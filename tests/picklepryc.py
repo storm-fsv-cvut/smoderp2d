@@ -3,12 +3,13 @@
 import numpy as np
 import os
 strr = 'adfadfadfa'
-d = np.ones([13,13])
-k = 123.1345
-ll = [1324,12341,1.1324,1324]
-lll = [[1,1,1,1,1],[1231231],[231,312],[312],[]]
+#d = np.ones([13,13])
+#k = 123.1345
+ll = [[],1324,2341,[324,33,34],44, [], [],[],[],999]
+#lll = [[1,1,1,1,1],[1231231],[231,312],[312],[]]
 
-dataList = [strr,d,k,ll,lll]
+#dataList = [strr,d,k,ll,lll]
+dataList = [ll]
 
 class SaveLoad:
   
@@ -77,30 +78,40 @@ class SaveLoad:
   
   def loadlist(self):
     n = self.lines[1].replace('\n','').split(' ')
+    n = int(n[0])
+    line = []
+    for i in self.lines[2:] :
+      line.append(i.replace('\n','').split(' '))
+      
+    print line
     a = 0
+    i = 0
     list_ = []
+    
     wrk = []
-    print 
-    for line in self.lines[2:] :
-      l = line.replace('\n','').split(' ')
-      m = int(l[0])
-      if not l[1]:
-        pass
-      else:
-        wrk.append(l[1])
-      print m, a
-      #if m > a :
-        #while m > a :
-          #list_.append([])
-          #a += 1
-      #if m == a :
-        #wrk.append(l[1])
+    while i < (n-1) :
+      print line[i],a
+      if int(line[i][0]) > a :
+        list_.append([])
+        a+=1
         
-      if m > a :
-        print '   zapis'    
-        list_.append(wrk)
-        wrk = []
-        a+=1 
+      else:
+        if int(line[i][0]) == a :
+          wrk.append(int(line[i][1]))
+        if int(line[i+1][0]) > a :
+          list_.append(wrk)
+          wrk = []
+          a += 1
+          
+        i += 1
+        
+      print list_
+      
+    if line[n-1][0] == line[n-2][0] :
+      wrk.append(int(line[n-1][1]))
+      list_.append(wrk)
+    if line[n-1][0] > line[n-2][0] :
+      list_.append([int(line[n-1][1])])
     print list_ 
 
 sl = SaveLoad()
