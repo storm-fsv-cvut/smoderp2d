@@ -1,5 +1,13 @@
 #!/usr/bin/python
 
+# list blbne 
+# chce ho rozlisit na int a float
+# true false blbne 
+
+
+
+
+import pickle
 import numpy as np
 import os
 strr = 'adfadfadfa'
@@ -10,19 +18,20 @@ for i in range(13):
     d[i][j] = ww
     ww += 1
 k = 123.1345
-ll = [[],[],111324,112341,[22324,2233,2234],33344, [], [],[],[],4444999,[5552334,5553], 666,[],[],[1324134]]
+#ll = [[],[],111324,112341,[22324,2233,2234],33344, [], [],[],[],4444999,[5552334,5553], 666,[],[],[1324134]]
 #lll = [[1,1,1,1,1],[1231231],[231,312],[312],[]]
-iii = int(1)
+#iii = int(1)
 #dataList = [strr,d,k,ll,lll]
-dataList = [iii,strr,k,ll,d]
+#dataList = [iii,strr,k,ll,d]
 
 #dataList = [k,ll]
+f = open('dp_hodne_bodu_tok.save','r')
+dataList = pickle.load(f)
+  
+  
+#for item in dataList:
+  #print item
 
-
-  
-  
-  
-  
   
   
   
@@ -70,11 +79,16 @@ class SaveItems :
     self.f.writelines(s + '\n') 
   
   def saveunicode(self,uni) :
-    self.f.writelines(s + '\n') 
+    self.f.writelines(uni + '\n') 
 
 
   def savenumpy(self,npa) :
-    np.savetxt(self.f,npa)
+    type_ = str(type(npa[0][0]))
+    self.f.writelines (type_ + '\n')
+    if 'int' in type_ :
+      np.savetxt(self.f,npa,fmt = '%15d',delimiter=';')
+    if 'float' in type_ :
+      np.savetxt(self.f,npa,fmt = '%15.10e',delimiter=';')
 
 class LoadItems :
 
@@ -101,7 +115,7 @@ class LoadItems :
         
       else:
         if int(line[i][0]) == a :
-          wrk.append(int(line[i][1]))
+          wrk.append(float(line[i][1]))
         if i == (N-1) : break
         if int(line[i+1][0]) > a :
           list_.append(wrk)
@@ -146,17 +160,32 @@ class LoadItems :
   
   def loadnpy(self) :
     
-    n = len(self.lines[1:])
-    m = len(self.lines[1].split(' '))
+    n = len(self.lines[2:])
+    m = len(self.lines[2].split(';'))
+    type_ = self.lines[1]
+    print type_, n, m
     arr = np.zeros([n,m],float)
     
-    for i, line in  enumerate(self.lines[1:]) :
-      for j, el in enumerate(line.split(' ')) :
-        arr[i][j]= float(el)
+    if 'int' in type_ : 
+      print 'int'
+      self.npyel = self.__npyint
+    if 'float' in type_ :
+      print 'float'
+      self.npyel = self.__npyfloat
+    
+    for i, line in  enumerate(self.lines[2:]) :
+      for j, el in enumerate(line.split(';')) :
+        arr[i][j]= self.npyel(el)
     return arr
 
-
-
+  def __npyfloat(self,el):
+    print el
+    return float(el)
+  
+  def __npyint(self,el):
+    return int(el)
+  
+  
 class SaveLoad(SaveItems,LoadItems):
   
   
@@ -165,8 +194,8 @@ class SaveLoad(SaveItems,LoadItems):
     if not os.path.exists(dir_):
       os.makedirs(dir_)
     for id_,it in enumerate(data):
-      print id_
-      with open(dir_+ os.sep + str(id_), 'w') as self.f:
+      #print "%02d" % (id_)
+      with open(dir_+ os.sep + "%02d" % (id_), 'w') as self.f:
         self.f.writelines(str(type(it))+'\n')
         self.save_item(it)
 
@@ -176,6 +205,7 @@ class SaveLoad(SaveItems,LoadItems):
     fs = sorted(os.listdir(dir_))
     listOut = []
     for fi in fs:
+      print fi
       with open(dir_+ os.sep + fi, 'r') as f:
         self.lines = f.readlines()
       listOut.append(self.load_item())
@@ -239,12 +269,17 @@ class SaveLoad(SaveItems,LoadItems):
 sl = SaveLoad()
 
 sl.save(dataList,'./save/')
-print dataList
+#print dataList
 
 del dataList
+#print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
+#print 'asdfasdfasdfasdfasdfadsfasdfasdfasdf'
+#print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
 
 dataList = sl.load('./save/')
 
 
+#for item in dataList :
+  #print item
 
-print dataList
+#print dataList
