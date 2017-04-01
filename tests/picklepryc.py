@@ -10,6 +10,12 @@
 import pickle
 import numpy as np
 import os
+import sys
+import zipfile
+import time    
+
+zipname = time.strftime('%Y-%m-%d_%H:%M:%S')+('-smoderpdata.zip')
+
 strr = 'adfadfadfa'
 d = np.zeros([13,10])
 ww = 0
@@ -162,8 +168,8 @@ class LoadItems :
       for i in range(nLinesList-int(line[iRec][0])-1) :
         list_.append([])
 
-    print list_
-    print 
+    #print list_
+    #print 
     return list_
   
   
@@ -217,7 +223,21 @@ class LoadItems :
 class SaveLoad(SaveItems,LoadItems):
 
   
-  def save(self,data, dir_):
+  def save(self,data, zipfname):
+    import shutil
+    
+    
+    dir_ = './.save/'
+    
+    if '.zip' in zipfname:
+      pass
+    else:
+      zipfname += '.zip'
+    
+    
+    zipf = zipfile.ZipFile(zipfname, 'w', zipfile.ZIP_DEFLATED)
+    
+    
     self.countList = 1
     if not os.path.exists(dir_):
       os.makedirs(dir_)
@@ -226,10 +246,39 @@ class SaveLoad(SaveItems,LoadItems):
       with open(dir_+ os.sep + "%02d" % (id_), 'w') as self.f:
         self.f.writelines(str(type(it))+'\n')
         self.save_item(it)
+    
+    
+    for root, dirs, files in os.walk(dir_):
+      for file in files:
+          #print os.path.join(root, file)
+          zipf.write(os.path.join(root, file))
+    
+    shutil.rmtree(dir_)
+    
 
+    
   
   
-  def load(self,dir_):
+  def load(self,zipfname):
+    import shutil
+    
+    dir_ = './.save/'
+    if not os.path.exists(dir_):
+      os.makedirs(dir_)
+    
+    
+    if '.zip' in zipfname:
+      pass
+    else:
+      zipfname += '.zip'
+      
+    fh = open(sys.argv[1], 'rb')
+    z = zipfile.ZipFile(fh)
+    for name in z.namelist():
+        outpath = "./"
+        z.extract(name, outpath)
+    fh.close()    
+    
     self.countList = 1
     fs = sorted(os.listdir(dir_))
     listOut = []
@@ -238,19 +287,23 @@ class SaveLoad(SaveItems,LoadItems):
       with open(dir_+ os.sep + fi, 'r') as f:
         self.lines = f.readlines()
       listOut.append(self.load_item())
-      
+    
+    
+    
+    shutil.rmtree(dir_)
+    
     return listOut
 
 
 
   def save_item(self,it):
     if isinstance(it,list) :
-      if self.countList in [1,2,3,4,5,8] : 
-        print 'int'
-      else:
-        print 'float'
-      print it
-      print 
+      #if self.countList in [1,2,3,4,5,8] : 
+        #print 'int'
+      #else:
+        #print 'float'
+      #print it
+      #print 
       self.savelist(it)
       self.countList += 1
     if isinstance(it,float) :
@@ -266,14 +319,14 @@ class SaveLoad(SaveItems,LoadItems):
 
   def load_item(self):
     if self.lines[0].replace('\n','') == str(type(list())) :
-      print self.countList, 
+      #print self.countList, 
       if self.countList in [1,2,3,4,5,8] : 
-        print 'int'
+        #print 'int'
         self.countList += 1
         return self.loadlist(int_=True)
       
       else:
-        print 'float'
+        #print 'float'
         self.countList += 1
         return self.loadlist(int_=False)
       
@@ -314,18 +367,26 @@ class SaveLoad(SaveItems,LoadItems):
   
 sl = SaveLoad()
 
-sl.save(dataList,'./save/')
+sl.save(dataList,sys.argv[1])
 #print dataList
 
+
+
 del dataList
-print '\n\n\n\n\n\n\n'#\n\n\n\n\n\n\n\n\n\n\n'
+#os.remove(sys.argv[1])
+#print '\n\n\n\n\n\n\n'#\n\n\n\n\n\n\n\n\n\n\n'
 #print 'asdfasdfasdfasdfasdfadsfasdfasdfasdf'
 #print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
 
-dataList = sl.load('./save/')
+
+#print dataList
 
 
-#for item in dataList :
-  #print item
+
+dataList = sl.load(sys.argv[1])
+
+
+for item in dataList :
+  print item
 
 #print dataList
