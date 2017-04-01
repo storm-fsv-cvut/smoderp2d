@@ -1,11 +1,12 @@
 import os 
 
+
 import main_src.constants                         as constants
 from   main_src.tools.tools                   import get_argv
 from   main_src.tools.tools                   import set_argv
 from   main_src.tools.tools                   import prt_sys_argv
 from   main_src.tools.tools                   import int_comp_type
-
+from   main_src.tools.tools                   import int_comp_type
 
 
 # # # # # # # # # # # # # # # # # # # # # # #
@@ -20,8 +21,11 @@ if partial_comp == 'full':
   from main_src.data_preparation import *
 
 elif partial_comp == 'dpre':
-  from main_src.data_preparation import *
-  import  main_src.tools.save_load_data as sld
+  
+  from    main_src.data_preparation    import *
+  import  main_src.tools.save_load_data    as sld
+  #import  main_src.tools.save_load_data_nopickle    as sld   # preparate
+  
   dataList = [boundaryRows, boundaryCols, mat_boundary, rrows, rcols, outletCells, x_coordinate, y_coordinate,\
     NoDataValue, array_points, \
     cols, rows, combinatIndex, delta_t,  \
@@ -33,13 +37,21 @@ elif partial_comp == 'dpre':
     output, pixel_area, points, poradi,  end_time, spix, state_cell, \
     temp, type_of_computing, vpix, mfda, sr, itera, \
     toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc]
+  
+  
   sld.save_data(dataList,get_argv(constants.PARAMETER_INDATA))
-  sys.exit('data prepared')
+  #sld.save(dataList,get_argv(constants.PARAMETER_INDATA))    #   preparated
+  
+  
+  sys.exit('data prepared...')
+  
 
 elif partial_comp == 'roff':
   import  main_src.tools.save_load_data as sld
   import main_src.processes.rainfall    as rainfall
-
+  #import  main_src.tools.save_load_data_nopickle    as sld   # preparated
+  
+  
   indata = get_argv(constants.PARAMETER_INDATA)
 
   boundaryRows, boundaryCols, \
@@ -57,7 +69,27 @@ elif partial_comp == 'roff':
   toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sld.load_data(indata)
 
 
-  
+  """
+  boundaryRows, boundaryCols, \
+  mat_boundary, rrows, rcols, outletCells, \
+  x_coordinate, y_coordinate,\
+  NoDataValue, array_points, \
+  cols, rows, combinatIndex, delta_t,  \
+  mat_pi, mat_ppl, \
+  surface_retention, mat_inf_index, mat_hcrit, mat_aa, mat_b,\
+  mat_fd, mat_dmt, mat_efect_vrst, mat_slope, mat_nan, \
+  mat_a,   \
+  mat_n,   \
+  output, pixel_area, points, poradi,  end_time, spix, state_cell, \
+  temp, type_of_computing, vpix, mfda, sr, itera, \
+  toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sld.load(indata)   #preparated
+  """
+
+
+  for item in sld.load_data(indata):
+    print type(item)
+    if isinstance(item,unicode) : print item
+  raw_input()
   
   if get_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY) == '-':
     set_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY, output)
