@@ -28,7 +28,15 @@ k = 123.1345
 f = open('dp_hodne_bodu_tok.save','r')
 dataList = pickle.load(f)
   
-  
+#l1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+
+#l2 = [[0, 1, 2, 3, 4, 5], [0, 5], [0, 5], [0, 5], [0, 5], [0, 5], [0, 5], [0, 5], [0, 5], [0, 5], [0, 5], [0, 5], [0, 5], [0, 5], [0, 5], [0, 5], [0, 5], [0, 1, 2, 3, 4, 5]]
+
+#l3 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+
+#l4 = [[], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], [] ]
+
+#dataList = [l1,l2,l3,l4]
 #for item in dataList:
   #print item
 
@@ -47,7 +55,7 @@ class SaveItems :
     b = []
     self.f.writelines(str(len(l))+'\n')
     for i in range(len(l)):
-      if not l[i] :
+      if l[i] == [] :
         pass
       else:
         if isinstance(l[i],list) :
@@ -59,7 +67,7 @@ class SaveItems :
     for item1 in b:
       line = ''
       for item2 in item1:
-        line += str(item2) + ' ' 
+        line += str(item2) + ';' 
       line = line[:-1]
       self.f.writelines(line + '\n') 
 
@@ -89,50 +97,73 @@ class SaveItems :
       np.savetxt(self.f,npa,fmt = '%15d',delimiter=';')
     if 'float' in type_ :
       np.savetxt(self.f,npa,fmt = '%15.10e',delimiter=';')
+      
 
 class LoadItems :
 
 
 
   
-  def loadlist(self):
-    n = self.lines[1].replace('\n','').split(' ')
-    n = int(n[0])
-    line = []
-    for i in self.lines[2:] :
-      line.append(i.replace('\n','').split(' '))
-      
-    N = len(line)
-    a = 0
-    i = 0
-    list_ = []
+  def loadlist(self,int_):
     
+    if int_ : 
+      self.el = self.__int
+    else :
+      self.el = self.__float
+      
+      
+    nLinesList = self.lines[1].replace('\n','').split(';')
+    nLinesList = int(nLinesList[0])
+    
+    line = []
+    
+    for i in self.lines[2:] :
+      line.append(i.replace('\n','').split(';'))
+      
+    nRec = len(line)
+    
+    iLine = 0
+    iRec = 0
+    
+    list_ = []
     wrk = []
-    while i < (n-1) :
-      if int(line[i][0]) > a :
+    
+    
+    
+    
+    
+    while iRec < (nRec-1) :
+      if int(line[iRec][0]) > iLine :
         list_.append([])
-        a+=1
+        iLine+=1
         
       else:
-        if int(line[i][0]) == a :
-          wrk.append(float(line[i][1]))
-        if i == (N-1) : break
-        if int(line[i+1][0]) > a :
-          list_.append(wrk)
-          wrk = []
-          a += 1
+        if int(line[iRec][0]) == iLine :
+          wrk.append(self.el(line[iRec][1]))
           
-        i += 1
+        if int(line[iRec+1][0]) > iLine :
+          if len(wrk) == 1 :
+            list_.append(wrk[0])
+          else:
+            list_.append(wrk)
+          wrk = []
+          iLine += 1
+        iRec += 1
     
-    if (n-1) == int(line[i][0]) :
-      if int(line[N-1][0]) == int(line[N-2][0]) :
+    
+    if (int(line[iRec][0]) == nLinesList-1) :
+      wrk.append(self.el(line[iRec][1]))
+      if len(wrk) == 1 :
+        list_.append(wrk[0])
+      else:
         list_.append(wrk)
-      if int(line[N-1][0]) > int(line[N-2][0]) :
-        list_.append([int(line[N-1][1])])
-    else :
-      while (N) >= i :
+    
+    if (int(line[iRec][0]) < nLinesList-1) :
+      for i in range(nLinesList-int(line[iRec][0])-1) :
         list_.append([])
-        i+=1
+
+    print list_
+    print 
     return list_
   
   
@@ -163,34 +194,31 @@ class LoadItems :
     n = len(self.lines[2:])
     m = len(self.lines[2].split(';'))
     type_ = self.lines[1]
-    print type_, n, m
     arr = np.zeros([n,m],float)
     
     if 'int' in type_ : 
-      print 'int'
-      self.npyel = self.__npyint
+      self.npyel = self.__int
     if 'float' in type_ :
-      print 'float'
-      self.npyel = self.__npyfloat
+      self.npyel = self.__float
     
     for i, line in  enumerate(self.lines[2:]) :
       for j, el in enumerate(line.split(';')) :
         arr[i][j]= self.npyel(el)
+        
     return arr
 
-  def __npyfloat(self,el):
-    print el
+  def __float(self,el):
     return float(el)
   
-  def __npyint(self,el):
+  def __int(self,el):
     return int(el)
   
   
 class SaveLoad(SaveItems,LoadItems):
-  
-  
+
   
   def save(self,data, dir_):
+    self.countList = 1
     if not os.path.exists(dir_):
       os.makedirs(dir_)
     for id_,it in enumerate(data):
@@ -202,10 +230,11 @@ class SaveLoad(SaveItems,LoadItems):
   
   
   def load(self,dir_):
+    self.countList = 1
     fs = sorted(os.listdir(dir_))
     listOut = []
     for fi in fs:
-      print fi
+      #print fi
       with open(dir_+ os.sep + fi, 'r') as f:
         self.lines = f.readlines()
       listOut.append(self.load_item())
@@ -216,7 +245,14 @@ class SaveLoad(SaveItems,LoadItems):
 
   def save_item(self,it):
     if isinstance(it,list) :
+      if self.countList in [1,2,3,4,5,8] : 
+        print 'int'
+      else:
+        print 'float'
+      print it
+      print 
       self.savelist(it)
+      self.countList += 1
     if isinstance(it,float) :
       self.savefloat(it)
     if isinstance(it,str) :
@@ -230,7 +266,17 @@ class SaveLoad(SaveItems,LoadItems):
 
   def load_item(self):
     if self.lines[0].replace('\n','') == str(type(list())) :
-      return self.loadlist()
+      print self.countList, 
+      if self.countList in [1,2,3,4,5,8] : 
+        print 'int'
+        self.countList += 1
+        return self.loadlist(int_=True)
+      
+      else:
+        print 'float'
+        self.countList += 1
+        return self.loadlist(int_=False)
+      
     if self.lines[0].replace('\n','') == str(type(float())) :
       return self.loadfloat()
     if self.lines[0].replace('\n','') == str(type(str())) :
@@ -272,7 +318,7 @@ sl.save(dataList,'./save/')
 #print dataList
 
 del dataList
-#print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
+print '\n\n\n\n\n\n\n'#\n\n\n\n\n\n\n\n\n\n\n'
 #print 'asdfasdfasdfasdfasdfadsfasdfasdfasdf'
 #print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
 
