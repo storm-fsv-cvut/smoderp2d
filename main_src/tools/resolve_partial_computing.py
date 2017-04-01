@@ -86,11 +86,6 @@ elif partial_comp == 'roff':
   """
 
 
-  for item in sld.load_data(indata):
-    print type(item)
-    if isinstance(item,unicode) : print item
-  raw_input()
-  
   if get_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY) == '-':
     set_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY, output)
     
