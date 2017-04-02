@@ -51,7 +51,7 @@ if prtTimes :
         
         for i in Globals.rr:
           for j in Globals.rc[i]:
-            tmp[i][j] = sur.arr[i][j].h_total
+            tmp[i][j] = sur.arr[i][j].h_total_new
           
         make_ASC_raster(filen,tmp,Globals)
         

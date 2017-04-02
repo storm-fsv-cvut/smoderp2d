@@ -11,6 +11,10 @@ import copy
 import numpy as np
 
 
+
+from main_src.main_classes.Surface     import runoff
+from main_src.main_classes.Surface     import surface_retention
+
 infilt_capa = 0
 infilt_time = 0
 max_infilt_capa = 0.000
@@ -140,28 +144,86 @@ class TimeStep:
         subArr[i][j].V_rest = self.V_subf_rest_tmp[i][j]
 
 
-
-  def do(self,surface, subsurface, rain_arr, courant, G, itera, total_time, delta_t, delta_t_pre, tz, sr, combinatIndex, NoDataValue, sum_interception, mat_efect_vrst,ratio, hydrographs):
-
+  
+  
+  def do_flow(self,surface, subsurface,delta_t,G, mat_efect_vrst, ratio, courant,itera, total_time, tz, sr) :
+    
+    """
     global infilt_capa
     global max_infilt_capa
     global infilt_time
-
+    """
     rrows = G.rr
     rcols = G.rc
     pixel_area = G.pixel_area
-    #ratio_tmpp = ratio
-
-    #
-    # rainfall during time step
-    #
-    rainfall, tz = rain_f.timestepRainfall(itera,total_time,delta_t_pre,tz,sr)
+    
+    
+    rainfall, tz = rain_f.timestepRainfall(itera,total_time,delta_t,tz,sr)
+    """
     infilt_capa += rainfall
     if (infilt_capa < max_infilt_capa) :
       infilt_time += delta_t_pre
       NS = 0.0
       rainfall = 0.0
       return NS, surface, subsurface,  tz, sum_interception, ratio, rainfall, 0.0, 0.0, 0.0
+    """
+    
+    
+    for i in rrows:
+      for j in rcols[i]:
+        #print i,j
+        
+        h_total_pre   = surface.arr[i][j].h_total_pre
+        
+        h_total_pre -= surface_retention(surface.arr[i][j])
+        
+        surface_state = surface.arr[i][j].state
+        
+        #
+        if surface_state >= 1000:
+          # toto je pripraveno pro odtok v ryhach
+          q_sheet = 0.0
+          q_rill  = 0.0
+          v_sheet = 0.0
+          rill_courant = 0.0
+          surface.arr[i][j].V_runoff = 0.0
+          surface.arr[i][j].V_rest   = 0.0
+
+          h_sub = subsurface.runoff_stream_cell(i,j)
+
+          inflowToReach =  h_sub*pixel_area + h_total_pre*pixel_area
+          surface.reach_inflows(id_=int(surface_state-1000),inflows=inflowToReach)
+
+        else:
+
+          q_sheet, v_sheet, q_rill, v_rill, ratio, rill_courant = runoff(i,j,surface.arr[i][j],delta_t, mat_efect_vrst[i][j], ratio)
+          subsurface.runoff(i,j,delta_t, mat_efect_vrst[i][j])
+
+        q_surface = q_sheet+q_rill
+
+        v = v_sheet
+        co='sheet'
+        
+        courant.CFL(i,j,surface.arr[i][j].h_total_pre,v,delta_t,mat_efect_vrst[i][j],co, rill_courant)
+       
+    return ratio, v_sheet, v_rill, rainfall, tz
+    
+  
+  
+  
+  
+  
+  
+  def do_next_h(self,surface, subsurface, rain_arr, rainfall, courant, G, total_time, delta_t, combinatIndex, NoDataValue, sum_interception, mat_efect_vrst):
+
+
+
+    rrows = G.rr
+    rcols = G.rc
+    pixel_area = G.pixel_area
+    #ratio_tmpp = ratio
+
+
 
 
     for iii in combinatIndex:
@@ -169,7 +231,7 @@ class TimeStep:
         k = iii[1]
         s =  iii[2]
         #jj * 100.0 !!! smazat
-        iii[3] = infilt.phlilip(k, s, delta_t_pre, total_time-infilt_time, NoDataValue)
+        iii[3] = infilt.phlilip(k, s, delta_t, total_time-infilt_time, NoDataValue)
         #print total_time-infilt_time, iii[3]*1000, k, s
 
     infilt.set_combinatIndex(combinatIndex)
@@ -187,12 +249,6 @@ class TimeStep:
 
     for i in rrows:
       for j in rcols[i]:
-        ##print i,j 
-        
-        
-        
-        #h = h_pre + p_pre - inf_pre + inflows_pre
-        
         
         #
         # current cell precipitation
@@ -203,11 +259,11 @@ class TimeStep:
         # Inflows from surroundings cells
         #
         surface.arr[i][j].inflow_tm = surface.cell_runoff(i,j)
+        
         #
         # Surface BILANCE
         #
-        surBIL =  surface.arr[i][j].V_rest_pre/pixel_area + surface.arr[i][j].V_rill_rest_pre/pixel_area + NS + surface.arr[i][j].inflow_tm/pixel_area
-
+        surBIL =  surface.arr[i][j].h_total_pre + NS + surface.arr[i][j].inflow_tm/pixel_area
 
         #
         # infiltration
@@ -221,67 +277,16 @@ class TimeStep:
           surface.arr[i][j].infiltration = infiltration
 
         # surface retention
-        surBIL = surface.surface_retention(i,j,surBIL)  + subsurface.get_exfiltration(i,j)
+        surBIL +=  subsurface.get_exfiltration(i,j)
         #print surBIL
-        h0 = surBIL
-
         
-        
-        
-        surface.arr[i][j].h = h0
-        surface.arr[i][j].h_total = h0
+        surface.arr[i][j].h_total_new = surBIL
         surface_state   = surface.arr[i][j].state
-
         # subsurface inflow
-        #
+        """
         inflow_sub = subsurface.cell_runoff(i,j,False)
         subsurface.bilance(i,j,infiltration,inflow_sub/pixel_area,delta_t)
         subsurface.fill_slope()
+        """
         
-        
-        
-        
-        
-        
-        
-        #
-        # Stream cell
-        #
-        if surface_state >= 1000:
-          # toto je pripraveno pro odtok v ryhach
-          q_sheet = 0.0
-          q_rill  = 0.0
-          v_sheet = 0.0
-          rill_courant = 0.0
-          surface.arr[i][j].V_runoff = 0.0
-          surface.arr[i][j].V_rest   = 0.0
-
-          h_sub = subsurface.runoff_stream_cell(i,j)
-
-          inflowToReach =  h_sub*pixel_area + surface.arr[i][j].h*pixel_area
-          surface.reach_inflows(id_=int(surface_state-1000),inflows=inflowToReach)
-
-        else:
-
-          q_sheet, v_sheet, q_rill, v_rill, ratio, rill_courant = surface.runoff(i,j,delta_t, mat_efect_vrst[i][j], ratio)
-          subsurface.runoff(i,j,delta_t, mat_efect_vrst[i][j])
-
-        q_surface = q_sheet+q_rill
-
-        v = v_sheet
-        co='sheet'
-        
-        
-        
-
-        #if ratio > ratio_tmpp :
-          ##print '\t, ', ratio_tmpp, ratio #; raw_input()
-          #courant.CFL(i,j,surface.arr[i][j].h,v,delta_t,mat_efect_vrst[i][j],co, rill_courant)
-          #return NS, surface, subsurface,  tz, sum_interception, ratio, rainfall, v_sheet, v_rill
-       
-        courant.CFL(i,j,surface.arr[i][j].h,v,delta_t,mat_efect_vrst[i][j],co, rill_courant)
-       
-
-
-
-    return NS, surface, subsurface,  tz, sum_interception, ratio, rainfall, v_sheet, v_rill
+    return NS, sum_interception

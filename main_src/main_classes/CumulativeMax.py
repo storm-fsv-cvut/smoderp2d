@@ -89,7 +89,7 @@ class CumulativeSubsurface(object):
   #  
   #  Method is called in main_src.runoff
   #  
-  def update_cumulative_sur(self,i,j,sub,q_subsur):
+  def update_cumulative_subsur(self,i,j,sub,q_subsur):
 
 
 
@@ -252,15 +252,15 @@ class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfa
     q_rill  = surface.V_runoff_rill/delta_t
 
     if surface.state == 0:
-      if surface.h > self.h_sur[i][j]:
-        self.h_sur[i][j] = surface.h
+      if surface.h_total_new > self.h_sur[i][j]:
+        self.h_sur[i][j] = surface.h_total_new
         self.q_sur[i][j] = q_sheet
 
     elif (surface.state == 1) or (surface.state == 2):
 
       self.V_rill[i][j] += surface.V_runoff_rill
-      if surface.h > self.h_sur[i][j] :
-        self.h_sur[i][j] = surface.h
+      if surface.h_total_new > self.h_sur[i][j] :
+        self.h_sur[i][j] = surface.h_total_new
         self.q_sur[i][j] = q_sheet
 
       elif surface.h_rill > self.h_rill[i][j]:

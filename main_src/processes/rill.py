@@ -6,9 +6,9 @@ courantMin = 0.2
 
 def update_hb(loc_V_to_rill,rillRatio,l,b,ratio, ppp=False):
   V = loc_V_to_rill
-  #if V <  0:
-    #print "chybka", V
-    #raw_input()
+  if V <  0:
+    print "chybka", V
+    raw_input()
   newb = math.sqrt(V/(rillRatio*l))
   #if ppp :  print 'zvetsuje', newb, b, V
   if newb > b :
