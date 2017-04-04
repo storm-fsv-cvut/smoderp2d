@@ -163,7 +163,8 @@ class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfa
             10 : 'V_rill',
             11 : 'b_rill',
             12 : 'inflow_sur',
-            13 : 'sur_ret'
+            13 : 'sur_ret',
+            14 : 'V_sur_r'
             }
 
             #12 : 'v_rill',
@@ -185,7 +186,8 @@ class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfa
             10 : 'CumVOutRillL3',
             11 : 'AreaRill',
             12 : 'CumVInL3',
-            13 : 'SurRet'
+            13 : 'SurRet',
+            14 : 'CumVRestL3'
             }
             #12 : 'MaxVeloRill',
 
@@ -210,6 +212,8 @@ class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfa
     self.q_sur  =  np.zeros([r,c],float)
     ## cumulative surface runoff volume [m3]
     self.V_sur  =  np.zeros([r,c],float)
+    ## cumulative surface runoff volume [m3]
+    self.V_sur_r=  np.zeros([r,c],float)
     ## maximum surface velocity [ms-1]
     self.v_sur  =  np.zeros([r,c],float)
     ## maximum surface shear stress [Pa]
@@ -221,7 +225,9 @@ class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfa
     ## maximum discharge in rills [m3s-1]
     self.q_rill =  np.zeros([r,c],float)
     ## cumulative runoff volume in rills [m3]
-    self.V_rill =  np.zeros([r,c],float)
+    self.V_rill   =  np.zeros([r,c],float)
+    ## cumulative runoff volume in rills [m3]
+    self.V_rill_r =  np.zeros([r,c],float)
     ## maximum rill width [m]
     self.b_rill =  np.zeros([r,c],float)
     ## maximum velocity in rills [ms-1]
@@ -239,12 +245,13 @@ class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfa
   #  
   #  Method is called in main_src.runoff
   #  
-  def update_cumulative(self,i,j,surface,subsurface,rain,delta_t):
+  def update_cumulative(self,i,j,surface,subsurface,delta_t):
 
 
     self.infiltration[i][j]  += surface.infiltration*self.pixel_area
-    self.precipitation[i][j] += rain*self.pixel_area
+    self.precipitation[i][j] += surface.cur_rain*self.pixel_area
     self.V_sur[i][j]         += surface.V_runoff
+    self.V_sur_r[i][j]       += surface.V_rest
     self.inflow_sur[i][j]    += surface.inflow_tm
     self.sur_ret[i][j]       += surface.cur_sur_ret*self.pixel_area
 
@@ -257,8 +264,8 @@ class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfa
         self.q_sur[i][j] = q_sheet
 
     elif (surface.state == 1) or (surface.state == 2):
-
-      self.V_rill[i][j] += surface.V_runoff_rill
+      self.V_rill[i][j]   += surface.V_runoff_rill
+      self.V_rill_r[i][j] += surface.V_rill_rest
       if surface.h_total_new > self.h_sur[i][j] :
         self.h_sur[i][j] = surface.h_total_new
         self.q_sur[i][j] = q_sheet

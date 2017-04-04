@@ -91,11 +91,11 @@ class D8(object):
       iax = i+ax
       jbx = j+bx
       try:
-        insurfflow_from_cell = self.arr[iax][jbx].V_runoff_pre
+        insurfflow_from_cell = self.arr[iax][jbx].V_runoff
       except:
         insurfflow_from_cell = 0.0
       try:
-        inrillflow_from_cell = self.arr[iax][jbx].V_runoff_rill_pre
+        inrillflow_from_cell = self.arr[iax][jbx].V_runoff_rill
       except:
         inrillflow_from_cell = 0.0
       inflow_from_cells = inflow_from_cells + insurfflow_from_cell + inrillflow_from_cell

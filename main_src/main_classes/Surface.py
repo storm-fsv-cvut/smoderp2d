@@ -12,7 +12,7 @@ from main_src.main_classes.Stream               import *
 
 import main_src.processes.rill                 as rill
 import main_src.io_functions.prt               as prt
-import main_src.processes.surface              as surface
+import main_src.processes.surface              as surfacefce
 from   main_src.tools.tools                     import comp_type
 isRill, subflow, stream, diffuse = comp_type()
 
@@ -30,13 +30,14 @@ class SurArrs :
     self.state =       int(0)
     self.sur_ret =     sur_ret
     self.cur_sur_ret = float(0)
+    self.cur_rain    = float(0)
     self.h_sheet =     float(0)
     self.h_total_new =    float(0)
     self.h_total_pre =    float(0)
     self.V_runoff =     float(0)
-    self.V_runoff_pre = float(0)
+    #self.V_runoff_pre = float(0)
     self.V_rest =       float(0)
-    self.V_rest_pre =   float(0)
+    #self.V_rest_pre =   float(0)
     self.inflow_tm =    float(0)
     self.soil_type =    inf_index
     self.infiltration = float(0)
@@ -44,11 +45,11 @@ class SurArrs :
     self.a =            a
     self.b =            b
     self.h_rill =       float(0)
-    self.h_rillPre =    float(0)
+    #self.h_rillPre =    float(0)
     self.V_runoff_rill= float(0)
-    self.V_runoff_rill_pre= float(0)
+    #self.V_runoff_rill_pre= float(0)
     self.V_rill_rest =      float(0)
-    self.V_rill_rest_pre =  float(0)
+    #self.V_rill_rest_pre =  float(0)
     self.rillWidth   =      float(0)
     self.V_to_rill   =      float(0)
 
@@ -96,7 +97,7 @@ class Surface(Stream if stream == True else StreamPass,Kinematic,Globals,Size):
       #';Rill_size;Rill_flow;Rill_V_runoff;Rill_V_rest'
       line += sep + str(arr.h_rill) + sep + str(arr.rillWidth) + sep + str(arr.V_runoff_rill/dt) + sep + str(arr.V_runoff_rill) + sep + str(arr.V_rill_rest) + sep + str(arr.V_runoff/dt + arr.V_runoff_rill/dt) + sep + str(arr.V_runoff+arr.V_runoff_rill)
     #bil_  = arr.inflow_tm - arr.V_runoff - arr.V_runoff_rill - arr.cur_sur_ret*self.pixel_area - arr.V_rest + arr.V_rest_pre - arr.infiltration*self.pixel_area - arr.V_rill_rest + arr.V_rill_rest_pre
-    bil_  = arr.inflow_tm - (arr.V_runoff + arr.V_runoff_rill + arr.infiltration*self.pixel_area) - (arr.cur_sur_ret*self.pixel_area + arr.V_rest + arr.V_rill_rest) + (arr.V_rest_pre + arr.V_rill_rest_pre)
+    bil_  = arr.h_total_pre*self.pixel_area + arr.cur_rain*self.pixel_area + arr.inflow_tm - (arr.V_runoff + arr.V_runoff_rill + arr.infiltration*self.pixel_area) - (arr.cur_sur_ret*self.pixel_area) - arr.h_total_new*self.pixel_area #<< + arr.V_rest + arr.V_rill_rest) + (arr.V_rest_pre + arr.V_rill_rest_pre)
     #bil_  = arr.inflow_tm - (arr.V_runoff + arr.infiltration*self.pixel_area) - (arr.cur_sur_ret*self.pixel_area + arr.V_rest) + (arr.V_rest_pre)
     return line, bil_
 
@@ -139,23 +140,27 @@ def __runoff(i,j,sur,dt,efect_vrst,ratio) :
 
 
 
-def __runoff_zero_compType(self,i,j,dt,efect_vrst,ratio) :
+def __runoff_zero_compType(i,j,sur,dt,efect_vrst,ratio) :
 
-  arr = self.arr[i][j]
+  h_tota_pre = sur.h_total_pre
+  h_crit     = sur.h_crit
+  state      = sur.state
   
-  arr.h_sheet = arr.h_total_pre
+  #sur.state               = update_state1(h_tota_pre,h_crit,state)
+  sur.h_sheet = sur.h_total_pre
+  
+  q_sheet = sheet_runoff(sur,dt)
   
   
-  q_sheet = self.sheet_runoff(i,j,dt)
-
-  if arr.h_sheet > 0.0 :
-    v_sheet = q_sheet / arr.h_sheet
+  if sur.h_sheet > 0.0 :
+    v_sheet = q_sheet / sur.h_sheet
   else:
     v_sheet = 0.0
+
+
   q_rill = 0
   v_rill = 0
 
-  self.arr[i][j] = arr
 
   return q_sheet, v_sheet, q_rill, v_rill, ratio, 0.0
 
@@ -188,14 +193,14 @@ def compute_h_hrill(h_total_pre,h_crit,state):
 def sheet_runoff(sur,dt):
 
 
-  q_sheet = surface.shallowSurfaceKinematic(sur)
+  q_sheet = surfacefce.shallowSurfaceKinematic(sur)
   sur.V_runoff = dt * q_sheet * Globals.dx
   sur.V_rest = sur.h_sheet * Globals.pixel_area - sur.V_runoff
 
   return q_sheet
 
 def rill_runoff(i,j,sur,dt,efect_vrst,ratio):
-
+  raw_input()
   ppp = False
   
 
@@ -258,5 +263,6 @@ if (isRill) :
   prt.message("\tRill flow: \n\t\tON")
   runoff = __runoff
 else:
+  #raw_input()
   prt.message("\tRill flow: \n\t\tOFF")
   runoff = __runoff_zero_compType

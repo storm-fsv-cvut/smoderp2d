@@ -84,6 +84,9 @@ def load_precipitation(fh):
     prt.message("Unexpected error:", sys.exc_info()[0])
     raise
 
+
+
+
 ## Function returns a rainfall amount for current time step
 #  if two or more rainfall records belongs to one time step
 #  the function integrates the rainfall amount.
@@ -134,7 +137,6 @@ def current_rain(rain, rainfallm, sum_interception):
   rain_veg = rain.veg_true
   rain_ppl = rain.ppl
   rain_pi  = rain.pi
-  
   if rain_veg != int(5):
     interc = rain_ppl * rainfallm # interception is konstant
     #jj nemelo by to byt interc = (1-rain_ppl) * rainfallm

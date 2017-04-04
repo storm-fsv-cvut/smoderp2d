@@ -145,7 +145,7 @@ else:
         cumulative.shear_sur[i][j] = cumulative.h_sur[i][j] * 98.07 *  mat_slope[i][j]
   
     
-    main_output = [3,4,5,6,7,12,13]  #jj vyznam najdes v class Cumulative mezi class Cumulative a def__init__
+    main_output = [3,4,5,6,7,12,13,14]  #jj vyznam najdes v class Cumulative mezi class Cumulative a def__init__
     if isRill : 
       main_output += [8,9,10,11]
     if subflow :
@@ -154,7 +154,6 @@ else:
       main_output += [1,2]
       
     
-    vRest     = np.zeros(np.shape(surArr),float)
     finState  = np.zeros(np.shape(surArr),int)
     hCrit     = np.zeros(np.shape(surArr),float)
     Stream    = np.zeros(np.shape(surArr),float)
@@ -163,7 +162,7 @@ else:
     
     for i in rrows:
       for j in rcols[i]:
-        vRest[i][j] =    surArr[i][j].V_rest
+        #vRest[i][j] =    surArr[i][j].V_rest
         finState[i][j] = int(surArr[i][j].state)
         hCrit[i][j] =    surArr[i][j].h_crit
     
@@ -179,15 +178,16 @@ else:
       tools.make_ASC_raster(outName,wrk,G)
     
     
-    outName = output+os.sep+'VRestEndL'+".asc" 
-    tools.make_ASC_raster(outName,vRest,G)
+    #outName = output+os.sep+'VRestEndL'+".asc" 
+    #tools.make_ASC_raster(outName,vRest,G)
     
     totalBil = cumulative.infiltration.copy()
     totalBil.fill(0.0)
     
     #                  (   IN                                  ) - (  OUT          )  - ( What rests in the end)
-    totalBil = (cumulative.precipitation + cumulative.inflow_sur) - (cumulative.infiltration + cumulative.V_sur) - (vRest) - cumulative.sur_ret
+    totalBil = (cumulative.precipitation + cumulative.inflow_sur) - (cumulative.infiltration + cumulative.V_sur) - cumulative.sur_ret + (cumulative.V_sur_r) 
     
+    vRest     = np.zeros(np.shape(surArr),float)
     if isRill : 
       for i in rrows:
         for j in rcols[i]:
@@ -197,9 +197,9 @@ else:
             vRest[i][j] =    surArr[i][j].V_rill_rest
           
           
-    outName = output+os.sep+'VRestEndRillL'+".asc" 
-    tools.make_ASC_raster(outName,vRest,G)
-    totalBil += - cumulative.V_rill - vRest
+      outName = output+os.sep+'VRestEndRillL'+".asc" 
+      tools.make_ASC_raster(outName,vRest,G)
+      totalBil += - cumulative.V_rill - vRest
       
     for i in rrows:
       for j in rcols[i]:

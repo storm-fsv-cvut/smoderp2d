@@ -174,7 +174,7 @@ class Hydrographs:
           #print currRain*self.pixel_area
           #raw_input()
           
-          line += str(currRain*self.pixel_area+linebil[1]) # + sep
+          line += str(linebil[1]) # + sep
           line += subsurface.return_str_vals(l,m,sep,dt) + sep
           if extraout :
             line += str(surface.arr[l][m].V_to_rill) + sep
