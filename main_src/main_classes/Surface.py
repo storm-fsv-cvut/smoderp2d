@@ -185,8 +185,8 @@ def compute_h_hrill(h_total_pre,h_crit,state):
     return h_sheet, h_rill
   
   elif state == 2 :
-    h_sheet   = h_crit
-    h_rill    = h_total_pre - h_crit
+    h_sheet   = min(h_total_pre,h_crit)
+    h_rill    = max(0,h_total_pre - h_crit)
     return h_sheet, h_rill
   
 
@@ -200,7 +200,6 @@ def sheet_runoff(sur,dt):
   return q_sheet
 
 def rill_runoff(i,j,sur,dt,efect_vrst,ratio):
-  raw_input()
   ppp = False
   
 
