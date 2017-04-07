@@ -199,11 +199,11 @@ class TimeStep:
 
         q_surface = q_sheet+q_rill
 
-        v = v_sheet
+        v = max(v_sheet,v_rill)
         co='sheet'
         #print surface.arr[i][j].h_sheet, surface.arr[i][j].h_total_pre, v, q_sheet, surface.arr[i][j].V_runoff
         courant.CFL(i,j,surface.arr[i][j].h_total_pre,v,delta_t,mat_efect_vrst[i][j],co, rill_courant)
-       
+        rill_courant = 0.
     return ratio, v_sheet, v_rill, rainfall, tz
     
   

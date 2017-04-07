@@ -94,8 +94,8 @@ class Courant():
   #
   def CFL(self,i,j,h0, v, delta_t, efect_vrst, co, rill_courant):
     cour = v / self.cour_coef * delta_t / efect_vrst
-
-
+    cour = max(cour,rill_courant)
+    #print cour
 
     if cour > self.cour_most:
         self.i = i
@@ -104,8 +104,8 @@ class Courant():
         self.cour_most  = cour
         self.maxh       = h0
         self.cour_speed = v
-    if rill_courant > self.cour_most_rill:
-        self.cour_most_rill = rill_courant
+    #if rill_courant > self.cour_most_rill:
+        #self.cour_most_rill = rill_courant
 
 
   ## Returns the adjusted/unchanged time step after a time step computation is completed.
@@ -122,12 +122,12 @@ class Courant():
     # to je ale reseno lokalne
     # v  ./main_src/processes/rill.py
     #
-    if (self.cour_most_rill < 0.1) :
-      ratio = max(1,ratio-1) # ratio nemuze byt mensi nez 1
-      if ratio == 1 :
-        self.max_delta_t_mult = 1.0
-      else :
-        self.max_delta_t_mult = min(1.0, self.max_delta_t_mult*1/(0.9)) # max_delta_t_mult nemuze byt vetsi nez 1.0
+    #if (self.cour_most_rill < 0.1) :
+      #ratio = max(1,ratio-1) # ratio nemuze byt mensi nez 1
+      #if ratio == 1 :
+        #self.max_delta_t_mult = 1.0
+      #else :
+        #self.max_delta_t_mult = min(1.0, self.max_delta_t_mult*1/(0.9)) # max_delta_t_mult nemuze byt vetsi nez 1.0
 
 
 
@@ -135,11 +135,11 @@ class Courant():
     # vyse nelze jit
     # proto se zmensuje max_delta_t_mult
     # ktery nasobi vysledne delta
-    #
-    if ((ratio > self.maxratio) or (self.cour_most_rill > 1.0)) :
-      ratio = self.maxratio
-      #ratio = 1
-      self.max_delta_t_mult *= 0.9
+    ##
+    #if ((ratio > self.maxratio) or (self.cour_most_rill > 1.0)) :
+      #ratio = self.maxratio
+      ##ratio = 1
+      #self.max_delta_t_mult *= 0.9
 
 
     # pokud je maximalni courant mimo dovolena kryteria

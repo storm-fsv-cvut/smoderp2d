@@ -90,7 +90,7 @@ if __name__ == "__main__":
   #print constants.PARAMETER_MAX_DELTA_T
   #sys.exit()
   
-  sys.argv.append('prt_times.in')
+  sys.argv.append('')
   #sys.argv.append('')
   import main_src.runoff
 

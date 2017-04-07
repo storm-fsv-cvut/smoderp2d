@@ -25,7 +25,7 @@ python main.py \
 - \
 indata/srazka.txt \
 30 \
-15 \
+30 \
 00.0  \
 - \
 out \
@@ -38,6 +38,6 @@ false \
 - \
 False \
 true  \
-indata/dp_vse.save \
+indata/dp_hodne_bodu_tok.save \
 roff \
 true

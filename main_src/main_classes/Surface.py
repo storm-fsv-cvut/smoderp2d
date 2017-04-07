@@ -20,7 +20,7 @@ isRill, subflow, stream, diffuse = comp_type()
 
 
 
-
+courantMax = 0.5
 
 
 class SurArrs :
@@ -200,33 +200,35 @@ def sheet_runoff(sur,dt):
   return q_sheet
 
 def rill_runoff(i,j,sur,dt,efect_vrst,ratio):
+  
   ppp = False
   
-
   if sur.state == 1 :
     sur.rillWidth = 0
     
-  sur.rillWidth, \
-  V_to_rill, \
-  sur.V_runoff_rill, \
-  sur.V_rill_rest, \
-  q_rill, \
-  v_rill, \
-  ratio, \
-  rill_courant = rill.rillCalculations(sur,
-                                        pixel_area,
-                                        efect_vrst,
-                                        constants.RILL_RATIO,
-                                        mat_n[i][j],
-                                        mat_slope[i][j],
-                                        dt,
-                                        ratio,ppp)
-
-
-
+  V_to_rill = sur.h_rill*Globals.pixel_area
+  h, b   = rill.update_hb(V_to_rill,constants.RILL_RATIO,efect_vrst,sur.rillWidth,ratio,ppp)
+  R_rill = (h*b)/(b + 2*h)
+  v_rill = math.pow(R_rill,(2.0/3.0)) * 1./mat_n[i][j] * math.pow(mat_slope[i][j]/100,0.5)
+  q_rill = v_rill * constants.RILL_RATIO * b * b # [m3/s]
+  V      = q_rill*dt
+  courant = (v_rill*dt)/efect_vrst
   sur.V_to_rill = V_to_rill
-  
-  return q_rill, v_rill, ratio, rill_courant
+
+
+  if (courant <= courantMax) :
+
+    if V>(V_to_rill):
+      sur.V_rill_rest   = 0
+      sur.V_runoff_rill = V_to_rill
+
+    else:
+      sur.V_rill_rest   = V_to_rill - V
+      sur.V_runoff_rill = V
+
+  else:
+    return q_rill, v_rill, ratio, courant
+  return q_rill, v_rill, ratio, courant  
 
 
 
