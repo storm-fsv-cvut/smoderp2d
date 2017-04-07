@@ -109,12 +109,12 @@ class Surface(Stream if stream == True else StreamPass,Kinematic,Globals,Size):
 #
 def __runoff(i,j,sur,dt,efect_vrst,ratio) :
   
-  h_tota_pre = sur.h_total_pre
+  h_total_pre = sur.h_total_pre
   h_crit     = sur.h_crit
   state      = sur.state
   
-  #sur.state               = update_state1(h_tota_pre,h_crit,state)
-  sur.h_sheet, sur.h_rill = compute_h_hrill(h_tota_pre,h_crit,state)
+  #sur.state               = update_state1(h_total_pre,h_crit,state)
+  sur.h_sheet, sur.h_rill = compute_h_hrill(h_total_pre,h_crit,state)
   
   q_sheet = sheet_runoff(sur,dt)
   
@@ -142,11 +142,11 @@ def __runoff(i,j,sur,dt,efect_vrst,ratio) :
 
 def __runoff_zero_compType(i,j,sur,dt,efect_vrst,ratio) :
 
-  h_tota_pre = sur.h_total_pre
+  h_total_pre = sur.h_total_pre
   h_crit     = sur.h_crit
   state      = sur.state
   
-  #sur.state               = update_state1(h_tota_pre,h_crit,state)
+  #sur.state               = update_state1(h_total_pre,h_crit,state)
   sur.h_sheet = sur.h_total_pre
   
   q_sheet = sheet_runoff(sur,dt)
@@ -236,7 +236,7 @@ def surface_retention(sur):
   reten = sur.sur_ret
   pre_reten = reten
   if reten < 0:
-    tempBIL = sur.h_tota_pre + reten
+    tempBIL = sur.h_total_pre + reten
 
     if tempBIL > 0:
       bil = tempBIL

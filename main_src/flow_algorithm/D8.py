@@ -42,6 +42,11 @@ def new_inflows(mat_fd):
       intok = __smery(in_dir,i,j,smer)
       inflows[i][j] = intok
   
+  #for item in inflows :
+    #print item
+    #for item2 in item :
+      #print item2
+  #raw_input()
   return inflows
   
 
