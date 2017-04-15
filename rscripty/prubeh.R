@@ -1,6 +1,7 @@
-# library(raster)
-# library(manipulate)
-setwd("~/Documents/Smoderp/curr/")
+### vse nastavujes v hlavicce ###
+# cesta k funkci, snad snad do smoderp/ snad automaticky
+path = dirname(parent.frame(2)$ofile)
+if(length(path) != 0){setwd(path);setwd('..')}
 dir_ = "out/"
 library(fields)
 

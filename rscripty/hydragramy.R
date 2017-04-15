@@ -1,15 +1,16 @@
 ### vse nastavujes v hlavicce ###
-# cesta k funkci
-setwd("~/Documents/Smoderp/curr/")
+# cesta k funkci, snad snad do smoderp/ snad automaticky
+path = dirname(parent.frame(2)$ofile)
+if(length(path) != 0){setwd(path);setwd('..')}
+source('rscripty/hydragramy_fnc.R')
 
-source('~/Documents/Smoderp/curr/rscripty/hydragramy_fnc.R')
-# cesta k datum
+# cesta k datum, vypln
 dir_ = 'out'
 # 
 
 # takhle muzes porovnat dva body
-id1_ = 8
-id2_ = 8
+id1_ = 1
+id2_ = 1
 
 
 

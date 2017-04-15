@@ -43,7 +43,7 @@ if prtTimes :
       if (time < self.times[self.__n]) & (self.times[self.__n] <=time+dt) :
         
         cas = '%015.2f' % (time+dt)
-        filen = Globals.outdir + os.sep  + self.outsubrid +os.sep+ 'H' + str(cas).replace('.','_')+'.acs'
+        filen = Globals.outdir + os.sep  + self.outsubrid +os.sep+ 'H' + str(cas).replace('.','_')+'.asc'
         prt.message("Printing total H into file: ." +os.sep+ filen + '...')
         prt.message("-----------------------------------------------------------")
         prt.message("-----------------------------------------------------------")

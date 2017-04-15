@@ -1,10 +1,10 @@
 ### vse nastavujes v hlavicce ###
-# cesta k funkci
-setwd("~/Documents/Smoderp/curr/")
+# cesta k funkci, snad snad do smoderp/ snad automaticky
+path = dirname(parent.frame(2)$ofile)
+if(length(path) != 0){setwd(path);setwd('..')}
+source('rscripty/hydragramy_vsechny_fce.R')
 
 
-
-source('~/Documents/Smoderp/curr/rscripty/hydragramy_vsechny_fce.R')
 # cesta k datum
 dir_ = 'out/'
 
