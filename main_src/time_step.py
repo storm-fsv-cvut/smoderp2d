@@ -204,6 +204,7 @@ class TimeStep:
         #print surface.arr[i][j].h_sheet, surface.arr[i][j].h_total_pre, v, q_sheet, surface.arr[i][j].V_runoff
         courant.CFL(i,j,surface.arr[i][j].h_total_pre,v,delta_t,mat_efect_vrst[i][j],co, rill_courant)
         rill_courant = 0.
+        #print i, j, h_total_pre, surface.arr[i][j].h_total_pre
     return ratio, v_sheet, v_rill, rainfall, tz
     
   
@@ -245,6 +246,7 @@ class TimeStep:
     subsurface.fill_slope()
     subsurface.new_inflows()
 
+    #print 'bbilll'
     for i in rrows:
       for j in rcols[i]:
         
@@ -264,7 +266,11 @@ class TimeStep:
         # Surface BILANCE
         #
         surBIL =  surface.arr[i][j].h_total_pre + NS + surface.arr[i][j].inflow_tm/pixel_area - (surface.arr[i][j].V_runoff/pixel_area + surface.arr[i][j].V_runoff_rill/pixel_area)
+        
+        
 
+        #print i,j, surface.arr[i][j].state, surface.arr[i][j].h_total_pre , NS , surface.arr[i][j].inflow_tm/pixel_area , surface.arr[i][j].V_runoff/pixel_area , surface.arr[i][j].V_runoff_rill/pixel_area
+          
         #
         # infiltration
         #

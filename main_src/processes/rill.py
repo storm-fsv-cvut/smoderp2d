@@ -1,6 +1,6 @@
 import math
 
-courantMax = 0.5
+courantMax = 1.0
 courantMin = 0.2
 
 
@@ -11,11 +11,15 @@ def update_hb(loc_V_to_rill,rillRatio,l,b,ratio, ppp=False):
     raw_input()
   newb = math.sqrt(V/(rillRatio*l))
   #if ppp :  print 'zvetsuje', newb, b, V
-  if newb > b :
-    b = newb
-    h = V/(b*l)
-  else:
-    h = V/(b*l)
+  if (V>0) :
+    if newb > b :
+      b = newb
+      h = V/(b*l)
+    else:
+      h = V/(b*l)
+    return h, b
+  h = V/(b*l)
+  #print '\t\t', h, V, b, l
   return h, b
 
 
@@ -46,10 +50,10 @@ def rill(V_to_rill,rillRatio,l,b,delta_t,ratio,n,slope,pixelArea,ppp=False):
 
     q[k] = v[k] * rillRatio * b * b # [m3/s]
     V = q[k]*loc_delta_t
-    courant = (v[k]*loc_delta_t)/l
+    courant =  v[k] / 0.5601 * loc_delta_t/l
 
 
-    #print courant
+
     if (courant <= courantMax) :
 
       if V>(loc_V_to_rill+V_rill_rest):
@@ -100,7 +104,7 @@ def rill(V_to_rill,rillRatio,l,b,delta_t,ratio,n,slope,pixelArea,ppp=False):
 #
 def rillCalculations(sur,pixelArea, l, rillRatio, n, slope, delta_t, ratio, ppp=False):
 
-
+  raw_input()
   h_rill        = sur.h_rill
   b             = sur.rillWidth
   V_to_rill     = h_rill*pixelArea
@@ -119,9 +123,9 @@ def rillCalculations(sur,pixelArea, l, rillRatio, n, slope, delta_t, ratio, ppp=
     #print '\t', b, 
     b, V_rill_runoff, V_rill_rest, q, v, courant = rill(V_to_rill,rillRatio,l,b,delta_t,ratio,n,slope,pixelArea,ppp)
     #if ppp : 
-    #print '\t', b, V_rill_runoff, V_rill_rest, courant
+    print '\t', b, V_rill_runoff, V_rill_rest, courant
     if (courant > courantMax):
-      #print '------ ratio += 1 -----'; raw_input()
+      print '------ ratio += 1 -----'; raw_input()
       ratio += 1
       if (ratio > 10):
         return b_tmp, V_to_rill, V_rill_runoff, V_rill_rest, 0.0, 0.0, 11, courant
@@ -129,8 +133,8 @@ def rillCalculations(sur,pixelArea, l, rillRatio, n, slope, delta_t, ratio, ppp=
 
   qMax = max(q)
   vMax = max(v)
-
-
+  #print raw_input('..')
+  #print "V_to_rill, V_rill_runoff", V_to_rill, V_rill_runoff
   return b, V_to_rill, V_rill_runoff, V_rill_rest, qMax, vMax, ratio, courant
 
 

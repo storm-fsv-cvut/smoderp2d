@@ -15,7 +15,6 @@
 # indata/dp_hodne_bodu_tok.save
 # indata/DS_plochamalyNx.save
 # indata/ada.save
-# indata/nucice_rillsheet_dem20m.save
 # '''
 
 python main.py \
@@ -25,10 +24,10 @@ python main.py \
 - \
 - \
 indata/srazka.txt \
-30 \
+60 \
 25 \
 00.0  \
-- \
+10.0 \
 out \
 shallowandrillsurface \
 false \
@@ -39,6 +38,6 @@ false \
 - \
 False \
 true  \
-indata/nucice_rillsheet_dem20m.save \
+indata/dp_hodne_bodu_tok.save \
 roff \
 true

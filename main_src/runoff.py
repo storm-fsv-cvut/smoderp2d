@@ -143,7 +143,7 @@ hydrographs.write_hydrographs_record(i,j,ratio,0.0,0.0,0,delta_t,total_time,surf
 
 
 
-
+raw_input('je tot toto')
 
 while ( total_time < end_time ):
 
@@ -185,7 +185,7 @@ while ( total_time < end_time ):
     progress_bar.pb.update(timeperc,delta_t,iter_,total_time+delta_t)
 
 
-
+    
 
 
     
