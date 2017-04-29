@@ -11,6 +11,7 @@ from main_src.main_classes.Stream               import *
 
 
 import main_src.processes.rill                 as rill
+import main_src.constants                      as constants
 import main_src.io_functions.prt               as prt
 import main_src.processes.surface              as surfacefce
 from   main_src.tools.tools                     import comp_type
@@ -45,13 +46,14 @@ class SurArrs :
     self.a =            a
     self.b =            b
     self.h_rill =       float(0)
-    #self.h_rillPre =    float(0)
+    self.h_rillPre =    float(0)
     self.V_runoff_rill= float(0)
     #self.V_runoff_rill_pre= float(0)
     self.V_rill_rest =      float(0)
     #self.V_rill_rest_pre =  float(0)
     self.rillWidth   =      float(0)
     self.V_to_rill   =      float(0)
+    self.h_last_state1 =    float(0)
 
 
 ## Documentation for a class Surface.
@@ -91,7 +93,7 @@ class Surface(Stream if stream == True else StreamPass,Kinematic,Globals,Size):
     arr = self.arr[i][j]
 
     #Water_level_[m];Flow_[m3/s];V_runoff[m3];V_rest[m3];Infiltration[];surface_retention[l]
-    line = str(arr.h_sheet) + sep + str(arr.V_runoff/dt) + sep + str(arr.V_runoff) + sep + str(arr.V_rest) + sep + str(arr.infiltration)+ sep + str(arr.cur_sur_ret)+ sep + str(arr.state) + sep + str(arr.inflow_tm)
+    line = str(arr.h_sheet) + sep + str(arr.V_runoff/dt) + sep + str(arr.V_runoff) + sep + str(arr.V_rest) + sep + str(arr.infiltration)+ sep + str(arr.cur_sur_ret)+ sep + str(arr.state) + sep + str(arr.inflow_tm) + sep + str(arr.h_total_new)
 
     if self.rill_computing :
       #';Rill_size;Rill_flow;Rill_V_runoff;Rill_V_rest'
@@ -114,7 +116,7 @@ def __runoff(i,j,sur,dt,efect_vrst,ratio) :
   state      = sur.state
   
   #sur.state               = update_state1(h_total_pre,h_crit,state)
-  sur.h_sheet, sur.h_rill = compute_h_hrill(h_total_pre,h_crit,state)
+  sur.h_sheet, sur.h_rill, sur.h_rillPre = compute_h_hrill(h_total_pre,h_crit,state,sur.rillWidth,sur.h_rillPre)
   
 
   q_sheet = sheet_runoff(sur,dt)
@@ -166,29 +168,33 @@ def __runoff_zero_compType(i,j,sur,dt,efect_vrst,ratio) :
   return q_sheet, v_sheet, q_rill, v_rill, ratio, 0.0
 
 
-def update_state1(ht_1,hcrit,state):
+def update_state1(ht_1,hcrit,state,rillWidth):
   if ht_1>hcrit :
     if state == 0:
       return 1
   return state  
 
 
-def compute_h_hrill(h_total_pre,h_crit,state):
+def compute_h_hrill(h_total_pre,h_crit,state,rillWidth,hRillPre):
 
   if state == 0 :
     h_sheet = h_total_pre
     h_rill  = 0
-    return h_sheet, h_rill
+    return h_sheet, h_rill, 0
   
   elif state == 1 :
-    h_sheet   = h_crit
-    h_rill    = h_total_pre - h_crit
-    return h_sheet, h_rill
+    h_sheet   = min(h_crit, h_total_pre)
+    h_rill    = max(h_total_pre - h_crit,0)
+    hRillPre  = h_rill
+    #print "%d, %.6e, %.6e" % (state, h_sheet, h_rill)
+    return h_sheet, h_rill, hRillPre
   
   elif state == 2 :
-    h_sheet   = min(h_total_pre,h_crit)
-    h_rill    = max(0,h_total_pre - h_crit)
-    return h_sheet, h_rill
+    h_rill    = min(hRillPre,h_total_pre)
+    h_sheet   = max(h_total_pre-hRillPre,0)
+    #print "%d, %.6e, %.6e, %.6e, %.6e" % (state, h_sheet, h_rill,h_total_pre, rillWidth*constants.RILL_RATIO)
+    #raw_input()
+    return h_sheet, h_rill, hRillPre
   
 
 def sheet_runoff(sur,dt):

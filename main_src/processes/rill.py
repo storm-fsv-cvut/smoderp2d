@@ -17,9 +17,9 @@ def update_hb(loc_V_to_rill,rillRatio,l,b,ratio, ppp=False):
       h = V/(b*l)
     else:
       h = V/(b*l)
-    return h, b
-  h = V/(b*l)
-  #print '\t\t', h, V, b, l
+  else:
+    h = V/(b*l)
+    
   return h, b
 
 

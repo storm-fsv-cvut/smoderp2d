@@ -25,7 +25,7 @@ python main.py \
 - \
 indata/srazka.txt \
 60 \
-25 \
+40 \
 00.0  \
 10.0 \
 out \

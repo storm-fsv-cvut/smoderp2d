@@ -143,8 +143,6 @@ hydrographs.write_hydrographs_record(i,j,ratio,0.0,0.0,0,delta_t,total_time,surf
 
 
 
-raw_input('je tot toto')
-
 while ( total_time < end_time ):
 
     #time_step.save(surface.arr,subsurface.arr)
@@ -204,13 +202,20 @@ while ( total_time < end_time ):
     
     for i in rrows:
       for j in rcols[i]:
+        
         if surface.arr[i][j].state == 0 :
           if surface.arr[i][j].h_total_new > surface.arr[i][j].h_crit :
             surface.arr[i][j].state = 1
+            
         if surface.arr[i][j].state == 1 : 
           if surface.arr[i][j].h_total_new < surface.arr[i][j].h_total_pre : 
+            surface.arr[i][j].h_last_state1  = surface.arr[i][j].h_total_pre
             surface.arr[i][j].state = 2
-          
+            
+        if surface.arr[i][j].state == 2 :
+          if surface.arr[i][j].h_total_new > surface.arr[i][j].h_last_state1 : 
+            surface.arr[i][j].state = 1
+            
         surface.arr[i][j].h_total_pre  = surface.arr[i][j].h_total_new
         
 

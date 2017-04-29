@@ -112,7 +112,7 @@ class Hydrographs:
         header = '# Hydrograph at the point with coordinates: '+ str(self.point_int[i][3]) + ' ' + str(self.point_int[i][4]) + '\n'
         header +=  '# A pixel size is [m2]:\n' 
         header +=  '# '+str(self.pixel_area) + '\n' 
-        header += '# Time[s];deltaTime[s];Rainfall[m];Water_level_[m];Sheet_Flow[m3/s];Sheet_V_runoff[m3];Sheet_V_rest[m3];Infiltration[m];Surface_retetion[m];State;V_inflow[m3]'
+        header += '# Time[s];deltaTime[s];Rainfall[m];Water_level_[m];Sheet_Flow[m3/s];Sheet_V_runoff[m3];Sheet_V_rest[m3];Infiltration[m];Surface_retetion[m];State;V_inflow[m3];WlevelTotal[m]'
         iSurface += 1
         if rill :
           header += ';WlevelRill[m];Rill_width[m];Rill_flow[m3/s];Rill_V_runoff[m3];Rill_V_rest;Surface_Flow[m3/s];Surface_V_runoff[m3]'
