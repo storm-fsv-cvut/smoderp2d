@@ -110,18 +110,20 @@ class Surface(Stream if stream == True else StreamPass,Kinematic,Globals,Size):
 ## Calculates the sheet and rill flow.
 #
 def __runoff(i,j,sur,dt,efect_vrst,ratio) :
-  
+
   h_total_pre = sur.h_total_pre
   h_crit     = sur.h_crit
-  state      = sur.state
-  
+  state      = sur.state # da se tady podivat v jakym jsem casovym kroku a jak se a
+
   #sur.state               = update_state1(h_total_pre,h_crit,state)
+
   sur.h_sheet, sur.h_rill, sur.h_rillPre = compute_h_hrill(h_total_pre,h_crit,state,sur.rillWidth,sur.h_rillPre)
   
 
+
   q_sheet = sheet_runoff(sur,dt)
-  
-  
+
+
   if sur.h_sheet > 0.0 :
     v_sheet = q_sheet / sur.h_sheet
   else:
@@ -148,13 +150,13 @@ def __runoff_zero_compType(i,j,sur,dt,efect_vrst,ratio) :
   h_total_pre = sur.h_total_pre
   h_crit     = sur.h_crit
   state      = sur.state
-  
+
   #sur.state               = update_state1(h_total_pre,h_crit,state)
   sur.h_sheet = sur.h_total_pre
-  
+
   q_sheet = sheet_runoff(sur,dt)
-  
-  
+
+
   if sur.h_sheet > 0.0 :
     v_sheet = q_sheet / sur.h_sheet
   else:
@@ -172,7 +174,7 @@ def update_state1(ht_1,hcrit,state,rillWidth):
   if ht_1>hcrit :
     if state == 0:
       return 1
-  return state  
+  return state
 
 
 def compute_h_hrill(h_total_pre,h_crit,state,rillWidth,hRillPre):
@@ -207,12 +209,9 @@ def sheet_runoff(sur,dt):
   return q_sheet
 
 def rill_runoff(i,j,sur,dt,efect_vrst,ratio):
-  
+
   ppp = False
-  #raw_input('..')
-  #if sur.state == 1 :
-    #sur.rillWidth = 0
-    
+
   V_to_rill = sur.h_rill*Globals.pixel_area
   h, b   = rill.update_hb(V_to_rill,constants.RILL_RATIO,efect_vrst,sur.rillWidth,ratio,ppp)
   R_rill = (h*b)/(b + 2*h)
@@ -238,7 +237,7 @@ def rill_runoff(i,j,sur,dt,efect_vrst,ratio):
 
   else:
     return q_rill, v_rill, ratio, courant
-  return q_rill, v_rill, ratio, courant  
+  return q_rill, v_rill, ratio, courant
 
 
 
@@ -256,7 +255,7 @@ def surface_retention(sur):
     else:
       reten = tempBIL
       bil = 0
-      
+
   sur.sur_ret = reten
   sur.cur_sur_ret = reten-pre_reten
 
