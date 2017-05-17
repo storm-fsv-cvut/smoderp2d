@@ -26,10 +26,11 @@ __date__ ="$29.12.2015 18:31:25$"
 import numpy as np
 import time
 import os
+import platform
 import sys
 #from   main_src.classes_main_arrays import *
 #from   main_src.tools.resolve_partial_computing import *
- 
+
 # importing classes
 from main_src.time_step                  import TimeStep
 from main_src.main_classes.General       import *
@@ -66,7 +67,7 @@ times_prt = TimesPrt()
 start = time.time()
 
 infiltrationType = int(0)
-total_time = 0.0      #delta_t bacha delta_t se prepisuje nize u couranta
+total_time = 0.0 #delta_t bacha delta_t se prepisuje nize u couranta
 tz = 0
 sum_interception = 0
 ratio = 1
@@ -95,9 +96,6 @@ else:
 
 
 cumulative = Cumulative()
-
-
-
 prt.message("--------------------- ------------------- ---------------------")
 
 
@@ -107,6 +105,7 @@ prt.message("--------------------- ------------------- ---------------------")
 courant = courant.Courant()
 delta_t = courant.initial_time_step(surface)
 courant.set_time_step(delta_t)
+delta_t_pre = delta_t
 
 
 prt.message('Corrected time step is', delta_t, '[s]')
@@ -127,10 +126,10 @@ else:
   hydrographs = wf.HydrographsPass()
 
 
-time_step = TimeStep()
+time_step = TimeStep(Globals)
 
 
-# first record hydrographs
+
 for i in rrows:
   for j in rcols[i]:
     hydrographs.write_hydrographs_record(i,j,ratio,0.0,0.0,0,delta_t,total_time,surface,subsurface,0.0,)
@@ -140,54 +139,55 @@ hydrographs.write_hydrographs_record(i,j,ratio,0.0,0.0,0,delta_t,total_time,surf
 
 
 
-
-
-
-
-
 while ( total_time < end_time ):
 
-    #time_step.save(surface.arr,subsurface.arr)
+    time_step.save(surface.arr,subsurface.arr)
     tz_tmp               = tz
     sum_interception_tmp = sum_interception
+    #ratio_tmp            = ratio
     iter_                = 0
-    
-    
     
     while (iter_ < maxIter):
       iter_ += 1
-      #time_step.undo(surface.arr,subsurface.arr)
+      time_step.undo(surface.arr,subsurface.arr)
       tz                 = tz_tmp
       sum_interception   = sum_interception_tmp
+      #ratio = ratio_tmp
+      surface.statechange  = False
       courant.reset()
-      ratio_tmp = ratio
 
+      ratio_tmp = ratio
       
-      ratio, v_sheet, v_rill, curr_rain, tz = time_step.do_flow( surface, subsurface, delta_t, Globals, mat_efect_vrst, ratio, courant, itera, total_time, tz, sr )
+      NS, surface, subsurface, tz, sum_interception, ratio, curr_rain, v_sheet, v_rill = time_step.do(surface, subsurface, rain_arr, courant, Globals, itera, total_time, delta_t, delta_t_pre, tz, sr, combinatIndex, NoDataValue, sum_interception, mat_efect_vrst,ratio, hydrographs)
 
       delta_t_tmp = delta_t
-
+      #print 'asdf', ratio, courant.cour_most_rill
       delta_t, ratio = courant.courant(curr_rain,delta_t,spix,ratio)
       
       
+      #prt.debug('delta_t_tmp ', delta_t_tmp)
+      #prt.debug('delta_t     ', delta_t)
+      #prt.debug('ratio_tmp   ', ratio_tmp)
+      #prt.debug('ratio       ', ratio)
+      #prt.debug('cout_most      ', courant.cour_most)
+      #prt.debug('cout_most_rill ', courant.cour_most_rill)
+      
+      
+      
+      
+      #print total_time, delta_t_tmp, delta_t, ratio_tmp, ratio
 
-      if (delta_t_tmp == delta_t) and (ratio_tmp == ratio) : break
-    
-    
-    
-    
-    NS, sum_interception = time_step.do_next_h(surface, subsurface, rain_arr, cumulative, hydrographs, curr_rain, courant, Globals, total_time, delta_t, combinatIndex, NoDataValue, sum_interception, mat_efect_vrst, ratio, iter_)
-    
-    
+      if (delta_t_tmp == delta_t) and (ratio_tmp == ratio) and not(surface.statechange): break
+
     timeperc = 100 * (total_time+delta_t) / end_time
     #raw_input()
   
     progress_bar.pb.update(timeperc,delta_t,iter_,total_time+delta_t)
 
-
-
-
-
+    #print total_time, surface.arr[8][1].V_rest/pixel_area, surface.arr[8][1].V_rill_rest/pixel_area, surface.arr[8][1].h_total_pre, (surface.arr[8][1].V_rest/pixel_area + surface.arr[8][1].V_rill_rest/pixel_area) - surface.arr[8][1].h_total_pre, surface.arr[8][1].state
+    
+    
+    #print courant.cour_most, courant.cour_most_rill, delta_t, ratio
     
     if iter_ >= maxIter :
       for i in rrows:
@@ -197,23 +197,25 @@ while ( total_time < end_time ):
       prt.error("max iteration in time step was reached\n","\tmaxIter = ", maxIter, '\n\tpartial results are saved in ', output, 'directory')
 
 
+    for i in rrows:
+      for j in rcols[i]:
+        cumulative.update_cumulative(i,j,surface.arr[i][j], subsurface,NS,delta_t)
+        hydrographs.write_hydrographs_record(i,j,ratio,courant.cour_most,courant.cour_most_rill,iter_,delta_t,total_time+delta_t,surface,subsurface,curr_rain)
+
     surface.stream_reach_outflow(delta_t)
     surface.stream_reach_inflow()
     surface.stream_cumulative(total_time+delta_t)
     
     
+    delta_t_pre = delta_t
     for i in rrows:
       for j in rcols[i]:
-        if surface.arr[i][j].state == 0 :
-          if surface.arr[i][j].h_total_new > surface.arr[i][j].h_crit :
-            surface.arr[i][j].state = 1
-        if surface.arr[i][j].state == 1 : 
-          if surface.arr[i][j].h_total_new < surface.arr[i][j].h_total_pre : 
-            surface.arr[i][j].state = 2
-          
-        surface.arr[i][j].h_total_pre  = surface.arr[i][j].h_total_new
-        
-
+        surface.arr[i][j].h_total_pre  = surface.arr[i][j].h_total
+        #surface.arr[i][j].h_total_pre = surface.arr[i][j].V_rest/pixel_area + surface.arr[i][j].V_rill_rest/pixel_area
+        surface.arr[i][j].V_runoff_pre = surface.arr[i][j].V_runoff
+        surface.arr[i][j].V_runoff_rill_pre = surface.arr[i][j].V_runoff_rill
+        surface.arr[i][j].V_rest_pre = surface.arr[i][j].V_rest
+        surface.arr[i][j].V_rill_rest_pre = surface.arr[i][j].V_rill_rest
 
     subsurface.curr_to_pre()
 
@@ -226,19 +228,11 @@ while ( total_time < end_time ):
       delta_t = end_time - total_time
 
     total_time = total_time + delta_t
-    #raw_input()
+
 
 #######################################################################
 ##########                 End of main loop                 ###########
 #######################################################################
-
-
-
-
-
-
-
-
 
 
 
@@ -263,8 +257,6 @@ post_proc.stream_table(output+os.sep, surface, tokyLoc)
 hydrographs.closeHydrographs()
 prt.message("")
 
-
-import platform
 if platform.system() == "Linux" :
   pid = os.getpid()
   prt.message("/proc/"+str(pid)+"/status", 'reading...')
