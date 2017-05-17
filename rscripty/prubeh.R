@@ -3,9 +3,7 @@
 path = dirname(parent.frame(2)$ofile)
 if(length(path) != 0){setwd(path);setwd('..')}
 dir_ = "out/"
-png_ = FALSE
 library(fields)
-library(raster)
 
 
 # convert -delay 100 -loop 0 *.png animation.gif
@@ -47,26 +45,25 @@ for (i in 1:n){
 
 
 
-# setwd("~/Documents/Smoderp/curr/out/prubeh/")
+setwd("~/Documents/Smoderp/curr/out/prubeh/")
 n = length(D)
 
 
 for (i in 1:n){
   jmeno = paste(sprintf('%08d',i),'.png',sep='')
-  if (png_) {png(jmeno)}
+  # png(jmeno)
   # layout(matrix(c(1,2,2),ncol=1))
   par(mar=c(4,4,4,5))
   # plot(H$X..Time.s.,H$Rainfall.m.,type='h')
   # abline(v=H$X..Time.s.[i])
   # image(D[[i]])
-  plot(D[[i]],main=jjj[i], breaks = seq(rr[1],rr[2],length=20),col=terrain.colors(21))
+  plot(D[[i]],main=jjj[i])
   mtext('X [m]',side = 1,line = 2)
   mtext('Y [m]',side = 2,line = 2)
   # imageScale(D[[i]])
   # mtext(jjj[i],side=3,line=3,cex = 2.0)
   grid()
   # image.plot(D[[1]], legend.only = TRUE, breaks = 6, col = 5)
-  if (png_) {dev.off()}
-  # 
+  # dev.off()
 }
 
