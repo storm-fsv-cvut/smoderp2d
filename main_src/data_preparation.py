@@ -473,7 +473,7 @@ def prepare_data(args):
   delfield(veg, fildname)
   delfield(soil, fildname)
   #cleaning datatypes - for numpy mud be double
-  for i in sfield:
+  """for i in sfield:
       inn = i+"n"
       arcpy.AddField_management(intersect, inn, "DOUBLE")
       with arcpy.da.UpdateCursor(intersect, [i, inn]) as tabulka:
@@ -497,6 +497,7 @@ def prepare_data(args):
             arcpy.AddMessage("Value in soilveg tab are no correct - STOP, check shp file Prunik in output")
             sys.exit()
 
+  """
   # input float vaflues parameters
   #delta_t = float(gp.GetParameterAsText(constants.PARAMETER_DELTA_T))*60.0 # prevod na sekundy
   delta_t = "nechci"
