@@ -488,6 +488,7 @@ def prepare_data(args):
             tabulka.updateRow(row)
       arcpy.DeleteField_management(intersect,inn)
   del row,rowx
+  """
 
 
   with arcpy.da.SearchCursor(intersect, sfield) as cursor:
@@ -497,7 +498,7 @@ def prepare_data(args):
             arcpy.AddMessage("Value in soilveg tab are no correct - STOP, check shp file Prunik in output")
             sys.exit()
 
-  """
+
   # input float vaflues parameters
   #delta_t = float(gp.GetParameterAsText(constants.PARAMETER_DELTA_T))*60.0 # prevod na sekundy
   delta_t = "nechci"
