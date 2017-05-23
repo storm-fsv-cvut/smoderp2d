@@ -201,26 +201,28 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
   tok_usek = temp_dp+os.sep+"tok_usek"
 
   arcpy.gp.Reclassify_sa(stream_rst, "VALUE", "NoDataValue 1000", tok_usek,"DATA") #jj no data 1000 kdyz in useku bude od 10000
-  mat_tok_usek = arcpy.RasterToNumPyArray(temp_dp+os.sep+"tok_usek",ll_corner, cols, rows,NoDataValue)
-  mat_tok = arcpy.RasterToNumPyArray(temp_dp+os.sep+"tok_usek",ll_corner, cols, rows,NoDataValue)
+  mat_tok_usek = arcpy.RasterToNumPyArray(temp_dp+os.sep+"tok_usek",ll_corner, cols, rows)
+  mat_tok = arcpy.RasterToNumPyArray(temp_dp+os.sep+"tok_usek",ll_corner, cols, rows)
   #hit = arcpy.NumPyArrayToRaster(mat_tok_usek,ll_corner,spix)
   #hit.save(temp_dp+"\\hit")
   pocet = len(mat_tok_usek)
   e = range(pocet) # useky toku + posledni NoData
 
   cell_stream = []
-
+    # cropped raster info
+  reclass_desc = arcpy.Describe(tok_usek)
+  ReclNoDataValue = reclass_desc.noDataValue
   mat_tok_usek = mat_tok_usek.astype('int16')
 
 
   for i in range(rows):
     for j in range(cols):
-        if mat_tok_usek[i][j] != 255:
+        if mat_tok_usek[i][j] < 0:
+            mat_tok_usek [i][j] = 0
+        else:
             mat_tok_usek[i][j] += 1000
             poz = [mat_tok_usek[i][j],i,j]
             cell_stream.append(poz)
-        else:
-            mat_tok_usek[i][j] = 0
 
   for i in range(rows):
     for j in range(cols):
