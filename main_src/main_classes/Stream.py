@@ -7,6 +7,10 @@ from   main_src.main_classes.General import *
 import main_src.stream_functions.stream_f as stream_f
 import main_src.io_functions.prt          as prt
 
+
+
+
+
 class Reach():
 
   def __init__(self,id_,POINT_X,POINT_Y,POINT_X_1,POINT_Y_1,to_node,length,sklon,smoderp,CISLO,TVAR,B,M,DRSNOST,Q365):
@@ -93,6 +97,9 @@ class Stream(object,Globals):
 
     self.tokyLoc      = tokyLoc
     self.mat_tok_usek = mat_tok_usek
+    
+    
+
     
     for i in self.rr :
       for j in self.rc[i]:

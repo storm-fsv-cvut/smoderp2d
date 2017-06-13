@@ -23,13 +23,13 @@ python main.py \
 - \
 - \
 - \
-indata/srazka.txt \
-60 \
-40 \
+- \
+30 \
+20.0 \
 00.0  \
-10.0 \
+00.0 \
 out \
-shallowandrillsurface \
+shallowrillstreamsurface \
 false \
 - \
 - \
@@ -38,6 +38,6 @@ false \
 - \
 False \
 true  \
-indata/dp_hodne_bodu_tok.save \
+indata/dp_vse.save \
 roff \
 true

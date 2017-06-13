@@ -87,6 +87,9 @@ mat_aa = None; del mat_aa
 mat_b = None; del mat_b
 
 
+
+tools.make_ASC_raster('toky.asc',mat_tok_usek,Globals)
+
 if (subflow == True):
   subsurface = Subsurface(L_sub = 0.1, Ks = 0.005, vg_n = 1.5, vg_l =  0.5)
 else:
@@ -141,6 +144,16 @@ hydrographs.write_hydrographs_record(i,j,ratio,0.0,0.0,0,delta_t,total_time,surf
 
 
 
+
+
+
+#print Globals.r
+#print Globals.c
+
+#print Globals.rr
+#print Globals.rc
+
+#tools.make_state_raster(surface.arr,Globals,total_time)
 
 
 while ( total_time < end_time ):
