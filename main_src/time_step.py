@@ -191,6 +191,8 @@ class TimeStep:
           h_sub = subsurface.runoff_stream_cell(i,j)
 
           inflowToReach =  h_sub*pixel_area + h_total_pre*pixel_area
+          if inflowToReach > 0:
+            pass
           surface.reach_inflows(id_=int(surface_state-1000),inflows=inflowToReach)
 
         else:
