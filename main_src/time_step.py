@@ -28,122 +28,7 @@ max_infilt_capa = 0.000
 #
 class TimeStep:
 
-  #def __init__(self):
-    #pass
-    #self.r = G.r
-    #self.c = G.c
-    #self.rr = G.rr
-    #self.rc = G.rc
 
-    #self.V_rest_tmp        = np.zeros([self.r,self.c],float)
-    #self.state_tmp         = np.zeros([self.r,self.c],float)
-    #self.h_total_pre_tmp   = np.zeros([self.r,self.c],float)
-    #self.sur_ret_tmp       = np.zeros([self.r,self.c],float)
-
-    #isRill  = comp_type("rill")
-    #subflow = comp_type("subflow")
-    #stream  = comp_type("stream")
-
-    #if isRill and not(subflow)  :
-      #self.V_rill_rest_tmp   = np.zeros([self.r,self.c],float)
-      ##self.V_rill_runoff_tmp = np.zeros([self.r,self.c],float)
-      #self.rillWidth_tmp     = np.zeros([self.r,self.c],float)
-      #self.save = self.__saveSurRill
-      #self.undo = self.__undoSurRill
-
-    #elif not(isRill) and subflow :
-      #self.V_subf_rest_tmp   = np.zeros([self.r,self.c],float)
-      #self.save = self.__saveSurSub
-      #self.undo = self.__undoSurSub
-
-
-    #elif isRill and subflow :
-      #self.V_rill_rest_tmp   = np.zeros([self.r,self.c],float)
-      #self.rillWidth_tmp     = np.zeros([self.r,self.c],float)
-      #self.V_subf_rest_tmp   = np.zeros([self.r,self.c],float)
-      #self.save = self.__saveSurSubRill
-      #self.undo = self.__undoSurSubRill
-
-    #else:
-      #self.save = self.__saveSur
-      #self.undo = self.__undoSur
-
-
-
-
-  #def __saveSur(self,surArr, subArr):
-
-    #for i in self.rr:
-      #for j in self.rc[i]:
-        #self.V_rest_tmp[i][j]     = surArr[i][j].V_rest
-        ##self.V_runoff_tmp[i][j]   = surArr[i][j].V_runoff
-        #self.state_tmp[i][j]      = surArr[i][j].state
-        #self.h_total_pre_tmp[i][j]= surArr[i][j].h_total_pre
-        #self.sur_ret_tmp[i][j]    = surArr[i][j].sur_ret
-
-
-  #def __undoSur(self,surArr, subArr):
- 
-    #for i in self.rr:
-      #for j in self.rc[i]:
-        #surArr[i][j].V_rest        = self.V_rest_tmp[i][j]
-        ##surArr[i][j].V_runoff      = self.V_runoff_tmp[i][j]
-        #surArr[i][j].state         = self.state_tmp[i][j]
-        #surArr[i][j].h_total_pre   = self.h_total_pre_tmp[i][j]
-        #surArr[i][j].sur_ret       = self.sur_ret_tmp[i][j]
-
-
-  #def __saveSurRill(self,surArr, subArr):
-
-    #self.__saveSur(surArr, subArr)
-    #for i in self.rr:
-      #for j in self.rc[i]:
-        #self.V_rill_rest_tmp[i][j] = surArr[i][j].V_rill_rest
-        #self.rillWidth_tmp[i][j]   = surArr[i][j].rillWidth
-        ##self.V_rill_runoff_tmp[i][j]   = surArr[i][j].V_runoff_rill
-
-  #def __undoSurRill(self,surArr, subArr):
-    #self.__undoSur(surArr, subArr)
-    #for i in self.rr:
-      #for j in self.rc[i]:
-        #surArr[i][j].V_rill_rest = self.V_rill_rest_tmp[i][j]
-        #surArr[i][j].rillWidth   = self.rillWidth_tmp[i][j]
-        ##surArr[i][j].V_runoff_rill=self.V_rill_runoff_tmp[i][j]
-
-
-  #def __saveSurSub(self,surArr, subArr):
-    #self.__saveSur(surArr, subArr)
-    #for i in self.rr:
-      #for j in self.rc[i]:
-        #self.V_subf_rest_tmp[i][j] = subArr[i][j].V_rest
-
-
-  #def __undoSurSub(self,surArr, subArr):
-    #self.__undoSur(surArr, subArr)
-    #for i in self.rr:
-      #for j in self.rc[i]:
-        #subArr[i][j].V_rest = self.V_subf_rest_tmp[i][j]
-
-
-
-  #def __saveSurSubRill(self,surArr, subArr):
-    #self.__saveSur(surArr, subArr)
-    #for i in self.rr:
-      #for j in self.rc[i]:
-        #self.V_rill_rest_tmp[i][j] = surArr[i][j].V_rill_rest
-        #self.rillWidth_tmp[i][j]   = surArr[i][j].rillWidth
-        #self.V_subf_rest_tmp[i][j] = subArr[i][j].V_rest
-
-  #def __undoSurSubRill(self,surArr, subArr):
-    #self.__undoSur(surArr, subArr)
-    #for i in self.rr:
-      #for j in self.rc[i]:
-        #surArr[i][j].V_rill_rest = self.V_rill_rest_tmp[i][j]
-        #surArr[i][j].rillWidth   = self.rillWidth_tmp[i][j]
-        #subArr[i][j].V_rest = self.V_subf_rest_tmp[i][j]
-
-
-  
   
   def do_flow(self,surface, subsurface,delta_t,G, mat_efect_vrst, ratio, courant,itera, total_time, tz, sr) :
     
@@ -167,33 +52,24 @@ class TimeStep:
       return NS, surface, subsurface,  tz, sum_interception, ratio, rainfall, 0.0, 0.0, 0.0
     """
     
-    
     for i in rrows:
       for j in rcols[i]:
         
         h_total_pre   = surface.arr[i][j].h_total_pre
         
         h_total_pre -= surface_retention(surface.arr[i][j])
+        #print i,j
+        
+
         
         surface_state = surface.arr[i][j].state
-        
-        #
         if surface_state >= 1000:
-          # toto je pripraveno pro odtok v ryhach
           q_sheet = 0.0
-          q_rill  = 0.0
           v_sheet = 0.0
+          q_rill = 0.0
+          v_rill = 0.0
           rill_courant = 0.0
-          surface.arr[i][j].V_runoff = 0.0
-          surface.arr[i][j].V_rest   = 0.0
-
-          h_sub = subsurface.runoff_stream_cell(i,j)
-
-          inflowToReach =  h_sub*pixel_area + h_total_pre*pixel_area
-          surface.reach_inflows(id_=int(surface_state-1000),inflows=inflowToReach)
-
-        else:
-
+        else :
           q_sheet, v_sheet, q_rill, v_rill, ratio, rill_courant = runoff(i,j,surface.arr[i][j],delta_t, mat_efect_vrst[i][j], ratio)
           subsurface.runoff(i,j,delta_t, mat_efect_vrst[i][j])
 
@@ -201,10 +77,10 @@ class TimeStep:
 
         v = max(v_sheet,v_rill)
         co='sheet'
-        #print surface.arr[i][j].h_sheet, surface.arr[i][j].h_total_pre, v, q_sheet, surface.arr[i][j].V_runoff
         courant.CFL(i,j,surface.arr[i][j].h_total_pre,v,delta_t,mat_efect_vrst[i][j],co, rill_courant)
         rill_courant = 0.
-        #print i, j, h_total_pre, surface.arr[i][j].h_total_pre
+
+
     return ratio, v_sheet, v_rill, rainfall, tz
     
   
@@ -285,8 +161,20 @@ class TimeStep:
         # surface retention
         surBIL +=  subsurface.get_exfiltration(i,j)
         #print surBIL
+        surface_state = surface.arr[i][j].state
         
-        surface.arr[i][j].h_total_new = surBIL
+        if surface_state >= 1000:
+          # toto je pripraveno pro odtok v ryhach
+
+          surface.arr[i][j].h_total_new = 0.0
+          
+          h_sub = subsurface.runoff_stream_cell(i,j)
+
+          inflowToReach =  h_sub*pixel_area + surBIL*pixel_area
+          surface.reach_inflows(id_=int(surface_state-1000),inflows=inflowToReach)
+
+        else:
+          surface.arr[i][j].h_total_new = surBIL
         
         #print surface.arr[i][j].h_sheet, surface.arr[i][j].h_total_pre, infiltration, NS,  surface.arr[i][j].inflow_tm/pixel_area
         surface_state   = surface.arr[i][j].state

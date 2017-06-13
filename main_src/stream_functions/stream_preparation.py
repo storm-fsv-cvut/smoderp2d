@@ -139,7 +139,7 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
   #Flip selected lines
   fc = temp_dp+os.sep+"toky.shp"
   field = ["OBJECTID","RASTERVALU","RASTERVA_1"]
-  prt.message("Flip lines...")
+  prt.message("Flip lines...")mat_tok_usek
   toky_t = arcpy.MakeFeatureLayer_management (toky, temp_dp+os.sep+"tok_t.shp")
   arcpy.SelectLayerByAttribute_management(toky_t, "NEW_SELECTION", "RASTERVALU < RASTERVA_1")
   arcpy.FlipLine_edit(toky_t)
