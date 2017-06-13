@@ -10,7 +10,7 @@ __date__ ="$29.12.2015 18:20:20$"
 #INITIAL SETTINGS:
 # importing project moduls
 import main_src.constants as constants
-#import main_src.data_preparation 
+#import main_src.data_preparation
 import main_src.flow_algorithm.arcgis_dmtfce as arcgis_dmtfce
 
 
@@ -29,14 +29,14 @@ import main_src.io_functions.prt as prt
 
 
 def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
-                    mat_nan, mat_fd, vpix, 
-                    spix, rows, cols, ll_corner, 
-                    NoDataValue,addfield, 
+                    mat_nan, mat_fd, vpix,
+                    spix, rows, cols, ll_corner,
+                    NoDataValue,addfield,
                     delfield,output, dmt_clip,
                     intersect, null_shp, gp):
 
-  
-  
+
+
   # creating the geoprocessor object
   gp = arcgisscripting.create()
   # setting the workspace environment
@@ -144,7 +144,7 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
   arcpy.SelectLayerByAttribute_management(toky_t, "NEW_SELECTION", "RASTERVALU < RASTERVA_1")
   arcpy.FlipLine_edit(toky_t)
   arcpy.DeleteField_management(toky, ["RASTERVALU","RASTERVA_1","ORIG_FID","ORIG_FID_1"])
-  
+
   #Feature vertices to points - START
   prt.message("Feature vertices to points - START...")
   start = arcpy.FeatureVerticesToPoints_management(toky, temp_dp+os.sep+"start", "START")
@@ -209,18 +209,20 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
   e = range(pocet) # useky toku + posledni NoData
 
   cell_stream = []
-  
+    # cropped raster info
+  reclass_desc = arcpy.Describe(tok_usek)
+  ReclNoDataValue = reclass_desc.noDataValue
   mat_tok_usek = mat_tok_usek.astype('int16')
-  
-  
+
+
   for i in range(rows):
     for j in range(cols):
-        if mat_tok_usek[i][j] != 255:
+        if mat_tok_usek[i][j] < 0:
+            mat_tok_usek [i][j] = 0
+        else:
             mat_tok_usek[i][j] += 1000
             poz = [mat_tok_usek[i][j],i,j]
             cell_stream.append(poz)
-        else:
-            mat_tok_usek[i][j] = 0
 
   for i in range(rows):
     for j in range(cols):
@@ -294,11 +296,11 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
                   prt.message("Value in tab_stream_tvar are no correct - STOP, check shp file toky in output")
 
                   sys.exit()
-                  
 
 
-  
-  
-  
-  
+
+
+
+
+
   return  toky, cell_stream, mat_tok_usek,  STREAM_RATIO, tokyLoc
