@@ -29,7 +29,7 @@ import os
 import sys
 #from   main_src.classes_main_arrays import *
 #from   main_src.tools.resolve_partial_computing import *
- 
+
 # importing classes
 from main_src.time_step                  import TimeStep
 from main_src.main_classes.General       import *
@@ -88,7 +88,7 @@ mat_b = None; del mat_b
 
 
 
-tools.make_ASC_raster('toky.asc',mat_tok_usek,Globals)
+tools.make_ASC_raster(output+os.sep+"toky.asc",mat_tok_usek,Globals)
 
 if (subflow == True):
   subsurface = Subsurface(L_sub = 0.1, Ks = 0.005, vg_n = 1.5, vg_l =  0.5)
@@ -162,9 +162,9 @@ while ( total_time < end_time ):
     tz_tmp               = tz
     sum_interception_tmp = sum_interception
     iter_                = 0
-    
-    
-    
+
+
+
     while (iter_ < maxIter):
       iter_ += 1
       #time_step.undo(surface.arr,subsurface.arr)
@@ -173,33 +173,33 @@ while ( total_time < end_time ):
       courant.reset()
       ratio_tmp = ratio
 
-      
+
       ratio, v_sheet, v_rill, curr_rain, tz = time_step.do_flow( surface, subsurface, delta_t, Globals, mat_efect_vrst, ratio, courant, itera, total_time, tz, sr )
 
       delta_t_tmp = delta_t
 
       delta_t, ratio = courant.courant(curr_rain,delta_t,spix,ratio)
-      
-      
+
+
 
       if (delta_t_tmp == delta_t) and (ratio_tmp == ratio) : break
-    
-    
-    
-    
+
+
+
+
     NS, sum_interception = time_step.do_next_h(surface, subsurface, rain_arr, cumulative, hydrographs, curr_rain, courant, Globals, total_time, delta_t, combinatIndex, NoDataValue, sum_interception, mat_efect_vrst, ratio, iter_)
-    
-    
+
+
     timeperc = 100 * (total_time+delta_t) / end_time
     #raw_input()
-  
+
     progress_bar.pb.update(timeperc,delta_t,iter_,total_time+delta_t)
 
 
-    
 
 
-    
+
+
     if iter_ >= maxIter :
       for i in rrows:
         for j in rcols[i]:
@@ -211,36 +211,36 @@ while ( total_time < end_time ):
     surface.stream_reach_outflow(delta_t)
     surface.stream_reach_inflow()
     surface.stream_cumulative(total_time+delta_t)
-    
 
-    
+
+
     for i in rrows:
       for j in rcols[i]:
-        
+
         if surface.arr[i][j].state == 0 :
           if surface.arr[i][j].h_total_new > surface.arr[i][j].h_crit :
             surface.arr[i][j].state = 1
-            
-        if surface.arr[i][j].state == 1 : 
-          if surface.arr[i][j].h_total_new < surface.arr[i][j].h_total_pre : 
+
+        if surface.arr[i][j].state == 1 :
+          if surface.arr[i][j].h_total_new < surface.arr[i][j].h_total_pre :
             surface.arr[i][j].h_last_state1  = surface.arr[i][j].h_total_pre
             surface.arr[i][j].state = 2
-            
+
         if surface.arr[i][j].state == 2 :
-          if surface.arr[i][j].h_total_new > surface.arr[i][j].h_last_state1 : 
+          if surface.arr[i][j].h_total_new > surface.arr[i][j].h_last_state1 :
             surface.arr[i][j].state = 1
-            
+
         surface.arr[i][j].h_total_pre  = surface.arr[i][j].h_total_new
-        
+
 
 
     subsurface.curr_to_pre()
 
     hydrographs.write_hydrographs_record(i,j,ratio,courant.cour_most,courant.cour_most_rill,iter_,delta_t,total_time+delta_t,surface,subsurface,curr_rain,True)
-    
-    
+
+
     times_prt.prt(total_time,delta_t,surface)
- 
+
     if ( end_time - total_time ) < delta_t and ( end_time - total_time ) > 0:
       delta_t = end_time - total_time
 
@@ -263,7 +263,7 @@ while ( total_time < end_time ):
 
 prt.message("Saving data..")
 
- 
+
 prt.message("")
 prt.message("-----------------------------------------------------------")
 prt.message('Total computing time: ',str(time.time()-start))
