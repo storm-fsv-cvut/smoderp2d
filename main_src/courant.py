@@ -23,11 +23,11 @@ class Courant():
     self.maxh   = 0
     self.cour_speed  = 0
     ## citical courant value
-    self.cour_crit  = 1.0
+    self.cour_crit  = 95.0
     self.cour_most        = self.cour_crit+1.0
     self.cour_most_rill   = self.cour_crit+1.0
     self.cour_coef  = 0.5601
-    self.cour_least  = self.cour_crit*0.75
+    self.cour_least  = self.cour_crit*0.85
     self.i = -1
     self.j = -1
     self.co = 'sheet'
