@@ -58,7 +58,7 @@ class TimeStep:
         h_total_pre   = surface.arr[i][j].h_total_pre
 
         h_total_pre -= surface_retention(surface.arr[i][j])
-        
+
         surface_state = surface.arr[i][j].state
 
         if surface_state >= 1000:
@@ -161,12 +161,12 @@ class TimeStep:
         #print surBIL
 
         surface_state = surface.arr[i][j].state
-        
+
         if surface_state >= 1000:
           # toto je pripraveno pro odtok v ryhach
 
           surface.arr[i][j].h_total_new = 0.0
-          
+
           h_sub = subsurface.runoff_stream_cell(i,j)
 
           inflowToReach =  h_sub*pixel_area + surBIL*pixel_area
@@ -174,7 +174,7 @@ class TimeStep:
 
         else:
           surface.arr[i][j].h_total_new = surBIL
-        
+
 
         #print surface.arr[i][j].h_sheet, surface.arr[i][j].h_total_pre, infiltration, NS,  surface.arr[i][j].inflow_tm/pixel_area
         surface_state   = surface.arr[i][j].state

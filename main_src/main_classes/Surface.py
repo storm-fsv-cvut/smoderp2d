@@ -118,7 +118,6 @@ def __runoff(i,j,sur,dt,efect_vrst,ratio) :
   #sur.state               = update_state1(h_total_pre,h_crit,state)
 
   sur.h_sheet, sur.h_rill, sur.h_rillPre = compute_h_hrill(h_total_pre,h_crit,state,sur.rillWidth,sur.h_rillPre)
-  
 
 
   q_sheet = sheet_runoff(sur,dt)
@@ -183,21 +182,22 @@ def compute_h_hrill(h_total_pre,h_crit,state,rillWidth,hRillPre):
     h_sheet = h_total_pre
     h_rill  = 0
     return h_sheet, h_rill, 0
-  
+
   elif state == 1 :
     h_sheet   = min(h_crit, h_total_pre)
     h_rill    = max(h_total_pre - h_crit,0)
     hRillPre  = h_rill
     #print "%d, %.6e, %.6e" % (state, h_sheet, h_rill)
     return h_sheet, h_rill, hRillPre
-  
+
   elif state == 2 :
     h_rill    = min(hRillPre,h_total_pre)
     h_sheet   = max(h_total_pre-hRillPre,0)
     #print "%d, %.6e, %.6e, %.6e, %.6e" % (state, h_sheet, h_rill,h_total_pre, rillWidth*constants.RILL_RATIO)
     #raw_input()
     return h_sheet, h_rill, hRillPre
-  
+
+
 
 def sheet_runoff(sur,dt):
 
@@ -223,7 +223,7 @@ def rill_runoff(i,j,sur,dt,efect_vrst,ratio):
   courant = (v_rill*dt)/efect_vrst
   sur.V_to_rill = V_to_rill
   sur.rillWidth = b
-  #print 'courant', v_rill,dt,efect_vrst 
+  #print 'courant', v_rill,dt,efect_vrst
   if (courant <= courantMax) :
 
     if V>(V_to_rill):
