@@ -33,9 +33,7 @@ class TimeStep:
   def do_flow(self,surface, subsurface,delta_t,G, mat_efect_vrst, ratio, courant,itera, total_time, tz, sr) :
 
 
-    global infilt_capa
-    global max_infilt_capa
-    global infilt_time
+
 
     rrows = G.rr
     rcols = G.rc
@@ -44,12 +42,7 @@ class TimeStep:
 
     rainfall, tz = rain_f.timestepRainfall(itera,total_time,delta_t,tz,sr)
 
-    infilt_capa += rainfall
-    if (infilt_capa < max_infilt_capa) :
-      infilt_time += delta_t
-      NS = 0.0
-      rainfall = 0.0
-      return NS, surface, subsurface,  tz, ratio, rainfall, 0.0, 0.0, 0.0
+
 
 
     for i in rrows:
@@ -89,15 +82,24 @@ class TimeStep:
 
   def do_next_h(self,surface, subsurface, rain_arr, cumulative, hydrographs, rainfall, courant, G, total_time, delta_t, combinatIndex, NoDataValue, sum_interception, mat_efect_vrst, ratio, iter_):
 
-
+    global infilt_capa
+    global max_infilt_capa
+    global infilt_time
 
     rrows = G.rr
     rcols = G.rc
     pixel_area = G.pixel_area
     #ratio_tmpp = ratio
 
-
-
+    infilt_capa += rainfall
+    if (infilt_capa < max_infilt_capa) :
+      infilt_time += delta_t
+      NS = 0.0
+      rainfall = 0.0
+      for i in rrows:
+        for j in rcols[i]:
+          hydrographs.write_hydrographs_record(i,j,ratio,courant.cour_most,courant.cour_most_rill,iter_,delta_t,total_time+delta_t,surface,subsurface,NS)
+      return NS, sum_interception
 
     for iii in combinatIndex:
         index = iii[0]
