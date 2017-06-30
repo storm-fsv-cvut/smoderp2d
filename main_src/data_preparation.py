@@ -465,10 +465,10 @@ def prepare_data(args):
   puda_veg_dbf = temp+os.sep+"puda_veg_tab_current.dbf"
 
   arcpy.CopyRows_management(tab_puda_veg, puda_veg_dbf)
-  sfield = ["k", "s", "n", "pi", "ppl", "alfa", "b", "x", "y", "tau", "v"]
+  sfield = ["k", "s", "n", "pi", "ppl", "ret", "b", "x", "y", "tau", "v"]
 
-  #sfield_txt = "k;s;n;pi;ppl;alfa;b;x;y;tau;v"
-  arcpy.JoinField_management(intersect, "puda_veg", puda_veg_dbf, tab_puda_veg_code, "k;s;n;pi;ppl;alfa;b;x;y;tau;v")
+  #sfield_txt = "k;s;n;pi;ppl;ret;b;x;y;tau;v"
+  arcpy.JoinField_management(intersect, "puda_veg", puda_veg_dbf, tab_puda_veg_code, "k;s;n;pi;ppl;ret;b;x;y;tau;v")
   #intersect1 = output+"\\puda_vegetace.shp"
   delfield(veg, fildname)
   delfield(soil, fildname)
@@ -583,8 +583,8 @@ def prepare_data(args):
   zeros.append(mat_ppl)
   mat_pi = np.zeros([rows,cols],float)
   zeros.append(mat_pi)
-  mat_alfa = np.zeros([rows,cols],float)
-  zeros.append(mat_alfa)
+  mat_ret = np.zeros([rows,cols],float)
+  zeros.append(mat_ret)
   mat_b = np.zeros([rows,cols],float)
   zeros.append(mat_b)
   mat_x = np.zeros([rows,cols],float)
@@ -606,7 +606,7 @@ def prepare_data(args):
   mat_aa = np.zeros([rows,cols],float)
   zeros.append(mat_aa)
 
-  all_attrib = [mat_k, mat_s, mat_n, mat_ppl, mat_pi, mat_alfa, mat_b, mat_x, mat_y, mat_tau, mat_v] # parametry, ktere se generuji ze shp
+  all_attrib = [mat_k, mat_s, mat_n, mat_ppl, mat_pi, mat_ret, mat_b, mat_x, mat_y, mat_tau, mat_v] # parametry, ktere se generuji ze shp
   poradi = 0
 
   for x in sfield:
@@ -622,7 +622,7 @@ def prepare_data(args):
   mat_n = all_attrib[2]
   mat_ppl = all_attrib[3]
   mat_pi = all_attrib[4]
-  mat_alfa = all_attrib[5]
+  mat_ret = all_attrib[5]
   mat_b = all_attrib[6]
   mat_x = all_attrib[7]
   mat_y = all_attrib[8]
