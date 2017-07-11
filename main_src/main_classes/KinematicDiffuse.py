@@ -1,8 +1,7 @@
 
 
 
-
-from main_src.main_classes.General import *
+from main_src.main_classes.General       import Globals as Gl
 from main_src.main_classes.Flow import *
 
 
@@ -14,7 +13,7 @@ import main_src.flow_algorithm.flow_direction       as flow_direction
 
 
 
-class Kinematic(Mfda if mfda==True else D8):
+class Kinematic(Mfda if Gl.mfda==True else D8):
 
   def __init__(self):
     prt.message("\tKinematic approach")
@@ -40,14 +39,14 @@ class Kinematic(Mfda if mfda==True else D8):
 
 
 
-class Diffuse(Mfda if mfda==True else D8, Globals):
+class Diffuse(Mfda if Gl.mfda==True else D8):
 
   def __init__(self):
     prt.message("\tDiffuse approach")
     if (Globals.r == None or Globals.r == None):
       exit("Global variables are not assigned")
-    r = self.r
-    c = self.c
+    r = Gl.r
+    c = Gl.c
 
     self.H = np.zeros([r,c],float)
 

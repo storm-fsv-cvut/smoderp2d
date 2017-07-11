@@ -90,6 +90,7 @@ def make_ASC_raster(name_,numpy_arr,G):
   bc    = G.bc
   nrows = G.r
   ncols = G.c
+  
 
   tmpStr = str(numpy_arr.dtype)[0:3]
   if tmpStr == 'int':

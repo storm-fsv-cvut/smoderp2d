@@ -9,7 +9,7 @@ debugInfo  = get_argv(constants.PARAMETER_DEBUG_PRT)
 outDir     = get_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
 #logFile = open(outDir+os.sep+logFileName, 'w')
 
-
+#print o
 #mujout = open('mujout.dat','w')
 #mujout.writelines("reach.id_" + ';' + "reach.h" + ';' + "reach.V_in_from_field" + ';' + "reach.V_rest" + ';' + " reach.V_in_from_reach" + ';' + "reach.V_out"+ ';' + "reach.to_node"+'\n')
 

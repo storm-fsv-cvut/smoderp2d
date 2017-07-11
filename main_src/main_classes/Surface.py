@@ -4,7 +4,6 @@ import sys
 import os
 #import psutil
 
-from   main_src.tools.resolve_partial_computing import *
 from main_src.main_classes.General              import *
 from main_src.main_classes.KinematicDiffuse     import *
 from main_src.main_classes.Stream               import *
@@ -16,6 +15,9 @@ import main_src.io_functions.prt               as prt
 import main_src.processes.surface              as surfacefce
 from   main_src.tools.tools                     import comp_type
 isRill, subflow, stream, diffuse = comp_type()
+
+
+
 
 
 
@@ -66,23 +68,32 @@ class Surface(Stream if stream == True else StreamPass,Kinematic,Globals,Size):
 
   ## The constructor
   #  make all numpy arrays and establish the inflow procedure based on D8 or Multi Flow Direction Algorithm method
-  def __init__(self,sur_ret,mat_inf_index,mat_hcrit,mat_aa,mat_b):
+  def __init__(self,r,c,mat_reten,mat_inf_index,mat_hcrit,mat_aa,mat_b):
 
     prt.message("Surface:")
-
+    
+    
+    
     self.n = 15
     self.arr = np.empty((self.r,self.c), dtype=object)
-
+    self.r = r
+    self.c = c 
+    
     for i in range(self.r):
       for j in range(self.c):
-        #jj
-        self.arr[i][j] = SurArrs(sur_ret,mat_inf_index[i][j],mat_hcrit[i][j],mat_aa[i][j],mat_b[i][j])
+        #jj                           prevod na m y mm
+        self.arr[i][j] = SurArrs(-mat_reten[i][j]/1000.,mat_inf_index[i][j],mat_hcrit[i][j],mat_aa[i][j],mat_b[i][j])
         #self.arr[i][j] = SurArrs(sur_ret,mat_inf_index[i][j],0.0025,mat_aa[i][j],mat_b[i][j])
 
-    #raw_input()
+
     self.rill_computing          = isRill
     #self.shallowSurfaceKinematic = surface.shallowSurfaceKinematic
     #self.rillCalculations        = rill.rillCalculations
+    if (isRill) :
+      prt.message("\tRill flow: \n\t\tON")
+    else:
+      #raw_input()
+      prt.message("\tRill flow: \n\t\tOFF")
 
 
     super(Surface, self).__init__()
@@ -96,11 +107,11 @@ class Surface(Stream if stream == True else StreamPass,Kinematic,Globals,Size):
     line = str(arr.h_sheet) + sep + str(arr.V_runoff/dt) + sep + str(arr.V_runoff) + sep + str(arr.V_rest) + sep + str(arr.infiltration)+ sep + str(arr.cur_sur_ret)+ sep + str(arr.state) + sep + str(arr.inflow_tm) + sep + str(arr.h_total_new)
 
     if self.rill_computing :
-      #';Rill_size;Rill_flow;Rill_V_runoff;Rill_V_rest'
+
       line += sep + str(arr.h_rill) + sep + str(arr.rillWidth) + sep + str(arr.V_runoff_rill/dt) + sep + str(arr.V_runoff_rill) + sep + str(arr.V_rill_rest) + sep + str(arr.V_runoff/dt + arr.V_runoff_rill/dt) + sep + str(arr.V_runoff+arr.V_runoff_rill)
-    #bil_  = arr.inflow_tm - arr.V_runoff - arr.V_runoff_rill - arr.cur_sur_ret*self.pixel_area - arr.V_rest + arr.V_rest_pre - arr.infiltration*self.pixel_area - arr.V_rill_rest + arr.V_rill_rest_pre
+
     bil_  = arr.h_total_pre*self.pixel_area + arr.cur_rain*self.pixel_area + arr.inflow_tm - (arr.V_runoff + arr.V_runoff_rill + arr.infiltration*self.pixel_area) - (arr.cur_sur_ret*self.pixel_area) - arr.h_total_new*self.pixel_area #<< + arr.V_rest + arr.V_rill_rest) + (arr.V_rest_pre + arr.V_rill_rest_pre)
-    #bil_  = arr.inflow_tm - (arr.V_runoff + arr.infiltration*self.pixel_area) - (arr.cur_sur_ret*self.pixel_area + arr.V_rest) + (arr.V_rest_pre)
+
     return line, bil_
 
 
@@ -116,8 +127,8 @@ def __runoff(i,j,sur,dt,efect_vrst,ratio) :
   state      = sur.state # da se tady podivat v jakym jsem casovym kroku a jak se a
 
   #sur.state               = update_state1(h_total_pre,h_crit,state)
-
   sur.h_sheet, sur.h_rill, sur.h_rillPre = compute_h_hrill(h_total_pre,h_crit,state,sur.rillWidth,sur.h_rillPre)
+  
 
 
   q_sheet = sheet_runoff(sur,dt)
@@ -199,6 +210,19 @@ def compute_h_hrill(h_total_pre,h_crit,state,rillWidth,hRillPre):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 def sheet_runoff(sur,dt):
 
 
@@ -208,6 +232,20 @@ def sheet_runoff(sur,dt):
 
   return q_sheet
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def rill_runoff(i,j,sur,dt,efect_vrst,ratio):
 
   ppp = False
@@ -216,14 +254,13 @@ def rill_runoff(i,j,sur,dt,efect_vrst,ratio):
   h, b   = rill.update_hb(V_to_rill,constants.RILL_RATIO,efect_vrst,sur.rillWidth,ratio,ppp)
   R_rill = (h*b)/(b + 2*h)
   #print '\t', h,b, b, 2*h
-  v_rill = math.pow(R_rill,(2.0/3.0)) * 1./mat_n[i][j] * math.pow(mat_slope[i][j]/100,0.5)
+  v_rill = math.pow(R_rill,(2.0/3.0)) * 1./Gl.mat_n[i][j] * math.pow(Gl.mat_slope[i][j]/100,0.5)
   #print "V_to_rill, R_rill", V_to_rill, R_rill
   q_rill = v_rill * constants.RILL_RATIO * b * b # [m3/s]
   V      = q_rill*dt
   courant = (v_rill*dt)/efect_vrst
   sur.V_to_rill = V_to_rill
   sur.rillWidth = b
-  #print 'courant', v_rill,dt,efect_vrst
   if (courant <= courantMax) :
 
     if V>(V_to_rill):
@@ -231,7 +268,6 @@ def rill_runoff(i,j,sur,dt,efect_vrst,ratio):
       sur.V_runoff_rill = V_to_rill
 
     else:
-      #print 'sur.V_runoff_rill', sur.V_runoff_rill
       sur.V_rill_rest   = V_to_rill - V
       sur.V_runoff_rill = V
 
@@ -242,12 +278,18 @@ def rill_runoff(i,j,sur,dt,efect_vrst,ratio):
 
 
 
-def surface_retention(sur):
+
+
+
+
+
+def surface_retention(bil,sur):
 
   reten = sur.sur_ret
   pre_reten = reten
+  
   if reten < 0:
-    tempBIL = sur.h_total_pre + reten
+    tempBIL = bil + reten
 
     if tempBIL > 0:
       bil = tempBIL
@@ -258,8 +300,8 @@ def surface_retention(sur):
 
   sur.sur_ret = reten
   sur.cur_sur_ret = reten-pre_reten
+  return bil
 
-  return sur.cur_sur_ret
 
 
 
@@ -270,9 +312,7 @@ def surface_retention(sur):
 
 
 if (isRill) :
-  prt.message("\tRill flow: \n\t\tON")
   runoff = __runoff
 else:
-  #raw_input()
-  prt.message("\tRill flow: \n\t\tOFF")
   runoff = __runoff_zero_compType
+

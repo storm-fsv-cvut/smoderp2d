@@ -4,9 +4,9 @@ import sys
 import os
 
 
-from   main_src.tools.resolve_partial_computing import *
-from main_src.main_classes.General              import *
-from main_src.main_classes.KinematicDiffuse     import *
+from main_src.main_classes.General           import Globals as Gl
+from main_src.main_classes.General           import Size
+from main_src.main_classes.KinematicDiffuse  import *
 
 
 import main_src.processes.subsurface           as darcy
@@ -35,15 +35,15 @@ class SubArrs:
 ## Documentation for a class.
 #  More details.
 #
-class SubsurfaceC(Diffuse if diffuse == True else Kinematic, Size,Globals):
+class SubsurfaceC(Diffuse if Gl.diffuse == True else Kinematic, Size):
   def __init__(self,L_sub, Ks, vg_n, vg_l):
 
     if (Globals.r == None or Globals.r == None):
       exit("Global variables are not assigned")
     super(SubsurfaceC, self).__init__()
 
-    r = self.r
-    c = self.c
+    r = Gl.r
+    c = Gl.c
 
     self.arr = np.empty((self.r,self.c), dtype=object)
 
@@ -160,11 +160,11 @@ class SubsurfaceC(Diffuse if diffuse == True else Kinematic, Size,Globals):
 
 ## Class
 #  empty class if no subsurface flow is considered
-class SubsurfacePass(object,Size,Globals):
+class SubsurfacePass(object,Size):
   def __init__(self,L_sub, Ks, vg_n, vg_l):
     #jj
     self.n = 0
-    self.arr = np.empty((self.r,self.c), dtype=object)
+    self.arr = np.empty((Gl.r,Gl.c), dtype=object)
     self.q_subsurface = None
     #self.arr = np.zeros([0],float)
     prt.message("\tOFF")
@@ -189,7 +189,7 @@ class SubsurfacePass(object,Size,Globals):
 
 
 
-class Subsurface(SubsurfaceC if subflow == True else SubsurfacePass):
+class Subsurface(SubsurfaceC if Gl.subflow == True else SubsurfacePass):
   def __init__(self,L_sub = 0.010, Ks = 0.001, vg_n = 1.5, vg_l =  0.5):
     prt.message("Subsurface:")
     super(Subsurface, self).__init__(L_sub = L_sub, Ks = Ks, vg_n = vg_n, vg_l =  vg_l)

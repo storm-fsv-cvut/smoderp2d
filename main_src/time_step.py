@@ -30,27 +30,21 @@ class TimeStep:
 
 
 
-  def do_flow(self,surface, subsurface,delta_t,G, mat_efect_vrst, ratio, courant,itera, total_time, tz, sr) :
+  def do_flow(self,rr,rc,surface, subsurface,delta_t, mat_efect_vrst, ratio, courant,itera, total_time, tz, sr) :
 
 
 
 
-    rrows = G.rr
-    rcols = G.rc
-    pixel_area = G.pixel_area
-
-
+    
     rainfall, tz = rain_f.timestepRainfall(itera,total_time,delta_t,tz,sr)
 
 
-
-
-    for i in rrows:
-      for j in rcols[i]:
+    for i in rr:
+      for j in rc[i]:
 
         h_total_pre   = surface.arr[i][j].h_total_pre
 
-        h_total_pre -= surface_retention(surface.arr[i][j])
+
 
         surface_state = surface.arr[i][j].state
 
@@ -80,15 +74,13 @@ class TimeStep:
 
 
 
-  def do_next_h(self,surface, subsurface, rain_arr, cumulative, hydrographs, rainfall, courant, G, total_time, delta_t, combinatIndex, NoDataValue, sum_interception, mat_efect_vrst, ratio, iter_):
+  def do_next_h(self,rr,rc,pixel_area, surface, subsurface, rain_arr, cumulative, hydrographs, rainfall, courant, total_time, delta_t, combinatIndex, NoDataValue, sum_interception, mat_efect_vrst, ratio, iter_):
 
     global infilt_capa
     global max_infilt_capa
     global infilt_time
 
-    rrows = G.rr
-    rcols = G.rc
-    pixel_area = G.pixel_area
+
     #ratio_tmpp = ratio
 
     infilt_capa += rainfall
@@ -96,8 +88,8 @@ class TimeStep:
       infilt_time += delta_t
       NS = 0.0
       rainfall = 0.0
-      for i in rrows:
-        for j in rcols[i]:
+      for i in rr:
+        for j in rc[i]:
           hydrographs.write_hydrographs_record(i,j,ratio,courant.cour_most,courant.cour_most_rill,iter_,delta_t,total_time+delta_t,surface,subsurface,NS)
       return NS, sum_interception
 
@@ -123,8 +115,8 @@ class TimeStep:
     subsurface.new_inflows()
 
     #print 'bbilll'
-    for i in rrows:
-      for j in rcols[i]:
+    for i in rr:
+      for j in rc[i]:
 
         #print i,j, surface.arr[i][j].h_total_pre, surface.arr[i][j].V_runoff
         #
@@ -133,17 +125,22 @@ class TimeStep:
         #print rain_arr.arr[i][j], rainfall, sum_interception
         NS, sum_interception, rain_arr.arr[i][j].veg_true = rain_f.current_rain(rain_arr.arr[i][j], rainfall, sum_interception)
         surface.arr[i][j].cur_rain = NS
+        
         #
         # Inflows from surroundings cells
         #
         surface.arr[i][j].inflow_tm = surface.cell_runoff(i,j)
-
+        
+        
         #
         # Surface BILANCE
         #
         surBIL =  surface.arr[i][j].h_total_pre + NS + surface.arr[i][j].inflow_tm/pixel_area - (surface.arr[i][j].V_runoff/pixel_area + surface.arr[i][j].V_runoff_rill/pixel_area)
 
-
+        #
+        # surface retention
+        #
+        surBIL = surface_retention(surBIL,surface.arr[i][j])
 
         #print i,j, surface.arr[i][j].state, surface.arr[i][j].h_total_pre , NS , surface.arr[i][j].inflow_tm/pixel_area , surface.arr[i][j].V_runoff/pixel_area , surface.arr[i][j].V_runoff_rill/pixel_area
 
@@ -188,5 +185,4 @@ class TimeStep:
         """
         cumulative.update_cumulative(i,j,surface.arr[i][j], subsurface,delta_t)
         hydrographs.write_hydrographs_record(i,j,ratio,courant.cour_most,courant.cour_most_rill,iter_,delta_t,total_time+delta_t,surface,subsurface,NS)
-
     return NS, sum_interception

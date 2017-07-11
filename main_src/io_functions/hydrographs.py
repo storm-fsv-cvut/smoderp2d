@@ -11,7 +11,7 @@ rill, subflow, stream, diffuse = comp_type()
     
 
 class Hydrographs:
-  def __init__(self,array_points,outdirr,mat_tok_usek,G):
+  def __init__(self,array_points,outdirr,mat_tok_usek,rr,rc,pixel_area):
     points = array_points
     ipi    = points.shape[0]
     jpj    = 5
@@ -40,9 +40,9 @@ class Hydrographs:
     for ip in range(ipi):
       l = point_int[ip][1]
       m = point_int[ip][2]
-      for ipp in G.rr:
+      for ipp in rr:
         if l==ipp:
-          for jpp in G.rc[ipp]:
+          for jpp in rc[ipp]:
             if m == jpp:
               outsideDomain = True
       if not(outsideDomain) :
@@ -90,7 +90,7 @@ class Hydrographs:
     self.subflow = subflow
     self.rill    = rill
     self.stream  = stream
-    self.pixel_area = G.pixel_area
+    self.pixel_area = pixel_area
     #print self.point_int
     #raw_input()
     

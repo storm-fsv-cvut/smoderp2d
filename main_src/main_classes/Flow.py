@@ -18,17 +18,15 @@
 
 
 
+from main_src.main_classes.General       import Globals as Gl
 
 
 
-from   main_src.tools.resolve_partial_computing import *
 from   main_src.tools.tools                     import comp_type
 import main_src.flow_algorithm.mfd                  as mfd
 import main_src.flow_algorithm.D8                   as D8_
 import main_src.io_functions.prt                    as prt
 
-
-isRill, subflow, stream, diffuse = comp_type()
 
 
 
@@ -61,7 +59,7 @@ class D8(object):
   #  
   def __init__(self):
     prt.message("\tD8 flow algorithm")
-    self.inflows = D8_.new_inflows(mat_fd)
+    self.inflows = D8_.new_inflows(Gl.mat_fd)
 
 
 
@@ -83,7 +81,7 @@ class D8(object):
   # 
   #  @return inflow_from_cells inflow volume from the adjacent cells 
   #  
-  def cell_runoff(self,i,j,sur=True):
+  def cell_runoff(self,i,j):
     inflow_from_cells = 0.0
     for z in range(len(self.inflows[i][j])):
       ax = self.inflows[i][j][z][0]
@@ -100,6 +98,7 @@ class D8(object):
         inrillflow_from_cell = 0.0
       inflow_from_cells = inflow_from_cells + insurfflow_from_cell + inrillflow_from_cell
 
+    
 
     return inflow_from_cells
 
@@ -138,7 +137,9 @@ class Mfda(object):
   
     
   def __init__(self):
+    
     prt.message("\tMultiflow direction algorithm")
+    self.isRill = comp_type('rill')
     self.inflows, fd_rill  = mfd.new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols)
     self.inflowsRill       = D8_.new_inflows(fd_rill)
   

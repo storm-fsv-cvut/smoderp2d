@@ -9,8 +9,14 @@ import main_src.io_functions.prt                  as prt
 prtTimes = get_argv(constants.PARAMETER_PRINT_TIME)
 
 
+if prtTimes == '-':
+  class TimesPrt():
+    def __init__(self):
+      pass
 
-if prtTimes :
+    def prt(self,time,dt,sur):
+      pass
+else:
   class TimesPrt():
     def __init__(self):
 
@@ -66,12 +72,3 @@ if prtTimes :
 
 
 
-
-
-else:
-  class TimesPrt():
-    def __init__(self):
-      pass
-
-    def prt(self,time,dt,sur):
-      pass

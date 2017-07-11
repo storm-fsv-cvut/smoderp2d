@@ -74,7 +74,7 @@ def load_precipitation(fh):
     #for  i, item in enumerate(sr):
       #print item[0], '\t', item[1]
     
-    #raw_input()
+
     return sr, itera
 
 

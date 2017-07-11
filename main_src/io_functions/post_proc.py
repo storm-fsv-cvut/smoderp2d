@@ -35,8 +35,9 @@ isRill, subflow, stream, diffuse = comp_type()
 if arcgis == True :
   import arcpy
   ## creates the raster in argis format in the output directory
-  def arcgis_raster(output, cumulative, mat_slope, G, surArr):
+  def arcgis_raster(cumulative, mat_slope, G, surArr):
     
+    output = G.outdir
     arcpy.env.workspace = output
     rrows = G.rr
     rcols = G.rc
@@ -133,11 +134,11 @@ if arcgis == True :
 else:
   
   ## creates the raster in ascii format in the output directory
-  def ascii_raster(output, cumulative, mat_slope, G, surArr):
+  def ascii_raster(cumulative, mat_slope, G, surArr):
     
     rrows = G.rr
     rcols = G.rc
-
+    output = G.outdir
     
     for i in rrows:
       for j in rcols[i]:
@@ -184,8 +185,8 @@ else:
     totalBil = cumulative.infiltration.copy()
     totalBil.fill(0.0)
     
-    #                  (   IN                                  ) - (  OUT          )  - ( What rests in the end)
-    totalBil = (cumulative.precipitation + cumulative.inflow_sur) - (cumulative.infiltration + cumulative.V_sur) - cumulative.sur_ret + (cumulative.V_sur_r) 
+    #          (   IN                                           ) - (  OUT                                                         )  - ( What rests in the end)
+    totalBil = (cumulative.precipitation + cumulative.inflow_sur) - (cumulative.infiltration + cumulative.V_sur + cumulative.V_rill) - cumulative.sur_ret #+ (cumulative.V_sur_r + cumulative.V_rill_r) 
     
     vRest     = np.zeros(np.shape(surArr),float)
     if isRill : 
@@ -194,12 +195,12 @@ else:
           if (finState[i][j] >= 1000) :
             vRest[i][j] =    G.NoDataValue
           else :
-            vRest[i][j] =    surArr[i][j].V_rill_rest
+            vRest[i][j] =  surArr[i][j].h_total_new*G.pixel_area
           
           
-      outName = output+os.sep+'VRestEndRillL'+".asc" 
+      outName = output+os.sep+'VRestEndRillL3'+".asc" 
       tools.make_ASC_raster(outName,vRest,G)
-      totalBil += - cumulative.V_rill - vRest
+      totalBil +=   -vRest
       
     for i in rrows:
       for j in rcols[i]:
