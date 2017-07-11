@@ -156,6 +156,8 @@ def get_indata ():
     toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sld.load_data(indata)
     
     
+    print toky
+    
     
 
 

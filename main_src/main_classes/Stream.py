@@ -1,8 +1,7 @@
 
 
 
-from   main_src.tools.resolve_partial_computing import *
-from   main_src.main_classes.General import *
+from main_src.main_classes.General       import Globals as Gl
 
 import main_src.stream_functions.stream_f as stream_f
 import main_src.io_functions.prt          as prt
@@ -70,7 +69,7 @@ class Reach():
 #  More details.
 
 # Bacha na id, je id v shp toku v sestupnem poradi. To musi jinak bude chyba ve tvorbe reach
-class Stream(object,Globals):
+class Stream(object):
 
   ## The constructor.
   def __init__(self):
@@ -83,29 +82,29 @@ class Stream(object,Globals):
     #self.temp_dp = sp.temp_dp
 
     # listy v poradi 'FID' 'POINT_X' 'POINT_Y' 'POINT_X_1' 'POINT_Y_1' 'to_node' 'length' 'sklon' 'smoderp' 'CISLO' 'TVAR' 'B' 'M' 'DRSNOST' 'Q365'
-    self.toky = toky # tu jsou nactena data z data preparation cca lajna 970
+    self.toky = Gl.toky # tu jsou nactena data z data preparation cca lajna 970
 
-    self.nReaches = len(toky[0])
+    self.nReaches = len(self.toky[0])
     
     
-    self.cell_stream = cell_stream
+    self.cell_stream = Gl.cell_stream
 
     self.reach = []
     
     for i in range(self.nReaches):
-      self.reach.append(Reach(toky[0][i],toky[1][i],toky[2][i],toky[3][i],toky[4][i],toky[5][i],toky[6][i],toky[7][i],toky[8][i],toky[9][i],toky[10][i],toky[11][i],toky[12][i],toky[13][i],toky[14][i]))
+      self.reach.append(Reach(self.toky[0][i],self.toky[1][i],self.toky[2][i],self.toky[3][i],self.toky[4][i],self.toky[5][i],self.toky[6][i],self.toky[7][i],self.toky[8][i],self.toky[9][i],self.toky[10][i],self.toky[11][i],self.toky[12][i],self.toky[13][i],self.toky[14][i]))
 
-    self.tokyLoc      = tokyLoc
-    self.mat_tok_usek = mat_tok_usek
+    self.tokyLoc      = Gl.tokyLoc
+    self.mat_tok_usek = Gl.mat_tok_usek
     
     
 
     
-    for i in self.rr :
-      for j in self.rc[i]:
-        self.arr[i][j].state += mat_tok_usek[i][j]
+    for i in Gl.rr :
+      for j in Gl.rc[i]:
+        self.arr[i][j].state += self.mat_tok_usek[i][j]
 
-    self.STREAM_RATIO = STREAM_RATIO
+    self.STREAM_RATIO = Gl.STREAM_RATIO
 
 
   def reset_inflows(self):
