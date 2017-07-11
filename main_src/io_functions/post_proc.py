@@ -245,7 +245,7 @@ else:
 
 
 if stream and arcgis:
-  
+  import arcpy
   def write_stream_table(outDir, surface,toky):
     sep = ';'
     nReaches = surface.nReaches
