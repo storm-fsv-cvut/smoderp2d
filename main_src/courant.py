@@ -161,7 +161,7 @@ class Courant():
 
       # nove dt nesmi byt vetsi nez je maxdt * max_delta_t_mult
       # max_delta_t_mult se meni podle ryh, vyse v teto funkci
-
+      
       #return dt*self.max_delta_t_mult, ratio
       #return min(dt,self.max_delta_t*self.max_delta_t_mult), ratio
       #print 'asdf', self.cour_speed, dt, self.max_delta_t_mult

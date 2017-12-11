@@ -8,7 +8,6 @@ from   main_src.tools.tools                   import get_argv
 from   main_src.tools.tools                   import set_argv
 from   main_src.tools.tools                   import prt_sys_argv
 from   main_src.tools.tools                   import int_comp_type
-from   main_src.tools.tools                   import int_comp_type
 from    main_src.tools.tools                  import logical_argv
 
 
@@ -19,14 +18,14 @@ from    main_src.tools.tools                  import logical_argv
 
 
 
-def get_indata ():
+def get_indata (args):
   
-  try:
-    partial_comp = get_argv(constants.PARAMETER_PARTIAL_COMPUTING)
-  except IndexError:
-    partial_comp = 'roff'
 
-  if partial_comp == 'full':
+    
+  
+  # full computation
+  #      data_preparation + runoff model
+  if args.typecomp == 'full':
     from main_src.data_preparation import prepare_data
 
 
@@ -36,9 +35,13 @@ def get_indata ():
 
 
 
+  # only data_preparation
+  #      data are saved in dump, can be stored and loaded later on
+  elif args.typecomp == 'dpre':
 
-  elif partial_comp == 'dpre':
     
+
+
     from main_src.data_preparation import prepare_data
     import  main_src.tools.save_load_data    as sld
     
@@ -75,15 +78,25 @@ def get_indata ():
     
     sld.save_data(dataList,get_argv(constants.PARAMETER_INDATA))
     #sld.save(dataList,get_argv(constants.PARAMETER_INDATA))    #   preparated
-    
-    
-    sys.exit('data prepared...')
-    
 
-  elif partial_comp == 'roff':
+          
+    print "Data praparation finished\n\t Data saved in ", get_argv(constants.PARAMETER_INDATA)
+    return False
+    
+    
+    """ puvocne ty bylo sys.exit coz ale neni dobre pokud bezi skript v nadrazenem programu
+    sys.exit pak muze shodit i ten. Taze se tu vrati False az do mainu a tam se nespusti
+    runoff protoze tu chci jen data praparation"""
 
-    import argparse
-    import ConfigParser
+
+
+
+  # only runoff model
+  #       data can be restored from previously prepared *.save file
+  #       
+  elif args.typecomp == 'roff':
+
+    
     
     # to je to je jen provizorne, pokud to bude petr delat tak jo doposud 
     if len(sys.argv) > 7 :
@@ -91,16 +104,18 @@ def get_indata ():
       logical_argv(constants.PARAMETER_EXTRA_OUTPUT)
       logical_argv(constants.PARAMETER_MFDA)
       indata = get_argv(constants.PARAMETER_INDATA)
+      
+      
     else:
-      parser = argparse.ArgumentParser(prog='Smoderp 0.1');
-      parser.add_argument('-s', '--sort', nargs =1, action = 'store', choices = ['roff', 'dpre','full'], default='mcs', help='Type of computing')
-      parser.add_argument('--indata', nargs ='+', action = 'store', help='Parameter file')
+      
+      import ConfigParser
+      
+      
 
-      args = parser.parse_args()
       
       
       Config = ConfigParser.ConfigParser()
-      Config.read(args.indata[0])
+      Config.read(args.indata)
       sys.argv = [sys.argv.pop(0)]
       #print sys.argv
       sys.argv.append(Config.get('GIS','dem'))
@@ -133,6 +148,8 @@ def get_indata ():
       logical_argv(constants.PARAMETER_MFDA)
       indata = get_argv(constants.PARAMETER_INDATA)    
 
+
+
     import main_src.tools.save_load_data as sld
     import main_src.processes.rainfall    as rainfall
     #import  main_src.tools.save_load_data_nopickle    as sld   # preparated
@@ -156,16 +173,7 @@ def get_indata ():
     toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sld.load_data(indata)
     
     
-    print toky
-    
-    
 
-
-    
-    
-
-    #print mat_aa
-    #raw_input('')
     """
     boundaryRows, boundaryCols, \
     mat_boundary, rrows, rcols, outletCells, \
@@ -179,7 +187,7 @@ def get_indata ():
     mat_n,   \
     output, pixel_area, points, poradi,  end_time, spix, state_cell, \
     temp, type_of_computing, vpix, mfda, sr, itera, \
-    toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sld.load(indata)   #preparated
+    toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sld.load(indata)   # pripraveno na pak
     """
 
 
@@ -213,7 +221,6 @@ def get_indata ():
       pass
     # zmena deste posave, pokud se pocita jen roff
     else:
-      print 'asdfdsdf'
       sr,itera  = rainfall.load_precipitation(rainfall_file_path)
     
     

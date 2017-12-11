@@ -15,6 +15,7 @@
 # indata/dp_hodne_bodu_tok.save
 # indata/DS_plochamalyNx.save
 # indata/ada.save
+# dp-maletau-matret.save
 # '''
 
 python main.py \
@@ -23,13 +24,13 @@ python main.py \
 - \
 - \
 - \
-- \
-30 \
+indata/srazka.txt \
+1 \
 20.0 \
 00.0  \
-00.0 \
+- \
 out \
-shallowrillstreamsurface \
+shallowandrillsurface \
 false \
 - \
 - \
@@ -38,6 +39,7 @@ false \
 - \
 False \
 true  \
-indata/dp_vse.save \
+indata/dp-maletau-matret.save \
 roff \
-true
+true \
+- 

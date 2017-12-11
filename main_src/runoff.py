@@ -62,7 +62,7 @@ class Runoff():
     # taky se vyresi vztypbi soubory nacteni dat
     # vse se hodi do ogjektu Globals as Gl
     
-    isRill, subflow, stream, diffuse = comp_type()
+    isRill, subflow, stream, diffuse, = comp_type()
 
     times_prt = TimesPrt()
 
@@ -151,8 +151,9 @@ class Runoff():
         iter_                = 0
 
 
-
+        
         while (iter_ < maxIter):
+          #print '      dt ', delta_t
           iter_ += 1
           #time_step.undo(surface.arr,subsurface.arr)
           tz                 = tz_tmp
@@ -168,16 +169,12 @@ class Runoff():
 
 
 
+          #if (iter_ == 2): raw_input()
           if (delta_t_tmp == delta_t) and (ratio_tmp == ratio) : break
 
 
 
-
         NS, sum_interception = time_step.do_next_h(Gl.rr,Gl.rc,Gl.pixel_area,surface, subsurface, rain_arr, cumulative, hydrographs, curr_rain, courant,  total_time, delta_t, Gl.combinatIndex, Gl.NoDataValue, sum_interception, Gl.mat_efect_vrst, ratio, iter_)
-
-
-        #raw_input()
-
 
 
 
@@ -188,8 +185,8 @@ class Runoff():
           for i in Gl.rr:
             for j in Gl.rc[i]:
               hydrographs.write_hydrographs_record(i,j,ratio,courant.cour_most,courant.cour_most_rill,iter_,delta_t,total_time+delta_t,surface,subsurface,curr_rain)
-          post_proc.raster_output(cumulative, mat_slope, Globals, surface.arr)
-          prt.error("max iteration in time step was reached\n","\tmaxIter = ", maxIter, '\n\tpartial results are saved in ', output, 'directory')
+          post_proc.raster_output(cumulative, Gl.mat_slope, Gl, surface.arr)
+          prt.error("max iteration in time step was reached\n","\tmaxIter = ", maxIter, '\n\tpartial results are saved in ', Gl.outdir, 'directory')
 
         if ( Gl.end_time - total_time ) < delta_t and ( Gl.end_time - total_time ) > 0:
           delta_t = Gl.end_time - total_time

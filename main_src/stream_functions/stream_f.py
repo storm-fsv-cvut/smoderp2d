@@ -50,17 +50,17 @@ def compute_h(A,m,b,err=0.0001,maxIter=20):
 # 
 #   
 def rectangle(reach,dt):
-  Vp = reach.Q365*dt
-  hp = Vp/(reach.b*reach.length)
-  dV = reach.V_in_from_field + reach.V_rest + reach.V_in_from_reach
-  h  = dV/(reach.b * reach.length)
-  H = hp + h
-  O = reach.b+2*H
-  S = reach.b*H
-  R = S/O
-  reach.vs = math.pow(R,0.6666)*math.pow(reach.slope,0.5)/(reach.roughness)  #v
-  reach.Q_out = S*reach.vs # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
-  reach.V_out = reach.Q_out*dt
+  Vp = reach.Q365*dt                # objem           : baseflow
+  hp = Vp/(reach.b*reach.length)    # vyska hladiny   : baseflow
+  dV = reach.V_in_from_field + reach.V_rest + reach.V_in_from_reach    # z okoli, predtim, odtok  : epizoda
+  h  = dV/(reach.b * reach.length)  # vyska hladiny   : epizoda
+  H = hp + h                        # total vyska hl. : epizoda
+  O = reach.b+2*H  # omoceny obvod
+  S = reach.b*H    # prurocna plocha
+  R = S/O          # hydraulicky polomer
+  reach.vs = math.pow(R,0.6666)*math.pow(reach.slope,0.5)/(reach.roughness)  # rychlost
+  reach.Q_out = S*reach.vs # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt                   # prutok 
+  reach.V_out = reach.Q_out*dt                                               # odtekly objem
   if reach.V_out > dV:
     reach.V_out = dV
     reach.Q_out = dV/dt
@@ -110,28 +110,35 @@ def trapezoid(reach,dt):
 #   
 def triangle(reach,dt):
   pass
-  #Vp = reach.Q365*dt
-  #hp = math.pow(Vp/(reach.length*reach.m),0.5)
-  #B = 2.0*hp*reach.m #b pro pocatecni stav (Q365)
-  #Bb = B + reach.h*reach.m
-  #h  = (reach.V_in_from_field + reach.V_rest + reach.V_in_from_reach)/(Bb * reach.length)
-  #H = hp + h
-  #O = 2.0*H*math.pow(1.0+reach.m*reach.m,0.5)
-  #S = reach.m*H*H
+  Vp = reach.Q365*dt                             # objem           : baseflow
+  hp = math.pow(Vp/(reach.length*reach.m),0.5)   # vyska hladiny   : baseflow __
+  B = 2.0*hp*reach.m                             # sirka zakladny  : baseflow \/
+  # Bb = B + reach.h*reach.m                                                                # tohle nechapu, takze jsem to zakomantoval...
+  # h  = (reach.V_in_from_field + reach.V_rest + reach.V_in_from_reach)/(Bb * reach.length) # tohle nechapu...
+  
+  Ve = (reach.V_in_from_field + reach.V_rest + reach.V_in_from_reach)     # objem z epizody
+  #
+  # vyska z epizody co pribude na trouhelnik z baseflow (takze lichobeznik)
+  #                       ____                                          __
+  # zahlacna lichobezniku \__/ je spodni 'horni'  zakladna trojuhelniku \/
+  he = compute_h(A=Ve/reach.length,m=reach.m,b=B) # funkce pouzita pro lichobeznik  ____
+  H = hp + he                                     # vyska vysledneho trouhelniku    \  /
+  O = 2.0*H*math.pow(1.0+reach.m*reach.m,0.5)     #                                  \/
+  S = reach.m*H*H
   #dS = B*reach.h + reach.m*reach.h*reach.h
   #dV = dS*reach.length
-  #R = S/O
-  #reach.vs = math.pow(R,0.6666)*math.pow(reach.slope,0.5)/(reach.roughness) #v
-  #reach.Q_out = S*reach.vs # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
-  #reach.V_out = reach.Q_out*dt
-  #if reach.V_out > dV:
-    #reach.V_out = dV
-    #reach.Q_out = dV/dt
-    #reach.V_rest = 0
-  #else:
-    #reach.Q_out = reach.V_out/dt
-    #reach.V_rest = dV - reach.V_out
-  #reach.h = H
+  R = S/O
+  reach.vs = math.pow(R,0.6666)*math.pow(reach.slope,0.5)/(reach.roughness) #v
+  reach.Q_out = S*reach.vs # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
+  reach.V_out = reach.Q_out*dt
+  if reach.V_out > Ve:
+    reach.V_out = Ve
+    reach.Q_out = Ve/dt
+    reach.V_rest = 0
+  else:
+    reach.Q_out = reach.V_out/dt
+    reach.V_rest = Ve - reach.V_out
+  reach.h = H
 
 
 

@@ -4,10 +4,15 @@
 
 
 import math
+import sys
 
+# get_indata is method which reads the input data
 from   main_src.tools.resolve_partial_computing import get_indata
+# get type of computing identifier based on the string
 from   main_src.tools.tools                     import comp_type
 
+from   main_src.tools.tools                   import get_argv
+import main_src.constants                         as constants
 
 
 ## Documentation for a class.
@@ -25,6 +30,18 @@ class Size:
   
   
   
+  
+  
+  
+  
+  
+  
+  
+## Calss Globals contains global variables 
+#  
+#  from data_preparation, in instance of class needed
+#  the data are taken from import of this class
+#
 class Globals:
   pixel_area = None
   r        = None
@@ -78,80 +95,106 @@ class Globals:
   tokyLoc = None
 
 
+
+
+
+## Init fills the Globals class with values 
+# 
 def init():
 
-  boundaryRows, boundaryCols, \
-  mat_boundary, rrows, rcols, outletCells, \
-  x_coordinate, y_coordinate,\
-  NoDataValue, array_points, \
-  cols, rows, combinatIndex, delta_t,  \
-  mat_pi, mat_ppl, \
-  surface_retention, mat_inf_index, mat_hcrit, mat_aa, mat_b, mat_reten,\
-  mat_fd, mat_dmt, mat_efect_vrst, mat_slope, mat_nan, \
-  mat_a,   \
-  mat_n,   \
-  output, pixel_area, points, poradi,  end_time, spix, state_cell, \
-  temp, type_of_computing, vpix, mfda, sr, itera, \
-  toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = get_indata()
+  
+  # tady provizorne sys.argv se vraci z arcgisu
+  # hodne parametru z sys.argv. tak to v arcgisu funguje
+  if len(sys.argv) > 7 :
+    partial_comp = get_argv(constants.PARAMETER_PARTIAL_COMPUTING)
+
+  # to je z prikazove radky volani
+  # ono se to nakonec tak jako tak nahazi do sys.argv
+  # v resolve_partial_computing pac zbytek smoderpu
+  # tak zatim funguje, ale toto je snazsi na zapis a 
+  # nacteni *.in souboru
+  else:
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('typecomp', help='type of computation', type=str, choices=['full','dpre','roff'])
+    parser.add_argument('--indata', help='file with input data', type=str)
+    args = parser.parse_args()
+    partial_comp = args.typecomp
 
   
   
-  Globals.pixel_area = pixel_area
-  Globals.r        = rows
-  Globals.c        = cols
-  Globals.rr    = rrows
-  Globals.rc    = rcols
-  Globals.br    = boundaryRows
-  Globals.bc    = boundaryCols
-  Globals.xllcorner = x_coordinate
-  Globals.yllcorner = y_coordinate
-  Globals.NoDataValue = NoDataValue
-  Globals.NoDataInt   = int(-9999)
-  Globals.dx = math.sqrt(pixel_area)
-  Globals.dy = Globals.dx
-  Globals.type_of_computing = type_of_computing
-  Globals.outdir = output
-  Globals.mat_boundary = mat_boundary
-  Globals.outletCells  = outletCells
-  Globals.array_points = array_points
-  Globals.combinatIndex = combinatIndex
-  Globals.mat_pi  = mat_pi
-  Globals.mat_ppl = mat_ppl
-  Globals.surface_retention = surface_retention
-  Globals.mat_inf_index = mat_inf_index
-  Globals.mat_hcrit = mat_hcrit
-  Globals.mat_aa = mat_aa
-  Globals.mat_b = mat_b
-  Globals.mat_reten = mat_reten
-  Globals.mat_fd = mat_fd
-  Globals.mat_dmt = mat_dmt
-  Globals.mat_efect_vrst = mat_efect_vrst
-  Globals.mat_slope = mat_slope
-  Globals.mat_nan = mat_nan
-  Globals.mat_a = mat_a
-  Globals.mat_n = mat_n
-  Globals.points = points
-  Globals.poradi = poradi
-  Globals.end_time = end_time
-  Globals.spix = spix
-  Globals.state_cell = state_cell
-  Globals.temp = temp
-  Globals.vpix = vpix
-  Globals.mfda = mfda
-  Globals.sr = sr
-  Globals.itera = itera 
-  Globals.toky = toky
-  Globals.cell_stream = cell_stream
-  Globals.mat_tok_usek = mat_tok_usek 
-  Globals.STREAM_RATIO = STREAM_RATIO
-  Globals.tokyLoc = tokyLoc
-  Globals.diffuse = comp_type('diffuse')
-  Globals.subflow = comp_type('subflow')
+  if partial_comp == 'roff' :
+    boundaryRows, boundaryCols, \
+    mat_boundary, rrows, rcols, outletCells, \
+    x_coordinate, y_coordinate,\
+    NoDataValue, array_points, \
+    cols, rows, combinatIndex, delta_t,  \
+    mat_pi, mat_ppl, \
+    surface_retention, mat_inf_index, mat_hcrit, mat_aa, mat_b, mat_reten,\
+    mat_fd, mat_dmt, mat_efect_vrst, mat_slope, mat_nan, \
+    mat_a,   \
+    mat_n,   \
+    output, pixel_area, points, poradi,  end_time, spix, state_cell, \
+    temp, type_of_computing, vpix, mfda, sr, itera, \
+    toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = get_indata(args)
+
+    Globals.pixel_area = pixel_area
+    Globals.r        = rows
+    Globals.c        = cols
+    Globals.rr    = rrows
+    Globals.rc    = rcols
+    Globals.br    = boundaryRows
+    Globals.bc    = boundaryCols
+    Globals.xllcorner = x_coordinate
+    Globals.yllcorner = y_coordinate
+    Globals.NoDataValue = NoDataValue
+    Globals.NoDataInt   = int(-9999)
+    Globals.dx = math.sqrt(pixel_area)
+    Globals.dy = Globals.dx
+    Globals.type_of_computing = type_of_computing
+    Globals.outdir = output
+    Globals.mat_boundary = mat_boundary
+    Globals.outletCells  = outletCells
+    Globals.array_points = array_points
+    Globals.combinatIndex = combinatIndex
+    Globals.mat_pi  = mat_pi
+    Globals.mat_ppl = mat_ppl
+    Globals.surface_retention = surface_retention
+    Globals.mat_inf_index = mat_inf_index
+    Globals.mat_hcrit = mat_hcrit
+    Globals.mat_aa = mat_aa
+    Globals.mat_b = mat_b
+    Globals.mat_reten = mat_reten
+    Globals.mat_fd = mat_fd
+    Globals.mat_dmt = mat_dmt
+    Globals.mat_efect_vrst = mat_efect_vrst
+    Globals.mat_slope = mat_slope
+    Globals.mat_nan = mat_nan
+    Globals.mat_a = mat_a
+    Globals.mat_n = mat_n
+    Globals.points = points
+    Globals.poradi = poradi
+    Globals.end_time = end_time
+    Globals.spix = spix
+    Globals.state_cell = state_cell
+    Globals.temp = temp
+    Globals.vpix = vpix
+    Globals.mfda = mfda
+    Globals.sr = sr
+    Globals.itera = itera 
+    Globals.toky = toky
+    Globals.cell_stream = cell_stream
+    Globals.mat_tok_usek = mat_tok_usek 
+    Globals.STREAM_RATIO = STREAM_RATIO
+    Globals.tokyLoc = tokyLoc
+    Globals.diffuse = comp_type('diffuse')
+    Globals.subflow = comp_type('subflow')
+    
+    return True
   
-  
-  
-  
-  
+  else:
+    stop = get_indata(args)
+    return stop
   
   
   

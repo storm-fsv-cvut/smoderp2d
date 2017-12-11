@@ -87,8 +87,7 @@ class Surface(Stream if stream == True else StreamPass,Kinematic,Globals,Size):
 
 
     self.rill_computing          = isRill
-    #self.shallowSurfaceKinematic = surface.shallowSurfaceKinematic
-    #self.rillCalculations        = rill.rillCalculations
+
     if (isRill) :
       prt.message("\tRill flow: \n\t\tON")
     else:
@@ -180,11 +179,20 @@ def __runoff_zero_compType(i,j,sur,dt,efect_vrst,ratio) :
   return q_sheet, v_sheet, q_rill, v_rill, ratio, 0.0
 
 
+
+
+
+
 def update_state1(ht_1,hcrit,state,rillWidth):
   if ht_1>hcrit :
     if state == 0:
       return 1
   return state
+
+
+
+
+
 
 
 def compute_h_hrill(h_total_pre,h_crit,state,rillWidth,hRillPre):
@@ -195,17 +203,21 @@ def compute_h_hrill(h_total_pre,h_crit,state,rillWidth,hRillPre):
     return h_sheet, h_rill, 0
 
   elif state == 1 :
-    h_sheet   = min(h_crit, h_total_pre)
+    h_sheet   = min(h_crit,              h_total_pre)
     h_rill    = max(h_total_pre - h_crit,0)
     hRillPre  = h_rill
     #print "%d, %.6e, %.6e" % (state, h_sheet, h_rill)
     return h_sheet, h_rill, hRillPre
 
   elif state == 2 :
-    h_rill    = min(hRillPre,h_total_pre)
-    h_sheet   = max(h_total_pre-hRillPre,0)
-    #print "%d, %.6e, %.6e, %.6e, %.6e" % (state, h_sheet, h_rill,h_total_pre, rillWidth*constants.RILL_RATIO)
-    #raw_input()
+    
+    if (h_total_pre>hRillPre) :
+      h_rill    = hRillPre
+      h_sheet   = h_total_pre-hRillPre
+    else :
+      h_rill    = h_total_pre
+      h_sheet   = 0
+    
     return h_sheet, h_rill, hRillPre
 
 
@@ -256,9 +268,21 @@ def rill_runoff(i,j,sur,dt,efect_vrst,ratio):
   #print '\t', h,b, b, 2*h
   v_rill = math.pow(R_rill,(2.0/3.0)) * 1./Gl.mat_n[i][j] * math.pow(Gl.mat_slope[i][j]/100,0.5)
   #print "V_to_rill, R_rill", V_to_rill, R_rill
-  q_rill = v_rill * constants.RILL_RATIO * b * b # [m3/s]
+  #q_rill = v_rill * constants.RILL_RATIO * b * b # [m3/s]
+  
+  q_rill = v_rill * h * b
+  
+  
   V      = q_rill*dt
+  
+  # puvodni podle rychlosti
   courant = (v_rill*dt)/efect_vrst
+  
+  # celerita 
+  #courant = (1 + s*b/(3*(b+2*h))) * q_rill/(b*h)
+  
+  
+  
   sur.V_to_rill = V_to_rill
   sur.rillWidth = b
   if (courant <= courantMax) :
@@ -273,6 +297,7 @@ def rill_runoff(i,j,sur,dt,efect_vrst,ratio):
 
   else:
     return q_rill, v_rill, ratio, courant
+
   return q_rill, v_rill, ratio, courant
 
 

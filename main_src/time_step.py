@@ -59,12 +59,17 @@ class TimeStep:
           subsurface.runoff(i,j,delta_t, mat_efect_vrst[i][j])
 
         q_surface = q_sheet+q_rill
-
+        #print v_sheet,v_rill
         v = max(v_sheet,v_rill)
         co='sheet'
         courant.CFL(i,j,surface.arr[i][j].h_total_pre,v,delta_t,mat_efect_vrst[i][j],co, rill_courant)
         rill_courant = 0.
-
+        
+        #w1 = surface.arr[i][j].V_runoff_rill
+        #w2 = surface.arr[i][j].V_rill_rest
+        #print surface.arr[i][j].h_total_pre
+        #if (w1 > 0 and w2 == 0) :
+          #print 'asdf', w1, w2
 
     return ratio, v_sheet, v_rill, rainfall, tz
 
