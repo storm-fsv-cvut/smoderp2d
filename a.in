@@ -1,0 +1,46 @@
+[GIS]
+dem: C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\1_rst\\ds_plocha
+soil: C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\2_vect\\plocha.shp 
+lu: C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\2_vect\\plocha.shp
+
+[shape atr]
+soil-atr: puda
+lu-atr: LU
+
+
+[srazka]
+file: indata/srazka.txt
+
+
+
+[time]
+#min
+maxdt: 20
+#min
+endtime: 20
+
+
+[Other]
+reten: 0.0
+points: C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\2_vect\\point2.shp
+outdir: out
+typecomp: shallowrillstreamsurface
+mfda: False
+soilvegtab : C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\3_tabs\\tabulkytab.dbf 
+soilvegcode : SOILVEG
+streamshp :  C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\2_vect\\toky.shp
+streamtab: C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\3_tabs\\tab_stream_tvar.txt
+streamtabcode: smoderp
+arcgis: False
+extraout: True
+indata: indata/nuc20-matret.save
+#indata/dp-maletau-matret.save
+partialcomp: roff
+debugprt: True
+printtimes: -
+
+
+
+# onlyshallowsurface
+# shallowandrillsurface
+# shallowrillstreamsurface
