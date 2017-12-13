@@ -32,22 +32,29 @@
 
 
 
-import sys
-import os
+import platform
 
 
 
 
 if __name__ == "__main__":
   
-  
   # init class contains global variables
-  from main_src.main_classes.General import init
+  if platform.system() == "Linux" :
+    from main_src.main_classes.General import initLinux
+    init = initLinux
+  elif platform.system() == "Windows" :
+    from main_src.main_classes.General import initWin
+    init = initWin
+  else :
+    from main_src.main_classes.General import initNone
+    init = initNone
   
-  # in case of dpre type of computation 
-  # false is returnde and no model is run
+  
+  # returns false for dpre type of computation
+  # or unsaported platform
   run = init()
-
+  
   
   if ((run)) :
     # runoff.run() starts the computation
@@ -56,17 +63,3 @@ if __name__ == "__main__":
     
     runoff.run()
     
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-

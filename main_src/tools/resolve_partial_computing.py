@@ -18,14 +18,12 @@ from    main_src.tools.tools                  import logical_argv
 
 
 
-def get_indata (args):
+def get_indata (tc,args):
   
 
-    
-  
   # full computation
   #      data_preparation + runoff model
-  if args.typecomp == 'full':
+  if tc == 'full':
     from main_src.data_preparation import prepare_data
 
 
@@ -37,7 +35,7 @@ def get_indata (args):
 
   # only data_preparation
   #      data are saved in dump, can be stored and loaded later on
-  elif args.typecomp == 'dpre':
+  elif tc == 'dpre':
 
     
 
@@ -94,7 +92,7 @@ def get_indata (args):
   # only runoff model
   #       data can be restored from previously prepared *.save file
   #       
-  elif args.typecomp == 'roff':
+  elif tc == 'roff':
 
     
     
@@ -109,15 +107,9 @@ def get_indata (args):
     else:
       
       import ConfigParser
-      
-      
-
-      
-      
       Config = ConfigParser.ConfigParser()
       Config.read(args.indata)
       sys.argv = [sys.argv.pop(0)]
-      #print sys.argv
       sys.argv.append(Config.get('GIS','dem'))
       sys.argv.append(Config.get('GIS','soil'))
       sys.argv.append(Config.get('shape atr','soil-atr'))
