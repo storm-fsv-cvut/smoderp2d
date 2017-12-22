@@ -95,9 +95,8 @@ def get_indata (tc,args):
   elif tc == 'roff':
 
     
-    
     # to je to je jen provizorne, pokud to bude petr delat tak jo doposud 
-    if len(sys.argv) > 7 :
+    if len(sys.argv) > 10 :
       logical_argv(constants.PARAMETER_ARCGIS)
       logical_argv(constants.PARAMETER_EXTRA_OUTPUT)
       logical_argv(constants.PARAMETER_MFDA)
@@ -118,22 +117,25 @@ def get_indata (tc,args):
       sys.argv.append(Config.get('srazka','file'))
       sys.argv.append(Config.get('time','maxdt'))
       sys.argv.append(Config.get('time','endtime'))
-      sys.argv.append(Config.get('Other','reten'))
+      #sys.argv.append(Config.get('Other','reten'))
       sys.argv.append(Config.get('Other','points'))
       sys.argv.append(Config.get('Other','outdir'))
-      sys.argv.append(Config.get('Other','typecomp'))
-      sys.argv.append(Config.get('Other','mfda'))
       sys.argv.append(Config.get('Other','soilvegtab'))
       sys.argv.append(Config.get('Other','soilvegcode'))
       sys.argv.append(Config.get('Other','streamshp'))
       sys.argv.append(Config.get('Other','streamtab'))
       sys.argv.append(Config.get('Other','streamtabcode'))
       sys.argv.append(Config.get('Other','arcgis'))
+      
+      
+      sys.argv.append(Config.get('Other','mfda'))
       sys.argv.append(Config.get('Other','extraout'))
       sys.argv.append(Config.get('Other','indata'))
       sys.argv.append(Config.get('Other','partialcomp'))
       sys.argv.append(Config.get('Other','debugprt'))
       sys.argv.append(Config.get('Other','printtimes'))
+      sys.argv.append(Config.get('Other','typecomp'))
+      
       
       logical_argv(constants.PARAMETER_ARCGIS)
       logical_argv(constants.PARAMETER_EXTRA_OUTPUT)

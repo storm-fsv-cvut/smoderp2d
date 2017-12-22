@@ -220,7 +220,7 @@ class Outlet:
 #  @return \b state_cell    array contains initial state of the cells  \e numpy[][]
 #  @return \b temp   temporary files folder path \e string
 #  @return \b type_of_computing   type of computing  \e string
-#  @return \b mfda   set multi flow direction algorithm if true, default is D8 direction algorithm
+#  @return \b mfda  set multi flow direction algorithm if true, default is D8 direction algorithm
 #  @return \b sr  contains the rainfall data [][]
 #  @return \b itera   amount of the rainfall intervals
 
@@ -899,7 +899,9 @@ def prepare_data(args):
 
 
   #@jj z runoff jsem to predal a rainfall_file_path
-  mfda = arcpy.GetParameterAsText(constants.PARAMETER_MFDA)
+  # dokud neni mfda pripraven je toto zakomentovane
+  # mfda = arcpy.GetParameterAsText(constants.PARAMETER_MFDA)
+  mfda   = False
   rainfall_file_path = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_RAINFALL_FILE)
   sr,itera  = rainfall.load_precipitation(rainfall_file_path)
 

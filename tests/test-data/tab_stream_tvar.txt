@@ -1,0 +1,6 @@
+cislo	smoderp	tvar	b	m	drsnost	Q365	pozn
+0	0	0	0.1	1.0	0.031	0.0	default
+1	1	0	0.2	1.0	0.032	0.0
+2	2	0	0.5	2.0	0.033	0.0
+3	3	0	0.5	2.0	0.034	0.0
+4	4	0	0.7	0.0	0.03	0.0	b..sirkahladina

@@ -178,7 +178,10 @@ def initLinux():
     output, pixel_area, points, poradi,  end_time, spix, state_cell, \
     temp, type_of_computing, vpix, mfda, sr, itera, \
     toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = get_indata(partial_comp,args)
-
+    
+    
+    
+    
 
     Globals.pixel_area = pixel_area
     Globals.r        = rows
@@ -249,12 +252,12 @@ def initLinux():
 #
 def initWin():
 
-
-  sys.argv.append('false')
-  sys.argv.append('outdata.save')
-  sys.argv.append('full')
-  sys.argv.append(False)
-  sys.argv.append('-')
+  sys.argv.append('#')          #  mfda
+  sys.argv.append('false')          #  extra output
+  sys.argv.append('outdata.save')   #  in data
+  sys.argv.append('full')           #  castence nee v arcgis
+  sys.argv.append(False)            #  debug print
+  sys.argv.append('-')              # print times
   partial_comp = get_argv(constants.PARAMETER_PARTIAL_COMPUTING)
 
 
