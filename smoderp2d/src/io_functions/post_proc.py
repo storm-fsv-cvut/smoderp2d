@@ -50,13 +50,12 @@ if arcgis == True :
         cumulative.shear_sur[i][j] = cumulative.h_sur[i][j] * 98.07 *  mat_slope[i][j]
   
   
-    main_output = [3,4,5,6,7,12,13]  #jj vyznam najdes v class Cumulative mezi class Cumulative a def__init__
-    if isRill : 
-      main_output += [8,9,10,11]
+    main_output = [1,2,3,5,6,7,10,15]  #jj vyznam najdes v class Cumulative mezi class Cumulative a def__init__
+    
     if subflow :
       main_output += [14,15,16,17,18]
     if extraOutput == True :    #jj tady jen pokud chceme se i ten zbytek extraOutput je zatim definovan  na zacatku class_main_arrays
-      main_output += [1,2]
+      main_output += [4,8,9,11,12,13,14]
     
     ll_corner = arcpy.Point(G.xllcorner, G.yllcorner)
     
@@ -72,13 +71,33 @@ if arcgis == True :
       saveAG.save(cumulative.names[i])
 
     
-    
     vRest     = np.zeros(np.shape(surArr),float)
     finState  = np.zeros(np.shape(surArr),int)
     hCrit     = np.zeros(np.shape(surArr),float)    
     
     #                  (   IN                                  ) - (  OUT          )  - ( What rests in the end)
     totalBil = (cumulative.precipitation + cumulative.inflow_sur) - (cumulative.infiltration + cumulative.V_sur) - (vRest) - cumulative.sur_ret
+    
+    outName = 'massBalance'
+    tmparr = np.copy(totalBil)
+    tmparr.fill(G.NoDataValue)
+    for ii in rrows:
+      for jj in rcols[ii]:
+        if (totalBil[ii][jj]>=1000):
+          tmparr[ii][jj] = G.NoDataValue
+        else:
+          tmparr[ii][jj] = totalBil[ii][jj]
+    saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, G.dx, G.dy, G.NoDataValue)
+    saveAG.save(outName)
+    
+    
+    
+    # pokud nechci extra output opoustim funkci tu
+    if not(extraOutput) :
+      return 1
+    
+    
+    
     
     
     outName = 'VRestEndL'
@@ -94,17 +113,6 @@ if arcgis == True :
 
       
     
-    outName = 'TotalBil'
-    tmparr = np.copy(totalBil)
-    tmparr.fill(G.NoDataValue)
-    for ii in rrows:
-      for jj in rcols[ii]:
-        if (totalBil[ii][jj]>=1000):
-          tmparr[ii][jj] = G.NoDataValue
-        else:
-          tmparr[ii][jj] = totalBil[ii][jj]
-    saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, G.dx, G.dy, G.NoDataValue)
-    saveAG.save(outName)
 
 
 
@@ -146,13 +154,13 @@ else:
         cumulative.shear_sur[i][j] = cumulative.h_sur[i][j] * 98.07 *  mat_slope[i][j]
   
     
-    main_output = [3,4,5,6,7,12,13,14]  #jj vyznam najdes v class Cumulative mezi class Cumulative a def__init__
-    if isRill : 
-      main_output += [8,9,10,11]
+    main_output = [1,2,3,5,6,7,10,15]  #jj vyznam najdes v class Cumulative mezi class Cumulative a def__init__
+    
     if subflow :
       main_output += [14,15,16,17,18]
     if extraOutput == True :    #jj tady jen pokud chceme se i ten zbytek extraOutput je zatim definovan  na zacatku class_main_arrays
-      main_output += [1,2]
+      main_output += [4,8,9,11,12,13,14]
+      
       
     
     finState  = np.zeros(np.shape(surArr),int)
@@ -177,6 +185,9 @@ else:
           if (finState[i][j] >= 1000) :
             wrk[i][j] = G.NoDataValue
       tools.make_ASC_raster(outName,wrk,G)
+    
+    
+    
     
     
     #outName = output+os.sep+'VRestEndL'+".asc" 
@@ -209,13 +220,19 @@ else:
           Stream[i][j]   = finState[i][j]
           hCrit[i][j]    = G.NoDataValue
       
+    outName = output+os.sep+'massBalance'+".asc" 
+    tools.make_ASC_raster(outName,totalBil,G)
+    
+    
+    # pokud nechci extra output opoustim funkci tu
+    if not(extraOutput) :
+      return 1
+    
       
     outName = output+os.sep+'Stream'+".asc" 
     tools.make_ASC_raster(outName,Stream,G)
     
     
-    outName = output+os.sep+'TotalBil'+".asc" 
-    tools.make_ASC_raster(outName,totalBil,G)
     
     
     
@@ -253,16 +270,17 @@ if stream and arcgis:
     outFileShp = outDir + 'stream.shp'
     outTemp  = outDir #+ 'temp' + os.sep
     with open(outFile, 'w') as f:
-      line = 'FID'+sep+'V_out_cum [L^3]'+sep+'Q_max [L^3.t^{-1}]'+sep+'timeQ_max[s]'+sep+'h_max [L]'+sep+'timeh_max[s]'+sep+'Cumulatice_inflow_from_field[L^3]' + sep+ 'Left_after_last_time_step[L^3]'   + sep+ 'Out_form_domain[L^3]'+sep+'to_reach'+'\n'
+      line = 'FID'+sep+'cVolM3'+sep+'mFlowM3_S'+sep+'mFlowTimeS'+sep+'mWatLM'+sep+'restVolM3' + sep + 'toFID'+'\n'
+      #line = 'FID'+sep+'V_out_cum [L^3]'+sep+'Q_max [L^3.t^{-1}]'+sep+'timeQ_max[s]'+sep+'h_max [L]'+sep+'timeh_max[s]'+sep+'Cumulatice_inflow_from_field[L^3]' + sep+ 'Left_after_last_time_step[L^3]'   + sep+ 'Out_form_domain[L^3]'+sep+'to_reach'+'\n'
       f.write(line)
       for iReach in range(nReaches):
         line = \
           str(surface.reach[iReach].id_) +sep+  \
             str(surface.reach[iReach].V_out_cum) +sep+   \
-              str(surface.reach[iReach].Q_max) +sep+ str(surface.reach[iReach].timeQ_max)  +sep+ str(surface.reach[iReach].h_max) +sep+str(surface.reach[iReach].timeh_max) +sep+\
-                str(surface.reach[iReach].V_in_from_field_cum) +sep+ str(surface.reach[iReach].V_rest) +sep+ \
-                str(surface.reach[iReach].V_out_domain) +sep+ str(surface.reach[iReach].to_node)\
-                + '\n'
+              str(surface.reach[iReach].Q_max) +sep+ str(surface.reach[iReach].timeQ_max)  +sep+ str(surface.reach[iReach].h_max) +sep+ \
+                str(surface.reach[iReach].V_rest) +sep+ \
+                  str(surface.reach[iReach].to_node) + '\n'
+
         f.write(line)
   
     arcpy.MakeFeatureLayer_management(toky,outTemp+"streamtmp.shp")
@@ -283,16 +301,17 @@ elif stream and not(arcgis):
     nReaches = surface.nReaches
     outFile = outDir + 'stream.txt'
     with open(outFile, 'w') as f:
-      line = '# FID'+sep+'V_out_cum [L^3]'+sep+'Q_max [L^3.t^{-1}]'+sep+'timeQ_max[s]'+sep+'h_max [L]'+sep+'timeh_max[s]'+sep+'Cumulatice_inflow_from_field[L^3]' + sep+ 'Left_after_last_time_step[L^3]'   + sep+ 'Out_form_domain[L^3]'+sep+'to_reach'+'\n'
+      line = 'FID'+sep+'cVolM3'+sep+'mFlowM3_S'+sep+'mFlowTimeS'+sep+'mWatLM'+sep+'restVolM3' + sep + 'toFID'+'\n'
+      #line = 'FID'+sep+'V_out_cum [L^3]'+sep+'Q_max [L^3.t^{-1}]'+sep+'timeQ_max[s]'+sep+'h_max [L]'+sep+'timeh_max[s]'+sep+'Cumulatice_inflow_from_field[L^3]' + sep+ 'Left_after_last_time_step[L^3]'   + sep+ 'Out_form_domain[L^3]'+sep+'to_reach'+'\n'
       f.write(line)
       for iReach in range(nReaches):
         line = \
           str(surface.reach[iReach].id_) +sep+  \
             str(surface.reach[iReach].V_out_cum) +sep+   \
-              str(surface.reach[iReach].Q_max) +sep+ str(surface.reach[iReach].timeQ_max)  +sep+ str(surface.reach[iReach].h_max) +sep+str(surface.reach[iReach].timeh_max) +sep+\
-                str(surface.reach[iReach].V_in_from_field_cum) +sep+ str(surface.reach[iReach].V_rest) +sep+ \
-                str(surface.reach[iReach].V_out_domain) +sep+ str(surface.reach[iReach].to_node)\
-                + '\n'
+              str(surface.reach[iReach].Q_max) +sep+ str(surface.reach[iReach].timeQ_max)  +sep+ str(surface.reach[iReach].h_max) +sep+ \
+                str(surface.reach[iReach].V_rest) +sep+ \
+                  str(surface.reach[iReach].to_node) + '\n'
+
         f.write(line)
         
   stream_table = write_stream_table

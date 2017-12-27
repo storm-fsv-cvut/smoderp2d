@@ -98,18 +98,27 @@ class Surface(Stream if stream == True else StreamPass,Kinematic,Globals,Size):
     super(Surface, self).__init__()
 
 
-  def return_str_vals(self,i,j,sep,dt):
+
+
+  
+  def return_str_vals(self,i,j,sep,dt,extraOut):
 
     arr = self.arr[i][j]
 
     #Water_level_[m];Flow_[m3/s];V_runoff[m3];V_rest[m3];Infiltration[];surface_retention[l]
-    line = str(arr.h_sheet) + sep + str(arr.V_runoff/dt) + sep + str(arr.V_runoff) + sep + str(arr.V_rest) + sep + str(arr.infiltration)+ sep + str(arr.cur_sur_ret)+ sep + str(arr.state) + sep + str(arr.inflow_tm) + sep + str(arr.h_total_new)
+    
+    
+    if not(extraOut) :
+      line = str(arr.h_total_new) + sep + str(arr.V_runoff/dt + arr.V_runoff_rill/dt) + sep + str(arr.V_runoff+arr.V_runoff_rill)
+      bil_ = ''
+    else :
+      line = str(arr.h_sheet) + sep + str(arr.V_runoff/dt) + sep + str(arr.V_runoff) + sep + str(arr.V_rest) + sep + str(arr.infiltration)+ sep + str(arr.cur_sur_ret)+ sep + str(arr.state) + sep + str(arr.inflow_tm) + sep + str(arr.h_total_new)
 
-    if self.rill_computing :
+      if self.rill_computing :
 
-      line += sep + str(arr.h_rill) + sep + str(arr.rillWidth) + sep + str(arr.V_runoff_rill/dt) + sep + str(arr.V_runoff_rill) + sep + str(arr.V_rill_rest) + sep + str(arr.V_runoff/dt + arr.V_runoff_rill/dt) + sep + str(arr.V_runoff+arr.V_runoff_rill)
+        line += sep + str(arr.h_rill) + sep + str(arr.rillWidth) + sep + str(arr.V_runoff_rill/dt) + sep + str(arr.V_runoff_rill) + sep + str(arr.V_rill_rest) + sep + str(arr.V_runoff/dt + arr.V_runoff_rill/dt) + sep + str(arr.V_runoff+arr.V_runoff_rill)
 
-    bil_  = arr.h_total_pre*self.pixel_area + arr.cur_rain*self.pixel_area + arr.inflow_tm - (arr.V_runoff + arr.V_runoff_rill + arr.infiltration*self.pixel_area) - (arr.cur_sur_ret*self.pixel_area) - arr.h_total_new*self.pixel_area #<< + arr.V_rest + arr.V_rill_rest) + (arr.V_rest_pre + arr.V_rill_rest_pre)
+      bil_  = arr.h_total_pre*self.pixel_area + arr.cur_rain*self.pixel_area + arr.inflow_tm - (arr.V_runoff + arr.V_runoff_rill + arr.infiltration*self.pixel_area) - (arr.cur_sur_ret*self.pixel_area) - arr.h_total_new*self.pixel_area #<< + arr.V_rest + arr.V_rill_rest) + (arr.V_rest_pre + arr.V_rill_rest_pre)
 
     return line, bil_
 

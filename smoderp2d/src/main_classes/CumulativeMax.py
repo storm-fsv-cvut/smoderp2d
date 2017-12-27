@@ -48,19 +48,19 @@ class CumulativeSubsurface(object):
 
 
     
-    self.arrs[14] = 'exfiltration'
-    self.arrs[15] = 'percolation'
-    self.arrs[16] = 'h_sub'
-    self.arrs[17] = 'q_sub'
-    self.arrs[18] = 'V_sub'
+    self.arrs[15] = 'exfiltration'
+    self.arrs[16] = 'percolation'
+    self.arrs[17] = 'h_sub'
+    self.arrs[18] = 'q_sub'
+    self.arrs[19] = 'V_sub'
 
 
 
-    self.names[14] = 'CumExfiltrL3'
-    self.names[15] = 'CumPercolL3'
-    self.names[16] = 'MaxWaterSubL'
-    self.names[17] = 'MaxQSubL3t_1'
-    self.names[18] = 'CumVOutSubL3'
+    self.names[15] = 'CumExfiltrL3'
+    self.names[16] = 'CumPercolL3'
+    self.names[17] = 'MaxWaterSubL'
+    self.names[18] = 'MaxQSubL3t_1'
+    self.names[19] = 'CumVOutSubL3'
 
 
 
@@ -164,7 +164,8 @@ class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfa
             11 : 'b_rill',
             12 : 'inflow_sur',
             13 : 'sur_ret',
-            14 : 'V_sur_r'
+            14 : 'V_sur_r',
+            15 : 'V_sur_tot'
             }
 
             #12 : 'v_rill',
@@ -174,20 +175,21 @@ class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfa
     #  
     #  self.names is used in the smoderp2d.src.io_functions.post_proc
     #  
-    self.names = {1  : 'CumInfiltL',
-            2  : 'CumRainL',
-            3  : 'MaxWateL',
+    self.names = {1  : 'cinfiltrationM',
+            2  : 'cRainfallM',
+            3  : 'cVolInM3',
             4  : 'MaxQL3t_1',
-            5  : 'CumVOutL3',
-            6  : 'MaxVelovity',
-            7  : 'ShearStress',
+            5  : 'cSheetVolOutM3',
+            6  : 'mVelovityM_S',
+            7  : 'mShearStressPa',
             8  : 'MaxWaterRillL',
             9  : 'MaxQRillL3t_1',
-            10 : 'CumVOutRillL3',
+            10 : 'cRillVolOutL3',
             11 : 'AreaRill',
             12 : 'CumVInL3',
             13 : 'SurRet',
-            14 : 'CumVRestL3'
+            14 : 'CumVRestL3',
+            15 : 'mSurfaceFlowM3_S'
             }
             #12 : 'MaxVeloRill',
 
@@ -234,6 +236,8 @@ class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfa
     self.v_rill =  np.zeros([r,c],float)
     ## maximum surface retention [m]
     self.sur_ret=  np.zeros([r,c],float)
+    ## maximal total surface flow [m3/s]
+    self.V_sur_tot=  np.zeros([r,c],float)
 
     
     super(Cumulative, self).__init__()
@@ -257,7 +261,10 @@ class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfa
 
     q_sheet = surface.V_runoff/delta_t
     q_rill  = surface.V_runoff_rill/delta_t
-
+    q_tot   = q_sheet + q_rill
+    if q_tot > self.V_sur_tot[i][j] :
+      self.V_sur_tot[i][j] = q_tot
+    
     if surface.state == 0:
       if surface.h_total_new > self.h_sur[i][j]:
         self.h_sur[i][j] = surface.h_total_new

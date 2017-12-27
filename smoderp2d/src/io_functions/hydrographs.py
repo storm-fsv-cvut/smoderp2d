@@ -105,27 +105,41 @@ class Hydrographs:
         header = '# Hydrograph at the point with coordinates: '+ str(self.point_int[i][3]) + ' ' + str(self.point_int[i][4]) + '\n'
         header +=  '# A pixel size is [m2]:\n' 
         header +=  '# '+str(self.pixel_area) + '\n' 
-        header += '# Time[s];deltaTime[s];Rainfall[m];Waterlevel[m];V_runoff[m3];Q[m3/s];V_from_field[m3];V_rests_in_stream[m3]\n'
+        
+        if not(extraout) :
+          header  += '# time[s];deltaTime[s];rainfall[m];reachWaterLevel[m];reachFlow[m3/s];reachVolRunoff[m3]'
+        else : 
+          header += '# Time[s];deltaTime[s];Rainfall[m];Waterlevel[m];V_runoff[m3];Q[m3/s];V_from_field[m3];V_rests_in_stream[m3]\n'
         self.header.append(header)
         iStream += 1
+        
+        
       elif i == self.inSurface[iSurface]:
         header = '# Hydrograph at the point with coordinates: '+ str(self.point_int[i][3]) + ' ' + str(self.point_int[i][4]) + '\n'
         header +=  '# A pixel size is [m2]:\n' 
         header +=  '# '+str(self.pixel_area) + '\n' 
-        header += '# Time[s];deltaTime[s];Rainfall[m];Water_level_[m];Sheet_Flow[m3/s];Sheet_V_runoff[m3];Sheet_V_rest[m3];Infiltration[m];Surface_retetion[m];State;V_inflow[m3];WlevelTotal[m]'
-        iSurface += 1
-        if rill :
-          header += ';WlevelRill[m];Rill_width[m];Rill_flow[m3/s];Rill_V_runoff[m3];Rill_V_rest;Surface_Flow[m3/s];Surface_V_runoff[m3]'
-        header += ';SurfaceBil[m3]'
-        if subflow :
-          header += ';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[];exfiltration[]'
-        if extraout :
-          header += ';V_to_rill.m3.;ratio;courant;courantrill;iter'
+        
+        
+        if not(extraout) :
+          header  += '# time[s];deltaTime[s];rainfall[m];totalWaterLevel[m];surfaceFlow[m3/s];surfaceVolRunoff[m3]'
+        else : 
+          header += '# Time[s];deltaTime[s];Rainfall[m];Water_level_[m];Sheet_Flow[m3/s];Sheet_V_runoff[m3];Sheet_V_rest[m3];Infiltration[m];Surface_retetion[m];State;V_inflow[m3];WlevelTotal[m]'
+          iSurface += 1
+          if rill :
+            header += ';WlevelRill[m];Rill_width[m];Rill_flow[m3/s];Rill_V_runoff[m3];Rill_V_rest;Surface_Flow[m3/s];Surface_V_runoff[m3]'
+          header += ';SurfaceBil[m3]'
+          if subflow :
+            header += ';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[];exfiltration[]'
+          if extraout :
+            header += ';V_to_rill.m3.;ratio;courant;courantrill;iter'
+          
         header += '\n'
+        iSurface += 1
         self.header.append(header)
 
 
-    
+
+
     self.files = []
     for i in range(self.n):
       name_ = outdirr+os.sep+'point'+str(self.point_int[i][0]).zfill(3)+'.dat'
@@ -133,13 +147,6 @@ class Hydrographs:
       file_.writelines(self.header[i])
       self.files.append(file_)
     
-    
-    #header = '# Hydrograph at the point with coordinates: '+ str(self.point_int[i][3]) + ' ' + str(self.point_int[i][4]) + '\n'
-    #header +=  '# A pixel size is [m2]:\n' 
-    #header +=  '# '+str(pixel_area) + '\n' 
-    #header += '# Time[s];deltaTime[s];Rainfall[m];Waterlevel[m];V_runoff[m3];Q[m3/s];V_from_field[m3];V_rests_in_stream[m3]\n'
-    #self.tokusek =   open(outdirr+os.sep+'point'+'usek'+'.dat','w')
-    #self.tokusek.writelines(header)
     
     
     del self.inStream[-1]
@@ -158,9 +165,16 @@ class Hydrographs:
         line = str(total_time) + sep
         line += str(dt) + sep
         line += str(currRain) + sep
-        line += surface.return_stream_str_vals(l,m,sep,dt)
+        line += surface.return_stream_str_vals(l,m,sep,dt,extraout)
         line += '\n'
         self.files[ip].writelines(line)
+        
+        
+        
+        
+        
+        
+        
     else:
       for ip in self.inSurface:
         l = self.point_int[ip][1]
@@ -169,13 +183,10 @@ class Hydrographs:
           line = str(total_time) + sep
           line += str(dt) + sep
           line += str(currRain) + sep
-          linebil = surface.return_str_vals(l,m,sep,dt)
-          line += linebil[0] + sep
-          #print currRain*self.pixel_area
-          #raw_input()
-          
+          linebil = surface.return_str_vals(l,m,sep,dt,extraout)
+          line += linebil[0] # + sep
           line += str(linebil[1]) # + sep
-          line += subsurface.return_str_vals(l,m,sep,dt) + sep
+          #line += subsurface.return_str_vals(l,m,sep,dt) + sep   # prozatim
           if extraout :
             line += str(surface.arr[l][m].V_to_rill) + sep
             line += str(ratio) + sep

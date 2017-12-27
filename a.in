@@ -32,7 +32,7 @@ streamshp :  C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\2_vect\\toky.shp
 streamtab: C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\3_tabs\\tab_stream_tvar.txt
 streamtabcode: smoderp
 arcgis: False
-extraout: True
+extraout: False
 indata: indata/nuc20-matret.save
 #indata/dp-maletau-matret.save
 partialcomp: roff

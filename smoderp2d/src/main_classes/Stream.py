@@ -152,12 +152,15 @@ class Stream(object):
         self.reach[id_].timeh_max        = time
         
         
-  def return_stream_str_vals(self,i,j,sep,dt):
+  def return_stream_str_vals(self,i,j,sep,dt,extraOut):
     id_ = int(self.arr[i][j].state-1000)
     # Time;   V_runoff  ;   Q   ;    V_from_field  ;  V_rests_in_stream
     # print id_
-    line = str(self.reach[id_].h) +sep+str(self.reach[id_].V_out) +sep+ str(self.reach[id_].Q_out) + sep + \
-      str(self.reach[id_].V_in_from_field) + sep + str(self.reach[id_].V_rest)
+    if not(extraOut) :
+      line = str(self.reach[id_].h)  +sep+ str(self.reach[id_].Q_out) +sep+str(self.reach[id_].V_out)
+    else :
+      line = str(self.reach[id_].h) +sep+str(self.reach[id_].V_out) +sep+ str(self.reach[id_].Q_out) + sep + \
+        str(self.reach[id_].V_in_from_field) + sep + str(self.reach[id_].V_rest)
     return line
 
 
