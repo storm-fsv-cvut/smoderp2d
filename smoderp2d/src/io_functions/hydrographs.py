@@ -65,7 +65,7 @@ class Hydrographs:
 
     
    
-   
+    
    
     counter = 0
     if (mat_tok_usek != None) and (stream == True):
@@ -102,12 +102,13 @@ class Hydrographs:
     for i in range(self.n):
 
       if i == self.inStream[iStream]:
+
         header = '# Hydrograph at the point with coordinates: '+ str(self.point_int[i][3]) + ' ' + str(self.point_int[i][4]) + '\n'
         header +=  '# A pixel size is [m2]:\n' 
         header +=  '# '+str(self.pixel_area) + '\n' 
         
         if not(extraout) :
-          header  += '# time[s];deltaTime[s];rainfall[m];reachWaterLevel[m];reachFlow[m3/s];reachVolRunoff[m3]'
+          header  += '# time[s];deltaTime[s];rainfall[m];reachWaterLevel[m];reachFlow[m3/s];reachVolRunoff[m3]\n'
         else : 
           header += '# Time[s];deltaTime[s];Rainfall[m];Waterlevel[m];V_runoff[m3];Q[m3/s];V_from_field[m3];V_rests_in_stream[m3]\n'
         self.header.append(header)
@@ -124,7 +125,7 @@ class Hydrographs:
           header  += '# time[s];deltaTime[s];rainfall[m];totalWaterLevel[m];surfaceFlow[m3/s];surfaceVolRunoff[m3]'
         else : 
           header += '# Time[s];deltaTime[s];Rainfall[m];Water_level_[m];Sheet_Flow[m3/s];Sheet_V_runoff[m3];Sheet_V_rest[m3];Infiltration[m];Surface_retetion[m];State;V_inflow[m3];WlevelTotal[m]'
-          iSurface += 1
+
           if rill :
             header += ';WlevelRill[m];Rill_width[m];Rill_flow[m3/s];Rill_V_runoff[m3];Rill_V_rest;Surface_Flow[m3/s];Surface_V_runoff[m3]'
           header += ';SurfaceBil[m3]'

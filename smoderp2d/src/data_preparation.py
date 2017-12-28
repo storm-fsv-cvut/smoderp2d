@@ -395,7 +395,7 @@ def prepare_data(args):
   #mask and clip data
   arcpy.AddMessage("Clip of the source data by intersect")
   grup = [soil_boundary, veg_boundary, null_shp]
-  intersect = temp+os.sep+"prunik.shp"
+  intersect = output+os.sep+"interSoilLU.shp"
   arcpy.Intersect_analysis(grup, intersect, "ALL", "", "INPUT")
 
 

@@ -266,8 +266,8 @@ if stream and arcgis:
   def write_stream_table(outDir, surface,toky):
     sep = ';'
     nReaches = surface.nReaches
-    outFile = outDir + 'stream.txt'
-    outFileShp = outDir + 'stream.shp'
+    outFile = outDir + 'hydReach.txt'
+    outFileShp = outDir + 'hydReach.shp'
     outTemp  = outDir #+ 'temp' + os.sep
     with open(outFile, 'w') as f:
       line = 'FID'+sep+'cVolM3'+sep+'mFlowM3_S'+sep+'mFlowTimeS'+sep+'mWatLM'+sep+'restVolM3' + sep + 'toFID'+'\n'
@@ -299,7 +299,7 @@ elif stream and not(arcgis):
   def write_stream_table(outDir, surface,toky):
     sep = ';'
     nReaches = surface.nReaches
-    outFile = outDir + 'stream.txt'
+    outFile = outDir + 'hydReach.txt'
     with open(outFile, 'w') as f:
       line = 'FID'+sep+'cVolM3'+sep+'mFlowM3_S'+sep+'mFlowTimeS'+sep+'mWatLM'+sep+'restVolM3' + sep + 'toFID'+'\n'
       #line = 'FID'+sep+'V_out_cum [L^3]'+sep+'Q_max [L^3.t^{-1}]'+sep+'timeQ_max[s]'+sep+'h_max [L]'+sep+'timeh_max[s]'+sep+'Cumulatice_inflow_from_field[L^3]' + sep+ 'Left_after_last_time_step[L^3]'   + sep+ 'Out_form_domain[L^3]'+sep+'to_reach'+'\n'

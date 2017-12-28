@@ -52,9 +52,7 @@ class Reach():
     self.V_out_domain = 0.0
     
     
-    TVAR =  2
-    self.m = 5
-    
+
     if TVAR == 1 :    #obdelnik
       self.outflow_method = stream_f.rectangle
     elif TVAR == 0 :  #trapezoid

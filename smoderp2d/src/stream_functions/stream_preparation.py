@@ -28,6 +28,33 @@ import math
 import smoderp2d.src.io_functions.prt as prt
 
 
+
+# definice erroru  na urovni modulu 
+# 
+class Error(Exception):
+    """Base class for exceptions in this module."""
+    pass
+
+class ZeroSlopeError(Error):
+    """Exception raised for zero slope of a reach.
+
+    Attributes:
+        msg  -- explanation of the error
+    """
+
+    def __init__(self,fid):
+        self.msg = 'Reach FID:' + str(fid) + ' has zero slope.'
+    def __str__(self):
+        return repr(self.msg)
+      
+      
+
+
+
+
+
+
+
 def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
                     mat_nan, mat_fd, vpix,
                     spix, rows, cols, ll_corner,
@@ -270,6 +297,8 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
   with arcpy.da.UpdateCursor(fc, field) as cursor:
           for row in cursor:
               sklon_koryta =(row[1]-row[2])/row[4]
+              if sklon_koryta == 0 :
+                  raise ZeroSlopeError(row(0))
               row[3] = sklon_koryta
               cursor.updateRow (row)
               row[5] = row[4]

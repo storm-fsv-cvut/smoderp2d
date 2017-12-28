@@ -142,7 +142,10 @@ class Runoff():
 
     hydrographs.write_hydrographs_record(i,j,ratio,0.0,0.0,0,delta_t,total_time,surface,subsurface,0.0,True)
 
-
+    
+    
+    
+    prt.message('Start of computing ...')
     while ( total_time < Gl.end_time ):
 
         #time_step.save(surface.arr,subsurface.arr)

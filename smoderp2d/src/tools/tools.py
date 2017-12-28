@@ -152,15 +152,18 @@ def comp_type(co_=""):
   elif string_type_of_coputing == "surfaceandsubsurfacestreamflow":
       type_of_computing = 5
   """
-  type_of_computing = get_argv(constants.PARAMETER_TYPE_COMPUTING)
+  type_of_computing = int(get_argv(constants.PARAMETER_TYPE_COMPUTING))
 
   diffuse = False
   subflow = False
   stream  = False
   rill    = False
   only_surface = False
-
-
+  
+  
+  
+  
+  
   if type_of_computing == 1:
     rill = True
 
@@ -183,7 +186,12 @@ def comp_type(co_=""):
   if (co_ == "stream")  : return stream
   if (co_ == "diffuse") : return diffuse
   if (co_ == "surface") : return only_surface
-
+  
+  
+  
+  
+  
+  
   return rill, subflow, stream, diffuse
 
 

@@ -24,7 +24,7 @@ endtime: 20
 reten: 0.0
 points: C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\2_vect\\point2.shp
 outdir: out
-typecomp: shallowrillstreamsurface
+typecomp: 3
 mfda: False
 soilvegtab : C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\3_tabs\\tabulkytab.dbf 
 soilvegcode : SOILVEG

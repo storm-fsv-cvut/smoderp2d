@@ -31,9 +31,9 @@ def main():
         'test-out',
         'test-data\\tabulkytab_maleTau.dbf',
         'SOILVEG',
-        '#',
-        '#',
-        '#',
+        'test-data\\toky2.shp',
+        'test-data\\tab_stream_tvar.txt',
+        'smoderp',
         'false']
       print 'initiating computation ...'
       sm.run()
