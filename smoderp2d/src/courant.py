@@ -59,31 +59,31 @@ class Courant():
   #  the guess is based on the maximum \e a and \e b parameters of the kinematic wave equation and critical water level
   #  in case of sheet flow only calculation the water level guess is 0.001 \e m by default
   def initial_time_step(self,sur):
-    sumA = sumB = sumHCrit = 0
-    count = 0
-    only_surface = comp_type('surface')
+    #sumA = sumB = sumHCrit = 0
+    #count = 0
+    #only_surface = comp_type('surface')
 
 
 
 
-    for i in sur.rr:
-      for j in sur.rc[i]:
-        sumA += sur.arr[i][j].a
-        sumB += sur.arr[i][j].b
-        sumHCrit += sur.arr[i][j].h_crit
-        count += 1
+    #for i in sur.rr:
+      #for j in sur.rc[i]:
+        #sumA += sur.arr[i][j].a
+        #sumB += sur.arr[i][j].b
+        #sumHCrit += sur.arr[i][j].h_crit
+        #count += 1
 
-    meanA = sumA/float(count)
-    meanB = sumB/float(count)
-    if (only_surface) :
-      meanHCrit = 0.001
-    else:
-      meanHCrit = sumHCrit/float(count)
+    #meanA = sumA/float(count)
+    #meanB = sumB/float(count)
+    #if (only_surface) :
+      #meanHCrit = 0.001
+    #else:
+      #meanHCrit = sumHCrit/float(count)
 
 
 
-    velGuess = meanA*meanHCrit*meanB*meanB
-    self.initGuess = (math.sqrt(sur.pixel_area)*self.cour_least*self.cour_coef)/velGuess
+    #velGuess = meanA*meanHCrit*meanB*meanB
+    #self.initGuess = (math.sqrt(sur.pixel_area)*self.cour_least*self.cour_coef)/velGuess
 
     #return self.initGuess
     return self.max_delta_t

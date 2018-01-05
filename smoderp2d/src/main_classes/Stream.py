@@ -53,14 +53,16 @@ class Reach():
     
     
 
-    if TVAR == 1 :    #obdelnik
+    if TVAR == 0 :    #obdelnik
       self.outflow_method = stream_f.rectangle
-    elif TVAR == 0 :  #trapezoid
+    elif TVAR == 1 :  #trapezoid
       self.outflow_method = stream_f.trapezoid
     elif TVAR == 2 :  #triangle
       self.outflow_method = stream_f.triangle
     elif TVAR == 3 :  #parabola
       self.outflow_method = stream_f.parabola
+    else :
+      self.outflow_method = stream_f.rectangle
 
     #print TVAR, B, M
     ##raw_input()

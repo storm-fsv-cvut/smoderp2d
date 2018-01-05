@@ -14,8 +14,8 @@ file: indata/srazka.txt
 
 
 [time]
-#min
-maxdt: 20
+#sec
+maxdt: 60
 #min
 endtime: 20
 

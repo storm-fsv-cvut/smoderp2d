@@ -254,7 +254,7 @@ def initLinux():
 def initWin():
 
   sys.argv.append('#')          #  mfda
-  sys.argv.append('false')          #  extra output
+  sys.argv.append(False)          #  extra output
   sys.argv.append('outdata.save')   #  in data
   sys.argv.append('full')           #  castence nee v arcgis
   sys.argv.append(False)            #  debug print

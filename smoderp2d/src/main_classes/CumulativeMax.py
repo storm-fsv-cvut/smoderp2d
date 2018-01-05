@@ -1,18 +1,18 @@
 ## @package smoderp2d.src.main_classes.CumulativeMax
-#  
+#
 #  package contains classes save the cumulative or maximum
-#  values of the results in each time step. 
-#  
-#  
+#  values of the results in each time step.
+#
+#
 
 
 
-# globals import 
+# globals import
 import numpy as np
 
 
 
-# smoderp import 
+# smoderp import
 from   smoderp2d.src.main_classes.General import *
 from   smoderp2d.src.tools.tools          import comp_type
 import smoderp2d.src.io_functions.prt         as prt
@@ -26,20 +26,20 @@ isRill, subflow, stream, diffuse = comp_type()
 
 
 
-## Max and cumulative values of the subsurface flow 
+## Max and cumulative values of the subsurface flow
 #
 #  Stores arrays of max or cumulative values of important variables of
 #  the subsurface flow \n
-#  
-#  The class is inhered by the class Cumulative 
-#  if the subsurface computation is desired 
-#  
-#  
+#
+#  The class is inhered by the class Cumulative
+#  if the subsurface computation is desired
+#
+#
 class CumulativeSubsurface(object):
-  
-  
+
+
   ## constructor
-  # 
+  #
   def __init__(self):
 
 
@@ -47,7 +47,7 @@ class CumulativeSubsurface(object):
     super(CumulativeSubsurface, self).__init__()
 
 
-    
+
     self.arrs[15] = 'exfiltration'
     self.arrs[16] = 'percolation'
     self.arrs[17] = 'h_sub'
@@ -68,14 +68,14 @@ class CumulativeSubsurface(object):
     c = self.c
 
     self.n += 5
-    
+
     ## cumulative exfiltration volume [m3]
     self.exfiltration      =  np.zeros([r,c],float)
     ## cumulative percolation volume [m3]
     self.percolation      =  np.zeros([r,c],float)
     ## maximum water level in rills [m]
-    # 
-    #  the height is related to the total cell area not the rill ares 
+    #
+    #  the height is related to the total cell area not the rill ares
     #
     self.h_sub      =  np.zeros([r,c],float)
     ## maximum discharge from rills [m3s-1]
@@ -83,12 +83,12 @@ class CumulativeSubsurface(object):
     ## cumulative outflow volume in rills [m3]
     self.V_sub      =  np.zeros([r,c],float)
 
-  
-  
+
+
   ## Method is used after each time step to save the desired variables.
-  #  
+  #
   #  Method is called in smoderp2d.src.runoff
-  #  
+  #
   def update_cumulative_subsur(self,i,j,sub,q_subsur):
 
 
@@ -101,19 +101,19 @@ class CumulativeSubsurface(object):
       self.h_sub[i][j] = sub.h
     if q_subsur > self.q_sub[i][j]:
       self.q_sub[i][j] = q_subsur
- 
+
 
 
 ## Empty (pass) Class
-# 
+#
 # Class is inherited by the class Cumulative if the subsurface flow is not desired.
-# 
+#
 class CumulativeSubsurfacePass(object):
-  
+
   ## Method is used after each time step.
-  #  
+  #
   #  Method is called in smoderp2d.src.runoff
-  #  
+  #
   def update_cumulative_sur(self,i,j,sub,q_subsur):
     pass
 
@@ -130,27 +130,27 @@ class CumulativeSubsurfacePass(object):
 ## Max and Cumulative values
 #
 #  Stores array of max or cumulative values at of important variables from
-#  the surface and rill flow 
-#  
-#  
+#  the surface and rill flow
+#
+#
 class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfacePass, Globals,Size):
 
 
 
 
   ## the constructor
-  #  
+  #
   #
   def __init__(self):
-    
+
     prt.message('Save cumulative and maximum values from:')
     prt.message('\tSurface')
-    
-    
-    ## Dictionary stores the python arrays identification. 
-    #  
+
+
+    ## Dictionary stores the python arrays identification.
+    #
     #  self.arr is used in the smoderp2d.src.io_functions.post_proc
-    #  
+    #
     self.arrs = {1  : 'infiltration',
             2  : 'precipitation',
             3  : 'h_sur',
@@ -171,25 +171,25 @@ class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfa
             #12 : 'v_rill',
 
 
-    ## Dictionary stores the the arrays name used in the output rasters. 
-    #  
+    ## Dictionary stores the the arrays name used in the output rasters.
+    #
     #  self.names is used in the smoderp2d.src.io_functions.post_proc
-    #  
-    self.names = {1  : 'cinfiltrationM',
-            2  : 'cRainfallM',
-            3  : 'cVolInM3',
+    #
+    self.names = {1  : 'cInfilM',
+            2  : 'cRainfM',
+            3  : 'cVInM3',
             4  : 'MaxQL3t_1',
-            5  : 'cSheetVolOutM3',
-            6  : 'mVelovityM_S',
-            7  : 'mShearStressPa',
+            5  : 'cSheetVOutM3',
+            6  : 'mVelM_S',
+            7  : 'mShearStrPa',
             8  : 'MaxWaterRillL',
             9  : 'MaxQRillL3t_1',
-            10 : 'cRillVolOutL3',
+            10 : 'cRillVOutL3',
             11 : 'AreaRill',
             12 : 'CumVInL3',
             13 : 'SurRet',
             14 : 'CumVRestL3',
-            15 : 'mSurfaceFlowM3_S'
+            15 : 'mSurFlowM3_S'
             }
             #12 : 'MaxVeloRill',
 
@@ -200,8 +200,8 @@ class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfa
 
     r = self.r
     c = self.c
-    
-    
+
+
     ## array count stored in the class
     self.n = 13
     ## cumulative infiltrated volume [m3]
@@ -239,16 +239,16 @@ class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfa
     ## maximal total surface flow [m3/s]
     self.V_sur_tot=  np.zeros([r,c],float)
 
-    
+
     super(Cumulative, self).__init__()
 
 
-  
-  
+
+
   ## Method is used after each time step to save the desired variables.
-  #  
+  #
   #  Method is called in smoderp2d.src.runoff
-  #  
+  #
   def update_cumulative(self,i,j,surface,subsurface,delta_t):
 
 
@@ -264,7 +264,7 @@ class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfa
     q_tot   = q_sheet + q_rill
     if q_tot > self.V_sur_tot[i][j] :
       self.V_sur_tot[i][j] = q_tot
-    
+
     if surface.state == 0:
       if surface.h_total_new > self.h_sur[i][j]:
         self.h_sur[i][j] = surface.h_total_new

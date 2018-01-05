@@ -260,6 +260,10 @@ def prepare_data(args):
   # setting output directory as input parameter
   output = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
 
+  shutil.rmtree(output)
+
+
+
   if not os.path.exists(output):
       os.makedirs(output)
   arcpy.AddMessage("Creating of the output directory: "+output)
@@ -398,43 +402,43 @@ def prepare_data(args):
   intersect = output+os.sep+"interSoilLU.shp"
   arcpy.Intersect_analysis(grup, intersect, "ALL", "", "INPUT")
 
-
-  tmpPoints = []
-  desc = arcpy.Describe(points)
-  shapefieldname = desc.ShapeFieldName
-  rows_p = arcpy.SearchCursor(points)
-  for row in rows_p:
-    fid = row.getValue('FID')
-    feat = row.getValue(shapefieldname)
-    pnt = feat.getPart()
-    tmpPoints.append([pnt.X, pnt.Y])
-
-
+  if points and (points != "#") and (points != ""):
+      tmpPoints = []
+      desc = arcpy.Describe(points)
+      shapefieldname = desc.ShapeFieldName
+      rows_p = arcpy.SearchCursor(points)
+      for row in rows_p:
+        fid = row.getValue('FID')
+        feat = row.getValue(shapefieldname)
+        pnt = feat.getPart()
+        tmpPoints.append([pnt.X, pnt.Y])
 
 
-  pointsClipCheck = temp+os.sep+"pointsCheck.shp"
-  arcpy.Clip_analysis(points, intersect,pointsClipCheck)
 
-  tmpPointsCheck = []
-  descCheck = arcpy.Describe(pointsClipCheck)
-  shapefieldnameCheck = descCheck.ShapeFieldName
-  rows_pch = arcpy.SearchCursor(pointsClipCheck)
-  for row2 in rows_pch:
-    fid = row2.getValue('FID')
-    featCheck = row2.getValue(shapefieldnameCheck)
-    pntChech = featCheck.getPart()
-    tmpPointsCheck.append([pntChech.X, pntChech.Y])
 
-  diffpts = [c for c in tmpPoints if c not in tmpPointsCheck]
-  if len(diffpts)==0:
-    pass
-  else:
-    arcpy.AddMessage("!!! Points at coordinates [x,y]:")
-    for item in diffpts:
-      arcpy.AddMessage(item)
-    arcpy.AddMessage("are outside the computation domain and will be ingnored !!!")
+      pointsClipCheck = temp+os.sep+"pointsCheck.shp"
+      arcpy.Clip_analysis(points, intersect,pointsClipCheck)
 
-  points = pointsClipCheck
+      tmpPointsCheck = []
+      descCheck = arcpy.Describe(pointsClipCheck)
+      shapefieldnameCheck = descCheck.ShapeFieldName
+      rows_pch = arcpy.SearchCursor(pointsClipCheck)
+      for row2 in rows_pch:
+        fid = row2.getValue('FID')
+        featCheck = row2.getValue(shapefieldnameCheck)
+        pntChech = featCheck.getPart()
+        tmpPointsCheck.append([pntChech.X, pntChech.Y])
+
+      diffpts = [c for c in tmpPoints if c not in tmpPointsCheck]
+      if len(diffpts)==0:
+        pass
+      else:
+        arcpy.AddMessage("!!! Points at coordinates [x,y]:")
+        for item in diffpts:
+          arcpy.AddMessage(item)
+        arcpy.AddMessage("are outside the computation domain and will be ingnored !!!")
+
+      points = pointsClipCheck
 
   arcpy.env.extent = intersect
   soil_clip = temp+os.sep+"soil_clip.shp"
@@ -563,12 +567,12 @@ def prepare_data(args):
   # cropping rasters
 
   dmt_clip = ExtractByMask(dmt_copy, maska)
-  dmt_clip.save(output+os.sep+"dmt_clip")
+  dmt_clip.save(output+os.sep+"DTM")
   slope_clip = ExtractByMask(slope_orig, maska)
   slope_clip.save(temp+os.sep+"slope_clip")
 
   flow_direction_clip = ExtractByMask(flow_direction, maska)
-  flow_direction_clip.save(output+os.sep+"fl_dir_clp")
+  flow_direction_clip.save(output+os.sep+"flowDir")
 
   # cropped raster info
   dmt_desc = arcpy.Describe(dmt_clip)

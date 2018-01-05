@@ -8,6 +8,26 @@ import smoderp2d.src.constants as constants
 import sys
 import smoderp2d.src.io_functions.prt as prt
 
+# definice erroru  na urovni modulu 
+# 
+class Error(Exception):
+    """Base class for exceptions in this module."""
+    pass
+
+class NonCumulativeRainData(Error):
+    """Exception raised bad rainfall record assignment.
+
+    Attributes:
+        msg  -- explanation of the error
+    """
+
+    def __init__(self):
+        self.msg = 'Error: Rainfall record has to be cumulative'
+    def __str__(self):
+        return repr(self.msg)
+
+
+
 
 
 def load_precipitation(fh):
@@ -17,7 +37,7 @@ def load_precipitation(fh):
     x = []
     for line in fh.readlines():
       z = line.split()
-      if len(z) == 0:
+      if len(z) == 0:    
         continue
       elif z[0].find('#') >= 0 :
         continue
@@ -28,11 +48,7 @@ def load_precipitation(fh):
             y0 = float(z[0])*60.0    #prevod na vteriny
             y1 = float(z[1])/1000.0  #prevod na metry
             if y1 < y2:
-              #@jj
-              prt.message( "Rainfall must be imputed in cumulative form")
-              sys.exit()
-              #prt.message("Rainfall must be imputed in cumulative form")
-              break
+              raise NonCumulativeRainData()
             y2 = y1
             mv = y0,y1
             x.append(mv)
@@ -125,7 +141,7 @@ def timestepRainfall(iterace,total_time,delta_t,tz,sr):
         
       tz = z
 
-  return rainfall,tz
+  return rainfall, tz
 
 
   

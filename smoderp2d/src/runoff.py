@@ -16,13 +16,13 @@
 # Surface and subsurface rutine
 # Created by Petr Kavka, FCE, CTU Prague, 2015
 
-__author__="edlman"
-__date__ ="$29.12.2015 18:31:25$"
+__author__ = "edlman"
+__date__   = "$29.12.2015 18:31:25$"
 
-#INITIAL SETTINGS:
+# INITIAL SETTINGS:
 #
 # importing system moduls
-#import math
+# import math
 import numpy as np
 import time
 import os
@@ -87,8 +87,6 @@ class Runoff():
     surface = Surface(Gl.r,Gl.c,Gl.mat_reten,Gl.mat_inf_index,Gl.mat_hcrit,Gl.mat_aa,Gl.mat_b)
 
 
-    if Gl.type_of_computing == 3 :
-      tools.make_ASC_raster(Gl.outdir+os.sep+"toky.asc",Gl.mat_tok_usek,Gl)
 
     if (subflow == True):
       subsurface = Subsurface(L_sub = 0.1, Ks = 0.005, vg_n = 1.5, vg_l =  0.5)
@@ -137,14 +135,14 @@ class Runoff():
     # first record hydrographs
     for i in Gl.rr:
       for j in Gl.rc[i]:
-        hydrographs.write_hydrographs_record(i,j,ratio,0.0,0.0,0,delta_t,total_time,surface,subsurface,0.0,)
+        hydrographs.write_hydrographs_record(i,j,ratio,0.0,0.0,0,delta_t,total_time,surface,subsurface,0.0)
 
 
     hydrographs.write_hydrographs_record(i,j,ratio,0.0,0.0,0,delta_t,total_time,surface,subsurface,0.0,True)
 
-    
-    
-    
+
+
+
     prt.message('Start of computing ...')
     while ( total_time < Gl.end_time ):
 

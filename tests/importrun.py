@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
-# Name:        module1
-# Purpose:
+# Name:        importrun
+# Purpose:     test of model after instalation
 #
 # Author:      jerabj11
 #
@@ -47,6 +47,8 @@ def main():
 
 if __name__ == '__main__':
     if (main() == 1) :
+        print '\n Trial run of model has finished successfully. \n'
         raw_input('press enter ...')
     else :
+        print '\n Trial run of model finished with error. \n'
         raw_input('press enter ...')
