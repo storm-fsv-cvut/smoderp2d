@@ -274,7 +274,8 @@ def prepare_data(args):
   temp = output+os.sep+"temp"
   if not os.path.exists(temp):
       os.makedirs(temp)
-  tempgdb  = arcpy.CreateFileGDB_management(temp, "temp.gdb")
+
+  #tempgdb  = arcpy.CreateFileGDB_management(temp, "temp.gdb")
 
   arcpy.AddMessage("Creating of the temp: "+temp)
 
@@ -412,11 +413,13 @@ def prepare_data(args):
         feat = row.getValue(shapefieldname)
         pnt = feat.getPart()
         tmpPoints.append([pnt.X, pnt.Y])
+      del rows_p
 
 
 
 
-      pointsClipCheck = temp+os.sep+"pointsCheck.shp"
+
+      pointsClipCheck = output+os.sep+"pointsCheck.shp"
       arcpy.Clip_analysis(points, intersect,pointsClipCheck)
 
       tmpPointsCheck = []
@@ -428,6 +431,9 @@ def prepare_data(args):
         featCheck = row2.getValue(shapefieldnameCheck)
         pntChech = featCheck.getPart()
         tmpPointsCheck.append([pntChech.X, pntChech.Y])
+      del rows_pch
+
+
 
       diffpts = [c for c in tmpPoints if c not in tmpPointsCheck]
       if len(diffpts)==0:

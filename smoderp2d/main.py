@@ -54,6 +54,12 @@ def run() :
   elif platform.system() == "Windows" :
     from smoderp2d.src.main_classes.General import initWin
     init = initWin
+    sys.argv.append('#')               #  mfda
+    sys.argv.append(False)             #  extra output
+    sys.argv.append('outdata.save')    #  in data
+    sys.argv.append('full')            #  castence nee v arcgis
+    sys.argv.append(False)             #  debug print
+    sys.argv.append('-')               # print times
   else :
     from smoderp2d.src.main_classes.General import initNone
     init = initNone

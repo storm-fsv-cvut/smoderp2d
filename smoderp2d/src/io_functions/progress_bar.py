@@ -35,7 +35,7 @@ else:
         prt.message("Time iterations: ", iter_ )
         prt.message("Percentage done: ", "%.2f" % i + " %")
         prt.message("Time to end [s]:  ???")
-        prt.message("-----------------------------------------------------------")
+        prt.message("--------------------------")
       else:
         self.pre = i
         self.currTime = time.time()
@@ -46,7 +46,7 @@ else:
         prt.message("Time iterations: ", iter_ )
         prt.message("Percentage done: ", "%.2f" % i + " %")
         prt.message("Time to end [s]: ", "%.2f" % remaining)
-        prt.message("-----------------------------------------------------------")
+        prt.message("--------------------------")
         
     
   pb = CPROG()

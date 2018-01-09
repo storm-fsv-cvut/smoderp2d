@@ -253,12 +253,7 @@ def initLinux():
 #
 def initWin():
 
-  sys.argv.append('#')          #  mfda
-  sys.argv.append(False)          #  extra output
-  sys.argv.append('outdata.save')   #  in data
-  sys.argv.append('full')           #  castence nee v arcgis
-  sys.argv.append(False)            #  debug print
-  sys.argv.append('-')              # print times
+
   partial_comp = get_argv(constants.PARAMETER_PARTIAL_COMPUTING)
 
 
@@ -340,7 +335,7 @@ def initWin():
 
     return True
 
-  elif (partial_comp == 'dprea') :
+  elif (partial_comp == 'dpre') :
     stop = get_indata(partial_comp,args)
     return stop
 

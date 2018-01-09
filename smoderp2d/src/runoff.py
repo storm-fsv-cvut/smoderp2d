@@ -260,7 +260,7 @@ class Runoff():
 
 
 
-    post_proc.raster_output(cumulative, Gl.mat_slope, Gl, surface.arr)
+    post_proc.do(cumulative, Gl.mat_slope, Gl, surface.arr)
 
 
     #tools.make_sur_raster(surface.arr,Globals,total_time+delta_t,output)
