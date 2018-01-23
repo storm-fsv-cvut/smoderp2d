@@ -8,7 +8,7 @@ import pickle
 import sys
 
 
-import smoderp2d.src.io_functions.prt          as prt
+#import smoderp2d.src.io_functions.prt          as prt
 
 
 

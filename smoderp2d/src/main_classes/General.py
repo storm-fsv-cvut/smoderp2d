@@ -287,14 +287,14 @@ class Globals:
   def get_cell_stream(self):
     return self.cell_stream
   
-  def get_(self):
-    return self.
+  def get_mat_tok_usek(self):
+    return self.mat_tok_usek
   
-  def get_(self):
-    return self.
+  def get_STREAM_RATIO(self):
+    return self.STREAM_RATIO
   
-  def get_(self):
-    return self.
+  def get_tokyLoc(self):
+    return self.tokyLoc
   
   
   
