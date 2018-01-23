@@ -142,7 +142,6 @@ class Runoff():
 
 
 
-
     prt.message('Start of computing ...')
     while ( total_time < Gl.end_time ):
 

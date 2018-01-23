@@ -5,7 +5,7 @@ setup(name='smoderp2d',
       packages=find_packages(),
       description='Simulacni model odtokovych a eroznich proceso',
       author='Vrana, Kavka',
-      author_email='...@fsv.cvut.cz',
+      author_email='petr.kavka@googlemail.com',
       url='http://storm.fsv.cvut.cz/cinnost-katedry/volne-stazitelne-vysledky/smoderp/?lang=cz',
       )
 

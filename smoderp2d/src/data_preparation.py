@@ -1,4 +1,5 @@
-## @package smoderp2d.src.data_preparation Method to performe the preprocessing with arcpy package
+## @package smoderp2d.src.data_preparation 
+#  Method to performe the preprocessing with arcpy package
 
 
 #!/usr/bin/python
