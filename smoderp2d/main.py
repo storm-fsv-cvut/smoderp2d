@@ -52,6 +52,7 @@ def run() :
     from smoderp2d.src.main_classes.General import initLinux
     init = initLinux
   elif platform.system() == "Windows" :
+    import sys
     from smoderp2d.src.main_classes.General import initWin
     init = initWin
     sys.argv.append('#')               #  mfda

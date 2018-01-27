@@ -15,6 +15,9 @@
 
 def main():
     import sys
+    import os
+
+
     try :
       print 'importing smoderp2d ...'
       import smoderp2d.main as sm
@@ -28,7 +31,7 @@ def main():
         '0.2',
         '60',
         'test-data\\point.shp',
-        'test-out',
+        os.getcwd() + os.sep+ os.sep + 'test-out',
         'test-data\\tabulkytab_maleTau.dbf',
         'SOILVEG',
         'test-data\\toky2.shp',
@@ -46,6 +49,8 @@ def main():
 
 
 if __name__ == '__main__':
+
+
     if (main() == 1) :
         print '\n Trial run of model has finished successfully. \n'
         raw_input('press enter ...')
