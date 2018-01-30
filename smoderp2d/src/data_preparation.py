@@ -1,4 +1,4 @@
-## @package smoderp2d.src.data_preparation 
+## @package smoderp2d.src.data_preparation
 #  Method to performe the preprocessing with arcpy package
 
 
@@ -938,6 +938,7 @@ def prepare_data(args):
 
 
 
+
   if (type_of_computing == 3) or (type_of_computing == 5):
 
     arcpy.AddMessage('Stream preparation...')
@@ -953,37 +954,7 @@ def prepare_data(args):
                                                                                 delfield,output, dmt_clip,
                                                                                 intersect, null_shp, gp)
 
-    fields = arcpy.ListFields(toky)
-    #field_names = [field.name for field in fields if field.type != 'Geometry']
-    field_names = [field.name for field in fields]
-    toky_tmp = [[] for field in fields]
 
-    for row in arcpy.SearchCursor(toky):
-      field_vals = [row.getValue(field) for field in field_names]
-      #field_vals
-      for i in range(len(field_vals)):
-        toky_tmp[i].append(field_vals[i])
-      del row
-
-    # all columns names in
-    """[u'FID', u'Shape', u'Id', u'Id_1', u'Id_12', u'Id_12_13', u'Id_12_1_14', u'Id_12_1_15', u'RASTERVALU', u'POINT_X', u'POINT_Y', u'Id_12_1_16', u'Id_12_1_17', u'Id_12_1_18', u'RASTERVA_1', u'POINT_X_1', u'POINT_Y_1', u'to_node', u'length', u'sklon', u'V_infl_ce', u'V_infl_us', u'V_infl', u'Q_outfl', u'V_outfl', u'V_outfl_tm', u'V_zbyt', u'V_zbyt_tm', u'V', u'h', u'vs', u'NS', u'total_Vic', u'total_Viu', u'max_Q', u'max_h', u'max_vs', u'total_Vo', u'total_Vi', u'total_NS', u'total_Vz', u'smoderp', u'CISLO', u'TVAR', u'B', u'M', u'DRSNOST', u'Q365']"""
-
-    toky = [] #Kubuv vyber
-    toky.append(toky_tmp[field_names.index('FID')])
-    toky.append(toky_tmp[field_names.index('POINT_X')])
-    toky.append(toky_tmp[field_names.index('POINT_Y')])
-    toky.append(toky_tmp[field_names.index('POINT_X_1')])
-    toky.append(toky_tmp[field_names.index('POINT_Y_1')])
-    toky.append(toky_tmp[field_names.index('to_node')])
-    toky.append(toky_tmp[field_names.index('length')])
-    toky.append(toky_tmp[field_names.index('sklon')])
-    toky.append(toky_tmp[field_names.index('smoderp')])
-    toky.append(toky_tmp[field_names.index('cislo')])
-    toky.append(toky_tmp[field_names.index('tvar')])
-    toky.append(toky_tmp[field_names.index('b')])
-    toky.append(toky_tmp[field_names.index('m')])
-    toky.append(toky_tmp[field_names.index('drsnost')])
-    toky.append(toky_tmp[field_names.index('Q365')])
 
     arcpy.AddMessage("Stream preparation has finished")
   else:
@@ -1000,19 +971,17 @@ def prepare_data(args):
 
 
   boundaryRows, boundaryCols, rrows, rcols, mat_boundary = find_boudary_cells(rows, cols, mat_nan, NoDataValue, mfda)
-  rada = Outlet()
+  # rada = Outlet()
 
+  # for i in boundaryRows:
+  #  for j in boundaryCols[i]:
+  #    rada.push(i,j,mat_nan,NoDataValue)
 
-  for i in boundaryRows:
-    for j in boundaryCols[i]:
-      rada.push(i,j,mat_nan,NoDataValue)
+  # rada.find_outlets(mat_dmt_fill)
 
+  # outletCells = rada.outletCells
 
-  rada.find_outlets(mat_dmt_fill)
-
-
-  outletCells = rada.outletCells
-
+  outletCells = None
 
   arcpy.AddMessage("Data preparation has been finished")
 

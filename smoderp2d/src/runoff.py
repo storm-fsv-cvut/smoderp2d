@@ -43,7 +43,7 @@ from smoderp2d.src.main_classes.CumulativeMax import Cumulative
 from smoderp2d.src.time_step                  import TimeStep
 
 import smoderp2d.src.constants                 as constants
-from smoderp2d.src.courant                 import Courant
+from     smoderp2d.src.courant                 import Courant
 import smoderp2d.src.tools.tools               as tools
 import smoderp2d.src.io_functions.post_proc    as post_proc
 import smoderp2d.src.io_functions.prt          as prt
@@ -55,6 +55,83 @@ from smoderp2d.src.tools.tools             import get_argv
 
 
 
+
+def init_classes():
+  
+  
+  
+  isRill, subflow, stream, diffuse, = comp_type()
+
+
+  times_prt = TimesPrt()
+
+
+  infiltrationType = int(0)
+  total_time = 0.0      #delta_t bacha delta_t se prepisuje nize u couranta
+  tz = 0
+  sum_interception = 0
+  ratio = 1
+  maxIter = 40
+
+
+  rain_arr = Vegetation(Gl.r,Gl.c,Gl.mat_ppl,Gl.mat_pi/1000.0)
+
+
+  surface = Surface(Gl.r,Gl.c,Gl.mat_reten,Gl.mat_inf_index,Gl.mat_hcrit,Gl.mat_aa,Gl.mat_b)
+
+
+  if (subflow == True):
+    subsurface = Subsurface(L_sub = 0.1, Ks = 0.005, vg_n = 1.5, vg_l =  0.5)
+  else:
+    subsurface = Subsurface()
+
+  cumulative = Cumulative()
+  
+  
+  
+  courant = Courant()
+  delta_t = courant.initial_time_step(surface)
+  courant.set_time_step(delta_t)
+
+
+  prt.message('Corrected time step is', delta_t, '[s]')
+
+
+
+  import io_functions.hydrographs as wf
+  points_shape = Gl.points
+  if points_shape and points_shape != "#":
+    hydrographs = wf.Hydrographs(Gl.array_points,Gl.outdir,Gl.mat_tok_usek,Gl.rr,Gl.rc,Gl.pixel_area)
+    arcgis      = get_argv(constants.PARAMETER_ARCGIS)
+    if not(arcgis):
+      with open(Gl.outdir+'/points.txt', 'w') as f:
+        for i in range(len(Gl.array_points)):
+          f.write(str(Gl.array_points[i][0]) + ' ' + str(Gl.array_points[i][3]) + ' ' + str(Gl.array_points[i][4]) + '\n')
+      f.closed
+  else:
+    hydrographs = wf.HydrographsPass()
+
+
+  time_step = TimeStep()
+
+
+  # first record hydrographs
+  for i in Gl.rr:
+    for j in Gl.rc[i]:
+      hydrographs.write_hydrographs_record(i,j,ratio,0.0,0.0,0,delta_t,total_time,surface,subsurface,0.0)
+
+
+  hydrographs.write_hydrographs_record(i,j,ratio,0.0,0.0,0,delta_t,total_time,surface,subsurface,0.0,True)
+
+
+
+  return delta_t,  times_prt, infiltrationType, total_time, tz, sum_interception, ratio, maxIter, \
+    rain_arr, surface, subsurface, cumulative, courant, hydrographs, time_step
+ 
+ 
+  prt.message("--------------------- ------------------- ---------------------") 
+ 
+  
 class Runoff():
 
   def run(self):
@@ -62,86 +139,16 @@ class Runoff():
     # taky se vyresi vztypbi soubory nacteni dat
     # vse se hodi do ogjektu Globals as Gl
 
-    isRill, subflow, stream, diffuse, = comp_type()
+    delta_t, times_prt, infiltrationType, total_time, tz, sum_interception, ratio, maxIter, \
+    rain_arr, surface, subsurface, cumulative, courant, hydrographs, time_step = init_classes()
 
-    times_prt = TimesPrt()
 
 
+
+
+    i = 0
+    j = 0
     start = time.time()
-
-    infiltrationType = int(0)
-    total_time = 0.0      #delta_t bacha delta_t se prepisuje nize u couranta
-    tz = 0
-    sum_interception = 0
-    ratio = 1
-    maxIter = 40
-
-
-
-    rain_arr = Vegetation(Gl.r,Gl.c,Gl.mat_ppl,Gl.mat_pi/1000.0)
-
-
-
-
-
-    surface = Surface(Gl.r,Gl.c,Gl.mat_reten,Gl.mat_inf_index,Gl.mat_hcrit,Gl.mat_aa,Gl.mat_b)
-
-
-
-    if (subflow == True):
-      subsurface = Subsurface(L_sub = 0.1, Ks = 0.005, vg_n = 1.5, vg_l =  0.5)
-    else:
-      subsurface = Subsurface()
-
-
-
-    cumulative = Cumulative()
-
-
-
-    prt.message("--------------------- ------------------- ---------------------")
-
-
-
-
-
-
-    courant = Courant()
-    delta_t = courant.initial_time_step(surface)
-    courant.set_time_step(delta_t)
-
-
-    prt.message('Corrected time step is', delta_t, '[s]')
-
-
-
-    import io_functions.hydrographs as wf
-    points_shape = Gl.points
-    if points_shape and points_shape != "#":
-      hydrographs = wf.Hydrographs(Gl.array_points,Gl.outdir,Gl.mat_tok_usek,Gl.rr,Gl.rc,Gl.pixel_area)
-      arcgis      = get_argv(constants.PARAMETER_ARCGIS)
-      if not(arcgis):
-        with open(Gl.outdir+'/points.txt', 'w') as f:
-          for i in range(len(Gl.array_points)):
-            f.write(str(Gl.array_points[i][0]) + ' ' + str(Gl.array_points[i][3]) + ' ' + str(Gl.array_points[i][4]) + '\n')
-        f.closed
-    else:
-      hydrographs = wf.HydrographsPass()
-
-
-    time_step = TimeStep()
-
-
-    # first record hydrographs
-    for i in Gl.rr:
-      for j in Gl.rc[i]:
-        hydrographs.write_hydrographs_record(i,j,ratio,0.0,0.0,0,delta_t,total_time,surface,subsurface,0.0)
-
-
-    hydrographs.write_hydrographs_record(i,j,ratio,0.0,0.0,0,delta_t,total_time,surface,subsurface,0.0,True)
-
-
-
     prt.message('Start of computing ...')
     while ( total_time < Gl.end_time ):
 

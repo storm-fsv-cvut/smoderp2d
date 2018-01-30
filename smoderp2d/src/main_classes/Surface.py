@@ -1,3 +1,12 @@
+## @package smoderp2d.src.main_classes.Surface
+#
+#  Package contains classes and methods to campute 
+#  surface processes
+
+
+
+
+
 import numpy as np
 import math
 import sys
@@ -26,8 +35,15 @@ isRill, subflow, stream, diffuse = comp_type()
 courantMax = 1.0
 
 
+
+## Main surface class
+# 
+#  Class contains a set of surface perameters
 class SurArrs :
 
+  ## Constructor of Surface array
+  #  
+  #  assign values into surface parameters
   def __init__(self,sur_ret,inf_index, hcrit, a, b):
 
     self.state =       int(0)

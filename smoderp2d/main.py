@@ -25,7 +25,7 @@
 
 
 
-## @package main resolves some input variables and start the computing
+## @package smoderp2d.main resolves some input variables and start the computing
 #
 #  The computing itself is performed in main_src.runoff
 

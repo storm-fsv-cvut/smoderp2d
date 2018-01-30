@@ -490,7 +490,7 @@ def initWin():
     return True
 
   elif (partial_comp == 'dpre') :
-    stop = get_indata(partial_comp,args)
+    stop = get_indata(partial_comp,sys.argv)
     return stop
 
 
