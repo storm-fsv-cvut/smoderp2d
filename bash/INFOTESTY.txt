@@ -1,0 +1,26 @@
+VSECHNY TESTY SE SOUSTEJI Z ADRESARE KDE JE SMODERP2D TAKZE:
+  
+  ./bash/?
+
+
+bash/testy-delej-vse.sh: 
+  udela podle dvou listu definovanych v tomto 
+  skriptu konfiguracni soubory 
+  do bash/test-in, kde jsou i srazkova data
+  data .save jsou v in data
+  vytvori skript bash/testy-delej-run.sh
+  kde jsou spousteci prikaze 
+  vse se uklada do bash/test-out
+  
+bash/testy-run.sh:   
+  jsou v nem spousteci prikazi vytvorene pomoci bash/testy-delej-vse.sh: 
+  
+  
+bash/testy-upload.sh:
+  pomoci rsync uploaduje vstupni data sousteci skripty a modelu smoderp2d
+  do smoderp:/home/smoderp/*
+  
+  
+  
+  
+  

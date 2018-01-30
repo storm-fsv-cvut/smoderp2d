@@ -60,8 +60,8 @@ done
 
 
 
-echo > bash/testy.sh
-
+echo \# TENTO SOUBOR SE GENERUJE AUTOMATICKY V bash/testy-delej-vse.sh > bash/testy-run.sh
+echo >>  bash/testy-run.sh
 for id in ${data[*]}; do
   for is in ${srazka[*]}; do
     echo python $smodskript --indata bash/test-in/$id-$is.in roff \> bash/test-out/$id-$is.log >> bash/testy-run.sh
