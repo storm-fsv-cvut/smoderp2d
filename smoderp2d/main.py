@@ -46,6 +46,9 @@
 
 def run() :
   
+
+  import smoderp2d.src.io_functions.prttxtlogo
+  
   import platform
   # init class contains global variables
   if platform.system() == "Linux" :
@@ -84,4 +87,6 @@ def run() :
 
 if __name__ == "__main__":
   
+    
+    
     run()
