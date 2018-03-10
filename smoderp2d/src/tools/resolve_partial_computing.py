@@ -109,7 +109,10 @@ def get_indata (tc,args):
 
       import ConfigParser
       Config = ConfigParser.ConfigParser()
+      
       Config.read(args.indata)
+      
+      
       sys.argv = [sys.argv.pop(0)]
       sys.argv.append(Config.get('GIS','dem'))
       sys.argv.append(Config.get('GIS','soil'))
@@ -201,7 +204,7 @@ def get_indata (tc,args):
 
     if get_argv(constants.PARAMETER_TYPE_COMPUTING) == '-':
       set_argv(constants.PARAMETER_TYPE_COMPUTING,int_comp_type(type_of_computing))
-
+    
 
     #jj end time se musi takto delta vzdy, neni v save
     output = get_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)

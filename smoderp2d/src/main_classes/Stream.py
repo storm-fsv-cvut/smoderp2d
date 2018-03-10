@@ -96,6 +96,8 @@ class Stream(object):
     self.reach = []
     
     for i in range(self.nReaches):
+      print self.toky[6][i]
+      print self.toky[11][i]
       self.reach.append(Reach(self.toky[0][i],self.toky[1][i],self.toky[2][i],self.toky[3][i],self.toky[4][i],self.toky[5][i],self.toky[6][i],self.toky[7][i],self.toky[8][i],self.toky[9][i],self.toky[10][i],self.toky[11][i],self.toky[12][i],self.toky[13][i],self.toky[14][i]))
 
     self.tokyLoc      = Gl.tokyLoc

@@ -351,7 +351,7 @@ def initLinux():
     Globals.NoDataInt   = int(-9999)
     Globals.dx = math.sqrt(pixel_area)
     Globals.dy = Globals.dx
-    Globals.type_of_computing = type_of_computing
+    Globals.type_of_computing =  type_of_computing
     Globals.outdir = output
     Globals.mat_boundary = mat_boundary
     Globals.outletCells  = outletCells

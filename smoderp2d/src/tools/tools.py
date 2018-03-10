@@ -153,6 +153,9 @@ def comp_type(co_=""):
       type_of_computing = 5
   """
   type_of_computing = int(get_argv(constants.PARAMETER_TYPE_COMPUTING))
+  
+  
+
 
   diffuse = False
   subflow = False

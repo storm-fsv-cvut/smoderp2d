@@ -37,10 +37,11 @@ else:
           if len(z) == 0:
               continue
           else:
-            self.times.append(float(line))
+            self.times.append(float(line)*60.0)
       self.times.sort()
 
-
+      print self.times
+      raw_input()
 
     def prt(self,time,dt,sur):
       if self.__n == len(self.times) :
