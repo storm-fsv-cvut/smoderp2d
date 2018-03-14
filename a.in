@@ -1,46 +1,87 @@
+# pri posteni na linux stroji se vetsina dat nacita z souboru *.save
+# ten je vytvoren pomoci malicku pickle a funkce pickle.dump
+
+
+# pri pousteni ze souboru *.save 
+# nelze nektereme parametry menit 
+# ty jsou oznaceny pomlckou zatim asi netreba popisovat
+
+# nektere lze prevzit z *.save, ale jsou zmenit pokud das misto pomlcky promenou (havne zadavana srazka)
+
+# nektere jsou pro linux povinne, ty jsou vyplnene a popsane
+
+
 [GIS]
-dem: C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\1_rst\\ds_plocha
-soil: C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\2_vect\\plocha.shp 
-lu: C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\2_vect\\plocha.shp
+dem: -
+soil: - 
+lu: -
 
 [shape atr]
-soil-atr: puda
-lu-atr: LU
+soil-atr: -
+lu-atr: -
 
 
+
+# soubor s informaci o srazkce lze menit
+# kdyz je - smoderp bere srazku ktera je 
+# v *.save souboru
 [srazka]
 file: indata/srazka.txt
+# file: -
 
 
-
+# maximalni (a zaroven pocatecni)
+# casovy krok se zde zadava 
+# i konecni cas simulace se zde zadava
 [time]
 #sec
-maxdt: 60
+maxdt: 20
 #min
-endtime: 10
+endtime: 20
 
 
 [Other]
-reten: 0.0
-points: C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\2_vect\\point2.shp
+points: -
+# 
+# output adresar ze zadava
+# obsah adresare se na zacatku vypoctu smaze
 outdir: out
+# 
+# zadava se 
+# pro zousteni z arvgis je zkryt
+# zatim mozna neni zajimavy...
 typecomp: 3
+# 
+# Mfda zatim zustava false
 mfda: False
-soilvegtab : C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\3_tabs\\tabulkytab.dbf 
-soilvegcode : SOILVEG
-streamshp :  C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\2_vect\\toky.shp
-streamtab: C:\Users\jerabj11\Desktop\\4_DS_plocha\\1_data_in\\3_tabs\\tab_stream_tvar.txt
-streamtabcode: smoderp
-arcgis: False
-extraout: True
-indata: indata/nuc20-matret.save
-#indata/dp-maletau-matret.save
+soilvegtab : -
+soilvegcode : -
+streamshp :  -
+streamtab: -
+streamtabcode: -
+#
+# pro linux musi zustat False / false.
+arcgis: false
+#
+# Zde si muzes nechat podrobneji 
+# vypsat vypisy, hlavne otazka zapsani vysledku
+extraout: False
+#
+# kde se zadava cesta k souboru se vstupnimi data
+indata: indata/destak.save
+#
+# pro linux zatim jen roff - nacteni vstupnich souboru
+# zadava se i jako povinna option pri spusteni skriptU
+# ten si nevzpomenu proc...
 partialcomp: roff
+#
+# tu jsem mel moznost detalneji popsat prubeh vypostU
+# momentalne to nic nedela...
 debugprt: True
+#
+# zde lze zadat casy, kde chces ulozit vysledky
+# pokud pomlcka nedela nic
 printtimes: -
 
 
 
-# onlyshallowsurface
-# shallowandrillsurface
-# shallowrillstreamsurface
