@@ -6,8 +6,7 @@
 import math
 import sys
 
-# get_indata is method which reads the input data
-from   smoderp2d.src.tools.resolve_partial_computing import get_indata
+
 # get type of computing identifier based on the string
 from   smoderp2d.src.tools.tools                     import comp_type
 
@@ -138,7 +137,7 @@ class Globals:
   ## ???
   cell_stream = None
   ## raster contains the reach id data
-  mat_tok_usek = None
+  mat_tok_reach = None
   ## ???
   STREAM_RATIO = None
   ## ???
@@ -155,6 +154,9 @@ class Globals:
   
   def get_rrows(self):
     return self.rr
+  
+  def get_rcols(self):
+    return self.rc
   
   def get_bor_rows(self):
     return self.br
@@ -201,22 +203,17 @@ class Globals:
   def get_delta_t(self):
     return self.delta_t
   
-  
   def get_mat_pi(self):
     return self.mat_pi
-  
   
   def get_mat_ppl(self):
     return self.mat_ppl
   
-  
   def get_surface_retention(self):
     return self.surface_retention
   
-  
   def get_mat_inf_index(self):
     return self.mat_inf_index
-  
   
   def get_mat_hcrit(self):
     return self._mat_hcrit
@@ -239,8 +236,8 @@ class Globals:
   def get_mat_efect_vrst(self):
     return self.mat_efect_vrst
   
-  def get_mat_slope(self):
-    return self.mat_slope
+  def get_mat_slope(self,i,j):
+    return self.mat_slope[i][j]
   
   def get_mat_nan(self):
     return self.mat_nan
@@ -248,8 +245,8 @@ class Globals:
   def get_mat_a(self):
     return self.mat_a
   
-  def get_mat_n(self):
-    return self.mat_n
+  def get_mat_n(self,i,j):
+    return self.mat_n[i][j]
   
   def get_points(self):
     return self.points
@@ -287,8 +284,8 @@ class Globals:
   def get_cell_stream(self):
     return self.cell_stream
   
-  def get_mat_tok_usek(self):
-    return self.mat_tok_usek
+  def get_mat_tok_reach(self,i,j):
+    return self.mat_tok_reach[i][j]
   
   def get_STREAM_RATIO(self):
     return self.STREAM_RATIO
@@ -306,8 +303,11 @@ class Globals:
 #
 def initLinux():
 
-
+  # get_indata is method which reads the input data
+  from   smoderp2d.src.tools.resolve_partial_computing import get_indata_lin
   import argparse
+  
+  
   parser = argparse.ArgumentParser()
   parser.add_argument('typecomp', help='type of computation', type=str, choices=['full','dpre','roff'])
   parser.add_argument('--indata', help='file with input data', type=str)
@@ -331,7 +331,8 @@ def initLinux():
     mat_n,   \
     output, pixel_area, points, poradi,  end_time, spix, state_cell, \
     temp, type_of_computing, vpix, mfda, sr, itera, \
-    toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = get_indata(partial_comp,args)
+    toky, cell_stream, mat_tok_reach, STREAM_RATIO, tokyLoc, extraOut, prtTimes, \
+    maxdt = get_indata_lin(partial_comp,args)
     
     
 
@@ -364,7 +365,7 @@ def initLinux():
     Globals.mat_hcrit = mat_hcrit
     Globals.mat_aa = mat_aa
     Globals.mat_b = mat_b
-    Globals.mat_reten = mat_reten
+    Globals.mat_reten = -mat_reten/1000.
     Globals.mat_fd = mat_fd
     Globals.mat_dmt = mat_dmt
     Globals.mat_efect_vrst = mat_efect_vrst
@@ -384,12 +385,17 @@ def initLinux():
     Globals.itera = itera
     Globals.toky = toky
     Globals.cell_stream = cell_stream
-    Globals.mat_tok_usek = mat_tok_usek
+    Globals.mat_tok_reach = mat_tok_reach
     Globals.STREAM_RATIO = STREAM_RATIO
     Globals.tokyLoc = tokyLoc
-    Globals.diffuse = comp_type('diffuse')
-    Globals.subflow = comp_type('subflow')
-
+    Globals.diffuse = comp_type(type_of_computing,'diffuse')
+    Globals.subflow = comp_type(type_of_computing,'subflow')
+    Globals.isRill =  comp_type(type_of_computing,'rill')
+    Globals.isStream =  comp_type(type_of_computing,'stream')
+    Globals.extraOut =  extraOut
+    Globals.arcgis =  False
+    Globals.prtTimes = prtTimes
+    Globals.maxdt  = maxdt
     return True
 
   else:
@@ -407,7 +413,10 @@ def initLinux():
 #
 def initWin():
 
-
+  # get_indata is method which reads the input data
+  from   smoderp2d.src.tools.resolve_partial_computing import get_indata_win
+  
+  
   partial_comp = get_argv(constants.PARAMETER_PARTIAL_COMPUTING)
 
 
@@ -428,7 +437,7 @@ def initWin():
     mat_n,   \
     output, pixel_area, points, poradi,  end_time, spix, state_cell, \
     temp, type_of_computing, vpix, mfda, sr, itera, \
-    toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = get_indata(partial_comp,sys.argv)
+    toky, cell_stream, mat_tok_reach, STREAM_RATIO, tokyLoc = get_indata_win(partial_comp,sys.argv)
 
 
     sys.argv.append(type_of_computing)
@@ -461,7 +470,7 @@ def initWin():
     Globals.mat_hcrit = mat_hcrit
     Globals.mat_aa = mat_aa
     Globals.mat_b = mat_b
-    Globals.mat_reten = mat_reten
+    Globals.mat_reten = -mat_reten/1000.
     Globals.mat_fd = mat_fd
     Globals.mat_dmt = mat_dmt
     Globals.mat_efect_vrst = mat_efect_vrst
@@ -481,7 +490,7 @@ def initWin():
     Globals.itera = itera
     Globals.toky = toky
     Globals.cell_stream = cell_stream
-    Globals.mat_tok_usek = mat_tok_usek
+    Globals.mat_tok_reach = mat_tok_reach
     Globals.STREAM_RATIO = STREAM_RATIO
     Globals.tokyLoc = tokyLoc
     Globals.diffuse = comp_type('diffuse')
@@ -490,7 +499,7 @@ def initWin():
     return True
 
   elif (partial_comp == 'dpre') :
-    stop = get_indata(partial_comp,sys.argv)
+    stop = get_indata_win(partial_comp,sys.argv)
     return stop
 
 

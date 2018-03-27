@@ -37,7 +37,7 @@ file: indata/srazka.txt
 #sec
 maxdt: 20
 #min
-endtime: 20
+endtime: 40
 
 
 [Other]
@@ -46,11 +46,12 @@ points: -
 # output adresar ze zadava
 # obsah adresare se na zacatku vypoctu smaze
 outdir: out
+
 # 
 # zadava se 
 # pro zousteni z arvgis je zkryt
 # zatim mozna neni zajimavy...
-typecomp: 3
+typecomp: 0
 # 
 # Mfda zatim zustava false
 mfda: False
@@ -65,10 +66,10 @@ arcgis: false
 #
 # Zde si muzes nechat podrobneji 
 # vypsat vypisy, hlavne otazka zapsani vysledku
-extraout: False
+extraout: true
 #
 # kde se zadava cesta k souboru se vstupnimi data
-indata: indata/destak.save
+indata: indata/trych01.save
 #
 # pro linux zatim jen roff - nacteni vstupnich souboru
 # zadava se i jako povinna option pri spusteni skriptU

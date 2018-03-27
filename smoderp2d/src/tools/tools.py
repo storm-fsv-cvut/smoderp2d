@@ -133,7 +133,7 @@ def make_ASC_raster(name_,numpy_arr,G):
 #  Return 4 true/values for rill, subflow, stream, diffuse presence/non-presence.\n
 #  Optionally string parameter co_ specify the process user ask for rill | subflow | stream | diffuse
 #
-def comp_type(co_=""):
+def comp_type(tc,co_=""):
 
   """
   string_type_of_coputing = get_argv(constants.PARAMETER_TYPE_COMPUTING)
@@ -152,10 +152,7 @@ def comp_type(co_=""):
   elif string_type_of_coputing == "surfaceandsubsurfacestreamflow":
       type_of_computing = 5
   """
-  type_of_computing = int(get_argv(constants.PARAMETER_TYPE_COMPUTING))
   
-  
-
 
   diffuse = False
   subflow = False
@@ -167,22 +164,22 @@ def comp_type(co_=""):
   
   
   
-  if type_of_computing == 1:
+  if int(tc) == 1:
     rill = True
 
-  if type_of_computing == 3:
+  if int(tc) == 3:
     stream = True
     rill = True
 
-  if type_of_computing == 4:
+  if int(tc) == 4:
     subflow = True
     rill = True
 
-  if type_of_computing == 5:
+  if int(tc) == 5:
     stream = True
     subflow = True
     rill = True
-  if type_of_computing == 0:
+  if int(tc) == 0:
     only_surface = True
   if (co_ == "rill")    : return rill
   if (co_ == "subflow") : return subflow
@@ -199,21 +196,20 @@ def comp_type(co_=""):
 
 
 
-def int_comp_type(intco_):
-
-
-  if intco_ == 0 :
-    return 'onlyshallowsurface'
-  elif intco_ == 1 :
-    return 'shallowandrillsurface'
-  elif intco_ == 2 :
-    return 'diffuseshallowsurface'
-  elif intco_ == 3 :
-    return 'shallowrillstreamsurface'
-  elif intco_ == 4 :
-    return 'surfaceandsubsurfaceflow'
-  elif intco_ == 5:
-    return 'surfaceandsubsurfacestreamflow'
+def int_comp_type(co_):
+  string_type_of_coputing = co_.lower().replace(' ','').replace(',','')  #jj .lower().replace(' ','').replace(',','') udela ze vsecho v tom stringu maly pismena, replace vyhodi mezery a
+  if string_type_of_coputing == 'onlyshallowsurface' :
+    return  0
+  elif string_type_of_coputing == 'shallowandrillsurface' :
+    return  1
+  elif string_type_of_coputing == 'diffuseshallowsurface' :
+    return  2
+  elif string_type_of_coputing == 'shallowrillstreamsurface' :
+    return  3
+  elif string_type_of_coputing == 'surfaceandsubsurfaceflow' :
+    return  4
+  elif string_type_of_coputing == 'surfaceandsubsurfacestreamflow':
+    return  5
   else:
     print 'error in data_preparation, PARAMETER_TYPE_COMPUTING error'
 

@@ -6,16 +6,32 @@ import smoderp2d.src.io_functions.prt as prt
 from   smoderp2d.src.tools.tools  import get_argv
 import smoderp2d.src.constants        as constants
 
-extraout = get_argv(constants.PARAMETER_EXTRA_OUTPUT)
-rill, subflow, stream, diffuse = comp_type()
 
+from smoderp2d.src.main_classes.General           import Globals as Gl
+
+#extraout = get_argv(constants.PARAMETER_EXTRA_OUTPUT)
+
+#rill, subflow, stream, diffuse = comp_type()
+
+rill    = Gl.isRill
+subflow = Gl.subflow
+stream  = Gl.isStream
+extraout= Gl.extraOut
 
 class Hydrographs:
-  def __init__(self,array_points,outdirr,mat_tok_usek,rr,rc,pixel_area):
-    points = array_points
+  def __init__(self):
+    
+    gl = Gl()
+    
+    points = gl.get_array_points()
     ipi    = points.shape[0]
     jpj    = 5
     point_int = [[0]*jpj for i in range(ipi)]
+
+    outdir = gl.get_outdir()
+    rr = gl.get_rrows()
+    rc = gl.get_rcols()
+    pixel_area = gl.get_pixel_area()
 
     self.inSurface = []
     self.inStream = []
@@ -69,12 +85,15 @@ class Hydrographs:
 
 
     counter = 0
-    if (mat_tok_usek != None) and (stream == True):
+    
+    # mat_tok_usek is alway presented if stream == True
+    #if (mat_tok_usek != None) and (stream == True):
+    if (stream == True):
       for ip in range(ipi):
         l = point_int[ip][1]
         m = point_int[ip][2]
-        #print mat_tok_usek[ip][jp]
-        if mat_tok_usek[l][m] >= 1000:
+        
+        if gl.get_mat_tok_reach(l,m) >= 1000:
           self.inStream.append(counter)
           counter += 1
         else:
@@ -111,7 +130,7 @@ class Hydrographs:
         if not(extraout) :
           header  += '# time[s];deltaTime[s];rainfall[m];reachWaterLevel[m];reachFlow[m3/s];reachVolRunoff[m3]\n'
         else :
-          header += '# Time[s];deltaTime[s];Rainfall[m];Waterlevel[m];V_runoff[m3];Q[m3/s];V_from_field[m3];V_rests_in_stream[m3]\n'
+          header += '# time[s];deltaTime[s];Rainfall[m];Waterlevel[m];V_runoff[m3];Q[m3/s];V_from_field[m3];V_rests_in_stream[m3]\n'
         self.header.append(header)
         iStream += 1
 
@@ -125,7 +144,7 @@ class Hydrographs:
         if not(extraout) :
           header  += '# time[s];deltaTime[s];rainfall[m];totalWaterLevel[m];surfaceFlow[m3/s];surfaceVolRunoff[m3]'
         else :
-          header += '# Time[s];deltaTime[s];Rainfall[m];Water_level_[m];Sheet_Flow[m3/s];Sheet_V_runoff[m3];Sheet_V_rest[m3];Infiltration[m];Surface_retetion[m];State;V_inflow[m3];WlevelTotal[m]'
+          header += '# time[s];deltaTime[s];Rainfall[m];Water_level_[m];Sheet_Flow[m3/s];Sheet_V_runoff[m3];Sheet_V_rest[m3];Infiltration[m];Surface_retetion[m];State;V_inflow[m3];WlevelTotal[m]'
 
           if rill :
             header += ';WlevelRill[m];Rill_width[m];Rill_flow[m3/s];Rill_V_runoff[m3];Rill_V_rest;Surface_Flow[m3/s];Surface_V_runoff[m3]'
@@ -144,7 +163,7 @@ class Hydrographs:
 
     self.files = []
     for i in range(self.n):
-      name_ = outdirr+os.sep+'point'+str(self.point_int[i][0]).zfill(3)+'.dat'
+      name_ = outdir+os.sep+'point'+str(self.point_int[i][0]).zfill(3)+'.dat'
       file_ = open(name_,'w')
       file_.writelines(self.header[i])
       self.files.append(file_)
@@ -158,8 +177,22 @@ class Hydrographs:
 
 
 
-  def write_hydrographs_record(self,i,j,ratio,courant,courantRill,iter_,dt,total_time,surface,subsurface,currRain,inStream=False,sep=';'):
-
+  def write_hydrographs_record(self,i,j,fc,courant,dt,surface,subsurface,currRain,inStream=False,sep=';'):
+    
+    
+    ratio      = fc.ratio
+    total_time = fc.total_time + dt
+    iter_      = fc.iter_
+    
+    
+    courantMost = courant.cour_most
+    courantRill = courant. cour_most_rill
+    
+    
+    
+    
+    
+    
     if inStream :
       for ip in self.inStream:
         l = self.point_int[ip][1]
@@ -186,13 +219,13 @@ class Hydrographs:
           line += str(dt) + sep
           line += str(currRain) + sep
           linebil = surface.return_str_vals(l,m,sep,dt,extraout)
-          line += linebil[0] # + sep
+          line += linebil[0]  + sep
           line += str(linebil[1]) # + sep
           #line += subsurface.return_str_vals(l,m,sep,dt) + sep   # prozatim
           if extraout :
             line += sep + str(surface.arr[l][m].V_to_rill) + sep
             line += str(ratio) + sep
-            line += str(courant) + sep
+            line += str(courantMost) + sep
             line += str(courantRill) + sep
             line += str(iter_)
 
@@ -215,7 +248,7 @@ class Hydrographs:
 
 
 class HydrographsPass:
-  def write_hydrographs_record(self,i,j,ratio,courant,courantRill,iter_,dt,total_time,surface,subsurface,currRain,inStream=False,sep=';'):
+  def write_hydrographs_record(self,i,j,fc,courant,dt,surface,subsurface,currRain,inStream=False,sep=';'):
     pass
   def closeHydrographs(self):
     pass

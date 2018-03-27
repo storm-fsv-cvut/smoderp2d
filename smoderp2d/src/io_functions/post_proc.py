@@ -1,7 +1,7 @@
 ## @package smoderp2d.src.post_proc Contain a function for the post-processing
 #
 #  the functions are defined according to the  smoderp2d.src.constants.PARAMETER_ARCGIS \n
-#  if smoderp2d.src.constants.PARAMETER_ARCGIS == True: arcgis rasters are created \n
+#  if smoderp2d.src.constants.PARAMETER_ARCGIS == True: Gl.arcgis rasters are created \n
 #  \n
 #  if smoderp2d.src.constants.PARAMETER_ARCGIS == False: ascii rasters are created \n
 #
@@ -22,19 +22,7 @@ from   smoderp2d.src.tools.tools                   import comp_type
 import smoderp2d.src.io_functions.prt as prt
 from    smoderp2d.src.tools.tools                  import logical_argv
 
-
-## if true extra outputs are printed
-logical_argv(constants.PARAMETER_EXTRA_OUTPUT)
-extraOutput = get_argv(constants.PARAMETER_EXTRA_OUTPUT)
-## if true arcgis rasters are printed, else a ascii format is used
-logical_argv(constants.PARAMETER_ARCGIS)
-arcgis      = get_argv(constants.PARAMETER_ARCGIS)
-## the path to the output directory
-
-
-
-
-isRill, subflow, stream, diffuse = comp_type()
+from smoderp2d.src.main_classes.General           import Globals as Gl
 
 
 
@@ -75,8 +63,8 @@ def raster_output_ascii (arrin, G, fs, outname, reachNA=True) :
 
 
 
-if arcgis == True :
-  raster_output = raster_output_arcgis
+if Gl.arcgis == True :
+  raster_output = raster_output_Gl.arcgis
 else :
   raster_output = raster_output_ascii
 
@@ -100,9 +88,9 @@ def do (cumulative, mat_slope, G, surArr) :
   #1, 2, 15, 16
   main_output = [1, 2, 6, 7, 15, 16]  #jj vyznam najdes v class Cumulative mezi class Cumulative a def__init__
 
-  if subflow :
+  if Gl.subflow :
     main_output += [14,15,16,17,18]
-  if extraOutput == True :    #jj tady jen pokud chceme se i ten zbytek extraOutput je zatim definovan  na zacatku class_main_arrays
+  if Gl.extraOut == True :    #jj tady jen pokud chceme se i ten zbytek Gl.extraOut je zatim definovan  na zacatku class_main_arrays
     main_output += [4,8,9,11,12,13,14]
 
   finState  = np.zeros(np.shape(surArr),int)
@@ -146,7 +134,7 @@ def do (cumulative, mat_slope, G, surArr) :
 
 
 
-  if not(extraOutput) :
+  if not(Gl.extraOut) :
     if os.path.exists(output + os.sep + 'temp'):
       shutil.rmtree(output + os.sep + 'temp')
     if os.path.exists(output + os.sep + 'temp_dp'):
@@ -155,7 +143,7 @@ def do (cumulative, mat_slope, G, surArr) :
 
 
   ####### creates the raster in argis format in the output directory
-  #####def arcgis_raster(cumulative, mat_slope, G, surArr):
+  #####def Gl.arcgis_raster(cumulative, mat_slope, G, surArr):
 
     #####output = G.outdir
     #####arcpy.env.workspace = output
@@ -172,9 +160,9 @@ def do (cumulative, mat_slope, G, surArr) :
 
     #####main_output = [1,2,3,5,6,7,10,15]  #jj vyznam najdes v class Cumulative mezi class Cumulative a def__init__
 
-    #####if subflow :
+    #####if Gl.subflow :
       #####main_output += [14,15,16,17,18]
-    #####if extraOutput == True :    #jj tady jen pokud chceme se i ten zbytek extraOutput je zatim definovan  na zacatku class_main_arrays
+    #####if Gl.extraOut == True :    #jj tady jen pokud chceme se i ten zbytek Gl.extraOut je zatim definovan  na zacatku class_main_arrays
       #####main_output += [4,8,9,11,12,13,14]
 
     #####ll_corner = arcpy.Point(G.xllcorner, G.yllcorner)
@@ -183,7 +171,7 @@ def do (cumulative, mat_slope, G, surArr) :
 
     #####for i in main_output:
       #####arrin = np.copy(getattr(cumulative, cumulative.arrs[i]))
-      #####raster_output_arcgis (aarin, G)
+      #####raster_output_Gl.arcgis (aarin, G)
 
 
 
@@ -194,7 +182,7 @@ def do (cumulative, mat_slope, G, surArr) :
 
 
     #####vRest     = np.zeros(np.shape(surArr),float)
-    #####if isRill :
+    #####if Gl.isRill :
       #####for i in rrows:
         #####for j in rcols[i]:
           #####if (finState[i][j] >= 1000) :
@@ -256,7 +244,7 @@ def do (cumulative, mat_slope, G, surArr) :
 
 
     ###### pokud nechci extra output opoustim funkci tu
-    #####if not(extraOutput) :
+    #####if not(Gl.extraOut) :
       #####return 1
 
 
@@ -298,8 +286,8 @@ def do (cumulative, mat_slope, G, surArr) :
     #####saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, G.dx, G.dy, G.NoDataValue)
     #####saveAG.save(outName)
 
-  ####### assign the ourput raster function based on the arcgis selector
-  #####raster_output = arcgis_raster
+  ####### assign the ourput raster function based on the Gl.arcgis selector
+  #####raster_output = Gl.arcgis_raster
 
 
 #####else:
@@ -318,9 +306,9 @@ def do (cumulative, mat_slope, G, surArr) :
 
     #####main_output = [1,2,3,5,6,7,10,15]  #jj vyznam najdes v class Cumulative mezi class Cumulative a def__init__
 
-    #####if subflow :
+    #####if Gl.subflow :
       #####main_output += [14,15,16,17,18]
-    #####if extraOutput == True :    #jj tady jen pokud chceme se i ten zbytek extraOutput je zatim definovan  na zacatku class_main_arrays
+    #####if Gl.extraOut == True :    #jj tady jen pokud chceme se i ten zbytek Gl.extraOut je zatim definovan  na zacatku class_main_arrays
       #####main_output += [4,8,9,11,12,13,14]
 
 
@@ -356,7 +344,7 @@ def do (cumulative, mat_slope, G, surArr) :
     #####totalBil = (cumulative.precipitation + cumulative.inflow_sur) - (cumulative.infiltration + cumulative.V_sur + cumulative.V_rill) - cumulative.sur_ret #+ (cumulative.V_sur_r + cumulative.V_rill_r)
 
     #####vRest     = np.zeros(np.shape(surArr),float)
-    #####if isRill :
+    #####if Gl.isRill :
       #####for i in rrows:
         #####for j in rcols[i]:
           #####if (finState[i][j] >= 1000) :
@@ -391,7 +379,7 @@ def do (cumulative, mat_slope, G, surArr) :
 
 
     ###### pokud nechci extra output opoustim funkci tu
-    #####if not(extraOutput) :
+    #####if not(Gl.extraOut) :
       #####return 1
 
 
@@ -418,7 +406,7 @@ def do (cumulative, mat_slope, G, surArr) :
 
 
 
-  ####### assign the ourput raster function based on the arcgis selector
+  ####### assign the ourput raster function based on the Gl.arcgis selector
   #####raster_output = ascii_raster
 
 
@@ -427,7 +415,7 @@ def do (cumulative, mat_slope, G, surArr) :
 
 
 
-if stream and arcgis:
+if Gl.isStream and Gl.arcgis:
   import arcpy
   def write_stream_table(outDir, surface,toky):
     sep = ';'
@@ -449,9 +437,9 @@ if stream and arcgis:
 
         f.write(line)
 
-    arcpy.MakeFeatureLayer_management(toky,outTemp+"streamtmp.shp")
-    arcpy.AddJoin_management(outTemp+"streamtmp.shp","FID",outFile,"FID")
-    arcpy.CopyFeatures_management(outTemp+"streamtmp.shp",outFileShp)
+    arcpy.MakeFeatureLayer_management(toky,outTemp+"Gl.streamtmp.shp")
+    arcpy.AddJoin_management(outTemp+"Gl.streamtmp.shp","FID",outFile,"FID")
+    arcpy.CopyFeatures_management(outTemp+"Gl.streamtmp.shp",outFileShp)
 
 
   stream_table = write_stream_table
@@ -461,7 +449,7 @@ if stream and arcgis:
 
 
 
-elif stream and not(arcgis):
+elif Gl.isStream and not(Gl.arcgis):
   def write_stream_table(outDir, surface,toky):
     sep = ';'
     nReaches = surface.nReaches

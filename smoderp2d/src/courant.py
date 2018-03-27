@@ -8,7 +8,7 @@ from   smoderp2d.src.tools.tools       import get_argv
 import smoderp2d.src.io_functions.prt  as prt
 
 
-
+from smoderp2d.src.main_classes.General           import Globals as Gl
 
 ## Contains variables and methods needed for time step size handling
 #
@@ -33,7 +33,7 @@ class Courant():
     self.co = 'sheet'
     self.co_pre = 'sheet'
     self.maxratio = 10
-    self.max_delta_t = float(get_argv(constants.PARAMETER_MAX_DELTA_T))
+    self.max_delta_t = Gl.maxdt
     self.max_delta_t_mult = 1.0
 
 

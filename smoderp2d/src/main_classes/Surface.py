@@ -23,9 +23,8 @@ import smoderp2d.src.constants                      as constants
 import smoderp2d.src.io_functions.prt               as prt
 import smoderp2d.src.processes.surface              as surfacefce
 from   smoderp2d.src.tools.tools                     import comp_type
-isRill, subflow, stream, diffuse = comp_type()
 
-
+from smoderp2d.src.main_classes.General           import Globals as Gl
 
 
 
@@ -79,12 +78,12 @@ class SurArrs :
 #  Class Surface contains data and methods
 #  to calculate the surface and rill runoff
 #
-class Surface(Stream if stream == True else StreamPass,Kinematic,Globals,Size):
+class Surface(Stream if Gl.isStream == True else StreamPass,Kinematic,Globals,Size):
 
 
   ## The constructor
   #  make all numpy arrays and establish the inflow procedure based on D8 or Multi Flow Direction Algorithm method
-  def __init__(self,r,c,mat_reten,mat_inf_index,mat_hcrit,mat_aa,mat_b):
+  def __init__(self):
 
     prt.message("Surface:")
     
@@ -92,19 +91,21 @@ class Surface(Stream if stream == True else StreamPass,Kinematic,Globals,Size):
     
     self.n = 15
     self.arr = np.empty((self.r,self.c), dtype=object)
-    self.r = r
-    self.c = c 
+    #self.r = r
+    #self.c = c 
+    
+    
+    #print '\n\n\n\n\n\nnatvrdo ret, a, b\n\n\n\n\n\n'
     
     for i in range(self.r):
       for j in range(self.c):
         #jj                           prevod na m y mm
-        self.arr[i][j] = SurArrs(-mat_reten[i][j]/1000.,mat_inf_index[i][j],mat_hcrit[i][j],mat_aa[i][j],mat_b[i][j])
-        #self.arr[i][j] = SurArrs(sur_ret,mat_inf_index[i][j],0.0025,mat_aa[i][j],mat_b[i][j])
+        self.arr[i][j] = SurArrs(self.mat_reten[i][j],self.mat_inf_index[i][j],self.mat_hcrit[i][j],self.mat_aa[i][j],self.mat_b[i][j])
+        #print mat_aa[i][j],mat_b[i][j]
+        #self.arr[i][j] = SurArrs(-0.001,mat_inf_index[i][j],0.0025,0.965,1.7)
 
 
-    self.rill_computing          = isRill
-
-    if (isRill) :
+    if (self.isRill) :
       prt.message("\tRill flow: \n\t\tON")
     else:
       #raw_input()
@@ -130,9 +131,9 @@ class Surface(Stream if stream == True else StreamPass,Kinematic,Globals,Size):
     else :
       line = str(arr.h_sheet) + sep + str(arr.V_runoff/dt) + sep + str(arr.V_runoff) + sep + str(arr.V_rest) + sep + str(arr.infiltration)+ sep + str(arr.cur_sur_ret)+ sep + str(arr.state) + sep + str(arr.inflow_tm) + sep + str(arr.h_total_new)
 
-      if self.rill_computing :
+      if self.isRill :
 
-        line += sep + str(arr.h_rill) + sep + str(arr.rillWidth) + sep + str(arr.V_runoff_rill/dt) + sep + str(arr.V_runoff_rill) + sep + str(arr.V_rill_rest) + sep + str(arr.V_runoff/dt + arr.V_runoff_rill/dt) + sep + str(arr.V_runoff+arr.V_runoff_rill) + sep
+        line += sep + str(arr.h_rill) + sep + str(arr.rillWidth) + sep + str(arr.V_runoff_rill/dt) + sep + str(arr.V_runoff_rill) + sep + str(arr.V_rill_rest) + sep + str(arr.V_runoff/dt + arr.V_runoff_rill/dt) + sep + str(arr.V_runoff+arr.V_runoff_rill)
 
       bil_  = arr.h_total_pre*self.pixel_area + arr.cur_rain*self.pixel_area + arr.inflow_tm - (arr.V_runoff + arr.V_runoff_rill + arr.infiltration*self.pixel_area) - (arr.cur_sur_ret*self.pixel_area) - arr.h_total_new*self.pixel_area #<< + arr.V_rest + arr.V_rill_rest) + (arr.V_rest_pre + arr.V_rill_rest_pre)
 
@@ -262,10 +263,10 @@ def compute_h_hrill(h_total_pre,h_crit,state,rillWidth,hRillPre):
 
 def sheet_runoff(sur,dt):
 
-
+  gl = Gl()
   q_sheet = surfacefce.shallowSurfaceKinematic(sur)
-  sur.V_runoff = dt * q_sheet * Globals.dx
-  sur.V_rest = sur.h_sheet * Globals.pixel_area - sur.V_runoff
+  sur.V_runoff = dt * q_sheet * gl.get_dx()
+  sur.V_rest = sur.h_sheet * gl.get_pixel_area() - sur.V_runoff
 
   return q_sheet
 
@@ -286,12 +287,15 @@ def sheet_runoff(sur,dt):
 def rill_runoff(i,j,sur,dt,efect_vrst,ratio):
 
   ppp = False
+  gl = Gl()
+  n = gl.get_mat_n(i,j)
+  slope = gl.get_mat_slope(i,j)
 
   V_to_rill = sur.h_rill*Globals.pixel_area
   h, b   = rill.update_hb(V_to_rill,constants.RILL_RATIO,efect_vrst,sur.rillWidth,ratio,ppp)
   R_rill = (h*b)/(b + 2*h)
   #print '\t', h,b, b, 2*h
-  v_rill = math.pow(R_rill,(2.0/3.0)) * 1./Gl.mat_n[i][j] * math.pow(Gl.mat_slope[i][j]/100,0.5)
+  v_rill = math.pow(R_rill,(2.0/3.0)) * 1./n * math.pow(slope/100,0.5)
   #print "V_to_rill, R_rill", V_to_rill, R_rill
   #q_rill = v_rill * constants.RILL_RATIO * b * b # [m3/s]
   
@@ -361,7 +365,7 @@ def surface_retention(bil,sur):
 
 
 
-if (isRill) :
+if (Gl.isRill) :
   runoff = __runoff
 else:
   runoff = __runoff_zero_compType

@@ -19,7 +19,7 @@ class Reach():
     #raw_input('classes_main_arrays 299\n!\n!\n!')
 
     self.id_ = id_
-    ##self.imat = i  #jj melo byt pozice v matici, ale to mozna nani treba kdyz zanech mat_tok_usek a tam id useku
+    ##self.imat = i  #jj melo byt pozice v matici, ale to mozna nani treba kdyz zanech mat_tok_reach a tam id useku
     ##self.jmat = j
     self.pointsFrom = [POINT_X,POINT_Y]
     self.pointsTo   = [POINT_X_1,POINT_Y_1]
@@ -101,14 +101,14 @@ class Stream(object):
       self.reach.append(Reach(self.toky[0][i],self.toky[1][i],self.toky[2][i],self.toky[3][i],self.toky[4][i],self.toky[5][i],self.toky[6][i],self.toky[7][i],self.toky[8][i],self.toky[9][i],self.toky[10][i],self.toky[11][i],self.toky[12][i],self.toky[13][i],self.toky[14][i]))
 
     self.tokyLoc      = Gl.tokyLoc
-    self.mat_tok_usek = Gl.mat_tok_usek
+    self.mat_tok_reach = Gl.mat_tok_reach
     
     
 
     
     for i in Gl.rr :
       for j in Gl.rc[i]:
-        self.arr[i][j].state += self.mat_tok_usek[i][j]
+        self.arr[i][j].state += self.mat_tok_reach[i][j]
 
     self.STREAM_RATIO = Gl.STREAM_RATIO
 
