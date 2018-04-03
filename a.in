@@ -37,7 +37,7 @@ file: indata/srazka.txt
 #sec
 maxdt: 20
 #min
-endtime: 40
+endtime: 20
 
 
 [Other]
@@ -69,7 +69,9 @@ arcgis: false
 extraout: true
 #
 # kde se zadava cesta k souboru se vstupnimi data
-indata: indata/trych01.save
+# indata: indata/trych01.save
+indata: indata/konk01.save
+#
 #
 # pro linux zatim jen roff - nacteni vstupnich souboru
 # zadava se i jako povinna option pri spusteni skriptU

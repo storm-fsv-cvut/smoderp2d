@@ -280,7 +280,7 @@ class Cumulative(CumulativeSubsurface if Gl.subflow == True else CumulativeSubsu
 
       elif surface.h_rill > self.h_rill[i][j]:
         self.h_rill[i][j]  = surface.h_rill
-        self.b_rill[i][j]  = surface.b
+        self.b_rill[i][j]  = surface.rillWidth
         self.q_rill[i][j]  = q_rill
 
 
