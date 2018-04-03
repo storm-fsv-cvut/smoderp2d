@@ -1,3 +1,15 @@
+## @package smoderp2d.src.tools.resolve_partial_computing
+#
+#  smodepr2d can be run in several modes
+#  full mode, only data preparation mode and only runoff mode
+#  the handing of those modes is platform dependent 
+#  there there two methods get_indata_lin for linux machine 
+#  and get_indata_win for for windows machine are defined in the package
+#  the functionality of is the same for both platforms
+
+
+
+
 import os
 import sys
 
@@ -18,7 +30,126 @@ from    smoderp2d.src.tools.tools                  import logical_argv
 
 
 
-def get_indata (tc,args):
+def get_indata_lin (tc,args):
+
+
+  if tc == 'roff':
+
+    import ConfigParser
+    import smoderp2d.src.tools.save_load_data  as sld
+    import smoderp2d.src.processes.rainfall    as rainfall
+    
+    #import  smoderp2d.src.tools.save_load_data_nopickle    as sld   # preparated
+    Config = ConfigParser.ConfigParser()
+    Config.read(args.indata)
+    indata = Config.get('Other','indata')
+
+
+
+    
+    # the data are loared from a pickle file
+    boundaryRows, boundaryCols, \
+    mat_boundary, rrows, rcols, outletCells, \
+    x_coordinate, y_coordinate,\
+    NoDataValue, array_points, \
+    cols, rows, combinatIndex, delta_t,  \
+    mat_pi, mat_ppl, \
+    surface_retention, mat_inf_index, mat_hcrit, mat_aa, mat_b, mat_reten,\
+    mat_fd, mat_dmt, mat_efect_vrst, mat_slope, mat_nan, \
+    mat_a,   \
+    mat_n,   \
+    output, pixel_area, points, poradi,  end_time, spix, state_cell, \
+    temp, type_of_computing, vpix, mfda, sr, itera, \
+    toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sld.load_data(indata)
+
+
+
+    """  This is data loading without pickle.dimp, prepared for future use
+    boundaryRows, boundaryCols, \
+    mat_boundary, rrows, rcols, outletCells, \
+    x_coordinate, y_coordinate,\
+    NoDataValue, array_points, \
+    cols, rows, combinatIndex, delta_t,  \
+    mat_pi, mat_ppl, \
+    surface_retention, mat_inf_index, mat_hcrit, mat_aa, mat_b,\
+    mat_fd, mat_dmt, mat_efect_vrst, mat_slope, mat_nan, \
+    mat_a,   \
+    mat_n,   \
+    output, pixel_area, points, poradi,  end_time, spix, state_cell, \
+    temp, type_of_computing, vpix, mfda, sr, itera, \
+    toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sld.load(indata)   
+    """
+
+    
+    ## some variables configs can be changes after loading from pickle.dump
+    ## such as
+    #  end time of simulation 
+    if Config.get('time','endtime') != '-':
+      end_time = Config.getfloat('time','endtime')*60.0
+    
+        
+    #  time of flow algorithm
+    if Config.get('Other','mfda') != '-':
+      mfda = Config.get('Other','mfda')
+
+    #  type of computing: 
+    #    0 sheet only, 
+    #    1 sheet and rill flow, 
+    #    2 sheet and subsurface flow, 
+    #    3 sheet, rill and reach flow
+    if Config.get('Other','typecomp') != '-':
+      type_of_computing = Config.get('Other','typecomp')
+    
+      
+    #  output directory is always set
+    output = Config.get('Other','outdir')
+    
+    
+    #  rainfall data can be saved
+    if Config.get('srazka','file') != '-' :
+      sr,itera  = rainfall.load_precipitation(Config.get('srazka','file'))
+    
+    
+    ## some configs are not in pickle.dump
+    extraOut = Config.getboolean('Other','extraout')
+    #  rainfall data can be saved
+    prttimes = Config.get('Other','printtimes')
+    
+    
+    
+    maxdt = Config.getfloat('time','maxdt')
+    if os.path.exists(output):
+      import shutil
+      shutil.rmtree(output)
+    if not os.path.exists(output):
+      os.makedirs(output)
+      #os.makedirs(output+os.sep+'prubeh')
+
+    return boundaryRows, boundaryCols, \
+    mat_boundary, rrows, rcols, outletCells, \
+    x_coordinate, y_coordinate,\
+    NoDataValue, array_points, \
+    cols, rows, combinatIndex, delta_t,  \
+    mat_pi, mat_ppl, \
+    surface_retention, mat_inf_index, mat_hcrit, mat_aa, mat_b, mat_reten,\
+    mat_fd, mat_dmt, mat_efect_vrst, mat_slope, mat_nan, \
+    mat_a,   \
+    mat_n,   \
+    output, pixel_area, points, poradi,  end_time, spix, state_cell, \
+    temp, type_of_computing, vpix, mfda, sr, itera, \
+    toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc, extraOut, prttimes, maxdt
+  
+  
+  else :
+    print "on a linux machine work only roff mode"
+    return None
+  
+  
+  
+
+
+
+def get_indata_win (tc,args):
 
 
   # full computation
@@ -97,53 +228,12 @@ def get_indata (tc,args):
   elif tc == 'roff':
 
 
-    # to je to je jen provizorne, pokud to bude petr delat tak jo doposud
-    if len(sys.argv) > 10 :
-      logical_argv(constants.PARAMETER_ARCGIS)
-      logical_argv(constants.PARAMETER_EXTRA_OUTPUT)
-      logical_argv(constants.PARAMETER_MFDA)
-      indata = get_argv(constants.PARAMETER_INDATA)
-
-
-    else:
-
-      import ConfigParser
-      Config = ConfigParser.ConfigParser()
-      Config.read(args.indata)
-      sys.argv = [sys.argv.pop(0)]
-      sys.argv.append(Config.get('GIS','dem'))
-      sys.argv.append(Config.get('GIS','soil'))
-      sys.argv.append(Config.get('shape atr','soil-atr'))
-      sys.argv.append(Config.get('GIS','lu'))
-      sys.argv.append(Config.get('shape atr','lu-atr'))
-      sys.argv.append(Config.get('srazka','file'))
-      sys.argv.append(Config.get('time','maxdt'))
-      sys.argv.append(Config.get('time','endtime'))
-      #sys.argv.append(Config.get('Other','reten'))
-      sys.argv.append(Config.get('Other','points'))
-      sys.argv.append(Config.get('Other','outdir'))
-      sys.argv.append(Config.get('Other','soilvegtab'))
-      sys.argv.append(Config.get('Other','soilvegcode'))
-      sys.argv.append(Config.get('Other','streamshp'))
-      sys.argv.append(Config.get('Other','streamtab'))
-      sys.argv.append(Config.get('Other','streamtabcode'))
-      sys.argv.append(Config.get('Other','arcgis'))
-
-
-      sys.argv.append(Config.get('Other','mfda'))
-      sys.argv.append(Config.get('Other','extraout'))
-      sys.argv.append(Config.get('Other','indata'))
-      sys.argv.append(Config.get('Other','partialcomp'))
-      sys.argv.append(Config.get('Other','debugprt'))
-      sys.argv.append(Config.get('Other','printtimes'))
-      sys.argv.append(Config.get('Other','typecomp'))
-
-
-      logical_argv(constants.PARAMETER_ARCGIS)
-      logical_argv(constants.PARAMETER_EXTRA_OUTPUT)
-      logical_argv(constants.PARAMETER_MFDA)
-      indata = get_argv(constants.PARAMETER_INDATA)
-
+    
+    
+    logical_argv(constants.PARAMETER_ARCGIS)
+    logical_argv(constants.PARAMETER_EXTRA_OUTPUT)
+    logical_argv(constants.PARAMETER_MFDA)
+    indata = get_argv(constants.PARAMETER_INDATA)
 
 
     import smoderp2d.src.tools.save_load_data  as sld
@@ -153,7 +243,8 @@ def get_indata (tc,args):
 
 
 
-
+    
+    # the data are loared from a pickle file
     boundaryRows, boundaryCols, \
     mat_boundary, rrows, rcols, outletCells, \
     x_coordinate, y_coordinate,\
@@ -186,41 +277,43 @@ def get_indata (tc,args):
     toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sld.load(indata)   # pripraveno na pak
     """
 
+    ## some variables configs can be changes after loading from pickle.dump
+    ## such as
+    #  end time of simulation 
+    if Config.get('time','endtime') != '-':
+      end_time = Config.getfloat('time','endtime')*60.0
+    
+        
+    #  time of flow algorithm
+    if Config.get('Other','mfda') != '-':
+      mfda = Config.get('Other','mfda')
 
-    if get_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY) == '-':
-      set_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY, output)
-
-    if get_argv(constants.PARAMETER_END_TIME) == '-':
-      set_argv(constants.PARAMETER_END_TIME, end_time)
-
-    if get_argv(constants.PARAMETER_MFDA) == '-':
-      set_argv(constants.PARAMETER_MFDA,mfda)
-
-    if get_argv(constants.PARAMETER_SURFACE_RETENTION) == '-':
-      set_argv(constants.PARAMETER_SURFACE_RETENTION,surface_retention)
-
-    if get_argv(constants.PARAMETER_TYPE_COMPUTING) == '-':
-      set_argv(constants.PARAMETER_TYPE_COMPUTING,int_comp_type(type_of_computing))
-
-
-    #jj end time se musi takto delta vzdy, neni v save
-    output = get_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
-    end_time = float(get_argv(constants.PARAMETER_END_TIME))*60.0
-    mfda                    = get_argv(constants.PARAMETER_MFDA)
-    surface_retention       = float(get_argv(constants.PARAMETER_SURFACE_RETENTION))/1000 #prevod z [mm] na [m]
-
-
-    arcgis                  = get_argv(constants.PARAMETER_ARCGIS)
-
-    rainfall_file_path      = get_argv(constants.PARAMETER_PATH_TO_RAINFALL_FILE)
-    if rainfall_file_path == '-' :
-      pass
-    # zmena deste posave, pokud se pocita jen roff
-    else:
-      sr,itera  = rainfall.load_precipitation(rainfall_file_path)
-
-
-
+    #  type of computing: 
+    #    0 sheet only, 
+    #    1 sheet and rill flow, 
+    #    2 sheet and subsurface flow, 
+    #    3 sheet, rill and reach flow
+    if Config.get('Other','typecomp') != '-':
+      type_of_computing = Config.get('Other','typecomp')
+    
+      
+    #  output directory is always set
+    output = Config.get('Other','outdir')
+    
+    
+    #  rainfall data can be saved
+    if Config.get('srazka','file') != '-' :
+      sr,itera  = rainfall.load_precipitation(Config.get('srazka','file'))
+    
+    
+    ## some configs are not in pickle.dump
+    extraOut = Config.getboolean('Other','extraout')
+    #  rainfall data can be saved
+    prttimes = Config.get('Other','printtimes')
+    
+    
+    
+    maxdt = Config.getfloat('time','maxdt')
     if os.path.exists(output):
       import shutil
       shutil.rmtree(output)
@@ -240,4 +333,4 @@ def get_indata (tc,args):
     mat_n,   \
     output, pixel_area, points, poradi,  end_time, spix, state_cell, \
     temp, type_of_computing, vpix, mfda, sr, itera, \
-    toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc
+    toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc, extraOut, prttimes, maxdt

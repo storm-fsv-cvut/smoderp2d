@@ -56,39 +56,144 @@ from smoderp2d.src.tools.tools             import get_argv
 
 
 
+
+
+class Error(Exception):
+    """Base class for exceptions in this module."""
+    pass
+
+class MaxIterationExceeded(Error):
+    """Exception raised if number of iteration exceed max iteration criterion
+
+    Attributes:
+        maxIter  -- max n of iteration
+    """
+
+    def __init__(self,mi,t):
+        self.msg = 'Maximum of iterations (maxIter = ' + str(mi) + ') was exceeded of at time [s]: ' + str(t) + '.'
+    def __str__(self):
+        return repr(self.msg)
+
+
+
+
+## FlowControl manage variables contains variables 
+#  
+#  class contains variables which controls
+#  are related to main computational loop
+class FlowControl():
+  
+  def __init__(self):
+    
+    # type of infiltration
+    # 0 for philip infiltration is the only one
+    # in current version
+    self.infiltrationType = int(0)
+    
+    # actual time in calculation
+    self.total_time = 0.0
+    
+    # keep order of a curent rainfall interval
+    self.tz      = 0
+    
+    # stores cumulative interception
+    self.sum_interception = 0
+    
+    # factor deviding the time step for rill calculation
+    # currently inactive
+    self.ratio   = 1
+    
+    # naximum amount of iterations
+    self.maxIter = 40
+    
+    # current number of wihtin time step iterations
+    self.iter_   = 0
+    
+  # store tz and sum of interception
+  # in case of repeating time time stem iteration
+  def save_vars(self):
+    self.tz_tmp = self.tz
+    self.sum_interception_tmp = self.sum_interception
+  # restore tz and sum of interception
+  # in case of repeating time time stem iteration  
+  def restore_vars(self):
+    self.tz = self.tz_tmp
+    self.sum_interception = self.sum_interception_tmp
+  
+  
+  # set current number of iteratio to
+  # zero at the begining of each time step  
+  def refresh_iter(self):
+    self.iter_ = 0
+  # rises iteration count by one 
+  # in case of iteration within a timestep calculation
+  def upload_iter(self):
+    self.iter_ += 1
+  # check if iteration exceed a maximum allowed amount
+  def max_iter_reached(self):
+    return self.iter_ < self.maxIter
+    
+  # saves ration in case of interation within time step
+  def save_ratio(self):
+    self.ratio_tmp = self.ratio
+  # check for changing ratio after rill courant criterion check
+  def compare_ratio(self):
+    return self.ratio_tmp == self.ratio
+  
+  # rises time after successfully calculated previous time step
+  def update_total_time(self,dt):
+    self.total_time += dt
+    
+  # checkes it end time is reached
+  def compare_time(self,end_time):
+    return self.total_time < end_time
+
+
+
+
+
+## Initialize main classes
+# 
+# method defines instances of classes 
+# for rainfall, surface, stream and subsurface processes handling
 def init_classes():
-  
-  
-  
-  isRill, subflow, stream, diffuse, = comp_type()
 
+  
 
+  # boolean variables defines presence of process 
+  #isRill, subflow, stream, diffuse, = comp_type()
+
+  
+  # instance of class for handling print of the solution in given times  
   times_prt = TimesPrt()
+  
+  
+  flowControl = FlowControl()
+  
+  
 
 
-  infiltrationType = int(0)
-  total_time = 0.0      #delta_t bacha delta_t se prepisuje nize u couranta
-  tz = 0
-  sum_interception = 0
-  ratio = 1
-  maxIter = 40
+  # instance of class handling the actual rainfall amount
+  rain_arr = Vegetation()
+  
+  
+  # instance of class handling the surface processes
+  surface = Surface()
 
-
-  rain_arr = Vegetation(Gl.r,Gl.c,Gl.mat_ppl,Gl.mat_pi/1000.0)
-
-
-  surface = Surface(Gl.r,Gl.c,Gl.mat_reten,Gl.mat_inf_index,Gl.mat_hcrit,Gl.mat_aa,Gl.mat_b)
-
-
-  if (subflow == True):
+  # instance of class handling the subsurface processes if desire
+  # doto: include in data preprocessing
+  if (Gl.subflow == True):
     subsurface = Subsurface(L_sub = 0.1, Ks = 0.005, vg_n = 1.5, vg_l =  0.5)
   else:
     subsurface = Subsurface()
-
+  
+  
+  # instance of class which stores maximal and cumulative values of resulting variables
   cumulative = Cumulative()
   
   
-  
+  # instance of class which handle times step changes
+  # based on Courant condition
   courant = Courant()
   delta_t = courant.initial_time_step(surface)
   courant.set_time_step(delta_t)
@@ -98,11 +203,15 @@ def init_classes():
 
 
 
+
+          
+          
+  # instance of class which opens files for storing hydrographs 
   import io_functions.hydrographs as wf
   points_shape = Gl.points
   if points_shape and points_shape != "#":
-    hydrographs = wf.Hydrographs(Gl.array_points,Gl.outdir,Gl.mat_tok_usek,Gl.rr,Gl.rc,Gl.pixel_area)
-    arcgis      = get_argv(constants.PARAMETER_ARCGIS)
+    hydrographs = wf.Hydrographs()
+    arcgis      = Gl.arcgis
     if not(arcgis):
       with open(Gl.outdir+'/points.txt', 'w') as f:
         for i in range(len(Gl.array_points)):
@@ -111,115 +220,163 @@ def init_classes():
   else:
     hydrographs = wf.HydrographsPass()
 
-
+  # instance of class contains method for single time step calculation
   time_step = TimeStep()
 
 
-  # first record hydrographs
+  #self,i,j,fc,courant,dt,surface,subsurface,currRain,inStream=False,sep=';')
+  # Record values into hydrographs at time zero
   for i in Gl.rr:
     for j in Gl.rc[i]:
-      hydrographs.write_hydrographs_record(i,j,ratio,0.0,0.0,0,delta_t,total_time,surface,subsurface,0.0)
+      hydrographs.write_hydrographs_record(i,j,flowControl,courant,delta_t,surface,subsurface,0.0)
+
+  # Record values into stream hydrographs at time zero
+  hydrographs.write_hydrographs_record(i,j,flowControl,courant,delta_t,surface,subsurface,0.0 ,True)
 
 
-  hydrographs.write_hydrographs_record(i,j,ratio,0.0,0.0,0,delta_t,total_time,surface,subsurface,0.0,True)
+  
 
-
-
-  return delta_t,  times_prt, infiltrationType, total_time, tz, sum_interception, ratio, maxIter, \
-    rain_arr, surface, subsurface, cumulative, courant, hydrographs, time_step
+  return delta_t, flowControl, rain_arr, surface, subsurface, cumulative, courant, hydrographs, time_step, times_prt 
  
  
   prt.message("--------------------- ------------------- ---------------------") 
- 
-  
+
+
+
+## Class runoff performs the calculation
+#
+#
 class Runoff():
 
+
+  ## Method run call method for initialization 
+  #  and contains the main time loop
   def run(self):
 
-    # taky se vyresi vztypbi soubory nacteni dat
-    # vse se hodi do ogjektu Globals as Gl
+    
+    #delta_t, times_prt, infiltrationType, total_time, tz, sum_interception, ratio, maxIter, \
+    delta_t, flowControl, rain_arr, surface, subsurface, cumulative, courant, hydrographs, time_step, times_prt = init_classes()
 
-    delta_t, times_prt, infiltrationType, total_time, tz, sum_interception, ratio, maxIter, \
-    rain_arr, surface, subsurface, cumulative, courant, hydrographs, time_step = init_classes()
+    
 
-
-
+    
+    
 
 
     i = 0
     j = 0
+    # saves time before the main loop
     start = time.time()
-    prt.message('Start of computing ...')
-    while ( total_time < Gl.end_time ):
+    prt.message('Start of computing ')
+    
+    # main loop
+    # until the end time
+    while ( flowControl.compare_time(Gl.end_time) ):
+        
+        flowControl.save_vars()
+        #tz_tmp               = tz                # stores the order of the rainfall interval in case of the time step size reduction
+        #sum_interception_tmp = sum_interception  # stores cumulative interception in case of the time step size reduction
+        
+        flowControl.refresh_iter()
+        #iter_                = 0
 
-        #time_step.save(surface.arr,subsurface.arr)
-        tz_tmp               = tz
-        sum_interception_tmp = sum_interception
-        iter_                = 0
-
-
-
-        while (iter_ < maxIter):
-          #print '      dt ', delta_t
-          iter_ += 1
-          #time_step.undo(surface.arr,subsurface.arr)
-          tz                 = tz_tmp
-          sum_interception   = sum_interception_tmp
-          courant.reset()
-          ratio_tmp = ratio
-
-          ratio, v_sheet, v_rill, curr_rain, tz = time_step.do_flow( Gl.rr,Gl.rc,surface, subsurface, delta_t,  Gl.mat_efect_vrst, ratio, courant, Gl.itera, total_time, tz, Gl.sr )
-
+        
+        # iteration loop
+        while (flowControl.max_iter_reached()):
+          
+        
+          flowControl.upload_iter()
+          #iter_ += 1
+          
+          
+          flowControl.restore_vars()
+          #tz                 = tz_tmp                # load the order of current rainfall interval
+          #sum_interception   = sum_interception_tmp  # load the current cumulative interception
+          
+          
+          # reset of the courant condition
+          courant.reset()  
+          flowControl.save_ratio()
+          #ratio_tmp = ratio
+          
+          
+          # time_step.do_flow return result of variables affecting the time step size
+          potRain = time_step.do_flow( surface, subsurface, delta_t, flowControl, courant )
+          
+          # stores current time step
           delta_t_tmp = delta_t
-
-          delta_t, ratio = courant.courant(curr_rain,delta_t,Gl.spix,ratio)
-
-
-
-          #if (iter_ == 2): raw_input()
-          if (delta_t_tmp == delta_t) and (ratio_tmp == ratio) : break
+          
+          # update time step size if necessary (based on the courant condition)
+          delta_t, flowControl.ratio = courant.courant(potRain,delta_t,Gl.spix,flowControl.ratio)
 
 
 
-        NS, sum_interception = time_step.do_next_h(Gl.rr,Gl.rc,Gl.pixel_area,surface, subsurface, rain_arr, cumulative, hydrographs, curr_rain, courant,  total_time, delta_t, Gl.combinatIndex, Gl.NoDataValue, sum_interception, Gl.mat_efect_vrst, ratio, iter_)
+          # I courant conditions is satisfied (time step did change) the iteration loop breaks
+          if (delta_t_tmp == delta_t) and (flowControl.compare_ratio()) : break
+
+
+        
+        # Calculate actual rainfall and adds up interception
+        # todo: AP - actual is not storred in hydrographs
+        actRain = time_step.do_next_h(surface, subsurface, rain_arr, cumulative, hydrographs, flowControl, courant, potRain,  delta_t)
 
 
 
 
 
-
-        if iter_ >= maxIter :
+        # if the iteration exceed the maximal amount of iteration
+        # last results are stored in hydrographs
+        # and error is raised
+        if not(flowControl.max_iter_reached()) :
           for i in Gl.rr:
             for j in Gl.rc[i]:
-              hydrographs.write_hydrographs_record(i,j,ratio,courant.cour_most,courant.cour_most_rill,iter_,delta_t,total_time+delta_t,surface,subsurface,curr_rain)
-          post_proc.raster_output(cumulative, Gl.mat_slope, Gl, surface.arr)
-          prt.error("max iteration in time step was reached\n","\tmaxIter = ", maxIter, '\n\tpartial results are saved in ', Gl.outdir, 'directory')
+              hydrographs.write_hydrographs_record(i,j,flowControl,courant,delta_t,surface,subsurface,curr_rain)
+          post_proc.do(cumulative, Gl.mat_slope, Gl, surface.arr)
+          raise MaxIterationExceeded(maxIter,total_time)
+        
+        
+        
 
-        if ( Gl.end_time - total_time ) < delta_t and ( Gl.end_time - total_time ) > 0:
-          delta_t = Gl.end_time - total_time
+        
+        
+        
+        # adjusts the last time step size
+        if ( Gl.end_time - flowControl.total_time ) < delta_t and ( Gl.end_time - flowControl.total_time ) > 0:
+          delta_t = Gl.end_time - flowControl.total_time
+        
+        
+        # proceed to next time
+        flowControl.update_total_time(delta_t)
 
-        total_time = total_time + delta_t
 
 
-
-
-        if ( total_time == Gl.end_time ) : break
-        timeperc = 100 * (total_time+delta_t) / Gl.end_time
-
-        progress_bar.pb.update(timeperc,delta_t,iter_,total_time+delta_t)
-
+        # if end time reached the main loop breaks
+        if ( flowControl.total_time == Gl.end_time ) : break
+      
+        timeperc = 100 * (flowControl.total_time+delta_t) / Gl.end_time
+        progress_bar.pb.update(timeperc,delta_t,flowControl.iter_,flowControl.total_time+delta_t)
+        
+        
+        # Calculate outflow from each reach of the stream network
         surface.stream_reach_outflow(delta_t)
+        # Calculate inflow to reaches 
         surface.stream_reach_inflow()
-        surface.stream_cumulative(total_time+delta_t)
-
+        # Record cumulative and maximal results of a reach
+        surface.stream_cumulative(flowControl.total_time+delta_t)
+        
+        
+        # set current times to previous time step
         subsurface.curr_to_pre()
+        
+        # write hydrographs of reaches 
+        hydrographs.write_hydrographs_record(i,j,flowControl,courant,delta_t,surface,subsurface,actRain,True)
 
-        hydrographs.write_hydrographs_record(i,j,ratio,courant.cour_most,courant.cour_most_rill,iter_,delta_t,total_time+delta_t,surface,subsurface,curr_rain,True)
+        
+        # print raster results in given time steps
+        times_prt.prt(flowControl.total_time,delta_t,surface)
 
-
-        times_prt.prt(total_time,delta_t,surface)
-
-
+        # set current time results to previous time step
+        # check if rill flow occur
         for i in Gl.rr:
           for j in Gl.rc[i]:
 
@@ -239,8 +396,6 @@ class Runoff():
             surface.arr[i][j].h_total_pre  = surface.arr[i][j].h_total_new
 
 
-
-        #raw_input()
 
     #######################################################################
     ##########                 End of main loop                 ###########
@@ -265,7 +420,7 @@ class Runoff():
     prt.message('Total computing time: ',str(time.time()-start))
 
 
-
+    
     post_proc.do(cumulative, Gl.mat_slope, Gl, surface.arr)
 
 
@@ -281,7 +436,7 @@ class Runoff():
     import platform
     if platform.system() == "Linux" :
       pid = os.getpid()
-      prt.message("/proc/"+str(pid)+"/status", 'reading...')
+      prt.message("/proc/"+str(pid)+"/status", 'reading')
       with open("/proc/"+str(pid)+"/status",'r') as fp:
         for i, line in enumerate(fp):
           if i >= 11 and i <= 23 :

@@ -2,7 +2,8 @@
 
 import numpy as np
 
-from smoderp2d.src.main_classes.General import Size
+from smoderp2d.src.main_classes.General       import Size
+from smoderp2d.src.main_classes.General       import Globals as Gl
 
 
 
@@ -20,8 +21,14 @@ class Vegetation(Size):
 
 
   ## The constructor.
-  def __init__(self,r,c,mat_ppl,mat_pi):
-
+  def __init__(self):
+    
+    
+    gl = Gl()
+    r = gl.get_rows()
+    c = gl.get_cols()
+    mat_ppl = gl.get_mat_ppl()
+    mat_pi = gl.get_mat_pi()/1000.0
     self.n = 3
     self.arr = np.empty((r,c), dtype=object)
 

@@ -6,10 +6,11 @@ from   smoderp2d.src.tools.tools                   import make_ASC_raster
 from smoderp2d.src.main_classes.General            import *
 import smoderp2d.src.io_functions.prt                  as prt
 
-prtTimes = get_argv(constants.PARAMETER_PRINT_TIME)
+from smoderp2d.src.main_classes.General           import Globals as Gl
 
 
-if prtTimes == '-':
+
+if Gl.prtTimes == '-':
   class TimesPrt():
     def __init__(self):
       pass
@@ -21,7 +22,7 @@ else:
     def __init__(self):
 
 
-      self.fTimes = open(prtTimes,'r')
+      self.fTimes = open(Gl.prtTimes,'r')
       self.outsubrid = 'prubeh'
       os.makedirs(Globals.outdir+os.sep+self.outsubrid)
       self.times  = []
@@ -37,10 +38,11 @@ else:
           if len(z) == 0:
               continue
           else:
-            self.times.append(float(line))
+            self.times.append(float(line)*60.0)
       self.times.sort()
 
-
+      print self.times
+      raw_input()
 
     def prt(self,time,dt,sur):
       if self.__n == len(self.times) :

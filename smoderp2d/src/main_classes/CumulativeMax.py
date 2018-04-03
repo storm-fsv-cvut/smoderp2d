@@ -18,11 +18,7 @@ from   smoderp2d.src.tools.tools          import comp_type
 import smoderp2d.src.io_functions.prt         as prt
 
 
-
-isRill, subflow, stream, diffuse = comp_type()
-
-
-
+from smoderp2d.src.main_classes.General           import Globals as Gl
 
 
 
@@ -133,7 +129,7 @@ class CumulativeSubsurfacePass(object):
 #  the surface and rill flow
 #
 #
-class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfacePass, Globals,Size):
+class Cumulative(CumulativeSubsurface if Gl.subflow == True else CumulativeSubsurfacePass, Globals,Size):
 
 
 
@@ -284,7 +280,7 @@ class Cumulative(CumulativeSubsurface if subflow == True else CumulativeSubsurfa
 
       elif surface.h_rill > self.h_rill[i][j]:
         self.h_rill[i][j]  = surface.h_rill
-        self.b_rill[i][j]  = surface.b
+        self.b_rill[i][j]  = surface.rillWidth
         self.q_rill[i][j]  = q_rill
 
 

@@ -2,7 +2,7 @@
 #  time step, and to store intermeriate variables
 
 
-
+from smoderp2d.src.main_classes.General    import Globals as Gl
 import smoderp2d.src.processes.rainfall        as rain_f
 import smoderp2d.src.processes.infiltration    as infilt
 from   smoderp2d.src.tools.tools               import comp_type
@@ -30,13 +30,20 @@ class TimeStep:
 
 
 
-  def do_flow(self,rr,rc,surface, subsurface,delta_t, mat_efect_vrst, ratio, courant,itera, total_time, tz, sr) :
-
-
-
+  def do_flow(self, surface, subsurface, delta_t,flowControl, courant ) :
+    surface, subsurface, delta_t,flowControl, courant 
 
     
-    rainfall, tz = rain_f.timestepRainfall(itera,total_time,delta_t,tz,sr)
+    gl = Gl()
+    rr = gl.get_rrows()
+    rc = gl.get_rcols() 
+    mat_efect_vrst = gl.get_mat_efect_vrst()
+    fc = flowControl
+    sr = gl.get_sr()
+    itera = gl.get_itera()
+
+    
+    potRain, fc.tz = rain_f.timestepRainfall(itera,fc.total_time,delta_t,fc.tz,sr)
 
 
     for i in rr:
@@ -55,7 +62,7 @@ class TimeStep:
           v_rill = 0.0
           rill_courant = 0.0
         else :
-          q_sheet, v_sheet, q_rill, v_rill, ratio, rill_courant = runoff(i,j,surface.arr[i][j],delta_t, mat_efect_vrst[i][j], ratio)
+          q_sheet, v_sheet, q_rill, v_rill, fc.ratio, rill_courant = runoff(i,j,surface.arr[i][j],delta_t, mat_efect_vrst[i][j], fc.ratio)
           subsurface.runoff(i,j,delta_t, mat_efect_vrst[i][j])
 
         q_surface = q_sheet+q_rill
@@ -71,45 +78,53 @@ class TimeStep:
         #if (w1 > 0 and w2 == 0) :
           #print 'asdf', w1, w2
 
-    return ratio, v_sheet, v_rill, rainfall, tz
+    return potRain
 
 
 
 
 
 
-
-  def do_next_h(self,rr,rc,pixel_area, surface, subsurface, rain_arr, cumulative, hydrographs, rainfall, courant, total_time, delta_t, combinatIndex, NoDataValue, sum_interception, mat_efect_vrst, ratio, iter_):
+#self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain, courant, total_time, delta_t, combinatIndex, NoDataValue, sum_interception, mat_efect_vrst, ratio, iter_
+  def do_next_h(self,surface, subsurface, rain_arr, cumulative, hydrographs, flowControl, courant, potRain,  delta_t):
 
     global infilt_capa
     global max_infilt_capa
     global infilt_time
 
 
-    #ratio_tmpp = ratio
+    
+    gl = Gl()
+    rr = gl.get_rrows()
+    rc = gl.get_rcols() 
+    pixel_area= gl.get_pixel_area() 
+    fc = flowControl
+    combinatIndex = gl.get_combinatIndex()
+    NoDataValue   = gl.get_NoDataValue()
 
-    infilt_capa += rainfall
+    infilt_capa += potRain
     if (infilt_capa < max_infilt_capa) :
       infilt_time += delta_t
-      NS = 0.0
-      rainfall = 0.0
+      actRain = 0.0
+      potRain = 0.0
       for i in rr:
         for j in rc[i]:
-          hydrographs.write_hydrographs_record(i,j,ratio,courant.cour_most,courant.cour_most_rill,iter_,delta_t,total_time+delta_t,surface,subsurface,NS)
-      return NS, sum_interception
+          hydrographs.write_hydrographs_record(i,j,flowControl,courant,delta_t,surface,subsurface,actRain)
+      return actRain
+    
 
     for iii in combinatIndex:
         index = iii[0]
         k = iii[1]
         s =  iii[2]
         #jj * 100.0 !!! smazat
-        iii[3] = infilt.phlilip(k, s, delta_t, total_time-infilt_time, NoDataValue)
+        iii[3] = infilt.phlilip(k, s, delta_t, fc.total_time-infilt_time, NoDataValue)
         #print total_time-infilt_time, iii[3]*1000, k, s
 
     infilt.set_combinatIndex(combinatIndex)
 
 
-
+  
     #
     #nulovani na zacatku kazdeho kola
     #
@@ -127,9 +142,9 @@ class TimeStep:
         #
         # current cell precipitation
         #
-        #print rain_arr.arr[i][j], rainfall, sum_interception
-        NS, sum_interception, rain_arr.arr[i][j].veg_true = rain_f.current_rain(rain_arr.arr[i][j], rainfall, sum_interception)
-        surface.arr[i][j].cur_rain = NS
+        #print rain_arr.arr[i][j], potRain, sum_interception
+        actRain, fc.sum_interception, rain_arr.arr[i][j].veg_true = rain_f.current_rain(rain_arr.arr[i][j], potRain, fc.sum_interception)
+        surface.arr[i][j].cur_rain = actRain
         
         #
         # Inflows from surroundings cells
@@ -140,14 +155,14 @@ class TimeStep:
         #
         # Surface BILANCE
         #
-        surBIL =  surface.arr[i][j].h_total_pre + NS + surface.arr[i][j].inflow_tm/pixel_area - (surface.arr[i][j].V_runoff/pixel_area + surface.arr[i][j].V_runoff_rill/pixel_area)
+        surBIL =  surface.arr[i][j].h_total_pre + actRain + surface.arr[i][j].inflow_tm/pixel_area - (surface.arr[i][j].V_runoff/pixel_area + surface.arr[i][j].V_runoff_rill/pixel_area)
 
         #
         # surface retention
         #
         surBIL = surface_retention(surBIL,surface.arr[i][j])
 
-        #print i,j, surface.arr[i][j].state, surface.arr[i][j].h_total_pre , NS , surface.arr[i][j].inflow_tm/pixel_area , surface.arr[i][j].V_runoff/pixel_area , surface.arr[i][j].V_runoff_rill/pixel_area
+        #print i,j, surface.arr[i][j].state, surface.arr[i][j].h_total_pre , actRain , surface.arr[i][j].inflow_tm/pixel_area , surface.arr[i][j].V_runoff/pixel_area , surface.arr[i][j].V_runoff_rill/pixel_area
 
         #
         # infiltration
@@ -155,7 +170,7 @@ class TimeStep:
         if subsurface.get_exfiltration(i,j) > 0 :
           surface.arr[i][j].infiltration = 0.0
           infiltration =  0.0
-          #print 'NS', NS
+          #print 'actRain', actRain
         else :
           surBIL, infiltration = infilt.philip_infiltration(surface.arr[i][j].soil_type,surBIL)
           surface.arr[i][j].infiltration = infiltration
@@ -180,7 +195,7 @@ class TimeStep:
           surface.arr[i][j].h_total_new = surBIL
 
 
-        #print surface.arr[i][j].h_sheet, surface.arr[i][j].h_total_pre, infiltration, NS,  surface.arr[i][j].inflow_tm/pixel_area
+        #print surface.arr[i][j].h_sheet, surface.arr[i][j].h_total_pre, infiltration, actRain,  surface.arr[i][j].inflow_tm/pixel_area
         surface_state   = surface.arr[i][j].state
         # subsurface inflow
         """
@@ -189,5 +204,7 @@ class TimeStep:
         subsurface.fill_slope()
         """
         cumulative.update_cumulative(i,j,surface.arr[i][j], subsurface,delta_t)
-        hydrographs.write_hydrographs_record(i,j,ratio,courant.cour_most,courant.cour_most_rill,iter_,delta_t,total_time+delta_t,surface,subsurface,NS)
-    return NS, sum_interception
+        hydrographs.write_hydrographs_record(i,j,flowControl,courant,delta_t,surface,subsurface,actRain)
+    
+    
+    return actRain
