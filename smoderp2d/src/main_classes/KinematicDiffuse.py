@@ -7,7 +7,6 @@ from smoderp2d.src.main_classes.Flow import *
 import smoderp2d.src.io_functions.prt as prt
 import smoderp2d.src.flow_algorithm.flow_direction as flow_direction
 
-print Gl.mfda, type(Gl.mfda)
 class Kinematic(Mfda if Gl.mfda else D8):
 
     def __init__(self):
