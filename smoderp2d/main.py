@@ -38,7 +38,10 @@
 
 def run():
 
-    import smoderp2d.src.io_functions.prttxtlogo
+    from smoderp2d.src.io_functions.prttxtlogo import prttxtlogo
+
+    # print txt logo
+    prttxtlogo()
 
     import platform
     # init class contains global variables
