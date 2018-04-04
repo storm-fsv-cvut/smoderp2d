@@ -45,13 +45,13 @@ points: -
 # 
 # output adresar ze zadava
 # obsah adresare se na zacatku vypoctu smaze
-outdir: out
+outdir: out-test
 
 # 
 # zadava se 
 # pro zousteni z arvgis je zkryt
 # zatim mozna neni zajimavy...
-typecomp: 0
+typecomp: 3
 # 
 # Mfda zatim zustava false
 mfda: False
