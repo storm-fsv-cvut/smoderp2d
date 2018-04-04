@@ -8,8 +8,3 @@ setup(name='smoderp2d',
       author_email='petr.kavka@googlemail.com',
       url='http://storm.fsv.cvut.cz/cinnost-katedry/volne-stazitelne-vysledky/smoderp/?lang=cz',
       )
-
-
-
-
-
