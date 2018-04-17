@@ -135,6 +135,7 @@ def make_ASC_raster(name_, numpy_arr, G):
 #  Optionally string parameter co_ specify the process user ask for rill | subflow | stream | diffuse
 #
 def comp_type(tc, co_=""):
+    ### TODO: remove (see providers.base)
     """
     string_type_of_coputing = get_argv(constants.PARAMETER_TYPE_COMPUTING)
     string_type_of_coputing = string_type_of_coputing.lower().replace(' ','').replace(',','')  #jj .lower().replace(' ','').replace(',','') udela ze vsecho v tom stringu maly pismena, replace vyhodi mezery a carky

@@ -82,6 +82,3 @@ debugprt: True
 # zde lze zadat casy, kde chces ulozit vysledky
 # pokud pomlcka nedela nic
 printtimes: -
-
-
-
