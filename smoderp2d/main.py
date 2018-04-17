@@ -24,7 +24,7 @@ def run():
     from smoderp2d.runoff import Runoff
     
     # the computation
-    runoff = Runoff()
+    runoff = Runoff(provider)
     runoff.run()
 
 if __name__ == "__main__":
