@@ -20,7 +20,6 @@ from smoderp2d.time_step import TimeStep
 
 from smoderp2d.courant import Courant
 from smoderp2d.io_functions import post_proc
-from smoderp2d.io_functions import prt
 from smoderp2d.io_functions import progress_bar
 from smoderp2d.tools.times_prt import TimesPrt
 from smoderp2d.io_functions import hydrographs as wf
@@ -356,8 +355,8 @@ class Runoff():
         import platform
         if platform.system() == "Linux":
             pid = os.getpid()
-            prt.message("/proc/" + str(pid) + "/status", 'reading')
-            with open("/proc/" + str(pid) + "/status", 'r') as fp:
+            self.provider.message("/proc/{}/status reading".format(pid))
+            with open(os.path.join('/', 'proc', str(pid), "status"), 'r') as fp:
                 for i, line in enumerate(fp):
                     if i >= 11 and i <= 23:
-                        prt.message(line.replace("\n", ""))
+                        self.provider.message(line.rstrip(os.linesep))
