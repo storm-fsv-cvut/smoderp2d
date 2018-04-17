@@ -6,6 +6,7 @@ import math
 import ConfigParser
 
 from smoderp2d.src.main_classes.General import Globals
+from smoderp2d.src.providers.logger import Logger
 
 class BaseProvider(object):
     def __init__(self):
@@ -31,6 +32,9 @@ class BaseProvider(object):
         self._config = ConfigParser.ConfigParser()
         self._config.read(self._args.indata)
 
+        # set logging level
+        Logger.setLevel(self._config.get('Other', 'logging'))
+        
     def parse_data(self, indata):
         # TODO: rewrite save pickle to use dict instead of list
         

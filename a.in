@@ -75,9 +75,14 @@ indata: indata/destak.save
 # ten si nevzpomenu proc...
 partialcomp: roff
 #
-# tu jsem mel moznost detalneji popsat prubeh vypostU
-# momentalne to nic nedela...
-debugprt: True
+# logging level
+#  - CRITICAL
+#  - ERROR
+#  - WARNING
+#  - INFO
+#  - DEBUG
+#  - NOTSET
+logging: DEBUG
 #
 # zde lze zadat casy, kde chces ulozit vysledky
 # pokud pomlcka nedela nic
