@@ -20,7 +20,6 @@ from smoderp2d.time_step import TimeStep
 
 from smoderp2d.courant import Courant
 from smoderp2d.io_functions import post_proc
-from smoderp2d.io_functions import progress_bar
 from smoderp2d.tools.times_prt import TimesPrt
 from smoderp2d.io_functions import hydrographs as wf
 
@@ -285,12 +284,11 @@ class Runoff():
                 break
 
             timeperc = 100 * (self.flowControl.total_time + self.delta_t) / Gl.end_time
-            progress_bar.pb.update(
+            self.provider.progress(
                 timeperc,
                 self.delta_t,
                 self.flowControl.iter_,
-                self.flowControl.total_time +
-                self.delta_t
+                self.flowControl.total_time + self.delta_t
             )
 
             # calculate outflow from each reach of the stream network

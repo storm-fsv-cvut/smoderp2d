@@ -3,6 +3,7 @@ import sys
 import argparse
 import shutil
 import math
+import time
 import ConfigParser
 
 from smoderp2d.main_classes.General import Globals
@@ -34,7 +35,10 @@ class BaseProvider(object):
 
         # set logging level
         Logger.setLevel(self._config.get('Other', 'logging'))
-        
+
+        # progress
+        self.startTime = time.time()
+
     def parse_data(self, indata):
         # TODO: rewrite save pickle to use dict instead of list
         
@@ -224,6 +228,19 @@ class BaseProvider(object):
         """
         sys.stdout.write('{}{}'.format(line, os.linesep))
 
+    def progress(self, i, dt, iter_, total_time):
+        self.message("Total time      [s]: {0:.2f}".format(total_time)) # TODO: ms ???
+        self.message("Time step       [s]: {0:.2f}".format(dt))
+        self.message("Time iterations    : {0:d}".format(iter_))
+        self.message("Percentage done [%]: {0:.2f}".format(i))
+        if i > 0:
+            diffTime = time.time() - self.startTime
+            remaining = (100.0 * diffTime) / i - diffTime
+        else:
+            remaining = '??'
+        self.message("Time to end     [s]: {0:.2f}".format(remaining))
+        self.message("-" * 40)
+        
     def logo(self):
         """Print Smoderp2d ascii-style logo."""
         with open(os.path.join(os.path.dirname(__file__), 'txtlogo.txt'), 'r') as fd:
