@@ -10,7 +10,7 @@ The computing itself is performed in src.runoff
  - mal by tam byl setup.py
 """
 
-from smoderp2d.src.providers import BaseProvider
+from smoderp2d.providers import BaseProvider
     
 def run():
     # initialize provider
@@ -21,7 +21,7 @@ def run():
     provider.logo()
 
     # must be called after initialization
-    from smoderp2d.src.runoff import Runoff
+    from smoderp2d.runoff import Runoff
     
     # the computation
     runoff = Runoff()
