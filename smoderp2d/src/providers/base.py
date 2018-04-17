@@ -98,41 +98,39 @@ class BaseProvider(object):
         # the data are loared from a pickle file
         data = self.parse_data(load_data(indata))
 
-        extraOut = prtTimes = maxdt = None
-        if self._config:
-            # some variables configs can be changes after loading from
-            # pickle.dump such as end time of simulation
+        # some variables configs can be changes after loading from
+        # pickle.dump such as end time of simulation
 
-            if self._config.get('time', 'endtime') != '-':
-                data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
+        if self._config.get('time', 'endtime') != '-':
+            data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
 
-            #  time of flow algorithm
-            if self._config.get('Other', 'mfda') != '-':
-                data['mfda'] = self._config.getboolean('Other', 'mfda')
+        #  time of flow algorithm
+        if self._config.get('Other', 'mfda') != '-':
+            data['mfda'] = self._config.getboolean('Other', 'mfda')
 
-            #  type of computing:
-            #    0 sheet only,
-            #    1 sheet and rill flow,
-            #    2 sheet and subsurface flow,
-            #    3 sheet, rill and reach flow
-            if self._config.get('Other', 'typecomp') != '-':
-                data['type_of_computing'] = self._config.get('Other', 'typecomp')
+        #  type of computing:
+        #    0 sheet only,
+        #    1 sheet and rill flow,
+        #    2 sheet and subsurface flow,
+        #    3 sheet, rill and reach flow
+        if self._config.get('Other', 'typecomp') != '-':
+            data['type_of_computing'] = self._config.get('Other', 'typecomp')
 
-            #  output directory is always set
-            data['outdir'] = self._config.get('Other', 'outdir')
+        #  output directory is always set
+        data['outdir'] = self._config.get('Other', 'outdir')
 
-            #  rainfall data can be saved
-            if self._config.get('srazka', 'file') != '-':
-                data['sr'], data['itera'] = rainfall.load_precipitation(
-                    self._config.get('srazka', 'file')
-                )
+        #  rainfall data can be saved
+        if self._config.get('srazka', 'file') != '-':
+            data['sr'], data['itera'] = rainfall.load_precipitation(
+                self._config.get('srazka', 'file')
+            )
 
-            # some self._configs are not in pickle.dump
-            data['extraOut'] = self._config.getboolean('Other', 'extraout')
-            # rainfall data can be saved
-            data['prtTimes'] = self._config.get('Other', 'printtimes')
+        # some self._configs are not in pickle.dump
+        data['extraOut'] = self._config.getboolean('Other', 'extraout')
+        # rainfall data can be saved
+        data['prtTimes'] = self._config.get('Other', 'printtimes')
 
-            data['maxdt'] = self._config.getfloat('time', 'maxdt')
+        data['maxdt'] = self._config.getfloat('time', 'maxdt')
 
         return data
     
