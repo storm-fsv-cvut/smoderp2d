@@ -202,14 +202,10 @@ def init_classes():
   prt.message('Corrected time step is', delta_t, '[s]')
 
 
-
-
-          
           
   # instance of class which opens files for storing hydrographs 
   import io_functions.hydrographs as wf
-  points_shape = Gl.points
-  if points_shape and points_shape != "#":
+  if len(Gl.array_points) > 0 :
     hydrographs = wf.Hydrographs()
     arcgis      = Gl.arcgis
     if not(arcgis):
@@ -307,7 +303,7 @@ class Runoff():
           delta_t_tmp = delta_t
           
           # update time step size if necessary (based on the courant condition)
-          delta_t, flowControl.ratio = courant.courant(potRain,delta_t,Gl.spix,flowControl.ratio)
+          delta_t, flowControl.ratio = courant.courant(potRain,delta_t,Gl.dx,flowControl.ratio)
 
 
 

@@ -93,7 +93,7 @@ class Hydrographs:
         l = point_int[ip][1]
         m = point_int[ip][2]
         
-        if gl.get_mat_tok_reach(l,m) >= 1000:
+        if gl.get_mat_reach(l,m) >= 1000:
           self.inStream.append(counter)
           counter += 1
         else:

@@ -419,7 +419,7 @@ if Gl.isStream and Gl.arcgis:
   import arcpy
   def write_stream_table(outDir, surface,toky):
     sep = ';'
-    nReaches = surface.nReaches
+    rFID = surface.rFID
     outFile = outDir + 'hydReach.txt'
     outFileShp = outDir + 'hydReach.shp'
     outTemp  = outDir #+ 'temp' + os.sep
@@ -427,7 +427,7 @@ if Gl.isStream and Gl.arcgis:
       line = 'FID'+sep+'cVolM3'+sep+'mFlowM3_S'+sep+'mFlowTimeS'+sep+'mWatLM'+sep+'restVolM3' + sep + 'toFID'+'\n'
       #line = 'FID'+sep+'V_out_cum [L^3]'+sep+'Q_max [L^3.t^{-1}]'+sep+'timeQ_max[s]'+sep+'h_max [L]'+sep+'timeh_max[s]'+sep+'Cumulatice_inflow_from_field[L^3]' + sep+ 'Left_after_last_time_step[L^3]'   + sep+ 'Out_form_domain[L^3]'+sep+'to_reach'+'\n'
       f.write(line)
-      for iReach in range(nReaches):
+    for i in rFID:
         line = \
           str(surface.reach[iReach].id_) +sep+  \
             str(surface.reach[iReach].V_out_cum) +sep+   \
@@ -452,20 +452,19 @@ if Gl.isStream and Gl.arcgis:
 elif Gl.isStream and not(Gl.arcgis):
   def write_stream_table(outDir, surface,toky):
     sep = ';'
-    nReaches = surface.nReaches
+    rFID = surface.rFID
     outFile = outDir + 'hydReach.txt'
     with open(outFile, 'w') as f:
       line = 'FID'+sep+'cVolM3'+sep+'mFlowM3_S'+sep+'mFlowTimeS'+sep+'mWatLM'+sep+'restVolM3' + sep + 'toFID'+'\n'
       #line = 'FID'+sep+'V_out_cum [L^3]'+sep+'Q_max [L^3.t^{-1}]'+sep+'timeQ_max[s]'+sep+'h_max [L]'+sep+'timeh_max[s]'+sep+'Cumulatice_inflow_from_field[L^3]' + sep+ 'Left_after_last_time_step[L^3]'   + sep+ 'Out_form_domain[L^3]'+sep+'to_reach'+'\n'
       f.write(line)
-      for iReach in range(nReaches):
+      for iReach in rFID:
         line = \
           str(surface.reach[iReach].id_) +sep+  \
             str(surface.reach[iReach].V_out_cum) +sep+   \
               str(surface.reach[iReach].Q_max) +sep+ str(surface.reach[iReach].timeQ_max)  +sep+ str(surface.reach[iReach].h_max) +sep+ \
                 str(surface.reach[iReach].V_rest) +sep+ \
                   str(surface.reach[iReach].to_node) + '\n'
-
         f.write(line)
 
   stream_table = write_stream_table

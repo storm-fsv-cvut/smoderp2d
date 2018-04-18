@@ -19,7 +19,7 @@ class Reach():
     #raw_input('classes_main_arrays 299\n!\n!\n!')
 
     self.id_ = id_
-    ##self.imat = i  #jj melo byt pozice v matici, ale to mozna nani treba kdyz zanech mat_tok_reach a tam id useku
+    ##self.imat = i  #jj melo byt pozice v matici, ale to mozna nani treba kdyz zanech  a tam id useku
     ##self.jmat = j
     self.pointsFrom = [POINT_X,POINT_Y]
     self.pointsTo   = [POINT_X_1,POINT_Y_1]
@@ -64,8 +64,6 @@ class Reach():
     else :
       self.outflow_method = stream_f.rectangle
 
-    #print TVAR, B, M
-    ##raw_input()
 
 
 ## Documentation for a class.
@@ -88,33 +86,35 @@ class Stream(object):
     # listy v poradi 'FID' 'POINT_X' 'POINT_Y' 'POINT_X_1' 'POINT_Y_1' 'to_node' 'length' 'sklon' 'smoderp' 'CISLO' 'TVAR' 'B' 'M' 'DRSNOST' 'Q365'
     self.toky = Gl.toky # tu jsou nactena data z data preparation cca lajna 970
 
-    self.nReaches = len(self.toky[0])
+    
+    self.rFID = self.toky[0]
     
     
-    self.cell_stream = Gl.cell_stream
+    
 
     self.reach = []
     
-    for i in range(self.nReaches):
-      print self.toky[6][i]
-      print self.toky[11][i]
+    for i in self.rFID:
+      
       self.reach.append(Reach(self.toky[0][i],self.toky[1][i],self.toky[2][i],self.toky[3][i],self.toky[4][i],self.toky[5][i],self.toky[6][i],self.toky[7][i],self.toky[8][i],self.toky[9][i],self.toky[10][i],self.toky[11][i],self.toky[12][i],self.toky[13][i],self.toky[14][i]))
 
+
+
     self.tokyLoc      = Gl.tokyLoc
-    self.mat_tok_reach = Gl.mat_tok_reach
+    self.mat_reach = Gl.mat_reach
     
-    
+    #raw_input()
 
     
     for i in Gl.rr :
       for j in Gl.rc[i]:
-        self.arr[i][j].state += self.mat_tok_reach[i][j]
+        #if self.mat_reach[i][j] > 0: print self.mat_reach[i][j] 
+        self.arr[i][j].state += self.mat_reach[i][j]
 
-    self.STREAM_RATIO = Gl.STREAM_RATIO
 
 
   def reset_inflows(self):
-    for id_ in range(self.nReaches):
+    for id_ in self.rFID:
       self.reach[id_].V_in_from_field = 0
       
 
@@ -124,16 +124,16 @@ class Stream(object):
     self.reach[id_].V_in_from_field += inflows
 
   def stream_reach_outflow(self,dt):
-    for id_ in range(self.nReaches):
+    for id_ in self.rFID:
       self.reach[id_].outflow_method(self.reach[id_],dt)
 
 
   def stream_reach_inflow(self):
-    for id_ in range(self.nReaches):
+    for id_ in self.rFID:
       self.reach[id_].V_in_from_reach = 0
       self.reach[id_].V_out_domain    = 0
       
-    for id_ in range(self.nReaches):
+    for id_ in self.rFID:
       id_to_node = int(self.reach[id_].to_node)
       if id_to_node == -9999:
         self.reach[id_].V_out_domain += self.reach[id_].V_out
@@ -143,7 +143,7 @@ class Stream(object):
 
   #jj jeste dodelat ty maxima a kumulativni zbyle
   def stream_cumulative(self,time):
-    for id_ in range(self.nReaches):
+    for id_ in self.rFID:
       self.reach[id_].V_out_cum += self.reach[id_].V_out
       self.reach[id_].V_in_from_field_cum += self.reach[id_].V_in_from_field
       if self.reach[id_].Q_out > self.reach[id_].Q_max:
@@ -156,8 +156,8 @@ class Stream(object):
         
   def return_stream_str_vals(self,i,j,sep,dt,extraOut):
     id_ = int(self.arr[i][j].state-1000)
-    # Time;   V_runoff  ;   Q   ;    V_from_field  ;  V_rests_in_stream
-    # print id_
+    
+    
     if not(extraOut) :
       line = str(self.reach[id_].h)  +sep+ str(self.reach[id_].Q_out) +sep+str(self.reach[id_].V_out)
     else :

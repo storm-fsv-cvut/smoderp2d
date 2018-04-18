@@ -86,8 +86,6 @@ def make_sub_raster(subArr,G,t,output):
 def make_ASC_raster(name_,numpy_arr,G):
   rr    = G.rr
   rc    = G.rc
-  br    = G.br
-  bc    = G.bc
   nrows = G.r
   ncols = G.c
 

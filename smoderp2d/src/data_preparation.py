@@ -1001,5 +1001,29 @@ def prepare_data(args):
 
 
 
+"""
+redundant return variables:
+  boundaryRows
+  boundaryCols
+  mat_boundary
+  outletCells
+  poradi
+  state_cell
+  surface_retention
+  cell_stream
+  STREAM_RATIO
+  spix
+  vpix
+  points
+  delta_t
+"""
+
+
+
+
+
+
+
+
 
 

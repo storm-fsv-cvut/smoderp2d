@@ -44,6 +44,7 @@ class SurArrs :
   #  
   #  assign values into surface parameters
   def __init__(self,sur_ret,inf_index, hcrit, a, b):
+    
 
     self.state =       int(0)
     self.sur_ret =     sur_ret
@@ -103,7 +104,6 @@ class Surface(Stream if Gl.isStream == True else StreamPass,Kinematic,Globals,Si
         self.arr[i][j] = SurArrs(self.mat_reten[i][j],self.mat_inf_index[i][j],self.mat_hcrit[i][j],self.mat_aa[i][j],self.mat_b[i][j])
         #print mat_aa[i][j],mat_b[i][j]
         #self.arr[i][j] = SurArrs(-0.001,mat_inf_index[i][j],0.0025,0.965,1.7)
-
 
     if (self.isRill) :
       prt.message("\tRill flow: \n\t\tON")

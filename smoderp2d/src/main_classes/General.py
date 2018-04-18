@@ -42,6 +42,7 @@ class Size:
 #  the data are taken from import of this class
 #
 class Globals:
+  
   ## area of a raster cell in meters
   pixel_area = None
   ## number of rows in rasters
@@ -52,42 +53,33 @@ class Globals:
   rr    = None
   ## id of columns in computational domain
   rc    = None
-  ## id of rows in at the boundary of computational domain
-  br    = None
-  ## id of columns in at the boundary of computational domain
-  bc    = None
   ## x coordinate od of left bottom corner of raster
   xllcorner = None
   ## y coordinate od of left bottom corner of raster
   yllcorner = None
+  ## size of raster cell
+  dx = None
+  
   ## no data value for raster
   NoDataValue = None
   ## no data integer value for raster
   NoDataInt   = None
-  ## size of raster cell
-  dx = None
-  ## size of raster cell
-  dy = None
-  ## type of computation
-  type_of_computing = None
+  
   ## path to a output directory
   outdir = None
-  ## raster with labeled boundary cells
-  mat_boundary = None
-  ## list containing coordinates of catchment outlet cells
-  outletCells  = None
+  ## path to directory for temporal data storage
+  temp = None
+  
   ## array containing information of hydrogram points
   array_points = None
+  
   ## combinatIndex
   combinatIndex = None
-  ## time step
-  delta_t = None
+  
   ## raster contains potential interception data
   mat_pi  = None
   ## raster contains leaf area data
   mat_ppl = None
-  ## raster contains surface retention data
-  surface_retention = None
   ## raster contains id of infiltration type
   mat_inf_index = None
   ## raster contains critical water level
@@ -98,6 +90,10 @@ class Globals:
   mat_b = None
   ## raster contains surface retention data
   mat_reten = None
+  mat_a = None
+  ## raster contains parameters ...
+  mat_n = None
+  
   ## raster contains flow direction datas
   mat_fd = None
   ## raster contains digital elevation model
@@ -106,42 +102,34 @@ class Globals:
   mat_efect_vrst = None
   ## raster contains surface slopes data
   mat_slope = None
-  ## raster labels not a number cells
+  
+  ## raster labels not a number cells (MASK)
   mat_nan = None
-  ## raster contains parameters ...
-  mat_a = None
-  ## raster contains parameters ...
-  mat_n = None
-  ## ???
-  points = None
-  ## ???
-  poradi = None
-  ## end time of computation
-  end_time = None
-  ## ???
-  spix = None
-  ## raster contains cell flow state information
-  state_cell = None
-  ## path to directory for temporal data storage
-  temp = None
-  ## ???
-  vpix = None
+  
+  ## type of computation
+  type_of_computing = None
   ## bool variable for flow direction algorithm (false=one direction, true multiple flow direction)
   mfda = None
+  
   ## list contains the precipitation data
   sr = None
   ## counter of precipitation intervals
   itera = None
-  ## ???
+  
+  ## reach information
   toky = None
-  ## ???
-  cell_stream = None
   ## raster contains the reach id data
-  mat_tok_reach = None
-  ## ???
-  STREAM_RATIO = None
-  ## ???
+  mat_reach = None
+  ## where to store used points for hydrographs
   tokyLoc = None
+  
+  ## end time of computation
+  end_time = None
+  ## time step
+  maxdt = None
+  
+  
+  
 
   def get_pixel_area(self):
     return self.pixel_area
@@ -158,12 +146,6 @@ class Globals:
   def get_rcols(self):
     return self.rc
   
-  def get_bor_rows(self):
-    return self.br
-  
-  def get_bor_cols(self):
-    return self.bc
-  
   def get_xllcorner (self):
     return self.xllcorner
   
@@ -179,20 +161,11 @@ class Globals:
   def get_dx(self):
     return self.dx
   
-  def get_dy(self):
-    return self.dy
-  
   def get_type_of_computing(self):
     return self.type_of_computing
   
   def get_outdir(self):
     return self.outdir
-  
-  def get_mat_boundary(self):
-    return self.mat_boundary
-  
-  def get_outletCells(self):
-    return self.outletCells
   
   def get_array_points(self):
     return self.array_points
@@ -200,17 +173,11 @@ class Globals:
   def get_combinatIndex(self):
     return self.combinatIndex
   
-  def get_delta_t(self):
-    return self.delta_t
-  
   def get_mat_pi(self):
     return self.mat_pi
   
   def get_mat_ppl(self):
     return self.mat_ppl
-  
-  def get_surface_retention(self):
-    return self.surface_retention
   
   def get_mat_inf_index(self):
     return self.mat_inf_index
@@ -248,26 +215,11 @@ class Globals:
   def get_mat_n(self,i,j):
     return self.mat_n[i][j]
   
-  def get_points(self):
-    return self.points
-  
-  def get_poradi(self):
-    return self.poradi
-  
   def get_end_tim(self):
     return self.end_time
   
-  def get_spix(self):
-    return self.spix
-  
-  def get_state_cell(self):
-    return self.state_cell
-  
   def get_temp(self):
     return self.temp
-  
-  def get_vpix(self):
-    return self.vpix
   
   def get_mfda(self):
     return self.mfda
@@ -281,14 +233,8 @@ class Globals:
   def get_toky(self):
     return self.toky
   
-  def get_cell_stream(self):
-    return self.cell_stream
-  
-  def get_mat_tok_reach(self,i,j):
-    return self.mat_tok_reach[i][j]
-  
-  def get_STREAM_RATIO(self):
-    return self.STREAM_RATIO
+  def get_mat_reach(self,i,j):
+    return self.mat_reach[i][j]
   
   def get_tokyLoc(self):
     return self.tokyLoc
@@ -331,73 +277,87 @@ def initLinux():
     mat_n,   \
     output, pixel_area, points, poradi,  end_time, spix, state_cell, \
     temp, type_of_computing, vpix, mfda, sr, itera, \
-    toky, cell_stream, mat_tok_reach, STREAM_RATIO, tokyLoc, extraOut, prtTimes, \
+    toky, cell_stream, mat_reach, STREAM_RATIO, tokyLoc, extraOut, prtTimes, \
     maxdt = get_indata_lin(partial_comp,args)
     
     
 
     
-    
-
+    ## geometry information
     Globals.pixel_area = pixel_area
     Globals.r        = rows
     Globals.c        = cols
     Globals.rr    = rrows
     Globals.rc    = rcols
-    Globals.br    = boundaryRows
-    Globals.bc    = boundaryCols
     Globals.xllcorner = x_coordinate
     Globals.yllcorner = y_coordinate
+    Globals.dx = math.sqrt(pixel_area)
+    
+    ## NoDataValue definition
     Globals.NoDataValue = NoDataValue
     Globals.NoDataInt   = int(-9999)
-    Globals.dx = math.sqrt(pixel_area)
-    Globals.dy = Globals.dx
-    Globals.type_of_computing =  type_of_computing
+    
+    ## output directories
     Globals.outdir = output
-    Globals.mat_boundary = mat_boundary
-    Globals.outletCells  = outletCells
+    Globals.temp = temp
+    
+    ## points of hydrpgraphs
     Globals.array_points = array_points
+    
+    
+    ## infiltration set
     Globals.combinatIndex = combinatIndex
+    
+    ## matrices with parameters
     Globals.mat_pi  = mat_pi
     Globals.mat_ppl = mat_ppl
-    Globals.surface_retention = surface_retention
     Globals.mat_inf_index = mat_inf_index
     Globals.mat_hcrit = mat_hcrit
     Globals.mat_aa = mat_aa
     Globals.mat_b = mat_b
     Globals.mat_reten = -mat_reten/1000.
+    Globals.mat_a = mat_a 
+    Globals.mat_n = mat_n
+    
+    ## DMT inferred parameters
     Globals.mat_fd = mat_fd
     Globals.mat_dmt = mat_dmt
     Globals.mat_efect_vrst = mat_efect_vrst
     Globals.mat_slope = mat_slope
+    
+    ## maks delineation array
     Globals.mat_nan = mat_nan
-    Globals.mat_a = mat_a
-    Globals.mat_n = mat_n
-    Globals.points = points
-    Globals.poradi = poradi
-    Globals.end_time = end_time
-    Globals.spix = spix
-    Globals.state_cell = state_cell
-    Globals.temp = temp
-    Globals.vpix = vpix
+    
+    ## definition of solved processes
+    Globals.type_of_computing =  type_of_computing
     Globals.mfda = mfda
-    Globals.sr = sr
-    Globals.itera = itera
-    Globals.toky = toky
-    Globals.cell_stream = cell_stream
-    Globals.mat_tok_reach = mat_tok_reach
-    Globals.STREAM_RATIO = STREAM_RATIO
-    Globals.tokyLoc = tokyLoc
     Globals.diffuse = comp_type(type_of_computing,'diffuse')
     Globals.subflow = comp_type(type_of_computing,'subflow')
     Globals.isRill =  comp_type(type_of_computing,'rill')
     Globals.isStream =  comp_type(type_of_computing,'stream')
+    
+    ## rainfall information
+    Globals.sr = sr
+    Globals.itera = itera
+    
+    ## reaches information
+    Globals.toky = toky
+    Globals.tokyLoc = tokyLoc
+    Globals.mat_reach = mat_reach
+    
+    ## I/O parametrs
     Globals.extraOut =  extraOut
     Globals.arcgis =  False
     Globals.prtTimes = prtTimes
+    
+    ## time step information
+    Globals.end_time = end_time
     Globals.maxdt  = maxdt
+    
+    
     return True
-
+   
+   
   else:
     print 'for Linux only roff'
     return False
@@ -437,7 +397,7 @@ def initWin():
     mat_n,   \
     output, pixel_area, points, poradi,  end_time, spix, state_cell, \
     temp, type_of_computing, vpix, mfda, sr, itera, \
-    toky, cell_stream, mat_tok_reach, STREAM_RATIO, tokyLoc = get_indata_win(partial_comp,sys.argv)
+    toky, cell_stream, mat_reach, STREAM_RATIO, tokyLoc = get_indata_win(partial_comp,sys.argv)
 
 
     sys.argv.append(type_of_computing)
@@ -490,7 +450,7 @@ def initWin():
     Globals.itera = itera
     Globals.toky = toky
     Globals.cell_stream = cell_stream
-    Globals.mat_tok_reach = mat_tok_reach
+    Globals.mat_reach = mat_reach
     Globals.STREAM_RATIO = STREAM_RATIO
     Globals.tokyLoc = tokyLoc
     Globals.diffuse = comp_type('diffuse')
