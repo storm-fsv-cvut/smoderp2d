@@ -1,40 +1,23 @@
-# @package nacteni a uloze hodnot co jsou z data preparation
-#  roff, dpre, full se resi  resolve_partial_computin
-#  odtud se jen vola tato funkce.
-
-
 import math
 import sys
 
-
-# get type of computing identifier based on the string
-from smoderp2d.tools.tools import comp_type
-
-from smoderp2d.tools.tools import get_argv
-import smoderp2d.constants as constants
-
-
-# Documentation for a class.
-#
-#  method to compute size of class arrays
 class Size:
-
-    # size
-    #  @param arrayNBytes <numpy array>.nbytes
-    #  @param m value in denominator to get bytes, kilobytes (m=2**10), megabytes (m=2**10+m**10) and so on.
-
-    def size(self, arrayNBytes, m=1.0):
+    @staticmethod
+    def size(arrayNBytes, m=1.0):
+        """Method to compute size of class arrays.    
+        
+        :param <numpy array>.nbytes arrayNBytes:
+        :param float m: value in denominator to get bytes, kilobytes
+        (m=2**10), megabytes (m=2**10+m**10) and so on.
+        """
         # arrayNBytes eq self.state.nbytes
-        size = (self.n * arrayNBytes) / m
-        return size
+        return (self.n * arrayNBytes) / m
 
-
-# Class Globals contains global variables
-#
-#  from data_preparation, in instance of class needed
-#  the data are taken from import of this class
-#
 class Globals:
+    """Gloobals contains global variables from data_preparation, in
+    instance of class needed the data are taken from import of this
+    class.
+    """
     # area of a raster cell in meters
     pixel_area = None
     # number of rows in rasters
@@ -49,9 +32,9 @@ class Globals:
     br = None
     # id of columns in at the boundary of computational domain
     bc = None
-    # x coordinate od of left bottom corner of raster
+    # left bottom corner x coordinate of raster
     xllcorner = None
-    # y coordinate od of left bottom corner of raster
+    # left bottom corner y coordinate of raster
     yllcorner = None
     # no data value for raster
     NoDataValue = None

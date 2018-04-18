@@ -13,19 +13,19 @@ import os
 from smoderp2d.main_classes.General import Globals as Gl
 from smoderp2d.main_classes.Vegetation import Vegetation
 from smoderp2d.main_classes.Surface import Surface
-
 from smoderp2d.main_classes.Subsurface import Subsurface
 from smoderp2d.main_classes.CumulativeMax import Cumulative
-from smoderp2d.time_step import TimeStep
 
+from smoderp2d.time_step import TimeStep
 from smoderp2d.courant import Courant
-from smoderp2d.io_functions import post_proc
+
 from smoderp2d.tools.times_prt import TimesPrt
+from smoderp2d.io_functions import post_proc
 from smoderp2d.io_functions import hydrographs as wf
 
 from smoderp2d.exceptions import MaxIterationExceeded
 
-class FlowControl():
+class FlowControl(object):
     """FlowControl manage variables contains variables related to main
     computational loop."""
     def __init__(self):
@@ -104,7 +104,7 @@ class FlowControl():
         """
         return self.total_time < end_time
 
-class Runoff():
+class Runoff(object):
     """Performs the calculation.
     """
     def __init__(self, provider):
@@ -331,7 +331,7 @@ class Runoff():
                             self.surface.arr[i][j].state = 2
 
                     if self.surface.arr[i][j].state == 2:
-                        if self.surface.arr[i][j].h_total_new > self.surface.arr[i][j].h_last_state1: # state1 ?
+                        if self.surface.arr[i][j].h_total_new > self.surface.arr[i][j].h_last_state1:
                             self.surface.arr[i][j].state = 1
 
                     self.surface.arr[i][j].h_total_pre = self.surface.arr[i][j].h_total_new
