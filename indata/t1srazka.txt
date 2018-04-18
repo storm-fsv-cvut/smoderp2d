@@ -1,2 +1,0 @@
-# cas [minuty]   uhrn [mm]
-60 100
