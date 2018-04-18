@@ -1,1079 +1,0 @@
-\hypertarget{namespacesmoderp2d_1_1src_1_1data__preparation}{\section{smoderp2d.\-src.\-data\-\_\-preparation Namespace Reference}
-\label{namespacesmoderp2d_1_1src_1_1data__preparation}\index{smoderp2d.\-src.\-data\-\_\-preparation@{smoderp2d.\-src.\-data\-\_\-preparation}}
-}
-
-
-Method to performe the preprocessing with arcpy package.  
-
-
-\subsection*{Classes}
-\begin{DoxyCompactItemize}
-\item 
-class \hyperlink{classsmoderp2d_1_1src_1_1data__preparation_1_1Outlet}{Outlet}
-\begin{DoxyCompactList}\small\item\em Class to find out the possible catchment outlets. \end{DoxyCompactList}\end{DoxyCompactItemize}
-\subsection*{Functions}
-\begin{DoxyCompactItemize}
-\item 
-\hypertarget{namespacesmoderp2d_1_1src_1_1data__preparation_a01c4fc4eacfb39b9e7f1f636ad1053a8}{def {\bfseries zapis}}\label{namespacesmoderp2d_1_1src_1_1data__preparation_a01c4fc4eacfb39b9e7f1f636ad1053a8}
-
-\item 
-def \hyperlink{namespacesmoderp2d_1_1src_1_1data__preparation_a32f7109b150f5af13b8087e8bb3213d2}{find\-\_\-boudary\-\_\-cells}
-\begin{DoxyCompactList}\small\item\em Identification of cells at the domain boundary. \end{DoxyCompactList}\item 
-def \hyperlink{namespacesmoderp2d_1_1src_1_1data__preparation_abe49c44911df9f3510eaad8751feab27}{prepare\-\_\-data}
-\begin{DoxyCompactList}\small\item\em Main function of the preparation preparation package all date raster/vector or scalar are transfered to python line fashion numpy arrays are created to store spatially distributed parameters digital elevation model. \end{DoxyCompactList}\end{DoxyCompactItemize}
-
-
-\subsection{Detailed Description}
-Method to performe the preprocessing with arcpy package. 
-
-\subsection{Function Documentation}
-\hypertarget{namespacesmoderp2d_1_1src_1_1data__preparation_a32f7109b150f5af13b8087e8bb3213d2}{\index{smoderp2d\-::src\-::data\-\_\-preparation@{smoderp2d\-::src\-::data\-\_\-preparation}!find\-\_\-boudary\-\_\-cells@{find\-\_\-boudary\-\_\-cells}}
-\index{find\-\_\-boudary\-\_\-cells@{find\-\_\-boudary\-\_\-cells}!smoderp2d::src::data_preparation@{smoderp2d\-::src\-::data\-\_\-preparation}}
-\subsubsection[{find\-\_\-boudary\-\_\-cells}]{\setlength{\rightskip}{0pt plus 5cm}def smoderp2d.\-src.\-data\-\_\-preparation.\-find\-\_\-boudary\-\_\-cells (
-\begin{DoxyParamCaption}
-\item[{}]{r, }
-\item[{}]{c, }
-\item[{}]{mat\-\_\-nan, }
-\item[{}]{no\-Data, }
-\item[{}]{mfda}
-\end{DoxyParamCaption}
-)}}\label{namespacesmoderp2d_1_1src_1_1data__preparation_a32f7109b150f5af13b8087e8bb3213d2}
-
-
-Identification of cells at the domain boundary. 
-
-
-\begin{DoxyParams}{Parameters}
-{\em r} & rows \\
-\hline
-\end{DoxyParams}
-
-
-Definition at line 44 of file data\-\_\-preparation.\-py.
-
-
-\begin{DoxyCode}
-44 
-45 \textcolor{keyword}{def }\hyperlink{namespacesmoderp2d_1_1src_1_1data__preparation_a32f7109b150f5af13b8087e8bb3213d2}{find\_boudary\_cells}(r, c, mat\_nan, noData, mfda):
-46 
-47   mat\_boundary =  np.zeros([r,c],float)
-48 
-49   nr = range(r)
-50   nc = range(c)
-51 
-52   cols = []
-53   rows = []
-54 
-55   boundaryCols = []
-56   boundaryRows = []
-57 
-58   \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} nr:
-59     \textcolor{keywordflow}{for} j \textcolor{keywordflow}{in} nc:
-60       val = mat\_nan[i][j]
-61       \textcolor{keywordflow}{if} i == 0 \textcolor{keywordflow}{or} j == 0 \textcolor{keywordflow}{or} i == ( r - 1 ) \textcolor{keywordflow}{or} j == ( c - 1 ):
-62         \textcolor{keywordflow}{if} val != noData:
-63           val = -99
-64       \textcolor{keywordflow}{else}:
-65         \textcolor{keywordflow}{if} val != noData:
-66           \textcolor{keywordflow}{if} mat\_nan[i-1][j] == noData \textcolor{keywordflow}{or} mat\_nan[i+1][j] == noData \textcolor{keywordflow}{or} mat\_nan[i][j-1] == noData \textcolor{keywordflow}{or} mat\_nan
-      [i][j-1] == noData :
-67             val = -99
-68           \textcolor{keywordflow}{if} mat\_nan[i-1][j+1] == noData \textcolor{keywordflow}{or} mat\_nan[i+1][j+1] == noData \textcolor{keywordflow}{or} mat\_nan[i-1][j-1] == noData \textcolor{keywordflow}{or} 
-      mat\_nan[i+1][j-1] == noData :
-69             val = -99
-70       mat\_boundary[i][j] = val
-71 
-72   inDomain = \textcolor{keyword}{False}
-73   inBoundary = \textcolor{keyword}{False}
-74 
-75   \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} nr:
-76     oneCol = []
-77     oneColBoundary = []
-78     \textcolor{keywordflow}{for} j \textcolor{keywordflow}{in} nc:
-79 
-80       \textcolor{keywordflow}{if} mat\_boundary[i][j]==-99 \textcolor{keywordflow}{and} inBoundary == \textcolor{keyword}{False}:
-81         boundaryRows.append(i)
-82         inBoundary = \textcolor{keyword}{True}
-83       \textcolor{keywordflow}{if} mat\_boundary[i][j]==-99 \textcolor{keywordflow}{and} inBoundary == \textcolor{keyword}{True}:
-84         oneColBoundary.append(j)
-85 
-86       \textcolor{comment}{#if (mat\_boundary[i][j]==0.0 or mat\_boundary[i][j]==-99) and inDomain == False:}
-87       \textcolor{keywordflow}{if} (mat\_boundary[i][j]==0.0) \textcolor{keywordflow}{and} inDomain == \textcolor{keyword}{False}:
-88         rows.append(i)
-89         inDomain = \textcolor{keyword}{True}
-90       \textcolor{comment}{#if (mat\_boundary[i][j]==0.0 or mat\_boundary[i][j]==-99) and inDomain == True:}
-91       \textcolor{keywordflow}{if} (mat\_boundary[i][j]==0.0) \textcolor{keywordflow}{and} inDomain == \textcolor{keyword}{True}:
-92         oneCol.append(j)
-93 
-94     inDomain = \textcolor{keyword}{False}
-95     inBoundary = \textcolor{keyword}{False}
-96     cols.append(oneCol)
-97     boundaryCols.append(oneColBoundary)
-98 
-99 
-100 
-101   \textcolor{keywordflow}{return} boundaryRows, boundaryCols, rows, cols, mat\_boundary
-102 
-103 
-104 
-
-\end{DoxyCode}
-\hypertarget{namespacesmoderp2d_1_1src_1_1data__preparation_abe49c44911df9f3510eaad8751feab27}{\index{smoderp2d\-::src\-::data\-\_\-preparation@{smoderp2d\-::src\-::data\-\_\-preparation}!prepare\-\_\-data@{prepare\-\_\-data}}
-\index{prepare\-\_\-data@{prepare\-\_\-data}!smoderp2d::src::data_preparation@{smoderp2d\-::src\-::data\-\_\-preparation}}
-\subsubsection[{prepare\-\_\-data}]{\setlength{\rightskip}{0pt plus 5cm}def smoderp2d.\-src.\-data\-\_\-preparation.\-prepare\-\_\-data (
-\begin{DoxyParamCaption}
-\item[{}]{args}
-\end{DoxyParamCaption}
-)}}\label{namespacesmoderp2d_1_1src_1_1data__preparation_abe49c44911df9f3510eaad8751feab27}
-
-
-Main function of the preparation preparation package all date raster/vector or scalar are transfered to python line fashion numpy arrays are created to store spatially distributed parameters digital elevation model. 
-
-The computing area is determined as well as the boundary cells.
-
-{\itshape prepare\-\_\-data} does the following\-:
-\begin{DoxyItemize}
-\item import data paths and input parameters
-\item do D\-E\-M preprocessing
-\begin{DoxyItemize}
-\item fill the D\-E\-M raster
-\item make flow direction raster
-\item make flow accumulation raster
-\item calculate slopes (percentage rise)
-\item make {\itshape numpy} arrays from rasters above
-\end{DoxyItemize}
-\item identify the low left corner
-\item exclude the edge cells
-\item do the vector preprocessing
-\begin{DoxyItemize}
-\item check the attribute tables for parameters
-\item identify common area of input vector data
-\item identify common area of vector and raster data
-\item make {\itshape numpy} arrays the vector data
-\end{DoxyItemize}
-\end{DoxyItemize}
-
-
-\begin{DoxyParams}{Parameters}
-{\em args} & sys.\-argv from the prompt or arcgis toolbox interface \\
-\hline
-\end{DoxyParams}
-\begin{DoxyReturn}{Returns}
-{\bfseries boundary\-Rows} stores all rows of raster where is a boundary located \mbox{[}\mbox{]} 
-
-{\bfseries boundary\-Cols} stores all columns of raster where is a boundary located \mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries mat\-\_\-boundary} array stores -\/99 at the boudary cells No\-Data\-Value outside the computational domain and zeros in the domain {\itshape numpy}\mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries rrows} reduced rows -\/ stores all rows of raster inside the domain \mbox{[}\mbox{]} 
-
-{\bfseries rcols} reduced columns -\/ stores all columns of raster inside the domain \mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries ll\-\_\-corner} arcpy point coordinates of the main origin 
-
-{\bfseries x\-\_\-coordinate} x coordinate of the domain origin {\itshape scalar} 
-
-{\bfseries y\-\_\-coordinate} y coordinate of the domain origin 
-
-{\bfseries No\-Data\-Value} no data value {\itshape scalar} 
-
-{\bfseries array\-\_\-points} position where time series of results is plotted \mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries rows} all rows of the rasters 
-
-{\bfseries cols} all columns of the rasters 
-
-{\bfseries combinat\-Index} prepare to assign the infiltration parameters \mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries delta\-\_\-t} the time step {\itshape scalar} 
-
-{\bfseries mat\-\_\-pi} array contains the potential clop interception {\itshape numpy}\mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries mat\-\_\-ppl} array contains the leaf area index {\itshape numpy}\mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries surface\-\_\-retention} surface retention in meters {\itshape scalar} 
-
-{\bfseries mat\-\_\-inf\-\_\-index} array contains the infiltration indexes for the Philips infiltration {\itshape numpy}\mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries mat\-\_\-hcrit} array contain the critical height for the rill formation {\itshape numpy}\mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries mat\-\_\-aa} array contains the a parameter for the kinematic surface runoff {\itshape numpy}\mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries mat\-\_\-b} array contains the b parameter for the kinematic surface runoff {\itshape numpy}\mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries mat\-\_\-fd} array contains the the flow direction based of the arcpy.\-sa.\-Flow\-Direction {\itshape numpy}\mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries mat\-\_\-dmt} array contains the the digital elevation model based of the arcpy.\-sa.\-Fill {\itshape numpy}\mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries mat\-\_\-efect\-\_\-vrst} smer klonu???? \#jj 
-
-{\bfseries mat\-\_\-slope} array contains the slopes based of the arcpy.\-sa.\-Slope {\itshape numpy}\mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries mat\-\_\-nan} array contains the Not a Number values outside the domain {\itshape numpy}\mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries mat\-\_\-a} ???? \#jj 
-
-{\bfseries mat\-\_\-n} array contains the {\itshape n} parameter for the rill calculation {\itshape numpy}\mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries output} output folder path {\itshape string} 
-
-{\bfseries pixel\-\_\-area} area of the cell {\itshape scalar} 
-
-{\bfseries points} path to shapefile contains the points contains location of the time series 
-
-{\bfseries poradi} number of the columns in the parameter database {\itshape scalar} 
-
-{\bfseries end\-\_\-time} total time of the simulation {\itshape scalar} 
-
-{\bfseries spix} width of the raster cell {\itshape scalar} 
-
-{\bfseries vpix} height of the raster cell {\itshape scalar} 
-
-{\bfseries state\-\_\-cell} array contains initial state of the cells {\itshape numpy}\mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries temp} temporary files folder path {\itshape string} 
-
-{\bfseries type\-\_\-of\-\_\-computing} type of computing {\itshape string} 
-
-{\bfseries mfda} set multi flow direction algorithm if true, default is D8 direction algorithm 
-
-{\bfseries sr} contains the rainfall data \mbox{[}\mbox{]}\mbox{[}\mbox{]} 
-
-{\bfseries itera} amount of the rainfall intervals flow\-\_\-accumulation = Extract\-By\-Mask(flow\-\_\-accumulation, maska) mat\-\_\-fa = arcpy.\-Raster\-To\-Num\-Py\-Array(flow\-\_\-accumulation) zeros.\-append(mat\-\_\-fa) 
-\end{DoxyReturn}
-
-
-Definition at line 231 of file data\-\_\-preparation.\-py.
-
-
-\begin{DoxyCode}
-231 
-232 \textcolor{keyword}{def }\hyperlink{namespacesmoderp2d_1_1src_1_1data__preparation_abe49c44911df9f3510eaad8751feab27}{prepare\_data}(args):
-233 
-234 
-235 
-236 
-237 
-238 
-239   \textcolor{comment}{## creating the geoprocessor object}
-240   gp = arcgisscripting.create()
-241   \textcolor{comment}{# setting the workspace environment}
-242 
-243   gp.workspace = gp.GetParameterAsText(constants.PARAMETER\_PATH\_TO\_OUTPUT\_DIRECTORY)
-244   \textcolor{comment}{# checking arcgis if ArcGIS Spatial extension is available}
-245 
-246   \textcolor{comment}{## @var asdfasdf}
-247   arcpy.CheckOutExtension(\textcolor{stringliteral}{"Spatial"})
-248   gp.overwriteoutput = 1
-249 
-250   \textcolor{comment}{# input rasters/shapefile parameters}
-251 
-252   dmt = gp.GetParameterAsText(constants.PARAMETER\_DMT)
-253   soil\_indata = gp.GetParameterAsText(constants.PARAMETER\_SOIL)
-254   ptyp = gp.GetParameterAsText(constants.PARAMETER\_SOIL\_TYPE)
-255   veg\_indata = gp.GetParameterAsText(constants.PARAMETER\_VEGETATION)
-256   vtyp = gp.GetParameterAsText(constants.PARAMETER\_VEGETATION\_TYPE)
-257   points = gp.GetParameterAsText(constants.PARAMETER\_POINTS)
-258 
-259 
-260 
-261 
-262   \textcolor{comment}{# setting output directory as input parameter}
-263   output = gp.GetParameterAsText(constants.PARAMETER\_PATH\_TO\_OUTPUT\_DIRECTORY)
-264 
-265   shutil.rmtree(output)
-266 
-267 
-268 
-269   \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} os.path.exists(output):
-270       os.makedirs(output)
-271   arcpy.AddMessage(\textcolor{stringliteral}{"Creating of the output directory: "}+output)
-272   outputgdb = arcpy.CreateFileGDB\_management(output, \textcolor{stringliteral}{"results.gdb"})
-273 
-274   \textcolor{comment}{#os.removedirs(output)}
-275   \textcolor{comment}{#os.makedirs(output)}
-276   temp = output+os.sep+\textcolor{stringliteral}{"temp"}
-277   \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} os.path.exists(temp):
-278       os.makedirs(temp)
-279 
-280   \textcolor{comment}{#tempgdb  = arcpy.CreateFileGDB\_management(temp, "temp.gdb")}
-281 
-282   arcpy.AddMessage(\textcolor{stringliteral}{"Creating of the temp: "}+temp)
-283 
-284   path = gp.GetParameterAsText(constants.PARAMETER\_PATH\_TO\_RAINFALL\_FILE)
-285   dir = os.path.dirname(path) \textcolor{comment}{#co to je???}
-286 
-287   arcpy.env.snapRaster = dmt
-288   \textcolor{comment}{# deleting content of output directory}
-289   dirList=os.listdir(output) \textcolor{comment}{# arcgis bug - locking shapefiles}
-290   ab = 0
-291   \textcolor{keywordflow}{for} fname \textcolor{keywordflow}{in} dirList:
-292       \textcolor{keywordflow}{if} \textcolor{stringliteral}{"sr.lock"} \textcolor{keywordflow}{in} fname:
-293        ab = 1
-294 
-295   \textcolor{keywordflow}{if} ab == 0:
-296       contents = [os.path.join(output, i) \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} os.listdir(output)]
-297 
-298       [shutil.rmtree(i) \textcolor{keywordflow}{if} os.path.isdir(i) \textcolor{keywordflow}{else} os.unlink(i) \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} contents]
-299 
-300   \textcolor{keywordflow}{if} \textcolor{keywordflow}{not} os.path.exists(temp): os.makedirs(temp)
-301 
-302   dmt\_copy = temp+os.sep+\textcolor{stringliteral}{"dmt\_copy"}
-303   arcpy.AddMessage(\textcolor{stringliteral}{"DMT preparation..."})
-304 
-305 
-306   arcpy.CopyRaster\_management(dmt, dmt\_copy)
-307   \textcolor{comment}{#corners deleting}
-308   dmt\_fill,flow\_direction,flow\_accumulation,slope\_orig = arcgis\_dmtfce.dmtfce(dmt\_copy,temp, \textcolor{stringliteral}{"TRUE"}, \textcolor{stringliteral}{"TRUE"}
-      , \textcolor{stringliteral}{"NONE"})
-309   copydmt\_Array = arcpy.RasterToNumPyArray(dmt\_copy)
-310   copySlope\_Array = arcpy.RasterToNumPyArray(slope\_orig)
-311   mat\_slope = arcpy.RasterToNumPyArray(slope\_orig)
-312 
-313 
-314   \textcolor{comment}{# cropped raster info}
-315   dmt\_desc = arcpy.Describe(dmt\_copy)
-316 
-317   \textcolor{comment}{# lower left corner coordinates}
-318   x\_coordinate = dmt\_desc.extent.XMin
-319   y\_coordinate = dmt\_desc.extent.YMin
-320 
-321   ll\_corner = arcpy.Point(x\_coordinate, y\_coordinate)
-322   NoDataValue = dmt\_desc.noDataValue
-323   vpix = dmt\_desc.MeanCellHeight
-324   spix = dmt\_desc.MeanCellWidth
-325   \textcolor{comment}{# size of the raster [0] = number of rows; [1] = number of columns}
-326   rows = copydmt\_Array.shape[0]
-327   cols = copydmt\_Array.shape[1]
-328 
-329 
-330 
-331   \textcolor{stringliteral}{"""for i in range(rows):}
-332 \textcolor{stringliteral}{    for j in range(cols):}
-333 \textcolor{stringliteral}{}
-334 \textcolor{stringliteral}{      valSlope = copySlope\_Array[i][j]}
-335 \textcolor{stringliteral}{      valElevation = copydmt\_Array[i][j]}
-336 \textcolor{stringliteral}{}
-337 \textcolor{stringliteral}{      if i > 0 and i < ( rows - 1 ) and j > 0 and j < ( cols - 1 ): # non edge cells}
-338 \textcolor{stringliteral}{  ssd = [mat\_slope[i-1][j-1], mat\_slope[i-1][j], mat\_slope[i-1][j+1], mat\_slope[i][j-1], mat\_slope[i][j+1],
-       mat\_slope[i+1][j-1], mat\_slope[i+1][j], mat\_slope[i+1][j+1]]}
-339 \textcolor{stringliteral}{  for k in range(8):}
-340 \textcolor{stringliteral}{    val = ssd[k]}
-341 \textcolor{stringliteral}{    if val < 0: # comparing if neighbor cell is NaN}
-342 \textcolor{stringliteral}{      valSlope = val}
-343 \textcolor{stringliteral}{      valElevation = val}
-344 \textcolor{stringliteral}{      elif (i == 0 or i == ( rows - 1 ) or j == 0 or j == ( cols - 1 )): # edge cells}
-345 \textcolor{stringliteral}{         valSlope = NoDataValue}
-346 \textcolor{stringliteral}{         valElevation = NoDataValue}
-347 \textcolor{stringliteral}{      else:}
-348 \textcolor{stringliteral}{         valSlope = NoDataValue}
-349 \textcolor{stringliteral}{         valElevation = NoDataValue}
-350 \textcolor{stringliteral}{}
-351 \textcolor{stringliteral}{      copySlope\_Array[i][j] = valSlope}
-352 \textcolor{stringliteral}{      copydmt\_Array[i][j] = valElevation}
-353 \textcolor{stringliteral}{  dmt\_copy = functions.zapis("dmtcopy1",copydmt\_Array,ll\_corner,spix,vpix,NoDataValue,temp)"""}
-354 
-355   \textcolor{comment}{# adding attribute for soil and vegetation into attribute table (type short int)}
-356   \textcolor{comment}{#preparation for clip}
-357 
-358   null = temp+os.sep+\textcolor{stringliteral}{"hrance\_rst"}
-359   null\_shp = temp+os.sep+\textcolor{stringliteral}{"null.shp"}
-360   arcpy.gp.Reclassify\_sa(dmt\_copy, \textcolor{stringliteral}{"VALUE"}, \textcolor{stringliteral}{"-100000 100000 1"}, null,\textcolor{stringliteral}{"DATA"})
-361   arcpy.RasterToPolygon\_conversion(null, null\_shp, \textcolor{stringliteral}{"NO\_SIMPLIFY"})
-362 
-363   \textcolor{comment}{#function for adding and deletinf fields}
-364   \textcolor{keyword}{def }addfield(inpute, newfield, datatyp, default\_value): \textcolor{comment}{#EDL}
-365       \textcolor{keywordflow}{try}:
-366         arcpy.DeleteField\_management(inpute,newfield)
-367       \textcolor{keywordflow}{except}:
-368         \textcolor{keywordflow}{pass}
-369       arcpy.AddField\_management(inpute, newfield, datatyp)
-370       arcpy.CalculateField\_management(inpute, newfield, default\_value, \textcolor{stringliteral}{"PYTHON"})
-371       \textcolor{keywordflow}{return} inpute
-372   \textcolor{keyword}{def }delfield(inpute, field):
-373       \textcolor{keywordflow}{try}:
-374         arcpy.DeleteField\_management(inpute,newfield)
-375       \textcolor{keywordflow}{except}:
-376         \textcolor{keywordflow}{pass}
-377 
-378   \textcolor{comment}{#add filed for disslolving and masking}
-379   fildname = \textcolor{stringliteral}{"one"}
-380   veg = temp+os.sep+\textcolor{stringliteral}{"LandCover.shp"}
-381   soil = temp+os.sep+\textcolor{stringliteral}{"Siol\_char.shp"}
-382   arcpy.Copy\_management(veg\_indata, veg)
-383   arcpy.Copy\_management(soil\_indata, soil)
-384 
-385   addfield(veg, fildname, \textcolor{stringliteral}{"SHORT"}, 2)
-386   addfield(soil, fildname, \textcolor{stringliteral}{"SHORT"}, 2)
-387 
-388 
-389 
-390 
-391 
-392 
-393   soil\_boundary = temp+os.sep+\textcolor{stringliteral}{"s\_b.shp"}
-394   veg\_boundary = temp+os.sep+\textcolor{stringliteral}{"v\_b.shp"}
-395 
-396 
-397   arcpy.Dissolve\_management(veg, veg\_boundary,vtyp)
-398   arcpy.Dissolve\_management(soil, soil\_boundary,ptyp)
-399 
-400 
-401 
-402   \textcolor{comment}{#mask and clip data}
-403   arcpy.AddMessage(\textcolor{stringliteral}{"Clip of the source data by intersect"})
-404   grup = [soil\_boundary, veg\_boundary, null\_shp]
-405   intersect = output+os.sep+\textcolor{stringliteral}{"interSoilLU.shp"}
-406   arcpy.Intersect\_analysis(grup, intersect, \textcolor{stringliteral}{"ALL"}, \textcolor{stringliteral}{""}, \textcolor{stringliteral}{"INPUT"})
-407 
-408   \textcolor{keywordflow}{if} points \textcolor{keywordflow}{and} (points != \textcolor{stringliteral}{"#"}) \textcolor{keywordflow}{and} (points != \textcolor{stringliteral}{""}):
-409       tmpPoints = []
-410       desc = arcpy.Describe(points)
-411       shapefieldname = desc.ShapeFieldName
-412       rows\_p = arcpy.SearchCursor(points)
-413       \textcolor{keywordflow}{for} row \textcolor{keywordflow}{in} rows\_p:
-414         fid = row.getValue(\textcolor{stringliteral}{'FID'})
-415         feat = row.getValue(shapefieldname)
-416         pnt = feat.getPart()
-417         tmpPoints.append([pnt.X, pnt.Y])
-418       del rows\_p
-419 
-420 
-421 
-422 
-423 
-424       pointsClipCheck = output+os.sep+\textcolor{stringliteral}{"pointsCheck.shp"}
-425       arcpy.Clip\_analysis(points, intersect,pointsClipCheck)
-426 
-427       tmpPointsCheck = []
-428       descCheck = arcpy.Describe(pointsClipCheck)
-429       shapefieldnameCheck = descCheck.ShapeFieldName
-430       rows\_pch = arcpy.SearchCursor(pointsClipCheck)
-431       \textcolor{keywordflow}{for} row2 \textcolor{keywordflow}{in} rows\_pch:
-432         fid = row2.getValue(\textcolor{stringliteral}{'FID'})
-433         featCheck = row2.getValue(shapefieldnameCheck)
-434         pntChech = featCheck.getPart()
-435         tmpPointsCheck.append([pntChech.X, pntChech.Y])
-436       del rows\_pch
-437 
-438 
-439 
-440       diffpts = [c \textcolor{keywordflow}{for} c \textcolor{keywordflow}{in} tmpPoints \textcolor{keywordflow}{if} c \textcolor{keywordflow}{not} \textcolor{keywordflow}{in} tmpPointsCheck]
-441       \textcolor{keywordflow}{if} len(diffpts)==0:
-442         \textcolor{keywordflow}{pass}
-443       \textcolor{keywordflow}{else}:
-444         arcpy.AddMessage(\textcolor{stringliteral}{"!!! Points at coordinates [x,y]:"})
-445         \textcolor{keywordflow}{for} item \textcolor{keywordflow}{in} diffpts:
-446           arcpy.AddMessage(item)
-447         arcpy.AddMessage(\textcolor{stringliteral}{"are outside the computation domain and will be ingnored !!!"})
-448 
-449       points = pointsClipCheck
-450 
-451   arcpy.env.extent = intersect
-452   soil\_clip = temp+os.sep+\textcolor{stringliteral}{"soil\_clip.shp"}
-453   veg\_clip = temp+os.sep+\textcolor{stringliteral}{"veg\_clip.shp"}
-454 
-455   \textcolor{comment}{#clipping of the soil and veg data}
-456 
-457   arcpy.Clip\_analysis(soil, intersect,soil\_clip)
-458   arcpy.Clip\_analysis(veg, intersect,veg\_clip)
-459   grup = [soil\_clip, veg\_clip]
-460   \textcolor{comment}{#intersect = output+os.sep+"prunik.shp"}
-461   \textcolor{comment}{#arcpy.Intersect\_analysis(grup, intersect, "ALL", "", "INPUT")}
-462 
-463   \textcolor{keywordflow}{if} gp.ListFields(intersect, \textcolor{stringliteral}{"puda\_veg"}).Next():
-464       arcpy.DeleteField\_management(intersect, \textcolor{stringliteral}{"puda\_veg"}, )
-465   arcpy.AddField\_management(intersect, \textcolor{stringliteral}{"puda\_veg"}, \textcolor{stringliteral}{"TEXT"}, \textcolor{stringliteral}{""}, \textcolor{stringliteral}{""}, \textcolor{stringliteral}{"15"}, \textcolor{stringliteral}{""}, \textcolor{stringliteral}{"NULLABLE"}, \textcolor{stringliteral}{"NON\_REQUIRED"}, \textcolor{stringliteral}{""}
-      )
-466 
-467   \textcolor{keywordflow}{if} ptyp == vtyp:
-468       vtyp1 = vtyp+\textcolor{stringliteral}{"\_1"}
-469   \textcolor{keywordflow}{else}:
-470       vtyp1 = vtyp
-471 
-472   expr = ptyp + vtyp
-473   fields = [ptyp,vtyp1,\textcolor{stringliteral}{"puda\_veg"}]
-474   with arcpy.da.UpdateCursor(intersect, fields) \textcolor{keyword}{as} cursor:
-475       \textcolor{keywordflow}{for} row \textcolor{keywordflow}{in} cursor:
-476          row[2] = row[0]+row[1]
-477          cursor.updateRow(row)
-478   del cursor, row
-479 
-480   tab\_puda\_veg = gp.GetParameterAsText(constants.PARAMETER\_SOILVEGTABLE)
-481   tab\_puda\_veg\_code = gp.GetParameterAsText(constants.PARAMETER\_SOILVEGTABLE\_CODE)
-482 
-483   puda\_veg\_dbf = temp+os.sep+\textcolor{stringliteral}{"puda\_veg\_tab\_current.dbf"}
-484 
-485   arcpy.CopyRows\_management(tab\_puda\_veg, puda\_veg\_dbf)
-486   sfield = [\textcolor{stringliteral}{"k"}, \textcolor{stringliteral}{"s"}, \textcolor{stringliteral}{"n"}, \textcolor{stringliteral}{"pi"}, \textcolor{stringliteral}{"ppl"}, \textcolor{stringliteral}{"ret"}, \textcolor{stringliteral}{"b"}, \textcolor{stringliteral}{"x"}, \textcolor{stringliteral}{"y"}, \textcolor{stringliteral}{"tau"}, \textcolor{stringliteral}{"v"}]
-487 
-488   \textcolor{comment}{#sfield\_txt = "k;s;n;pi;ppl;ret;b;x;y;tau;v"}
-489   arcpy.JoinField\_management(intersect, \textcolor{stringliteral}{"puda\_veg"}, puda\_veg\_dbf, tab\_puda\_veg\_code, \textcolor{stringliteral}{"
-      k;s;n;pi;ppl;ret;b;x;y;tau;v"})
-490   \textcolor{comment}{#intersect1 = output+"\(\backslash\)\(\backslash\)puda\_vegetace.shp"}
-491   delfield(veg, fildname)
-492   delfield(soil, fildname)
-493   \textcolor{comment}{#cleaning datatypes - for numpy mud be double}
-494   \textcolor{stringliteral}{"""for i in sfield:}
-495 \textcolor{stringliteral}{      inn = i+"n"}
-496 \textcolor{stringliteral}{      arcpy.AddField\_management(intersect, inn, "DOUBLE")}
-497 \textcolor{stringliteral}{      with arcpy.da.UpdateCursor(intersect, [i, inn]) as tabulka:}
-498 \textcolor{stringliteral}{        for row in tabulka:}
-499 \textcolor{stringliteral}{            row[1] = row[0]}
-500 \textcolor{stringliteral}{            tabulka.updateRow(row)}
-501 \textcolor{stringliteral}{      arcpy.DeleteField\_management(intersect,i)}
-502 \textcolor{stringliteral}{      arcpy.AddField\_management(intersect, i, "DOUBLE")}
-503 \textcolor{stringliteral}{      with arcpy.da.UpdateCursor(intersect, [i, inn]) as tabulka:}
-504 \textcolor{stringliteral}{        for rowx in tabulka:}
-505 \textcolor{stringliteral}{            rowx[0] = rowx[1]}
-506 \textcolor{stringliteral}{            tabulka.updateRow(row)}
-507 \textcolor{stringliteral}{      arcpy.DeleteField\_management(intersect,inn)}
-508 \textcolor{stringliteral}{  del row,rowx}
-509 \textcolor{stringliteral}{  """}
-510 
-511 
-512   with arcpy.da.SearchCursor(intersect, sfield) \textcolor{keyword}{as} cursor:
-513       \textcolor{keywordflow}{for} row \textcolor{keywordflow}{in} cursor:
-514         \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(len(row)):
-515           \textcolor{keywordflow}{if} row[i] == \textcolor{stringliteral}{" "}:
-516             arcpy.AddMessage(\textcolor{stringliteral}{"Value in soilveg tab are no correct - STOP, check shp file Prunik in output"})
-      
-517             sys.exit()
-518 
-519 
-520   \textcolor{comment}{# input float vaflues parameters}
-521   \textcolor{comment}{#delta\_t = float(gp.GetParameterAsText(constants.PARAMETER\_DELTA\_T))*60.0 # prevod na sekundy}
-522   delta\_t = \textcolor{stringliteral}{"nechci"}
-523   end\_time = float(gp.GetParameterAsText(constants.PARAMETER\_END\_TIME))*60.0 \textcolor{comment}{# prevod na sekundy}
-524   surface\_retention = float(gp.GetParameterAsText(constants.PARAMETER\_SURFACE\_RETENTION))/1000 \textcolor{comment}{#prevod z
-       [mm] na [m]}
-525 
-526   \textcolor{comment}{# boolean input parameter}
-527   \textcolor{comment}{#}
-528   \textcolor{stringliteral}{"""}
-529 \textcolor{stringliteral}{  string\_type\_of\_coputing = arcpy.GetParameterAsText(constants.PARAMETER\_TYPE\_COMPUTING)}
-530 \textcolor{stringliteral}{  string\_type\_of\_coputing = string\_type\_of\_coputing.lower().replace(' ','').replace(',','')  #jj
-       .lower().replace(' ','').replace(',','') udela ze vsecho v tom stringu maly pismena, replace vyhodi mezery a carky}
-531 \textcolor{stringliteral}{  """}
-532 
-533   \textcolor{comment}{# pocitam vzdy s ryhama}
-534   \textcolor{comment}{# pokud jsou i toky}
-535   \textcolor{comment}{# dole ve skripty se prepise}
-536   \textcolor{comment}{# type\_of\_computing na 3}
-537   \textcolor{comment}{# tzn ryhy i toky}
-538   type\_of\_computing = 1
-539   \textcolor{stringliteral}{"""}
-540 \textcolor{stringliteral}{  if string\_type\_of\_coputing == "onlyshallowsurface":}
-541 \textcolor{stringliteral}{      type\_of\_computing = 0}
-542 \textcolor{stringliteral}{  elif string\_type\_of\_coputing == "shallowandrillsurface":}
-543 \textcolor{stringliteral}{      type\_of\_computing = 1}
-544 \textcolor{stringliteral}{  elif string\_type\_of\_coputing == "diffuseshallowsurface":}
-545 \textcolor{stringliteral}{      type\_of\_computing = 2}
-546 \textcolor{stringliteral}{  elif string\_type\_of\_coputing == "shallowrillstreamsurface":}
-547 \textcolor{stringliteral}{      type\_of\_computing = 3}
-548 \textcolor{stringliteral}{  elif string\_type\_of\_coputing == "surfaceandsubsurfaceflow":}
-549 \textcolor{stringliteral}{      type\_of\_computing = 4}
-550 \textcolor{stringliteral}{  elif string\_type\_of\_coputing == "surfaceandsubsurfacestreamflow":}
-551 \textcolor{stringliteral}{      type\_of\_computing = 5}
-552 \textcolor{stringliteral}{  else:}
-553 \textcolor{stringliteral}{      arcpy.AddMessage("Type of computing not defined, only shalow surface will be computing")}
-554 \textcolor{stringliteral}{      type\_of\_computing = 0}
-555 \textcolor{stringliteral}{  """}
-556 
-557 
-558 
-559 
-560   \textcolor{comment}{# setting progressor}
-561   gp.SetProgressor(\textcolor{stringliteral}{"default"}, \textcolor{stringliteral}{"Data preparations..."})
-562 
-563   \textcolor{comment}{# raster description}
-564   dmt\_desc = arcpy.Describe(dmt\_copy)
-565 
-566   \textcolor{comment}{# output raster coordinate system}
-567   arcpy.env.outputCoordinateSystem=dmt\_desc.SpatialReference
-568 
-569   \textcolor{comment}{# size of cell}
-570   vpix = dmt\_desc.MeanCellHeight
-571   spix = dmt\_desc.MeanCellWidth
-572 
-573   maska = temp+os.sep+\textcolor{stringliteral}{"maska"}
-574   arcpy.PolygonToRaster\_conversion(intersect, \textcolor{stringliteral}{"FID"}, maska, \textcolor{stringliteral}{"MAXIMUM\_AREA"}, cellsize=vpix)
-575   \textcolor{comment}{# cropping rasters}
-576 
-577   dmt\_clip = ExtractByMask(dmt\_copy, maska)
-578   dmt\_clip.save(output+os.sep+\textcolor{stringliteral}{"DTM"})
-579   slope\_clip = ExtractByMask(slope\_orig, maska)
-580   slope\_clip.save(temp+os.sep+\textcolor{stringliteral}{"slope\_clip"})
-581 
-582   flow\_direction\_clip = ExtractByMask(flow\_direction, maska)
-583   flow\_direction\_clip.save(output+os.sep+\textcolor{stringliteral}{"flowDir"})
-584 
-585   \textcolor{comment}{# cropped raster info}
-586   dmt\_desc = arcpy.Describe(dmt\_clip)
-587 
-588   \textcolor{comment}{# lower left corner coordinates}
-589   x\_coordinate = dmt\_desc.Extent.XMin
-590   y\_coordinate = dmt\_desc.Extent.YMin
-591   NoDataValue = dmt\_desc.noDataValue
-592   vpix = dmt\_desc.MeanCellHeight
-593   spix = dmt\_desc.MeanCellWidth
-594   pixel\_area = spix * vpix
-595   ll\_corner = arcpy.Point(x\_coordinate, y\_coordinate)
-596   \textcolor{comment}{# raster to numpy array conversion}
-597   zeros = []
-598   dmt\_array = arcpy.RasterToNumPyArray(dmt\_clip)
-599   zeros.append(dmt\_array)
-600   mat\_slope = arcpy.RasterToNumPyArray(slope\_clip)
-601   mat\_fd = arcpy.RasterToNumPyArray(flow\_direction\_clip) \textcolor{comment}{#}
-602   zapis(\textcolor{stringliteral}{"fl\_dir"},mat\_fd,x\_coordinate,y\_coordinate,spix,vpix,NoDataValue,temp)
-603 
-604   \textcolor{comment}{# size of the raster [0] = number of rows; [1] = number of columns}
-605   rows = dmt\_array.shape[0]
-606   cols = dmt\_array.shape[1]
-607 
-608   mat\_dmt = dmt\_array
-609   zeros.append(mat\_dmt)
-610   mat\_k = np.zeros([rows,cols],float)
-611   zeros.append(mat\_k)
-612   mat\_s = np.zeros([rows,cols],float)
-613   zeros.append(mat\_s)
-614   mat\_n = np.zeros([rows,cols],float)
-615   zeros.append(mat\_n)
-616   mat\_ppl = np.zeros([rows,cols],float)
-617   zeros.append(mat\_ppl)
-618   mat\_pi = np.zeros([rows,cols],float)
-619   zeros.append(mat\_pi)
-620   mat\_ret = np.zeros([rows,cols],float)
-621   zeros.append(mat\_ret)
-622   mat\_b = np.zeros([rows,cols],float)
-623   zeros.append(mat\_b)
-624   mat\_x = np.zeros([rows,cols],float)
-625   zeros.append(mat\_x)
-626   mat\_y = np.zeros([rows,cols],float)
-627   zeros.append(mat\_y)
-628   mat\_tau = np.zeros([rows,cols],float)
-629   zeros.append(mat\_tau)
-630   mat\_v = np.zeros([rows,cols],float)
-631   zeros.append(mat\_v)
-632   \textcolor{comment}{#prevod = np.zeros([rows,cols],float)}
-633 
-634   mat\_nan = np.zeros([rows,cols],float)
-635   zeros.append(mat\_nan)
-636   \textcolor{comment}{#mat\_slope = np.zeros([rows,cols],float)}
-637   zeros.append(mat\_slope)
-638   mat\_a = np.zeros([rows,cols],float)
-639   zeros.append(mat\_a)
-640   mat\_aa = np.zeros([rows,cols],float)
-641   zeros.append(mat\_aa)
-642 
-643   all\_attrib = [mat\_k, mat\_s, mat\_n, mat\_ppl, mat\_pi, mat\_ret, mat\_b, mat\_x, mat\_y, mat\_tau, mat\_v] \textcolor{comment}{#
-       parametry, ktere se generuji ze shp}
-644   poradi = 0
-645 
-646   \textcolor{keywordflow}{for} x \textcolor{keywordflow}{in} sfield:
-647       RtoNu = \textcolor{stringliteral}{"}\textcolor{stringliteral}{r"+str(x)}
-648 \textcolor{stringliteral}{      d = temp+os.sep+RtoNu}
-649 \textcolor{stringliteral}{      arcpy.PolygonToRaster\_conversion(intersect, str(x), d, }\textcolor{stringliteral}{"MAXIMUM\_AREA"}, \textcolor{stringliteral}{""},vpix)
-650       c = arcpy.RasterToNumPyArray(d)
-651       all\_attrib[poradi] = c
-652       poradi += 1
-653 
-654   mat\_k = all\_attrib[0]
-655   mat\_s = all\_attrib[1]
-656   mat\_n = all\_attrib[2]
-657   mat\_ppl = all\_attrib[3]
-658   mat\_pi = all\_attrib[4]
-659   mat\_ret = all\_attrib[5]
-660   mat\_b = all\_attrib[6]
-661   mat\_x = all\_attrib[7]
-662   mat\_y = all\_attrib[8]
-663   mat\_tau = all\_attrib[9]
-664   mat\_v = all\_attrib[10]
-665 
-666 
-667   infiltrationType = int(0) \textcolor{comment}{#"Phillip"}
-668   \textcolor{keywordflow}{if} infiltrationType == int(0):
-669       mat\_inf\_index = np.zeros([rows,cols],int)
-670       combinat = []
-671       combinatIndex = []
-672       \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range (rows):
-673         \textcolor{keywordflow}{for} j \textcolor{keywordflow}{in} range(cols):
-674             kkk = mat\_k[i][j]
-675             sss = mat\_s[i][j]
-676             ccc = [kkk, sss]
-677             \textcolor{keywordflow}{try}:
-678               \textcolor{keywordflow}{if} combinat.index(ccc):
-679                 mat\_inf\_index [i][j] = combinat.index(ccc)
-680             \textcolor{keywordflow}{except}:
-681               ccc = [kkk, sss]
-682               combinat.append(ccc)
-683               combinat.index(ccc)
-684               combinatIndex.append([combinat.index(ccc), ccc[0],ccc[1], 0])
-685               mat\_inf\_index [i][j] = combinat.index(ccc)
-686 
-687 
-688   \textcolor{comment}{# getting points coordinates from optional input shapefile}
-689   \textcolor{keywordflow}{if} points \textcolor{keywordflow}{and} (points != \textcolor{stringliteral}{"#"}) \textcolor{keywordflow}{and} (points != \textcolor{stringliteral}{""}):
-690       \textcolor{comment}{# identify the geometry field}
-691       desc = arcpy.Describe(points)
-692       shapefieldname = desc.ShapeFieldName
-693       \textcolor{comment}{# create search cursor}
-694       rows\_p = arcpy.SearchCursor(points)
-695       \textcolor{comment}{# getting number of points in shapefile}
-696       count = arcpy.GetCount\_management(points) \textcolor{comment}{# result}
-697       count = count.getOutput(0)
-698 
-699       \textcolor{comment}{# empty array}
-700       array\_points = np.zeros([int(count),5],float)
-701 
-702       i = 0
-703       \textcolor{comment}{# each point is saved into matrix from second row to the end. First row is for maximal value from
-       flow accumulation array}
-704       \textcolor{keywordflow}{for} row \textcolor{keywordflow}{in} rows\_p:
-705         \textcolor{comment}{# getting points ID}
-706         fid = row.getValue(\textcolor{stringliteral}{'FID'})
-707         array\_points[i][0] = fid
-708         \textcolor{comment}{# create the geometry object 'feat'}
-709         feat = row.getValue(shapefieldname)
-710         pnt = feat.getPart()
-711         \textcolor{comment}{# position i,j in raster}
-712         array\_points[i][1] = rows - (( pnt.Y - y\_coordinate ) // vpix) - 1 \textcolor{comment}{# i}
-713         array\_points[i][2] = ( pnt.X - x\_coordinate ) // spix \textcolor{comment}{# j}
-714         \textcolor{comment}{# x,y coordinates of current point stored in an array}
-715         array\_points[i][3] = pnt.X
-716         array\_points[i][4] = pnt.Y
-717         i = i + 1
-718       del rows\_p,i
-719   \textcolor{keywordflow}{else}:
-720     array\_points = \textcolor{keywordtype}{None}
-721   \textcolor{comment}{#toto jeste dodelat, aby to bylo formou neznamych, zdali fltrovat ci ne}
-722   \textcolor{comment}{#from functions import dmtfce}
-723   \textcolor{comment}{#dmt\_fill,flow\_direction,flow\_accumulation,slope = dmtfce(dmt\_clip, temp,"TRUE", "TRUE", "NONE")}
-724   \textcolor{comment}{#dmt\_fill,flow\_direction,flow\_accumulation,slope = functions.dmtfce(dmt\_clip, temp,"TRUE", "TRUE",
-       "NONE")}
-725 
-726   \textcolor{comment}{# loading file soil\_type\_values}
-727 
-728   \textcolor{comment}{# trimming the edge cells}
-729   \textcolor{comment}{#convert dmt to array}
-730   mat\_dmt\_fill = arcpy.RasterToNumPyArray(dmt\_fill)
-731   zeros.append(mat\_dmt\_fill)
-732   \textcolor{comment}{#mat\_fd = arcpy.RasterToNumPyArray(flow\_direction\_clip)}
-733   zeros.append(mat\_fd)
-734   \textcolor{comment}{#}
-735   \textcolor{comment}{#}
-736   \textcolor{comment}{#}
-737   \textcolor{comment}{#}
-738   \textcolor{comment}{#}
-739   \textcolor{comment}{#jj !!!!! maska na flow accumulatin by se mozna mela delat predtim}
-740   \textcolor{comment}{#         respektive by se asi melo flow accumulation udelat z dmt ktery uz je tou maskou orezany}
-741   \textcolor{comment}{#         takze ta lajna pod timto komentem je asi blbe !!!!!}
-742   \textcolor{comment}{#}
-743   \textcolor{comment}{#}
-744   \textcolor{comment}{##}
-745   \textcolor{comment}{#flow\_accumulation = ExtractByMask(flow\_accumulation, maska)}
-746   \textcolor{comment}{#mat\_fa = arcpy.RasterToNumPyArray(flow\_accumulation)}
-747   \textcolor{comment}{#zeros.append(mat\_fa)}
-748 
-749   \textcolor{comment}{#vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u sklou a acc}
-750   i = 0
-751   j = 0
-752   \textcolor{stringliteral}{"""for i in range(rows):}
-753 \textcolor{stringliteral}{    for j in range(cols):}
-754 \textcolor{stringliteral}{}
-755 \textcolor{stringliteral}{      valSlope = mat\_slope[i][j]}
-756 \textcolor{stringliteral}{      val\_height = mat\_fa[i][j]}
-757 \textcolor{stringliteral}{}
-758 \textcolor{stringliteral}{      if i > 0 and i < ( rows - 1 ) and j > 0 and j < ( cols - 1 ): # non edge cells}
-759 \textcolor{stringliteral}{  ssd = [mat\_slope[i-1][j-1], r\_slope[i-1][j], r\_slope[i-1][j+1], mat\_slope[i][j-1], r\_slope[i][j+1],
-       r\_slope[i+1][j-1], r\_slope[i+1][j], r\_slope[i+1][j+1]]}
-760 \textcolor{stringliteral}{  for k in range(8):}
-761 \textcolor{stringliteral}{    val = ssd[k]}
-762 \textcolor{stringliteral}{    if val < 0: # comparing if neighbor cell is NaN}
-763 \textcolor{stringliteral}{      valSlope = val}
-764 \textcolor{stringliteral}{      val\_height = val}
-765 \textcolor{stringliteral}{      elif (i == 0 or i == ( rows - 1 ) or j == 0 or j == ( cols - 1 )): # edge cells}
-766 \textcolor{stringliteral}{  valSlope = NoDataValue}
-767 \textcolor{stringliteral}{  val\_height = NoDataValue}
-768 \textcolor{stringliteral}{      else:}
-769 \textcolor{stringliteral}{  valSlope = NoDataValue}
-770 \textcolor{stringliteral}{  val\_height = NoDataValue}
-771 \textcolor{stringliteral}{}
-772 \textcolor{stringliteral}{      mat\_slope[i][j] = valSlope}
-773 \textcolor{stringliteral}{      mat\_fa[i][j] = val\_height"""}
-774 
-775   \textcolor{comment}{# data value vector intersection}
-776   \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(rows):
-777     \textcolor{keywordflow}{for} j \textcolor{keywordflow}{in} range(cols):
-778       x\_mat\_dmt = mat\_dmt[i][j]
-779       slp = mat\_slope[i][j]
-780       \textcolor{keywordflow}{if} x\_mat\_dmt == NoDataValue \textcolor{keywordflow}{or} slp == NoDataValue:
-781           mat\_nan[i][j] = NoDataValue
-782           mat\_slope[i][j] = NoDataValue
-783           mat\_dmt[i][j] = NoDataValue
-784       \textcolor{keywordflow}{else}:
-785           mat\_nan[i][j] = 0
-786 
-787   \textcolor{comment}{# checking for points at the edge of the raster}
-788   \textcolor{keywordflow}{if} points \textcolor{keywordflow}{and} points != \textcolor{stringliteral}{"#"}:
-789       \textcolor{keywordflow}{for} kyk \textcolor{keywordflow}{in} range( array\_points.shape[0] - 1 ):
-790           \textcolor{keywordflow}{if} array\_points[kyk][1] == i \textcolor{keywordflow}{and} array\_points[kyk][2] == j:
-791               gp.AddMessage(\textcolor{stringliteral}{"Point FID = "} + str( int( array\_points[kyk][0] ) ) + \textcolor{stringliteral}{" is at the edge of the
-       raster. This point will not be included in results."})
-792               array\_points =  np.delete(array\_points, kyk,0)
-793 
-794 
-795   \textcolor{comment}{# calculating the "a" parameter}
-796   \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(rows):
-797     \textcolor{keywordflow}{for} j \textcolor{keywordflow}{in} range(cols):
-798       slope = mat\_slope[i][j]
-799       par\_x = mat\_x[i][j]
-800       par\_y = mat\_y[i][j]
-801       \textcolor{keywordflow}{if} i == 3 \textcolor{keywordflow}{and} j == 90:
-802         cxs = 5
-803 
-804       \textcolor{keywordflow}{if} par\_x == NoDataValue \textcolor{keywordflow}{or} par\_y ==NoDataValue \textcolor{keywordflow}{or} slope == NoDataValue:
-805           par\_a = NoDataValue
-806           par\_aa = NoDataValue
-807           exp = 0
-808 
-809       \textcolor{keywordflow}{elif} par\_x == NoDataValue \textcolor{keywordflow}{or} par\_y ==NoDataValue \textcolor{keywordflow}{or} slope == 0.0:
-810           par\_a = 0.0001
-811           par\_aa = par\_a / 100 / mat\_n[i][j]
-812           exp = 0
-813 
-814       \textcolor{keywordflow}{else}:
-815           exp = np.power(slope, par\_y)
-816           par\_a = par\_x * exp
-817           par\_aa = par\_a / 100 / mat\_n[i][j]
-818 
-819       mat\_a[i][j] = par\_a
-820       mat\_aa [i][j] = par\_aa
-821 
-822 
-823 
-824   \textcolor{comment}{# critical water level}
-825   \textcolor{comment}{# if je pryc protoze ryhy jedou vzdy}
-826   \textcolor{comment}{#if type\_of\_computing != 0:}
-827   arcpy.AddMessage(\textcolor{stringliteral}{"Computing critical level"})
-828   mat\_hcrit\_tau = np.zeros([rows,cols],float)
-829   mat\_hcrit\_v = np.zeros([rows,cols],float)
-830   mat\_hcrit\_flux = np.zeros([rows,cols],float)
-831   mat\_hcrit = np.zeros([rows,cols],float)
-832   \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(rows):
-833       \textcolor{keywordflow}{for} j \textcolor{keywordflow}{in} range(cols):
-834           \textcolor{keywordflow}{if} mat\_slope[i][j] != NoDataValue \textcolor{keywordflow}{and} mat\_tau[i][j] != NoDataValue:
-835               slope = mat\_slope[i][j]
-836               tau\_crit = mat\_tau[i][j]
-837               v\_crit = mat\_v[i][j]
-838               b = mat\_b[i][j]
-839               a = mat\_a[i][j]
-840               aa = mat\_aa[i][j]
-841               flux\_crit = tau\_crit * v\_crit
-842               exp = 1/(b - 1)
-843 
-844               \textcolor{keywordflow}{if} slope == 0.0:
-845                   hcrit\_tau = hcrit\_v = hcrit\_flux = 1000
-846 
-847 
-848               \textcolor{keywordflow}{else}:
-849                   hcrit\_v = np.power((v\_crit/aa),exp) \textcolor{comment}{# h critical from v (10 je kuli jednotkam, bude
-       jinak)}
-850                   hcrit\_tau = tau\_crit / 98.07 / slope \textcolor{comment}{# h critical from tau}
-851                   hcrit\_flux = np.power((flux\_crit/slope/98.07/aa),(1 / mat\_b[i][j]))\textcolor{comment}{#kontrola jednotek}
-852 
-853               mat\_hcrit\_tau[i][j] = hcrit\_tau
-854               mat\_hcrit\_v[i][j] = hcrit\_v
-855               mat\_hcrit\_flux[i][j] = hcrit\_flux
-856               hcrit = min (hcrit\_tau, hcrit\_v, hcrit\_flux)
-857               mat\_hcrit[i][j] = hcrit
-858           \textcolor{keywordflow}{else}:
-859               mat\_hcrit\_tau[i][j] = NoDataValue
-860               mat\_hcrit\_v[i][j] = NoDataValue
-861               mat\_hcrit\_flux[i][j] = NoDataValue
-862               mat\_hcrit[i][j] = NoDataValue
-863 
-864   rhcrit\_tau = arcpy.NumPyArrayToRaster(mat\_hcrit\_tau, ll\_corner, spix, vpix, \textcolor{stringliteral}{"#"} )
-865   rhcrit\_tau.save(temp+os.sep+\textcolor{stringliteral}{"hcrit\_tau"})
-866   rhcrit\_flux = arcpy.NumPyArrayToRaster(mat\_hcrit\_flux, ll\_corner, spix, vpix, \textcolor{stringliteral}{"#"} )
-867   rhcrit\_flux.save(temp+os.sep+\textcolor{stringliteral}{"hcrit\_flux"})
-868   rhcrit\_v = arcpy.NumPyArrayToRaster(mat\_hcrit\_v, ll\_corner, spix, vpix, \textcolor{stringliteral}{"#"} )
-869   rhcrit\_v.save(temp+os.sep+\textcolor{stringliteral}{"hcrit\_v"})
-870   \textcolor{comment}{#else:}
-871       \textcolor{comment}{#mat\_hcrit = np.zeros([rows,cols],float)}
-872 
-873   \textcolor{stringliteral}{"""rmat\_hcrit = arcpy.NumPyArrayToRaster(mat\_hcrit, ll\_corner, spix, vpix, "#" )}
-874 \textcolor{stringliteral}{  rmat\_hcrit.save(output+os.sep+"hcrit")"""}
-875   zeros.append(mat\_hcrit)
-876   \textcolor{comment}{#fektivni vrstevnice a priprava "state cell, jestli to je tok ci plocha}
-877   pii = math.pi / 180.0
-878   asp = arcpy.sa.Aspect(dmt\_clip)
-879   asppii = Times (asp, pii)
-880   sinasp = arcpy.sa.Sin (asppii)
-881   cosasp = arcpy.sa.Cos (asppii)
-882   sinsklon = arcpy.sa.Abs(sinasp)
-883   cossklon = arcpy.sa.Abs(cosasp)
-884   \textcolor{comment}{#times1 = arcpy.sa.Times(cossklon, sinsklon)}
-885   times1 = arcpy.sa.Plus(cossklon, sinsklon)
-886   times1.save(temp+os.sep+\textcolor{stringliteral}{"ratio\_cell"})
-887 
-888   efect\_vrst = arcpy.sa.Times(times1, spix)
-889   efect\_vrst.save(temp+os.sep+\textcolor{stringliteral}{"efect\_vrst"})
-890   mat\_efect\_vrst = arcpy.RasterToNumPyArray(efect\_vrst)
-891   zeros.append(mat\_efect\_vrst)
-892 
-893 
-894   state\_cell = np.zeros([rows,cols],float)
-895   zeros.append(state\_cell)
-896 
-897   \textcolor{keyword}{def }zero(mat\_layer, zero\_layer, loc\_row, loc\_cols):
-898       mat\_layer = np.zeros([rows,cols],float)
-899       \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(loc\_row):
-900         \textcolor{keywordflow}{for} j \textcolor{keywordflow}{in} range(loc\_cols):
-901             \textcolor{keywordflow}{if} zero\_layer[i][j] == NoDataValue:
-902               mat\_layer[i][j] = NoDataValue
-903             \textcolor{keywordflow}{else}:
-904               mat\_layer[i][j] = mat\_layer[i][j]
-905       \textcolor{keywordflow}{return} mat\_layer
-906   \textcolor{keywordflow}{for} zz \textcolor{keywordflow}{in} zeros:
-907       zz = zero(zz,mat\_nan, rows,cols)
-908 
-909 
-910 
-911 
-912 
-913   \textcolor{comment}{#@jj z runoff jsem to predal a rainfall\_file\_path}
-914   \textcolor{comment}{# dokud neni mfda pripraven je toto zakomentovane}
-915   \textcolor{comment}{# mfda = arcpy.GetParameterAsText(constants.PARAMETER\_MFDA)}
-916   mfda   = \textcolor{keyword}{False}
-917   rainfall\_file\_path = gp.GetParameterAsText(constants.PARAMETER\_PATH\_TO\_RAINFALL\_FILE)
-918   sr,itera  = rainfall.load\_precipitation(rainfall\_file\_path)
-919 
-920 
-921 
-922 
-923 
-924   \textcolor{comment}{#}
-925   \textcolor{comment}{#  je stream?}
-926   \textcolor{comment}{# #jj tu sem to pridal prekopal 23.6.16}
-927   \textcolor{comment}{# pokud jsou zadane vsechny vstupy pro vypocet toku}
-928   \textcolor{comment}{# toky se pocitaji a type\_of\_computing je 3}
-929   stream = gp.GetParameterAsText(constants.PARAMETER\_STREAM)
-930   tab\_stream\_tvar = gp.GetParameterAsText(constants.PARAMETER\_STREAMTABLE)
-931   tab\_stream\_tvar\_code = gp.GetParameterAsText(constants.PARAMETER\_STREAMTABLE\_CODE)
-932   listin = [stream,tab\_stream\_tvar,tab\_stream\_tvar\_code]
-933   tflistin = [len(i)>1 \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} listin]
-934 
-935   \textcolor{keywordflow}{if} all(tflistin) :
-936     type\_of\_computing = 3
-937   \textcolor{keywordflow}{else} :
-938     \textcolor{keywordflow}{pass}
-939 
-940 
-941 
-942   \textcolor{keywordflow}{if} (type\_of\_computing == 3) \textcolor{keywordflow}{or} (type\_of\_computing == 5):
-943 
-944     arcpy.AddMessage(\textcolor{stringliteral}{'Stream preparation...'})
-945 
-946 
-947 
-948 
-949     \textcolor{keyword}{import} \hyperlink{namespacesmoderp2d_1_1src_1_1stream__functions_1_1stream__preparation}{smoderp2d.src.stream\_functions.stream\_preparation}
-       \textcolor{keyword}{as} sp
-950     toky, cell\_stream, mat\_tok\_usek, STREAM\_RATIO, tokyLoc = sp.prepare\_streams(dmt, dmt\_copy, mat\_dmt\_fill
-      , null\_shp,
-951                                                                                 mat\_nan, mat\_fd, vpix,
-952                                                                                 spix, rows, cols, ll\_corner
-      ,
-953                                                                                 NoDataValue,addfield,
-954                                                                                 delfield,output, dmt\_clip,
-955                                                                                 intersect, null\_shp, gp)
-956 
-957     fields = arcpy.ListFields(toky)
-958     \textcolor{comment}{#field\_names = [field.name for field in fields if field.type != 'Geometry']}
-959     field\_names = [field.name \textcolor{keywordflow}{for} field \textcolor{keywordflow}{in} fields]
-960     toky\_tmp = [[] \textcolor{keywordflow}{for} field \textcolor{keywordflow}{in} fields]
-961 
-962     \textcolor{keywordflow}{for} row \textcolor{keywordflow}{in} arcpy.SearchCursor(toky):
-963       field\_vals = [row.getValue(field) \textcolor{keywordflow}{for} field \textcolor{keywordflow}{in} field\_names]
-964       \textcolor{comment}{#field\_vals}
-965       \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} range(len(field\_vals)):
-966         toky\_tmp[i].append(field\_vals[i])
-967       del row
-968 
-969     \textcolor{comment}{# all columns names in}
-970     \textcolor{stringliteral}{"""[u'FID', u'Shape', u'Id', u'Id\_1', u'Id\_12', u'Id\_12\_13', u'Id\_12\_1\_14', u'Id\_12\_1\_15', u'RASTERVALU
-      ', u'POINT\_X', u'POINT\_Y', u'Id\_12\_1\_16', u'Id\_12\_1\_17', u'Id\_12\_1\_18', u'RASTERVA\_1', u'POINT\_X\_1', u'
-      POINT\_Y\_1', u'to\_node', u'length', u'sklon', u'V\_infl\_ce', u'V\_infl\_us', u'V\_infl', u'Q\_outfl', u'V\_outfl', u'
-      V\_outfl\_tm', u'V\_zbyt', u'V\_zbyt\_tm', u'V', u'h', u'vs', u'NS', u'total\_Vic', u'total\_Viu', u'max\_Q', u'max\_h',
-       u'max\_vs', u'total\_Vo', u'total\_Vi', u'total\_NS', u'total\_Vz', u'smoderp', u'CISLO', u'TVAR', u'B', u'M', u
-      'DRSNOST', u'Q365']"""}
-971 
-972     toky = [] \textcolor{comment}{#Kubuv vyber}
-973     toky.append(toky\_tmp[field\_names.index(\textcolor{stringliteral}{'FID'})])
-974     toky.append(toky\_tmp[field\_names.index(\textcolor{stringliteral}{'POINT\_X'})])
-975     toky.append(toky\_tmp[field\_names.index(\textcolor{stringliteral}{'POINT\_Y'})])
-976     toky.append(toky\_tmp[field\_names.index(\textcolor{stringliteral}{'POINT\_X\_1'})])
-977     toky.append(toky\_tmp[field\_names.index(\textcolor{stringliteral}{'POINT\_Y\_1'})])
-978     toky.append(toky\_tmp[field\_names.index(\textcolor{stringliteral}{'to\_node'})])
-979     toky.append(toky\_tmp[field\_names.index(\textcolor{stringliteral}{'length'})])
-980     toky.append(toky\_tmp[field\_names.index(\textcolor{stringliteral}{'sklon'})])
-981     toky.append(toky\_tmp[field\_names.index(\textcolor{stringliteral}{'smoderp'})])
-982     toky.append(toky\_tmp[field\_names.index(\textcolor{stringliteral}{'cislo'})])
-983     toky.append(toky\_tmp[field\_names.index(\textcolor{stringliteral}{'tvar'})])
-984     toky.append(toky\_tmp[field\_names.index(\textcolor{stringliteral}{'b'})])
-985     toky.append(toky\_tmp[field\_names.index(\textcolor{stringliteral}{'m'})])
-986     toky.append(toky\_tmp[field\_names.index(\textcolor{stringliteral}{'drsnost'})])
-987     toky.append(toky\_tmp[field\_names.index(\textcolor{stringliteral}{'Q365'})])
-988 
-989     arcpy.AddMessage(\textcolor{stringliteral}{"Stream preparation has finished"})
-990   \textcolor{keywordflow}{else}:
-991     toky = \textcolor{keywordtype}{None}
-992     cell\_stream = \textcolor{keywordtype}{None}
-993     mat\_tok\_usek = \textcolor{keywordtype}{None}
-994     \textcolor{comment}{#mat\_tok = None}
-995     STREAM\_RATIO = \textcolor{keywordtype}{None}
-996     tokyLoc = \textcolor{keywordtype}{None}
-997 
-998 
-999 
-1000 
-1001 
-1002 
-1003   boundaryRows, boundaryCols, rrows, rcols, mat\_boundary = \hyperlink{namespacesmoderp2d_1_1src_1_1data__preparation_a32f7109b150f5af13b8087e8bb3213d2}{find\_boudary\_cells}(rows, cols,
-       mat\_nan, NoDataValue, mfda)
-1004   rada = \hyperlink{classsmoderp2d_1_1src_1_1data__preparation_1_1Outlet}{Outlet}()
-1005 
-1006 
-1007   \textcolor{keywordflow}{for} i \textcolor{keywordflow}{in} boundaryRows:
-1008     \textcolor{keywordflow}{for} j \textcolor{keywordflow}{in} boundaryCols[i]:
-1009       rada.push(i,j,mat\_nan,NoDataValue)
-1010 
-1011 
-1012   rada.find\_outlets(mat\_dmt\_fill)
-1013 
-1014 
-1015   outletCells = rada.outletCells
-1016 
-1017 
-1018   arcpy.AddMessage(\textcolor{stringliteral}{"Data preparation has been finished"})
-1019 
-1020 
-1021 
-1022   \textcolor{keywordflow}{return} boundaryRows, boundaryCols, mat\_boundary, rrows, rcols, outletCells, x\_coordinate, y\_coordinate,\(\backslash\)
-1023     NoDataValue, array\_points, \(\backslash\)
-1024     cols, rows, combinatIndex, delta\_t, \(\backslash\)
-1025     mat\_pi, mat\_ppl, \(\backslash\)
-1026     surface\_retention, mat\_inf\_index, mat\_hcrit, mat\_aa, mat\_b, mat\_ret, \(\backslash\)
-1027     mat\_fd, mat\_dmt, mat\_efect\_vrst, mat\_slope, mat\_nan, \(\backslash\)
-1028     mat\_a,   \(\backslash\)
-1029     mat\_n,   \(\backslash\)
-1030     output, pixel\_area, points, poradi,  end\_time, spix, state\_cell, \(\backslash\)
-1031     temp, type\_of\_computing, vpix, mfda, sr, itera,  \(\backslash\)
-1032     toky, cell\_stream, mat\_tok\_usek, STREAM\_RATIO, tokyLoc
-1033 
-1034 
-1035 
-1036 
-1037 
-\end{DoxyCode}

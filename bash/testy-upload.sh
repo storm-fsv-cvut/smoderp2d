@@ -1,1 +1,0 @@
-rsync -Rave ssh --delete --exclude='*.pyc'  indata bash/testy-delej-vse.sh bash/test-in start-smoderp2d.py smoderp2d sshsmoderp:/home/smoderp

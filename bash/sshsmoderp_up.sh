@@ -1,1 +1,0 @@
-rsync -ave ssh main.py a.sh main_src indata sshsmoderp:/home/smoderp
