@@ -1,0 +1,3457 @@
+
+    @ @ @   @       @     @ @     @ @ @     @ @ @ @  @ @ @    @ @ @
+   @        @ @   @ @   @     @   @     @   @        @     @  @     @
+   @        @   @   @  @       @  @      @  @        @     @  @     @
+     @ @    @       @  @       @  @      @  @ @ @    @ @ @    @ @ @
+         @  @       @  @       @  @      @  @        @   @    @
+         @  @       @   @     @   @     @   @        @    @   @
+    @ @ @   @       @     @ @     @ @ @     @ @ @ @  @     @  @
+
+   \  \  /   / /    \   \  /   \  /    /     /        @ @ @   @ @ @
+    \ _\/   /_/      \   \/     \/    /_____/        @     @  @     @
+        \__/          \  /      _\___/                     @  @      @
+            \____      \/      /                          @   @      @
+                 \_____/______/                         @     @      @
+                              \                       @       @     @
+                               \____________________ @ @ @ @  @ @ @
+Surface: 
+	Rill flow: 
+		OFF 
+	Kinematic approach 
+	D8 flow algorithm 
+Stream: 
+	OFF 
+Subsurface: 
+	OFF 
+Save cumulative and maximum values from: 
+	Surface 
+Corrected time step is 20.0 [s] 
+Hydrographs files has been created... 
+Start of computing  
+Total time [s]:   40.00 
+Time step  [s]:   20.00 
+Time iterations:  1 
+Percentage done:  3.33 % 
+Time to end [s]:  0.72 
+-------------------------- 
+Total time [s]:   60.00 
+Time step  [s]:   20.00 
+Time iterations:  1 
+Percentage done:  5.00 % 
+Time to end [s]:  0.59 
+-------------------------- 
+Total time [s]:   80.00 
+Time step  [s]:   20.00 
+Time iterations:  1 
+Percentage done:  6.67 % 
+Time to end [s]:  0.52 
+-------------------------- 
+Total time [s]:   100.00 
+Time step  [s]:   20.00 
+Time iterations:  1 
+Percentage done:  8.33 % 
+Time to end [s]:  0.48 
+-------------------------- 
+Total time [s]:   120.00 
+Time step  [s]:   20.00 
+Time iterations:  1 
+Percentage done:  10.00 % 
+Time to end [s]:  0.44 
+-------------------------- 
+Total time [s]:   140.00 
+Time step  [s]:   20.00 
+Time iterations:  1 
+Percentage done:  11.67 % 
+Time to end [s]:  0.52 
+-------------------------- 
+Total time [s]:   160.00 
+Time step  [s]:   20.00 
+Time iterations:  1 
+Percentage done:  13.33 % 
+Time to end [s]:  0.56 
+-------------------------- 
+Total time [s]:   180.00 
+Time step  [s]:   20.00 
+Time iterations:  1 
+Percentage done:  15.00 % 
+Time to end [s]:  0.59 
+-------------------------- 
+Total time [s]:   187.46 
+Time step  [s]:   13.73 
+Time iterations:  2 
+Percentage done:  15.62 % 
+Time to end [s]:  0.66 
+-------------------------- 
+Total time [s]:   191.49 
+Time step  [s]:   8.88 
+Time iterations:  2 
+Percentage done:  15.96 % 
+Time to end [s]:  0.75 
+-------------------------- 
+Total time [s]:   197.59 
+Time step  [s]:   7.49 
+Time iterations:  2 
+Percentage done:  16.47 % 
+Time to end [s]:  0.82 
+-------------------------- 
+Total time [s]:   203.47 
+Time step  [s]:   6.68 
+Time iterations:  2 
+Percentage done:  16.96 % 
+Time to end [s]:  0.89 
+-------------------------- 
+Total time [s]:   209.04 
+Time step  [s]:   6.13 
+Time iterations:  2 
+Percentage done:  17.42 % 
+Time to end [s]:  0.95 
+-------------------------- 
+Total time [s]:   214.34 
+Time step  [s]:   5.72 
+Time iterations:  2 
+Percentage done:  17.86 % 
+Time to end [s]:  1.01 
+-------------------------- 
+Total time [s]:   219.41 
+Time step  [s]:   5.39 
+Time iterations:  2 
+Percentage done:  18.28 % 
+Time to end [s]:  1.07 
+-------------------------- 
+Total time [s]:   224.27 
+Time step  [s]:   5.12 
+Time iterations:  2 
+Percentage done:  18.69 % 
+Time to end [s]:  1.12 
+-------------------------- 
+Total time [s]:   228.94 
+Time step  [s]:   4.90 
+Time iterations:  2 
+Percentage done:  19.08 % 
+Time to end [s]:  1.18 
+-------------------------- 
+Total time [s]:   233.46 
+Time step  [s]:   4.71 
+Time iterations:  2 
+Percentage done:  19.46 % 
+Time to end [s]:  1.23 
+-------------------------- 
+Total time [s]:   237.84 
+Time step  [s]:   4.54 
+Time iterations:  2 
+Percentage done:  19.82 % 
+Time to end [s]:  1.28 
+-------------------------- 
+Total time [s]:   242.09 
+Time step  [s]:   4.40 
+Time iterations:  2 
+Percentage done:  20.17 % 
+Time to end [s]:  1.33 
+-------------------------- 
+Total time [s]:   246.23 
+Time step  [s]:   4.27 
+Time iterations:  2 
+Percentage done:  20.52 % 
+Time to end [s]:  1.38 
+-------------------------- 
+Total time [s]:   250.26 
+Time step  [s]:   4.15 
+Time iterations:  2 
+Percentage done:  20.86 % 
+Time to end [s]:  1.43 
+-------------------------- 
+Total time [s]:   254.20 
+Time step  [s]:   4.04 
+Time iterations:  2 
+Percentage done:  21.18 % 
+Time to end [s]:  1.48 
+-------------------------- 
+Total time [s]:   258.05 
+Time step  [s]:   3.95 
+Time iterations:  2 
+Percentage done:  21.50 % 
+Time to end [s]:  1.52 
+-------------------------- 
+Total time [s]:   261.82 
+Time step  [s]:   3.86 
+Time iterations:  2 
+Percentage done:  21.82 % 
+Time to end [s]:  1.56 
+-------------------------- 
+Total time [s]:   265.51 
+Time step  [s]:   3.78 
+Time iterations:  2 
+Percentage done:  22.13 % 
+Time to end [s]:  1.60 
+-------------------------- 
+Total time [s]:   269.14 
+Time step  [s]:   3.70 
+Time iterations:  2 
+Percentage done:  22.43 % 
+Time to end [s]:  1.64 
+-------------------------- 
+Total time [s]:   272.70 
+Time step  [s]:   3.63 
+Time iterations:  2 
+Percentage done:  22.72 % 
+Time to end [s]:  1.68 
+-------------------------- 
+Total time [s]:   276.20 
+Time step  [s]:   3.56 
+Time iterations:  2 
+Percentage done:  23.02 % 
+Time to end [s]:  1.72 
+-------------------------- 
+Total time [s]:   279.64 
+Time step  [s]:   3.50 
+Time iterations:  2 
+Percentage done:  23.30 % 
+Time to end [s]:  1.76 
+-------------------------- 
+Total time [s]:   283.03 
+Time step  [s]:   3.44 
+Time iterations:  2 
+Percentage done:  23.59 % 
+Time to end [s]:  1.79 
+-------------------------- 
+Total time [s]:   286.36 
+Time step  [s]:   3.39 
+Time iterations:  2 
+Percentage done:  23.86 % 
+Time to end [s]:  1.82 
+-------------------------- 
+Total time [s]:   289.65 
+Time step  [s]:   3.34 
+Time iterations:  2 
+Percentage done:  24.14 % 
+Time to end [s]:  1.86 
+-------------------------- 
+Total time [s]:   292.89 
+Time step  [s]:   3.29 
+Time iterations:  2 
+Percentage done:  24.41 % 
+Time to end [s]:  1.89 
+-------------------------- 
+Total time [s]:   296.09 
+Time step  [s]:   3.24 
+Time iterations:  2 
+Percentage done:  24.67 % 
+Time to end [s]:  1.92 
+-------------------------- 
+Total time [s]:   299.24 
+Time step  [s]:   3.20 
+Time iterations:  2 
+Percentage done:  24.94 % 
+Time to end [s]:  1.96 
+-------------------------- 
+Total time [s]:   302.36 
+Time step  [s]:   3.16 
+Time iterations:  2 
+Percentage done:  25.20 % 
+Time to end [s]:  1.99 
+-------------------------- 
+Total time [s]:   305.44 
+Time step  [s]:   3.12 
+Time iterations:  2 
+Percentage done:  25.45 % 
+Time to end [s]:  2.02 
+-------------------------- 
+Total time [s]:   308.48 
+Time step  [s]:   3.08 
+Time iterations:  2 
+Percentage done:  25.71 % 
+Time to end [s]:  2.05 
+-------------------------- 
+Total time [s]:   311.49 
+Time step  [s]:   3.04 
+Time iterations:  2 
+Percentage done:  25.96 % 
+Time to end [s]:  2.08 
+-------------------------- 
+Total time [s]:   314.46 
+Time step  [s]:   3.01 
+Time iterations:  2 
+Percentage done:  26.20 % 
+Time to end [s]:  2.11 
+-------------------------- 
+Total time [s]:   317.40 
+Time step  [s]:   2.98 
+Time iterations:  2 
+Percentage done:  26.45 % 
+Time to end [s]:  2.13 
+-------------------------- 
+Total time [s]:   320.31 
+Time step  [s]:   2.94 
+Time iterations:  2 
+Percentage done:  26.69 % 
+Time to end [s]:  2.16 
+-------------------------- 
+Total time [s]:   323.19 
+Time step  [s]:   2.91 
+Time iterations:  2 
+Percentage done:  26.93 % 
+Time to end [s]:  2.19 
+-------------------------- 
+Total time [s]:   326.05 
+Time step  [s]:   2.88 
+Time iterations:  2 
+Percentage done:  27.17 % 
+Time to end [s]:  2.21 
+-------------------------- 
+Total time [s]:   328.87 
+Time step  [s]:   2.85 
+Time iterations:  2 
+Percentage done:  27.41 % 
+Time to end [s]:  2.24 
+-------------------------- 
+Total time [s]:   331.67 
+Time step  [s]:   2.83 
+Time iterations:  2 
+Percentage done:  27.64 % 
+Time to end [s]:  2.26 
+-------------------------- 
+Total time [s]:   334.44 
+Time step  [s]:   2.80 
+Time iterations:  2 
+Percentage done:  27.87 % 
+Time to end [s]:  2.29 
+-------------------------- 
+Total time [s]:   337.19 
+Time step  [s]:   2.77 
+Time iterations:  2 
+Percentage done:  28.10 % 
+Time to end [s]:  2.31 
+-------------------------- 
+Total time [s]:   339.91 
+Time step  [s]:   2.75 
+Time iterations:  2 
+Percentage done:  28.33 % 
+Time to end [s]:  2.34 
+-------------------------- 
+Total time [s]:   342.61 
+Time step  [s]:   2.72 
+Time iterations:  2 
+Percentage done:  28.55 % 
+Time to end [s]:  2.36 
+-------------------------- 
+Total time [s]:   345.29 
+Time step  [s]:   2.70 
+Time iterations:  2 
+Percentage done:  28.77 % 
+Time to end [s]:  2.38 
+-------------------------- 
+Total time [s]:   347.94 
+Time step  [s]:   2.68 
+Time iterations:  2 
+Percentage done:  29.00 % 
+Time to end [s]:  2.40 
+-------------------------- 
+Total time [s]:   350.58 
+Time step  [s]:   2.66 
+Time iterations:  2 
+Percentage done:  29.21 % 
+Time to end [s]:  2.43 
+-------------------------- 
+Total time [s]:   353.19 
+Time step  [s]:   2.63 
+Time iterations:  2 
+Percentage done:  29.43 % 
+Time to end [s]:  2.45 
+-------------------------- 
+Total time [s]:   355.78 
+Time step  [s]:   2.61 
+Time iterations:  2 
+Percentage done:  29.65 % 
+Time to end [s]:  2.47 
+-------------------------- 
+Total time [s]:   358.36 
+Time step  [s]:   2.59 
+Time iterations:  2 
+Percentage done:  29.86 % 
+Time to end [s]:  2.49 
+-------------------------- 
+Total time [s]:   360.91 
+Time step  [s]:   2.57 
+Time iterations:  2 
+Percentage done:  30.08 % 
+Time to end [s]:  2.51 
+-------------------------- 
+Total time [s]:   363.45 
+Time step  [s]:   2.56 
+Time iterations:  2 
+Percentage done:  30.29 % 
+Time to end [s]:  2.53 
+-------------------------- 
+Total time [s]:   365.97 
+Time step  [s]:   2.54 
+Time iterations:  2 
+Percentage done:  30.50 % 
+Time to end [s]:  2.55 
+-------------------------- 
+Total time [s]:   368.47 
+Time step  [s]:   2.52 
+Time iterations:  2 
+Percentage done:  30.71 % 
+Time to end [s]:  2.57 
+-------------------------- 
+Total time [s]:   370.95 
+Time step  [s]:   2.50 
+Time iterations:  2 
+Percentage done:  30.91 % 
+Time to end [s]:  2.58 
+-------------------------- 
+Total time [s]:   373.42 
+Time step  [s]:   2.48 
+Time iterations:  2 
+Percentage done:  31.12 % 
+Time to end [s]:  2.60 
+-------------------------- 
+Total time [s]:   375.87 
+Time step  [s]:   2.47 
+Time iterations:  2 
+Percentage done:  31.32 % 
+Time to end [s]:  2.62 
+-------------------------- 
+Total time [s]:   378.30 
+Time step  [s]:   2.45 
+Time iterations:  2 
+Percentage done:  31.53 % 
+Time to end [s]:  2.64 
+-------------------------- 
+Total time [s]:   380.72 
+Time step  [s]:   2.43 
+Time iterations:  2 
+Percentage done:  31.73 % 
+Time to end [s]:  2.66 
+-------------------------- 
+Total time [s]:   383.12 
+Time step  [s]:   2.42 
+Time iterations:  2 
+Percentage done:  31.93 % 
+Time to end [s]:  2.67 
+-------------------------- 
+Total time [s]:   385.51 
+Time step  [s]:   2.40 
+Time iterations:  2 
+Percentage done:  32.13 % 
+Time to end [s]:  2.69 
+-------------------------- 
+Total time [s]:   387.89 
+Time step  [s]:   2.39 
+Time iterations:  2 
+Percentage done:  32.32 % 
+Time to end [s]:  2.71 
+-------------------------- 
+Total time [s]:   390.25 
+Time step  [s]:   2.37 
+Time iterations:  2 
+Percentage done:  32.52 % 
+Time to end [s]:  2.72 
+-------------------------- 
+Total time [s]:   392.59 
+Time step  [s]:   2.36 
+Time iterations:  2 
+Percentage done:  32.72 % 
+Time to end [s]:  2.74 
+-------------------------- 
+Total time [s]:   394.92 
+Time step  [s]:   2.35 
+Time iterations:  2 
+Percentage done:  32.91 % 
+Time to end [s]:  2.76 
+-------------------------- 
+Total time [s]:   397.24 
+Time step  [s]:   2.33 
+Time iterations:  2 
+Percentage done:  33.10 % 
+Time to end [s]:  2.77 
+-------------------------- 
+Total time [s]:   399.55 
+Time step  [s]:   2.32 
+Time iterations:  2 
+Percentage done:  33.30 % 
+Time to end [s]:  2.79 
+-------------------------- 
+Total time [s]:   401.84 
+Time step  [s]:   2.31 
+Time iterations:  2 
+Percentage done:  33.49 % 
+Time to end [s]:  2.80 
+-------------------------- 
+Total time [s]:   404.12 
+Time step  [s]:   2.29 
+Time iterations:  2 
+Percentage done:  33.68 % 
+Time to end [s]:  2.81 
+-------------------------- 
+Total time [s]:   406.39 
+Time step  [s]:   2.28 
+Time iterations:  2 
+Percentage done:  33.87 % 
+Time to end [s]:  2.83 
+-------------------------- 
+Total time [s]:   408.65 
+Time step  [s]:   2.27 
+Time iterations:  2 
+Percentage done:  34.05 % 
+Time to end [s]:  2.84 
+-------------------------- 
+Total time [s]:   410.89 
+Time step  [s]:   2.26 
+Time iterations:  2 
+Percentage done:  34.24 % 
+Time to end [s]:  2.86 
+-------------------------- 
+Total time [s]:   413.12 
+Time step  [s]:   2.24 
+Time iterations:  2 
+Percentage done:  34.43 % 
+Time to end [s]:  2.87 
+-------------------------- 
+Total time [s]:   415.35 
+Time step  [s]:   2.23 
+Time iterations:  2 
+Percentage done:  34.61 % 
+Time to end [s]:  2.89 
+-------------------------- 
+Total time [s]:   417.56 
+Time step  [s]:   2.22 
+Time iterations:  2 
+Percentage done:  34.80 % 
+Time to end [s]:  2.90 
+-------------------------- 
+Total time [s]:   419.76 
+Time step  [s]:   2.21 
+Time iterations:  2 
+Percentage done:  34.98 % 
+Time to end [s]:  2.91 
+-------------------------- 
+Total time [s]:   421.94 
+Time step  [s]:   2.20 
+Time iterations:  2 
+Percentage done:  35.16 % 
+Time to end [s]:  2.92 
+-------------------------- 
+Total time [s]:   424.12 
+Time step  [s]:   2.19 
+Time iterations:  2 
+Percentage done:  35.34 % 
+Time to end [s]:  2.93 
+-------------------------- 
+Total time [s]:   426.29 
+Time step  [s]:   2.18 
+Time iterations:  2 
+Percentage done:  35.52 % 
+Time to end [s]:  2.95 
+-------------------------- 
+Total time [s]:   428.45 
+Time step  [s]:   2.17 
+Time iterations:  2 
+Percentage done:  35.70 % 
+Time to end [s]:  2.96 
+-------------------------- 
+Total time [s]:   430.59 
+Time step  [s]:   2.16 
+Time iterations:  2 
+Percentage done:  35.88 % 
+Time to end [s]:  2.97 
+-------------------------- 
+Total time [s]:   432.73 
+Time step  [s]:   2.15 
+Time iterations:  2 
+Percentage done:  36.06 % 
+Time to end [s]:  2.98 
+-------------------------- 
+Total time [s]:   434.86 
+Time step  [s]:   2.14 
+Time iterations:  2 
+Percentage done:  36.24 % 
+Time to end [s]:  2.99 
+-------------------------- 
+Total time [s]:   436.98 
+Time step  [s]:   2.13 
+Time iterations:  2 
+Percentage done:  36.41 % 
+Time to end [s]:  3.01 
+-------------------------- 
+Total time [s]:   439.09 
+Time step  [s]:   2.12 
+Time iterations:  2 
+Percentage done:  36.59 % 
+Time to end [s]:  3.02 
+-------------------------- 
+Total time [s]:   441.19 
+Time step  [s]:   2.11 
+Time iterations:  2 
+Percentage done:  36.77 % 
+Time to end [s]:  3.03 
+-------------------------- 
+Total time [s]:   443.28 
+Time step  [s]:   2.10 
+Time iterations:  2 
+Percentage done:  36.94 % 
+Time to end [s]:  3.04 
+-------------------------- 
+Total time [s]:   445.36 
+Time step  [s]:   2.09 
+Time iterations:  2 
+Percentage done:  37.11 % 
+Time to end [s]:  3.05 
+-------------------------- 
+Total time [s]:   447.43 
+Time step  [s]:   2.08 
+Time iterations:  2 
+Percentage done:  37.29 % 
+Time to end [s]:  3.06 
+-------------------------- 
+Total time [s]:   449.50 
+Time step  [s]:   2.07 
+Time iterations:  2 
+Percentage done:  37.46 % 
+Time to end [s]:  3.07 
+-------------------------- 
+Total time [s]:   451.55 
+Time step  [s]:   2.06 
+Time iterations:  2 
+Percentage done:  37.63 % 
+Time to end [s]:  3.08 
+-------------------------- 
+Total time [s]:   453.60 
+Time step  [s]:   2.06 
+Time iterations:  2 
+Percentage done:  37.80 % 
+Time to end [s]:  3.09 
+-------------------------- 
+Total time [s]:   455.64 
+Time step  [s]:   2.05 
+Time iterations:  2 
+Percentage done:  37.97 % 
+Time to end [s]:  3.10 
+-------------------------- 
+Total time [s]:   457.67 
+Time step  [s]:   2.04 
+Time iterations:  2 
+Percentage done:  38.14 % 
+Time to end [s]:  3.11 
+-------------------------- 
+Total time [s]:   459.69 
+Time step  [s]:   2.03 
+Time iterations:  2 
+Percentage done:  38.31 % 
+Time to end [s]:  3.12 
+-------------------------- 
+Total time [s]:   461.71 
+Time step  [s]:   2.02 
+Time iterations:  2 
+Percentage done:  38.48 % 
+Time to end [s]:  3.13 
+-------------------------- 
+Total time [s]:   463.71 
+Time step  [s]:   2.01 
+Time iterations:  2 
+Percentage done:  38.64 % 
+Time to end [s]:  3.14 
+-------------------------- 
+Total time [s]:   465.71 
+Time step  [s]:   2.01 
+Time iterations:  2 
+Percentage done:  38.81 % 
+Time to end [s]:  3.15 
+-------------------------- 
+Total time [s]:   467.70 
+Time step  [s]:   2.00 
+Time iterations:  2 
+Percentage done:  38.98 % 
+Time to end [s]:  3.15 
+-------------------------- 
+Total time [s]:   469.69 
+Time step  [s]:   1.99 
+Time iterations:  2 
+Percentage done:  39.14 % 
+Time to end [s]:  3.16 
+-------------------------- 
+Total time [s]:   471.66 
+Time step  [s]:   1.98 
+Time iterations:  2 
+Percentage done:  39.31 % 
+Time to end [s]:  3.17 
+-------------------------- 
+Total time [s]:   473.63 
+Time step  [s]:   1.98 
+Time iterations:  2 
+Percentage done:  39.47 % 
+Time to end [s]:  3.18 
+-------------------------- 
+Total time [s]:   475.59 
+Time step  [s]:   1.97 
+Time iterations:  2 
+Percentage done:  39.63 % 
+Time to end [s]:  3.19 
+-------------------------- 
+Total time [s]:   477.55 
+Time step  [s]:   1.96 
+Time iterations:  2 
+Percentage done:  39.80 % 
+Time to end [s]:  3.20 
+-------------------------- 
+Total time [s]:   479.50 
+Time step  [s]:   1.96 
+Time iterations:  2 
+Percentage done:  39.96 % 
+Time to end [s]:  3.20 
+-------------------------- 
+Total time [s]:   481.44 
+Time step  [s]:   1.95 
+Time iterations:  2 
+Percentage done:  40.12 % 
+Time to end [s]:  3.21 
+-------------------------- 
+Total time [s]:   483.37 
+Time step  [s]:   1.94 
+Time iterations:  2 
+Percentage done:  40.28 % 
+Time to end [s]:  3.22 
+-------------------------- 
+Total time [s]:   485.30 
+Time step  [s]:   1.93 
+Time iterations:  2 
+Percentage done:  40.44 % 
+Time to end [s]:  3.23 
+-------------------------- 
+Total time [s]:   487.22 
+Time step  [s]:   1.93 
+Time iterations:  2 
+Percentage done:  40.60 % 
+Time to end [s]:  3.24 
+-------------------------- 
+Total time [s]:   489.13 
+Time step  [s]:   1.92 
+Time iterations:  2 
+Percentage done:  40.76 % 
+Time to end [s]:  3.24 
+-------------------------- 
+Total time [s]:   491.04 
+Time step  [s]:   1.91 
+Time iterations:  2 
+Percentage done:  40.92 % 
+Time to end [s]:  3.25 
+-------------------------- 
+Total time [s]:   492.94 
+Time step  [s]:   1.91 
+Time iterations:  2 
+Percentage done:  41.08 % 
+Time to end [s]:  3.25 
+-------------------------- 
+Total time [s]:   494.84 
+Time step  [s]:   1.90 
+Time iterations:  2 
+Percentage done:  41.24 % 
+Time to end [s]:  3.26 
+-------------------------- 
+Total time [s]:   496.73 
+Time step  [s]:   1.89 
+Time iterations:  2 
+Percentage done:  41.39 % 
+Time to end [s]:  3.27 
+-------------------------- 
+Total time [s]:   498.61 
+Time step  [s]:   1.89 
+Time iterations:  2 
+Percentage done:  41.55 % 
+Time to end [s]:  3.27 
+-------------------------- 
+Total time [s]:   500.49 
+Time step  [s]:   1.88 
+Time iterations:  2 
+Percentage done:  41.71 % 
+Time to end [s]:  3.28 
+-------------------------- 
+Total time [s]:   502.36 
+Time step  [s]:   1.88 
+Time iterations:  2 
+Percentage done:  41.86 % 
+Time to end [s]:  3.29 
+-------------------------- 
+Total time [s]:   504.22 
+Time step  [s]:   1.87 
+Time iterations:  2 
+Percentage done:  42.02 % 
+Time to end [s]:  3.29 
+-------------------------- 
+Total time [s]:   506.08 
+Time step  [s]:   1.86 
+Time iterations:  2 
+Percentage done:  42.17 % 
+Time to end [s]:  3.30 
+-------------------------- 
+Total time [s]:   507.93 
+Time step  [s]:   1.86 
+Time iterations:  2 
+Percentage done:  42.33 % 
+Time to end [s]:  3.31 
+-------------------------- 
+Total time [s]:   509.78 
+Time step  [s]:   1.85 
+Time iterations:  2 
+Percentage done:  42.48 % 
+Time to end [s]:  3.31 
+-------------------------- 
+Total time [s]:   511.62 
+Time step  [s]:   1.85 
+Time iterations:  2 
+Percentage done:  42.63 % 
+Time to end [s]:  3.32 
+-------------------------- 
+Total time [s]:   513.45 
+Time step  [s]:   1.84 
+Time iterations:  2 
+Percentage done:  42.79 % 
+Time to end [s]:  3.32 
+-------------------------- 
+Total time [s]:   515.28 
+Time step  [s]:   1.84 
+Time iterations:  2 
+Percentage done:  42.94 % 
+Time to end [s]:  3.33 
+-------------------------- 
+Total time [s]:   517.11 
+Time step  [s]:   1.83 
+Time iterations:  2 
+Percentage done:  43.09 % 
+Time to end [s]:  3.33 
+-------------------------- 
+Total time [s]:   518.93 
+Time step  [s]:   1.82 
+Time iterations:  2 
+Percentage done:  43.24 % 
+Time to end [s]:  3.34 
+-------------------------- 
+Total time [s]:   520.74 
+Time step  [s]:   1.82 
+Time iterations:  2 
+Percentage done:  43.40 % 
+Time to end [s]:  3.35 
+-------------------------- 
+Total time [s]:   522.55 
+Time step  [s]:   1.81 
+Time iterations:  2 
+Percentage done:  43.55 % 
+Time to end [s]:  3.35 
+-------------------------- 
+Total time [s]:   524.35 
+Time step  [s]:   1.81 
+Time iterations:  2 
+Percentage done:  43.70 % 
+Time to end [s]:  3.36 
+-------------------------- 
+Total time [s]:   526.15 
+Time step  [s]:   1.80 
+Time iterations:  2 
+Percentage done:  43.85 % 
+Time to end [s]:  3.37 
+-------------------------- 
+Total time [s]:   527.94 
+Time step  [s]:   1.80 
+Time iterations:  2 
+Percentage done:  44.00 % 
+Time to end [s]:  3.37 
+-------------------------- 
+Total time [s]:   529.73 
+Time step  [s]:   1.79 
+Time iterations:  2 
+Percentage done:  44.14 % 
+Time to end [s]:  3.38 
+-------------------------- 
+Total time [s]:   531.51 
+Time step  [s]:   1.79 
+Time iterations:  2 
+Percentage done:  44.29 % 
+Time to end [s]:  3.38 
+-------------------------- 
+Total time [s]:   533.29 
+Time step  [s]:   1.78 
+Time iterations:  2 
+Percentage done:  44.44 % 
+Time to end [s]:  3.39 
+-------------------------- 
+Total time [s]:   535.06 
+Time step  [s]:   1.78 
+Time iterations:  2 
+Percentage done:  44.59 % 
+Time to end [s]:  3.40 
+-------------------------- 
+Total time [s]:   536.83 
+Time step  [s]:   1.77 
+Time iterations:  2 
+Percentage done:  44.74 % 
+Time to end [s]:  3.40 
+-------------------------- 
+Total time [s]:   538.59 
+Time step  [s]:   1.77 
+Time iterations:  2 
+Percentage done:  44.88 % 
+Time to end [s]:  3.40 
+-------------------------- 
+Total time [s]:   540.35 
+Time step  [s]:   1.76 
+Time iterations:  2 
+Percentage done:  45.03 % 
+Time to end [s]:  3.41 
+-------------------------- 
+Total time [s]:   542.10 
+Time step  [s]:   1.76 
+Time iterations:  2 
+Percentage done:  45.18 % 
+Time to end [s]:  3.41 
+-------------------------- 
+Total time [s]:   543.85 
+Time step  [s]:   1.75 
+Time iterations:  2 
+Percentage done:  45.32 % 
+Time to end [s]:  3.41 
+-------------------------- 
+Total time [s]:   545.59 
+Time step  [s]:   1.75 
+Time iterations:  2 
+Percentage done:  45.47 % 
+Time to end [s]:  3.42 
+-------------------------- 
+Total time [s]:   547.33 
+Time step  [s]:   1.74 
+Time iterations:  2 
+Percentage done:  45.61 % 
+Time to end [s]:  3.42 
+-------------------------- 
+Total time [s]:   549.07 
+Time step  [s]:   1.74 
+Time iterations:  2 
+Percentage done:  45.76 % 
+Time to end [s]:  3.42 
+-------------------------- 
+Total time [s]:   550.80 
+Time step  [s]:   1.73 
+Time iterations:  2 
+Percentage done:  45.90 % 
+Time to end [s]:  3.43 
+-------------------------- 
+Total time [s]:   552.52 
+Time step  [s]:   1.73 
+Time iterations:  2 
+Percentage done:  46.04 % 
+Time to end [s]:  3.43 
+-------------------------- 
+Total time [s]:   554.24 
+Time step  [s]:   1.73 
+Time iterations:  2 
+Percentage done:  46.19 % 
+Time to end [s]:  3.43 
+-------------------------- 
+Total time [s]:   555.96 
+Time step  [s]:   1.72 
+Time iterations:  2 
+Percentage done:  46.33 % 
+Time to end [s]:  3.43 
+-------------------------- 
+Total time [s]:   557.67 
+Time step  [s]:   1.72 
+Time iterations:  2 
+Percentage done:  46.47 % 
+Time to end [s]:  3.44 
+-------------------------- 
+Total time [s]:   559.38 
+Time step  [s]:   1.71 
+Time iterations:  2 
+Percentage done:  46.61 % 
+Time to end [s]:  3.44 
+-------------------------- 
+Total time [s]:   561.08 
+Time step  [s]:   1.71 
+Time iterations:  2 
+Percentage done:  46.76 % 
+Time to end [s]:  3.44 
+-------------------------- 
+Total time [s]:   562.78 
+Time step  [s]:   1.70 
+Time iterations:  2 
+Percentage done:  46.90 % 
+Time to end [s]:  3.45 
+-------------------------- 
+Total time [s]:   564.48 
+Time step  [s]:   1.70 
+Time iterations:  2 
+Percentage done:  47.04 % 
+Time to end [s]:  3.45 
+-------------------------- 
+Total time [s]:   566.17 
+Time step  [s]:   1.70 
+Time iterations:  2 
+Percentage done:  47.18 % 
+Time to end [s]:  3.45 
+-------------------------- 
+Total time [s]:   567.85 
+Time step  [s]:   1.69 
+Time iterations:  2 
+Percentage done:  47.32 % 
+Time to end [s]:  3.45 
+-------------------------- 
+Total time [s]:   569.54 
+Time step  [s]:   1.69 
+Time iterations:  2 
+Percentage done:  47.46 % 
+Time to end [s]:  3.45 
+-------------------------- 
+Total time [s]:   571.21 
+Time step  [s]:   1.68 
+Time iterations:  2 
+Percentage done:  47.60 % 
+Time to end [s]:  3.46 
+-------------------------- 
+Total time [s]:   572.89 
+Time step  [s]:   1.68 
+Time iterations:  2 
+Percentage done:  47.74 % 
+Time to end [s]:  3.46 
+-------------------------- 
+Total time [s]:   574.56 
+Time step  [s]:   1.67 
+Time iterations:  2 
+Percentage done:  47.88 % 
+Time to end [s]:  3.46 
+-------------------------- 
+Total time [s]:   576.23 
+Time step  [s]:   1.67 
+Time iterations:  2 
+Percentage done:  48.02 % 
+Time to end [s]:  3.46 
+-------------------------- 
+Total time [s]:   577.89 
+Time step  [s]:   1.67 
+Time iterations:  2 
+Percentage done:  48.16 % 
+Time to end [s]:  3.47 
+-------------------------- 
+Total time [s]:   579.55 
+Time step  [s]:   1.66 
+Time iterations:  2 
+Percentage done:  48.30 % 
+Time to end [s]:  3.47 
+-------------------------- 
+Total time [s]:   581.20 
+Time step  [s]:   1.66 
+Time iterations:  2 
+Percentage done:  48.43 % 
+Time to end [s]:  3.47 
+-------------------------- 
+Total time [s]:   582.85 
+Time step  [s]:   1.66 
+Time iterations:  2 
+Percentage done:  48.57 % 
+Time to end [s]:  3.47 
+-------------------------- 
+Total time [s]:   584.50 
+Time step  [s]:   1.65 
+Time iterations:  2 
+Percentage done:  48.71 % 
+Time to end [s]:  3.47 
+-------------------------- 
+Total time [s]:   586.15 
+Time step  [s]:   1.65 
+Time iterations:  2 
+Percentage done:  48.85 % 
+Time to end [s]:  3.47 
+-------------------------- 
+Total time [s]:   587.79 
+Time step  [s]:   1.64 
+Time iterations:  2 
+Percentage done:  48.98 % 
+Time to end [s]:  3.48 
+-------------------------- 
+Total time [s]:   589.42 
+Time step  [s]:   1.64 
+Time iterations:  2 
+Percentage done:  49.12 % 
+Time to end [s]:  3.48 
+-------------------------- 
+Total time [s]:   591.06 
+Time step  [s]:   1.64 
+Time iterations:  2 
+Percentage done:  49.25 % 
+Time to end [s]:  3.48 
+-------------------------- 
+Total time [s]:   592.69 
+Time step  [s]:   1.63 
+Time iterations:  2 
+Percentage done:  49.39 % 
+Time to end [s]:  3.48 
+-------------------------- 
+Total time [s]:   594.31 
+Time step  [s]:   1.63 
+Time iterations:  2 
+Percentage done:  49.53 % 
+Time to end [s]:  3.48 
+-------------------------- 
+Total time [s]:   595.93 
+Time step  [s]:   1.63 
+Time iterations:  2 
+Percentage done:  49.66 % 
+Time to end [s]:  3.48 
+-------------------------- 
+Total time [s]:   597.55 
+Time step  [s]:   1.62 
+Time iterations:  2 
+Percentage done:  49.80 % 
+Time to end [s]:  3.48 
+-------------------------- 
+Total time [s]:   599.17 
+Time step  [s]:   1.62 
+Time iterations:  2 
+Percentage done:  49.93 % 
+Time to end [s]:  3.48 
+-------------------------- 
+Total time [s]:   600.78 
+Time step  [s]:   1.62 
+Time iterations:  2 
+Percentage done:  50.07 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   602.39 
+Time step  [s]:   1.61 
+Time iterations:  2 
+Percentage done:  50.20 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   604.00 
+Time step  [s]:   1.61 
+Time iterations:  2 
+Percentage done:  50.33 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   605.61 
+Time step  [s]:   1.61 
+Time iterations:  2 
+Percentage done:  50.47 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   607.21 
+Time step  [s]:   1.60 
+Time iterations:  2 
+Percentage done:  50.60 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   608.81 
+Time step  [s]:   1.60 
+Time iterations:  2 
+Percentage done:  50.73 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   610.41 
+Time step  [s]:   1.60 
+Time iterations:  2 
+Percentage done:  50.87 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   612.00 
+Time step  [s]:   1.60 
+Time iterations:  2 
+Percentage done:  51.00 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   613.59 
+Time step  [s]:   1.59 
+Time iterations:  2 
+Percentage done:  51.13 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   615.18 
+Time step  [s]:   1.59 
+Time iterations:  2 
+Percentage done:  51.27 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   616.77 
+Time step  [s]:   1.59 
+Time iterations:  2 
+Percentage done:  51.40 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   618.35 
+Time step  [s]:   1.59 
+Time iterations:  2 
+Percentage done:  51.53 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   619.94 
+Time step  [s]:   1.59 
+Time iterations:  2 
+Percentage done:  51.66 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   621.52 
+Time step  [s]:   1.58 
+Time iterations:  2 
+Percentage done:  51.79 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   623.10 
+Time step  [s]:   1.58 
+Time iterations:  2 
+Percentage done:  51.92 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   624.68 
+Time step  [s]:   1.58 
+Time iterations:  2 
+Percentage done:  52.06 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   626.25 
+Time step  [s]:   1.58 
+Time iterations:  2 
+Percentage done:  52.19 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   627.83 
+Time step  [s]:   1.58 
+Time iterations:  2 
+Percentage done:  52.32 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   629.40 
+Time step  [s]:   1.57 
+Time iterations:  2 
+Percentage done:  52.45 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   630.97 
+Time step  [s]:   1.57 
+Time iterations:  2 
+Percentage done:  52.58 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   632.55 
+Time step  [s]:   1.57 
+Time iterations:  2 
+Percentage done:  52.71 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   634.11 
+Time step  [s]:   1.57 
+Time iterations:  2 
+Percentage done:  52.84 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   635.68 
+Time step  [s]:   1.57 
+Time iterations:  2 
+Percentage done:  52.97 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   637.25 
+Time step  [s]:   1.57 
+Time iterations:  2 
+Percentage done:  53.10 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   638.82 
+Time step  [s]:   1.57 
+Time iterations:  2 
+Percentage done:  53.23 % 
+Time to end [s]:  3.49 
+-------------------------- 
+Total time [s]:   640.38 
+Time step  [s]:   1.57 
+Time iterations:  2 
+Percentage done:  53.37 % 
+Time to end [s]:  3.48 
+-------------------------- 
+Total time [s]:   641.95 
+Time step  [s]:   1.57 
+Time iterations:  2 
+Percentage done:  53.50 % 
+Time to end [s]:  3.48 
+-------------------------- 
+Total time [s]:   643.51 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  53.63 % 
+Time to end [s]:  3.48 
+-------------------------- 
+Total time [s]:   645.07 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  53.76 % 
+Time to end [s]:  3.48 
+-------------------------- 
+Total time [s]:   646.63 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  53.89 % 
+Time to end [s]:  3.48 
+-------------------------- 
+Total time [s]:   648.20 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  54.02 % 
+Time to end [s]:  3.48 
+-------------------------- 
+Total time [s]:   649.76 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  54.15 % 
+Time to end [s]:  3.48 
+-------------------------- 
+Total time [s]:   651.32 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  54.28 % 
+Time to end [s]:  3.47 
+-------------------------- 
+Total time [s]:   652.88 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  54.41 % 
+Time to end [s]:  3.47 
+-------------------------- 
+Total time [s]:   654.43 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  54.54 % 
+Time to end [s]:  3.47 
+-------------------------- 
+Total time [s]:   655.99 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  54.67 % 
+Time to end [s]:  3.47 
+-------------------------- 
+Total time [s]:   657.55 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  54.80 % 
+Time to end [s]:  3.47 
+-------------------------- 
+Total time [s]:   659.11 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  54.93 % 
+Time to end [s]:  3.47 
+-------------------------- 
+Total time [s]:   660.67 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  55.06 % 
+Time to end [s]:  3.46 
+-------------------------- 
+Total time [s]:   662.22 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  55.19 % 
+Time to end [s]:  3.46 
+-------------------------- 
+Total time [s]:   663.78 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  55.31 % 
+Time to end [s]:  3.46 
+-------------------------- 
+Total time [s]:   665.33 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  55.44 % 
+Time to end [s]:  3.46 
+-------------------------- 
+Total time [s]:   666.89 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  55.57 % 
+Time to end [s]:  3.45 
+-------------------------- 
+Total time [s]:   668.45 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  55.70 % 
+Time to end [s]:  3.45 
+-------------------------- 
+Total time [s]:   670.00 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  55.83 % 
+Time to end [s]:  3.45 
+-------------------------- 
+Total time [s]:   671.56 
+Time step  [s]:   1.56 
+Time iterations:  2 
+Percentage done:  55.96 % 
+Time to end [s]:  3.45 
+-------------------------- 
+Total time [s]:   673.11 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  56.09 % 
+Time to end [s]:  3.44 
+-------------------------- 
+Total time [s]:   674.66 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  56.22 % 
+Time to end [s]:  3.44 
+-------------------------- 
+Total time [s]:   676.22 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  56.35 % 
+Time to end [s]:  3.44 
+-------------------------- 
+Total time [s]:   677.77 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  56.48 % 
+Time to end [s]:  3.44 
+-------------------------- 
+Total time [s]:   679.33 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  56.61 % 
+Time to end [s]:  3.43 
+-------------------------- 
+Total time [s]:   680.88 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  56.74 % 
+Time to end [s]:  3.43 
+-------------------------- 
+Total time [s]:   682.43 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  56.87 % 
+Time to end [s]:  3.43 
+-------------------------- 
+Total time [s]:   683.99 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  57.00 % 
+Time to end [s]:  3.42 
+-------------------------- 
+Total time [s]:   685.54 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  57.13 % 
+Time to end [s]:  3.42 
+-------------------------- 
+Total time [s]:   687.09 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  57.26 % 
+Time to end [s]:  3.42 
+-------------------------- 
+Total time [s]:   688.65 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  57.39 % 
+Time to end [s]:  3.41 
+-------------------------- 
+Total time [s]:   690.20 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  57.52 % 
+Time to end [s]:  3.41 
+-------------------------- 
+Total time [s]:   691.75 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  57.65 % 
+Time to end [s]:  3.41 
+-------------------------- 
+Total time [s]:   693.30 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  57.78 % 
+Time to end [s]:  3.40 
+-------------------------- 
+Total time [s]:   694.86 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  57.90 % 
+Time to end [s]:  3.40 
+-------------------------- 
+Total time [s]:   696.41 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  58.03 % 
+Time to end [s]:  3.39 
+-------------------------- 
+Total time [s]:   697.96 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  58.16 % 
+Time to end [s]:  3.39 
+-------------------------- 
+Total time [s]:   699.51 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  58.29 % 
+Time to end [s]:  3.39 
+-------------------------- 
+Total time [s]:   701.06 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  58.42 % 
+Time to end [s]:  3.38 
+-------------------------- 
+Total time [s]:   702.62 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  58.55 % 
+Time to end [s]:  3.38 
+-------------------------- 
+Total time [s]:   704.17 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  58.68 % 
+Time to end [s]:  3.37 
+-------------------------- 
+Total time [s]:   705.72 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  58.81 % 
+Time to end [s]:  3.37 
+-------------------------- 
+Total time [s]:   707.27 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  58.94 % 
+Time to end [s]:  3.36 
+-------------------------- 
+Total time [s]:   708.82 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  59.07 % 
+Time to end [s]:  3.36 
+-------------------------- 
+Total time [s]:   710.38 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  59.20 % 
+Time to end [s]:  3.35 
+-------------------------- 
+Total time [s]:   711.93 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  59.33 % 
+Time to end [s]:  3.35 
+-------------------------- 
+Total time [s]:   713.48 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  59.46 % 
+Time to end [s]:  3.34 
+-------------------------- 
+Total time [s]:   715.03 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  59.59 % 
+Time to end [s]:  3.34 
+-------------------------- 
+Total time [s]:   716.58 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  59.72 % 
+Time to end [s]:  3.33 
+-------------------------- 
+Total time [s]:   718.13 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  59.84 % 
+Time to end [s]:  3.32 
+-------------------------- 
+Total time [s]:   719.68 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  59.97 % 
+Time to end [s]:  3.32 
+-------------------------- 
+Total time [s]:   721.23 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  60.10 % 
+Time to end [s]:  3.31 
+-------------------------- 
+Total time [s]:   722.79 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  60.23 % 
+Time to end [s]:  3.31 
+-------------------------- 
+Total time [s]:   724.34 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  60.36 % 
+Time to end [s]:  3.30 
+-------------------------- 
+Total time [s]:   725.89 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  60.49 % 
+Time to end [s]:  3.29 
+-------------------------- 
+Total time [s]:   727.44 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  60.62 % 
+Time to end [s]:  3.29 
+-------------------------- 
+Total time [s]:   728.99 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  60.75 % 
+Time to end [s]:  3.28 
+-------------------------- 
+Total time [s]:   730.54 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  60.88 % 
+Time to end [s]:  3.27 
+-------------------------- 
+Total time [s]:   732.09 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  61.01 % 
+Time to end [s]:  3.27 
+-------------------------- 
+Total time [s]:   733.64 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  61.14 % 
+Time to end [s]:  3.26 
+-------------------------- 
+Total time [s]:   735.19 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  61.27 % 
+Time to end [s]:  3.25 
+-------------------------- 
+Total time [s]:   736.75 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  61.40 % 
+Time to end [s]:  3.25 
+-------------------------- 
+Total time [s]:   738.30 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  61.52 % 
+Time to end [s]:  3.24 
+-------------------------- 
+Total time [s]:   739.85 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  61.65 % 
+Time to end [s]:  3.23 
+-------------------------- 
+Total time [s]:   741.40 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  61.78 % 
+Time to end [s]:  3.23 
+-------------------------- 
+Total time [s]:   742.95 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  61.91 % 
+Time to end [s]:  3.22 
+-------------------------- 
+Total time [s]:   744.50 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  62.04 % 
+Time to end [s]:  3.21 
+-------------------------- 
+Total time [s]:   746.05 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  62.17 % 
+Time to end [s]:  3.21 
+-------------------------- 
+Total time [s]:   747.60 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  62.30 % 
+Time to end [s]:  3.20 
+-------------------------- 
+Total time [s]:   749.15 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  62.43 % 
+Time to end [s]:  3.19 
+-------------------------- 
+Total time [s]:   750.70 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  62.56 % 
+Time to end [s]:  3.18 
+-------------------------- 
+Total time [s]:   752.25 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  62.69 % 
+Time to end [s]:  3.18 
+-------------------------- 
+Total time [s]:   753.80 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  62.82 % 
+Time to end [s]:  3.17 
+-------------------------- 
+Total time [s]:   755.35 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  62.95 % 
+Time to end [s]:  3.16 
+-------------------------- 
+Total time [s]:   756.90 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  63.08 % 
+Time to end [s]:  3.15 
+-------------------------- 
+Total time [s]:   758.46 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  63.20 % 
+Time to end [s]:  3.15 
+-------------------------- 
+Total time [s]:   760.01 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  63.33 % 
+Time to end [s]:  3.14 
+-------------------------- 
+Total time [s]:   761.56 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  63.46 % 
+Time to end [s]:  3.13 
+-------------------------- 
+Total time [s]:   763.11 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  63.59 % 
+Time to end [s]:  3.12 
+-------------------------- 
+Total time [s]:   764.66 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  63.72 % 
+Time to end [s]:  3.12 
+-------------------------- 
+Total time [s]:   766.21 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  63.85 % 
+Time to end [s]:  3.11 
+-------------------------- 
+Total time [s]:   767.76 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  63.98 % 
+Time to end [s]:  3.10 
+-------------------------- 
+Total time [s]:   769.31 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  64.11 % 
+Time to end [s]:  3.09 
+-------------------------- 
+Total time [s]:   770.86 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  64.24 % 
+Time to end [s]:  3.09 
+-------------------------- 
+Total time [s]:   772.41 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  64.37 % 
+Time to end [s]:  3.08 
+-------------------------- 
+Total time [s]:   773.96 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  64.50 % 
+Time to end [s]:  3.07 
+-------------------------- 
+Total time [s]:   775.51 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  64.63 % 
+Time to end [s]:  3.06 
+-------------------------- 
+Total time [s]:   777.06 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  64.75 % 
+Time to end [s]:  3.05 
+-------------------------- 
+Total time [s]:   778.61 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  64.88 % 
+Time to end [s]:  3.05 
+-------------------------- 
+Total time [s]:   780.16 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  65.01 % 
+Time to end [s]:  3.04 
+-------------------------- 
+Total time [s]:   781.71 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  65.14 % 
+Time to end [s]:  3.03 
+-------------------------- 
+Total time [s]:   783.26 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  65.27 % 
+Time to end [s]:  3.02 
+-------------------------- 
+Total time [s]:   784.81 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  65.40 % 
+Time to end [s]:  3.01 
+-------------------------- 
+Total time [s]:   786.36 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  65.53 % 
+Time to end [s]:  3.00 
+-------------------------- 
+Total time [s]:   787.91 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  65.66 % 
+Time to end [s]:  3.00 
+-------------------------- 
+Total time [s]:   789.46 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  65.79 % 
+Time to end [s]:  2.99 
+-------------------------- 
+Total time [s]:   791.01 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  65.92 % 
+Time to end [s]:  2.98 
+-------------------------- 
+Total time [s]:   792.56 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  66.05 % 
+Time to end [s]:  2.97 
+-------------------------- 
+Total time [s]:   794.11 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  66.18 % 
+Time to end [s]:  2.96 
+-------------------------- 
+Total time [s]:   795.66 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  66.31 % 
+Time to end [s]:  2.96 
+-------------------------- 
+Total time [s]:   797.21 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  66.43 % 
+Time to end [s]:  2.95 
+-------------------------- 
+Total time [s]:   798.76 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  66.56 % 
+Time to end [s]:  2.94 
+-------------------------- 
+Total time [s]:   800.31 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  66.69 % 
+Time to end [s]:  2.93 
+-------------------------- 
+Total time [s]:   801.86 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  66.82 % 
+Time to end [s]:  2.92 
+-------------------------- 
+Total time [s]:   803.41 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  66.95 % 
+Time to end [s]:  2.91 
+-------------------------- 
+Total time [s]:   804.96 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  67.08 % 
+Time to end [s]:  2.90 
+-------------------------- 
+Total time [s]:   806.51 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  67.21 % 
+Time to end [s]:  2.90 
+-------------------------- 
+Total time [s]:   808.06 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  67.34 % 
+Time to end [s]:  2.89 
+-------------------------- 
+Total time [s]:   809.61 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  67.47 % 
+Time to end [s]:  2.88 
+-------------------------- 
+Total time [s]:   811.16 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  67.60 % 
+Time to end [s]:  2.87 
+-------------------------- 
+Total time [s]:   812.71 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  67.73 % 
+Time to end [s]:  2.86 
+-------------------------- 
+Total time [s]:   814.26 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  67.86 % 
+Time to end [s]:  2.85 
+-------------------------- 
+Total time [s]:   815.81 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  67.98 % 
+Time to end [s]:  2.84 
+-------------------------- 
+Total time [s]:   817.36 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  68.11 % 
+Time to end [s]:  2.83 
+-------------------------- 
+Total time [s]:   818.91 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  68.24 % 
+Time to end [s]:  2.82 
+-------------------------- 
+Total time [s]:   820.46 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  68.37 % 
+Time to end [s]:  2.82 
+-------------------------- 
+Total time [s]:   822.01 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  68.50 % 
+Time to end [s]:  2.81 
+-------------------------- 
+Total time [s]:   823.56 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  68.63 % 
+Time to end [s]:  2.80 
+-------------------------- 
+Total time [s]:   825.11 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  68.76 % 
+Time to end [s]:  2.79 
+-------------------------- 
+Total time [s]:   826.66 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  68.89 % 
+Time to end [s]:  2.78 
+-------------------------- 
+Total time [s]:   828.21 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  69.02 % 
+Time to end [s]:  2.77 
+-------------------------- 
+Total time [s]:   829.76 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  69.15 % 
+Time to end [s]:  2.76 
+-------------------------- 
+Total time [s]:   831.31 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  69.28 % 
+Time to end [s]:  2.75 
+-------------------------- 
+Total time [s]:   832.86 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  69.40 % 
+Time to end [s]:  2.74 
+-------------------------- 
+Total time [s]:   834.41 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  69.53 % 
+Time to end [s]:  2.73 
+-------------------------- 
+Total time [s]:   835.96 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  69.66 % 
+Time to end [s]:  2.72 
+-------------------------- 
+Total time [s]:   837.51 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  69.79 % 
+Time to end [s]:  2.71 
+-------------------------- 
+Total time [s]:   839.06 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  69.92 % 
+Time to end [s]:  2.71 
+-------------------------- 
+Total time [s]:   840.60 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  70.05 % 
+Time to end [s]:  2.70 
+-------------------------- 
+Total time [s]:   842.15 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  70.18 % 
+Time to end [s]:  2.69 
+-------------------------- 
+Total time [s]:   843.70 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  70.31 % 
+Time to end [s]:  2.68 
+-------------------------- 
+Total time [s]:   845.25 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  70.44 % 
+Time to end [s]:  2.67 
+-------------------------- 
+Total time [s]:   846.80 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  70.57 % 
+Time to end [s]:  2.66 
+-------------------------- 
+Total time [s]:   848.35 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  70.70 % 
+Time to end [s]:  2.65 
+-------------------------- 
+Total time [s]:   849.90 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  70.83 % 
+Time to end [s]:  2.64 
+-------------------------- 
+Total time [s]:   851.45 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  70.95 % 
+Time to end [s]:  2.63 
+-------------------------- 
+Total time [s]:   853.00 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  71.08 % 
+Time to end [s]:  2.62 
+-------------------------- 
+Total time [s]:   854.55 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  71.21 % 
+Time to end [s]:  2.61 
+-------------------------- 
+Total time [s]:   856.10 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  71.34 % 
+Time to end [s]:  2.60 
+-------------------------- 
+Total time [s]:   857.65 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  71.47 % 
+Time to end [s]:  2.59 
+-------------------------- 
+Total time [s]:   859.20 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  71.60 % 
+Time to end [s]:  2.58 
+-------------------------- 
+Total time [s]:   860.75 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  71.73 % 
+Time to end [s]:  2.57 
+-------------------------- 
+Total time [s]:   862.30 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  71.86 % 
+Time to end [s]:  2.56 
+-------------------------- 
+Total time [s]:   863.85 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  71.99 % 
+Time to end [s]:  2.55 
+-------------------------- 
+Total time [s]:   865.40 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  72.12 % 
+Time to end [s]:  2.54 
+-------------------------- 
+Total time [s]:   866.94 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  72.25 % 
+Time to end [s]:  2.53 
+-------------------------- 
+Total time [s]:   868.49 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  72.37 % 
+Time to end [s]:  2.52 
+-------------------------- 
+Total time [s]:   870.04 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  72.50 % 
+Time to end [s]:  2.51 
+-------------------------- 
+Total time [s]:   871.59 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  72.63 % 
+Time to end [s]:  2.50 
+-------------------------- 
+Total time [s]:   873.14 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  72.76 % 
+Time to end [s]:  2.49 
+-------------------------- 
+Total time [s]:   874.69 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  72.89 % 
+Time to end [s]:  2.48 
+-------------------------- 
+Total time [s]:   876.24 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  73.02 % 
+Time to end [s]:  2.47 
+-------------------------- 
+Total time [s]:   877.79 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  73.15 % 
+Time to end [s]:  2.46 
+-------------------------- 
+Total time [s]:   879.34 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  73.28 % 
+Time to end [s]:  2.45 
+-------------------------- 
+Total time [s]:   880.89 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  73.41 % 
+Time to end [s]:  2.44 
+-------------------------- 
+Total time [s]:   882.44 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  73.54 % 
+Time to end [s]:  2.43 
+-------------------------- 
+Total time [s]:   883.99 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  73.67 % 
+Time to end [s]:  2.42 
+-------------------------- 
+Total time [s]:   885.53 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  73.79 % 
+Time to end [s]:  2.41 
+-------------------------- 
+Total time [s]:   887.08 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  73.92 % 
+Time to end [s]:  2.40 
+-------------------------- 
+Total time [s]:   888.63 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  74.05 % 
+Time to end [s]:  2.39 
+-------------------------- 
+Total time [s]:   890.18 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  74.18 % 
+Time to end [s]:  2.38 
+-------------------------- 
+Total time [s]:   891.73 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  74.31 % 
+Time to end [s]:  2.37 
+-------------------------- 
+Total time [s]:   893.28 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  74.44 % 
+Time to end [s]:  2.36 
+-------------------------- 
+Total time [s]:   894.83 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  74.57 % 
+Time to end [s]:  2.35 
+-------------------------- 
+Total time [s]:   896.38 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  74.70 % 
+Time to end [s]:  2.34 
+-------------------------- 
+Total time [s]:   897.93 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  74.83 % 
+Time to end [s]:  2.33 
+-------------------------- 
+Total time [s]:   899.48 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  74.96 % 
+Time to end [s]:  2.32 
+-------------------------- 
+Total time [s]:   901.03 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  75.09 % 
+Time to end [s]:  2.31 
+-------------------------- 
+Total time [s]:   902.57 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  75.21 % 
+Time to end [s]:  2.30 
+-------------------------- 
+Total time [s]:   904.12 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  75.34 % 
+Time to end [s]:  2.29 
+-------------------------- 
+Total time [s]:   905.67 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  75.47 % 
+Time to end [s]:  2.28 
+-------------------------- 
+Total time [s]:   907.22 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  75.60 % 
+Time to end [s]:  2.27 
+-------------------------- 
+Total time [s]:   908.77 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  75.73 % 
+Time to end [s]:  2.26 
+-------------------------- 
+Total time [s]:   910.32 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  75.86 % 
+Time to end [s]:  2.25 
+-------------------------- 
+Total time [s]:   911.87 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  75.99 % 
+Time to end [s]:  2.24 
+-------------------------- 
+Total time [s]:   913.42 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  76.12 % 
+Time to end [s]:  2.23 
+-------------------------- 
+Total time [s]:   914.97 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  76.25 % 
+Time to end [s]:  2.22 
+-------------------------- 
+Total time [s]:   916.51 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  76.38 % 
+Time to end [s]:  2.21 
+-------------------------- 
+Total time [s]:   918.06 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  76.51 % 
+Time to end [s]:  2.20 
+-------------------------- 
+Total time [s]:   919.61 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  76.63 % 
+Time to end [s]:  2.19 
+-------------------------- 
+Total time [s]:   921.16 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  76.76 % 
+Time to end [s]:  2.17 
+-------------------------- 
+Total time [s]:   922.71 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  76.89 % 
+Time to end [s]:  2.16 
+-------------------------- 
+Total time [s]:   924.26 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  77.02 % 
+Time to end [s]:  2.15 
+-------------------------- 
+Total time [s]:   925.81 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  77.15 % 
+Time to end [s]:  2.14 
+-------------------------- 
+Total time [s]:   927.36 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  77.28 % 
+Time to end [s]:  2.13 
+-------------------------- 
+Total time [s]:   928.90 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  77.41 % 
+Time to end [s]:  2.12 
+-------------------------- 
+Total time [s]:   930.45 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  77.54 % 
+Time to end [s]:  2.11 
+-------------------------- 
+Total time [s]:   932.00 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  77.67 % 
+Time to end [s]:  2.10 
+-------------------------- 
+Total time [s]:   933.55 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  77.80 % 
+Time to end [s]:  2.09 
+-------------------------- 
+Total time [s]:   935.10 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  77.92 % 
+Time to end [s]:  2.08 
+-------------------------- 
+Total time [s]:   936.65 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  78.05 % 
+Time to end [s]:  2.07 
+-------------------------- 
+Total time [s]:   938.20 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  78.18 % 
+Time to end [s]:  2.06 
+-------------------------- 
+Total time [s]:   939.75 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  78.31 % 
+Time to end [s]:  2.04 
+-------------------------- 
+Total time [s]:   941.29 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  78.44 % 
+Time to end [s]:  2.03 
+-------------------------- 
+Total time [s]:   942.84 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  78.57 % 
+Time to end [s]:  2.02 
+-------------------------- 
+Total time [s]:   944.39 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  78.70 % 
+Time to end [s]:  2.01 
+-------------------------- 
+Total time [s]:   945.94 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  78.83 % 
+Time to end [s]:  2.00 
+-------------------------- 
+Total time [s]:   947.49 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  78.96 % 
+Time to end [s]:  1.99 
+-------------------------- 
+Total time [s]:   949.04 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  79.09 % 
+Time to end [s]:  1.98 
+-------------------------- 
+Total time [s]:   950.59 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  79.22 % 
+Time to end [s]:  1.97 
+-------------------------- 
+Total time [s]:   952.13 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  79.34 % 
+Time to end [s]:  1.96 
+-------------------------- 
+Total time [s]:   953.68 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  79.47 % 
+Time to end [s]:  1.95 
+-------------------------- 
+Total time [s]:   955.23 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  79.60 % 
+Time to end [s]:  1.93 
+-------------------------- 
+Total time [s]:   956.78 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  79.73 % 
+Time to end [s]:  1.92 
+-------------------------- 
+Total time [s]:   958.33 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  79.86 % 
+Time to end [s]:  1.91 
+-------------------------- 
+Total time [s]:   959.88 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  79.99 % 
+Time to end [s]:  1.90 
+-------------------------- 
+Total time [s]:   961.43 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  80.12 % 
+Time to end [s]:  1.89 
+-------------------------- 
+Total time [s]:   962.97 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  80.25 % 
+Time to end [s]:  1.88 
+-------------------------- 
+Total time [s]:   964.52 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  80.38 % 
+Time to end [s]:  1.87 
+-------------------------- 
+Total time [s]:   966.07 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  80.51 % 
+Time to end [s]:  1.86 
+-------------------------- 
+Total time [s]:   967.62 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  80.63 % 
+Time to end [s]:  1.85 
+-------------------------- 
+Total time [s]:   969.17 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  80.76 % 
+Time to end [s]:  1.83 
+-------------------------- 
+Total time [s]:   970.72 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  80.89 % 
+Time to end [s]:  1.82 
+-------------------------- 
+Total time [s]:   972.27 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  81.02 % 
+Time to end [s]:  1.81 
+-------------------------- 
+Total time [s]:   973.81 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  81.15 % 
+Time to end [s]:  1.80 
+-------------------------- 
+Total time [s]:   975.36 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  81.28 % 
+Time to end [s]:  1.79 
+-------------------------- 
+Total time [s]:   976.91 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  81.41 % 
+Time to end [s]:  1.78 
+-------------------------- 
+Total time [s]:   978.46 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  81.54 % 
+Time to end [s]:  1.77 
+-------------------------- 
+Total time [s]:   980.01 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  81.67 % 
+Time to end [s]:  1.76 
+-------------------------- 
+Total time [s]:   981.56 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  81.80 % 
+Time to end [s]:  1.74 
+-------------------------- 
+Total time [s]:   983.10 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  81.93 % 
+Time to end [s]:  1.73 
+-------------------------- 
+Total time [s]:   984.65 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  82.05 % 
+Time to end [s]:  1.72 
+-------------------------- 
+Total time [s]:   986.20 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  82.18 % 
+Time to end [s]:  1.71 
+-------------------------- 
+Total time [s]:   987.75 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  82.31 % 
+Time to end [s]:  1.70 
+-------------------------- 
+Total time [s]:   989.30 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  82.44 % 
+Time to end [s]:  1.69 
+-------------------------- 
+Total time [s]:   990.85 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  82.57 % 
+Time to end [s]:  1.68 
+-------------------------- 
+Total time [s]:   992.39 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  82.70 % 
+Time to end [s]:  1.66 
+-------------------------- 
+Total time [s]:   993.94 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  82.83 % 
+Time to end [s]:  1.65 
+-------------------------- 
+Total time [s]:   995.49 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  82.96 % 
+Time to end [s]:  1.64 
+-------------------------- 
+Total time [s]:   997.04 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  83.09 % 
+Time to end [s]:  1.63 
+-------------------------- 
+Total time [s]:   998.59 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  83.22 % 
+Time to end [s]:  1.62 
+-------------------------- 
+Total time [s]:   1000.13 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  83.34 % 
+Time to end [s]:  1.61 
+-------------------------- 
+Total time [s]:   1001.68 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  83.47 % 
+Time to end [s]:  1.59 
+-------------------------- 
+Total time [s]:   1003.23 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  83.60 % 
+Time to end [s]:  1.58 
+-------------------------- 
+Total time [s]:   1004.78 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  83.73 % 
+Time to end [s]:  1.57 
+-------------------------- 
+Total time [s]:   1006.33 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  83.86 % 
+Time to end [s]:  1.56 
+-------------------------- 
+Total time [s]:   1007.88 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  83.99 % 
+Time to end [s]:  1.55 
+-------------------------- 
+Total time [s]:   1009.42 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  84.12 % 
+Time to end [s]:  1.54 
+-------------------------- 
+Total time [s]:   1010.97 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  84.25 % 
+Time to end [s]:  1.52 
+-------------------------- 
+Total time [s]:   1012.52 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  84.38 % 
+Time to end [s]:  1.51 
+-------------------------- 
+Total time [s]:   1014.07 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  84.51 % 
+Time to end [s]:  1.50 
+-------------------------- 
+Total time [s]:   1015.62 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  84.63 % 
+Time to end [s]:  1.49 
+-------------------------- 
+Total time [s]:   1017.16 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  84.76 % 
+Time to end [s]:  1.48 
+-------------------------- 
+Total time [s]:   1018.71 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  84.89 % 
+Time to end [s]:  1.47 
+-------------------------- 
+Total time [s]:   1020.26 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  85.02 % 
+Time to end [s]:  1.45 
+-------------------------- 
+Total time [s]:   1021.81 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  85.15 % 
+Time to end [s]:  1.44 
+-------------------------- 
+Total time [s]:   1023.36 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  85.28 % 
+Time to end [s]:  1.43 
+-------------------------- 
+Total time [s]:   1024.91 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  85.41 % 
+Time to end [s]:  1.42 
+-------------------------- 
+Total time [s]:   1026.45 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  85.54 % 
+Time to end [s]:  1.41 
+-------------------------- 
+Total time [s]:   1028.00 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  85.67 % 
+Time to end [s]:  1.40 
+-------------------------- 
+Total time [s]:   1029.55 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  85.80 % 
+Time to end [s]:  1.38 
+-------------------------- 
+Total time [s]:   1031.10 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  85.92 % 
+Time to end [s]:  1.37 
+-------------------------- 
+Total time [s]:   1032.65 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  86.05 % 
+Time to end [s]:  1.36 
+-------------------------- 
+Total time [s]:   1034.19 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  86.18 % 
+Time to end [s]:  1.35 
+-------------------------- 
+Total time [s]:   1035.74 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  86.31 % 
+Time to end [s]:  1.34 
+-------------------------- 
+Total time [s]:   1037.29 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  86.44 % 
+Time to end [s]:  1.32 
+-------------------------- 
+Total time [s]:   1038.84 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  86.57 % 
+Time to end [s]:  1.31 
+-------------------------- 
+Total time [s]:   1040.39 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  86.70 % 
+Time to end [s]:  1.30 
+-------------------------- 
+Total time [s]:   1041.93 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  86.83 % 
+Time to end [s]:  1.29 
+-------------------------- 
+Total time [s]:   1043.48 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  86.96 % 
+Time to end [s]:  1.28 
+-------------------------- 
+Total time [s]:   1045.03 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  87.09 % 
+Time to end [s]:  1.26 
+-------------------------- 
+Total time [s]:   1046.58 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  87.21 % 
+Time to end [s]:  1.25 
+-------------------------- 
+Total time [s]:   1048.13 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  87.34 % 
+Time to end [s]:  1.24 
+-------------------------- 
+Total time [s]:   1049.67 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  87.47 % 
+Time to end [s]:  1.23 
+-------------------------- 
+Total time [s]:   1051.22 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  87.60 % 
+Time to end [s]:  1.22 
+-------------------------- 
+Total time [s]:   1052.77 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  87.73 % 
+Time to end [s]:  1.20 
+-------------------------- 
+Total time [s]:   1054.32 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  87.86 % 
+Time to end [s]:  1.19 
+-------------------------- 
+Total time [s]:   1055.86 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  87.99 % 
+Time to end [s]:  1.18 
+-------------------------- 
+Total time [s]:   1057.41 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  88.12 % 
+Time to end [s]:  1.17 
+-------------------------- 
+Total time [s]:   1058.96 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  88.25 % 
+Time to end [s]:  1.16 
+-------------------------- 
+Total time [s]:   1060.51 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  88.38 % 
+Time to end [s]:  1.14 
+-------------------------- 
+Total time [s]:   1062.06 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  88.50 % 
+Time to end [s]:  1.13 
+-------------------------- 
+Total time [s]:   1063.60 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  88.63 % 
+Time to end [s]:  1.12 
+-------------------------- 
+Total time [s]:   1065.15 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  88.76 % 
+Time to end [s]:  1.11 
+-------------------------- 
+Total time [s]:   1066.70 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  88.89 % 
+Time to end [s]:  1.09 
+-------------------------- 
+Total time [s]:   1068.25 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  89.02 % 
+Time to end [s]:  1.08 
+-------------------------- 
+Total time [s]:   1069.80 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  89.15 % 
+Time to end [s]:  1.07 
+-------------------------- 
+Total time [s]:   1071.34 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  89.28 % 
+Time to end [s]:  1.06 
+-------------------------- 
+Total time [s]:   1072.89 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  89.41 % 
+Time to end [s]:  1.05 
+-------------------------- 
+Total time [s]:   1074.44 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  89.54 % 
+Time to end [s]:  1.03 
+-------------------------- 
+Total time [s]:   1075.99 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  89.67 % 
+Time to end [s]:  1.02 
+-------------------------- 
+Total time [s]:   1077.53 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  89.79 % 
+Time to end [s]:  1.01 
+-------------------------- 
+Total time [s]:   1079.08 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  89.92 % 
+Time to end [s]:  1.00 
+-------------------------- 
+Total time [s]:   1080.63 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  90.05 % 
+Time to end [s]:  0.98 
+-------------------------- 
+Total time [s]:   1082.18 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  90.18 % 
+Time to end [s]:  0.97 
+-------------------------- 
+Total time [s]:   1083.73 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  90.31 % 
+Time to end [s]:  0.96 
+-------------------------- 
+Total time [s]:   1085.27 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  90.44 % 
+Time to end [s]:  0.95 
+-------------------------- 
+Total time [s]:   1086.82 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  90.57 % 
+Time to end [s]:  0.93 
+-------------------------- 
+Total time [s]:   1088.37 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  90.70 % 
+Time to end [s]:  0.92 
+-------------------------- 
+Total time [s]:   1089.92 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  90.83 % 
+Time to end [s]:  0.91 
+-------------------------- 
+Total time [s]:   1091.46 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  90.96 % 
+Time to end [s]:  0.90 
+-------------------------- 
+Total time [s]:   1093.01 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  91.08 % 
+Time to end [s]:  0.89 
+-------------------------- 
+Total time [s]:   1094.56 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  91.21 % 
+Time to end [s]:  0.87 
+-------------------------- 
+Total time [s]:   1096.11 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  91.34 % 
+Time to end [s]:  0.86 
+-------------------------- 
+Total time [s]:   1097.65 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  91.47 % 
+Time to end [s]:  0.85 
+-------------------------- 
+Total time [s]:   1099.20 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  91.60 % 
+Time to end [s]:  0.84 
+-------------------------- 
+Total time [s]:   1100.75 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  91.73 % 
+Time to end [s]:  0.82 
+-------------------------- 
+Total time [s]:   1102.30 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  91.86 % 
+Time to end [s]:  0.81 
+-------------------------- 
+Total time [s]:   1103.85 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  91.99 % 
+Time to end [s]:  0.80 
+-------------------------- 
+Total time [s]:   1105.39 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  92.12 % 
+Time to end [s]:  0.79 
+-------------------------- 
+Total time [s]:   1106.94 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  92.25 % 
+Time to end [s]:  0.77 
+-------------------------- 
+Total time [s]:   1108.49 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  92.37 % 
+Time to end [s]:  0.76 
+-------------------------- 
+Total time [s]:   1110.04 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  92.50 % 
+Time to end [s]:  0.75 
+-------------------------- 
+Total time [s]:   1111.58 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  92.63 % 
+Time to end [s]:  0.74 
+-------------------------- 
+Total time [s]:   1113.13 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  92.76 % 
+Time to end [s]:  0.72 
+-------------------------- 
+Total time [s]:   1114.68 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  92.89 % 
+Time to end [s]:  0.71 
+-------------------------- 
+Total time [s]:   1116.23 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  93.02 % 
+Time to end [s]:  0.70 
+-------------------------- 
+Total time [s]:   1117.77 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  93.15 % 
+Time to end [s]:  0.68 
+-------------------------- 
+Total time [s]:   1119.32 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  93.28 % 
+Time to end [s]:  0.67 
+-------------------------- 
+Total time [s]:   1120.87 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  93.41 % 
+Time to end [s]:  0.66 
+-------------------------- 
+Total time [s]:   1122.42 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  93.53 % 
+Time to end [s]:  0.65 
+-------------------------- 
+Total time [s]:   1123.96 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  93.66 % 
+Time to end [s]:  0.63 
+-------------------------- 
+Total time [s]:   1125.51 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  93.79 % 
+Time to end [s]:  0.62 
+-------------------------- 
+Total time [s]:   1127.06 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  93.92 % 
+Time to end [s]:  0.61 
+-------------------------- 
+Total time [s]:   1128.61 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  94.05 % 
+Time to end [s]:  0.60 
+-------------------------- 
+Total time [s]:   1130.15 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  94.18 % 
+Time to end [s]:  0.58 
+-------------------------- 
+Total time [s]:   1131.70 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  94.31 % 
+Time to end [s]:  0.57 
+-------------------------- 
+Total time [s]:   1133.25 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  94.44 % 
+Time to end [s]:  0.56 
+-------------------------- 
+Total time [s]:   1134.80 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  94.57 % 
+Time to end [s]:  0.55 
+-------------------------- 
+Total time [s]:   1136.34 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  94.70 % 
+Time to end [s]:  0.53 
+-------------------------- 
+Total time [s]:   1137.89 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  94.82 % 
+Time to end [s]:  0.52 
+-------------------------- 
+Total time [s]:   1139.44 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  94.95 % 
+Time to end [s]:  0.51 
+-------------------------- 
+Total time [s]:   1140.99 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  95.08 % 
+Time to end [s]:  0.49 
+-------------------------- 
+Total time [s]:   1142.53 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  95.21 % 
+Time to end [s]:  0.48 
+-------------------------- 
+Total time [s]:   1144.08 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  95.34 % 
+Time to end [s]:  0.47 
+-------------------------- 
+Total time [s]:   1145.63 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  95.47 % 
+Time to end [s]:  0.46 
+-------------------------- 
+Total time [s]:   1147.18 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  95.60 % 
+Time to end [s]:  0.44 
+-------------------------- 
+Total time [s]:   1148.72 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  95.73 % 
+Time to end [s]:  0.43 
+-------------------------- 
+Total time [s]:   1150.27 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  95.86 % 
+Time to end [s]:  0.42 
+-------------------------- 
+Total time [s]:   1151.82 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  95.98 % 
+Time to end [s]:  0.40 
+-------------------------- 
+Total time [s]:   1153.36 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  96.11 % 
+Time to end [s]:  0.39 
+-------------------------- 
+Total time [s]:   1154.91 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  96.24 % 
+Time to end [s]:  0.38 
+-------------------------- 
+Total time [s]:   1156.46 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  96.37 % 
+Time to end [s]:  0.37 
+-------------------------- 
+Total time [s]:   1158.01 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  96.50 % 
+Time to end [s]:  0.35 
+-------------------------- 
+Total time [s]:   1159.55 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  96.63 % 
+Time to end [s]:  0.34 
+-------------------------- 
+Total time [s]:   1161.10 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  96.76 % 
+Time to end [s]:  0.33 
+-------------------------- 
+Total time [s]:   1162.65 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  96.89 % 
+Time to end [s]:  0.31 
+-------------------------- 
+Total time [s]:   1164.20 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  97.02 % 
+Time to end [s]:  0.30 
+-------------------------- 
+Total time [s]:   1165.74 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  97.15 % 
+Time to end [s]:  0.29 
+-------------------------- 
+Total time [s]:   1167.29 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  97.27 % 
+Time to end [s]:  0.28 
+-------------------------- 
+Total time [s]:   1168.84 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  97.40 % 
+Time to end [s]:  0.26 
+-------------------------- 
+Total time [s]:   1170.39 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  97.53 % 
+Time to end [s]:  0.25 
+-------------------------- 
+Total time [s]:   1171.93 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  97.66 % 
+Time to end [s]:  0.24 
+-------------------------- 
+Total time [s]:   1173.48 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  97.79 % 
+Time to end [s]:  0.22 
+-------------------------- 
+Total time [s]:   1175.03 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  97.92 % 
+Time to end [s]:  0.21 
+-------------------------- 
+Total time [s]:   1176.57 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  98.05 % 
+Time to end [s]:  0.20 
+-------------------------- 
+Total time [s]:   1178.12 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  98.18 % 
+Time to end [s]:  0.18 
+-------------------------- 
+Total time [s]:   1179.67 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  98.31 % 
+Time to end [s]:  0.17 
+-------------------------- 
+Total time [s]:   1181.22 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  98.43 % 
+Time to end [s]:  0.16 
+-------------------------- 
+Total time [s]:   1182.76 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  98.56 % 
+Time to end [s]:  0.15 
+-------------------------- 
+Total time [s]:   1184.31 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  98.69 % 
+Time to end [s]:  0.13 
+-------------------------- 
+Total time [s]:   1185.86 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  98.82 % 
+Time to end [s]:  0.12 
+-------------------------- 
+Total time [s]:   1187.40 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  98.95 % 
+Time to end [s]:  0.11 
+-------------------------- 
+Total time [s]:   1188.95 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  99.08 % 
+Time to end [s]:  0.09 
+-------------------------- 
+Total time [s]:   1190.50 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  99.21 % 
+Time to end [s]:  0.08 
+-------------------------- 
+Total time [s]:   1192.05 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  99.34 % 
+Time to end [s]:  0.07 
+-------------------------- 
+Total time [s]:   1193.59 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  99.47 % 
+Time to end [s]:  0.05 
+-------------------------- 
+Total time [s]:   1195.14 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  99.60 % 
+Time to end [s]:  0.04 
+-------------------------- 
+Total time [s]:   1196.69 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  99.72 % 
+Time to end [s]:  0.03 
+-------------------------- 
+Total time [s]:   1198.24 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  99.85 % 
+Time to end [s]:  0.01 
+-------------------------- 
+Total time [s]:   1199.78 
+Time step  [s]:   1.55 
+Time iterations:  1 
+Percentage done:  99.98 % 
+Time to end [s]:  0.00 
+-------------------------- 
+Total time [s]:   1201.33 
+Time step  [s]:   1.55 
+Time iterations:  2 
+Percentage done:  100.11 % 
+Time to end [s]:  -0.01 
+-------------------------- 
+Saving data.. 
+ 
+----------------------------------------------------------- 
+Total computing time:  10.2092080116 
+ 
+/proc/13598/status reading 
+Groups:	4 24 27 30 46 113 127 1000  
+NStgid:	13598 
+NSpid:	13598 
+NSpgid:	13598 
+NSsid:	13332 
+VmPeak:	   86008 kB 
+VmSize:	   86008 kB 
+VmLck:	       0 kB 
+VmPin:	       0 kB 
+VmHWM:	   27484 kB 
+VmRSS:	   27484 kB 
+RssAnon:	   17804 kB 
+RssFile:	    9680 kB 

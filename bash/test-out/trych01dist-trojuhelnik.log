@@ -1,0 +1,45 @@
+Surface: 
+	Rill flow: 
+		ON 
+Stream: 
+	ON 
+	Kinematic approach 
+	D8 flow algorithm 
+Subsurface: 
+	OFF 
+Save cumulative and maximum values from: 
+	Surface 
+Corrected time step is 20.0 [s] 
+Hydrographs files has been created... 
+Start of computing ... 
+Total time [s]:   40.00 
+Time step  [s]:   20.00 
+Time iterations:  1 
+Percentage done:  66.67 % 
+Time to end [s]:  0.56 
+-------------------------- 
+Total time [s]:   60.00 
+Time step  [s]:   20.00 
+Time iterations:  1 
+Percentage done:  100.00 % 
+Time to end [s]:  0.00 
+-------------------------- 
+Saving data.. 
+ 
+----------------------------------------------------------- 
+Total computing time:  0.799041986465 
+ 
+/proc/1664/status reading... 
+NStgid:	1664 
+NSpid:	1664 
+NSpgid:	1601 
+NSsid:	1416 
+VmPeak:	  134216 kB 
+VmSize:	  134184 kB 
+VmLck:	       0 kB 
+VmPin:	       0 kB 
+VmHWM:	   69520 kB 
+VmRSS:	   69488 kB 
+VmData:	   61400 kB 
+VmStk:	     132 kB 
+VmExe:	    2796 kB 

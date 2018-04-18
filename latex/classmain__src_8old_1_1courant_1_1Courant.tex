@@ -1,0 +1,118 @@
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant}{\section{main\-\_\-src.\-old.\-courant.\-Courant Class Reference}
+\label{classmain__src_8old_1_1courant_1_1Courant}\index{main\-\_\-src.\-old.\-courant.\-Courant@{main\-\_\-src.\-old.\-courant.\-Courant}}
+}
+
+
+Contains variables and methods needed for time step size handling.  
+
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_a5f750343263f79e8635f0b1e7b33938b}{def \hyperlink{classmain__src_8old_1_1courant_1_1Courant_a5f750343263f79e8635f0b1e7b33938b}{\-\_\-\-\_\-init\-\_\-\-\_\-}}\label{classmain__src_8old_1_1courant_1_1Courant_a5f750343263f79e8635f0b1e7b33938b}
+
+\begin{DoxyCompactList}\small\item\em constructor \end{DoxyCompactList}\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_a07477ef2b1ff3e65631f34f553e111f7}{def \hyperlink{classmain__src_8old_1_1courant_1_1Courant_a07477ef2b1ff3e65631f34f553e111f7}{set\-\_\-time\-\_\-step}}\label{classmain__src_8old_1_1courant_1_1Courant_a07477ef2b1ff3e65631f34f553e111f7}
+
+\begin{DoxyCompactList}\small\item\em Store the original guess time step. \end{DoxyCompactList}\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_a45c40308ebd673cd4963bf082979dcb0}{def \hyperlink{classmain__src_8old_1_1courant_1_1Courant_a45c40308ebd673cd4963bf082979dcb0}{reset}}\label{classmain__src_8old_1_1courant_1_1Courant_a45c40308ebd673cd4963bf082979dcb0}
+
+\begin{DoxyCompactList}\small\item\em Resets the self.\-cour\-\_\-most and self.\-cour\-\_\-speed after each time stop computation is successfully completed. \end{DoxyCompactList}\item 
+def \hyperlink{classmain__src_8old_1_1courant_1_1Courant_a5f7667f167dfa1cfbccf3ea84bd45954}{initial\-\_\-time\-\_\-step}
+\begin{DoxyCompactList}\small\item\em Guesses the initial time step. \end{DoxyCompactList}\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_a89b1be1f2f7cdd9d99089eb4b71857a5}{def \hyperlink{classmain__src_8old_1_1courant_1_1Courant_a89b1be1f2f7cdd9d99089eb4b71857a5}{C\-F\-L}}\label{classmain__src_8old_1_1courant_1_1Courant_a89b1be1f2f7cdd9d99089eb4b71857a5}
+
+\begin{DoxyCompactList}\small\item\em Checks and store in each computational cell the maximum velocity and maximum \hyperlink{classmain__src_8old_1_1courant_1_1Courant}{Courant} coefficient. \end{DoxyCompactList}\item 
+def \hyperlink{classmain__src_8old_1_1courant_1_1Courant_a28824c2fa3ceba4c3f6f5a996a7acbf9}{courant}
+\begin{DoxyCompactList}\small\item\em Returns the adjusted/unchanged time step after a time step computation is completed. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_a989f7d22af02025e013d786fe7ea15d8}{{\bfseries maxh}}\label{classmain__src_8old_1_1courant_1_1Courant_a989f7d22af02025e013d786fe7ea15d8}
+
+\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_a09984641e8d07debe0ad0779bc6c116e}{{\bfseries cour\-\_\-speed}}\label{classmain__src_8old_1_1courant_1_1Courant_a09984641e8d07debe0ad0779bc6c116e}
+
+\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_a3aa07fe65026c8517d7637f530df8ea7}{\hyperlink{classmain__src_8old_1_1courant_1_1Courant_a3aa07fe65026c8517d7637f530df8ea7}{cour\-\_\-crit}}\label{classmain__src_8old_1_1courant_1_1Courant_a3aa07fe65026c8517d7637f530df8ea7}
+
+\begin{DoxyCompactList}\small\item\em citical courant value \end{DoxyCompactList}\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_a5d2e39178412aa388a90d5d7cac0e219}{{\bfseries cour\-\_\-most}}\label{classmain__src_8old_1_1courant_1_1Courant_a5d2e39178412aa388a90d5d7cac0e219}
+
+\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_ab2b06b5f9fe78af6af976d857beb3846}{{\bfseries cour\-\_\-most\-\_\-rill}}\label{classmain__src_8old_1_1courant_1_1Courant_ab2b06b5f9fe78af6af976d857beb3846}
+
+\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_a4207a482eb2653c0dc83adb4d93bbbd2}{{\bfseries cour\-\_\-coef}}\label{classmain__src_8old_1_1courant_1_1Courant_a4207a482eb2653c0dc83adb4d93bbbd2}
+
+\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_a6df44affcf86db83c2b332b40f648139}{{\bfseries cour\-\_\-least}}\label{classmain__src_8old_1_1courant_1_1Courant_a6df44affcf86db83c2b332b40f648139}
+
+\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_a2024f3008726a71ab910a17f9c7de77e}{{\bfseries i}}\label{classmain__src_8old_1_1courant_1_1Courant_a2024f3008726a71ab910a17f9c7de77e}
+
+\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_a964b68ed18f05cdbeeed4c3553e4dcfc}{{\bfseries j}}\label{classmain__src_8old_1_1courant_1_1Courant_a964b68ed18f05cdbeeed4c3553e4dcfc}
+
+\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_ab928e8c2d8d13cf7b067ebf0b3070575}{{\bfseries co}}\label{classmain__src_8old_1_1courant_1_1Courant_ab928e8c2d8d13cf7b067ebf0b3070575}
+
+\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_ab12ebc1f4443e3405c3cdfb72215a113}{{\bfseries co\-\_\-pre}}\label{classmain__src_8old_1_1courant_1_1Courant_ab12ebc1f4443e3405c3cdfb72215a113}
+
+\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_a894f6cf1ce962f91168dc3dd303d1382}{{\bfseries maxratio}}\label{classmain__src_8old_1_1courant_1_1Courant_a894f6cf1ce962f91168dc3dd303d1382}
+
+\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_aa402482762ed08118e9eb6871b9c5322}{{\bfseries max\-\_\-delta\-\_\-t}}\label{classmain__src_8old_1_1courant_1_1Courant_aa402482762ed08118e9eb6871b9c5322}
+
+\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_afa228a37d904f9245192c6fdca31fcb9}{{\bfseries max\-\_\-delta\-\_\-t\-\_\-mult}}\label{classmain__src_8old_1_1courant_1_1Courant_afa228a37d904f9245192c6fdca31fcb9}
+
+\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_a6261e2e33ccfb13eefc0235dec24a070}{{\bfseries orig\-\_\-dt}}\label{classmain__src_8old_1_1courant_1_1Courant_a6261e2e33ccfb13eefc0235dec24a070}
+
+\item 
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_a8971521ad8c1584490a8ab5f1e6efe66}{{\bfseries init\-Guess}}\label{classmain__src_8old_1_1courant_1_1Courant_a8971521ad8c1584490a8ab5f1e6efe66}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Contains variables and methods needed for time step size handling. 
+
+
+
+\subsection{Member Function Documentation}
+\hypertarget{classmain__src_8old_1_1courant_1_1Courant_a28824c2fa3ceba4c3f6f5a996a7acbf9}{\index{main\-\_\-src.\-old\-::courant\-::\-Courant@{main\-\_\-src.\-old\-::courant\-::\-Courant}!courant@{courant}}
+\index{courant@{courant}!main_src.old::courant::Courant@{main\-\_\-src.\-old\-::courant\-::\-Courant}}
+\subsubsection[{courant}]{\setlength{\rightskip}{0pt plus 5cm}def main\-\_\-src.\-old.\-courant.\-Courant.\-courant (
+\begin{DoxyParamCaption}
+\item[{}]{self, }
+\item[{}]{rainfall, }
+\item[{}]{delta\-\_\-t, }
+\item[{}]{efect\-\_\-vrst, }
+\item[{}]{ratio}
+\end{DoxyParamCaption}
+)}}\label{classmain__src_8old_1_1courant_1_1Courant_a28824c2fa3ceba4c3f6f5a996a7acbf9}
+
+
+Returns the adjusted/unchanged time step after a time step computation is completed. 
+
+Also returns the ratio for the rill computation division. if ((ratio $>$ self.\-maxratio) or (self.\-cour\-\_\-most\-\_\-rill $>$ 1.\-0)) \-: ratio = self.\-maxratio ratio = 1 self.\-max\-\_\-delta\-\_\-t\-\_\-mult $\ast$= 0.\-9 \hypertarget{classmain__src_8old_1_1courant_1_1Courant_a5f7667f167dfa1cfbccf3ea84bd45954}{\index{main\-\_\-src.\-old\-::courant\-::\-Courant@{main\-\_\-src.\-old\-::courant\-::\-Courant}!initial\-\_\-time\-\_\-step@{initial\-\_\-time\-\_\-step}}
+\index{initial\-\_\-time\-\_\-step@{initial\-\_\-time\-\_\-step}!main_src.old::courant::Courant@{main\-\_\-src.\-old\-::courant\-::\-Courant}}
+\subsubsection[{initial\-\_\-time\-\_\-step}]{\setlength{\rightskip}{0pt plus 5cm}def main\-\_\-src.\-old.\-courant.\-Courant.\-initial\-\_\-time\-\_\-step (
+\begin{DoxyParamCaption}
+\item[{}]{self, }
+\item[{}]{sur}
+\end{DoxyParamCaption}
+)}}\label{classmain__src_8old_1_1courant_1_1Courant_a5f7667f167dfa1cfbccf3ea84bd45954}
+
+
+Guesses the initial time step. 
+
+the guess is based on the maximum {\itshape a} and {\itshape b} parameters of the kinematic wave equation and critical water level in case of sheet flow only calculation the water level guess is 0.\-001 {\itshape m} by default 
+
+The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+main\-\_\-src.\-old/courant.\-py\end{DoxyCompactItemize}

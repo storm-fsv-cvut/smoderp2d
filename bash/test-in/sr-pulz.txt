@@ -1,0 +1,3 @@
+# cas [minuty]   uhrn [mm]
+5  20
+60  20

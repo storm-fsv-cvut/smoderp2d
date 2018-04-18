@@ -1,0 +1,15 @@
+\form#0:$ i+m $
+\form#1:$ j+n $
+\form#2:$ i,j $
+\form#3:$ m_1 = inflows[i][j][0][0] = -1 $
+\form#4:$ n_1 = inflows[i][j][0][1] = 0 $
+\form#5:$ m_2 = inflows[i][j][1][0] = -1 $
+\form#6:$ n_2 = inflows[i][j][1][1] = +1 $
+\form#7:$ rillRatio =\frac{y}{b} $
+\form#8:$ V_{to\ rill} = h_{rill} \ pixelArea + V_{rill\ rest} $
+\form#9:$V_{to\ rill}$
+\form#10:$V_{rill}$
+\form#11:$ V_{rill} = y^{2} \ rillRatio \ length $
+\form#12:\[ h_{n+1} = h_{n} - \frac{f(h_n)}{f^{\prime}(h_n)} \]
+\form#13:\[ f(h) = bh+mh^2 - A \]
+\form#14:\[ f^{\prime}(h) = b+2mh \]

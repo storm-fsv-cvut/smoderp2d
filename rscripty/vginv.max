@@ -1,0 +1,3 @@
+stringout("out.txt",string(solve(th = thr + (ths-thr)/(1+(a*h)**n)**m,h)));
+n;
+n;

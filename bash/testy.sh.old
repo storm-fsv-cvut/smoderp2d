@@ -1,0 +1,94 @@
+# delat list
+# vybec netestuju jine parametry
+# nebo rozlozeni toku
+# skript na grafy rovnou
+
+
+
+
+
+smodskript=start-smoderp2d.py
+
+
+
+
+if [ "$1" == "-h" ]; then
+  echo "Pouziti:
+  all : udela vse
+  
+  kr  : udela srazku krabici
+  "
+#   pulz: udela srazku pulz
+#   velbloud: udela stazku velbloud
+#   
+  exit 0
+fi
+
+
+
+if [ $# -eq 0 ]
+then
+  echo 
+  echo 'testy.sh -h napoveda ... '
+  echo 
+  exit 0
+fi
+
+
+
+
+function jeden  {
+  echo
+  echo konk01-krabice-velka ...
+  echo
+  python $smodskript --indata bash/test-in/konk01-krabice-velka.in roff > bash/test-out/konk01-krabice-velka.log
+}
+
+
+
+
+
+
+function vse {
+
+  echo
+  echo nuc20-krabice-velka ...
+  echo
+  python $smodskript --indata bash/test-in/nuc20-krabice-velka.in roff > bash/test-out/nuc20-krabice-velka.log
+
+  exit 0
+  echo
+  echo nuc20-krabice-mala ...
+  echo
+  python $smodskript --indata bash/test-in/nuc20-krabice-mala.in roff > bash/test-out/nuc20-krabice-mala.log
+
+
+
+  echo
+  echo nuc20-polz ...
+  echo
+  python $smodskript --indata bash/test-in/nuc20-pulz.in roff > bash/test-out/nuc20-pulz.log
+  
+}
+
+
+if [ "$1" == "all" ]; then
+  
+  vse
+  
+  exit 1
+fi
+
+
+if [ "$1" == "kr" ]; then
+  jeden   
+  exit 1
+fi
+
+
+
+
+
+
+
+

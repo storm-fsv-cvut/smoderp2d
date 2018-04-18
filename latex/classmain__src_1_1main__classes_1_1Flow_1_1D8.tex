@@ -1,0 +1,96 @@
+\hypertarget{classmain__src_1_1main__classes_1_1Flow_1_1D8}{\section{main\-\_\-src.\-main\-\_\-classes.\-Flow.\-D8 Class Reference}
+\label{classmain__src_1_1main__classes_1_1Flow_1_1D8}\index{main\-\_\-src.\-main\-\_\-classes.\-Flow.\-D8@{main\-\_\-src.\-main\-\_\-classes.\-Flow.\-D8}}
+}
+
+
+Defines methods for executing the one direction flow algorithm \hyperlink{classmain__src_1_1main__classes_1_1Flow_1_1D8}{D8}.  
+
+
+Inheritance diagram for main\-\_\-src.\-main\-\_\-classes.\-Flow.\-D8\-:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=3.050109cm]{classmain__src_1_1main__classes_1_1Flow_1_1D8}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+def \hyperlink{classmain__src_1_1main__classes_1_1Flow_1_1D8_aa434664b8f49810662c7bc460cc92170}{\-\_\-\-\_\-init\-\_\-\-\_\-}
+\begin{DoxyCompactList}\small\item\em constructor \end{DoxyCompactList}\item 
+def \hyperlink{classmain__src_1_1main__classes_1_1Flow_1_1D8_a964b6a8da5f48f97b65af59977aac7ef}{update\-\_\-inflows}
+\begin{DoxyCompactList}\small\item\em updates \#inflows list if the diffuse approach is used. \end{DoxyCompactList}\item 
+def \hyperlink{classmain__src_1_1main__classes_1_1Flow_1_1D8_afaa910dba37ffebbd423049421792fbf}{cell\-\_\-runoff}
+\begin{DoxyCompactList}\small\item\em returns the water volume water flows into cell i , j from the previous time step based on the \#inflows list, \par
+\end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classmain__src_1_1main__classes_1_1Flow_1_1D8_acf85a68e7a071ea51b4b47f7867ed676}{{\bfseries inflows}}\label{classmain__src_1_1main__classes_1_1Flow_1_1D8_acf85a68e7a071ea51b4b47f7867ed676}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Defines methods for executing the one direction flow algorithm \hyperlink{classmain__src_1_1main__classes_1_1Flow_1_1D8}{D8}. 
+
+Can be inherited by the Classes\-:
+
+
+\begin{DoxyItemize}
+\item \hyperlink{classmain__src_1_1main__classes_1_1KinematicDiffuse_1_1Kinematic}{main\-\_\-src.\-main\-\_\-classes.\-Kinematic\-Diffuse.\-Kinematic}
+\item \hyperlink{classmain__src_1_1main__classes_1_1KinematicDiffuse_1_1Diffuse}{main\-\_\-src.\-main\-\_\-classes.\-Kinematic\-Diffuse.\-Diffuse} 
+\end{DoxyItemize}
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classmain__src_1_1main__classes_1_1Flow_1_1D8_aa434664b8f49810662c7bc460cc92170}{\index{main\-\_\-src\-::main\-\_\-classes\-::\-Flow\-::\-D8@{main\-\_\-src\-::main\-\_\-classes\-::\-Flow\-::\-D8}!\-\_\-\-\_\-init\-\_\-\-\_\-@{\-\_\-\-\_\-init\-\_\-\-\_\-}}
+\index{\-\_\-\-\_\-init\-\_\-\-\_\-@{\-\_\-\-\_\-init\-\_\-\-\_\-}!main_src::main_classes::Flow::D8@{main\-\_\-src\-::main\-\_\-classes\-::\-Flow\-::\-D8}}
+\subsubsection[{\-\_\-\-\_\-init\-\_\-\-\_\-}]{\setlength{\rightskip}{0pt plus 5cm}def main\-\_\-src.\-main\-\_\-classes.\-Flow.\-D8.\-\_\-\-\_\-init\-\_\-\-\_\- (
+\begin{DoxyParamCaption}
+\item[{}]{self}
+\end{DoxyParamCaption}
+)}}\label{classmain__src_1_1main__classes_1_1Flow_1_1D8_aa434664b8f49810662c7bc460cc92170}
+
+
+constructor 
+
+defines inflows list which defines the flow direction for each cell of the D\-E\-M. The kinematic approach is used the inflows are defines only once in this constructor. 
+
+\subsection{Member Function Documentation}
+\hypertarget{classmain__src_1_1main__classes_1_1Flow_1_1D8_afaa910dba37ffebbd423049421792fbf}{\index{main\-\_\-src\-::main\-\_\-classes\-::\-Flow\-::\-D8@{main\-\_\-src\-::main\-\_\-classes\-::\-Flow\-::\-D8}!cell\-\_\-runoff@{cell\-\_\-runoff}}
+\index{cell\-\_\-runoff@{cell\-\_\-runoff}!main_src::main_classes::Flow::D8@{main\-\_\-src\-::main\-\_\-classes\-::\-Flow\-::\-D8}}
+\subsubsection[{cell\-\_\-runoff}]{\setlength{\rightskip}{0pt plus 5cm}def main\-\_\-src.\-main\-\_\-classes.\-Flow.\-D8.\-cell\-\_\-runoff (
+\begin{DoxyParamCaption}
+\item[{}]{self, }
+\item[{}]{i, }
+\item[{}]{j}
+\end{DoxyParamCaption}
+)}}\label{classmain__src_1_1main__classes_1_1Flow_1_1D8_afaa910dba37ffebbd423049421792fbf}
+
+
+returns the water volume water flows into cell i , j from the previous time step based on the \#inflows list, \par
+
+
+\#inflows list definition is shown in the method new\-\_\-inflows() in the package main\-\_\-src.\-flow\-\_\-algorithm.\-D8
+
+The total inflow is sum of sheet and rill runoff volume.
+
+\begin{DoxyReturn}{Returns}
+inflow\-\_\-from\-\_\-cells inflow volume from the adjacent cells 
+\end{DoxyReturn}
+\hypertarget{classmain__src_1_1main__classes_1_1Flow_1_1D8_a964b6a8da5f48f97b65af59977aac7ef}{\index{main\-\_\-src\-::main\-\_\-classes\-::\-Flow\-::\-D8@{main\-\_\-src\-::main\-\_\-classes\-::\-Flow\-::\-D8}!update\-\_\-inflows@{update\-\_\-inflows}}
+\index{update\-\_\-inflows@{update\-\_\-inflows}!main_src::main_classes::Flow::D8@{main\-\_\-src\-::main\-\_\-classes\-::\-Flow\-::\-D8}}
+\subsubsection[{update\-\_\-inflows}]{\setlength{\rightskip}{0pt plus 5cm}def main\-\_\-src.\-main\-\_\-classes.\-Flow.\-D8.\-update\-\_\-inflows (
+\begin{DoxyParamCaption}
+\item[{}]{self, }
+\item[{}]{fd}
+\end{DoxyParamCaption}
+)}}\label{classmain__src_1_1main__classes_1_1Flow_1_1D8_a964b6a8da5f48f97b65af59977aac7ef}
+
+
+updates \#inflows list if the diffuse approach is used. 
+
+In the diffusive approach the flow direction may change due to changes of the water level. 
+
+The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+main\-\_\-src/main\-\_\-classes/Flow.\-py\end{DoxyCompactItemize}

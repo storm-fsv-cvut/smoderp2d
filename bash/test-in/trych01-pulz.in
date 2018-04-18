@@ -1,0 +1,35 @@
+[GIS]
+dem: C:Usersjerabj11Desktop\4_DS_plocha\1_data_in\1_rst\ds_plocha
+soil: C:Usersjerabj11Desktop\4_DS_plocha\1_data_in\2_vect\plocha.shp
+lu: C:Usersjerabj11Desktop\4_DS_plocha\1_data_in\2_vect\plocha.shp
+
+[shape atr]
+soil-atr: puda
+lu-atr: LU
+
+[srazka]
+file: bash/test-in/sr-pulz.txt
+
+[time]
+#min
+maxdt: 20
+#min
+endtime: 1
+
+[Other]
+reten: 0.0
+points: C:Usersjerabj11Desktop\4_DS_plocha\1_data_in\2_vect\point2.shp
+outdir: bash/test-out/out-trych01-pulz
+typecomp: 3
+mfda: False
+soilvegtab : C:Usersjerabj11Desktop\4_DS_plocha\1_data_in\3_tabs\tabulkytab.dbf
+soilvegcode : SOILVEG
+streamshp : C:Usersjerabj11Desktop\4_DS_plocha\1_data_in\2_vect\toky.shp
+streamtab: C:Usersjerabj11Desktop\4_DS_plocha\1_data_in\3_tabs\tab_stream_tvar.txt
+streamtabcode: smoderp
+arcgis: False
+extraout: False
+indata: indata/trych01.save
+partialcomp: roff
+debugprt: True
+printtimes: -

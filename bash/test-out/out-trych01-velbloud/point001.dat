@@ -1,0 +1,8 @@
+# Hydrograph at the point with coordinates: 82.8755771271 69.7665107692
+# A pixel size is [m2]:
+# 1.0
+# time[s];deltaTime[s];rainfall[m];totalWaterLevel[m];surfaceFlow[m3/s];surfaceVolRunoff[m3]
+0.0;20.0;0.0;0.0;0.0;0.0
+20.0;20.0;0.0;0.0;0.0;0.0
+40.0;20.0;0.0;0.0;0.0;0.0
+60.0;20.0;0.0;0.0;0.0;0.0
