@@ -1,5 +1,0 @@
-
-
-python start-smoderp2d.py --indata a.in roff > a.log
-python start-smoderp2d.py --indata b.in roff > b.log
-

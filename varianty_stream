@@ -1,2 +1,0 @@
-python start-smoderp2d.py --indata con2018stream.in roff > con2018stream.log
-python start-smoderp2d.py --indata con2018.in roff > con2018.log
