@@ -49,6 +49,7 @@ from smoderp2d.tools.tools import comp_type
 from smoderp2d.tools.times_prt import TimesPrt
 from smoderp2d.tools.tools import get_argv
 
+from smoderp2d.exceptions import MaxIterationExceeded
 
 class Error(Exception):
 

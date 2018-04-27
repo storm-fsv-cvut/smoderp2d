@@ -26,8 +26,8 @@ lu-atr: -
 # kdyz je - smoderp bere srazku ktera je 
 # v *.save souboru
 [srazka]
-# file: indata/srazka.txt
-file: -
+file: indata/srazka.txt
+# file: -
 
 
 # maximalni (a zaroven pocatecni)

@@ -18,7 +18,7 @@ from smoderp2d.tools.tools import set_argv
 from smoderp2d.tools.tools import prt_sys_argv
 from smoderp2d.tools.tools import int_comp_type
 from smoderp2d.tools.tools import logical_argv
-
+from smoderp2d.exceptions import RainfallFileMissing
 
 #
 # from inspect import currentframe, getframeinfo
@@ -78,6 +78,9 @@ def get_indata_lin(tc, args):
         output = Config.get('Other', 'outdir')
 
         #  rainfall data can be saved
+        if (not(os.path.isfile(Config.get('srazka', 'file')))):
+            raise RainfallFileMissing(Config.get('srazka', 'file'))
+
         if Config.get('srazka', 'file') != '-':
             sr, itera = rainfall.load_precipitation(
                 Config.get('srazka', 'file'))
