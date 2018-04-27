@@ -12,7 +12,7 @@
 #    - subsurface
 #    - surface + subsurface
 #  - Flow direction algorithm
-#    - D8 (default)
+#    - D8 (default) 
 #    - multi-flow direction
 #  - Erosion
 #    - none
