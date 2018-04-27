@@ -38,16 +38,16 @@
 
 def run():
 
-    import smoderp2d.src.io_functions.prttxtlogo
+    import smoderp2d.io_functions.prttxtlogo
 
     import platform
     # init class contains global variables
     if platform.system() == "Linux":
-        from smoderp2d.src.main_classes.General import initLinux
+        from smoderp2d.main_classes.General import initLinux
         init = initLinux
     elif platform.system() == "Windows":
         import sys
-        from smoderp2d.src.main_classes.General import initWin
+        from smoderp2d.main_classes.General import initWin
         init = initWin
         sys.argv.append('#')  # mfda
         sys.argv.append(False)  # extra output
@@ -56,7 +56,7 @@ def run():
         sys.argv.append(False)  # debug print
         sys.argv.append('-')               # print times
     else:
-        from smoderp2d.src.main_classes.General import initNone
+        from smoderp2d.main_classes.General import initNone
         init = initNone
 
     # returns false for dpre type of computation
@@ -65,7 +65,7 @@ def run():
 
     if ((ok)):
         # runoff.run() starts the computation
-        from smoderp2d.src.runoff import Runoff
+        from smoderp2d.runoff import Runoff
         runoff = Runoff()
 
         runoff.run()

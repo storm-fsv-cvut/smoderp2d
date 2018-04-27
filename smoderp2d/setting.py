@@ -10,7 +10,7 @@ def get_indata():
     # full computation
     #      data_preparation + runoff model
     if pc == 'full':
-        from smoderp2d.src.data_preparation import prepare_data
+        from smoderp2d.data_preparation import prepare_data
 
         return prepare_data(sys.argv)
 
@@ -18,8 +18,8 @@ def get_indata():
     #      data are saved in dump, can be stored and loaded later on
     elif pc == 'dpre':
 
-        from smoderp2d.src.data_preparation import prepare_data
-        import smoderp2d.src.tools.save_load_data as sld
+        from smoderp2d.data_preparation import prepare_data
+        import smoderp2d.tools.save_load_data as sld
 
         boundaryRows, boundaryCols, mat_boundary, rrows, rcols, outletCells, x_coordinate, y_coordinate,\
             NoDataValue, array_points, \
@@ -34,7 +34,7 @@ def get_indata():
             toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = prepare_data(
                 sys.argv)
 
-        # import  smoderp2d.src.tools.save_load_data_nopickle    as sld   #
+        # import  smoderp2d.tools.save_load_data_nopickle    as sld   #
         # preparate
 
         dataList = [
@@ -73,11 +73,11 @@ def get_indata():
             import src.tools.save_load_data as sld
             # import src.processes.rainfall    as rainfall
         else:
-            import smoderp2d.src.tools.save_load_data as sld
+            import smoderp2d.tools.save_load_data as sld
             # toto bude fungocat az bute setup spojen se semoderpem
-            import smoderp2d.src.processes.rainfall as rainfall
+            import smoderp2d.processes.rainfall as rainfall
 
-        # import  smoderp2d.src.tools.save_load_data_nopickle    as sld   #
+        # import  smoderp2d.tools.save_load_data_nopickle    as sld   #
         # pripraveno na jindy
 
         boundaryRows, boundaryCols, \

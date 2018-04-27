@@ -76,7 +76,7 @@ def boolean_val(val):
 
 
 def set_config_win(arg):
-    import smoderp2d.src.constants as constants
+    import smoderp2d.constants as constants
 
     global demPath
     global soilPath
