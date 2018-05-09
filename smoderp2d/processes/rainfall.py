@@ -33,6 +33,21 @@ class NonCumulativeRainData(Error):
         return repr(self.msg)
 
 
+class ErrorInRainfallRecord(Error):
+
+    """Exception raised for  rainfall record assignment.
+
+    Attributes:
+        msg  -- explanation of the error
+    """
+
+    def __init__(self):
+        self.msg = 'Error: Rainfall record starts with the length of the first time interval. See manual.'
+
+    def __str__(self):
+        return repr(self.msg)
+    
+    
 def load_precipitation(fh):
     y2 = 0
     try:
@@ -45,7 +60,11 @@ def load_precipitation(fh):
             elif z[0].find('#') >= 0:
                 continue
             else:
-                if len(z) == 0:
+                if (len(z) == 0) : # if raw in text file is empty
+                    continue
+                elif ((float(z[0])==0) & (float(z[1])>0)) : # if the record start with zero minutes the line has to be corrected
+                    raise ErrorInRainfallRecord()
+                elif ((float(z[0])==0) & (float(z[1])==0)) : # if the record start with zero minutes and rainfall the line is ignored
                     continue
                 else:
                     y0 = float(z[0]) * 60.0  # prevod na vteriny
@@ -90,13 +109,12 @@ def load_precipitation(fh):
                     sr[i][0] = x[i][0]
                     sr[i][1] = sr_int
 
-        # for  i, item in enumerate(sr):
-            # print item[0], '\t', item[1]
-
+        #for  i, item in enumerate(sr):
+            #print item[0], '\t', item[1]
         return sr, itera
 
     except IOError:
-        prt.message("The file does not exist!")
+        prt.message("The rainfall file does not exist!")
     except:
         prt.message("Unexpected error:", sys.exc_info()[0])
         raise
