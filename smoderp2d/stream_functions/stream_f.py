@@ -124,6 +124,10 @@ def trapezoid(reach, dt):
         reach.Q_out = reach.V_out / dt
         reach.V_rest = dV - reach.V_out  # V_zbyt
     reach.h = H
+    
+    
+    #print reach.V_in_from_field, reach.V_rest, reach.V_in_from_reach, reach.length
+    #raw_input()
     # prt.mujout.writelines(str(reach.id_) + ';' + str(reach.h) + ';' +
     # str(reach.V_in_from_field) + ';' + str(reach.V_rest) + ';' + str(
     # reach.V_in_from_reach) + ';' + str(reach.V_out) + ';' +

@@ -20,7 +20,8 @@ def philip_infiltration(soil, bil):
         if soil == z[0]:
             infiltration = z[3]
             if bil < 0:
-                print ("tady5")
+                #print (bil, "tady5")
+                pass
             if infiltration > bil:
                 infiltration = bil
                 bil = 0

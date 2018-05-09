@@ -1,7 +1,7 @@
 # @package smoderp2d.time_step methods to performe
 #  time step, and to store intermeriate variables
 
-
+import math
 from smoderp2d.main_classes.General import Globals as Gl
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.processes.infiltration as infilt
@@ -56,6 +56,7 @@ class TimeStep:
                     q_sheet, v_sheet, q_rill, v_rill, fc.ratio, rill_courant = runoff(
                         i, j, surface.arr[i][j], delta_t, mat_efect_vrst[i][j], fc.ratio)
                     subsurface.runoff(i, j, delta_t, mat_efect_vrst[i][j])
+
 
                 q_surface = q_sheet + q_rill
                 # print v_sheet,v_rill
@@ -165,17 +166,21 @@ class TimeStep:
                 surBIL = surface.arr[i][j].h_total_pre + actRain + surface.arr[i][j].inflow_tm / pixel_area - (
                     surface.arr[i][j].V_runoff / pixel_area + surface.arr[i][j].V_runoff_rill / pixel_area)
 
+                #if math.isnan(surBIL) :
+                    #print actRain
+                    #raw_input(str(i) +' '+ str(j)  + '...')
                 #
                 # surface retention
                 #
                 surBIL = surface_retention(surBIL, surface.arr[i][j])
+                #print 'poret', surBIL
 
                 # print i,j, surface.arr[i][j].state,
                 # surface.arr[i][j].h_total_pre , actRain ,
                 # surface.arr[i][j].inflow_tm/pixel_area ,
                 # surface.arr[i][j].V_runoff/pixel_area ,
                 # surface.arr[i][j].V_runoff_rill/pixel_area
-
+            
                 #
                 # infiltration
                 #
@@ -191,7 +196,8 @@ class TimeStep:
                 # surface retention
                 surBIL += subsurface.get_exfiltration(i, j)
                 # print surBIL
-
+                    
+                    
                 surface_state = surface.arr[i][j].state
 
                 if surface_state >= 1000:
@@ -202,6 +208,8 @@ class TimeStep:
                     h_sub = subsurface.runoff_stream_cell(i, j)
 
                     inflowToReach = h_sub * pixel_area + surBIL * pixel_area
+                    
+                    #print '\t', gl.r,gl.c,i,j,inflowToReach, surface_state
                     surface.reach_inflows(
                         id_=int(surface_state - 1000),
                         inflows=inflowToReach)

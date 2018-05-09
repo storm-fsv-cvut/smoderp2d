@@ -26,8 +26,8 @@ lu-atr: -
 # kdyz je - smoderp bere srazku ktera je 
 # v *.save souboru
 [srazka]
-file: indata/srazka.txt
-# file: -
+file: indata/srazkaerr.txt
+#file: -
 
 
 # maximalni (a zaroven pocatecni)
@@ -35,9 +35,9 @@ file: indata/srazka.txt
 # i konecni cas simulace se zde zadava
 [time]
 #sec
-maxdt: 20
+maxdt: 10
 #min
-endtime: 20
+endtime: 2
 
 
 [Other]
@@ -65,10 +65,10 @@ arcgis: false
 #
 # Zde si muzes nechat podrobneji 
 # vypsat vypisy, hlavne otazka zapsani vysledku
-extraout: False
+extraout: True
 #
 # kde se zadava cesta k souboru se vstupnimi data
-indata: indata/destak.save
+indata: indata/nanstudentka.save
 #
 # pro linux zatim jen roff - nacteni vstupnich souboru
 # zadava se i jako povinna option pri spusteni skriptU

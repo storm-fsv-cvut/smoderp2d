@@ -176,7 +176,8 @@ def __runoff(i, j, sur, dt, efect_vrst, ratio):
     else:
         q_rill, v_rill, ratio, rill_courant = 0, 0, ratio, 0.0
 
-    # print 'sur.V_runoff', sur.V_runoff, sur.V_runoff_rill
+    
+    
     return q_sheet, v_sheet, q_rill, v_rill, ratio, rill_courant
 
 
@@ -185,6 +186,7 @@ def __runoff_zero_compType(i, j, sur, dt, efect_vrst, ratio):
     h_total_pre = sur.h_total_pre
     h_crit = sur.h_crit
     state = sur.state
+    
 
     # sur.state               = update_state1(h_total_pre,h_crit,state)
     sur.h_sheet = sur.h_total_pre
@@ -259,8 +261,6 @@ def rill_runoff(i, j, sur, dt, efect_vrst, ratio):
     # print '\t', h,b, b, 2*h
     v_rill = math.pow(R_rill, (2.0 / 3.0)) * \
         1. / n * math.pow(slope / 100, 0.5)
-    # print "V_to_rill, R_rill", V_to_rill, R_rill
-    # q_rill = v_rill * constants.RILL_RATIO * b * b # [m3/s]
 
     q_rill = v_rill * h * b
 
@@ -294,7 +294,6 @@ def surface_retention(bil, sur):
 
     reten = sur.sur_ret
     pre_reten = reten
-
     if reten < 0:
         tempBIL = bil + reten
 
@@ -307,6 +306,7 @@ def surface_retention(bil, sur):
 
     sur.sur_ret = reten
     sur.cur_sur_ret = reten - pre_reten
+    
     return bil
 
 

@@ -49,6 +49,7 @@ class Reach():
         self.timeQ_max = 0.0
         self.V_out_domain = 0.0
 
+
         if TVAR == 0:  # obdelnik
             self.outflow_method = stream_f.rectangle
         elif TVAR == 1:  # trapezoid
@@ -95,8 +96,6 @@ class Stream(object):
         self.reach = []
 
         for i in range(self.nReaches):
-            print self.toky[6][i]
-            print self.toky[11][i]
             self.reach.append(
                 Reach(self.toky[0][i],
                       self.toky[1][i],
@@ -113,7 +112,8 @@ class Stream(object):
                       self.toky[12][i],
                       self.toky[13][i],
                       self.toky[14][i]))
-
+        
+        
         self.tokyLoc = Gl.tokyLoc
         self.mat_tok_reach = Gl.mat_tok_reach
 
@@ -131,6 +131,7 @@ class Stream(object):
     #  @param id_ starts in 0 not 1000
     def reach_inflows(self, id_, inflows):
         self.reach[id_].V_in_from_field += inflows
+        #print inflows, self.reach[id_].V_in_from_field
 
     def stream_reach_outflow(self, dt):
         for id_ in range(self.nReaches):
@@ -165,7 +166,7 @@ class Stream(object):
     def return_stream_str_vals(self, i, j, sep, dt, extraOut):
         id_ = int(self.arr[i][j].state - 1000)
         # Time;   V_runoff  ;   Q   ;    V_from_field  ;  V_rests_in_stream
-        # print id_
+        # print id_, self.reach[id_].Q_out, str(self.reach[id_].V_out)
         if not(extraOut):
             line = str(self.reach[id_].h) + sep + str(
                 self.reach[id_].Q_out) + sep + str(self.reach[id_].V_out)
