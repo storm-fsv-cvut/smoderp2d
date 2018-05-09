@@ -146,11 +146,10 @@ class TimeStep:
         for i in rr:
             for j in rc[i]:
 
-            # print i,j, surface.arr[i][j].h_total_pre, surface.arr[i][j].V_runoff
-            #
-            # current cell precipitation
-            #
-            # print rain_arr.arr[i][j], potRain, sum_interception
+                # print i,j, surface.arr[i][j].h_total_pre, surface.arr[i][j].V_runoff
+                #
+                # current cell precipitation
+                #
                 actRain, fc.sum_interception, rain_arr.arr[i][j].veg_true = rain_f.current_rain(
                     rain_arr.arr[i][j], potRain, fc.sum_interception)
                 surface.arr[i][j].cur_rain = actRain
@@ -166,20 +165,10 @@ class TimeStep:
                 surBIL = surface.arr[i][j].h_total_pre + actRain + surface.arr[i][j].inflow_tm / pixel_area - (
                     surface.arr[i][j].V_runoff / pixel_area + surface.arr[i][j].V_runoff_rill / pixel_area)
 
-                #if math.isnan(surBIL) :
-                    #print actRain
-                    #raw_input(str(i) +' '+ str(j)  + '...')
                 #
                 # surface retention
                 #
                 surBIL = surface_retention(surBIL, surface.arr[i][j])
-                #print 'poret', surBIL
-
-                # print i,j, surface.arr[i][j].state,
-                # surface.arr[i][j].h_total_pre , actRain ,
-                # surface.arr[i][j].inflow_tm/pixel_area ,
-                # surface.arr[i][j].V_runoff/pixel_area ,
-                # surface.arr[i][j].V_runoff_rill/pixel_area
             
                 #
                 # infiltration
@@ -187,7 +176,6 @@ class TimeStep:
                 if subsurface.get_exfiltration(i, j) > 0:
                     surface.arr[i][j].infiltration = 0.0
                     infiltration = 0.0
-                    # print 'actRain', actRain
                 else:
                     surBIL, infiltration = infilt.philip_infiltration(
                         surface.arr[i][j].soil_type, surBIL)
@@ -195,7 +183,6 @@ class TimeStep:
 
                 # surface retention
                 surBIL += subsurface.get_exfiltration(i, j)
-                # print surBIL
                     
                     
                 surface_state = surface.arr[i][j].state
@@ -209,7 +196,6 @@ class TimeStep:
 
                     inflowToReach = h_sub * pixel_area + surBIL * pixel_area
                     
-                    #print '\t', gl.r,gl.c,i,j,inflowToReach, surface_state
                     surface.reach_inflows(
                         id_=int(surface_state - 1000),
                         inflows=inflowToReach)
@@ -217,9 +203,6 @@ class TimeStep:
                 else:
                     surface.arr[i][j].h_total_new = surBIL
 
-                # print surface.arr[i][j].h_sheet,
-                # surface.arr[i][j].h_total_pre, infiltration, actRain,
-                # surface.arr[i][j].inflow_tm/pixel_area
                 surface_state = surface.arr[i][j].state
                 # subsurface inflow
                 """
