@@ -73,8 +73,8 @@ class TimeStep:
                     rill_courant)
                 rill_courant = 0.
 
-                # w1 = surface.arr[i][j].V_runoff_rill
-                # w2 = surface.arr[i][j].V_rill_rest
+                # w1 = surface.arr[i][j].v_runoff_rill
+                # w2 = surface.arr[i][j].v_rill_rest
                 # print surface.arr[i][j].h_total_pre
                 # if (w1 > 0 and w2 == 0) :
                     # print 'asdf', w1, w2
@@ -146,7 +146,7 @@ class TimeStep:
         for i in rr:
             for j in rc[i]:
 
-                # print i,j, surface.arr[i][j].h_total_pre, surface.arr[i][j].V_runoff
+                # print i,j, surface.arr[i][j].h_total_pre, surface.arr[i][j].v_runoff
                 #
                 # current cell precipitation
                 #
@@ -163,7 +163,7 @@ class TimeStep:
                 # Surface BILANCE
                 #
                 surBIL = surface.arr[i][j].h_total_pre + actRain + surface.arr[i][j].inflow_tm / pixel_area - (
-                    surface.arr[i][j].V_runoff / pixel_area + surface.arr[i][j].V_runoff_rill / pixel_area)
+                    surface.arr[i][j].v_runoff / pixel_area + surface.arr[i][j].v_runoff_rill / pixel_area)
 
                 #
                 # surface retention

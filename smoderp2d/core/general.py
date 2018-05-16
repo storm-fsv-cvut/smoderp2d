@@ -217,24 +217,24 @@ class Globals:
         return cls.surface_retention
 
     @classmethod
-    def get_mat_inf_index(cls):
-        return cls.mat_inf_index
+    def get_mat_inf_index(cls, i, j):
+        return cls.mat_inf_index[i][j]
 
     @classmethod
-    def get_mat_hcrit(cls):
-        return cls._mat_hcrit
+    def get_mat_hcrit(cls, i, j):
+        return cls.mat_hcrit[i][j]
 
     @classmethod
-    def get_mat_aa(cls):
-        return cls.mat_aa
+    def get_mat_aa(cls, i, j):
+        return cls.mat_aa[i][j]
 
     @classmethod
-    def get_mat_b(cls):
-        return cls.mat_b
+    def get_mat_b(cls, i, j):
+        return cls.mat_b[i][j]
 
     @classmethod
-    def get_mat_reten(cls):
-        return cls.mat_reten
+    def get_mat_reten(cls, i, j):
+        return cls.mat_reten[i][j]
 
     @classmethod
     def get_mat_fd(cls):

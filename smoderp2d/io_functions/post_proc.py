@@ -119,7 +119,7 @@ def do(cumulative, mat_slope, G, surArr):
                 vRest[i][j] = surArr[i][j].h_total_new * G.pixel_area
 
     totalBil = (cumulative.precipitation + cumulative.inflow_sur) - (cumulative.infiltration +
-                                                                     cumulative.V_sur + cumulative.V_rill) - cumulative.sur_ret  # + (cumulative.V_sur_r + cumulative.V_rill_r)
+                                                                     cumulative.v_sur + cumulative.v_rill) - cumulative.sur_ret  # + (cumulative.v_sur_r + cumulative.v_rill_r)
     totalBil -= vRest
 
     raster_output(totalBil, G, finState, 'massBalance')
@@ -178,12 +178,12 @@ def do(cumulative, mat_slope, G, surArr):
                     # vRest[i][j] =  surArr[i][j].h_total_new*G.pixel_area
 
         # (   IN                                           ) - (  OUT                                                         )  - ( What rests in the end)
-        # totalBil = (cumulative.precipitation + cumulative.inflow_sur) - (cumulative.infiltration + cumulative.V_sur + cumulative.V_rill) - cumulative.sur_ret #+ (cumulative.V_sur_r + cumulative.V_rill_r)
+        # totalBil = (cumulative.precipitation + cumulative.inflow_sur) - (cumulative.infiltration + cumulative.v_sur + cumulative.v_rill) - cumulative.sur_ret #+ (cumulative.v_sur_r + cumulative.v_rill_r)
         # totalBil -= vRest
 
         # for i in rrows:
             # for j in rcols[i]:
-                # vRest[i][j] =    surArr[i][j].V_rest
+                # vRest[i][j] =    surArr[i][j].v_rest
                 # finState[i][j] = int(surArr[i][j].state)
 
         # outName = 'reachFID'
@@ -277,7 +277,7 @@ def do(cumulative, mat_slope, G, surArr):
 
         # for i in rrows:
             # for j in rcols[i]:
-                # vRest[i][j] =    surArr[i][j].V_rest
+                # vRest[i][j] =    surArr[i][j].v_rest
                 # finState[i][j] = int(surArr[i][j].state)
                 # hCrit[i][j] =    surArr[i][j].h_crit
 
@@ -291,8 +291,8 @@ def do(cumulative, mat_slope, G, surArr):
 
         # (   IN                                           ) - (  OUT                                                         )  - ( What rests in the end)
         # totalBil = (cumulative.precipitation + cumulative.inflow_sur) -
-        # (cumulative.infiltration + cumulative.V_sur + cumulative.V_rill) -
-        # cumulative.sur_ret #+ (cumulative.V_sur_r + cumulative.V_rill_r)
+        # (cumulative.infiltration + cumulative.v_sur + cumulative.v_rill) -
+        # cumulative.sur_ret #+ (cumulative.v_sur_r + cumulative.v_rill_r)
 
         # vRest     = np.zeros(np.shape(surArr),float)
         # if Gl.isRill :
@@ -349,7 +349,7 @@ if Gl.isStream and Gl.arcgis:
         with open(outFile, 'w') as f:
             line = 'FID' + sep + 'cVolM3' + sep + 'mFlowM3_S' + sep + 'mFlowTimeS' + \
                 sep + 'mWatLM' + sep + 'restVolM3' + sep + 'toFID' + '\n'
-            # line = 'FID'+sep+'V_out_cum [L^3]'+sep+'Q_max
+            # line = 'FID'+sep+'v_out_cum [L^3]'+sep+'Q_max
             # [L^3.t^{-1}]'+sep+'timeQ_max[s]'+sep+'h_max
             # [L]'+sep+'timeh_max[s]'+sep+'Cumulatice_inflow_from_field[L^3]' +
             # sep+ 'Left_after_last_time_step[L^3]'   + sep+
@@ -358,9 +358,9 @@ if Gl.isStream and Gl.arcgis:
             for iReach in range(nReaches):
                 line = \
                     str(surface.reach[iReach].id_) + sep +  \
-                    str(surface.reach[iReach].V_out_cum) + sep +   \
+                    str(surface.reach[iReach].v_out_cum) + sep +   \
                       str(surface.reach[iReach].Q_max) + sep + str(surface.reach[iReach].timeQ_max)  + sep + str(surface.reach[iReach].h_max) + sep + \
-                        str(surface.reach[iReach].V_rest) + sep + \
+                        str(surface.reach[iReach].v_rest) + sep + \
                           str(surface.reach[iReach].to_node) + '\n'
 
                 f.write(line)
@@ -385,7 +385,7 @@ elif Gl.isStream and not(Gl.arcgis):
         with open(outFile, 'w') as f:
             line = 'FID' + sep + 'cVolM3' + sep + 'mFlowM3_S' + sep + 'mFlowTimeS' + \
                 sep + 'mWatLM' + sep + 'restVolM3' + sep + 'toFID' + '\n'
-            # line = 'FID'+sep+'V_out_cum [L^3]'+sep+'Q_max
+            # line = 'FID'+sep+'v_out_cum [L^3]'+sep+'Q_max
             # [L^3.t^{-1}]'+sep+'timeQ_max[s]'+sep+'h_max
             # [L]'+sep+'timeh_max[s]'+sep+'Cumulatice_inflow_from_field[L^3]' +
             # sep+ 'Left_after_last_time_step[L^3]'   + sep+
@@ -397,7 +397,7 @@ elif Gl.isStream and not(Gl.arcgis):
                     str(surface.reach[iReach].V_out_cum) + sep +   \
                       str(surface.reach[iReach].Q_max) + sep + str(surface.reach[iReach].timeQ_max)  + sep + str(surface.reach[iReach].h_max) + sep + \
                         str(surface.reach[iReach].V_rest) + sep + \
-                          str(surface.reach[iReach].to_node) + '\n'
+                        str(surface.reach[iReach].to_node) + '\n'
 
                 f.write(line)
 

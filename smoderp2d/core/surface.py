@@ -1,159 +1,169 @@
-# @package smoderp2d.core.surface
-#
-#  Package contains classes and methods to campute
-#  surface processes
-
+"""Package contains classes and methods to compute surface processes.
+"""
 
 import numpy as np
 import math
-import sys
-import os
-# import psutil
 
-from smoderp2d.core.general import *
-from smoderp2d.core.kinematic_diffuse import *
-from smoderp2d.core.stream import *
-
+from smoderp2d.core.kinematic_diffuse import Kinematic
+from smoderp2d.core.stream import Stream
+from smoderp2d.core.general import Globals, Size
 
 import smoderp2d.processes.rill as rill
+import smoderp2d.processes.surface as surfacefce
 import smoderp2d.constants as constants
 import smoderp2d.io_functions.prt as prt
-import smoderp2d.processes.surface as surfacefce
+
 from smoderp2d.tools.tools import comp_type
 
-from smoderp2d.core.general import Globals
+from smoderp2d.providers.logger import Logger
 
 courantMax = 1.0
 
-
-# Main surface class
-#
-#  Class contains a set of surface perameters
-class SurArrs:
-
-    # Constructor of Surface array
-    #
-    #  assign values into surface parameters
-
+class SurArrs(object):
+    """Surface attributes."""
     def __init__(self, sur_ret, inf_index, hcrit, a, b):
+        """Constructor of Surface array
+        
+        Assign values into surface parameters.
 
-        self.state = int(0)
+        :param sur_ret: TODO
+        :inf_index: TODO
+        :hcrit: TODO
+        :a: TODO
+        :b: TODO
+        """
+        self.state = 0
         self.sur_ret = sur_ret
-        self.cur_sur_ret = float(0)
-        self.cur_rain = float(0)
-        self.h_sheet = float(0)
-        self.h_total_new = float(0)
-        self.h_total_pre = float(0)
-        self.V_runoff = float(0)
-        # self.V_runoff_pre = float(0)
-        self.V_rest = float(0)
-        # self.V_rest_pre =   float(0)
-        self.inflow_tm = float(0)
+        self.cur_sur_ret = 0.
+        self.cur_rain = 0.
+        self.h_sheet = 0.
+        self.h_total_new = 0.
+        self.h_total_pre = 0.
+        self.v_runoff = 0.
+        # self.v_runoff_pre = float(0)
+        self.v_rest = 0.
+        # self.v_rest_pre =   float(0)
+        self.inflow_tm = 0.
         self.soil_type = inf_index
-        self.infiltration = float(0)
+        self.infiltration = 0.
         self.h_crit = hcrit
         self.a = a
         self.b = b
-        self.h_rill = float(0)
-        self.h_rillPre = float(0)
-        self.V_runoff_rill = float(0)
-        # self.V_runoff_rill_pre= float(0)
-        self.V_rill_rest = float(0)
-        # self.V_rill_rest_pre =  float(0)
-        self.rillWidth = float(0)
-        self.V_to_rill = float(0)
-        self.h_last_state1 = float(0)
+        self.h_rill = 0.
+        self.h_rillPre = 0.
+        self.v_runoff_rill = 0.
+        # self.v_runoff_rill_pre= float(0)
+        self.v_rill_rest = 0.
+        # self.v_rill_rest_pre =  float(0)
+        self.rillWidth = 0.
+        self.v_to_rill = 0.
+        self.h_last_state1 = 0.
 
 
-# Documentation for a class Surface.
-#
-#  Class Surface contains data and methods
-#  to calculate the surface and rill runoff
-#
-class Surface(Stream if Globals.isStream else StreamPass, Kinematic, Globals, Size):
-
-    # The constructor
-    # make all numpy arrays and establish the inflow procedure based on D8 or
-    # Multi Flow Direction Algorithm method
-
+class Surface(Stream if Globals.isStream else StreamPass, Kinematic, Size):
+    """Contains data and methods to calculate the surface and rill runoff.
+    """
     def __init__(self):
+        """The constructor
 
-        prt.message("Surface:")
+        Make all numpy arrays and establish the inflow procedure based
+        on D8 or Multi Flow Direction Algorithm method.
+        """
+        Logger.info("Surface: ON")
 
+        r = Globals.get_rows()
+        c = Globals.get_cols()
+        
         self.n = 15
-        self.arr = np.empty((self.r, self.c), dtype=object)
-        # self.r = r
-        # self.c = c
+        self.arr = np.empty((r, c), dtype=object)
 
-        # print '\n\n\n\n\n\nnatvrdo ret, a, b\n\n\n\n\n\n'
-
-        for i in range(self.r):
-            for j in range(self.c):
-                # jj                           prevod na m y mm
+        # assign array objects
+        for i in range(r):
+            for j in range(c):
                 self.arr[i][j] = SurArrs(
-                    self.mat_reten[i][j],
-                    self.mat_inf_index[i][j],
-                    self.mat_hcrit[i][j],
-                    self.mat_aa[i][j],
-                    self.mat_b[i][j])
-                # print mat_aa[i][j],mat_b[i][j]
-                # self.arr[i][j] =
-                # SurArrs(-0.001,mat_inf_index[i][j],0.0025,0.965,1.7)
+                    Globals.get_mat_reten(i, j),
+                    Globals.get_mat_inf_index(i, j),
+                    Globals.get_mat_hcrit(i, j),
+                    Globals.get_mat_aa(i, j),
+                    Globals.get_mat_b(i, j)
+                )
 
-        if (self.isRill):
-            prt.message("\tRill flow: \n\t\tON")
-        else:
-            # raw_input()
-            prt.message("\tRill flow: \n\t\tOFF")
-
+        Logger.info("\tRill flow: {}".format('ON' if Globals.isRill else 'OFF'))
+        
         super(Surface, self).__init__()
 
-    def return_str_vals(self, i, j, sep, dt, extraOut):
+    def return_str_vals(self, i, j, sep, dt, extra_out):
+        """TODO.
 
+        :param i: row index
+        :param j: col index
+        :param sep: separator
+        :param dt: TODO
+        :param extra_out: append extra output
+
+        :return: TODO
+        """
         arr = self.arr[i][j]
 
-        # Water_level_[m];Flow_[m3/s];V_runoff[m3];V_rest[m3];Infiltration[];surface_retention[l]
-
-        if not(extraOut):
-            line = str(
-                arr.h_total_new) + sep + str(
-                    arr.V_runoff / dt + arr.V_runoff_rill / dt) + sep + str(
-                        arr.V_runoff + arr.V_runoff_rill)
+        # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
+        if not extra_out:
+            line = '{0}{sep}{1}{sep}{2}'.format(
+                arr.h_total_new,
+                arr.v_runoff / dt + arr.v_runoff_rill / dt,
+                arr.v_runoff + arr.v_runoff_rill,
+                sep=sep
+            )
             bil_ = ''
         else:
-            line = str(
-                arr.h_sheet) + sep + str(
-                    arr.V_runoff / dt) + sep + str(
-                        arr.V_runoff) + sep + str(
-                arr.V_rest) + sep + str(
-                    arr.infiltration) + sep + str(
-                        arr.cur_sur_ret) + sep + str(
-                            arr.state) + sep + str(
-                                arr.inflow_tm) + sep + str(
-                                    arr.h_total_new)
+            line = '{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}{sep}{7}{sep}{8}'.format(
+                arr.h_sheet,
+                arr.v_runoff / dt,
+                arr.v_runoff,
+                arr.v_rest,
+                arr.infiltration,
+                arr.cur_sur_ret,
+                arr.state,
+                arr.inflow_tm,
+                arr.h_total_new,
+                sep=sep
+            )
 
-            if self.isRill:
+            if Globals.isRill:
+                line += '{sep}{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}'.format(
+                    arr.h_rill,
+                    arr.rillWidth,
+                    arr.v_runoff_rill / dt,
+                    arr.v_runoff_rill,
+                    arr.v_rill_rest,
+                    arr.v_runoff / dt + arr.v_runoff_rill / dt,
+                    arr.v_runoff + arr.v_runoff_rill,
+                    sep=sep
+                )
 
-                line += sep + str(
-                    arr.h_rill) + sep + str(
-                        arr.rillWidth) + sep + str(
-                            arr.V_runoff_rill / dt) + sep + str(
-                                arr.V_runoff_rill) + sep + str(
-                    arr.V_rill_rest) + sep + str(
-                        arr.V_runoff / dt + arr.V_runoff_rill / dt) + sep + str(
-                            arr.V_runoff + arr.V_runoff_rill)
-
-            bil_ = arr.h_total_pre * self.pixel_area + arr.cur_rain * self.pixel_area + arr.inflow_tm - (
-                arr.V_runoff + arr.V_runoff_rill + arr.infiltration * self.pixel_area) - (
-                    arr.cur_sur_ret * self.pixel_area) - arr.h_total_new * self.pixel_area  # << + arr.V_rest + arr.V_rill_rest) + (arr.V_rest_pre + arr.V_rill_rest_pre)
+            pixel_area = Globals.get_pixel_area()
+            bil_ = arr.h_total_pre * pixel_area + \
+                   arr.cur_rain * pixel_area + \
+                   arr.inflow_tm - \
+                   (arr.v_runoff + arr.v_runoff_rill + \
+                    arr.infiltration * pixel_area) - \
+                    (arr.cur_sur_ret * pixel_area) - \
+                    arr.h_total_new * pixel_area
+            # << + arr.v_rest + arr.v_rill_rest) + (arr.v_rest_pre + arr.v_rill_rest_pre)
 
         return line, bil_
 
 
-# Calculates the sheet and rill flow.
-#
 def __runoff(i, j, sur, dt, efect_vrst, ratio):
+    """Calculates the sheet and rill flow.
 
+    :param i: row index
+    :param j: col index
+    :param dt: TODO
+    :param efect_vrst: TODO
+    :param ratio: TODO
+
+    :return: TODO
+    """
     h_total_pre = sur.h_total_pre
     h_crit = sur.h_crit
     state = sur.state  # da se tady podivat v jakym jsem casovym kroku a jak se a
@@ -171,17 +181,26 @@ def __runoff(i, j, sur, dt, efect_vrst, ratio):
 
     if sur.state > 0:
         q_rill, v_rill, ratio, rill_courant = rill_runoff(
-            i, j, sur, dt, efect_vrst, ratio)
+            i, j, sur, dt, efect_vrst, ratio
+        )
     else:
         q_rill, v_rill, ratio, rill_courant = 0, 0, ratio, 0.0
-
-    
     
     return q_sheet, v_sheet, q_rill, v_rill, ratio, rill_courant
 
 
-def __runoff_zero_compType(i, j, sur, dt, efect_vrst, ratio):
+def __runoff_zero_comp_type(i, j, sur, dt, efect_vrst, ratio):
+    """TODO.
 
+    :param i: row index
+    :param j: col index
+    :param sur: TOD
+    :param dt: TODO
+    :param efect_vrst: TODO
+    :param ratio: TODO
+
+    :return: TODO
+    """
     h_total_pre = sur.h_total_pre
     h_crit = sur.h_crit
     state = sur.state
@@ -203,84 +222,116 @@ def __runoff_zero_compType(i, j, sur, dt, efect_vrst, ratio):
     return q_sheet, v_sheet, q_rill, v_rill, ratio, 0.0
 
 
-def update_state1(ht_1, hcrit, state, rillWidth):
+def update_state1(ht_1, hcrit, state, rill_width):
+    """TODO.
+    
+    :param ht_1: TODO
+    :param hcrit: TODO
+    :param state: TODO (not used)
+    :patam rill_width: TODO (not used)
+
+    :return: TODO
+    """
     if ht_1 > hcrit:
         if state == 0:
             return 1
     return state
 
 
-def compute_h_hrill(h_total_pre, h_crit, state, rillWidth, hRillPre):
+def compute_h_hrill(h_total_pre, h_crit, state, rill_width, h_rill_pre):
+    """TODO.
+    
+    :param h_total_pre: TODO
+    :param h_crit: TODO
+    :param state: TODO (not used)
+    :patam rill_width: TODO (not used)
+    :patam h_rill_pre: TODO (not used)
 
+    :return: TODO
+    """
     if state == 0:
         h_sheet = h_total_pre
         h_rill = 0
+
         return h_sheet, h_rill, 0
 
     elif state == 1:
         h_sheet = min(h_crit, h_total_pre)
         h_rill = max(h_total_pre - h_crit, 0)
         hRillPre = h_rill
-        # print "%d, %.6e, %.6e" % (state, h_sheet, h_rill)
-        return h_sheet, h_rill, hRillPre
+        
+        return h_sheet, h_rill, h_rill_pre
 
-    elif state == 2:
-
-        if (h_total_pre > hRillPre):
-            h_rill = hRillPre
-            h_sheet = h_total_pre - hRillPre
+    else: # elif state == 2:
+        if h_total_pre > h_rill_pre:
+            h_rill = h_hill_pre
+            h_sheet = h_total_pre - h_hill_pre
         else:
             h_rill = h_total_pre
             h_sheet = 0
 
-        return h_sheet, h_rill, hRillPre
-
-
+        return h_sheet, h_rill, h_rill_pre
+    
 def sheet_runoff(sur, dt):
+    """TODO.
 
+    :param sur: TODO
+    :param dt: TODO
+    
+    :return: TODO
+    """
     q_sheet = surfacefce.shallowSurfaceKinematic(sur)
-    sur.V_runoff = dt * q_sheet * Globals.get_dx()
-    sur.V_rest = sur.h_sheet * Globals.get_pixel_area() - sur.V_runoff
+    sur.v_runoff = dt * q_sheet * Globals.get_dx()
+    sur.v_rest = sur.h_sheet * Globals.get_pixel_area() - sur.v_runoff
 
     return q_sheet
 
-
 def rill_runoff(i, j, sur, dt, efect_vrst, ratio):
+    """TODO.
+
+    :param i: row index
+    :param j: col index
+    :param sur: TODO
+    :param dt: TODO
+    :param efect_vrst: TODO
+    :param ratio: TODO
+    
+    :return: TODO
+    """
 
     ppp = False
 
     n = Globals.get_mat_n(i, j)
     slope = Globals.get_mat_slope(i, j)
 
-    V_to_rill = sur.h_rill * Globals.get_pixel_area()
+    v_to_rill = sur.h_rill * Globals.get_pixel_area()
     h, b = rill.update_hb(
-        V_to_rill, constants.RILL_RATIO, efect_vrst, sur.rillWidth, ratio, ppp)
-    R_rill = (h * b) / (b + 2 * h)
-    # print '\t', h,b, b, 2*h
-    v_rill = math.pow(R_rill, (2.0 / 3.0)) * \
+        v_to_rill, constants.RILL_RATIO, efect_vrst, sur.rillWidth, ratio, ppp
+    )
+    r_rill = (h * b) / (b + 2 * h)
+
+    v_rill = math.pow(r_rill, (2.0 / 3.0)) * \
         1. / n * math.pow(slope / 100, 0.5)
 
     q_rill = v_rill * h * b
 
-    V = q_rill * dt
+    v = q_rill * dt
 
-    # puvodni podle rychlosti
+    # original based on speed
     courant = (v_rill * dt) / efect_vrst
 
     # celerita
     # courant = (1 + s*b/(3*(b+2*h))) * q_rill/(b*h)
 
-    sur.V_to_rill = V_to_rill
+    sur.v_to_rill = v_to_rill
     sur.rillWidth = b
-    if (courant <= courantMax):
-
-        if V > (V_to_rill):
-            sur.V_rill_rest = 0
-            sur.V_runoff_rill = V_to_rill
-
+    if courant <= courantMax:
+        if v > v_to_rill:
+            sur.v_rill_rest = 0
+            sur.v_runoff_rill = v_to_rill
         else:
-            sur.V_rill_rest = V_to_rill - V
-            sur.V_runoff_rill = V
+            sur.v_rill_rest = v_to_rill - v
+            sur.v_runoff_rill = v
 
     else:
         return q_rill, v_rill, ratio, courant
@@ -289,7 +340,11 @@ def rill_runoff(i, j, sur, dt, efect_vrst, ratio):
 
 
 def surface_retention(bil, sur):
-
+    """TODO.
+    
+    :param bil: TODO
+    param sur: TODO
+    """
     reten = sur.sur_ret
     pre_reten = reten
     if reten < 0:
@@ -307,8 +362,7 @@ def surface_retention(bil, sur):
     
     return bil
 
-
-if (Globals.isRill):
+if Globals.isRill:
     runoff = __runoff
 else:
-    runoff = __runoff_zero_compType
+    runoff = __runoff_zero_comp_type

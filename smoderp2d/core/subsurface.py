@@ -1,52 +1,59 @@
 import numpy as np
 import math
-import sys
-import os
 
 
-from smoderp2d.core.general import Globals
-from smoderp2d.core.general import Size
-from smoderp2d.core.kinematic_diffuse import *
-
+from smoderp2d.core.general import Globals, Size
+from smoderp2d.core.kinematic_diffuse import Kinematic
+from smoderp2d.exceptions import SmoderpError
 
 import smoderp2d.processes.subsurface as darcy
 import smoderp2d.io_functions.prt as prt
 
-
 class SubArrs:
-
     def __init__(self, L_sub, Ks, vg_n, vg_l, z, ele):
+        """Subsurface attributes.
+
+        :param L_sub: TODO
+        :param Ks: TODO
+        :param vg_n: TODO
+        :param vg_l: TODO
+        :param z: TODO
+        :param ele: TODO
+        """
         self.L_sub = L_sub
-        self.h = float(0)
+        self.h = 0.
         self.H = ele
         self.z = z
-        self.slope = float(0)
-        self.exfiltration = float(0)
-        self.V_runoff = float(0)
-        self.V_runoff_pre = float(0)
-        self.V_rest = float(0)
+        self.slope = 0.
+        self.exfiltration = 0.
+        self.V_runoff = 0.
+        self.V_runoff_pre = 0.
+        self.V_rest = 0.
         self.Ks = Ks
-        self.cum_percolation = float(0)
-        self.percolation = float(0)
+        self.cum_percolation = 0.
+        self.percolation = 0.
         self.vg_n = vg_n
         self.vg_m = 1.0 - 1.0 / vg_n
         self.vg_l = vg_l
 
 
-# Documentation for a class.
-#  More details.
-#
 class SubsurfaceC(Diffuse if Globals.diffuse else Kinematic, Size):
-
     def __init__(self, L_sub, Ks, vg_n, vg_l):
+        """TODO.
 
-        if (Globals.r is None or Globals.r is None):
-            exit("Global variables are not assigned")
-        super(SubsurfaceC, self).__init__()
-
+        :param L_sub: TODO
+        :param Ks: TODO
+        :param vg_n: TODO
+        :param vg_l: TODO
+        """
         r = Globals.r
         c = Globals.c
 
+        if (Globals.r is None or Globals.r is None):
+            raise SmoderpError("Global variables are not assigned")
+        super(SubsurfaceC, self).__init__()
+
+        # TODO self.r?
         self.arr = np.empty((self.r, self.c), dtype=object)
 
         for i in range(self.r):
