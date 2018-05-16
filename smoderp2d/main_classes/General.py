@@ -118,7 +118,7 @@ class Globals:
     # ???
     STREAM_RATIO = None
     # ???
-    tokyLoc = None
+    toky_loc = None
     # ???
     maxdt = None
     # ???
@@ -271,5 +271,5 @@ class Globals:
     def get_STREAM_RATIO(self):
         return self.STREAM_RATIO
 
-    def get_tokyLoc(self):
-        return self.tokyLoc
+    def get_toky_loc(self):
+        return self.toky_loc

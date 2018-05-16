@@ -25,14 +25,14 @@ max_infilt_capa = 0.003  # [m]
 #
 class TimeStep:
 
-    def do_flow(self, surface, subsurface, delta_t, flowControl, courant):
-        surface, subsurface, delta_t, flowControl, courant
+    def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
+        surface, subsurface, delta_t, flow_control, courant
 
         gl = Gl()
         rr = gl.get_rrows()
         rc = gl.get_rcols()
         mat_efect_vrst = gl.get_mat_efect_vrst()
-        fc = flowControl
+        fc = flow_control
         sr = gl.get_sr()
         itera = gl.get_itera()
 
@@ -86,7 +86,7 @@ class TimeStep:
 # courant, total_time, delta_t, combinatIndex, NoDataValue,
 # sum_interception, mat_efect_vrst, ratio, iter_
     def do_next_h(self, surface, subsurface, rain_arr, cumulative,
-                  hydrographs, flowControl, courant, potRain, delta_t):
+                  hydrographs, flow_control, courant, potRain, delta_t):
 
         global infilt_capa
         global max_infilt_capa
@@ -96,7 +96,7 @@ class TimeStep:
         rr = gl.get_rrows()
         rc = gl.get_rcols()
         pixel_area = gl.get_pixel_area()
-        fc = flowControl
+        fc = flow_control
         combinatIndex = gl.get_combinatIndex()
         NoDataValue = gl.get_NoDataValue()
 
@@ -110,7 +110,7 @@ class TimeStep:
                     hydrographs.write_hydrographs_record(
                         i,
                         j,
-                        flowControl,
+                        flow_control,
                         courant,
                         delta_t,
                         surface,
@@ -219,7 +219,7 @@ class TimeStep:
                 hydrographs.write_hydrographs_record(
                     i,
                     j,
-                    flowControl,
+                    flow_control,
                     courant,
                     delta_t,
                     surface,

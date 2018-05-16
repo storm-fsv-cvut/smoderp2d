@@ -32,7 +32,8 @@ class FlowControl(object):
         # type of infiltration
         #  - 0 for philip infiltration is the only
         #    one in current version
-        self.infiltrationType = 0
+        # TODO: seems to be not used (?)
+        self.infiltration_type = 0
 
         # actual time in calculation
         self.total_time = 0.0
@@ -48,7 +49,7 @@ class FlowControl(object):
         self.ratio = 1
 
         # naximum amount of iterations
-        self.maxIter = 40
+        self.max_iter = 40
 
         # current number of wihtin time step iterations
         self.iter_ = 0
@@ -82,7 +83,7 @@ class FlowControl(object):
     def max_iter_reached(self):
         """Check if iteration exceed a maximum allowed amount.
         """
-        return self.iter_ < self.maxIter
+        return self.iter_ < self.max_iter
 
     def save_ratio(self):
         """Saves ration in case of interation within time step.
@@ -119,7 +120,7 @@ class Runoff(object):
         self.times_prt = TimesPrt()
 
         # flow control
-        self.flowControl = FlowControl()
+        self.flow_control = FlowControl()
 
         # handling the actual rainfall amount
         self.rain_arr = Vegetation()
@@ -171,7 +172,7 @@ class Runoff(object):
                 self.hydrographs.write_hydrographs_record(
                     i,
                     j,
-                    self.flowControl,
+                    self.flow_control,
                     self.courant,
                     self.delta_t,
                     self.surface,
@@ -182,7 +183,7 @@ class Runoff(object):
         self.hydrographs.write_hydrographs_record(
             i,
             j,
-            self.flowControl,
+            self.flow_control,
             self.courant,
             self.delta_t,
             self.surface,
@@ -200,27 +201,27 @@ class Runoff(object):
 
         # main loop: until the end time
         i = j = 0
-        while self.flowControl.compare_time(Gl.end_time):
+        while self.flow_control.compare_time(Gl.end_time):
 
-            self.flowControl.save_vars()
-            self.flowControl.refresh_iter()
+            self.flow_control.save_vars()
+            self.flow_control.refresh_iter()
 
             # iteration loop
-            while self.flowControl.max_iter_reached():
+            while self.flow_control.max_iter_reached():
 
-                self.flowControl.upload_iter()
-                self.flowControl.restore_vars()
+                self.flow_control.upload_iter()
+                self.flow_control.restore_vars()
 
                 # reset of the courant condition
                 self.courant.reset()
-                self.flowControl.save_ratio()
+                self.flow_control.save_ratio()
 
                 # time step size
                 potRain = self.time_step.do_flow(
                     self.surface,
                     self.subsurface,
                     self.delta_t,
-                    self.flowControl,
+                    self.flow_control,
                     self.courant
                 )
 
@@ -229,13 +230,13 @@ class Runoff(object):
 
                 # update time step size if necessary (based on the courant
                 # condition)
-                self.delta_t, self.flowControl.ratio = self.courant.courant(
-                    potRain, self.delta_t, Gl.spix, self.flowControl.ratio
+                self.delta_t, self.flow_control.ratio = self.courant.courant(
+                    potRain, self.delta_t, Gl.spix, self.flow_control.ratio
                 )
 
                 # courant conditions is satisfied (time step did
                 # change) the iteration loop breaks
-                if delta_t_tmp == self.delta_t and self.flowControl.compare_ratio():
+                if delta_t_tmp == self.delta_t and self.flow_control.compare_ratio():
                     break
 
             # Calculate actual rainfall and adds up interception todo:
@@ -246,7 +247,7 @@ class Runoff(object):
                 self.rain_arr,
                 self.cumulative,
                 self.hydrographs,
-                self.flowControl,
+                self.flow_control,
                 self.courant,
                 potRain,
                 self.delta_t
@@ -255,13 +256,13 @@ class Runoff(object):
             # if the iteration exceed the maximal amount of iteration
             # last results are stored in hydrographs
             # and error is raised
-            if not self.flowControl.max_iter_reached():
+            if not self.flow_control.max_iter_reached():
                 for i in Gl.rr:
                     for j in Gl.rc[i]:
                         self.hydrographs.write_hydrographs_record(
                             i,
                             j,
-                            self.flowControl,
+                            self.flow_control,
                             self.courant,
                             self.delta_t,
                             self.surface,
@@ -269,26 +270,26 @@ class Runoff(object):
                             self.curr_rain
                         )
                 post_proc.do(self.cumulative, Gl.mat_slope, Gl, surface.arr)
-                raise MaxIterationExceeded(maxIter, total_time)
+                raise MaxIterationExceeded(max_iter, total_time)
 
             # adjusts the last time step size
-            if (Gl.end_time - self.flowControl.total_time) < self.delta_t and \
-               (Gl.end_time - self.flowControl.total_time) > 0:
-                self.delta_t = Gl.end_time - self.flowControl.total_time
+            if (Gl.end_time - self.flow_control.total_time) < self.delta_t and \
+               (Gl.end_time - self.flow_control.total_time) > 0:
+                self.delta_t = Gl.end_time - self.flow_control.total_time
 
             # proceed to next time
-            self.flowControl.update_total_time(self.delta_t)
+            self.flow_control.update_total_time(self.delta_t)
 
             # if end time reached the main loop breaks
-            if self.flowControl.total_time == Gl.end_time:
+            if self.flow_control.total_time == Gl.end_time:
                 break
 
-            timeperc = 100 * (self.flowControl.total_time + self.delta_t) / Gl.end_time
+            timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Gl.end_time
             self.provider.progress(
                 timeperc,
                 self.delta_t,
-                self.flowControl.iter_,
-                self.flowControl.total_time + self.delta_t
+                self.flow_control.iter_,
+                self.flow_control.total_time + self.delta_t
             )
 
             # calculate outflow from each reach of the stream network
@@ -296,7 +297,7 @@ class Runoff(object):
             # calculate inflow to reaches
             self.surface.stream_reach_inflow()
             # record cumulative and maximal results of a reach
-            self.surface.stream_cumulative(self.flowControl.total_time + self.delta_t)
+            self.surface.stream_cumulative(self.flow_control.total_time + self.delta_t)
 
             # set current times to previous time step
             self.subsurface.curr_to_pre()
@@ -305,7 +306,7 @@ class Runoff(object):
             self.hydrographs.write_hydrographs_record(
                 i,
                 j,
-                self.flowControl,
+                self.flow_control,
                 self.courant,
                 self.delta_t,
                 self.surface,
@@ -315,7 +316,7 @@ class Runoff(object):
             )
 
             # print raster results in given time steps
-            self.times_prt.prt(self.flowControl.total_time, self.delta_t, self.surface)
+            self.times_prt.prt(self.flow_control.total_time, self.delta_t, self.surface)
 
             # set current time results to previous time step
             # check if rill flow occur
@@ -344,7 +345,7 @@ class Runoff(object):
 
         post_proc.do(self.cumulative, Gl.mat_slope, Gl, self.surface.arr)
 
-        post_proc.stream_table(Gl.outdir + os.sep, self.surface, Gl.tokyLoc)
+        post_proc.stream_table(Gl.outdir + os.sep, self.surface, Gl.toky_loc)
 
         self.hydrographs.closeHydrographs()
         self.provider.message("")

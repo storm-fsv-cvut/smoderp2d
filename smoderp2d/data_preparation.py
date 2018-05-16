@@ -671,8 +671,8 @@ def prepare_data(args):
     mat_tau = all_attrib[9]
     mat_v = all_attrib[10]
 
-    infiltrationType = int(0)  # "Phillip"
-    if infiltrationType == int(0):
+    infiltration_type = int(0)  # "Phillip"
+    if infiltration_type == int(0):
         mat_inf_index = np.zeros([rows, cols], int)
         combinat = []
         combinatIndex = []
@@ -961,7 +961,7 @@ def prepare_data(args):
         arcpy.AddMessage('Stream preparation...')
 
         import smoderp2d.stream_functions.stream_preparation as sp
-        toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sp.prepare_streams(
+        toky, cell_stream, mat_tok_usek, STREAM_RATIO, toky_loc = sp.prepare_streams(
             dmt, dmt_copy, mat_dmt_fill, null_shp,
                                                                                     mat_nan, mat_fd, vpix,
                                                                                     spix, rows, cols, ll_corner,
@@ -976,7 +976,7 @@ def prepare_data(args):
         mat_tok_usek = None
         # mat_tok = None
         STREAM_RATIO = None
-        tokyLoc = None
+        toky_loc = None
 
     boundaryRows, boundaryCols, rrows, rcols, mat_boundary = find_boudary_cells(
         rows, cols, mat_nan, NoDataValue, mfda)
@@ -1004,4 +1004,4 @@ def prepare_data(args):
         mat_n,   \
         output, pixel_area, points, poradi,  end_time, spix, state_cell, \
         temp, type_of_computing, vpix, mfda, sr, itera,  \
-        toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc
+        toky, cell_stream, mat_tok_usek, STREAM_RATIO, toky_loc

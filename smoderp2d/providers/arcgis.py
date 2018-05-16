@@ -35,7 +35,7 @@ class ArcGisProvider(BaseProvider):
             mat_n,   \
             output, pixel_area, points, poradi,  end_time, spix, state_cell, \
             temp, type_of_computing, vpix, mfda, sr, itera, \
-            toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = \
+            toky, cell_stream, mat_tok_usek, STREAM_RATIO, toky_loc = \
             prepare_data(sys.argv)
 
         # TODO: use dict
@@ -51,7 +51,7 @@ class ArcGisProvider(BaseProvider):
             mat_n,
             output, pixel_area, points, poradi, end_time, spix, state_cell,
             temp, type_of_computing, vpix, mfda, sr, itera,
-            toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc]
+            toky, cell_stream, mat_tok_usek, STREAM_RATIO, toky_loc]
         
         outoutdat = get_argv(
             os.path.join(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY),

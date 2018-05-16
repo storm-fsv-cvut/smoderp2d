@@ -114,7 +114,7 @@ class Stream(object):
                       self.toky[14][i]))
         
         
-        self.tokyLoc = Gl.tokyLoc
+        self.toky_loc = Gl.toky_loc
         self.mat_tok_reach = Gl.mat_tok_reach
 
         for i in Gl.rr:

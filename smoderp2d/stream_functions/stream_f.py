@@ -25,7 +25,7 @@ frameinfo = getframeinfo(currentframe())
 #
 #   @return h water level in the trapezoid
 #
-def compute_h(A, m, b, err=0.0001, maxIter=20):
+def compute_h(A, m, b, err=0.0001, max_iter=20):
     def feval(h):
         return b * h + m * h * h - A
 
@@ -38,16 +38,16 @@ def compute_h(A, m, b, err=0.0001, maxIter=20):
     while (feval(h_pre) > err):
         h = h_pre - feval(h_pre) / dfdheval(h_pre)
         h_pre = h
-        if iter_ >= maxIter:
+        if iter_ >= max_iter:
             prt.error(
                 "if file",
                 frameinfo.filename,
                 "near line ",
                 frameinfo.lineno,
                 "\n\t newton solver didnt converge after",
-                maxIter,
-                'iterations (maxIter=',
-                maxIter,
+                max_iter,
+                'iterations (max_iter=',
+                max_iter,
                 ')')
             break
         iter_ += 1

@@ -131,7 +131,7 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
     # WATER FLOWS ACCORDING DIBAVOD:
     # Clip
     toky = temp_dp + os.sep + "toky.shp"
-    tokyLoc = temp_dp + os.sep + "toky.shp"
+    toky_loc = temp_dp + os.sep + "toky.shp"
     # intersect = data_preparation.intersect
     hranice = temp_dp + os.sep + "hranice.shp"
     # null = data_preparation.null_shp
@@ -512,4 +512,4 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
     except ValueError:
         tokylist.append(toky_tmp[field_names.index('Q365')])
 
-    return tokylist, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc
+    return tokylist, cell_stream, mat_tok_usek, STREAM_RATIO, toky_loc

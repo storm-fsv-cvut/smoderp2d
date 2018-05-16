@@ -90,7 +90,7 @@ class BaseProvider(object):
         data['cell_stream'],              \
         data['mat_tok_reach'],            \
         data['STREAM_RATIO'],             \
-        data['tokyLoc'] = indata
+        data['toky_loc'] = indata
 
         return data
         
