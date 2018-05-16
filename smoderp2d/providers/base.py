@@ -8,6 +8,7 @@ import ConfigParser
 
 from smoderp2d.main_classes.General import Globals
 from smoderp2d.providers.logger import Logger
+from smoderp2d.exceptions import ProviderError
 
 class BaseProvider(object):
     def __init__(self):
@@ -104,7 +105,10 @@ class BaseProvider(object):
         from smoderp2d.processes import rainfall
 
         # the data are loared from a pickle file
-        data = self.parse_data(load_data(indata))
+        try:
+            data = self.parse_data(load_data(indata))
+        except IOError as e:
+            raise ProviderError('{}'.format(e))
 
         # some variables configs can be changes after loading from
         # pickle.dump such as end time of simulation
@@ -129,9 +133,12 @@ class BaseProvider(object):
 
         #  rainfall data can be saved
         if self._config.get('srazka', 'file') != '-':
-            data['sr'], data['itera'] = rainfall.load_precipitation(
-                self._config.get('srazka', 'file')
-            )
+            try:
+                data['sr'], data['itera'] = rainfall.load_precipitation(
+                    self._config.get('srazka', 'file')
+                )
+            except TypeError:
+                raise ProviderError('Invalid file in [srazka] section')
 
         # some self._configs are not in pickle.dump
         data['extraOut'] = self._config.getboolean('Other', 'extraout')
@@ -181,7 +188,7 @@ class BaseProvider(object):
             self._set_globals(data)
             self._cleanup()
         else:
-            raise Exception('Unsupported partial computing: {}'.format(
+            raise ProviderError('Unsupported partial computing: {}'.format(
                 self._args.typecomp
             ))
 

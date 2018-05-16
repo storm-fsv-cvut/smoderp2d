@@ -1,6 +1,9 @@
 class SmoderpError(Exception):
     pass
 
+class ProviderError(Exception):
+    pass
+
 class MaxIterationExceeded(SmoderpError):
     """Number of iteration exceed max iteration criterion.
     """
