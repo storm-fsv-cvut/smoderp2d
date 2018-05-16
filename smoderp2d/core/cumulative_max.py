@@ -16,7 +16,7 @@ from smoderp2d.tools.tools import comp_type
 import smoderp2d.io_functions.prt as prt
 
 
-from smoderp2d.core.general import Globals as Gl
+from smoderp2d.core.general import Globals
 
 
 # Max and cumulative values of the subsurface flow
@@ -106,7 +106,7 @@ class CumulativeSubsurfacePass(object):
 #  the surface and rill flow
 #
 #
-class Cumulative(CumulativeSubsurface if Gl.subflow else CumulativeSubsurfacePass, Globals, Size):
+class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfacePass, Globals, Size):
 
     # the constructor
     #

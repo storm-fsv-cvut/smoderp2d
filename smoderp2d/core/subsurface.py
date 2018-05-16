@@ -4,7 +4,7 @@ import sys
 import os
 
 
-from smoderp2d.core.general import Globals as Gl
+from smoderp2d.core.general import Globals
 from smoderp2d.core.general import Size
 from smoderp2d.core.kinematic_diffuse import *
 
@@ -36,7 +36,7 @@ class SubArrs:
 # Documentation for a class.
 #  More details.
 #
-class SubsurfaceC(Diffuse if Gl.diffuse else Kinematic, Size):
+class SubsurfaceC(Diffuse if Globals.diffuse else Kinematic, Size):
 
     def __init__(self, L_sub, Ks, vg_n, vg_l):
 
@@ -44,8 +44,8 @@ class SubsurfaceC(Diffuse if Gl.diffuse else Kinematic, Size):
             exit("Global variables are not assigned")
         super(SubsurfaceC, self).__init__()
 
-        r = Gl.r
-        c = Gl.c
+        r = Globals.r
+        c = Globals.c
 
         self.arr = np.empty((self.r, self.c), dtype=object)
 
@@ -178,7 +178,7 @@ class SubsurfacePass(object, Size):
     def __init__(self, L_sub, Ks, vg_n, vg_l):
         # jj
         self.n = 0
-        self.arr = np.empty((Gl.r, Gl.c), dtype=object)
+        self.arr = np.empty((Globals.r, Globals.c), dtype=object)
         self.q_subsurface = None
         # self.arr = np.zeros([0],float)
         prt.message("\tOFF")
@@ -211,7 +211,7 @@ class SubsurfacePass(object, Size):
         pass
 
 
-class Subsurface(SubsurfaceC if Gl.subflow else SubsurfacePass):
+class Subsurface(SubsurfaceC if Globals.subflow else SubsurfacePass):
 
     def __init__(self, L_sub=0.010, Ks=0.001, vg_n=1.5, vg_l=0.5):
         prt.message("Subsurface:")

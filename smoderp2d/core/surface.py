@@ -21,8 +21,7 @@ import smoderp2d.io_functions.prt as prt
 import smoderp2d.processes.surface as surfacefce
 from smoderp2d.tools.tools import comp_type
 
-from smoderp2d.core.general import Globals as Gl
-
+from smoderp2d.core.general import Globals
 
 courantMax = 1.0
 
@@ -71,7 +70,7 @@ class SurArrs:
 #  Class Surface contains data and methods
 #  to calculate the surface and rill runoff
 #
-class Surface(Stream if Gl.isStream else StreamPass, Kinematic, Globals, Size):
+class Surface(Stream if Globals.isStream else StreamPass, Kinematic, Globals, Size):
 
     # The constructor
     # make all numpy arrays and establish the inflow procedure based on D8 or
@@ -239,10 +238,9 @@ def compute_h_hrill(h_total_pre, h_crit, state, rillWidth, hRillPre):
 
 def sheet_runoff(sur, dt):
 
-    gl = Gl()
     q_sheet = surfacefce.shallowSurfaceKinematic(sur)
-    sur.V_runoff = dt * q_sheet * gl.get_dx()
-    sur.V_rest = sur.h_sheet * gl.get_pixel_area() - sur.V_runoff
+    sur.V_runoff = dt * q_sheet * Globals.get_dx()
+    sur.V_rest = sur.h_sheet * Globals.get_pixel_area() - sur.V_runoff
 
     return q_sheet
 
@@ -250,11 +248,11 @@ def sheet_runoff(sur, dt):
 def rill_runoff(i, j, sur, dt, efect_vrst, ratio):
 
     ppp = False
-    gl = Gl()
-    n = gl.get_mat_n(i, j)
-    slope = gl.get_mat_slope(i, j)
 
-    V_to_rill = sur.h_rill * Globals.pixel_area
+    n = Globals.get_mat_n(i, j)
+    slope = Globals.get_mat_slope(i, j)
+
+    V_to_rill = sur.h_rill * Globals.get_pixel_area()
     h, b = rill.update_hb(
         V_to_rill, constants.RILL_RATIO, efect_vrst, sur.rillWidth, ratio, ppp)
     R_rill = (h * b) / (b + 2 * h)
@@ -310,7 +308,7 @@ def surface_retention(bil, sur):
     return bil
 
 
-if (Gl.isRill):
+if (Globals.isRill):
     runoff = __runoff
 else:
     runoff = __runoff_zero_compType

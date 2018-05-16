@@ -6,10 +6,10 @@ from smoderp2d.tools.tools import make_ASC_raster
 from smoderp2d.core.general import *
 import smoderp2d.io_functions.prt as prt
 
-from smoderp2d.core.general import Globals as Gl
+from smoderp2d.core.general import Globals
 
 
-if Gl.prtTimes == '-':
+if Globals.prtTimes == '-':
     class TimesPrt():
 
         def __init__(self):
@@ -22,7 +22,7 @@ else:
 
         def __init__(self):
 
-            self.fTimes = open(Gl.prtTimes, 'r')
+            self.fTimes = open(Globals.prtTimes, 'r')
             self.outsubrid = 'prubeh'
             os.makedirs(Globals.outdir + os.sep + self.outsubrid)
             self.times = []
@@ -64,7 +64,7 @@ else:
                     "-----------------------------------------------------------")
                 tmp = np.zeros([Globals.r, Globals.c], float)
 
-                for i in Globals.rr:
+                for i in Globalsobals.rr:
                     for j in Globals.rc[i]:
                         tmp[i][j] = sur.arr[i][j].h_total_new
 

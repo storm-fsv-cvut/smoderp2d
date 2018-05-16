@@ -14,7 +14,7 @@ class Size:
         return (self.n * arrayNBytes) / m
 
 class Globals:
-    """Gloobals contains global variables from data_preparation, in
+    """Globals contains global variables from data_preparation, in
     instance of class needed the data are taken from import of this
     class.
     """
@@ -123,153 +123,203 @@ class Globals:
     maxdt = None
     # ???
     extraOut = None
+
+    @classmethod
+    def get_pixel_area(cls):
+        return cls.pixel_area
+
+    @classmethod
+    def get_rows(cls):
+        return cls.r
     
-    def get_pixel_area(self):
-        return self.pixel_area
+    @classmethod
+    def get_cols(cls):
+        return cls.c
 
-    def get_rows(self):
-        return self.r
+    @classmethod
+    def get_rrows(cls):
+        return cls.rr
+    
+    @classmethod
+    def get_rcols(cls):
+        return cls.rc
 
-    def get_cols(self):
-        return self.c
+    @classmethod
+    def get_bor_rows(cls):
+        return cls.br
 
-    def get_rrows(self):
-        return self.rr
+    @classmethod
+    def get_bor_cols(cls):
+        return cls.bc
 
-    def get_rcols(self):
-        return self.rc
+    @classmethod
+    def get_xllcorner(cls):
+        return cls.xllcorner
 
-    def get_bor_rows(self):
-        return self.br
+    @classmethod
+    def get_yllcorner(cls):
+        return cls.yllcorner
 
-    def get_bor_cols(self):
-        return self.bc
+    @classmethod
+    def get_NoDataValue(cls):
+        return cls.NoDataValue
 
-    def get_xllcorner(self):
-        return self.xllcorner
+    @classmethod
+    def get_NoDataInt(cls):
+        return cls.NoDataInt
 
-    def get_yllcorner(self):
-        return self.yllcorner
+    @classmethod
+    def get_dx(cls):
+        return cls.dx
 
-    def get_NoDataValue(self):
-        return self.NoDataValue
+    @classmethod
+    def get_dy(cls):
+        return cls.dy
 
-    def get_NoDataInt(self):
-        return self.NoDataInt
+    @classmethod
+    def get_type_of_computing(cls):
+        return cls.type_of_computing
 
-    def get_dx(self):
-        return self.dx
+    @classmethod
+    def get_outdir(cls):
+        return cls.outdir
 
-    def get_dy(self):
-        return self.dy
+    @classmethod
+    def get_mat_boundary(cls):
+        return cls.mat_boundary
 
-    def get_type_of_computing(self):
-        return self.type_of_computing
+    @classmethod
+    def get_outletCells(cls):
+        return cls.outletCells
 
-    def get_outdir(self):
-        return self.outdir
+    @classmethod
+    def get_array_points(cls):
+        return cls.array_points
 
-    def get_mat_boundary(self):
-        return self.mat_boundary
+    @classmethod
+    def get_combinatIndex(cls):
+        return cls.combinatIndex
 
-    def get_outletCells(self):
-        return self.outletCells
+    @classmethod
+    def get_delta_t(cls):
+        return cls.delta_t
 
-    def get_array_points(self):
-        return self.array_points
+    @classmethod
+    def get_mat_pi(cls):
+        return cls.mat_pi
 
-    def get_combinatIndex(self):
-        return self.combinatIndex
+    @classmethod
+    def get_mat_ppl(cls):
+        return cls.mat_ppl
 
-    def get_delta_t(self):
-        return self.delta_t
+    @classmethod
+    def get_surface_retention(cls):
+        return cls.surface_retention
 
-    def get_mat_pi(self):
-        return self.mat_pi
+    @classmethod
+    def get_mat_inf_index(cls):
+        return cls.mat_inf_index
 
-    def get_mat_ppl(self):
-        return self.mat_ppl
+    @classmethod
+    def get_mat_hcrit(cls):
+        return cls._mat_hcrit
 
-    def get_surface_retention(self):
-        return self.surface_retention
+    @classmethod
+    def get_mat_aa(cls):
+        return cls.mat_aa
 
-    def get_mat_inf_index(self):
-        return self.mat_inf_index
+    @classmethod
+    def get_mat_b(cls):
+        return cls.mat_b
 
-    def get_mat_hcrit(self):
-        return self._mat_hcrit
+    @classmethod
+    def get_mat_reten(cls):
+        return cls.mat_reten
 
-    def get_mat_aa(self):
-        return self.mat_aa
+    @classmethod
+    def get_mat_fd(cls):
+        return cls.mat_fd
 
-    def get_mat_b(self):
-        return self.mat_b
+    @classmethod
+    def get_mat_dmt(cls):
+        return cls.mat_dmt
 
-    def get_mat_reten(self):
-        return self.mat_reten
+    @classmethod
+    def get_mat_efect_vrst(cls):
+        return cls.mat_efect_vrst
 
-    def get_mat_fd(self):
-        return self.mat_fd
+    @classmethod
+    def get_mat_slope(cls, i, j):
+        return cls.mat_slope[i][j]
 
-    def get_mat_dmt(self):
-        return self.mat_dmt
+    @classmethod
+    def get_mat_nan(cls):
+        return cls.mat_nan
 
-    def get_mat_efect_vrst(self):
-        return self.mat_efect_vrst
+    @classmethod
+    def get_mat_a(cls):
+        return cls.mat_a
 
-    def get_mat_slope(self, i, j):
-        return self.mat_slope[i][j]
+    @classmethod
+    def get_mat_n(cls, i, j):
+        return cls.mat_n[i][j]
 
-    def get_mat_nan(self):
-        return self.mat_nan
+    @classmethod
+    def get_points(cls):
+        return cls.points
 
-    def get_mat_a(self):
-        return self.mat_a
+    @classmethod
+    def get_poradi(cls):
+        return cls.poradi
 
-    def get_mat_n(self, i, j):
-        return self.mat_n[i][j]
+    @classmethod
+    def get_end_tim(cls):
+        return cls.end_time
 
-    def get_points(self):
-        return self.points
+    @classmethod
+    def get_spix(cls):
+        return cls.spix
 
-    def get_poradi(self):
-        return self.poradi
+    @classmethod
+    def get_state_cell(cls):
+        return cls.state_cell
 
-    def get_end_tim(self):
-        return self.end_time
+    @classmethod
+    def get_temp(cls):
+        return cls.temp
 
-    def get_spix(self):
-        return self.spix
+    @classmethod
+    def get_vpix(cls):
+        return cls.vpix
 
-    def get_state_cell(self):
-        return self.state_cell
+    @classmethod
+    def get_mfda(cls):
+        return cls.mfda
 
-    def get_temp(self):
-        return self.temp
+    @classmethod
+    def get_sr(cls):
+        return cls.sr
 
-    def get_vpix(self):
-        return self.vpix
+    @classmethod
+    def get_itera(cls):
+        return cls.itera
 
-    def get_mfda(self):
-        return self.mfda
+    @classmethod
+    def get_toky(cls):
+        return cls.toky
 
-    def get_sr(self):
-        return self.sr
+    @classmethod
+    def get_cell_stream(cls):
+        return cls.cell_stream
 
-    def get_itera(self):
-        return self.itera
+    @classmethod
+    def get_mat_tok_reach(cls, i, j):
+        return cls.mat_tok_reach[i][j]
 
-    def get_toky(self):
-        return self.toky
+    @classmethod
+    def get_STREAM_RATIO(cls):
+        return cls.STREAM_RATIO
 
-    def get_cell_stream(self):
-        return self.cell_stream
-
-    def get_mat_tok_reach(self, i, j):
-        return self.mat_tok_reach[i][j]
-
-    def get_STREAM_RATIO(self):
-        return self.STREAM_RATIO
-
-    def get_toky_loc(self):
-        return self.toky_loc
+    @classmethod
+    def get_toky_loc(cls):
+        return cls.toky_loc

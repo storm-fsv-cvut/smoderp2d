@@ -17,8 +17,7 @@
 #
 
 
-from smoderp2d.core.general import Globals as Gl
-
+from smoderp2d.core.general import Globals
 
 from smoderp2d.tools.tools import comp_type
 import smoderp2d.flow_algorithm.mfd as mfd
@@ -44,7 +43,7 @@ class D8(object):
 
     def __init__(self):
         prt.message("\tD8 flow algorithm")
-        self.inflows = D8_.new_inflows(Gl.mat_fd)
+        self.inflows = D8_.new_inflows(Globals.get_mat_fd())
 
     # updates #inflows list if the diffuse approach is used.
     #
