@@ -4,9 +4,9 @@ import sys
 import os
 
 
-from smoderp2d.main_classes.General import Globals as Gl
-from smoderp2d.main_classes.General import Size
-from smoderp2d.main_classes.KinematicDiffuse import *
+from smoderp2d.core.General import Globals as Gl
+from smoderp2d.core.General import Size
+from smoderp2d.core.KinematicDiffuse import *
 
 
 import smoderp2d.processes.subsurface as darcy

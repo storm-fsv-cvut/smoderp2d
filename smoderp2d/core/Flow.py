@@ -1,4 +1,4 @@
-# @package smoderp2d.main_classes.Flow
+# @package smoderp2d.core.Flow
 #
 #  Contains Classes and methods resolve
 #  the flow type according the D8 or Mfda algorithm.
@@ -13,11 +13,11 @@
 #
 #  Both classes can inherited by the
 #  classes Kinematic or Diffuse in the
-#  package smoderp2d.main_classes.KinematicDiffuse
+#  package smoderp2d.core.KinematicDiffuse
 #
 
 
-from smoderp2d.main_classes.General import Globals as Gl
+from smoderp2d.core.General import Globals as Gl
 
 
 from smoderp2d.tools.tools import comp_type
@@ -30,8 +30,8 @@ import smoderp2d.io_functions.prt as prt
 #
 #  Can be inherited by the Classes:
 #
-#  - smoderp2d.main_classes.KinematicDiffuse.Kinematic
-#  - smoderp2d.main_classes.KinematicDiffuse.Diffuse
+#  - smoderp2d.core.KinematicDiffuse.Kinematic
+#  - smoderp2d.core.KinematicDiffuse.Diffuse
 #
 class D8(object):
 
@@ -87,8 +87,8 @@ class D8(object):
 #
 #  Can be inherited by the Classes:
 #
-#  - smoderp2d.main_classes.KinematicDiffuse.Kinematic
-#  - smoderp2d.main_classes.KinematicDiffuse.Diffuse
+#  - smoderp2d.core.KinematicDiffuse.Kinematic
+#  - smoderp2d.core.KinematicDiffuse.Diffuse
 #
 #  note: The rill flow, if computed, is always defined in terms
 #  of one directions algorithm. In the class Mfda are therefore

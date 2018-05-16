@@ -1,4 +1,4 @@
-# @package smoderp2d.main_classes.CumulativeMax
+# @package smoderp2d.core.CumulativeMax
 #
 #  package contains classes save the cumulative or maximum
 #  values of the results in each time step.
@@ -11,12 +11,12 @@ import numpy as np
 
 
 # smoderp import
-from smoderp2d.main_classes.General import *
+from smoderp2d.core.General import *
 from smoderp2d.tools.tools import comp_type
 import smoderp2d.io_functions.prt as prt
 
 
-from smoderp2d.main_classes.General import Globals as Gl
+from smoderp2d.core.General import Globals as Gl
 
 
 # Max and cumulative values of the subsurface flow

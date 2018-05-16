@@ -2,7 +2,7 @@
 #  time step, and to store intermeriate variables
 
 import math
-from smoderp2d.main_classes.General import Globals as Gl
+from smoderp2d.core.General import Globals as Gl
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.processes.infiltration as infilt
 from smoderp2d.tools.tools import comp_type
@@ -11,8 +11,8 @@ import copy
 import numpy as np
 
 
-from smoderp2d.main_classes.Surface import runoff
-from smoderp2d.main_classes.Surface import surface_retention
+from smoderp2d.core.Surface import runoff
+from smoderp2d.core.Surface import surface_retention
 
 infilt_capa = 0
 infilt_time = 0

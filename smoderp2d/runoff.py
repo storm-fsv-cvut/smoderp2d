@@ -10,11 +10,11 @@ Vypocet probiha v zadanem casovem kroku, pripade je cas kracen podle
 import time
 import os
 
-from smoderp2d.main_classes.General import Globals as Gl
-from smoderp2d.main_classes.Vegetation import Vegetation
-from smoderp2d.main_classes.Surface import Surface
-from smoderp2d.main_classes.Subsurface import Subsurface
-from smoderp2d.main_classes.CumulativeMax import Cumulative
+from smoderp2d.core.General import Globals as Gl
+from smoderp2d.core.Vegetation import Vegetation
+from smoderp2d.core.Surface import Surface
+from smoderp2d.core.Subsurface import Subsurface
+from smoderp2d.core.CumulativeMax import Cumulative
 
 from smoderp2d.time_step import TimeStep
 from smoderp2d.courant import Courant

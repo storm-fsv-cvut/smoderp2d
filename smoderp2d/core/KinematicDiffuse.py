@@ -1,7 +1,7 @@
 
 
-from smoderp2d.main_classes.General import Globals as Gl
-from smoderp2d.main_classes.Flow import *
+from smoderp2d.core.General import Globals as Gl
+from smoderp2d.core.Flow import *
 
 
 import smoderp2d.io_functions.prt as prt

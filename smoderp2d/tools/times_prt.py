@@ -3,10 +3,10 @@ import os
 import smoderp2d.constants as constants
 from smoderp2d.tools.tools import get_argv
 from smoderp2d.tools.tools import make_ASC_raster
-from smoderp2d.main_classes.General import *
+from smoderp2d.core.General import *
 import smoderp2d.io_functions.prt as prt
 
-from smoderp2d.main_classes.General import Globals as Gl
+from smoderp2d.core.General import Globals as Gl
 
 
 if Gl.prtTimes == '-':
