@@ -20,7 +20,7 @@ from smoderp2d.tools.tools import comp_type
 import smoderp2d.io_functions.prt as prt
 from smoderp2d.tools.tools import logical_argv
 
-from smoderp2d.core.General import Globals as Gl
+from smoderp2d.core.general import Globals as Gl
 
 
 def raster_output_arcgis(arrin, G, fs, outname, reachNA=True):

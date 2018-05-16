@@ -8,7 +8,7 @@ from smoderp2d.tools.tools import get_argv
 import smoderp2d.io_functions.prt as prt
 
 
-from smoderp2d.core.General import Globals as Gl
+from smoderp2d.core.general import Globals as Gl
 
 # Contains variables and methods needed for time step size handling
 #

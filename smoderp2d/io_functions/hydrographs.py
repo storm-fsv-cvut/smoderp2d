@@ -7,7 +7,7 @@ from smoderp2d.tools.tools import get_argv
 import smoderp2d.constants as constants
 
 
-from smoderp2d.core.General import Globals as Gl
+from smoderp2d.core.general import Globals as Gl
 
 # extraout = get_argv(constants.PARAMETER_EXTRA_OUTPUT)
 

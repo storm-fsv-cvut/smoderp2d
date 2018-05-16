@@ -1,6 +1,6 @@
 
 
-from smoderp2d.core.General import Globals as Gl
+from smoderp2d.core.general import Globals as Gl
 
 import smoderp2d.stream_functions.stream_f as stream_f
 import smoderp2d.io_functions.prt as prt

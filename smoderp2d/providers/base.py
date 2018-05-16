@@ -6,7 +6,7 @@ import math
 import time
 import ConfigParser
 
-from smoderp2d.core.General import Globals
+from smoderp2d.core.general import Globals
 from smoderp2d.providers.logger import Logger
 from smoderp2d.exceptions import ProviderError
 
