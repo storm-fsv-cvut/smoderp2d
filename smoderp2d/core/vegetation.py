@@ -2,31 +2,32 @@
 
 import numpy as np
 
-from smoderp2d.core.general import Size, Globals
+from smoderp2d.core.general import GridGlobals, DataGlobals, Size, Globals
 
 class VegArrs(object):
-    def __init__(self, veg_true, ppl, pi):
+    def __init__(self, veg, ppl, pi):
         """Vegetation attributes.
 
-        :param veg_true: True for vegetation
-        :param ppl:
-        :param pi:
+        :param veg bool: True for vegetation
+        :param ppl: TODO
+        :param pi: TODO
         """
-        self.veg_true = veg_true
+        self.veg = veg
         self.ppl = ppl
         self.pi = pi
 
-class Vegetation(Size):
+class Vegetation(GridGlobals, Size):
     def __init__(self):
         """TODO."""
-        r = Globals.get_rows()
-        c = Globals.get_cols()
-        mat_ppl = Globals.get_mat_ppl()
+        super(Vegetation, self).__init__()
+        
         mat_pi = Globals.get_mat_pi() / 1000.0
 
-        self.n = 3 # TODO
-        self.arr = np.empty((r, c), dtype=object)
+        self.n = 3 # TODO ?
 
-        for i in range(r):
-            for j in range(c):
-                self.arr[i][j] = VegArrs(False, mat_ppl[i][j], mat_pi[i][j])
+        for i in range(self.r):
+            for j in range(self.c):
+                self.arr[i][j] = VegArrs(False,
+                                         DataGlobals.get_mat_ppl(i, j),
+                                         mat_pi[i][j]
+                )

@@ -1,7 +1,8 @@
-import math
-import sys
+import numpy as np
 
-class Size:
+from smoderp2d.exceptions import SmoderpError
+
+class Size(object):
     @staticmethod
     def size(arrayNBytes, m=1.0):
         """Method to compute size of class arrays.    
@@ -13,25 +14,97 @@ class Size:
         # arrayNBytes eq self.state.nbytes
         return (self.n * arrayNBytes) / m
 
-class Globals:
-    """Globals contains global variables from data_preparation, in
-    instance of class needed the data are taken from import of this
-    class.
-    """
-    # area of a raster cell in meters
-    pixel_area = None
-    # number of rows in rasters
+class GridGlobals(object):
+    # number of raster rows (int)
     r = None
-    # number of columns in rasters
+    # number of raster columns (int)
     c = None
-    # id of rows in computational domain
+    # area of a raster cell in meters (float)
+    pixel_area = None
+    # id of rows in computational domain (list)
     rr = None
-    # id of columns in computational domain
+    # id of columns in computational domain (list of lists)
+    # row out of computational domain is empty list
     rc = None
     # id of rows in at the boundary of computational domain
     br = None
     # id of columns in at the boundary of computational domain
     bc = None
+
+    def __init__(self):
+        if self.r is None or self.c is None:
+            raise SmoderpError("Global variables are not assigned")
+
+        self.arr = np.empty((self.r, self.c), dtype=object)
+
+    @classmethod        
+    def get_rows(cls):
+        return cls.r
+
+    @classmethod
+    def get_cols(cls):
+        return cls.c
+
+    @classmethod
+    def get_pixel_area(cls):
+        return cls.pixel_area
+
+    @classmethod
+    def get_rrows(cls):
+        return cls.rr
+    
+    @classmethod
+    def get_rcols(cls):
+        return cls.rc
+
+    @classmethod
+    def get_bor_rows(cls):
+        return cls.br
+
+    @classmethod
+    def get_bor_cols(cls):
+        return cls.bc
+
+
+    def write_asc_raster(filename, data, fs=None):
+        """Write ASCII raster.
+
+        :param filename: name for output file (without extension)
+        :param: fs
+        """
+        # TODO: implement
+        # post_proc.raster_output_ascii + tools.make_asc_raster
+        # path = os.path.join(Globals.outdir, filename + '.asc')
+
+        # out_arr = np.empty((self.r, self.c), 
+
+        # out_arr.fill(
+        #     # TODO: NoDataValue -> NaN ? 
+        #     Globals.NoDataInt if instance(numpy_arr.dtype, ?) else Globals.NoDataValue
+        # )
+        
+        # for i in self.rrows:
+        #     for j in self.rcols[i]:
+        #         if (fs and fs[i][j] < 1000) or not fs:
+        #             out_arr[i][j] = data[i][j]
+
+
+
+    
+class DataGlobals:
+    # raster contains leaf area data
+    mat_ppl = None
+
+    @classmethod
+    def get_mat_ppl(cls, i, j):
+        return cls.mat_ppl[i][j]
+
+    
+class Globals:
+    """Globals contains global variables from data_preparation, in
+    instance of class needed the data are taken from import of this
+    class.
+    """
     # left bottom corner x coordinate of raster
     xllcorner = None
     # left bottom corner y coordinate of raster
@@ -60,8 +133,6 @@ class Globals:
     delta_t = None
     # raster contains potential interception data
     mat_pi = None
-    # raster contains leaf area data
-    mat_ppl = None
     # raster contains surface retention data
     surface_retention = None
     # raster contains id of infiltration type
@@ -125,34 +196,6 @@ class Globals:
     extraOut = None
 
     @classmethod
-    def get_pixel_area(cls):
-        return cls.pixel_area
-
-    @classmethod
-    def get_rows(cls):
-        return cls.r
-    
-    @classmethod
-    def get_cols(cls):
-        return cls.c
-
-    @classmethod
-    def get_rrows(cls):
-        return cls.rr
-    
-    @classmethod
-    def get_rcols(cls):
-        return cls.rc
-
-    @classmethod
-    def get_bor_rows(cls):
-        return cls.br
-
-    @classmethod
-    def get_bor_cols(cls):
-        return cls.bc
-
-    @classmethod
     def get_xllcorner(cls):
         return cls.xllcorner
 
@@ -208,9 +251,6 @@ class Globals:
     def get_mat_pi(cls):
         return cls.mat_pi
 
-    @classmethod
-    def get_mat_ppl(cls):
-        return cls.mat_ppl
 
     @classmethod
     def get_surface_retention(cls):

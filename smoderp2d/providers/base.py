@@ -6,7 +6,7 @@ import math
 import time
 import ConfigParser
 
-from smoderp2d.core.general import Globals
+from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
 from smoderp2d.providers.logger import Logger
 from smoderp2d.exceptions import ProviderError
 
@@ -155,9 +155,12 @@ class BaseProvider(object):
         :param dict data: data to be set
         """
         for item in data.keys():
-            if not hasattr(Globals, item):
-                continue
-            setattr(Globals, item, data[item])
+            if hasattr(Globals, item):
+                setattr(Globals, item, data[item])
+            elif hasattr(GridGlobals, item):
+                setattr(GridGlobals, item, data[item])
+            elif hasattr(DataGlobals, item):
+                setattr(DataGlobals, item, data[item])
 
         Globals.NoDataInt = int(-9999)
         Globals.dx = math.sqrt(data['pixel_area'])

@@ -1,6 +1,6 @@
 
 
-from smoderp2d.core.general import Globals as Gl
+from smoderp2d.core.general import GridGlobals, Globals as Gl
 
 import smoderp2d.stream_functions.stream_f as stream_f
 import smoderp2d.io_functions.prt as prt
@@ -76,10 +76,12 @@ class Stream(object):
     # The constructor.
 
     def __init__(self):
+        super(Stream, self).__init__()
+        print ("x")
+
         # jj
         prt.message('Stream:')
         prt.message('\tON')
-        super(Stream, self).__init__()
 
         # pak kouknout co je treba jen uvnitr tridy
         # self.temp_dp = sp.temp_dp
@@ -117,8 +119,8 @@ class Stream(object):
         self.toky_loc = Gl.toky_loc
         self.mat_tok_reach = Gl.mat_tok_reach
 
-        for i in Gl.rr:
-            for j in Gl.rc[i]:
+        for i in self.rr:
+            for j in self.rc[i]:
                 self.arr[i][j].state += self.mat_tok_reach[i][j]
 
         self.STREAM_RATIO = Gl.STREAM_RATIO

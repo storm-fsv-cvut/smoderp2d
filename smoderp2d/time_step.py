@@ -2,7 +2,7 @@
 #  time step, and to store intermeriate variables
 
 import math
-from smoderp2d.core.general import Globals as Gl
+from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.processes.infiltration as infilt
 from smoderp2d.tools.tools import comp_type
@@ -28,13 +28,12 @@ class TimeStep:
     def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
         surface, subsurface, delta_t, flow_control, courant
 
-        gl = Gl()
-        rr = gl.get_rrows()
-        rc = gl.get_rcols()
-        mat_efect_vrst = gl.get_mat_efect_vrst()
+        rr = GridGlobals.get_rrows()
+        rc = GridGlobals.get_rcols()
+        mat_efect_vrst = Globals.get_mat_efect_vrst()
         fc = flow_control
-        sr = gl.get_sr()
-        itera = gl.get_itera()
+        sr = Globals.get_sr()
+        itera = Globals.get_itera()
 
         potRain, fc.tz = rain_f.timestepRainfall(
             itera, fc.total_time, delta_t, fc.tz, sr)
@@ -92,13 +91,12 @@ class TimeStep:
         global max_infilt_capa
         global infilt_time
 
-        gl = Gl()
-        rr = gl.get_rrows()
-        rc = gl.get_rcols()
-        pixel_area = gl.get_pixel_area()
+        rr = GridGlobals.get_rrows()
+        rc = GridGlobals.get_rcols()
+        pixel_area = GridGlobals.get_pixel_area()
         fc = flow_control
-        combinatIndex = gl.get_combinatIndex()
-        NoDataValue = gl.get_NoDataValue()
+        combinatIndex = Globals.get_combinatIndex()
+        NoDataValue = Globals.get_NoDataValue()
 
         infilt_capa += potRain
         if (infilt_capa < max_infilt_capa):

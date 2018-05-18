@@ -10,7 +10,7 @@ Vypocet probiha v zadanem casovem kroku, pripade je cas kracen podle
 import time
 import os
 
-from smoderp2d.core.general import Globals as Gl
+from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
 from smoderp2d.core.surface import Surface
 from smoderp2d.core.subsurface import Subsurface
@@ -130,7 +130,7 @@ class Runoff(object):
 
         # class handling the subsurface processes if desir
         # TODO: include in data preprocessing
-        if Gl.subflow:
+        if Globals.subflow:
             self.subsurface = Subsurface(
                 L_sub=0.1,
                 Ks=0.005,
@@ -150,15 +150,15 @@ class Runoff(object):
         provider.message('Corrected time step is {} [s]'.format(self.delta_t))
 
         # opens files for storing hydrographs
-        if Gl.points and Gl.points != "#":
+        if Globals.points and Globals.points != "#":
             self.hydrographs = wf.Hydrographs()
-            arcgis = Gl.arcgis
+            arcgis = Globals.arcgis
             if not arcgis:
-                with open(os.path.join(Gl.outdir, 'points.txt'), 'w') as fd:
-                    for i in range(len(Gl.array_points)):
+                with open(os.path.join(Globals.outdir, 'points.txt'), 'w') as fd:
+                    for i in range(len(Globals.array_points)):
                         fd.write('{} {} {} {}'.format(
-                            Gl.array_points[i][0], Gl.array_points[i][3],
-                            Gl.array_points[i][4], os.linesep
+                            Globals.array_points[i][0], Globals.array_points[i][3],
+                            Globals.array_points[i][4], os.linesep
                         ))
         else:
             self.hydrographs = wf.HydrographsPass()
@@ -167,8 +167,10 @@ class Runoff(object):
         self.time_step = TimeStep()
 
         # record values into hydrographs at time zero
-        for i in Gl.rr:
-            for j in Gl.rc[i]:
+        rr = GridGlobals.get_rrows()
+        rc = GridGlobals.get_rcols()
+        for i in rr:
+            for j in rc[i]:
                 self.hydrographs.write_hydrographs_record(
                     i,
                     j,
@@ -201,7 +203,7 @@ class Runoff(object):
 
         # main loop: until the end time
         i = j = 0
-        while self.flow_control.compare_time(Gl.end_time):
+        while self.flow_control.compare_time(Globals.end_time):
 
             self.flow_control.save_vars()
             self.flow_control.refresh_iter()
@@ -231,7 +233,7 @@ class Runoff(object):
                 # update time step size if necessary (based on the courant
                 # condition)
                 self.delta_t, self.flow_control.ratio = self.courant.courant(
-                    potRain, self.delta_t, Gl.spix, self.flow_control.ratio
+                    potRain, self.delta_t, Globals.spix, self.flow_control.ratio
                 )
 
                 # courant conditions is satisfied (time step did
@@ -257,8 +259,8 @@ class Runoff(object):
             # last results are stored in hydrographs
             # and error is raised
             if not self.flow_control.max_iter_reached():
-                for i in Gl.rr:
-                    for j in Gl.rc[i]:
+                for i in Globals.rr:
+                    for j in Globals.rc[i]:
                         self.hydrographs.write_hydrographs_record(
                             i,
                             j,
@@ -269,22 +271,23 @@ class Runoff(object):
                             self.subsurface,
                             self.curr_rain
                         )
-                post_proc.do(self.cumulative, Gl.mat_slope, Gl, surface.arr)
+                # TODO
+                # post_proc.do(self.cumulative, Globals.mat_slope, Gl, surface.arr)
                 raise MaxIterationExceeded(max_iter, total_time)
 
             # adjusts the last time step size
-            if (Gl.end_time - self.flow_control.total_time) < self.delta_t and \
-               (Gl.end_time - self.flow_control.total_time) > 0:
-                self.delta_t = Gl.end_time - self.flow_control.total_time
+            if (Globals.end_time - self.flow_control.total_time) < self.delta_t and \
+               (Globals.end_time - self.flow_control.total_time) > 0:
+                self.delta_t = Globals.end_time - self.flow_control.total_time
 
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
 
             # if end time reached the main loop breaks
-            if self.flow_control.total_time == Gl.end_time:
+            if self.flow_control.total_time == Globals.end_time:
                 break
 
-            timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Gl.end_time
+            timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
             self.provider.progress(
                 timeperc,
                 self.delta_t,
@@ -320,8 +323,8 @@ class Runoff(object):
 
             # set current time results to previous time step
             # check if rill flow occur
-            for i in Gl.rr:
-                for j in Gl.rc[i]:
+            for i in self.surface.rr:
+                for j in self.surface.rc[i]:
                     if self.surface.arr[i][j].state == 0:
                         if self.surface.arr[i][j].h_total_new > self.surface.arr[i][j].h_crit:
                             self.surface.arr[i][j].state = 1
@@ -343,9 +346,10 @@ class Runoff(object):
         self.provider.message('-' * 80)
         self.provider.message('Total computing time: {}'.format(time.time() - start))
 
-        post_proc.do(self.cumulative, Gl.mat_slope, Gl, self.surface.arr)
+        # TODO
+        # post_proc.do(self.cumulative, Globals.mat_slope, Gl, self.surface.arr)
 
-        post_proc.stream_table(Gl.outdir + os.sep, self.surface, Gl.toky_loc)
+        post_proc.stream_table(Globals.outdir + os.sep, self.surface, Globals.toky_loc)
 
         self.hydrographs.closeHydrographs()
         self.provider.message("")

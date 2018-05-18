@@ -6,7 +6,7 @@ import math
 
 from smoderp2d.core.kinematic_diffuse import Kinematic
 from smoderp2d.core.stream import Stream
-from smoderp2d.core.general import Globals, Size
+from smoderp2d.core.general import Globals, GridGlobals, Size
 
 import smoderp2d.processes.rill as rill
 import smoderp2d.processes.surface as surfacefce
@@ -60,7 +60,7 @@ class SurArrs(object):
         self.h_last_state1 = 0.
 
 
-class Surface(Stream if Globals.isStream else StreamPass, Kinematic, Size):
+class Surface(GridGlobals, Size, Stream if Globals.isStream else StreamPass, Kinematic):
     """Contains data and methods to calculate the surface and rill runoff.
     """
     def __init__(self):
@@ -69,17 +69,15 @@ class Surface(Stream if Globals.isStream else StreamPass, Kinematic, Size):
         Make all numpy arrays and establish the inflow procedure based
         on D8 or Multi Flow Direction Algorithm method.
         """
+        GridGlobals.__init__(self)
+        
         Logger.info("Surface: ON")
 
-        r = Globals.get_rows()
-        c = Globals.get_cols()
-        
         self.n = 15
-        self.arr = np.empty((r, c), dtype=object)
-
+         
         # assign array objects
-        for i in range(r):
-            for j in range(c):
+        for i in range(self.r):
+            for j in range(self.c):
                 self.arr[i][j] = SurArrs(
                     Globals.get_mat_reten(i, j),
                     Globals.get_mat_inf_index(i, j),
@@ -88,9 +86,9 @@ class Surface(Stream if Globals.isStream else StreamPass, Kinematic, Size):
                     Globals.get_mat_b(i, j)
                 )
 
-        Logger.info("\tRill flow: {}".format('ON' if Globals.isRill else 'OFF'))
+        Stream.__init__(self)
         
-        super(Surface, self).__init__()
+        Logger.info("\tRill flow: {}".format('ON' if Globals.isRill else 'OFF'))
 
     def return_str_vals(self, i, j, sep, dt, extra_out):
         """TODO.
@@ -140,14 +138,13 @@ class Surface(Stream if Globals.isStream else StreamPass, Kinematic, Size):
                     sep=sep
                 )
 
-            pixel_area = Globals.get_pixel_area()
-            bil_ = arr.h_total_pre * pixel_area + \
-                   arr.cur_rain * pixel_area + \
+            bil_ = arr.h_total_pre * self.pixel_area + \
+                   arr.cur_rain * self.pixel_area + \
                    arr.inflow_tm - \
                    (arr.v_runoff + arr.v_runoff_rill + \
-                    arr.infiltration * pixel_area) - \
-                    (arr.cur_sur_ret * pixel_area) - \
-                    arr.h_total_new * pixel_area
+                    arr.infiltration * self.pixel_area) - \
+                    (arr.cur_sur_ret * self.pixel_area) - \
+                    arr.h_total_new * self.pixel_area
             # << + arr.v_rest + arr.v_rill_rest) + (arr.v_rest_pre + arr.v_rill_rest_pre)
 
         return line, bil_
@@ -282,7 +279,7 @@ def sheet_runoff(sur, dt):
     """
     q_sheet = surfacefce.shallowSurfaceKinematic(sur)
     sur.v_runoff = dt * q_sheet * Globals.get_dx()
-    sur.v_rest = sur.h_sheet * Globals.get_pixel_area() - sur.v_runoff
+    sur.v_rest = sur.h_sheet * GridGlobals.get_pixel_area() - sur.v_runoff
 
     return q_sheet
 

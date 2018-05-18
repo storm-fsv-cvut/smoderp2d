@@ -2,7 +2,7 @@ import numpy as np
 import math
 
 
-from smoderp2d.core.general import Globals, Size
+from smoderp2d.core.general import GridGlobals, Globals, Size
 from smoderp2d.core.kinematic_diffuse import Kinematic
 from smoderp2d.exceptions import SmoderpError
 
@@ -180,12 +180,13 @@ class SubsurfaceC(Diffuse if Globals.diffuse else Kinematic, Size):
 
 # Class
 #  empty class if no subsurface flow is considered
-class SubsurfacePass(object, Size):
+class SubsurfacePass(GridGlobals, Size):
 
     def __init__(self, L_sub, Ks, vg_n, vg_l):
+        super(SubsurfacePass, self).__init__()
         # jj
         self.n = 0
-        self.arr = np.empty((Globals.r, Globals.c), dtype=object)
+
         self.q_subsurface = None
         # self.arr = np.zeros([0],float)
         prt.message("\tOFF")
@@ -222,10 +223,9 @@ class Subsurface(SubsurfaceC if Globals.subflow else SubsurfacePass):
 
     def __init__(self, L_sub=0.010, Ks=0.001, vg_n=1.5, vg_l=0.5):
         prt.message("Subsurface:")
-        super(
-            Subsurface,
-            self).__init__(
-                L_sub=L_sub,
-                Ks=Ks,
-         vg_n=vg_n,
-         vg_l=vg_l)
+        super(Subsurface, self).__init__(
+            L_sub=L_sub,
+            Ks=Ks,
+            vg_n=vg_n,
+            vg_l=vg_l
+        )

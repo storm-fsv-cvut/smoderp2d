@@ -7,33 +7,25 @@ from smoderp2d.tools.tools import get_argv
 import smoderp2d.constants as constants
 
 
-from smoderp2d.core.general import Globals as Gl
+from smoderp2d.core.general import GridGlobals, Globals
 
 # extraout = get_argv(constants.PARAMETER_EXTRA_OUTPUT)
 
 # rill, subflow, stream, diffuse = comp_type()
 
-rill = Gl.isRill
-subflow = Gl.subflow
-stream = Gl.isStream
-extraout = Gl.extraOut
-
-
 class Hydrographs:
 
     def __init__(self):
 
-        gl = Gl()
-
-        points = gl.get_array_points()
+        points = Globals.get_array_points()
         ipi = points.shape[0]
         jpj = 5
         point_int = [[0] * jpj for i in range(ipi)]
 
-        outdir = gl.get_outdir()
-        rr = gl.get_rrows()
-        rc = gl.get_rcols()
-        pixel_area = gl.get_pixel_area()
+        outdir = Globals.get_outdir()
+        rr = GridGlobals.get_rrows()
+        rc = GridGlobals.get_rcols()
+        pixel_area = GridGlobals.get_pixel_area()
 
         self.inSurface = []
         self.inStream = []
@@ -79,12 +71,12 @@ class Hydrographs:
 
         # mat_tok_usek is alway presented if stream == True
         # if (mat_tok_usek != None) and (stream == True):
-        if (stream):
+        if Globals.isStream:
             for ip in range(ipi):
                 l = point_int[ip][1]
                 m = point_int[ip][2]
 
-                if gl.get_mat_tok_reach(l, m) >= 1000:
+                if Globals.get_mat_tok_reach(l, m) >= 1000:
                     self.inStream.append(counter)
                     counter += 1
                 else:
@@ -98,9 +90,9 @@ class Hydrographs:
 
         self.n = ipi
         self.point_int = point_int
-        self.subflow = subflow
-        self.rill = rill
-        self.stream = stream
+        self.subflow = Globals.subflow
+        self.rill = Globals.isRill
+        self.stream = Globals.isStream
         self.pixel_area = pixel_area
         # print self.point_int
         # raw_input()
@@ -120,7 +112,7 @@ class Hydrographs:
                 header += '# A pixel size is [m2]:\n'
                 header += '# ' + str(self.pixel_area) + '\n'
 
-                if not(extraout):
+                if not Globals.extraOut:
                     header += '# time[s];deltaTime[s];rainfall[m];reachWaterLevel[m];reachFlow[m3/s];reachVolRunoff[m3]\n'
                 else:
                     header += '# time[s];deltaTime[s];Rainfall[m];Waterlevel[m];V_runoff[m3];Q[m3/s];V_from_field[m3];V_rests_in_stream[m3]\n'
@@ -134,17 +126,17 @@ class Hydrographs:
                 header += '# A pixel size is [m2]:\n'
                 header += '# ' + str(self.pixel_area) + '\n'
 
-                if not(extraout):
+                if not Globals.extraOut:
                     header += '# time[s];deltaTime[s];rainfall[m];totalWaterLevel[m];surfaceFlow[m3/s];surfaceVolRunoff[m3]'
                 else:
                     header += '# time[s];deltaTime[s];Rainfall[m];Water_level_[m];Sheet_Flow[m3/s];Sheet_V_runoff[m3];Sheet_V_rest[m3];Infiltration[m];Surface_retetion[m];State;V_inflow[m3];WlevelTotal[m]'
 
-                    if rill:
+                    if Globals.isRill:
                         header += ';WlevelRill[m];Rill_width[m];Rill_flow[m3/s];Rill_V_runoff[m3];Rill_V_rest;Surface_Flow[m3/s];Surface_V_runoff[m3]'
                     header += ';SurfaceBil[m3]'
-                    if subflow:
+                    if Globals.subflow:
                         header += ';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[];exfiltration[]'
-                    if extraout:
+                    if Globals.extraOut:
                         header += ';V_to_rill.m3.;ratio;courant;courantrill;iter'
 
                 header += '\n'
@@ -181,7 +173,7 @@ class Hydrographs:
                 line = str(total_time) + sep
                 line += str(dt) + sep
                 line += str(currRain) + sep
-                line += surface.return_stream_str_vals(l, m, sep, dt, extraout)
+                line += surface.return_stream_str_vals(l, m, sep, dt, Globals.extraOut)
                 line += '\n'
                 self.files[ip].writelines(line)
 
@@ -193,12 +185,12 @@ class Hydrographs:
                     line = str(total_time) + sep
                     line += str(dt) + sep
                     line += str(currRain) + sep
-                    linebil = surface.return_str_vals(l, m, sep, dt, extraout)
+                    linebil = surface.return_str_vals(l, m, sep, dt, Globals.extraOut)
                     line += linebil[0] + sep
                     line += str(linebil[1])  # + sep
                     # line += subsurface.return_str_vals(l,m,sep,dt) + sep   #
                     # prozatim
-                    if extraout:
+                    if Globals.extraOut:
                         line += sep + str(surface.arr[l][m].v_to_rill) + sep
                         line += str(ratio) + sep
                         line += str(courantMost) + sep

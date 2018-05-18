@@ -16,7 +16,7 @@ from smoderp2d.tools.tools import comp_type
 import smoderp2d.io_functions.prt as prt
 
 
-from smoderp2d.core.general import Globals
+from smoderp2d.core.general import GridGlobals, Globals
 
 
 # Max and cumulative values of the subsurface flow
@@ -106,14 +106,14 @@ class CumulativeSubsurfacePass(object):
 #  the surface and rill flow
 #
 #
-class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfacePass, Globals, Size):
+class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else CumulativeSubsurfacePass, Globals, Size):
 
     # the constructor
     #
     #
 
     def __init__(self):
-
+        super(Cumulative, self).__init__()
         prt.message('Save cumulative and maximum values from:')
         prt.message('\tSurface')
 
@@ -163,9 +163,6 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
                       16: 'csurvout_m3_s'
                       }
                 # 12 : 'MaxVeloRill',
-
-        if (Globals.r is None or Globals.r is None):
-            sys.exit("Global variables are not assigned")
 
         r = self.r
         c = self.c
