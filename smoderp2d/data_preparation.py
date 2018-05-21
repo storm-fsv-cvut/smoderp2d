@@ -17,13 +17,10 @@ import numpy as np
 from arcpy.sa import *
 import math
 import csv
-import numpy as np
-
 
 import smoderp2d.processes.rainfall as rainfall
 import constants
 import smoderp2d.flow_algorithm.arcgis_dmtfce as arcgis_dmtfce
-
 
 def zapis(name, array_export, l_x, l_y, spix, vpix, NoDataValue, folder):
     ll_corner = arcpy.Point(l_x, l_y)
@@ -35,7 +32,6 @@ def zapis(name, array_export, l_x, l_y, spix, vpix, NoDataValue, folder):
      NoDataValue)
     raster.save(folder + os.sep + name)
     return raster
-
 
 # Identification of cells at the domain boundary
 #  @param r rows
@@ -97,13 +93,9 @@ def find_boudary_cells(r, c, mat_nan, noData, mfda):
 
     return boundaryRows, boundaryCols, rows, cols, mat_boundary
 
-
 # Class to find out the possible catchment outlets
-#
 class Outlet:
-
     # constructor
-
     def __init__(self):
 
         # cells in the domain
@@ -113,7 +105,6 @@ class Outlet:
         self.outletCells = []
 
     # Function to determine cells indexes and neighbor of all cells in the domain
-    #
     def push(self, cellI, cellJ, mat_nan, noDataVal):
         cn = []
         for i in [-1, 0, 1]:
@@ -132,7 +123,6 @@ class Outlet:
         self.cellNeighbour.append(cn)
 
     # Determine which of cells in the domain are outlet. Outlet cell is the lowers cell compared to all its neighbors
-    #
     def find_outlets(self, dem):
         for i in range(len(self.cell)):
             lowest = True
@@ -143,7 +133,6 @@ class Outlet:
                     lowest = False
             if lowest:
                 self.outletCells.append(self.cell[i])
-
 
 # Main function of the preparation preparation package all date raster/vector or scalar are transfered to python line fashion numpy arrays are created to store spatially distributed parameters  digital elevation model
 #
@@ -208,9 +197,7 @@ class Outlet:
 #  @return \b sr  contains the rainfall data [][]
 #  @return \b itera   amount of the rainfall intervals
 
-
 def prepare_data(args):
-
     # creating the geoprocessor object
     gp = arcgisscripting.create()
     # setting the workspace environment
@@ -224,7 +211,6 @@ def prepare_data(args):
     gp.overwriteoutput = 1
 
     # input rasters/shapefile parameters
-
     dmt = gp.GetParameterAsText(constants.PARAMETER_DMT)
     soil_indata = gp.GetParameterAsText(constants.PARAMETER_SOIL)
     ptyp = gp.GetParameterAsText(constants.PARAMETER_SOIL_TYPE)
@@ -325,7 +311,6 @@ def prepare_data(args):
 
     # adding attribute for soil and vegetation into attribute table (type short int)
     # preparation for clip
-
     null = temp + os.sep + "hrance_rst"
     null_shp = temp + os.sep + "null.shp"
     arcpy.gp.Reclassify_sa(dmt_copy, "VALUE", "-100000 100000 1", null, "DATA")
@@ -416,7 +401,6 @@ def prepare_data(args):
     veg_clip = temp + os.sep + "veg_clip.shp"
 
     # clipping of the soil and veg data
-
     arcpy.Clip_analysis(soil, intersect, soil_clip)
     arcpy.Clip_analysis(veg, intersect, veg_clip)
     grup = [soil_clip, veg_clip]
@@ -505,7 +489,6 @@ def prepare_data(args):
         constants.PARAMETER_SURFACE_RETENTION)) / 1000  # prevod z [mm] na [m]
 
     # boolean input parameter
-    #
     """
   string_type_of_coputing = arcpy.GetParameterAsText(constants.PARAMETER_TYPE_COMPUTING)
   string_type_of_coputing = string_type_of_coputing.lower().replace(' ','').replace(',','')  #jj .lower().replace(' ','').replace(',','') udela ze vsecho v tom stringu maly pismena, replace vyhodi mezery a carky
@@ -555,8 +538,8 @@ def prepare_data(args):
      maska,
      "MAXIMUM_AREA",
      cellsize=vpix)
-    # cropping rasters
 
+    # cropping rasters
     dmt_clip = ExtractByMask(dmt_copy, maska)
     dmt_clip.save(output + os.sep + "DTM")
     slope_clip = ExtractByMask(slope_orig, maska)
@@ -576,6 +559,7 @@ def prepare_data(args):
     spix = dmt_desc.MeanCellWidth
     pixel_area = spix * vpix
     ll_corner = arcpy.Point(x_coordinate, y_coordinate)
+
     # raster to numpy array conversion
     zeros = []
     dmt_array = arcpy.RasterToNumPyArray(dmt_clip)
@@ -620,8 +604,8 @@ def prepare_data(args):
     zeros.append(mat_tau)
     mat_v = np.zeros([rows, cols], float)
     zeros.append(mat_v)
-    # prevod = np.zeros([rows,cols],float)
 
+    # prevod = np.zeros([rows,cols],float)
     mat_nan = np.zeros([rows, cols], float)
     zeros.append(mat_nan)
     # mat_slope = np.zeros([rows,cols],float)
@@ -899,7 +883,8 @@ def prepare_data(args):
     """rmat_hcrit = arcpy.NumPyArrayToRaster(mat_hcrit, ll_corner, spix, vpix, "#" )
   rmat_hcrit.save(output+os.sep+"hcrit")"""
     zeros.append(mat_hcrit)
-    # fektivni vrstevnice a priprava "state cell, jestli to je tok ci plocha
+
+    # fiktivni vrstevnice a priprava "state cell, jestli to je tok ci plocha
     pii = math.pi / 180.0
     asp = arcpy.sa.Aspect(dmt_clip)
     asppii = Times(asp, pii)
