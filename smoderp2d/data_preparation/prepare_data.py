@@ -27,6 +27,27 @@ class PrepareData:
         arcpy.CheckOutExtension("Spatial") # TODO - raise an exception (21.05.2018 MK)
         self.gp.overwriteoutput = 1
 
+    def addfield(self, input, newfield, datatyp, default_value):  # EDL
+        # function for adding fields
+        try:
+            arcpy.DeleteField_management(input, newfield)
+        except:
+            pass
+        arcpy.AddField_management(input, newfield, datatyp)
+        arcpy.CalculateField_management(
+            input,
+            newfield,
+            default_value,
+            "PYTHON")
+        return input
+
+    def delfield(self,input, field):
+        #function for deleting fields
+        try:
+            arcpy.DeleteField_management(input, newfield) # to je asi chyba ne? spatnej argument (21.05.2018 MK)
+        except:
+            pass
+
     def prepare_data(self,args):
     # main function of data_preparation class
 
@@ -83,28 +104,7 @@ class PrepareData:
         dmt_copy = temp + os.sep + "dmt_copy"
 
         arcpy.AddMessage("DMT preparation...")
-        self.dmt_preparation(dmt,dmt_copy,temp) # output arguments? (21.05.2018 MK)
-
-    def addfield(self, input, newfield, datatyp, default_value):  # EDL
-        # function for adding fields
-        try:
-            arcpy.DeleteField_management(input, newfield)
-        except:
-            pass
-        arcpy.AddField_management(input, newfield, datatyp)
-        arcpy.CalculateField_management(
-            input,
-            newfield,
-            default_value,
-            "PYTHON")
-        return input
-
-    def delfield(self,input, field):
-        #function for deleting fields
-        try:
-            arcpy.DeleteField_management(input, newfield) # to je asi chyba ne? spatnej argument (21.05.2018 MK)
-        except:
-            pass
+        self.dmt_preparation(dmt,dmt_copy,temp) # return values? (21.05.2018 MK)
 
     def dmt_preparation(self,dmt,dmt_copy,temp):
 
@@ -129,8 +129,8 @@ class PrepareData:
         spix = dmt_desc.MeanCellWidth # not used
 
         # size of the raster [0] = number of rows; [1] = number of columns
-        rows = copydmt_array.shape[0]
-        cols = copydmt_array.shape[1]
+        rows = copydmt_array.shape[0] # not used
+        cols = copydmt_array.shape[1] # not used
 
         ########## KONEC 21.05.2018 MK
 
