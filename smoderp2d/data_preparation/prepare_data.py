@@ -15,6 +15,7 @@ from smoderp2d import constants
 
 class PrepareData:
 
+# hlavni funkce je prepare_data
     def __init__(self):
 
         # creating the geoprocessor object
@@ -104,9 +105,12 @@ class PrepareData:
         dmt_copy = temp + os.sep + "dmt_copy"
 
         arcpy.AddMessage("DMT preparation...")
-        self.dmt_preparation(dmt,dmt_copy,temp) # return values? (21.05.2018 MK)
 
-    def dmt_preparation(self,dmt,dmt_copy,temp):
+        dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array, copySlope_array, mat_slope, dmt_desc, \
+            ll_corner, NoDataValue, vpix, spix, rows, cols = self.dmt_preparation(dmt, dmt_copy, temp)  # Promazat to, co se nepouziva 22.05.2018 MK
+
+
+    def dmt_preparation(self, dmt, dmt_copy, temp):
 
         arcpy.CopyRaster_management(dmt, dmt_copy)
 
@@ -132,8 +136,9 @@ class PrepareData:
         rows = copydmt_array.shape[0] # not used
         cols = copydmt_array.shape[1] # not used
 
-        ########## KONEC 21.05.2018 MK
+        return dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array, copySlope_array, mat_slope, dmt_desc, ll_corner, NoDataValue, vpix, spix, rows, cols  # promazat to, co neni pouzivano 22.05.2018 MK
 
+    def clip_data(self, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points):
         # adding attribute for soil and vegetation into attribute table (type short int)
         # preparation for clip
         null = temp + os.sep + "hrance_rst"
@@ -141,16 +146,15 @@ class PrepareData:
         arcpy.gp.Reclassify_sa(dmt_copy, "VALUE", "-100000 100000 1", null, "DATA")
         arcpy.RasterToPolygon_conversion(null, null_shp, "NO_SIMPLIFY")
 
-
         # add filed for disslolving and masking
-        fildname = "one"
+        fieldname = "one"
         veg = temp + os.sep + "LandCover.shp"
         soil = temp + os.sep + "Siol_char.shp"
         arcpy.Copy_management(veg_indata, veg)
         arcpy.Copy_management(soil_indata, soil)
 
-        self.addfield(veg, fildname, "SHORT", 2)
-        self.addfield(soil, fildname, "SHORT", 2)
+        self.addfield(veg, fieldname, "SHORT", 2)
+        self.addfield(soil, fieldname, "SHORT", 2)
 
         soil_boundary = temp + os.sep + "s_b.shp"
         veg_boundary = temp + os.sep + "v_b.shp"
@@ -189,6 +193,9 @@ class PrepareData:
                 pntChech = featCheck.getPart()
                 tmpPointsCheck.append([pntChech.X, pntChech.Y])
             del rows_pch
+
+            # konec 22.05.2018 MK - je treba rozdelit clip na nekolik podfunkci, je treba clip jeste zavolat z prepare_data
+            # az sem jsou vsechny promenne zahrnute v argumentech funkce
 
             diffpts = [c for c in tmpPoints if c not in tmpPointsCheck]
             if len(diffpts) == 0:
@@ -257,8 +264,8 @@ class PrepareData:
             tab_puda_veg_code,
             "k;s;n;pi;ppl;ret;b;x;y;tau;v")
         # intersect1 = output+"\\puda_vegetace.shp"
-        self.delfield(veg, fildname)
-        self.delfield(soil, fildname)
+        self.delfield(veg, fieldname)
+        self.delfield(soil, fieldname)
         # cleaning datatypes - for numpy mud be double
         """for i in sfield:
           inn = i+"n"
@@ -673,8 +680,8 @@ class PrepareData:
                 dmt, dmt_copy, mat_dmt_fill, null_shp,
                 mat_nan, mat_fd, vpix,
                 spix, rows, cols, ll_corner,
-                NoDataValue, addfield,
-                delfield, output, dmt_clip,
+                NoDataValue, self.addfield,
+                self.delfield, output, dmt_clip,
                 intersect, null_shp, gp)
 
             arcpy.AddMessage("Stream preparation has finished")
