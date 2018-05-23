@@ -127,6 +127,7 @@ class PrepareData:
         copySlope_array = arcpy.RasterToNumPyArray(slope_orig) # not used
         mat_slope = arcpy.RasterToNumPyArray(slope_orig) # not used
 
+        return dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array, copySlope_array, mat_slope
 
     def clip_data(self, gp, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig, flow_direction):
         # TODO: rozdelit na vic podfunkci 23.05.2018 MK
