@@ -112,15 +112,14 @@ class PrepareData:
 
         dmt_copy = temp + os.sep + "dmt_copy"
 
+        arcpy.CopyRaster_management(dmt, dmt_copy)
+
         arcpy.AddMessage("DMT preparation...")
 
-        dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array, copySlope_array, mat_slope, rows, cols = self.dmt_preparation(dmt, dmt_copy, temp)
-
+        dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array, copySlope_array, mat_slope = self.dmt_preparation(dmt_copy, temp)
         flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp = self.clip_data(gp, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig, flow_direction)
 
-    def dmt_preparation(self, dmt, dmt_copy, temp):
-
-        arcpy.CopyRaster_management(dmt, dmt_copy)
+    def dmt_preparation(self dmt_copy, temp):
 
         # corners deleting
         dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, temp, "TRUE", "TRUE", "NONE")
@@ -128,13 +127,10 @@ class PrepareData:
         copySlope_array = arcpy.RasterToNumPyArray(slope_orig) # not used
         mat_slope = arcpy.RasterToNumPyArray(slope_orig) # not used
 
-        # size of the raster [0] = number of rows; [1] = number of columns
-        rows = copydmt_array.shape[0] # not used
-        cols = copydmt_array.shape[1] # not used
-
-        return dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array, copySlope_array, mat_slope, rows, cols  # promazat to, co neni pouzivano 22.05.2018 MK
 
     def clip_data(self, gp, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig, flow_direction):
+        # TODO: rozdelit na vic podfunkci 23.05.2018 MK
+
         # adding attribute for soil and vegetation into attribute table (type short int)
         # preparation for clip
         null = temp + os.sep + "hrance_rst"
@@ -281,13 +277,8 @@ class PrepareData:
                             "Values in soilveg tab are not correct - STOP, check shp file Prunik in output")
                         sys.exit()
 
-        # input float vaflues parameters
         # delta_t = float(gp.GetParameterAsText(constants.PARAMETER_DELTA_T))*60.0
-        # # prevod na sekundy
         delta_t = "nechci" # co teda tohle? # 23.05.2018 MK
-
-        # konec 23.05.2018 MK - je treba rozdelit clip na nekolik podfunkci, je treba clip jeste zavolat z prepare_data
-        # az sem jsou vsechny promenne zahrnute v argumentech funkce
 
         # setting progressor
         gp.SetProgressor("default", "Data preparations...") # mrknout na tohle, zatim nevim, co to je a kde by to melo byt 23.05.2018 MK
@@ -322,6 +313,8 @@ class PrepareData:
         flow_direction_clip.save(output + os.sep + "flowDir")
 
         return flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp
+
+        # konec 23.05.2018 MK
 
         # cropped raster info
         dmt_desc = arcpy.Describe(dmt_clip)
