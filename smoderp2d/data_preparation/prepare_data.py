@@ -320,7 +320,7 @@ class PrepareData:
 
         return flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp
 
-    def raster2numpy(self):
+    def raster2numpy(self, dmt_clip, slope_clip, flow_direction_clip, temp):
         # cropped raster info
         dmt_desc = arcpy.Describe(dmt_clip)
 
@@ -339,7 +339,8 @@ class PrepareData:
         zeros.append(dmt_array)
         mat_slope = arcpy.RasterToNumPyArray(slope_clip)
         mat_fd = arcpy.RasterToNumPyArray(flow_direction_clip)
-        zapis(
+
+        self.zapis(
             "fl_dir",
             mat_fd,
             x_coordinate,
@@ -353,40 +354,25 @@ class PrepareData:
         rows = dmt_array.shape[0]
         cols = dmt_array.shape[1]
 
-        mat_dmt = dmt_array
-        zeros.append(mat_dmt)
-        mat_k = np.zeros([rows, cols], float)
-        zeros.append(mat_k)
-        mat_s = np.zeros([rows, cols], float)
-        zeros.append(mat_s)
-        mat_n = np.zeros([rows, cols], float)
-        zeros.append(mat_n)
-        mat_ppl = np.zeros([rows, cols], float)
-        zeros.append(mat_ppl)
-        mat_pi = np.zeros([rows, cols], float)
-        zeros.append(mat_pi)
-        mat_ret = np.zeros([rows, cols], float)
-        zeros.append(mat_ret)
-        mat_b = np.zeros([rows, cols], float)
-        zeros.append(mat_b)
-        mat_x = np.zeros([rows, cols], float)
-        zeros.append(mat_x)
-        mat_y = np.zeros([rows, cols], float)
-        zeros.append(mat_y)
-        mat_tau = np.zeros([rows, cols], float)
-        zeros.append(mat_tau)
-        mat_v = np.zeros([rows, cols], float)
-        zeros.append(mat_v)
-
+        # nasledujici blok by sel urcite napsat lip 23.05.2018 MK
+        mat_dmt = dmt_array; zeros.append(mat_dmt)
+        mat_k = np.zeros([rows, cols], float); zeros.append(mat_k)
+        mat_s = np.zeros([rows, cols], float); zeros.append(mat_s)
+        mat_n = np.zeros([rows, cols], float); zeros.append(mat_n)
+        mat_ppl = np.zeros([rows, cols], float); zeros.append(mat_ppl)
+        mat_pi = np.zeros([rows, cols], float); zeros.append(mat_pi)
+        mat_ret = np.zeros([rows, cols], float); zeros.append(mat_ret)
+        mat_b = np.zeros([rows, cols], float); zeros.append(mat_b)
+        mat_x = np.zeros([rows, cols], float); zeros.append(mat_x)
+        mat_y = np.zeros([rows, cols], float); zeros.append(mat_y)
+        mat_tau = np.zeros([rows, cols], float); zeros.append(mat_tau)
+        mat_v = np.zeros([rows, cols], float); zeros.append(mat_v)
         # prevod = np.zeros([rows,cols],float)
-        mat_nan = np.zeros([rows, cols], float)
-        zeros.append(mat_nan)
+        mat_nan = np.zeros([rows, cols], float); zeros.append(mat_nan)
         # mat_slope = np.zeros([rows,cols],float)
         zeros.append(mat_slope)
-        mat_a = np.zeros([rows, cols], float)
-        zeros.append(mat_a)
-        mat_aa = np.zeros([rows, cols], float)
-        zeros.append(mat_aa)
+        mat_a = np.zeros([rows, cols], float); zeros.append(mat_a)
+        mat_aa = np.zeros([rows, cols], float); zeros.append(mat_aa)
 
         all_attrib = [
             mat_k,
@@ -401,6 +387,8 @@ class PrepareData:
             mat_tau,
             mat_v]  # parametry, ktere se generuji ze shp
         poradi = 0
+
+        # konec 23.05.218 MK
 
         for x in sfield:
             RtoNu = "r" + str(x)
@@ -702,7 +690,7 @@ class PrepareData:
                temp, type_of_computing, vpix, mfda, sr, itera, \
                toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc
 
-    def zapis(name, array_export, l_x, l_y, spix, vpix, NoDataValue, folder):
+    def zapis(self, name, array_export, l_x, l_y, spix, vpix, NoDataValue, folder):
         ll_corner = arcpy.Point(l_x, l_y)
         raster = arcpy.NumPyArrayToRaster(
             array_export,
