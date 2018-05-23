@@ -114,9 +114,9 @@ class PrepareData:
 
         arcpy.AddMessage("DMT preparation...")
 
-        dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array, copySlope_array, mat_slope, dmt_desc, \
-            ll_corner, NoDataValue, vpix, spix, rows, cols = self.dmt_preparation(dmt, dmt_copy, temp)  # Promazat to, co se nepouziva 22.05.2018 MK
+        dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array, copySlope_array, mat_slope, rows, cols = self.dmt_preparation(dmt, dmt_copy, temp)
 
+        flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp = self.clip_data(gp, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig, flow_direction)
 
     def dmt_preparation(self, dmt, dmt_copy, temp):
 
@@ -128,25 +128,13 @@ class PrepareData:
         copySlope_array = arcpy.RasterToNumPyArray(slope_orig) # not used
         mat_slope = arcpy.RasterToNumPyArray(slope_orig) # not used
 
-        # cropped raster info
-        dmt_desc = arcpy.Describe(dmt_copy)
-
-        # lower left corner coordinates
-        x_coordinate = dmt_desc.extent.XMin
-        y_coordinate = dmt_desc.extent.YMin
-
-        ll_corner = arcpy.Point(x_coordinate, y_coordinate) # not used
-        NoDataValue = dmt_desc.noDataValue
-        vpix = dmt_desc.MeanCellHeight # not used
-        spix = dmt_desc.MeanCellWidth # not used
-
         # size of the raster [0] = number of rows; [1] = number of columns
         rows = copydmt_array.shape[0] # not used
         cols = copydmt_array.shape[1] # not used
 
-        return dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array, copySlope_array, mat_slope, dmt_desc, ll_corner, NoDataValue, vpix, spix, rows, cols  # promazat to, co neni pouzivano 22.05.2018 MK
+        return dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array, copySlope_array, mat_slope, rows, cols  # promazat to, co neni pouzivano 22.05.2018 MK
 
-    def clip_data(self, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, end_time, surface_retention):
+    def clip_data(self, gp, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig, flow_direction):
         # adding attribute for soil and vegetation into attribute table (type short int)
         # preparation for clip
         null = temp + os.sep + "hrance_rst"
@@ -182,7 +170,7 @@ class PrepareData:
             shapefieldname = desc.ShapeFieldName
             rows_p = arcpy.SearchCursor(points)
             for row in rows_p:
-                fid = row.getValue('FID')
+                fid = row.getValue('FID') # not used
                 feat = row.getValue(shapefieldname)
                 pnt = feat.getPart()
                 tmpPoints.append([pnt.X, pnt.Y])
@@ -196,7 +184,7 @@ class PrepareData:
             shapefieldnameCheck = descCheck.ShapeFieldName
             rows_pch = arcpy.SearchCursor(pointsClipCheck)
             for row2 in rows_pch:
-                fid = row2.getValue('FID')
+                fid = row2.getValue('FID') # not used
                 featCheck = row2.getValue(shapefieldnameCheck)
                 pntChech = featCheck.getPart()
                 tmpPointsCheck.append([pntChech.X, pntChech.Y])
@@ -221,7 +209,7 @@ class PrepareData:
         # clipping of the soil and veg data
         arcpy.Clip_analysis(soil, intersect, soil_clip)
         arcpy.Clip_analysis(veg, intersect, veg_clip)
-        grup = [soil_clip, veg_clip]
+        grup = [soil_clip, veg_clip] # not used
         # intersect = output+os.sep+"prunik.shp"
         # arcpy.Intersect_analysis(grup, intersect, "ALL", "", "INPUT")
 
@@ -302,7 +290,7 @@ class PrepareData:
         # az sem jsou vsechny promenne zahrnute v argumentech funkce
 
         # setting progressor
-        gp.SetProgressor("default", "Data preparations...")
+        gp.SetProgressor("default", "Data preparations...") # mrknout na tohle, zatim nevim, co to je a kde by to melo byt 23.05.2018 MK
 
         # raster description
         dmt_desc = arcpy.Describe(dmt_copy)
@@ -312,7 +300,7 @@ class PrepareData:
 
         # size of cell
         vpix = dmt_desc.MeanCellHeight
-        spix = dmt_desc.MeanCellWidth
+        spix = dmt_desc.MeanCellWidth # not used
 
         maska = temp + os.sep + "maska"
         arcpy.PolygonToRaster_conversion(
@@ -322,6 +310,8 @@ class PrepareData:
             "MAXIMUM_AREA",
             cellsize=vpix)
 
+        del vpix, spix, dmt_desc
+
         # cropping rasters
         dmt_clip = ExtractByMask(dmt_copy, maska)
         dmt_clip.save(output + os.sep + "DTM")
@@ -330,6 +320,8 @@ class PrepareData:
 
         flow_direction_clip = ExtractByMask(flow_direction, maska)
         flow_direction_clip.save(output + os.sep + "flowDir")
+
+        return flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp
 
         # cropped raster info
         dmt_desc = arcpy.Describe(dmt_clip)
