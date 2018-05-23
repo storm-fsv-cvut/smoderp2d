@@ -67,13 +67,15 @@ class PrepareData:
         rainfall_file_path = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_RAINFALL_FILE)
         dir = os.path.dirname(rainfall_path) # not used
 
-
         tab_puda_veg = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE)
         tab_puda_veg_code = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE_CODE)
 
-
         end_time = float(gp.GetParameterAsText(constants.PARAMETER_END_TIME)) * 60.0  # prevod na sekundy
         surface_retention = float(gp.GetParameterAsText(constants.PARAMETER_SURFACE_RETENTION)) / 1000  # prevod z [mm] na [m]
+
+        stream = gp.GetParameterAsText(constants.PARAMETER_STREAM)
+        tab_stream_tvar = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE)
+        tab_stream_tvar_code = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE_CODE)
 
         # setting output directory as input parameter
         output = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
@@ -166,7 +168,7 @@ class PrepareData:
         intersect = output + os.sep + "interSoilLU.shp"
         arcpy.Intersect_analysis(grup, intersect, "ALL", "", "INPUT")
 
-        if points and (points != "#") and (points != ""): # nejakej else? 23.05.2018 MK
+        if points and (points != "#") and (points != ""):
             tmpPoints = []
             desc = arcpy.Describe(points)
             shapefieldname = desc.ShapeFieldName
@@ -320,7 +322,7 @@ class PrepareData:
 
         return flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp
 
-    def raster2numpy(self, dmt_clip, slope_clip, flow_direction_clip, temp):
+    def raster2np(self, dmt_clip, slope_clip, flow_direction_clip, temp, sfield, intersect, points, dmt_fill):
         # cropped raster info
         dmt_desc = arcpy.Describe(dmt_clip)
 
@@ -334,7 +336,7 @@ class PrepareData:
         ll_corner = arcpy.Point(x_coordinate, y_coordinate)
 
         # raster to numpy array conversion
-        zeros = []
+        zeros = []  # k cemu jsou ty nuly? Nevidim nikde vyuziti 23.05.2018 MK
         dmt_array = arcpy.RasterToNumPyArray(dmt_clip)
         zeros.append(dmt_array)
         mat_slope = arcpy.RasterToNumPyArray(slope_clip)
@@ -386,38 +388,28 @@ class PrepareData:
             mat_y,
             mat_tau,
             mat_v]  # parametry, ktere se generuji ze shp
-        poradi = 0
 
-        # konec 23.05.218 MK
-
+        i = 0
         for x in sfield:
-            RtoNu = "r" + str(x)
-            d = temp + os.sep + RtoNu
-            arcpy.PolygonToRaster_conversion(
-                intersect,
-                str(x),
-                d,
-                "MAXIMUM_AREA",
-                "",
-                vpix)
-            c = arcpy.RasterToNumPyArray(d)
-            all_attrib[poradi] = c
-            poradi += 1
+            d = temp + os.sep + "r" + str(x)
+            arcpy.PolygonToRaster_conversion(intersect, str(x), d, "MAXIMUM_AREA", "", vpix)
+            all_attrib[i] = arcpy.RasterToNumPyArray(d)
+            i = i + 1
 
-        mat_k = all_attrib[0]
-        mat_s = all_attrib[1]
-        mat_n = all_attrib[2]
+        mat_k   = all_attrib[0]
+        mat_s   = all_attrib[1]
+        mat_n   = all_attrib[2]
         mat_ppl = all_attrib[3]
-        mat_pi = all_attrib[4]
+        mat_pi  = all_attrib[4]
         mat_ret = all_attrib[5]
-        mat_b = all_attrib[6]
-        mat_x = all_attrib[7]
-        mat_y = all_attrib[8]
+        mat_b   = all_attrib[6]
+        mat_x   = all_attrib[7]
+        mat_y   = all_attrib[8]
         mat_tau = all_attrib[9]
-        mat_v = all_attrib[10]
+        mat_v   = all_attrib[10]
 
-        infiltrationType = int(0)  # "Phillip"
-        if infiltrationType == int(0):
+        infiltration_type = int(0)  # "Phillip"
+        if infiltration_type == int(0):  #to se rovna vzdycky ne? nechapu tuhle podminku 23.05.2018 MK
             mat_inf_index = np.zeros([rows, cols], int)
             combinat = []
             combinatIndex = []
@@ -430,15 +422,12 @@ class PrepareData:
                         if combinat.index(ccc):
                             mat_inf_index[i][j] = combinat.index(ccc)
                     except:
-                        ccc = [kkk, sss]
                         combinat.append(ccc)
-                        combinat.index(ccc)
-                        combinatIndex.append(
-                            [combinat.index(ccc), ccc[0], ccc[1], 0])
+                        combinatIndex.append([combinat.index(ccc), kkk, sss, 0])
                         mat_inf_index[i][j] = combinat.index(ccc)
 
         # getting points coordinates from optional input shapefile
-        if points and (points != "#") and (points != ""):
+        if points and (points != "#") and (points != ""):  # to samy je uz na radku 169, do fce? 23.05.2018 MK
             # identify the geometry field
             desc = arcpy.Describe(points)
             shapefieldname = desc.ShapeFieldName
@@ -462,8 +451,7 @@ class PrepareData:
                 feat = row.getValue(shapefieldname)
                 pnt = feat.getPart()
                 # position i,j in raster
-                array_points[i][1] = rows - (
-                    (pnt.Y - y_coordinate) // vpix) - 1  # i
+                array_points[i][1] = rows - ((pnt.Y - y_coordinate) // vpix) - 1  # i
                 array_points[i][2] = (pnt.X - x_coordinate) // spix  # j
                 # x,y coordinates of current point stored in an array
                 array_points[i][3] = pnt.X
@@ -477,10 +465,9 @@ class PrepareData:
         # convert dmt to array
         mat_dmt_fill = arcpy.RasterToNumPyArray(dmt_fill)
         zeros.append(mat_dmt_fill)
-        # mat_fd = arcpy.RasterToNumPyArray(flow_direction_clip)
         zeros.append(mat_fd)
 
-        # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u sklou a acc
+        # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u sklonu a acc
         i = 0
         j = 0
 
@@ -504,6 +491,9 @@ class PrepareData:
                         int(array_points[kyk][0])) + " is at the edge of the raster. This point will not be included in results.")
                     array_points = np.delete(array_points, kyk, 0)
 
+        return
+
+    def par(self):
         # calculating the "a" parameter
         for i in range(rows):
             for j in range(cols):
@@ -629,19 +619,14 @@ class PrepareData:
             zz = zero(zz, mat_nan, rows, cols)
 
         # dokud neni mfda pripraven je toto zakomentovane
-        # mfda = arcpy.GetParameterAsText(constants.PARAMETER_MFDA)
+        # mfda = arcpy.GetParameterAsText(constants.PARAMETER_MFDA)  # az se tohle odkomentuje, tak prehodit do
+                                                        #  prepare_data a sem to posilat jako argument 23.05.2018 MK
         mfda = False
-        rainfall_file_path = gp.GetParameterAsText(
-            constants.PARAMETER_PATH_TO_RAINFALL_FILE)
-        sr, itera = rainfall.load_precipitation(rainfall_file_path)
+        sr, itera = rainfall.load_precipitation(rainfall_file_path) # rainfall_file_path je treba dat jako vstup do teto funkce 23.05.2018 MK
 
         # pokud jsou zadane vsechny vstupy pro vypocet toku
         # toky se pocitaji a type_of_computing je 3
-        stream = gp.GetParameterAsText(constants.PARAMETER_STREAM)
-        tab_stream_tvar = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE)
-        tab_stream_tvar_code = gp.GetParameterAsText(
-            constants.PARAMETER_STREAMTABLE_CODE)
-        listin = [stream, tab_stream_tvar, tab_stream_tvar_code]
+        listin = [stream, tab_stream_tvar, tab_stream_tvar_code]  # stream, tab_stream_tvar, tab_stream_tvar_code sem posilat jako vstup do funkce 23.05.2018 MK
         tflistin = [len(i) > 1 for i in listin]
 
         if all(tflistin):
