@@ -28,27 +28,6 @@ class PrepareData:
         arcpy.CheckOutExtension("Spatial") # TODO - raise an exception (21.05.2018 MK)
         self.gp.overwriteoutput = 1
 
-    def addfield(self, input, newfield, datatyp, default_value):  # EDL
-        # function for adding fields
-        try:
-            arcpy.DeleteField_management(input, newfield)
-        except:
-            pass
-        arcpy.AddField_management(input, newfield, datatyp)
-        arcpy.CalculateField_management(
-            input,
-            newfield,
-            default_value,
-            "PYTHON")
-        return input
-
-    def delfield(self,input, field):
-        #function for deleting fields
-        try:
-            arcpy.DeleteField_management(input, newfield) # to je asi chyba ne? spatnej argument (21.05.2018 MK)
-        except:
-            pass
-
     def prepare_data(self,args):
     # main function of data_preparation class
 
@@ -136,6 +115,27 @@ class PrepareData:
             output, pixel_area, points, poradi, end_time, spix, state_cell, \
             temp, type_of_computing, vpix, mfda, sr, itera, \
             toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc
+
+    def addfield(self, input, newfield, datatyp, default_value):  # EDL
+        # function for adding fields
+        try:
+            arcpy.DeleteField_management(input, newfield)
+        except:
+            pass
+        arcpy.AddField_management(input, newfield, datatyp)
+        arcpy.CalculateField_management(
+            input,
+            newfield,
+            default_value,
+            "PYTHON")
+        return input
+
+    def delfield(self,input, field):
+        #function for deleting fields
+        try:
+            arcpy.DeleteField_management(input, newfield) # to je asi chyba ne? spatnej argument (21.05.2018 MK)
+        except:
+            pass
 
     def dmt_preparation(self, dmt_copy, temp):
 
