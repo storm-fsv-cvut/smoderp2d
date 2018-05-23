@@ -67,6 +67,14 @@ class PrepareData:
         rainfall_file_path = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_RAINFALL_FILE)
         dir = os.path.dirname(rainfall_path) # not used
 
+
+        tab_puda_veg = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE)
+        tab_puda_veg_code = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE_CODE)
+
+
+        end_time = float(gp.GetParameterAsText(constants.PARAMETER_END_TIME)) * 60.0  # prevod na sekundy
+        surface_retention = float(gp.GetParameterAsText(constants.PARAMETER_SURFACE_RETENTION)) / 1000  # prevod z [mm] na [m]
+
         # setting output directory as input parameter
         output = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
 
@@ -138,7 +146,7 @@ class PrepareData:
 
         return dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array, copySlope_array, mat_slope, dmt_desc, ll_corner, NoDataValue, vpix, spix, rows, cols  # promazat to, co neni pouzivano 22.05.2018 MK
 
-    def clip_data(self, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points):
+    def clip_data(self, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, end_time, surface_retention):
         # adding attribute for soil and vegetation into attribute table (type short int)
         # preparation for clip
         null = temp + os.sep + "hrance_rst"
@@ -168,7 +176,7 @@ class PrepareData:
         intersect = output + os.sep + "interSoilLU.shp"
         arcpy.Intersect_analysis(grup, intersect, "ALL", "", "INPUT")
 
-        if points and (points != "#") and (points != ""):
+        if points and (points != "#") and (points != ""): # nejakej else? 23.05.2018 MK
             tmpPoints = []
             desc = arcpy.Describe(points)
             shapefieldname = desc.ShapeFieldName
@@ -193,9 +201,6 @@ class PrepareData:
                 pntChech = featCheck.getPart()
                 tmpPointsCheck.append([pntChech.X, pntChech.Y])
             del rows_pch
-
-            # konec 22.05.2018 MK - je treba rozdelit clip na nekolik podfunkci, je treba clip jeste zavolat z prepare_data
-            # az sem jsou vsechny promenne zahrnute v argumentech funkce
 
             diffpts = [c for c in tmpPoints if c not in tmpPointsCheck]
             if len(diffpts) == 0:
@@ -239,17 +244,13 @@ class PrepareData:
         else:
             vtyp1 = vtyp
 
-        expr = ptyp + vtyp
+        expr = ptyp + vtyp # not used
         fields = [ptyp, vtyp1, "puda_veg"]
         with arcpy.da.UpdateCursor(intersect, fields) as cursor:
             for row in cursor:
                 row[2] = row[0] + row[1]
                 cursor.updateRow(row)
         del cursor, row
-
-        tab_puda_veg = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE)
-        tab_puda_veg_code = gp.GetParameterAsText(
-            constants.PARAMETER_SOILVEGTABLE_CODE)
 
         puda_veg_dbf = temp + os.sep + "puda_veg_tab_current.dbf"
 
@@ -289,17 +290,16 @@ class PrepareData:
                 for i in range(len(row)):
                     if row[i] == " ":
                         arcpy.AddMessage(
-                            "Value in soilveg tab are no correct - STOP, check shp file Prunik in output")
+                            "Values in soilveg tab are not correct - STOP, check shp file Prunik in output")
                         sys.exit()
 
         # input float vaflues parameters
         # delta_t = float(gp.GetParameterAsText(constants.PARAMETER_DELTA_T))*60.0
         # # prevod na sekundy
-        delta_t = "nechci"
-        end_time = float(gp.GetParameterAsText(constants.PARAMETER_END_TIME)) * \
-                   60.0  # prevod na sekundy
-        surface_retention = float(gp.GetParameterAsText(
-            constants.PARAMETER_SURFACE_RETENTION)) / 1000  # prevod z [mm] na [m]
+        delta_t = "nechci" # co teda tohle? # 23.05.2018 MK
+
+        # konec 23.05.2018 MK - je treba rozdelit clip na nekolik podfunkci, je treba clip jeste zavolat z prepare_data
+        # az sem jsou vsechny promenne zahrnute v argumentech funkce
 
         # setting progressor
         gp.SetProgressor("default", "Data preparations...")
