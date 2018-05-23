@@ -104,6 +104,11 @@ class PrepareData:
             dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig,
             flow_direction)
 
+        array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
+            combinatIndex, rows, cols, vpix, spix, mat_a, mat_aa, x_coordinate, y_coordinate, ll_corner, pixel_area, \
+            NoDataValue = self.raster2np(dmt_clip, slope_clip, flow_direction_clip, temp, sfield, intersect, points,
+                                         dmt_fill)
+
         return boundaryRows, boundaryCols, mat_boundary, rrows, rcols, outletCells, x_coordinate, y_coordinate, \
             NoDataValue, array_points, \
             cols, rows, combinatIndex, delta_t, \
@@ -321,8 +326,6 @@ class PrepareData:
             "MAXIMUM_AREA",
             cellsize=vpix)
 
-        del vpix, spix, dmt_desc
-
         # cropping rasters
         dmt_clip = ExtractByMask(dmt_copy, maska)
         dmt_clip.save(output + os.sep + "DTM")
@@ -335,6 +338,8 @@ class PrepareData:
         return flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp
 
     def raster2np(self, dmt_clip, slope_clip, flow_direction_clip, temp, sfield, intersect, points, dmt_fill):
+        # TODO: rozdelit raster2np do vic podfunkci, polovina veci s tim prevodem nesouvisi 23.05.2018 MK
+
         # cropped raster info
         dmt_desc = arcpy.Describe(dmt_clip)
 
@@ -408,24 +413,15 @@ class PrepareData:
             all_attrib[i] = arcpy.RasterToNumPyArray(d)
             i = i + 1
 
-        mat_k   = all_attrib[0]
-        mat_s   = all_attrib[1]
-        mat_n   = all_attrib[2]
-        mat_ppl = all_attrib[3]
-        mat_pi  = all_attrib[4]
-        mat_ret = all_attrib[5]
-        mat_b   = all_attrib[6]
-        mat_x   = all_attrib[7]
-        mat_y   = all_attrib[8]
-        mat_tau = all_attrib[9]
-        mat_v   = all_attrib[10]
+        mat_k = all_attrib[0]
+        mat_s = all_attrib[1]
 
         infiltration_type = int(0)  # "Phillip"
         if infiltration_type == int(0):  #to se rovna vzdycky ne? nechapu tuhle podminku 23.05.2018 MK
             mat_inf_index = np.zeros([rows, cols], int)
             combinat = []
             combinatIndex = []
-            for i in range(rows):
+            for i in range(rows):  # tady to chce jeste nejak prepsat ty ccc, sss, kkk 23.05.2018 MK
                 for j in range(cols):
                     kkk = mat_k[i][j]
                     sss = mat_s[i][j]
@@ -469,7 +465,7 @@ class PrepareData:
                 array_points[i][3] = pnt.X
                 array_points[i][4] = pnt.Y
                 i = i + 1
-            del rows_p, i
+
         else:
             array_points = None
 
@@ -503,9 +499,26 @@ class PrepareData:
                         int(array_points[kyk][0])) + " is at the edge of the raster. This point will not be included in results.")
                     array_points = np.delete(array_points, kyk, 0)
 
-        return
+        return array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
+            combinatIndex, rows, cols, vpix, spix, mat_a, mat_aa, x_coordinate, y_coordinate, ll_corner, pixel_area, \
+            NoDataValue
 
-    def par(self):
+    ####### KONEC 23.05.2018 MK, u funkce par je zatim pouze 1 vstupni argument
+
+    def par(self, all_attrib):
+
+        mat_k = all_attrib[0]
+        mat_s = all_attrib[1]
+        mat_n = all_attrib[2]
+        mat_ppl = all_attrib[3]
+        mat_pi = all_attrib[4]
+        mat_ret = all_attrib[5]
+        mat_b = all_attrib[6]
+        mat_x = all_attrib[7]
+        mat_y = all_attrib[8]
+        mat_tau = all_attrib[9]
+        mat_v = all_attrib[10]
+
         # calculating the "a" parameter
         for i in range(rows):
             for j in range(cols):
