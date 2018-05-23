@@ -116,10 +116,14 @@ class PrepareData:
 
         arcpy.AddMessage("DMT preparation...")
 
-        dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array, copySlope_array, mat_slope = self.dmt_preparation(dmt_copy, temp)
-        flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp = self.clip_data(gp, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig, flow_direction)
+        dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array, copySlope_array, \
+            mat_slope = self.dmt_preparation(dmt_copy, temp)  # zkontrolovat takovehle rozdeleni radku 23.05.2018 MK
 
-    def dmt_preparation(self dmt_copy, temp):
+        flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp = self.clip_data(gp, temp,
+            dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig,
+            flow_direction)
+
+    def dmt_preparation(self, dmt_copy, temp):
 
         # corners deleting
         dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, temp, "TRUE", "TRUE", "NONE")
@@ -129,7 +133,8 @@ class PrepareData:
 
         return dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array, copySlope_array, mat_slope
 
-    def clip_data(self, gp, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig, flow_direction):
+    def clip_data(self, gp, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg,
+                  tab_puda_veg_code, slope_orig, flow_direction):
         # TODO: rozdelit na vic podfunkci 23.05.2018 MK
 
         # adding attribute for soil and vegetation into attribute table (type short int)
@@ -315,8 +320,7 @@ class PrepareData:
 
         return flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp
 
-        # konec 23.05.2018 MK
-
+    def raster2numpy(self):
         # cropped raster info
         dmt_desc = arcpy.Describe(dmt_clip)
 
