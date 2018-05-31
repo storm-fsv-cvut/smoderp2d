@@ -65,7 +65,6 @@ class PrepareData:
         if not os.path.exists(output):
             os.makedirs(output)
         arcpy.AddMessage("Creating of the output directory: " + output)
-        output_gdb = arcpy.CreateFileGDB_management(output, "results.gdb") # not used
 
         temp = output + os.sep + "temp"
 
@@ -191,7 +190,6 @@ class PrepareData:
             shapefieldname = desc.ShapeFieldName
             rows_p = arcpy.SearchCursor(points)
             for row in rows_p:
-                fid = row.getValue('FID') # not used
                 feat = row.getValue(shapefieldname)
                 pnt = feat.getPart()
                 tmpPoints.append([pnt.X, pnt.Y])
@@ -205,7 +203,6 @@ class PrepareData:
             shapefieldnameCheck = descCheck.ShapeFieldName
             rows_pch = arcpy.SearchCursor(pointsClipCheck)
             for row2 in rows_pch:
-                fid = row2.getValue('FID') # not used
                 featCheck = row2.getValue(shapefieldnameCheck)
                 pntChech = featCheck.getPart()
                 tmpPointsCheck.append([pntChech.X, pntChech.Y])
@@ -231,8 +228,6 @@ class PrepareData:
         arcpy.Clip_analysis(soil, intersect, soil_clip)
         arcpy.Clip_analysis(veg, intersect, veg_clip)
         grup = [soil_clip, veg_clip] # not used
-        # intersect = output+os.sep+"prunik.shp"
-        # arcpy.Intersect_analysis(grup, intersect, "ALL", "", "INPUT")
 
         if gp.ListFields(intersect, "puda_veg").Next():
             arcpy.DeleteField_management(intersect, "puda_veg", )
@@ -253,7 +248,6 @@ class PrepareData:
         else:
             vtyp1 = vtyp
 
-        expr = ptyp + vtyp # not used
         fields = [ptyp, vtyp1, "puda_veg"]
         with arcpy.da.UpdateCursor(intersect, fields) as cursor:
             for row in cursor:
@@ -276,23 +270,6 @@ class PrepareData:
         # intersect1 = output+"\\puda_vegetace.shp"
         self.delfield(veg, fieldname)
         self.delfield(soil, fieldname)
-        # cleaning datatypes - for numpy mud be double
-        """for i in sfield:
-          inn = i+"n"
-          arcpy.AddField_management(intersect, inn, "DOUBLE")
-          with arcpy.da.UpdateCursor(intersect, [i, inn]) as tabulka:
-            for row in tabulka:
-                row[1] = row[0]
-                tabulka.updateRow(row)
-          arcpy.DeleteField_management(intersect,i)
-          arcpy.AddField_management(intersect, i, "DOUBLE")
-          with arcpy.da.UpdateCursor(intersect, [i, inn]) as tabulka:
-            for rowx in tabulka:
-                rowx[0] = rowx[1]
-                tabulka.updateRow(row)
-          arcpy.DeleteField_management(intersect,inn)
-      del row,rowx
-      """
 
         with arcpy.da.SearchCursor(intersect, sfield) as cursor:
             for row in cursor:
@@ -301,9 +278,6 @@ class PrepareData:
                         arcpy.AddMessage(
                             "Values in soilveg tab are not correct - STOP, check shp file Prunik in output")
                         sys.exit()
-
-        # delta_t = float(gp.GetParameterAsText(constants.PARAMETER_DELTA_T))*60.0
-        delta_t = "nechci" # co teda tohle? # 23.05.2018 MK
 
         # setting progressor
         gp.SetProgressor("default", "Data preparations...") # mrknout na tohle, zatim nevim, co to je a kde by to melo byt 23.05.2018 MK
