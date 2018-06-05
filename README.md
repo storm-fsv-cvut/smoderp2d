@@ -1,7 +1,7 @@
 # smoderp
 Distributed event-based model for surface and subsurface runoff and erosion
 
-
+```
     @ @ @   @       @     @ @     @ @ @     @ @ @ @  @ @ @    @ @ @
    @        @ @   @ @   @     @   @     @   @        @     @  @     @
    @        @   @   @  @       @  @      @  @        @     @  @     @
@@ -17,3 +17,4 @@ Distributed event-based model for surface and subsurface runoff and erosion
                  \_____/______/                         @     @      @
                               \                       @       @     @
                                \____________________ @ @ @ @ @ @ @
+```
