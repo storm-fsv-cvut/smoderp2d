@@ -327,9 +327,7 @@ class PrepareData:
         ll_corner = arcpy.Point(x_coordinate, y_coordinate)
 
         # raster to numpy array conversion
-        zeros = []  # k cemu jsou ty nuly? Nevidim nikde vyuziti 23.05.2018 MK
         dmt_array = arcpy.RasterToNumPyArray(dmt_clip)
-        zeros.append(dmt_array)
         mat_slope = arcpy.RasterToNumPyArray(slope_clip)
         mat_fd = arcpy.RasterToNumPyArray(flow_direction_clip)
 
@@ -348,24 +346,21 @@ class PrepareData:
         cols = dmt_array.shape[1]
 
         # nasledujici blok by sel urcite napsat lip 23.05.2018 MK
-        mat_dmt = dmt_array; zeros.append(mat_dmt)
-        mat_k = np.zeros([rows, cols], float); zeros.append(mat_k)
-        mat_s = np.zeros([rows, cols], float); zeros.append(mat_s)
-        mat_n = np.zeros([rows, cols], float); zeros.append(mat_n)
-        mat_ppl = np.zeros([rows, cols], float); zeros.append(mat_ppl)
-        mat_pi = np.zeros([rows, cols], float); zeros.append(mat_pi)
-        mat_ret = np.zeros([rows, cols], float); zeros.append(mat_ret)
-        mat_b = np.zeros([rows, cols], float); zeros.append(mat_b)
-        mat_x = np.zeros([rows, cols], float); zeros.append(mat_x)
-        mat_y = np.zeros([rows, cols], float); zeros.append(mat_y)
-        mat_tau = np.zeros([rows, cols], float); zeros.append(mat_tau)
-        mat_v = np.zeros([rows, cols], float); zeros.append(mat_v)
-        # prevod = np.zeros([rows,cols],float)
-        mat_nan = np.zeros([rows, cols], float); zeros.append(mat_nan)
-        # mat_slope = np.zeros([rows,cols],float)
-        zeros.append(mat_slope)
-        mat_a = np.zeros([rows, cols], float); zeros.append(mat_a)
-        mat_aa = np.zeros([rows, cols], float); zeros.append(mat_aa)
+        mat_dmt = dmt_array
+        mat_k = np.zeros([rows, cols], float)
+        mat_s = np.zeros([rows, cols], float)
+        mat_n = np.zeros([rows, cols], float)
+        mat_ppl = np.zeros([rows, cols], float)
+        mat_pi = np.zeros([rows, cols], float)
+        mat_ret = np.zeros([rows, cols], float)
+        mat_b = np.zeros([rows, cols], float)
+        mat_x = np.zeros([rows, cols], float)
+        mat_y = np.zeros([rows, cols], float)
+        mat_tau = np.zeros([rows, cols], float)
+        mat_v = np.zeros([rows, cols], float)
+        mat_nan = np.zeros([rows, cols], float)
+        mat_a = np.zeros([rows, cols], float)
+        mat_aa = np.zeros([rows, cols], float)
 
         all_attrib = [
             mat_k,
@@ -446,8 +441,6 @@ class PrepareData:
         # trimming the edge cells
         # convert dmt to array
         mat_dmt_fill = arcpy.RasterToNumPyArray(dmt_fill)
-        zeros.append(mat_dmt_fill)
-        zeros.append(mat_fd)
 
         # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u sklonu a acc
         i = 0
@@ -583,8 +576,6 @@ class PrepareData:
             "#")
         rhcrit_v.save(temp + os.sep + "hcrit_v")
 
-        zeros.append(mat_hcrit)
-
         # fiktivni vrstevnice a priprava "state cell, jestli to je tok ci plocha
         pii = math.pi / 180.0
         asp = arcpy.sa.Aspect(dmt_clip)
@@ -600,22 +591,8 @@ class PrepareData:
         efect_vrst = arcpy.sa.Times(times1, spix)
         efect_vrst.save(temp + os.sep + "efect_vrst")
         mat_efect_vrst = arcpy.RasterToNumPyArray(efect_vrst)
-        zeros.append(mat_efect_vrst)
 
         state_cell = np.zeros([rows, cols], float)
-        zeros.append(state_cell)
-
-        def zero(mat_layer, zero_layer, loc_row, loc_cols):
-            mat_layer = np.zeros([rows, cols], float)
-            for i in range(loc_row):
-                for j in range(loc_cols):
-                    if zero_layer[i][j] == NoDataValue:
-                        mat_layer[i][j] = NoDataValue
-                    else:
-                        mat_layer[i][j] = mat_layer[i][j]
-            return mat_layer
-        for zz in zeros:
-            zz = zero(zz, mat_nan, rows, cols)
 
         # dokud neni mfda pripraven je toto zakomentovane
         # mfda = arcpy.GetParameterAsText(constants.PARAMETER_MFDA)  # az se tohle odkomentuje, tak prehodit do
