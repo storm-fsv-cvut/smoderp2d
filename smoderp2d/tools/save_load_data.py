@@ -10,7 +10,7 @@ from smoderp2d.providers.logger import Logger
 def save_data(data, filename):
     """Save data into pickle.
     """
-    dirname = os.path.dirname(dirname)
+    dirname = os.path.dirname(filename)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
 
