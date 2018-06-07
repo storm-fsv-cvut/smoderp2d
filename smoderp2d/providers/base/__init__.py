@@ -3,7 +3,6 @@ import sys
 import argparse
 import shutil
 import math
-import time
 import ConfigParser
 
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
@@ -38,9 +37,6 @@ class BaseProvider(object):
 
         # set logging level
         Logger.setLevel(self._config.get('Other', 'logging'))
-
-        # progress
-        self.startTime = time.time()
 
     def _load_roff(self, indata):
         """Load configuration data for roff compurtation only.
@@ -181,29 +177,9 @@ class BaseProvider(object):
 
         return ret
         
-    def message(self, line):
-        """Print message.
-
-        :param str line: string to be printed
-        """
-        sys.stdout.write('{}{}'.format(line, os.linesep))
-
-    def progress(self, i, dt, iter_, total_time):
-        self.message("Total time      [s]: {0:.2f}".format(total_time)) # TODO: ms ???
-        self.message("Time step       [s]: {0:.2f}".format(dt))
-        self.message("Time iterations    : {0:d}".format(iter_))
-        self.message("Percentage done [%]: {0:.2f}".format(i))
-        if i > 0:
-            diffTime = time.time() - self.startTime
-            remaining = (100.0 * diffTime) / i - diffTime
-        else:
-            remaining = '??'
-        self.message("Time to end     [s]: {0:.2f}".format(remaining))
-        self.message("-" * 40)
-        
     def logo(self):
         """Print Smoderp2d ascii-style logo."""
         with open(os.path.join(os.path.dirname(__file__), 'txtlogo.txt'), 'r') as fd:
             for line in fd.readlines():
-                line = line.rstrip('\n')
-                self.message(line)
+                sys.stdout.write(line)
+        sys.stdout.flush()

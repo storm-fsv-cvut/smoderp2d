@@ -23,6 +23,8 @@ from smoderp2d.tools.times_prt import TimesPrt
 from smoderp2d.io_functions import post_proc
 from smoderp2d.io_functions import hydrographs as wf
 
+from smoderp2d.providers import Logger
+
 from smoderp2d.exceptions import MaxIterationExceeded
 
 class FlowControl(object):
@@ -147,7 +149,7 @@ class Runoff(object):
         self.courant = Courant()
         self.delta_t = self.courant.initial_time_step(self.surface)
         self.courant.set_time_step(self.delta_t)
-        provider.message('Corrected time step is {} [s]'.format(self.delta_t))
+        Logger.info('Corrected time step is {} [s]'.format(self.delta_t))
 
         # opens files for storing hydrographs
         if Globals.points and Globals.points != "#":
@@ -194,12 +196,12 @@ class Runoff(object):
             True
         )
 
-        self.provider.message('-' * 80)
+        Logger.info('-' * 80)
 
     def run(self):
         # saves time before the main loop
         start = time.time()
-        self.provider.message('Start of computing...')
+        Logger.info('Start of computing...')
 
         # main loop: until the end time
         i = j = 0
@@ -288,7 +290,7 @@ class Runoff(object):
                 break
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
-            self.provider.progress(
+            Logger.progress(
                 timeperc,
                 self.delta_t,
                 self.flow_control.iter_,
@@ -340,11 +342,11 @@ class Runoff(object):
 
                     self.surface.arr[i][j].h_total_pre = self.surface.arr[i][j].h_total_new
 
-        self.provider.message('Saving data...')
+        Logger.info('Saving data...')
 
-        self.provider.message('')
-        self.provider.message('-' * 80)
-        self.provider.message('Total computing time: {}'.format(time.time() - start))
+        Logger.info('')
+        Logger.info('-' * 80)
+        Logger.info('Total computing time: {}'.format(time.time() - start))
 
         # TODO
         # post_proc.do(self.cumulative, Globals.mat_slope, Gl, self.surface.arr)
@@ -352,14 +354,14 @@ class Runoff(object):
         post_proc.stream_table(Globals.outdir + os.sep, self.surface, Globals.toky_loc)
 
         self.hydrographs.closeHydrographs()
-        self.provider.message("")
+        Logger.info("")
 
         # TODO: print stats in better way
-        import platform
-        if platform.system() == "Linux":
-            pid = os.getpid()
-            self.provider.message("/proc/{}/status reading".format(pid))
-            with open(os.path.join('/', 'proc', str(pid), "status"), 'r') as fp:
-                for i, line in enumerate(fp):
-                    if i >= 11 and i <= 23:
-                        self.provider.message(line.rstrip(os.linesep))
+        # import platform
+        # if platform.system() == "Linux":
+        #     pid = os.getpid()
+        #     Logger.info("/proc/{}/status reading".format(pid))
+        #     with open(os.path.join('/', 'proc', str(pid), "status"), 'r') as fp:
+        #         for i, line in enumerate(fp):
+        #             if i >= 11 and i <= 23:
+        #                 Logger.info(line.rstrip(os.linesep))

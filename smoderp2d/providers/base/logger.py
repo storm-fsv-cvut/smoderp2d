@@ -2,6 +2,7 @@ import sys
 import types
 import logging
 import os
+import time
 
 # python 2.7 hack (in Python 3 can be replaced by 'terminates')
 def customEmit(self, record):
@@ -38,6 +39,9 @@ class LoggerClass(logging.getLoggerClass()):
         super(LoggerClass, self).__init__(name)
         self.addHandler(NoNewLineLogHandler(sys.stderr))
         self.setLevel(level)
+
+        # progress
+        self.startTime = time.time()
 
     def debug(self, message, *args, **kwargs):
         if not self.isEnabledFor(logging.DEBUG):
@@ -83,3 +87,18 @@ class LoggerClass(logging.getLoggerClass()):
                                                                   os.linesep),
                   args, **kwargs
         )
+
+    def progress(self, i, dt, iter_, total_time):
+        self.info("Total time      [s]: {0:.2f}".format(total_time)) # TODO: ms ???
+        self.info("Time step       [s]: {0:.2f}".format(dt))
+        self.info("Time iterations    : {0:d}".format(iter_))
+        self.info("Percentage done [%]: {0:.2f}".format(i))
+        if i > 0:
+            diffTime = time.time() - self.startTime
+            remaining = (100.0 * diffTime) / i - diffTime
+        else:
+            remaining = '??'
+        self.info("Time to end     [s]: {0:.2f}".format(remaining))
+        self.info("-" * 40)
+        
+        
