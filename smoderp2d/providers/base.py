@@ -40,60 +40,6 @@ class BaseProvider(object):
         # progress
         self.startTime = time.time()
 
-    def parse_data(self, indata):
-        # TODO: rewrite save pickle to use dict instead of list
-        
-        data = {}
-        data['br'],                       \
-        data['bc'],                       \
-        data['mat_boundary'],             \
-        data['rr'],                       \
-        data['rc'],                       \
-        data['outletCells'],              \
-        data['xllcorner'],                \
-        data['yllcorner'],                \
-        data['NoDataValue'],              \
-        data['array_points'],             \
-        data['c'],                        \
-        data['r'],                        \
-        data['combinatIndex'],            \
-        data['delta_t'],                  \
-        data['mat_pi'],                   \
-        data['mat_ppl'],                  \
-        data['surface_retention'],        \
-        data['mat_inf_index'],            \
-        data['mat_hcrit'],                \
-        data['mat_aa'],                   \
-        data['mat_b'],                    \
-        data['mat_reten'],                \
-        data['mat_fd'],                   \
-        data['mat_dmt'],                  \
-        data['mat_efect_vrst'],           \
-        data['mat_slope'],                \
-        data['mat_nan'],                  \
-        data['mat_a'],                    \
-        data['mat_n'],                    \
-        data['outdir'],                   \
-        data['pixel_area'],               \
-        data['points'],                   \
-        data['poradi'],                   \
-        data['end_time'],                 \
-        data['spix'],                     \
-        data['state_cell'],               \
-        data['temp'],                     \
-        data['type_of_computing'],        \
-        data['vpix'],                     \
-        data['mfda'],                     \
-        data['sr'],                       \
-        data['itera'],                    \
-        data['toky'],                     \
-        data['cell_stream'],              \
-        data['mat_tok_reach'],            \
-        data['STREAM_RATIO'],             \
-        data['toky_loc'] = indata
-
-        return data
-        
     def _load_roff(self, indata):
         """Load configuration data for roff compurtation only.
 
@@ -106,7 +52,7 @@ class BaseProvider(object):
 
         # the data are loared from a pickle file
         try:
-            data = self.parse_data(load_data(indata))
+            data = load_data(indata)
         except IOError as e:
             raise ProviderError('{}'.format(e))
 
