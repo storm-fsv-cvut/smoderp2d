@@ -22,8 +22,7 @@ from smoderp2d.core.general import Globals
 from smoderp2d.tools.tools import comp_type
 import smoderp2d.flow_algorithm.mfd as mfd
 import smoderp2d.flow_algorithm.D8 as D8_
-import smoderp2d.io_functions.prt as prt
-
+from smoderp2d.providers.logger import Logger
 
 # Defines methods for executing the one direction flow algorithm D8.
 #
@@ -42,7 +41,7 @@ class D8(object):
     #
 
     def __init__(self):
-        prt.message("\tD8 flow algorithm")
+        Logger.info("D8 flow algorithm")
         self.inflows = D8_.new_inflows(Globals.get_mat_fd())
 
     # updates #inflows list if the diffuse approach is used.
@@ -98,7 +97,7 @@ class Mfda(object):
 
     def __init__(self):
 
-        prt.message("\tMultiflow direction algorithm")
+        Logger.info("Multiflow direction algorithm")
         self.isRill = comp_type('rill')
         self.inflows, fd_rill = mfd.new_mfda(
             mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols)

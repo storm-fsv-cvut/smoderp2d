@@ -1,10 +1,7 @@
-
-
 from smoderp2d.core.general import GridGlobals, Globals as Gl
+from smoderp2d.providers.logger import Logger
 
 import smoderp2d.stream_functions.stream_f as stream_f
-import smoderp2d.io_functions.prt as prt
-
 
 class Reach():
 
@@ -23,8 +20,7 @@ class Reach():
         self.to_node = to_node
         self.length = length
         if sklon < 0:
-            prt.message("Slope in reach part" + str(
-                id) + "indicated minus slope in stream")
+            Logger.info("Slope in reach part {} indicated minus slope in stream".format(id_))
         self.slope = abs(sklon)
         self.smoderp = smoderp
         self.no = CISLO
@@ -79,9 +75,7 @@ class Stream(object):
         super(Stream, self).__init__()
         print ("x")
 
-        # jj
-        prt.message('Stream:')
-        prt.message('\tON')
+        Logger.info('Stream: ON')
 
         # pak kouknout co je treba jen uvnitr tridy
         # self.temp_dp = sp.temp_dp
@@ -183,8 +177,7 @@ class StreamPass(object):
 
     def __init__(self):
         super(StreamPass, self).__init__()
-        prt.message('Stream:')
-        prt.message('\tOFF')
+        Logger.info('Stream: OFF')
 
     def reset_inflows(self):
         pass

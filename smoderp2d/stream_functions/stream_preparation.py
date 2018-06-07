@@ -24,8 +24,7 @@ import numpy as np
 from arcpy.sa import *
 import math
 
-
-import smoderp2d.io_functions.prt as prt
+from smoderp2d.providers.logger import Logger
 
 
 # definice erroru  na urovni modulu
@@ -116,7 +115,7 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
             "VALUE < 300")  # hodnota value??
         setnull.save(temp_dp + os.sep + "setnull")
     except:
-        prt.message(
+        Logger.info(
             "Unexepted error during setnull calculation:",
             sys.exc_info()[0])
         raise
@@ -125,7 +124,7 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
     """try:
       toky_dmt = arcpy.sa.StreamToFeature(setnull, flow_direction, temp_dp+os.sep+"toky_dmt", "SIMPLIFY")
   except:
-      prt.message("Unexepted error during stream to future calculation:", sys.exc_info()[0])
+      Logger.info("Unexepted error during stream to future calculation:", sys.exc_info()[0])
       raise"""
 
     # WATER FLOWS ACCORDING DIBAVOD:
@@ -158,16 +157,16 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
          "UTOKJN_F"])
 
     # Feature vertices to points - START
-    prt.message("Feature vertices to points - START...")
+    Logger.info("Feature vertices to points - START...")
     start = arcpy.FeatureVerticesToPoints_management(
         toky, temp_dp + os.sep + "start", "START")
     # Feature vertices to points - END
-    prt.message("Feature vertices to points - END...")
+    Logger.info("Feature vertices to points - END...")
     end = arcpy.FeatureVerticesToPoints_management(
         toky, temp_dp + os.sep + "end", "END")
 
     # Extract value to points - END
-    prt.message("Extract value to points - END...")
+    Logger.info("Extract value to points - END...")
     xxx = temp_dp + os.sep + "end_point"
     end_point = arcpy.sa.ExtractValuesToPoints(
         end, dmt_clip, xxx, "NONE", "VALUE_ONLY")
@@ -198,7 +197,7 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
     fc = temp_dp + os.sep + "toky.shp"
 
     field = ["OBJECTID", "RASTERVALU", "RASTERVA_1"]
-    prt.message("Flip lines...")  # mat_tok_usek
+    Logger.info("Flip lines...")  # mat_tok_usek
 
     # jj tu se zamkne toky a zustane zamcen...
     toky_t = arcpy.MakeFeatureLayer_management(
@@ -219,15 +218,15 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
          "ORIG_FID_1"])
 
     # Feature vertices to points - START
-    prt.message("Feature vertices to points - START...")
+    Logger.info("Feature vertices to points - START...")
     start = arcpy.FeatureVerticesToPoints_management(
         toky, temp_dp + os.sep + "start", "START")
     # Feature vertices to points - END
-    prt.message("Feature vertices to points - END...")
+    Logger.info("Feature vertices to points - END...")
     end = arcpy.FeatureVerticesToPoints_management(
         toky, temp_dp + os.sep + "end", "END")
     # Extract value to points - START
-    prt.message("Extract value to points - START...")
+    Logger.info("Extract value to points - START...")
     start_point_check = arcpy.sa.ExtractValuesToPoints(
         start,
         dmt,
@@ -236,7 +235,7 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
      "VALUE_ONLY")
     arcpy.AddXY_management(start_point_check)
     # Extract value to points - END
-    prt.message("Extract value to points - END...")
+    Logger.info("Extract value to points - END...")
     end_point_check = arcpy.sa.ExtractValuesToPoints(
         end,
         dmt,
@@ -263,7 +262,7 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
             if row[1] > row[3]:
                 continue
             else:
-                prt.message("Flip line")
+                Logger.info("Flip line")
                 arcpy.FlipLine_edit(fc)
     addfield(toky, "to_node", "DOUBLE", -9999)
 
@@ -452,7 +451,7 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
         for row in cursor:
             for i in range(len(row)):
                 if row[i] == " ":
-                    prt.message(
+                    Logger.info(
                         "Value in tab_stream_tvar are no correct - STOP, check shp file toky in output")
 
                     sys.exit()

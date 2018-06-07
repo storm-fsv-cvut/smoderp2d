@@ -5,8 +5,7 @@ import math
 import smoderp2d.constants as constants
 from smoderp2d.tools.tools import comp_type
 from smoderp2d.tools.tools import get_argv
-import smoderp2d.io_functions.prt as prt
-
+from smoderp2d.providers.logger import Logger
 
 from smoderp2d.core.general import Globals as Gl
 
@@ -168,5 +167,6 @@ class Courant():
             else:
                 return delta_t * self.max_delta_t_mult, ratio
 
-        prt.error(
-            'courant.cour() missed all its time step conditions\n no rule to preserve or change the time step!')
+        Logger.critical(
+            'courant.cour() missed all its time step conditions\n no rule to preserve or change the time step!'
+        )

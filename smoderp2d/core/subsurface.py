@@ -5,9 +5,9 @@ import math
 from smoderp2d.core.general import GridGlobals, Globals, Size
 from smoderp2d.core.kinematic_diffuse import Kinematic
 from smoderp2d.exceptions import SmoderpError
+from smoderp2d.providers.logger import Logger
 
 import smoderp2d.processes.subsurface as darcy
-import smoderp2d.io_functions.prt as prt
 
 class SubArrs:
     def __init__(self, L_sub, Ks, vg_n, vg_l, z, ele):
@@ -189,7 +189,7 @@ class SubsurfacePass(GridGlobals, Size):
 
         self.q_subsurface = None
         # self.arr = np.zeros([0],float)
-        prt.message("\tOFF")
+        Logger.info("Subsurface: OFF")
 
     def new_inflows(self):
         pass
@@ -222,7 +222,7 @@ class SubsurfacePass(GridGlobals, Size):
 class Subsurface(SubsurfaceC if Globals.subflow else SubsurfacePass):
 
     def __init__(self, L_sub=0.010, Ks=0.001, vg_n=1.5, vg_l=0.5):
-        prt.message("Subsurface:")
+        Logger.info("Subsurface:")
         super(Subsurface, self).__init__(
             L_sub=L_sub,
             Ks=Ks,

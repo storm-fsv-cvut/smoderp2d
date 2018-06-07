@@ -17,7 +17,6 @@ import smoderp2d.tools.tools as tools
 import smoderp2d.constants as constants
 from smoderp2d.tools.tools import get_argv
 from smoderp2d.tools.tools import comp_type
-import smoderp2d.io_functions.prt as prt
 from smoderp2d.tools.tools import logical_argv
 
 from smoderp2d.core.general import Globals as Gl
@@ -35,7 +34,6 @@ def raster_output_arcgis(arrin, G, fs, outname, reachNA=True):
     tmpdat = arrin.copy()
     for ii in rrows:
         for jj in rcols[ii]:
-            # prt.message(tmpdat[ii][jj])
             tmparr[ii][jj] = tmpdat[ii][jj]
     outName = output + os.sep + outname
     saveAG = arcpy.NumPyArrayToRaster(

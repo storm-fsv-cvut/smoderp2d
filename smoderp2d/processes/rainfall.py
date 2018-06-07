@@ -3,10 +3,11 @@
 # SMODERP 2D
 # Created by Jan Zajicek, FCE, CTU Prague, 2012-2013
 
+import sys
 import numpy as np
 import smoderp2d.constants as constants
-import sys
-import smoderp2d.io_functions.prt as prt
+
+from smoderp2d.providers.logger import Logger
 
 # definice erroru  na urovni modulu
 #
@@ -114,9 +115,9 @@ def load_precipitation(fh):
         return sr, itera
 
     except IOError:
-        prt.message("The rainfall file does not exist!")
+        Logger.critical("The rainfall file does not exist!")
     except:
-        prt.message("Unexpected error:", sys.exc_info()[0])
+        Logger.critical("Unexpected error:", sys.exc_info()[0])
         raise
 
 

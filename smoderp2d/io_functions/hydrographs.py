@@ -2,8 +2,9 @@ import sys
 import numpy as np
 import os
 from smoderp2d.tools.tools import comp_type
-import smoderp2d.io_functions.prt as prt
 from smoderp2d.tools.tools import get_argv
+from smoderp2d.providers.logger import Logger
+
 import smoderp2d.constants as constants
 
 
@@ -154,7 +155,7 @@ class Hydrographs:
         del self.inStream[-1]
         del self.inSurface[-1]
 
-        prt.message("Hydrographs files has been created...")
+        Logger.info("Hydrographs files has been created...")
 
     def write_hydrographs_record(
             self, i, j, fc, courant, dt, surface, subsurface, currRain, inStream=False, sep=';'):

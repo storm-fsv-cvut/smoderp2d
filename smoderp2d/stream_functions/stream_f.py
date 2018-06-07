@@ -2,8 +2,9 @@
 
 import math
 import sys
-import smoderp2d.io_functions.prt as prt
 from inspect import currentframe, getframeinfo
+
+from smoderp2d.providers.logger import Logger
 
 # Jen na debug, umi to zjistit nazev souboru a radek odkud se\n
 #  <em>print frameinfo.filename, frameinfo.lineno</em>\n
@@ -39,7 +40,7 @@ def compute_h(A, m, b, err=0.0001, max_iter=20):
         h = h_pre - feval(h_pre) / dfdheval(h_pre)
         h_pre = h
         if iter_ >= max_iter:
-            prt.error(
+            Logger.error(
                 "if file",
                 frameinfo.filename,
                 "near line ",

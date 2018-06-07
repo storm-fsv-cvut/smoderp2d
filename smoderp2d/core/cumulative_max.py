@@ -13,8 +13,7 @@ import numpy as np
 # smoderp import
 from smoderp2d.core.general import *
 from smoderp2d.tools.tools import comp_type
-import smoderp2d.io_functions.prt as prt
-
+from smoderp2d.providers.logger import Logger
 
 from smoderp2d.core.general import GridGlobals, Globals
 
@@ -35,7 +34,7 @@ class CumulativeSubsurface(object):
 
     def __init__(self):
 
-        prt.message('\tSubsurface')
+        Logger.info('Subsurface')
         super(CumulativeSubsurface, self).__init__()
 
         self.arrs[17] = 'exfiltration'
@@ -114,8 +113,7 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
 
     def __init__(self):
         super(Cumulative, self).__init__()
-        prt.message('Save cumulative and maximum values from:')
-        prt.message('\tSurface')
+        Logger.info('Save cumulative and maximum values from: Surface')
 
         # Dictionary stores the python arrays identification.
         #
