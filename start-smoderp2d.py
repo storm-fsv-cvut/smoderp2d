@@ -1,5 +1,9 @@
 ﻿#!/usr/bin/env python
 
-import smoderp2d.main as sm
+if __name__ == "__main__":
+    import smoderp2d.main as sm
 
-sm.run()
+    sm.run()
+else:
+    import sys
+    sys.exit("Can be run only as standalone program.")
