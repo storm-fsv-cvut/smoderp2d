@@ -73,7 +73,6 @@ class Stream(object):
 
     def __init__(self):
         super(Stream, self).__init__()
-        print ("x")
 
         Logger.info('Stream: ON')
 
