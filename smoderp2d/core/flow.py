@@ -22,7 +22,7 @@ from smoderp2d.core.general import Globals
 from smoderp2d.tools.tools import comp_type
 import smoderp2d.flow_algorithm.mfd as mfd
 import smoderp2d.flow_algorithm.D8 as D8_
-from smoderp2d.providers.logger import Logger
+from smoderp2d.providers import Logger
 
 # Defines methods for executing the one direction flow algorithm D8.
 #

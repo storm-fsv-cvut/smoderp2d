@@ -1,1 +1,1 @@
-from base import BaseProvider
+from base import BaseProvider, Logger

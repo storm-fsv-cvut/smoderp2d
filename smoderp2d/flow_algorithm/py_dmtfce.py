@@ -2,7 +2,7 @@ import numpy as np
 import math
 
 import smoderp2d.constants as constants
-from smoderp2d.providers.logger import Logger
+from smoderp2d.providers import Logger
 
 def neighbors(i, j, array, x, y):  # function to determine all neighbor cell to actual cell in the raster dataset
     "Return all neigbours to actuall cell in the raster dataset"

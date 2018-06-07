@@ -83,5 +83,3 @@ class LoggerClass(logging.getLoggerClass()):
                                                                   os.linesep),
                   args, **kwargs
         )
-
-Logger = LoggerClass('Smoderp')

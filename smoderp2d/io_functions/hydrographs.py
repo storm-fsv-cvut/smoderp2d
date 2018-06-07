@@ -3,7 +3,7 @@ import numpy as np
 import os
 from smoderp2d.tools.tools import comp_type
 from smoderp2d.tools.tools import get_argv
-from smoderp2d.providers.logger import Logger
+from smoderp2d.providers import Logger
 
 import smoderp2d.constants as constants
 

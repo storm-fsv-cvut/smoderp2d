@@ -4,7 +4,7 @@ import math
 import sys
 from inspect import currentframe, getframeinfo
 
-from smoderp2d.providers.logger import Logger
+from smoderp2d.providers import Logger
 
 # Jen na debug, umi to zjistit nazev souboru a radek odkud se\n
 #  <em>print frameinfo.filename, frameinfo.lineno</em>\n

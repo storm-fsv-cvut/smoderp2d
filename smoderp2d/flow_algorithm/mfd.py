@@ -10,7 +10,7 @@ import numpy as np
 
 import smoderp2d.constants as constants
 import smoderp2d.flow_algorithm.py_dmtfce as py_dmtfce
-from smoderp2d.providers.logger import Logger
+from smoderp2d.providers import Logger
 
 def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
     state = 0

@@ -5,7 +5,7 @@ import math
 from smoderp2d.core.general import GridGlobals, Globals, Size
 from smoderp2d.core.kinematic_diffuse import Kinematic
 from smoderp2d.exceptions import SmoderpError
-from smoderp2d.providers.logger import Logger
+from smoderp2d.providers import Logger
 
 import smoderp2d.processes.subsurface as darcy
 

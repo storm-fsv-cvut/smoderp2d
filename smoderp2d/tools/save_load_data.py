@@ -5,7 +5,7 @@ import os
 import pickle
 import sys
 
-from smoderp2d.providers.logger import Logger
+from smoderp2d.providers import Logger
 
 def save_data(data, filename):
     """Save data into pickle.

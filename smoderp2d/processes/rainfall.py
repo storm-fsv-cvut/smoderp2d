@@ -7,7 +7,7 @@ import sys
 import numpy as np
 import smoderp2d.constants as constants
 
-from smoderp2d.providers.logger import Logger
+from smoderp2d.providers import Logger
 
 # definice erroru  na urovni modulu
 #

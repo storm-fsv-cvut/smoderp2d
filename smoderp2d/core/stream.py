@@ -1,5 +1,5 @@
 from smoderp2d.core.general import GridGlobals, Globals as Gl
-from smoderp2d.providers.logger import Logger
+from smoderp2d.providers import Logger
 
 import smoderp2d.stream_functions.stream_f as stream_f
 

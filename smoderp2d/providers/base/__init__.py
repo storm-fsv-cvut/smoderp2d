@@ -7,8 +7,10 @@ import time
 import ConfigParser
 
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
-from smoderp2d.providers.logger import Logger
+from smoderp2d.providers.base.logger import LoggerClass
 from smoderp2d.exceptions import ProviderError
+
+Logger = LoggerClass('Smoderp')
 
 class BaseProvider(object):
     def __init__(self):

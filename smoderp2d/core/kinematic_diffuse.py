@@ -1,6 +1,6 @@
 from smoderp2d.core.general import Globals
 from smoderp2d.core.flow import *
-from smoderp2d.providers.logger import Logger
+from smoderp2d.providers import Logger
 
 import smoderp2d.flow_algorithm.flow_direction as flow_direction
 

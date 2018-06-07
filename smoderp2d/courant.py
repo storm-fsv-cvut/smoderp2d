@@ -5,7 +5,7 @@ import math
 import smoderp2d.constants as constants
 from smoderp2d.tools.tools import comp_type
 from smoderp2d.tools.tools import get_argv
-from smoderp2d.providers.logger import Logger
+from smoderp2d.providers import Logger
 
 from smoderp2d.core.general import Globals as Gl
 
