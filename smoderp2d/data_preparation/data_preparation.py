@@ -115,6 +115,45 @@ class PrepareData:
 
         mat_efect_vrst, state_cell, mfda, sr, itera = self.contour(dmt_clip, temp, spix)
 
+        # pokud jsou zadane vsechny vstupy pro vypocet toku
+        # toky se pocitaji a type_of_computing je 3
+        listin = [stream, tab_stream_tvar, tab_stream_tvar_code]
+        tflistin = [len(i) > 1 for i in listin]
+
+        if all(tflistin):
+            type_of_computing = 3
+        else:
+            pass
+
+        if (type_of_computing == 3) or (type_of_computing == 5):
+
+            arcpy.AddMessage('Stream preparation...')
+
+            toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sp.prepare_streams(
+                dmt, dmt_copy, mat_dmt_fill, null_shp,
+                mat_nan, mat_fd, vpix,
+                spix, rows, cols, ll_corner,
+                NoDataValue, self.addfield,
+                self.delfield, output, dmt_clip,
+                intersect, null_shp, gp)
+
+            arcpy.AddMessage("Stream preparation has finished")
+
+        else:
+            toky = None
+            cell_stream = None
+            mat_tok_usek = None
+            # mat_tok = None
+            STREAM_RATIO = None
+            tokyLoc = None
+
+        boundaryRows, boundaryCols, rrows, rcols, mat_boundary = self.find_boudary_cells(
+            rows, cols, mat_nan, NoDataValue, mfda)
+
+        outletCells = None
+
+        arcpy.AddMessage("Data preparation has been finished")
+
         return boundaryRows, boundaryCols, mat_boundary, rrows, rcols, outletCells, x_coordinate, y_coordinate, \
             NoDataValue, array_points, \
             cols, rows, combinatIndex, delta_t, \
@@ -589,44 +628,6 @@ class PrepareData:
 
         return mat_efect_vrst, state_cell, mfda, sr, itera
 
-        # pokud jsou zadane vsechny vstupy pro vypocet toku
-        # toky se pocitaji a type_of_computing je 3
-        listin = [stream, tab_stream_tvar, tab_stream_tvar_code]
-        tflistin = [len(i) > 1 for i in listin]
-
-        if all(tflistin):
-            type_of_computing = 3
-        else:
-            pass
-
-        if (type_of_computing == 3) or (type_of_computing == 5):
-
-            arcpy.AddMessage('Stream preparation...')
-
-            toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sp.prepare_streams(
-                dmt, dmt_copy, mat_dmt_fill, null_shp,
-                mat_nan, mat_fd, vpix,
-                spix, rows, cols, ll_corner,
-                NoDataValue, self.addfield,
-                self.delfield, output, dmt_clip,
-                intersect, null_shp, gp)
-
-            arcpy.AddMessage("Stream preparation has finished")
-        else:
-            toky = None
-            cell_stream = None
-            mat_tok_usek = None
-            # mat_tok = None
-            STREAM_RATIO = None
-            tokyLoc = None
-
-        boundaryRows, boundaryCols, rrows, rcols, mat_boundary = find_boudary_cells(
-            rows, cols, mat_nan, NoDataValue, mfda)
-
-        outletCells = None
-
-        arcpy.AddMessage("Data preparation has been finished")
-
     def zapis(self, name, array_export, l_x, l_y, spix, vpix, NoDataValue, folder):
         ll_corner = arcpy.Point(l_x, l_y)
         raster = arcpy.NumPyArrayToRaster(
@@ -636,19 +637,18 @@ class PrepareData:
             vpix,
             NoDataValue)
         raster.save(folder + os.sep + name)
-        return raster
+        return raster # musi tady byt return raster?
 
-    # Identification of cells at the domain boundary
-    #  @param r rows
-    def find_boudary_cells(r, c, mat_nan, noData, mfda):
+    def find_boudary_cells(self, rows, cols, mat_nan, noData, mfda):
+        # Identification of cells at the domain boundary
 
-        mat_boundary = np.zeros([r, c], float)
+        mat_boundary = np.zeros([rows, cols], float)
 
-        nr = range(r)
-        nc = range(c)
+        nr = range(rows)
+        nc = range(cols)
 
-        cols = []
-        rows = []
+        rcols = []
+        rrows = []
 
         boundaryCols = []
         boundaryRows = []
@@ -656,7 +656,7 @@ class PrepareData:
         for i in nr:
             for j in nc:
                 val = mat_nan[i][j]
-                if i == 0 or j == 0 or i == (r - 1) or j == (c - 1):
+                if i == 0 or j == 0 or i == (rows - 1) or j == (cols - 1):
                     if val != noData:
                         val = -99
                 else:
@@ -680,22 +680,20 @@ class PrepareData:
                 if mat_boundary[i][j] == -99 and inBoundary == False:
                     boundaryRows.append(i)
                     inBoundary = True
+
                 if mat_boundary[i][j] == -99 and inBoundary:
                     oneColBoundary.append(j)
 
-                # if (mat_boundary[i][j]==0.0 or mat_boundary[i][j]==-99) and
-                # inDomain == False:
                 if (mat_boundary[i][j] == 0.0) and inDomain == False:
-                    rows.append(i)
+                    rrows.append(i)
                     inDomain = True
-                # if (mat_boundary[i][j]==0.0 or mat_boundary[i][j]==-99) and
-                # inDomain == True:
+
                 if (mat_boundary[i][j] == 0.0) and inDomain:
                     oneCol.append(j)
 
             inDomain = False
             inBoundary = False
-            cols.append(oneCol)
+            rcols.append(oneCol)
             boundaryCols.append(oneColBoundary)
 
-        return boundaryRows, boundaryCols, rows, cols, mat_boundary
+        return boundaryRows, boundaryCols, rrows, rcols, mat_boundary
