@@ -11,6 +11,8 @@ import csv
 import smoderp2d.processes.rainfall as rainfall
 import smoderp2d.flow_algorithm.arcgis_dmtfce as arcgis_dmtfce
 
+import smoderp2d.stream_functions.stream_preparation as sp
+
 from smoderp2d import constants
 
 class PrepareData:
@@ -110,6 +112,8 @@ class PrepareData:
 
         mat_hcrit, mat_a, mat_aa = self.par(all_attrib, rows, cols, mat_slope, NoDataValue, mat_a, mat_aa,
                                             ll_corner, vpix, spix, temp)
+
+        mat_efect_vrst, state_cell, mfda, sr, itera = self.contour(dmt_clip, temp, spix)
 
         return boundaryRows, boundaryCols, mat_boundary, rrows, rcols, outletCells, x_coordinate, y_coordinate, \
             NoDataValue, array_points, \
@@ -557,6 +561,8 @@ class PrepareData:
 
         return mat_hcrit, mat_a, mat_aa
 
+    def contour(self,dmt_clip, temp, spix):
+
         # fiktivni vrstevnice a priprava "state cell, jestli to je tok ci plocha
         pii = math.pi / 180.0
         asp = arcpy.sa.Aspect(dmt_clip)
@@ -579,11 +585,13 @@ class PrepareData:
         # mfda = arcpy.GetParameterAsText(constants.PARAMETER_MFDA)  # az se tohle odkomentuje, tak prehodit do
                                                         #  prepare_data a sem to posilat jako argument 23.05.2018 MK
         mfda = False
-        sr, itera = rainfall.load_precipitation(rainfall_file_path) # rainfall_file_path je treba dat jako vstup do teto funkce 23.05.2018 MK
+        sr, itera = rainfall.load_precipitation(rainfall_file_path)
+
+        return mat_efect_vrst, state_cell, mfda, sr, itera
 
         # pokud jsou zadane vsechny vstupy pro vypocet toku
         # toky se pocitaji a type_of_computing je 3
-        listin = [stream, tab_stream_tvar, tab_stream_tvar_code]  # stream, tab_stream_tvar, tab_stream_tvar_code sem posilat jako vstup do funkce 23.05.2018 MK
+        listin = [stream, tab_stream_tvar, tab_stream_tvar_code]
         tflistin = [len(i) > 1 for i in listin]
 
         if all(tflistin):
@@ -595,7 +603,6 @@ class PrepareData:
 
             arcpy.AddMessage('Stream preparation...')
 
-            import smoderp2d.stream_functions.stream_preparation as sp
             toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sp.prepare_streams(
                 dmt, dmt_copy, mat_dmt_fill, null_shp,
                 mat_nan, mat_fd, vpix,
