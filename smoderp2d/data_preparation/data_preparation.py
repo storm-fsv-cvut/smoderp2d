@@ -108,6 +108,9 @@ class PrepareData:
             NoDataValue = self.raster2np(dmt_clip, slope_clip, flow_direction_clip, temp, sfield, intersect, points,
                                          dmt_fill)
 
+        mat_hcrit, mat_a, mat_aa = self.par(all_attrib, rows, cols, mat_slope, NoDataValue, mat_a, mat_aa,
+                                            ll_corner, vpix, spix, temp)
+
         return boundaryRows, boundaryCols, mat_boundary, rrows, rcols, outletCells, x_coordinate, y_coordinate, \
             NoDataValue, array_points, \
             cols, rows, combinatIndex, delta_t, \
@@ -345,7 +348,7 @@ class PrepareData:
         rows = dmt_array.shape[0]
         cols = dmt_array.shape[1]
 
-        # nasledujici blok by sel urcite napsat lip 23.05.2018 MK
+        # nasledujici blok by sel urcite napsat lip 23.05.2018 MK a mozna by se mel presunout do funkce par 09.06.2018 MK
         mat_dmt = dmt_array
         mat_k = np.zeros([rows, cols], float)
         mat_s = np.zeros([rows, cols], float)
@@ -470,16 +473,9 @@ class PrepareData:
             combinatIndex, rows, cols, vpix, spix, mat_a, mat_aa, x_coordinate, y_coordinate, ll_corner, pixel_area, \
             NoDataValue
 
-    ####### KONEC 23.05.2018 MK, u funkce par je zatim pouze 1 vstupni argument
+    def par(self, all_attrib, rows, cols, mat_slope, NoDataValue, mat_a, mat_aa, ll_corner, vpix, spix, temp):
 
-    def par(self, all_attrib):
-
-        mat_k = all_attrib[0]
-        mat_s = all_attrib[1]
         mat_n = all_attrib[2]
-        mat_ppl = all_attrib[3]
-        mat_pi = all_attrib[4]
-        mat_ret = all_attrib[5]
         mat_b = all_attrib[6]
         mat_x = all_attrib[7]
         mat_y = all_attrib[8]
@@ -493,17 +489,17 @@ class PrepareData:
                 par_x = mat_x[i][j]
                 par_y = mat_y[i][j]
                 if i == 3 and j == 90:
-                    cxs = 5
+                    cxs = 5 #not used
 
                 if par_x == NoDataValue or par_y == NoDataValue or slope == NoDataValue:
                     par_a = NoDataValue
                     par_aa = NoDataValue
-                    exp = 0
+                    exp = 0 # not used
 
                 elif par_x == NoDataValue or par_y == NoDataValue or slope == 0.0:
                     par_a = 0.0001
                     par_aa = par_a / 100 / mat_n[i][j]
-                    exp = 0
+                    exp = 0 #not used
 
                 else:
                     exp = np.power(slope, par_y)
@@ -526,7 +522,7 @@ class PrepareData:
                     tau_crit = mat_tau[i][j]
                     v_crit = mat_v[i][j]
                     b = mat_b[i][j]
-                    a = mat_a[i][j]
+                    a = mat_a[i][j] # not used
                     aa = mat_aa[i][j]
                     flux_crit = tau_crit * v_crit
                     exp = 1 / (b - 1)
@@ -535,13 +531,9 @@ class PrepareData:
                         hcrit_tau = hcrit_v = hcrit_flux = 1000
 
                     else:
-                        hcrit_v = np.power(
-                            (v_crit / aa),
-                            exp)  # h critical from v (10 je kuli jednotkam, bude jinak)
+                        hcrit_v = np.power((v_crit / aa), exp)  # h critical from v
                         hcrit_tau = tau_crit / 98.07 / slope  # h critical from tau
-                        hcrit_flux = np.power(
-                            (flux_crit / slope / 98.07 / aa),
-                            (1 / mat_b[i][j]))  # kontrola jednotek
+                        hcrit_flux = np.power((flux_crit / slope / 98.07 / aa),(1 / mat_b[i][j]))  # kontrola jednotek
 
                     mat_hcrit_tau[i][j] = hcrit_tau
                     mat_hcrit_v[i][j] = hcrit_v
@@ -554,27 +546,16 @@ class PrepareData:
                     mat_hcrit_flux[i][j] = NoDataValue
                     mat_hcrit[i][j] = NoDataValue
 
-        rhcrit_tau = arcpy.NumPyArrayToRaster(
-            mat_hcrit_tau,
-            ll_corner,
-            spix,
-            vpix,
-            "#")
+        rhcrit_tau = arcpy.NumPyArrayToRaster(mat_hcrit_tau, ll_corner, spix, vpix, "#")
         rhcrit_tau.save(temp + os.sep + "hcrit_tau")
-        rhcrit_flux = arcpy.NumPyArrayToRaster(
-            mat_hcrit_flux,
-            ll_corner,
-            spix,
-            vpix,
-            "#")
+
+        rhcrit_flux = arcpy.NumPyArrayToRaster(mat_hcrit_flux, ll_corner, spix, vpix, "#")
         rhcrit_flux.save(temp + os.sep + "hcrit_flux")
-        rhcrit_v = arcpy.NumPyArrayToRaster(
-            mat_hcrit_v,
-            ll_corner,
-            spix,
-            vpix,
-            "#")
+
+        rhcrit_v = arcpy.NumPyArrayToRaster(mat_hcrit_v, ll_corner, spix, vpix, "#")
         rhcrit_v.save(temp + os.sep + "hcrit_v")
+
+        return mat_hcrit, mat_a, mat_aa
 
         # fiktivni vrstevnice a priprava "state cell, jestli to je tok ci plocha
         pii = math.pi / 180.0
