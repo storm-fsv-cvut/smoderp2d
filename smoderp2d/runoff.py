@@ -353,9 +353,6 @@ class Runoff(object):
 
         post_proc.stream_table(Globals.outdir + os.sep, self.surface, Globals.toky_loc)
 
-        self.hydrographs.closeHydrographs()
-        Logger.info("")
-
         # TODO: print stats in better way
         # import platform
         # if platform.system() == "Linux":
