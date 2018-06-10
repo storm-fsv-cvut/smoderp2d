@@ -6,10 +6,10 @@ import math
 import ConfigParser
 
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
-from smoderp2d.providers.base.logger import LoggerClass
+from smoderp2d.providers.base.logger import logger
 from smoderp2d.exceptions import ProviderError
 
-Logger = LoggerClass('Smoderp')
+Logger = logger()
 
 class BaseProvider(object):
     def __init__(self):
@@ -185,4 +185,5 @@ class BaseProvider(object):
         with open(os.path.join(os.path.dirname(__file__), 'txtlogo.txt'), 'r') as fd:
             for line in fd.readlines():
                 sys.stdout.write(line)
+        sys.stdout.write(os.linesep)
         sys.stdout.flush()
