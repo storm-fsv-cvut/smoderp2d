@@ -2,6 +2,30 @@
 import sys
 from base import BaseProvider
 
+def get_argv(id_):
+    iid_ = id_
+    # print '!!!Bacha tools.get_argv jsou plus 1!!!';
+    iid_ += 1
+    return sys.argv[iid_]
+
+# Transfers string 'true'/'false' in sys.argv to a logical True/False
+#
+def logical_argv(id_):
+    iid_ = id_
+    # print '!!!Bacha tools.get_argv jsou plus 1!!!';
+    iid_ += 1
+    if isinstance(sys.argv[iid_], str):
+        if sys.argv[iid_].lower().strip() == 'true':
+            sys.argv[iid_] = True
+        elif sys.argv[iid_].lower().strip() == 'false':
+            sys.argv[iid_] = False
+        else:
+            sys.exit('Logical parameter are not assign correctly...')
+    if isinstance(sys.argv[iid_], int):
+        sys.exit('Logical parameter are not assign correctly...')
+    if isinstance(sys.argv[iid_], float):
+        sys.exit('Logical parameter are not assign correctly...')
+
 class ArcGisProvider(BaseProvider):
     import arcpy
     

@@ -15,8 +15,6 @@ import shutil
 
 import smoderp2d.tools.tools as tools
 import smoderp2d.constants as constants
-from smoderp2d.tools.tools import get_argv
-from smoderp2d.tools.tools import logical_argv
 
 from smoderp2d.core.general import Globals as Gl
 
