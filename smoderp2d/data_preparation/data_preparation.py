@@ -133,8 +133,8 @@ class PrepareData:
                 dmt, dmt_copy, mat_dmt_fill, null_shp,
                 mat_nan, mat_fd, vpix,
                 spix, rows, cols, ll_corner,
-                NoDataValue, self.addfield,
-                self.delfield, output, dmt_clip,
+                NoDataValue, self.add_field,
+                self.del_field, output, dmt_clip,
                 intersect, null_shp, gp)
 
             arcpy.AddMessage("Stream preparation has finished")
@@ -166,7 +166,7 @@ class PrepareData:
             temp, type_of_computing, vpix, mfda, sr, itera, \
             toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc
 
-    def addfield(self, input, newfield, datatyp, default_value):  # EDL
+    def add_field(self, input, newfield, datatyp, default_value):  # EDL
         # function for adding fields
         try:
             arcpy.DeleteField_management(input, newfield)
@@ -180,7 +180,7 @@ class PrepareData:
             "PYTHON")
         return input
 
-    def delfield(self,input, field):
+    def del_field(self,input, field):
         #function for deleting fields
         try:
             arcpy.DeleteField_management(input, newfield) # to je asi chyba ne? spatnej argument (21.05.2018 MK)
@@ -215,8 +215,8 @@ class PrepareData:
         arcpy.Copy_management(veg_indata, veg)
         arcpy.Copy_management(soil_indata, soil)
 
-        self.addfield(veg, fieldname, "SHORT", 2)
-        self.addfield(soil, fieldname, "SHORT", 2)
+        self.add_field(veg, fieldname, "SHORT", 2)
+        self.add_field(soil, fieldname, "SHORT", 2)
 
         soil_boundary = temp + os.sep + "s_b.shp"
         veg_boundary = temp + os.sep + "v_b.shp"
@@ -314,8 +314,8 @@ class PrepareData:
             tab_puda_veg_code,
             "k;s;n;pi;ppl;ret;b;x;y;tau;v")
         # intersect1 = output+"\\puda_vegetace.shp"
-        self.delfield(veg, fieldname)
-        self.delfield(soil, fieldname)
+        self.del_field(veg, fieldname)
+        self.del_field(soil, fieldname)
 
         with arcpy.da.SearchCursor(intersect, sfield) as cursor:
             for row in cursor:
