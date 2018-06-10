@@ -119,8 +119,9 @@ class BaseProvider(object):
         Globals.isStream = self._comp_type(data['type_of_computing'])['stream']
         Globals.arcgis = False
         Globals.prtTimes = data['prtTimes']
-        
-    def _cleanup(self):
+
+    @staticmethod
+    def _cleanup():
         """Clean-up output directory."""
         output = Globals.outdir
         if os.path.exists(output):
@@ -141,7 +142,8 @@ class BaseProvider(object):
                 self._args.typecomp
             ))
 
-    def _comp_type(self, tc):
+    @staticmethod
+    def _comp_type(tc):
         """Returns boolean information about the components of the computation.
         
         Return 4 true/values for rill, subflow, stream, diffuse
@@ -176,8 +178,9 @@ class BaseProvider(object):
             ret['only_surface'] = True
 
         return ret
-        
-    def logo(self):
+
+    @staticmethod
+    def logo():
         """Print Smoderp2d ascii-style logo."""
         with open(os.path.join(os.path.dirname(__file__), 'txtlogo.txt'), 'r') as fd:
             for line in fd.readlines():
