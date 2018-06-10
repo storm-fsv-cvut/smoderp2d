@@ -101,24 +101,6 @@ def make_ASC_raster(name_, numpy_arr, G):
         f.write(line)
 
 
-def int_comp_type(co_):
-    string_type_of_coputing = co_.lower().replace(' ', '').replace(
-        ',', '')  # jj .lower().replace(' ','').replace(',','') udela ze vsecho v tom stringu maly pismena, replace vyhodi mezery a
-    if string_type_of_coputing == 'onlyshallowsurface':
-        return 0
-    elif string_type_of_coputing == 'shallowandrillsurface':
-        return 1
-    elif string_type_of_coputing == 'diffuseshallowsurface':
-        return 2
-    elif string_type_of_coputing == 'shallowrillstreamsurface':
-        return 3
-    elif string_type_of_coputing == 'surfaceandsubsurfaceflow':
-        return 4
-    elif string_type_of_coputing == 'surfaceandsubsurfacestreamflow':
-        return 5
-    else:
-        print 'error in data_preparation, PARAMETER_TYPE_COMPUTING error'
-
 # Returns input parameter from the sys.argv
 #
 
