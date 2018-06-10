@@ -3,34 +3,6 @@ import sys
 import numpy as np
 import smoderp2d.constants as constants
 
-# Class with the debug mark
-#
-# method self.mark with given name return konsole message with generically
-# increasing integer value
-
-
-class DebugMark:
-    n = 0
-
-    def mark(self, name_, info=''):
-        DebugMark.n += 1
-
-
-# Class with the file name generation
-#
-# method self.gen with given name returns the name plus increasing int
-# number 000*
-class FileNameGen:
-
-    def __init__(self):
-        self.n = 0
-
-    def gen(self, name_, info=''):
-        filename = name_ + str(self.n).zfill(4)
-        self.n += 1
-        return filename
-
-
 # Make a asc raster output from a numpy array
 #
 #  only water level in rills and surface are considered
@@ -127,68 +99,6 @@ def make_ASC_raster(name_, numpy_arr, G):
             line += str(tmp[i][j]) + "\t"
         line += '\n'
         f.write(line)
-
-
-# Returns boolean information about the components of the computation
-#
-#  Return 4 true/values for rill, subflow, stream, diffuse presence/non-presence.\n
-#  Optionally string parameter co_ specify the process user ask for rill | subflow | stream | diffuse
-#
-def comp_type(tc, co_=""):
-    ### TODO: remove (see providers.base)
-    """
-    string_type_of_coputing = get_argv(constants.PARAMETER_TYPE_COMPUTING)
-    string_type_of_coputing = string_type_of_coputing.lower().replace(' ','').replace(',','')  #jj .lower().replace(' ','').replace(',','') udela ze vsecho v tom stringu maly pismena, replace vyhodi mezery a carky
-
-    if string_type_of_coputing == "onlyshallowsurface":
-        type_of_computing = 0
-    elif string_type_of_coputing == "shallowandrillsurface":
-        type_of_computing = 1
-    elif string_type_of_coputing == "diffuseshallowsurface":
-        type_of_computing = 2
-    elif string_type_of_coputing == "shallowrillstreamsurface":
-        type_of_computing = 3
-    elif string_type_of_coputing == "surfaceandsubsurfaceflow":
-        type_of_computing = 4
-    elif string_type_of_coputing == "surfaceandsubsurfacestreamflow":
-        type_of_computing = 5
-    """
-
-    diffuse = False
-    subflow = False
-    stream = False
-    rill = False
-    only_surface = False
-
-    if int(tc) == 1:
-        rill = True
-
-    if int(tc) == 3:
-        stream = True
-        rill = True
-
-    if int(tc) == 4:
-        subflow = True
-        rill = True
-
-    if int(tc) == 5:
-        stream = True
-        subflow = True
-        rill = True
-    if int(tc) == 0:
-        only_surface = True
-    if (co_ == "rill"):
-        return rill
-    if (co_ == "subflow"):
-        return subflow
-    if (co_ == "stream"):
-        return stream
-    if (co_ == "diffuse"):
-        return diffuse
-    if (co_ == "surface"):
-        return only_surface
-
-    return rill, subflow, stream, diffuse
 
 
 def int_comp_type(co_):

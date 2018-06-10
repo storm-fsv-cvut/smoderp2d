@@ -12,7 +12,6 @@ import numpy as np
 
 # smoderp import
 from smoderp2d.core.general import *
-from smoderp2d.tools.tools import comp_type
 from smoderp2d.providers import Logger
 
 from smoderp2d.core.general import GridGlobals, Globals

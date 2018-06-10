@@ -12,8 +12,6 @@ import smoderp2d.processes.rill as rill
 import smoderp2d.processes.surface as surfacefce
 import smoderp2d.constants as constants
 
-from smoderp2d.tools.tools import comp_type
-
 from smoderp2d.providers import Logger
 
 courantMax = 1.0

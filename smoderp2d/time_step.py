@@ -5,7 +5,7 @@ import math
 from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.processes.infiltration as infilt
-from smoderp2d.tools.tools import comp_type
+
 import copy
 import numpy as np
 
