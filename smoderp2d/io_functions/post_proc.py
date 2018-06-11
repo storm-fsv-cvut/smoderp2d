@@ -18,51 +18,6 @@ import smoderp2d.constants as constants
 
 from smoderp2d.core.general import Globals as Gl
 
-
-def raster_output_arcgis(arrin, G, fs, outname, reachNA=True):
-    import arcpy
-    rrows = G.rr
-    rcols = G.rc
-    output = G.outdir
-    arcpy.env.workspace = output
-    ll_corner = arcpy.Point(G.xllcorner, G.yllcorner)
-    tmparr = arrin.copy()
-    tmparr.fill(G.NoDataValue)
-    tmpdat = arrin.copy()
-    for ii in rrows:
-        for jj in rcols[ii]:
-            tmparr[ii][jj] = tmpdat[ii][jj]
-    outName = output + os.sep + outname
-    saveAG = arcpy.NumPyArrayToRaster(
-        tmparr,
-        ll_corner,
-     G.dx,
-     G.dy,
-     G.NoDataValue)
-    saveAG.save(outName)
-
-
-def raster_output_ascii(arrin, G, fs, outname, reachNA=True):
-    output = G.outdir
-    outName = output + os.sep + outname + \
-        ".asc"  # KAvka - zm?nit na nazvy prom?nn?ch #jj pridal jsem jmena promennych do te tridy aspon muze byt vice lidsky ten nazev ....
-    wrk = arrin
-    rrows = G.rr
-    rcols = G.rc
-    if (reachNA):
-        for i in rrows:
-            for j in rcols[i]:
-                if (fs[i][j] >= 1000):
-                    wrk[i][j] = G.NoDataValue
-    tools.make_ASC_raster(outName, wrk, G)
-
-
-if Gl.arcgis:
-    raster_output = raster_output_Gl.arcgis
-else:
-    raster_output = raster_output_ascii
-
-
 def do(cumulative, mat_slope, G, surArr):
 
     output = G.outdir

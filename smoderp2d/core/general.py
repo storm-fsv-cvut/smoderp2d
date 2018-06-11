@@ -30,81 +30,6 @@ class GridGlobals(object):
     br = None
     # id of columns in at the boundary of computational domain
     bc = None
-
-    def __init__(self):
-        if self.r is None or self.c is None:
-            raise SmoderpError("Global variables are not assigned")
-
-        self.arr = np.empty((self.r, self.c), dtype=object)
-
-    @classmethod        
-    def get_rows(cls):
-        return cls.r
-
-    @classmethod
-    def get_cols(cls):
-        return cls.c
-
-    @classmethod
-    def get_pixel_area(cls):
-        return cls.pixel_area
-
-    @classmethod
-    def get_rrows(cls):
-        return cls.rr
-    
-    @classmethod
-    def get_rcols(cls):
-        return cls.rc
-
-    @classmethod
-    def get_bor_rows(cls):
-        return cls.br
-
-    @classmethod
-    def get_bor_cols(cls):
-        return cls.bc
-
-
-    def write_asc_raster(filename, data, fs=None):
-        """Write ASCII raster.
-
-        :param filename: name for output file (without extension)
-        :param: fs
-        """
-        # TODO: implement
-        # post_proc.raster_output_ascii + tools.make_asc_raster
-        # path = os.path.join(Globals.outdir, filename + '.asc')
-
-        # out_arr = np.empty((self.r, self.c), 
-
-        # out_arr.fill(
-        #     # TODO: NoDataValue -> NaN ? 
-        #     Globals.NoDataInt if instance(numpy_arr.dtype, ?) else Globals.NoDataValue
-        # )
-        
-        # for i in self.rrows:
-        #     for j in self.rcols[i]:
-        #         if (fs and fs[i][j] < 1000) or not fs:
-        #             out_arr[i][j] = data[i][j]
-
-
-
-    
-class DataGlobals:
-    # raster contains leaf area data
-    mat_ppl = None
-
-    @classmethod
-    def get_mat_ppl(cls, i, j):
-        return cls.mat_ppl[i][j]
-
-    
-class Globals:
-    """Globals contains global variables from data_preparation, in
-    instance of class needed the data are taken from import of this
-    class.
-    """
     # left bottom corner x coordinate of raster
     xllcorner = None
     # left bottom corner y coordinate of raster
@@ -117,6 +42,55 @@ class Globals:
     dx = None
     # size of raster cell
     dy = None
+
+    def __init__(self):
+        if self.r is None or self.c is None:
+            raise SmoderpError("Global variables are not assigned")
+
+        self.arr = np.empty((self.r, self.c), dtype=object)
+
+    @classmethod        
+    def get_dim(cls):
+        return (cls.r, cls.c)
+
+    @classmethod
+    def get_pixel_area(cls):
+        return cls.pixel_area
+
+    @classmethod
+    def get_region_dim(cls):
+        return (cls.rr, cls.rc)
+
+    @classmethod
+    def get_border_dim(cls):
+        return (cls.br, cls.bc)
+
+    @classmethod
+    def get_llcorner(cls):
+        return (cls.xllcorner, cls.yllcorner)
+
+    @classmethod
+    def get_size(cls):
+        return (cls.dx, cls.dy)
+
+    @classmethod
+    def get_no_data(cls):
+        # TODO: int?
+        return cls.NoDataValue
+
+class DataGlobals:
+    # raster contains leaf area data
+    mat_ppl = None
+
+    @classmethod
+    def get_mat_ppl(cls, i, j):
+        return cls.mat_ppl[i][j]
+    
+class Globals:
+    """Globals contains global variables from data_preparation, in
+    instance of class needed the data are taken from import of this
+    class.
+    """
     # type of computation
     type_of_computing = None
     # path to a output directory
@@ -194,30 +168,6 @@ class Globals:
     maxdt = None
     # ???
     extraOut = None
-
-    @classmethod
-    def get_xllcorner(cls):
-        return cls.xllcorner
-
-    @classmethod
-    def get_yllcorner(cls):
-        return cls.yllcorner
-
-    @classmethod
-    def get_NoDataValue(cls):
-        return cls.NoDataValue
-
-    @classmethod
-    def get_NoDataInt(cls):
-        return cls.NoDataInt
-
-    @classmethod
-    def get_dx(cls):
-        return cls.dx
-
-    @classmethod
-    def get_dy(cls):
-        return cls.dy
 
     @classmethod
     def get_type_of_computing(cls):

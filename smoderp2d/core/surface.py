@@ -275,7 +275,7 @@ def sheet_runoff(sur, dt):
     :return: TODO
     """
     q_sheet = surfacefce.shallowSurfaceKinematic(sur)
-    sur.v_runoff = dt * q_sheet * Globals.get_dx()
+    sur.v_runoff = dt * q_sheet * GridGlobals.get_size()[0]
     sur.v_rest = sur.h_sheet * GridGlobals.get_pixel_area() - sur.v_runoff
 
     return q_sheet

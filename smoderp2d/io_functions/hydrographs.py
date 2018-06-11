@@ -11,8 +11,7 @@ class Hydrographs:
         point_int = [[0] * jpj for i in range(ipi)]
 
         outdir = Globals.get_outdir()
-        rr = GridGlobals.get_rrows()
-        rc = GridGlobals.get_rcols()
+        rr, rc = GridGlobals.get_region_dim()
         pixel_area = GridGlobals.get_pixel_area()
 
         self.inSurface = []

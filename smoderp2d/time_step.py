@@ -27,8 +27,7 @@ class TimeStep:
     def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
         surface, subsurface, delta_t, flow_control, courant
 
-        rr = GridGlobals.get_rrows()
-        rc = GridGlobals.get_rcols()
+        rr, rc = GridGlobals.get_region_dim()
         mat_efect_vrst = Globals.get_mat_efect_vrst()
         fc = flow_control
         sr = Globals.get_sr()
@@ -90,12 +89,11 @@ class TimeStep:
         global max_infilt_capa
         global infilt_time
 
-        rr = GridGlobals.get_rrows()
-        rc = GridGlobals.get_rcols()
+        rr, rc = GridGlobals.get_region_dim()
         pixel_area = GridGlobals.get_pixel_area()
         fc = flow_control
         combinatIndex = Globals.get_combinatIndex()
-        NoDataValue = Globals.get_NoDataValue()
+        NoDataValue = GridGlobals.get_no_data()
 
         infilt_capa += potRain
         if (infilt_capa < max_infilt_capa):

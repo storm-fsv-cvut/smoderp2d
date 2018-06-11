@@ -108,9 +108,9 @@ class BaseProvider(object):
             elif hasattr(DataGlobals, item):
                 setattr(DataGlobals, item, data[item])
 
-        Globals.NoDataInt = int(-9999)
-        Globals.dx = math.sqrt(data['pixel_area'])
-        Globals.dy = Globals.dx
+        GridGlobals.NoDataInt = int(-9999)
+        GridGlobals.dx = math.sqrt(data['pixel_area'])
+        GridGlobals.dy = GridGlobals.dx
         Globals.mat_reten = -1.0 * data['mat_reten'] / 1000
         Globals.diffuse = self._comp_type(data['type_of_computing'])['diffuse']
         Globals.subflow = self._comp_type(data['type_of_computing'])['subflow']
