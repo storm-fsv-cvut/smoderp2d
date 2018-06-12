@@ -26,7 +26,13 @@ def load_data(filename):
     :param str filename: file to be loaded
     """
     with open(filename, 'rb') as fd:
-        data = pickle.load(fd)
+        if sys.version_info > (3, 0):
+            data = pickle.load(fd, encoding='bytes')
+            data = {
+                key.decode(): val.decode if isinstance(val, bytes) else val for key, val in data.items()
+            }
+        else:
+            data = pickle.load(fd)
     Logger.debug('Size of loaded data is {} bytes'.format(
         sys.getsizeof(data))
     )

@@ -3,7 +3,10 @@ import sys
 import argparse
 import shutil
 import math
-import ConfigParser
+if sys.version_info > (3, 0):
+    from configparser import ConfigParser
+else:
+    from ConfigParser import ConfigParser
 
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
 from smoderp2d.providers.base.logger import logger
@@ -32,7 +35,7 @@ class BaseProvider(object):
         self._args = self._parser.parse_args()
 
         # load configuration
-        self._config = ConfigParser.ConfigParser()
+        self._config = ConfigParser()
         self._config.read(self._args.indata)
 
         # set logging level
