@@ -44,9 +44,8 @@ class PrepareData:
         vtyp = gp.GetParameterAsText(constants.PARAMETER_VEGETATION_TYPE)
         points = gp.GetParameterAsText(constants.PARAMETER_POINTS)
 
-        # rainfall file path and dirname
+        # rainfall file path
         rainfall_file_path = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_RAINFALL_FILE)
-        dir = os.path.dirname(rainfall_path) # not used
 
         tab_puda_veg = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE)
         tab_puda_veg_code = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE_CODE)
@@ -98,8 +97,7 @@ class PrepareData:
 
         arcpy.AddMessage("DMT preparation...")
 
-        dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array, copySlope_array, \
-            mat_slope = self.dmt_preparation(dmt_copy, temp)  # zkontrolovat takovehle rozdeleni radku 23.05.2018 MK
+        dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array = self.dmt_preparation(dmt_copy, temp)
 
         flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp = self.clip_data(gp, temp,
             dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig,
@@ -113,7 +111,7 @@ class PrepareData:
         mat_hcrit, mat_a, mat_aa = self.par(all_attrib, rows, cols, mat_slope, NoDataValue, mat_a, mat_aa,
                                             ll_corner, vpix, spix, temp)
 
-        mat_efect_vrst, state_cell, mfda, sr, itera = self.contour(dmt_clip, temp, spix)
+        mat_efect_vrst, state_cell, mfda, sr, itera = self.contour(dmt_clip, temp, spix, rainfall_file_path)
 
         # pokud jsou zadane vsechny vstupy pro vypocet toku
         # toky se pocitaji a type_of_computing je 3
@@ -143,7 +141,6 @@ class PrepareData:
             toky = None
             cell_stream = None
             mat_tok_usek = None
-            # mat_tok = None
             STREAM_RATIO = None
             tokyLoc = None
 
@@ -192,10 +189,8 @@ class PrepareData:
         # corners deleting
         dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, temp, "TRUE", "TRUE", "NONE")
         copydmt_array = arcpy.RasterToNumPyArray(dmt_copy)
-        copySlope_array = arcpy.RasterToNumPyArray(slope_orig) # not used
-        mat_slope = arcpy.RasterToNumPyArray(slope_orig) # not used
 
-        return dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array, copySlope_array, mat_slope
+        return dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array
 
     def clip_data(self, gp, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg,
                   tab_puda_veg_code, slope_orig, flow_direction):
@@ -273,7 +268,6 @@ class PrepareData:
         # clipping of the soil and veg data
         arcpy.Clip_analysis(soil, intersect, soil_clip)
         arcpy.Clip_analysis(veg, intersect, veg_clip)
-        grup = [soil_clip, veg_clip] # not used
 
         if gp.ListFields(intersect, "puda_veg").Next():
             arcpy.DeleteField_management(intersect, "puda_veg", )
@@ -336,7 +330,6 @@ class PrepareData:
 
         # size of cell
         vpix = dmt_desc.MeanCellHeight
-        spix = dmt_desc.MeanCellWidth # not used
 
         maska = temp + os.sep + "maska"
         arcpy.PolygonToRaster_conversion(
@@ -531,18 +524,14 @@ class PrepareData:
                 slope = mat_slope[i][j]
                 par_x = mat_x[i][j]
                 par_y = mat_y[i][j]
-                if i == 3 and j == 90:
-                    cxs = 5 #not used
 
                 if par_x == NoDataValue or par_y == NoDataValue or slope == NoDataValue:
                     par_a = NoDataValue
                     par_aa = NoDataValue
-                    exp = 0 # not used
 
                 elif par_x == NoDataValue or par_y == NoDataValue or slope == 0.0:
                     par_a = 0.0001
                     par_aa = par_a / 100 / mat_n[i][j]
-                    exp = 0 #not used
 
                 else:
                     exp = np.power(slope, par_y)
@@ -565,7 +554,6 @@ class PrepareData:
                     tau_crit = mat_tau[i][j]
                     v_crit = mat_v[i][j]
                     b = mat_b[i][j]
-                    a = mat_a[i][j] # not used
                     aa = mat_aa[i][j]
                     flux_crit = tau_crit * v_crit
                     exp = 1 / (b - 1)
@@ -600,7 +588,7 @@ class PrepareData:
 
         return mat_hcrit, mat_a, mat_aa
 
-    def contour(self,dmt_clip, temp, spix):
+    def contour(self,dmt_clip, temp, spix, rainfall_file_path):
 
         # fiktivni vrstevnice a priprava "state cell, jestli to je tok ci plocha
         pii = math.pi / 180.0
