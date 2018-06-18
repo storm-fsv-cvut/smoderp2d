@@ -105,7 +105,7 @@ class PrepareData:
 
         array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
             combinatIndex, rows, cols, vpix, spix, mat_a, mat_aa, x_coordinate, y_coordinate, ll_corner, pixel_area, \
-            NoDataValue = self.raster2np(dmt_clip, slope_clip, flow_direction_clip, temp, sfield, intersect, points,
+            NoDataValue, poradi = self.raster2np(gp, dmt_clip, slope_clip, flow_direction_clip, temp, sfield, intersect, points,
                                          dmt_fill)
 
         mat_hcrit, mat_a, mat_aa = self.par(all_attrib, rows, cols, mat_slope, NoDataValue, mat_a, mat_aa,
@@ -148,6 +148,13 @@ class PrepareData:
             rows, cols, mat_nan, NoDataValue, mfda)
 
         outletCells = None
+
+        delta_t = "nechci"
+        mat_n = all_attrib[2];
+        mat_ppl = all_attrib[3];
+        mat_pi = all_attrib[4];
+        mat_ret = all_attrib[5];
+        mat_b = all_attrib[6];
 
         arcpy.AddMessage("Data preparation has been finished")
 
@@ -350,7 +357,7 @@ class PrepareData:
 
         return flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp
 
-    def raster2np(self, dmt_clip, slope_clip, flow_direction_clip, temp, sfield, intersect, points, dmt_fill):
+    def raster2np(self, gp, dmt_clip, slope_clip, flow_direction_clip, temp, sfield, intersect, points, dmt_fill):
         # TODO: rozdelit raster2np do vic podfunkci, polovina veci s tim prevodem nesouvisi 23.05.2018 MK
 
         # cropped raster info
@@ -414,12 +421,12 @@ class PrepareData:
             mat_tau,
             mat_v]  # parametry, ktere se generuji ze shp
 
-        i = 0
+        poradi = 0
         for x in sfield:
             d = temp + os.sep + "r" + str(x)
             arcpy.PolygonToRaster_conversion(intersect, str(x), d, "MAXIMUM_AREA", "", vpix)
-            all_attrib[i] = arcpy.RasterToNumPyArray(d)
-            i = i + 1
+            all_attrib[poradi] = arcpy.RasterToNumPyArray(d)
+            poradi = poradi + 1
 
         mat_k = all_attrib[0]
         mat_s = all_attrib[1]
@@ -507,7 +514,7 @@ class PrepareData:
 
         return array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
             combinatIndex, rows, cols, vpix, spix, mat_a, mat_aa, x_coordinate, y_coordinate, ll_corner, pixel_area, \
-            NoDataValue
+            NoDataValue, poradi
 
     def par(self, all_attrib, rows, cols, mat_slope, NoDataValue, mat_a, mat_aa, ll_corner, vpix, spix, temp):
 
@@ -593,7 +600,7 @@ class PrepareData:
         # fiktivni vrstevnice a priprava "state cell, jestli to je tok ci plocha
         pii = math.pi / 180.0
         asp = arcpy.sa.Aspect(dmt_clip)
-        asppii = Times(asp, pii)
+        asppii = arcpy.sa.Times(asp, pii)
         sinasp = arcpy.sa.Sin(asppii)
         cosasp = arcpy.sa.Cos(asppii)
         sinsklon = arcpy.sa.Abs(sinasp)
