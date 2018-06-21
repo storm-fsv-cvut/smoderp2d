@@ -156,11 +156,11 @@ class PrepareData:
         outletCells = None
 
         delta_t = "nechci"
-        mat_n = all_attrib[2];
-        mat_ppl = all_attrib[3];
-        mat_pi = all_attrib[4];
-        mat_ret = all_attrib[5];
-        mat_b = all_attrib[6];
+        mat_n = all_attrib[2]
+        mat_ppl = all_attrib[3]
+        mat_pi = all_attrib[4]
+        mat_ret = all_attrib[5]
+        mat_b = all_attrib[6]
 
         self.add_message("Data preparation has been finished")
 
