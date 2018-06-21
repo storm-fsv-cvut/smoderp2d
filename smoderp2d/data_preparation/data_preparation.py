@@ -101,7 +101,9 @@ class PrepareData:
 
         self.add_message("DMT preparation...")
 
-        dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array = self.dmt_preparation(dmt_copy, temp)
+        # corners deleting
+        dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, temp,
+                                                                                       "TRUE", "TRUE", "NONE")
 
         flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp = self.clip_data(gp, temp,
             dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig,
@@ -194,14 +196,6 @@ class PrepareData:
             arcpy.DeleteField_management(input, newfield) # to je asi chyba ne? spatnej argument (21.05.2018 MK)
         except:
             pass
-
-    def dmt_preparation(self, dmt_copy, temp):
-
-        # corners deleting
-        dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, temp, "TRUE", "TRUE", "NONE")
-        copydmt_array = arcpy.RasterToNumPyArray(dmt_copy)
-
-        return dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array
 
     def clip_data(self, gp, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg,
                   tab_puda_veg_code, slope_orig, flow_direction):
