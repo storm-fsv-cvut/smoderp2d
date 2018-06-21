@@ -110,12 +110,11 @@ class PrepareData:
             flow_direction)
 
         array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
-            combinatIndex, rows, cols, vpix, spix, mat_a, mat_aa, x_coordinate, y_coordinate, ll_corner, pixel_area, \
+            combinatIndex, rows, cols, vpix, spix, x_coordinate, y_coordinate, ll_corner, pixel_area, \
             NoDataValue, poradi = self.raster2np(gp, dmt_clip, slope_clip, flow_direction_clip, temp, sfield, intersect, points,
                                          dmt_fill)
 
-        mat_hcrit, mat_a, mat_aa = self.par(all_attrib, rows, cols, mat_slope, NoDataValue, mat_a, mat_aa,
-                                            ll_corner, vpix, spix, temp)
+        mat_hcrit, mat_a, mat_aa = self.par(all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix, temp)
 
         mat_efect_vrst, state_cell, mfda, sr, itera = self.contour(dmt_clip, temp, spix, rainfall_file_path)
 
@@ -426,8 +425,6 @@ class PrepareData:
 
         mat_dmt = dmt_array
         mat_nan = np.zeros([rows, cols], float)
-        mat_a = np.zeros([rows, cols], float)
-        mat_aa = np.zeros([rows, cols], float)
 
         all_attrib, poradi = self.get_attrib(temp, vpix)
 
@@ -516,10 +513,10 @@ class PrepareData:
                     array_points = np.delete(array_points, kyk, 0)
 
         return array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
-            combinatIndex, rows, cols, vpix, spix, mat_a, mat_aa, x_coordinate, y_coordinate, ll_corner, pixel_area, \
+            combinatIndex, rows, cols, vpix, spix, x_coordinate, y_coordinate, ll_corner, pixel_area, \
             NoDataValue, poradi
 
-    def par(self, all_attrib, rows, cols, mat_slope, NoDataValue, mat_a, mat_aa, ll_corner, vpix, spix, temp):
+    def par(self, all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix, temp):
 
         mat_n = all_attrib[2]
         mat_b = all_attrib[6]
@@ -527,6 +524,8 @@ class PrepareData:
         mat_y = all_attrib[8]
         mat_tau = all_attrib[9]
         mat_v = all_attrib[10]
+        mat_a = np.zeros([rows, cols], float)
+        mat_aa = np.zeros([rows, cols], float)
 
         # calculating the "a" parameter
         for i in range(rows):
