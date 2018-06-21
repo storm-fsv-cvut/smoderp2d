@@ -353,7 +353,7 @@ class PrepareData:
 
         return flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp
 
-    def get_attrib(self, temp, vpix):
+    def get_attrib(self, temp, vpix, rows, cols):
 
         mat_k = np.zeros([rows, cols], float)
         mat_s = np.zeros([rows, cols], float)
@@ -426,7 +426,7 @@ class PrepareData:
         mat_dmt = dmt_array
         mat_nan = np.zeros([rows, cols], float)
 
-        all_attrib, poradi = self.get_attrib(temp, vpix)
+        all_attrib, poradi = self.get_attrib(temp, vpix, rows, cols)
 
         mat_k = all_attrib[0]
         mat_s = all_attrib[1]
