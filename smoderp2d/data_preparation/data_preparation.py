@@ -354,6 +354,42 @@ class PrepareData:
 
         return flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp
 
+    def get_attrib(self, temp, vpix):
+
+        mat_k = np.zeros([rows, cols], float)
+        mat_s = np.zeros([rows, cols], float)
+        mat_n = np.zeros([rows, cols], float)
+        mat_ppl = np.zeros([rows, cols], float)
+        mat_pi = np.zeros([rows, cols], float)
+        mat_ret = np.zeros([rows, cols], float)
+        mat_b = np.zeros([rows, cols], float)
+        mat_x = np.zeros([rows, cols], float)
+        mat_y = np.zeros([rows, cols], float)
+        mat_tau = np.zeros([rows, cols], float)
+        mat_v = np.zeros([rows, cols], float)
+
+        all_attrib = [
+            mat_k,
+            mat_s,
+            mat_n,
+            mat_ppl,
+            mat_pi,
+            mat_ret,
+            mat_b,
+            mat_x,
+            mat_y,
+            mat_tau,
+            mat_v]  # parametry, ktere se generuji ze shp
+
+        poradi = 0
+        for x in sfield:
+            d = temp + os.sep + "r" + str(x)
+            arcpy.PolygonToRaster_conversion(intersect, str(x), d, "MAXIMUM_AREA", "", vpix)
+            all_attrib[poradi] = arcpy.RasterToNumPyArray(d)
+            poradi = poradi + 1
+
+        return all_attrib, poradi
+
     def raster2np(self, gp, dmt_clip, slope_clip, flow_direction_clip, temp, sfield, intersect, points, dmt_fill):
         # TODO: rozdelit raster2np do vic podfunkci, polovina veci s tim prevodem nesouvisi 23.05.2018 MK
 
@@ -388,42 +424,12 @@ class PrepareData:
         rows = dmt_array.shape[0]
         cols = dmt_array.shape[1]
 
-        # nasledujici blok by sel urcite napsat lip 23.05.2018 MK a mozna by se mel presunout do funkce par 09.06.2018 MK
         mat_dmt = dmt_array
-        mat_k = np.zeros([rows, cols], float)
-        mat_s = np.zeros([rows, cols], float)
-        mat_n = np.zeros([rows, cols], float)
-        mat_ppl = np.zeros([rows, cols], float)
-        mat_pi = np.zeros([rows, cols], float)
-        mat_ret = np.zeros([rows, cols], float)
-        mat_b = np.zeros([rows, cols], float)
-        mat_x = np.zeros([rows, cols], float)
-        mat_y = np.zeros([rows, cols], float)
-        mat_tau = np.zeros([rows, cols], float)
-        mat_v = np.zeros([rows, cols], float)
         mat_nan = np.zeros([rows, cols], float)
         mat_a = np.zeros([rows, cols], float)
         mat_aa = np.zeros([rows, cols], float)
 
-        all_attrib = [
-            mat_k,
-            mat_s,
-            mat_n,
-            mat_ppl,
-            mat_pi,
-            mat_ret,
-            mat_b,
-            mat_x,
-            mat_y,
-            mat_tau,
-            mat_v]  # parametry, ktere se generuji ze shp
-
-        poradi = 0
-        for x in sfield:
-            d = temp + os.sep + "r" + str(x)
-            arcpy.PolygonToRaster_conversion(intersect, str(x), d, "MAXIMUM_AREA", "", vpix)
-            all_attrib[poradi] = arcpy.RasterToNumPyArray(d)
-            poradi = poradi + 1
+        all_attrib, poradi = self.get_attrib(temp, vpix)
 
         mat_k = all_attrib[0]
         mat_s = all_attrib[1]
@@ -447,7 +453,7 @@ class PrepareData:
                         mat_inf_index[i][j] = combinat.index(ccc)
 
         # getting points coordinates from optional input shapefile
-        if points and (points != "#") and (points != ""):  # to samy je uz na radku 169, do fce? 23.05.2018 MK
+        if points and (points != "#") and (points != ""):
             # identify the geometry field
             desc = arcpy.Describe(points)
             shapefieldname = desc.ShapeFieldName
