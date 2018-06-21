@@ -116,7 +116,7 @@ class PrepareData:
 
         mat_hcrit, mat_a, mat_aa = self.par(all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix, temp)
 
-        mat_efect_vrst, state_cell, mfda, sr, itera = self.contour(dmt_clip, temp, spix, rainfall_file_path)
+        mat_efect_vrst, state_cell, mfda, sr, itera = self.contour(dmt_clip, temp, spix, rainfall_file_path,rows,cols)
 
         # pokud jsou zadane vsechny vstupy pro vypocet toku
         # toky se pocitaji a type_of_computing je 3
@@ -597,7 +597,7 @@ class PrepareData:
 
         return mat_hcrit, mat_a, mat_aa
 
-    def contour(self,dmt_clip, temp, spix, rainfall_file_path):
+    def contour(self,dmt_clip, temp, spix, rainfall_file_path,rows,cols):
 
         # fiktivni vrstevnice a priprava "state cell, jestli to je tok ci plocha
         pii = math.pi / 180.0
