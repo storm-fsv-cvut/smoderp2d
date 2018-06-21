@@ -30,6 +30,10 @@ class PrepareData:
         arcpy.CheckOutExtension("Spatial") # TODO - raise an exception (21.05.2018 MK)
         self.gp.overwriteoutput = 1
 
+    def add_message(self,message):
+        # arcpy dependent
+        arcpy.AddMessage(message)
+
     def prepare_data(self,args):
     # main function of data_preparation class
 
@@ -65,14 +69,14 @@ class PrepareData:
 
         if not os.path.exists(output):
             os.makedirs(output)
-        arcpy.AddMessage("Creating of the output directory: " + output)
+        self.add_message("Creating of the output directory: " + output)
 
         temp = output + os.sep + "temp"
 
         if not os.path.exists(temp):
             os.makedirs(temp)
 
-        arcpy.AddMessage("Creating of the temp: " + temp)
+        self.add_message("Creating of the temp: " + temp)
 
         arcpy.env.snapRaster = dmt
         # deleting content of output directory
@@ -95,7 +99,7 @@ class PrepareData:
 
         arcpy.CopyRaster_management(dmt, dmt_copy)
 
-        arcpy.AddMessage("DMT preparation...")
+        self.add_message("DMT preparation...")
 
         dmt_fill, flow_direction, flow_accumulation, slope_orig, copydmt_array = self.dmt_preparation(dmt_copy, temp)
 
@@ -125,7 +129,7 @@ class PrepareData:
 
         if (type_of_computing == 3) or (type_of_computing == 5):
 
-            arcpy.AddMessage('Stream preparation...')
+            self.add_message("Stream preparation...")
 
             toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sp.prepare_streams(
                 dmt, dmt_copy, mat_dmt_fill, null_shp,
@@ -135,7 +139,7 @@ class PrepareData:
                 self.del_field, output, dmt_clip,
                 intersect, null_shp, gp)
 
-            arcpy.AddMessage("Stream preparation has finished")
+            self.add_message("Stream preparation has finished")
 
         else:
             toky = None
@@ -156,7 +160,7 @@ class PrepareData:
         mat_ret = all_attrib[5];
         mat_b = all_attrib[6];
 
-        arcpy.AddMessage("Data preparation has been finished")
+        self.add_message("Data preparation has been finished")
 
         return boundaryRows, boundaryCols, mat_boundary, rrows, rcols, outletCells, x_coordinate, y_coordinate, \
             NoDataValue, array_points, \
@@ -227,7 +231,7 @@ class PrepareData:
         arcpy.Dissolve_management(soil, soil_boundary, ptyp)
 
         # mask and clip data
-        arcpy.AddMessage("Clip of the source data by intersect")
+        self.add_message("Clip of the source data by intersect")
         grup = [soil_boundary, veg_boundary, null_shp]
         intersect = output + os.sep + "interSoilLU.shp"
         arcpy.Intersect_analysis(grup, intersect, "ALL", "", "INPUT")
@@ -260,11 +264,10 @@ class PrepareData:
             if len(diffpts) == 0:
                 pass
             else:
-                arcpy.AddMessage("!!! Points at coordinates [x,y]:")
+                self.add_message("!!! Points at coordinates [x,y]:")
                 for item in diffpts:
-                    arcpy.AddMessage(item)
-                arcpy.AddMessage(
-                    "are outside the computation domain and will be ingnored !!!")
+                    self.add_message(item)
+                self.add_message("are outside the computation domain and will be ingnored !!!")
 
             points = pointsClipCheck
 
@@ -322,7 +325,7 @@ class PrepareData:
             for row in cursor:
                 for i in range(len(row)):
                     if row[i] == " ":
-                        arcpy.AddMessage(
+                        self.add_message(
                             "Values in soilveg tab are not correct - STOP, check shp file Prunik in output")
                         sys.exit()
 
@@ -549,7 +552,7 @@ class PrepareData:
                 mat_aa[i][j] = par_aa
 
         # critical water level
-        arcpy.AddMessage("Computing critical level")
+        self.add_message("Computing critical level")
         mat_hcrit_tau = np.zeros([rows, cols], float)
         mat_hcrit_v = np.zeros([rows, cols], float)
         mat_hcrit_flux = np.zeros([rows, cols], float)
