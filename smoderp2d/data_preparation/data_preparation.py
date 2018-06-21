@@ -374,7 +374,7 @@ class PrepareData:
         mat_slope = arcpy.RasterToNumPyArray(slope_clip)
         mat_fd = arcpy.RasterToNumPyArray(flow_direction_clip)
 
-        self.zapis(
+        self.save_raster(
             "fl_dir",
             mat_fd,
             x_coordinate,
@@ -620,7 +620,7 @@ class PrepareData:
 
         return mat_efect_vrst, state_cell, mfda, sr, itera
 
-    def zapis(self, name, array_export, l_x, l_y, spix, vpix, NoDataValue, folder):
+    def save_raster(self, name, array_export, l_x, l_y, spix, vpix, NoDataValue, folder):
         ll_corner = arcpy.Point(l_x, l_y)
         raster = arcpy.NumPyArrayToRaster(
             array_export,
@@ -629,7 +629,6 @@ class PrepareData:
             vpix,
             NoDataValue)
         raster.save(folder + os.sep + name)
-        return raster # musi tady byt return raster?
 
     def find_boudary_cells(self, rows, cols, mat_nan, noData, mfda):
         # Identification of cells at the domain boundary
