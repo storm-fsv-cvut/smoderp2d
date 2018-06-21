@@ -118,6 +118,8 @@ class PrepareData:
 
         mat_efect_vrst, state_cell, mfda, sr, itera = self.contour(dmt_clip, temp, spix, rainfall_file_path,rows,cols)
 
+        # pocitam vzdy s ryhama
+        type_of_computing = 1
         # pokud jsou zadane vsechny vstupy pro vypocet toku
         # toky se pocitaji a type_of_computing je 3
         listin = [stream, tab_stream_tvar, tab_stream_tvar_code]
@@ -296,7 +298,7 @@ class PrepareData:
             for row in cursor:
                 row[2] = row[0] + row[1]
                 cursor.updateRow(row)
-        del cursor, row
+        del cursor
 
         puda_veg_dbf = temp + os.sep + "puda_veg_tab_current.dbf"
 
