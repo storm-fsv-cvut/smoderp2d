@@ -989,8 +989,4 @@ def prepare_data(args):
         mat_n,   \
         output, pixel_area, points, poradi,  end_time, spix, state_cell, \
         temp, type_of_computing, vpix, mfda, sr, itera,  \
-<<<<<<< HEAD
         toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc
-=======
-        toky, cell_stream, mat_tok_usek, STREAM_RATIO, toky_loc
->>>>>>> origin/refactoring_tacr
