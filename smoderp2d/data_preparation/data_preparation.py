@@ -95,7 +95,8 @@ class PrepareData:
         if not os.path.exists(temp):
             os.makedirs(temp)
 
-        dmt_copy = temp + os.sep + "dmt_copy"
+        temp_gdb = arcpy.CreateFileGDB_management (temp, "tempGDB.gdb")
+        dmt_copy = temp + os.sep + "tempGDB.gdb" + os.sep + "dmt_copy"
 
         arcpy.CopyRaster_management(dmt, dmt_copy)
 

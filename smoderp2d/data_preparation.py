@@ -197,6 +197,9 @@ class Outlet:
 #  @return \b sr  contains the rainfall data [][]
 #  @return \b itera   amount of the rainfall intervals
 
+def run():
+    prepare_data(sys.argv)
+
 def prepare_data(args):
     # creating the geoprocessor object
     gp = arcgisscripting.create()
