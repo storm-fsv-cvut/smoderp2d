@@ -1,4 +1,4 @@
-# @package smoderp2d.main_classes.Flow
+# @package smoderp2d.core.flow
 #
 #  Contains Classes and methods resolve
 #  the flow type according the D8 or Mfda algorithm.
@@ -13,25 +13,22 @@
 #
 #  Both classes can inherited by the
 #  classes Kinematic or Diffuse in the
-#  package smoderp2d.main_classes.KinematicDiffuse
+#  package smoderp2d.core.kinematic_diffuse
 #
 
 
-from smoderp2d.main_classes.General import Globals as Gl
+from smoderp2d.core.general import Globals
 
-
-from smoderp2d.tools.tools import comp_type
 import smoderp2d.flow_algorithm.mfd as mfd
 import smoderp2d.flow_algorithm.D8 as D8_
-import smoderp2d.io_functions.prt as prt
-
+from smoderp2d.providers import Logger
 
 # Defines methods for executing the one direction flow algorithm D8.
 #
 #  Can be inherited by the Classes:
 #
-#  - smoderp2d.main_classes.KinematicDiffuse.Kinematic
-#  - smoderp2d.main_classes.KinematicDiffuse.Diffuse
+#  - smoderp2d.core.kinematic_diffuse.Kinematic
+#  - smoderp2d.core.kinematic_diffuse.Diffuse
 #
 class D8(object):
 
@@ -43,8 +40,8 @@ class D8(object):
     #
 
     def __init__(self):
-        prt.message("\tD8 flow algorithm")
-        self.inflows = D8_.new_inflows(Gl.mat_fd)
+        Logger.info("D8 flow algorithm")
+        self.inflows = D8_.new_inflows(Globals.get_mat_fd())
 
     # updates #inflows list if the diffuse approach is used.
     #
@@ -87,8 +84,8 @@ class D8(object):
 #
 #  Can be inherited by the Classes:
 #
-#  - smoderp2d.main_classes.KinematicDiffuse.Kinematic
-#  - smoderp2d.main_classes.KinematicDiffuse.Diffuse
+#  - smoderp2d.core.kinematic_diffuse.Kinematic
+#  - smoderp2d.core.kinematic_diffuse.Diffuse
 #
 #  note: The rill flow, if computed, is always defined in terms
 #  of one directions algorithm. In the class Mfda are therefore
@@ -99,10 +96,10 @@ class Mfda(object):
 
     def __init__(self):
 
-        prt.message("\tMultiflow direction algorithm")
-        self.isRill = comp_type('rill')
+        Logger.info("Multiflow direction algorithm")
         self.inflows, fd_rill = mfd.new_mfda(
-            mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols)
+            mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols
+        )
         self.inflowsRill = D8_.new_inflows(fd_rill)
 
     def update_inflows(self, fd):
@@ -111,32 +108,30 @@ class Mfda(object):
         self.inflowsRill = D8_.new_inflows(fd_rill)
 
     def cell_runoff(self, i, j, sur=True):
-        # print 'asdf'
         inflow_from_cells = \
-            self.inflows[i - 1][j - 1][1] * self.arr[i - 1][j - 1].V_runoff_pre +\
-            self.inflows[i - 1][j][2] * self.arr[i - 1][j].V_runoff_pre +\
-              self.inflows[i - 1][j + 1][3] * self.arr[i - 1][j + 1].V_runoff_pre +\
-                self.inflows[i][j - 1][0] * self.arr[i][j - 1].V_runoff_pre +\
-                  self.inflows[i][j + 1][4] * self.arr[i][j + 1].V_runoff_pre +\
-                    self.inflows[i + 1][j - 1][7] * self.arr[i + 1][j - 1].V_runoff_pre +\
-                      self.inflows[i + 1][j][6] * self.arr[i + 1][j].V_runoff_pre +\
-                        self.inflows[
-                            i + 1][
-                                j + 1][
-                                    5] * self.arr[
-                i + 1][
-                    j + 1].V_runoff_pre
+            self.inflows[i - 1][j - 1][1] * \
+            self.arr[i - 1][j - 1].V_runoff_pre + \
+            self.inflows[i - 1][j][2] * \
+            self.arr[i - 1][j].V_runoff_pre + \
+            self.inflows[i - 1][j + 1][3] * \
+            self.arr[i - 1][j + 1].V_runoff_pre + \
+            self.inflows[i][j - 1][0] * self.arr[i][j - 1].V_runoff_pre + \
+            self.inflows[i][j + 1][4] * self.arr[i][j + 1].V_runoff_pre + \
+            self.inflows[i + 1][j - 1][7] * self.arr[i + 1][j - 1].V_runoff_pre + \
+            self.inflows[i + 1][j][6] * self.arr[i + 1][j].V_runoff_pre + \
+            self.inflows[i + 1][j + 1][5] * \
+            self.arr[i + 1][j + 1].V_runoff_pre
 
-        if isRill and sur:
+        if Globals.isRill and sur:
             for z in range(len(self.inflowsRill[i][j])):
                 ax = self.inflowsRill[i][j][z][0]
                 bx = self.inflowsRill[i][j][z][1]
                 iax = i + ax
                 jbx = j + bx
-                if (self.arr[i][j].state == 1) or (self.arr[i][j].state == 2):  # rill
+                if self.arr[i][j].state == 1 or self.arr[i][j].state == 2: # rill
                     try:
-                        inflow_from_cells += self.V_runoff_rill_pre[
-                            iax][jbx]  # toto jeste predelat u ryh
+                        inflow_from_cells += \
+                            self.V_runoff_rill_pre[iax][jbx]  # toto jeste predelat u ryh
                     except:
                         inflow_from_cells += 0.0
 

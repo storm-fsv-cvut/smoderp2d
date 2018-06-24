@@ -1,4 +1,4 @@
-# @package smoderp2d.main_classes.CumulativeMax
+# @package smoderp2d.core.cumulative_max
 #
 #  package contains classes save the cumulative or maximum
 #  values of the results in each time step.
@@ -11,12 +11,10 @@ import numpy as np
 
 
 # smoderp import
-from smoderp2d.main_classes.General import *
-from smoderp2d.tools.tools import comp_type
-import smoderp2d.io_functions.prt as prt
+from smoderp2d.core.general import *
+from smoderp2d.providers import Logger
 
-
-from smoderp2d.main_classes.General import Globals as Gl
+from smoderp2d.core.general import GridGlobals, Globals
 
 
 # Max and cumulative values of the subsurface flow
@@ -35,14 +33,14 @@ class CumulativeSubsurface(object):
 
     def __init__(self):
 
-        prt.message('\tSubsurface')
+        Logger.info('Subsurface')
         super(CumulativeSubsurface, self).__init__()
 
         self.arrs[17] = 'exfiltration'
         self.arrs[18] = 'percolation'
         self.arrs[19] = 'h_sub'
         self.arrs[20] = 'q_sub'
-        self.arrs[21] = 'V_sub'
+        self.arrs[21] = 'v_sub'
 
         self.names[17] = 'CumExfiltrL3'
         self.names[18] = 'CumPercolL3'
@@ -67,7 +65,7 @@ class CumulativeSubsurface(object):
         # maximum discharge from rills [m3s-1]
         self.q_sub = np.zeros([r, c], float)
         # cumulative outflow volume in rills [m3]
-        self.V_sub = np.zeros([r, c], float)
+        self.v_sub = np.zeros([r, c], float)
 
     # Method is used after each time step to save the desired variables.
     #
@@ -77,7 +75,7 @@ class CumulativeSubsurface(object):
 
         self.exfiltration[i][j] += sub.exfiltration * self.pixel_area
         self.percolation[i][j] += sub.percolation * self.pixel_area
-        self.V_sub[i][j] += sub.V_runoff
+        self.v_sub[i][j] += sub.v_runoff
 
         if sub.h > self.h_sub[i][j]:
             self.h_sub[i][j] = sub.h
@@ -106,16 +104,15 @@ class CumulativeSubsurfacePass(object):
 #  the surface and rill flow
 #
 #
-class Cumulative(CumulativeSubsurface if Gl.subflow else CumulativeSubsurfacePass, Globals, Size):
+class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else CumulativeSubsurfacePass, Globals, Size):
 
     # the constructor
     #
     #
 
     def __init__(self):
-
-        prt.message('Save cumulative and maximum values from:')
-        prt.message('\tSurface')
+        super(Cumulative, self).__init__()
+        Logger.info('Save cumulative and maximum values from: Surface')
 
         # Dictionary stores the python arrays identification.
         #
@@ -125,18 +122,18 @@ class Cumulative(CumulativeSubsurface if Gl.subflow else CumulativeSubsurfacePas
                      2: 'precipitation',
                      3: 'h_sur',
                      4: 'q_sur',
-                     5: 'V_sur',
+                     5: 'v_sur',
                      6: 'v_sur',
                      7: 'shear_sur',
                      8: 'h_rill',
                      9: 'q_rill',
-                     10: 'V_rill',
+                     10: 'v_rill',
                      11: 'b_rill',
                      12: 'inflow_sur',
                      13: 'sur_ret',
-                     14: 'V_sur_r',
+                     14: 'v_sur_r',
                      15: 'q_sur_tot',
-                     16: 'V_sur_tot'
+                     16: 'v_sur_tot'
                      }
 
                 # 12 : 'v_rill',
@@ -164,9 +161,6 @@ class Cumulative(CumulativeSubsurface if Gl.subflow else CumulativeSubsurfacePas
                       }
                 # 12 : 'MaxVeloRill',
 
-        if (Globals.r is None or Globals.r is None):
-            sys.exit("Global variables are not assigned")
-
         r = self.r
         c = self.c
 
@@ -181,9 +175,9 @@ class Cumulative(CumulativeSubsurface if Gl.subflow else CumulativeSubsurfacePas
         # maximum surface discharge [m3s-1]
         self.q_sur = np.zeros([r, c], float)
         # cumulative surface runoff volume [m3]
-        self.V_sur = np.zeros([r, c], float)
+        self.v_sur = np.zeros([r, c], float)
         # cumulative surface runoff volume [m3]
-        self.V_sur_r = np.zeros([r, c], float)
+        self.v_sur_r = np.zeros([r, c], float)
         # maximum surface velocity [ms-1]
         self.v_sur = np.zeros([r, c], float)
         # maximum surface shear stress [Pa]
@@ -195,9 +189,9 @@ class Cumulative(CumulativeSubsurface if Gl.subflow else CumulativeSubsurfacePas
         # maximum discharge in rills [m3s-1]
         self.q_rill = np.zeros([r, c], float)
         # cumulative runoff volume in rills [m3]
-        self.V_rill = np.zeros([r, c], float)
+        self.v_rill = np.zeros([r, c], float)
         # cumulative runoff volume in rills [m3]
-        self.V_rill_r = np.zeros([r, c], float)
+        self.v_rill_r = np.zeros([r, c], float)
         # maximum rill width [m]
         self.b_rill = np.zeros([r, c], float)
         # maximum velocity in rills [ms-1]
@@ -207,7 +201,7 @@ class Cumulative(CumulativeSubsurface if Gl.subflow else CumulativeSubsurfacePas
         # maximal total surface flow [m3/s]
         self.q_sur_tot = np.zeros([r, c], float)
         # cumulative total surface flow [m3/s]
-        self.V_sur_tot = np.zeros([r, c], float)
+        self.v_sur_tot = np.zeros([r, c], float)
 
         super(Cumulative, self).__init__()
 
@@ -219,14 +213,14 @@ class Cumulative(CumulativeSubsurface if Gl.subflow else CumulativeSubsurfacePas
 
         self.infiltration[i][j] += surface.infiltration * self.pixel_area
         self.precipitation[i][j] += surface.cur_rain * self.pixel_area
-        self.V_sur[i][j] += surface.V_runoff
-        self.V_sur_r[i][j] += surface.V_rest
-        self.V_sur_tot[i][j] += surface.V_rest + surface.V_runoff
+        self.v_sur[i][j] += surface.v_runoff
+        self.v_sur_r[i][j] += surface.v_rest
+        self.v_sur_tot[i][j] += surface.v_rest + surface.v_runoff
         self.inflow_sur[i][j] += surface.inflow_tm
         self.sur_ret[i][j] += surface.cur_sur_ret * self.pixel_area
 
-        q_sheet = surface.V_runoff / delta_t
-        q_rill = surface.V_runoff_rill / delta_t
+        q_sheet = surface.v_runoff / delta_t
+        q_rill = surface.v_runoff_rill / delta_t
         q_tot = q_sheet + q_rill
         if q_tot > self.q_sur_tot[i][j]:
             self.q_sur_tot[i][j] = q_tot
@@ -237,8 +231,8 @@ class Cumulative(CumulativeSubsurface if Gl.subflow else CumulativeSubsurfacePas
                 self.q_sur[i][j] = q_sheet
 
         elif (surface.state == 1) or (surface.state == 2):
-            self.V_rill[i][j] += surface.V_runoff_rill
-            self.V_rill_r[i][j] += surface.V_rill_rest
+            self.v_rill[i][j] += surface.v_runoff_rill
+            self.v_rill_r[i][j] += surface.v_rill_rest
             if surface.h_total_new > self.h_sur[i][j]:
                 self.h_sur[i][j] = surface.h_total_new
                 self.q_sur[i][j] = q_sheet

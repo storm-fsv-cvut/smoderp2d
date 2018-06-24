@@ -1,9 +1,8 @@
 import numpy as np
 import math
 
-import smoderp2d.io_functions.prt as prt
 import smoderp2d.constants as constants
-
+from smoderp2d.providers import Logger
 
 def neighbors(i, j, array, x, y):  # function to determine all neighbor cell to actual cell in the raster dataset
     "Return all neigbours to actuall cell in the raster dataset"
@@ -130,8 +129,9 @@ def removeCellsWithSameHeightNeighborhood(mat_dmt, mat_nan, rows, cols):  # func
                     bad_cells.append(c)
                     bc = 1
 
-    prt.message(
-        "Possible water circulation! Check the input DTM raster for flat areas with the same height neighborhood.")
+    Logger.info(
+        "Possible water circulation! Check the input DTM raster for flat areas with the same height neighborhood."
+    )
 
     # all problem cells set as NoData
     if len(bad_cells) > 0:

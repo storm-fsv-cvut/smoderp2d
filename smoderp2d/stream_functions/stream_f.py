@@ -2,8 +2,9 @@
 
 import math
 import sys
-import smoderp2d.io_functions.prt as prt
 from inspect import currentframe, getframeinfo
+
+from smoderp2d.providers import Logger
 
 # Jen na debug, umi to zjistit nazev souboru a radek odkud se\n
 #  <em>print frameinfo.filename, frameinfo.lineno</em>\n
@@ -25,7 +26,7 @@ frameinfo = getframeinfo(currentframe())
 #
 #   @return h water level in the trapezoid
 #
-def compute_h(A, m, b, err=0.0001, maxIter=20):
+def compute_h(A, m, b, err=0.0001, max_iter=20):
     def feval(h):
         return b * h + m * h * h - A
 
@@ -38,16 +39,16 @@ def compute_h(A, m, b, err=0.0001, maxIter=20):
     while (feval(h_pre) > err):
         h = h_pre - feval(h_pre) / dfdheval(h_pre)
         h_pre = h
-        if iter_ >= maxIter:
-            prt.error(
+        if iter_ >= max_iter:
+            Logger.error(
                 "if file",
                 frameinfo.filename,
                 "near line ",
                 frameinfo.lineno,
                 "\n\t newton solver didnt converge after",
-                maxIter,
-                'iterations (maxIter=',
-                maxIter,
+                max_iter,
+                'iterations (max_iter=',
+                max_iter,
                 ')')
             break
         iter_ += 1
@@ -124,6 +125,10 @@ def trapezoid(reach, dt):
         reach.Q_out = reach.V_out / dt
         reach.V_rest = dV - reach.V_out  # V_zbyt
     reach.h = H
+    
+    
+    #print reach.V_in_from_field, reach.V_rest, reach.V_in_from_reach, reach.length
+    #raw_input()
     # prt.mujout.writelines(str(reach.id_) + ';' + str(reach.h) + ';' +
     # str(reach.V_in_from_field) + ';' + str(reach.V_rest) + ';' + str(
     # reach.V_in_from_reach) + ';' + str(reach.V_out) + ';' +

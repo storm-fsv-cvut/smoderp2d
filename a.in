@@ -27,7 +27,7 @@ lu-atr: -
 # v *.save souboru
 [srazka]
 file: indata/srazka.txt
-# file: -
+#file: -
 
 
 # maximalni (a zaroven pocatecni)
@@ -35,9 +35,9 @@ file: indata/srazka.txt
 # i konecni cas simulace se zde zadava
 [time]
 #sec
-maxdt: 20
+maxdt: 10
 #min
-endtime: 20
+endtime: 2
 
 
 [Other]
@@ -65,7 +65,7 @@ arcgis: false
 #
 # Zde si muzes nechat podrobneji 
 # vypsat vypisy, hlavne otazka zapsani vysledku
-extraout: False
+extraout: True
 #
 # kde se zadava cesta k souboru se vstupnimi data
 indata: indata/destak.save

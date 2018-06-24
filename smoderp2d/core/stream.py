@@ -1,10 +1,7 @@
-
-
-from smoderp2d.main_classes.General import Globals as Gl
+from smoderp2d.core.general import GridGlobals, Globals as Gl
+from smoderp2d.providers import Logger
 
 import smoderp2d.stream_functions.stream_f as stream_f
-import smoderp2d.io_functions.prt as prt
-
 
 class Reach():
 
@@ -23,8 +20,7 @@ class Reach():
         self.to_node = to_node
         self.length = length
         if sklon < 0:
-            prt.message("Slope in reach part" + str(
-                id) + "indicated minus slope in stream")
+            Logger.info("Slope in reach part {} indicated minus slope in stream".format(id_))
         self.slope = abs(sklon)
         self.smoderp = smoderp
         self.no = CISLO
@@ -48,6 +44,7 @@ class Reach():
         self.Q_max = 0.0
         self.timeQ_max = 0.0
         self.V_out_domain = 0.0
+
 
         if TVAR == 0:  # obdelnik
             self.outflow_method = stream_f.rectangle
@@ -75,10 +72,9 @@ class Stream(object):
     # The constructor.
 
     def __init__(self):
-        # jj
-        prt.message('Stream:')
-        prt.message('\tON')
         super(Stream, self).__init__()
+
+        Logger.info('Stream: ON')
 
         # pak kouknout co je treba jen uvnitr tridy
         # self.temp_dp = sp.temp_dp
@@ -95,8 +91,6 @@ class Stream(object):
         self.reach = []
 
         for i in range(self.nReaches):
-            print self.toky[6][i]
-            print self.toky[11][i]
             self.reach.append(
                 Reach(self.toky[0][i],
                       self.toky[1][i],
@@ -113,12 +107,13 @@ class Stream(object):
                       self.toky[12][i],
                       self.toky[13][i],
                       self.toky[14][i]))
-
-        self.tokyLoc = Gl.tokyLoc
+        
+        
+        self.toky_loc = Gl.toky_loc
         self.mat_tok_reach = Gl.mat_tok_reach
 
-        for i in Gl.rr:
-            for j in Gl.rc[i]:
+        for i in self.rr:
+            for j in self.rc[i]:
                 self.arr[i][j].state += self.mat_tok_reach[i][j]
 
         self.STREAM_RATIO = Gl.STREAM_RATIO
@@ -131,6 +126,7 @@ class Stream(object):
     #  @param id_ starts in 0 not 1000
     def reach_inflows(self, id_, inflows):
         self.reach[id_].V_in_from_field += inflows
+        #print inflows, self.reach[id_].V_in_from_field
 
     def stream_reach_outflow(self, dt):
         for id_ in range(self.nReaches):
@@ -165,7 +161,7 @@ class Stream(object):
     def return_stream_str_vals(self, i, j, sep, dt, extraOut):
         id_ = int(self.arr[i][j].state - 1000)
         # Time;   V_runoff  ;   Q   ;    V_from_field  ;  V_rests_in_stream
-        # print id_
+        # print id_, self.reach[id_].Q_out, str(self.reach[id_].V_out)
         if not(extraOut):
             line = str(self.reach[id_].h) + sep + str(
                 self.reach[id_].Q_out) + sep + str(self.reach[id_].V_out)
@@ -180,8 +176,7 @@ class StreamPass(object):
 
     def __init__(self):
         super(StreamPass, self).__init__()
-        prt.message('Stream:')
-        prt.message('\tOFF')
+        Logger.info('Stream: OFF')
 
     def reset_inflows(self):
         pass

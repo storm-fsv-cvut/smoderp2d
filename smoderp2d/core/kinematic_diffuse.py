@@ -1,16 +1,13 @@
+from smoderp2d.core.general import Globals
+from smoderp2d.core.flow import *
+from smoderp2d.providers import Logger
 
-
-from smoderp2d.main_classes.General import Globals as Gl
-from smoderp2d.main_classes.Flow import *
-
-
-import smoderp2d.io_functions.prt as prt
 import smoderp2d.flow_algorithm.flow_direction as flow_direction
 
-class Kinematic(Mfda if Gl.mfda else D8):
+class Kinematic(Mfda if Globals.mfda else D8):
 
     def __init__(self):
-        prt.message("\tKinematic approach")
+        Logger.info("Kinematic approach")
         super(Kinematic, self).__init__()
 
     def new_inflows(self):
@@ -20,14 +17,14 @@ class Kinematic(Mfda if Gl.mfda else D8):
         pass
 
 
-class Diffuse(Mfda if Gl.mfda else D8):
+class Diffuse(Mfda if Globals.mfda else D8):
 
     def __init__(self):
-        prt.message("\tDiffuse approach")
+        Logger.info("Diffuse approach")
         if (Globals.r is None or Globals.r is None):
             exit("Global variables are not assigned")
-        r = Gl.r
-        c = Gl.c
+        r = Globals.r
+        c = Globals.c
 
         self.H = np.zeros([r, c], float)
 

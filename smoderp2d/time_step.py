@@ -1,18 +1,17 @@
 # @package smoderp2d.time_step methods to performe
 #  time step, and to store intermeriate variables
 
-
-from smoderp2d.main_classes.General import Globals as Gl
+import math
+from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.processes.infiltration as infilt
-from smoderp2d.tools.tools import comp_type
-import smoderp2d.io_functions.prt as prt
+
 import copy
 import numpy as np
 
 
-from smoderp2d.main_classes.Surface import runoff
-from smoderp2d.main_classes.Surface import surface_retention
+from smoderp2d.core.surface import runoff
+from smoderp2d.core.surface import surface_retention
 
 infilt_capa = 0
 infilt_time = 0
@@ -25,16 +24,14 @@ max_infilt_capa = 0.003  # [m]
 #
 class TimeStep:
 
-    def do_flow(self, surface, subsurface, delta_t, flowControl, courant):
-        surface, subsurface, delta_t, flowControl, courant
+    def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
+        surface, subsurface, delta_t, flow_control, courant
 
-        gl = Gl()
-        rr = gl.get_rrows()
-        rc = gl.get_rcols()
-        mat_efect_vrst = gl.get_mat_efect_vrst()
-        fc = flowControl
-        sr = gl.get_sr()
-        itera = gl.get_itera()
+        rr, rc = GridGlobals.get_region_dim()
+        mat_efect_vrst = Globals.get_mat_efect_vrst()
+        fc = flow_control
+        sr = Globals.get_sr()
+        itera = Globals.get_itera()
 
         potRain, fc.tz = rain_f.timestepRainfall(
             itera, fc.total_time, delta_t, fc.tz, sr)
@@ -57,6 +54,7 @@ class TimeStep:
                         i, j, surface.arr[i][j], delta_t, mat_efect_vrst[i][j], fc.ratio)
                     subsurface.runoff(i, j, delta_t, mat_efect_vrst[i][j])
 
+
                 q_surface = q_sheet + q_rill
                 # print v_sheet,v_rill
                 v = max(v_sheet, v_rill)
@@ -72,8 +70,8 @@ class TimeStep:
                     rill_courant)
                 rill_courant = 0.
 
-                # w1 = surface.arr[i][j].V_runoff_rill
-                # w2 = surface.arr[i][j].V_rill_rest
+                # w1 = surface.arr[i][j].v_runoff_rill
+                # w2 = surface.arr[i][j].v_rill_rest
                 # print surface.arr[i][j].h_total_pre
                 # if (w1 > 0 and w2 == 0) :
                     # print 'asdf', w1, w2
@@ -85,19 +83,17 @@ class TimeStep:
 # courant, total_time, delta_t, combinatIndex, NoDataValue,
 # sum_interception, mat_efect_vrst, ratio, iter_
     def do_next_h(self, surface, subsurface, rain_arr, cumulative,
-                  hydrographs, flowControl, courant, potRain, delta_t):
+                  hydrographs, flow_control, courant, potRain, delta_t):
 
         global infilt_capa
         global max_infilt_capa
         global infilt_time
 
-        gl = Gl()
-        rr = gl.get_rrows()
-        rc = gl.get_rcols()
-        pixel_area = gl.get_pixel_area()
-        fc = flowControl
-        combinatIndex = gl.get_combinatIndex()
-        NoDataValue = gl.get_NoDataValue()
+        rr, rc = GridGlobals.get_region_dim()
+        pixel_area = GridGlobals.get_pixel_area()
+        fc = flow_control
+        combinatIndex = Globals.get_combinatIndex()
+        NoDataValue = GridGlobals.get_no_data()
 
         infilt_capa += potRain
         if (infilt_capa < max_infilt_capa):
@@ -109,7 +105,7 @@ class TimeStep:
                     hydrographs.write_hydrographs_record(
                         i,
                         j,
-                        flowControl,
+                        flow_control,
                         courant,
                         delta_t,
                         surface,
@@ -145,11 +141,10 @@ class TimeStep:
         for i in rr:
             for j in rc[i]:
 
-            # print i,j, surface.arr[i][j].h_total_pre, surface.arr[i][j].V_runoff
-            #
-            # current cell precipitation
-            #
-            # print rain_arr.arr[i][j], potRain, sum_interception
+                # print i,j, surface.arr[i][j].h_total_pre, surface.arr[i][j].v_runoff
+                #
+                # current cell precipitation
+                #
                 actRain, fc.sum_interception, rain_arr.arr[i][j].veg_true = rain_f.current_rain(
                     rain_arr.arr[i][j], potRain, fc.sum_interception)
                 surface.arr[i][j].cur_rain = actRain
@@ -163,26 +158,19 @@ class TimeStep:
                 # Surface BILANCE
                 #
                 surBIL = surface.arr[i][j].h_total_pre + actRain + surface.arr[i][j].inflow_tm / pixel_area - (
-                    surface.arr[i][j].V_runoff / pixel_area + surface.arr[i][j].V_runoff_rill / pixel_area)
+                    surface.arr[i][j].v_runoff / pixel_area + surface.arr[i][j].v_runoff_rill / pixel_area)
 
                 #
                 # surface retention
                 #
                 surBIL = surface_retention(surBIL, surface.arr[i][j])
-
-                # print i,j, surface.arr[i][j].state,
-                # surface.arr[i][j].h_total_pre , actRain ,
-                # surface.arr[i][j].inflow_tm/pixel_area ,
-                # surface.arr[i][j].V_runoff/pixel_area ,
-                # surface.arr[i][j].V_runoff_rill/pixel_area
-
+            
                 #
                 # infiltration
                 #
                 if subsurface.get_exfiltration(i, j) > 0:
                     surface.arr[i][j].infiltration = 0.0
                     infiltration = 0.0
-                    # print 'actRain', actRain
                 else:
                     surBIL, infiltration = infilt.philip_infiltration(
                         surface.arr[i][j].soil_type, surBIL)
@@ -190,8 +178,8 @@ class TimeStep:
 
                 # surface retention
                 surBIL += subsurface.get_exfiltration(i, j)
-                # print surBIL
-
+                    
+                    
                 surface_state = surface.arr[i][j].state
 
                 if surface_state >= 1000:
@@ -202,6 +190,7 @@ class TimeStep:
                     h_sub = subsurface.runoff_stream_cell(i, j)
 
                     inflowToReach = h_sub * pixel_area + surBIL * pixel_area
+                    
                     surface.reach_inflows(
                         id_=int(surface_state - 1000),
                         inflows=inflowToReach)
@@ -209,9 +198,6 @@ class TimeStep:
                 else:
                     surface.arr[i][j].h_total_new = surBIL
 
-                # print surface.arr[i][j].h_sheet,
-                # surface.arr[i][j].h_total_pre, infiltration, actRain,
-                # surface.arr[i][j].inflow_tm/pixel_area
                 surface_state = surface.arr[i][j].state
                 # subsurface inflow
                 """
@@ -228,7 +214,7 @@ class TimeStep:
                 hydrographs.write_hydrographs_record(
                     i,
                     j,
-                    flowControl,
+                    flow_control,
                     courant,
                     delta_t,
                     surface,

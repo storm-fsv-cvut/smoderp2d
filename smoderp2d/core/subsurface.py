@@ -1,52 +1,59 @@
 import numpy as np
 import math
-import sys
-import os
 
 
-from smoderp2d.main_classes.General import Globals as Gl
-from smoderp2d.main_classes.General import Size
-from smoderp2d.main_classes.KinematicDiffuse import *
-
+from smoderp2d.core.general import GridGlobals, Globals, Size
+from smoderp2d.core.kinematic_diffuse import Kinematic
+from smoderp2d.exceptions import SmoderpError
+from smoderp2d.providers import Logger
 
 import smoderp2d.processes.subsurface as darcy
-import smoderp2d.io_functions.prt as prt
-
 
 class SubArrs:
-
     def __init__(self, L_sub, Ks, vg_n, vg_l, z, ele):
+        """Subsurface attributes.
+
+        :param L_sub: TODO
+        :param Ks: TODO
+        :param vg_n: TODO
+        :param vg_l: TODO
+        :param z: TODO
+        :param ele: TODO
+        """
         self.L_sub = L_sub
-        self.h = float(0)
+        self.h = 0.
         self.H = ele
         self.z = z
-        self.slope = float(0)
-        self.exfiltration = float(0)
-        self.V_runoff = float(0)
-        self.V_runoff_pre = float(0)
-        self.V_rest = float(0)
+        self.slope = 0.
+        self.exfiltration = 0.
+        self.V_runoff = 0.
+        self.V_runoff_pre = 0.
+        self.V_rest = 0.
         self.Ks = Ks
-        self.cum_percolation = float(0)
-        self.percolation = float(0)
+        self.cum_percolation = 0.
+        self.percolation = 0.
         self.vg_n = vg_n
         self.vg_m = 1.0 - 1.0 / vg_n
         self.vg_l = vg_l
 
 
-# Documentation for a class.
-#  More details.
-#
-class SubsurfaceC(Diffuse if Gl.diffuse else Kinematic, Size):
-
+class SubsurfaceC(Diffuse if Globals.diffuse else Kinematic, Size):
     def __init__(self, L_sub, Ks, vg_n, vg_l):
+        """TODO.
+
+        :param L_sub: TODO
+        :param Ks: TODO
+        :param vg_n: TODO
+        :param vg_l: TODO
+        """
+        r = Globals.r
+        c = Globals.c
 
         if (Globals.r is None or Globals.r is None):
-            exit("Global variables are not assigned")
+            raise SmoderpError("Global variables are not assigned")
         super(SubsurfaceC, self).__init__()
 
-        r = Gl.r
-        c = Gl.c
-
+        # TODO self.r?
         self.arr = np.empty((self.r, self.c), dtype=object)
 
         for i in range(self.r):
@@ -173,15 +180,16 @@ class SubsurfaceC(Diffuse if Gl.diffuse else Kinematic, Size):
 
 # Class
 #  empty class if no subsurface flow is considered
-class SubsurfacePass(object, Size):
+class SubsurfacePass(GridGlobals, Size):
 
     def __init__(self, L_sub, Ks, vg_n, vg_l):
+        super(SubsurfacePass, self).__init__()
         # jj
         self.n = 0
-        self.arr = np.empty((Gl.r, Gl.c), dtype=object)
+
         self.q_subsurface = None
         # self.arr = np.zeros([0],float)
-        prt.message("\tOFF")
+        Logger.info("Subsurface: OFF")
 
     def new_inflows(self):
         pass
@@ -211,14 +219,13 @@ class SubsurfacePass(object, Size):
         pass
 
 
-class Subsurface(SubsurfaceC if Gl.subflow else SubsurfacePass):
+class Subsurface(SubsurfaceC if Globals.subflow else SubsurfacePass):
 
     def __init__(self, L_sub=0.010, Ks=0.001, vg_n=1.5, vg_l=0.5):
-        prt.message("Subsurface:")
-        super(
-            Subsurface,
-            self).__init__(
-                L_sub=L_sub,
-                Ks=Ks,
-         vg_n=vg_n,
-         vg_l=vg_l)
+        Logger.info("Subsurface:")
+        super(Subsurface, self).__init__(
+            L_sub=L_sub,
+            Ks=Ks,
+            vg_n=vg_n,
+            vg_l=vg_l
+        )

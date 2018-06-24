@@ -10,10 +10,7 @@ import numpy as np
 
 import smoderp2d.constants as constants
 import smoderp2d.flow_algorithm.py_dmtfce as py_dmtfce
-
-
-import smoderp2d.io_functions.prt as prt
-
+from smoderp2d.providers import Logger
 
 def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
     state = 0
@@ -23,7 +20,7 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
     val_array2 = np.zeros([rows, cols], float)
     fd_rill = np.zeros([rows, cols], float)
 
-    prt.message("Computing multiple flow direction algorithm...")
+    Logger.info("Computing multiple flow direction algorithm...")
 
     # for i in range(rows):
       # for j in range(cols):
@@ -236,13 +233,11 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
                     state = 0
 
                     if (abs(sum(flprop) - 1.0) > 1e-5):
-                        prt.message(
-                            "Error - sum of flow proportions is not eqaul to 1.0")
-                        prt.message(sum(flprop), i, j)
+                        Logger.info("Error - sum of flow proportions is not eqaul to 1.0")
+                        Logger.info(sum(flprop), i, j)
                     if (abs(sum(flow_amount_cell) - 1.0) > 1e-5):
-                        prt.message(
-                            "Error - sum of flow amount in cell is not eqaul to 1.0")
-                        prt.message(sum(flow_amount_cell), i, j)
+                        Logger.info("Error - sum of flow amount in cell is not eqaul to 1.0")
+                        Logger.info(sum(flow_amount_cell), i, j)
 
                     # same direction as in ArcGIS
                     flow_direction = [
