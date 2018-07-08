@@ -135,9 +135,8 @@ class PrepareData:
 
             self.add_message("Stream preparation...")
 
-            toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sp.prepare_streams(
-                gp, listin, dmt, null_shp, mat_nan, spix, rows, cols, ll_corner, self.add_field, output,
-                dmt_clip, intersect)
+            toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sp.prepare_streams(listin, dmt, null_shp,
+                mat_nan, spix, rows, cols, ll_corner, self.add_field, output, dmt_clip, intersect)
 
             self.add_message("Stream preparation has finished")
 

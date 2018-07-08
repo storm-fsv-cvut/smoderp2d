@@ -44,7 +44,7 @@ class ZeroSlopeError(Error):
         return repr(self.msg)
 
 
-def prepare_streams(gp, listin, dmt, null, mat_nan, spix, rows, cols, ll_corner, addfield, output, dmt_clip, intersect):
+def prepare_streams(listin, dmt, null, mat_nan, spix, rows, cols, ll_corner, addfield, output, dmt_clip, intersect):
 
     # Overwriting output
     arcpy.env.overwriteOutput = 1
