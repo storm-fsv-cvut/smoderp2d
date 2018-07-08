@@ -34,7 +34,7 @@ class PrepareData:
         # arcpy dependent
         arcpy.AddMessage(message)
 
-    def prepare_data(self,args):
+    def prepare_data(self):
     # main function of data_preparation class
 
         # geoprocessor object
