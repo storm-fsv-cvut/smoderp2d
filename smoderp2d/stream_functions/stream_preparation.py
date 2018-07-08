@@ -7,10 +7,6 @@
 __author__ = "edlman"
 __date__ = "$29.12.2015 18:20:20$"
 
-# INITIAL SETTINGS:
-# importing project moduls
-import smoderp2d.constants as constants
-# import smoderp2d.data_preparation
 import smoderp2d.flow_algorithm.arcgis_dmtfce as arcgis_dmtfce
 
 
@@ -25,8 +21,6 @@ from arcpy.sa import *
 import math
 
 from smoderp2d.providers.base.logger import BaseLogger
-
-
 # definice erroru  na urovni modulu
 #
 class Error(Exception):
@@ -50,18 +44,8 @@ class ZeroSlopeError(Error):
         return repr(self.msg)
 
 
-def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
-                    mat_nan, mat_fd, vpix,
-                    spix, rows, cols, ll_corner,
-                    NoDataValue, addfield,
-                    delfield, output, dmt_clip,
-                    intersect, null_shp, gp):
+def prepare_streams(gp, listin, dmt, null, mat_nan, spix, rows, cols, ll_corner, addfield, output, dmt_clip, intersect):
 
-    # creating the geoprocessor object
-    gp = arcgisscripting.create()
-    # setting the workspace environment
-    gp.workspace = gp.GetParameterAsText(
-        constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
     # Overwriting output
     arcpy.env.overwriteOutput = 1
     # Check extensions
@@ -70,40 +54,22 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
 
     # SET INPUT:
     # Set input
-    stream = gp.GetParameterAsText(constants.PARAMETER_STREAM)
-
-    # dmt = data_preparation.dmt
-    # dmt_copy = data_preparation.dmt_copy
-    # mat_dmt = data_preparation.mat_dmt_fill
-    # mat_nan = data_preparation.mat_nan
-    # mat_fd = data_preparation.mat_fd
-    # vpix = data_preparation.vpix
-    # spix = data_preparation.spix
-    # rows = data_preparation.rows
-    # cols = data_preparation.cols
-    # gp = data_preparation.gp
-    # ll_corner = data_preparation.ll_corner
-    # NoDataValue = data_preparation.NoDataValue
-    # addfield = data_preparation.addfield
-    # delfield = data_preparation.delfield
+    # tvar koryt
+    stream = listin[0]
+    tab_stream_tvar = listin[1]
+    tab_stream_tvar_code = listin[2]
     STREAM_RATIO = 1
 
-    # cropped raster info
-    dmt_desc = arcpy.Describe(dmt_copy)
-    # lower left corner coordinates
-    x_coordinate = dmt_desc.extent.XMin
-    y_coordinate = dmt_desc.extent.YMin
     arcpy.env.snapRaster = dmt
 
     # Set output
-    # output = data_preparation.output
     temp_dp = output + os.sep + "temp_dp"
     if not os.path.exists(temp_dp):
         os.makedirs(temp_dp)
     tempgdb_dp = arcpy.CreateFileGDB_management(temp_dp, "temp_dp.gdb")
 
     # WATER FLOWS ACCORDING DMT:
-    # dmt_clip = data_preparation.dmt_clip
+
     dmt_fill, flow_direction, flow_accumulation, slope = arcgis_dmtfce.dmtfce(
         dmt_clip, temp_dp, "TRUE", "TRUE", "NONE")
 
@@ -118,33 +84,17 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
         setnull.save(temp_dp + os.sep + "setnull")
     except:
         log.info(
-            "Unexepted error during setnull calculation:",
+            "Unexpected error during setnull calculation:",
             sys.exc_info()[0])
         raise
-
-    # Stream to feature
-    """try:
-      toky_dmt = arcpy.sa.StreamToFeature(setnull, flow_direction, temp_dp+os.sep+"toky_dmt", "SIMPLIFY")
-  except:
-      log.info("Unexepted error during stream to future calculation:", sys.exc_info()[0])
-      raise"""
 
     # WATER FLOWS ACCORDING DIBAVOD:
     # Clip
     toky = temp_dp + os.sep + "toky.shp"
     toky_loc = temp_dp + os.sep + "toky.shp"
-    # intersect = data_preparation.intersect
     hranice = temp_dp + os.sep + "hranice.shp"
-    # null = data_preparation.null_shp
     hranice = arcpy.Clip_analysis(null, intersect, hranice)
-    hranice2 = arcpy.Buffer_analysis(
-        hranice,
-        temp_dp + os.sep + "hranice2.shp",
-     -spix / 3,
-     "FULL",
-     "ROUND",
-     "NONE")
-    # hranice2 = hranice
+    hranice2 = arcpy.Buffer_analysis(hranice, temp_dp + os.sep + "hranice2.shp", -spix / 3, "FULL", "ROUND", "NONE")
 
     toky = arcpy.Clip_analysis(stream, hranice2, toky)
 
@@ -160,23 +110,21 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
 
     # Feature vertices to points - START
     log.info("Feature vertices to points - START...")
-    start = arcpy.FeatureVerticesToPoints_management(
-        toky, temp_dp + os.sep + "start", "START")
+    start = arcpy.FeatureVerticesToPoints_management(toky, temp_dp + os.sep + "start", "START")
+
     # Feature vertices to points - END
     log.info("Feature vertices to points - END...")
-    end = arcpy.FeatureVerticesToPoints_management(
-        toky, temp_dp + os.sep + "end", "END")
+    end = arcpy.FeatureVerticesToPoints_management(toky, temp_dp + os.sep + "end", "END")
 
     # Extract value to points - END
     log.info("Extract value to points - END...")
     xxx = temp_dp + os.sep + "end_point"
-    end_point = arcpy.sa.ExtractValuesToPoints(
-        end, dmt_clip, xxx, "NONE", "VALUE_ONLY")
+    end_point = arcpy.sa.ExtractValuesToPoints(end, dmt_clip, xxx, "NONE", "VALUE_ONLY")
+
     # Extract value to points - START
     arcpy.AddMessage("Extract value to points - START...")
     xxx = temp_dp + os.sep + "start_point"
-    start_point = arcpy.sa.ExtractValuesToPoints(
-        start, dmt_clip, xxx, "NONE", "VALUE_ONLY")
+    start_point = arcpy.sa.ExtractValuesToPoints(start, dmt_clip, xxx, "NONE", "VALUE_ONLY")
 
     # Join
     arcpy.JoinField_management(toky, "FID", start_point, "ORIG_FID")
@@ -196,65 +144,37 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
          "ORIG_FID_1"])
 
     # Flip selected lines
-    fc = temp_dp + os.sep + "toky.shp"
-
-    field = ["OBJECTID", "RASTERVALU", "RASTERVA_1"]
     log.info("Flip lines...")  # mat_tok_usek
 
-    # jj tu se zamkne toky a zustane zamcen...
-    toky_t = arcpy.MakeFeatureLayer_management(
-        toky, temp_dp + os.sep + "tok_t.shp")
+    toky_t = arcpy.MakeFeatureLayer_management(toky, temp_dp + os.sep + "tok_t.shp")
 
-    arcpy.SelectLayerByAttribute_management(
-        toky_t,
-        "NEW_SELECTION",
-     "RASTERVALU < RASTERVA_1")
+    arcpy.SelectLayerByAttribute_management(toky_t, "NEW_SELECTION", "RASTERVALU < RASTERVA_1")
     arcpy.FlipLine_edit(toky_t)
-    # arcpy.DeleteField_management(toky_t,
-    # ["RASTERVALU","RASTERVA_1","ORIG_FID","ORIG_FID_1"])
-    arcpy.DeleteField_management(
-        toky,
-        ["RASTERVALU",
-         "RASTERVA_1",
-         "ORIG_FID",
-         "ORIG_FID_1"])
+
+    arcpy.DeleteField_management(toky, ["RASTERVALU", "RASTERVA_1", "ORIG_FID", "ORIG_FID_1"])
 
     # Feature vertices to points - START
     log.info("Feature vertices to points - START...")
-    start = arcpy.FeatureVerticesToPoints_management(
-        toky, temp_dp + os.sep + "start", "START")
+    start = arcpy.FeatureVerticesToPoints_management(toky, temp_dp + os.sep + "start", "START")
+
     # Feature vertices to points - END
     log.info("Feature vertices to points - END...")
-    end = arcpy.FeatureVerticesToPoints_management(
-        toky, temp_dp + os.sep + "end", "END")
+    end = arcpy.FeatureVerticesToPoints_management(toky, temp_dp + os.sep + "end", "END")
+
     # Extract value to points - START
     log.info("Extract value to points - START...")
-    start_point_check = arcpy.sa.ExtractValuesToPoints(
-        start,
-        dmt,
-     temp_dp + os.sep + "start_point_check",
-     "NONE",
-     "VALUE_ONLY")
+    start_point_check = arcpy.sa.ExtractValuesToPoints(start,dmt,temp_dp+os.sep+"start_point_check","NONE","VALUE_ONLY")
     arcpy.AddXY_management(start_point_check)
+
     # Extract value to points - END
     log.info("Extract value to points - END...")
-    end_point_check = arcpy.sa.ExtractValuesToPoints(
-        end,
-        dmt,
-     temp_dp + os.sep + "end_point_check",
-     "NONE",
-     "VALUE_ONLY")
+    end_point_check = arcpy.sa.ExtractValuesToPoints(end, dmt, temp_dp+os.sep+"end_point_check", "NONE","VALUE_ONLY")
     arcpy.AddXY_management(end_point_check)
 
     # Join
     A = arcpy.JoinField_management(toky, "FID", start_point_check, "ORIG_FID")
     B = arcpy.JoinField_management(toky, "FID", end_point_check, "ORIG_FID")
-    arcpy.DeleteField_management(
-        toky,
-        ["NAZ_TOK_1",
-         "NAZ_TOK_12",
-         "TOK_ID_1",
-         "TOK_ID_12"])
+    arcpy.DeleteField_management(toky, ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"])
 
     fc = toky
     field = ["FID", "RASTERVALU", "POINT_X", "RASTERVA_1", "POINT_X_1"]
@@ -269,20 +189,8 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
     addfield(toky, "to_node", "DOUBLE", -9999)
 
     fc = toky
-    field_end = [
-        "FID",
-        "POINT_X",
-     "POINT_Y",
-     "POINT_X_1",
-     "POINT_Y_1",
-     "to_node"]
-    field_start = [
-        "FID",
-        "POINT_X",
-     "POINT_Y",
-     "POINT_X_1",
-     "POINT_Y_1",
-     "to_node"]
+    field_end = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
+    field_start = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
     with arcpy.da.SearchCursor(fc, field_start) as cursor_start:
         for row in cursor_start:
             a = (row[1], row[2])
@@ -313,44 +221,17 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
          "SHAPE_L_12",
          "SHAPE_L_13",
          "SHAPE_L_14"])
-    arcpy.DeleteField_management(
-        toky, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"])
+    arcpy.DeleteField_management(toky, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"])
 
     stream_rst1 = temp_dp + os.sep + "stream_rst"
-    stream_rst = arcpy.PolylineToRaster_conversion(
-        toky,
-        "FID",
-     stream_rst1,
-     "MAXIMUM_LENGTH",
-     "NONE",
-     spix)
+    stream_rst = arcpy.PolylineToRaster_conversion(toky, "FID", stream_rst1, "MAXIMUM_LENGTH", "NONE", spix)
     tok_usek = temp_dp + os.sep + "tok_usek"
 
-    arcpy.gp.Reclassify_sa(
-        stream_rst,
-        "VALUE",
-     "NoDataValue 1000",
-     tok_usek,
-     "DATA")  # jj no data 1000 kdyz in useku bude od 10000
-    mat_tok_usek = arcpy.RasterToNumPyArray(
-        temp_dp + os.sep + "tok_usek",
-        ll_corner,
-     cols,
-     rows)
-    mat_tok = arcpy.RasterToNumPyArray(
-        temp_dp + os.sep + "tok_usek",
-        ll_corner,
-     cols,
-     rows)
-    # hit = arcpy.NumPyArrayToRaster(mat_tok_usek,ll_corner,spix)
-    # hit.save(temp_dp+"\\hit")
-    pocet = len(mat_tok_usek)
-    e = range(pocet)  # useky toku + posledni NoData
+    arcpy.gp.Reclassify_sa(stream_rst, "VALUE", "NoDataValue 1000", tok_usek, "DATA")
+    mat_tok_usek = arcpy.RasterToNumPyArray(temp_dp + os.sep + "tok_usek", ll_corner, cols, rows)
+    mat_tok = arcpy.RasterToNumPyArray(temp_dp + os.sep + "tok_usek", ll_corner, cols, rows)
 
     cell_stream = []
-        # cropped raster info
-    reclass_desc = arcpy.Describe(tok_usek)
-    ReclNoDataValue = reclass_desc.noDataValue
     mat_tok_usek = mat_tok_usek.astype('int16')
 
     for i in range(rows):
@@ -369,19 +250,12 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
             else:
                 continue
 
-    # hit1 = arcpy.NumPyArrayToRaster(mat_tok,ll_corner,spix)
-    # hit1.save(temp_dp+"\\hit1")
     mat_nan = arcpy.NumPyArrayToRaster(mat_nan, ll_corner, spix)
     mat_nan.save(temp_dp + os.sep + "mat_nan")
-                 # kavka - proc se tu uklada tady
 
     # HYDRAULIKA TOKU
     addfield(toky, "length", "DOUBLE", 0.0)  # (m)
-    # addfield(toky,"vegetace","TEXT", "trava") #tabulka pro drsnosti, vstupem
-    # bude tabulka suseky toku - tvar a opevneni(vegetace) ci rovnou drsnost
-    # na tvrdo?
     addfield(toky, "sklon", "DOUBLE", 0.0)  # (-)
-    # addfield(toky,"drsnost","DOUBLE", 0)
     addfield(toky, "V_infl_ce", "DOUBLE", 0.0)  # (m3)
     addfield(toky, "V_infl_us", "DOUBLE", 0.0)  # (m3)
     addfield(toky, "V_infl", "DOUBLE", 0.0)  # (m3)
@@ -394,7 +268,6 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
     addfield(toky, "h", "DOUBLE", 0.0)  # (m)
     addfield(toky, "vs", "DOUBLE", 0.0)  # (m/s)
     addfield(toky, "NS", "DOUBLE", 0.0)  # (m)
-
     addfield(toky, "total_Vic", "DOUBLE", 0.0)  # (m3)
     addfield(toky, "total_Viu", "DOUBLE", 0.0)  # (m3)
     addfield(toky, "max_Q", "DOUBLE", 0.0)  # (m3/s)
@@ -407,13 +280,7 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
 
     # sklon
     fc = toky
-    field = [
-        "FID",
-        "RASTERVALU",
-     "RASTERVA_1",
-     "sklon",
-     "SHAPE@LENGTH",
-     "length"]
+    field = ["FID", "RASTERVALU", "RASTERVA_1", "sklon", "SHAPE@LENGTH", "length"]
     with arcpy.da.UpdateCursor(fc, field) as cursor:
         for row in cursor:
             sklon_koryta = (row[1] - row[2]) / row[4]
@@ -424,43 +291,28 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
             row[5] = row[4]
             cursor.updateRow(row)
     # tvar koryt
-    tab_stream_tvar = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE)
-    tab_stream_tvar_code = gp.GetParameterAsText(
-        constants.PARAMETER_STREAMTABLE_CODE)
 
     stream_tvar_dbf = temp_dp + os.sep + "stream_tvar.dbf"
     arcpy.CopyRows_management(tab_stream_tvar, stream_tvar_dbf)
     sfield = ["cislo", "smoderp", "tvar", "b", "m", "drsnost", "Q365"]
 
     try:
-        arcpy.JoinField_management(
-            toky,
-            tab_stream_tvar_code,
-            stream_tvar_dbf,
-            tab_stream_tvar_code,
-            "cislo;tvar;b;m;drsnost;Q365")
+        arcpy.JoinField_management(toky, tab_stream_tvar_code, stream_tvar_dbf, tab_stream_tvar_code,
+                                    "cislo;tvar;b;m;drsnost;Q365")
     except:
         arcpy.AddField_management(toky, "smoderp", "TEXT")
         arcpy.CalculateField_management(toky, "smoderp", "0", "PYTHON")
-        arcpy.JoinField_management(
-            toky,
-            tab_stream_tvar_code,
-            stream_tvar_dbf,
-            tab_stream_tvar_code,
-            "cislo;tvar;b;m;drsnost;Q365")
+        arcpy.JoinField_management(toky, tab_stream_tvar_code, stream_tvar_dbf, tab_stream_tvar_code,
+                                   "cislo;tvar;b;m;drsnost;Q365")
 
     with arcpy.da.SearchCursor(toky, sfield) as cursor:
         for row in cursor:
             for i in range(len(row)):
                 if row[i] == " ":
-                    log.info(
-                        "Value in tab_stream_tvar are no correct - STOP, check shp file toky in output")
-
+                    log.info("Value in tab_stream_tvar are no correct - STOP, check shp file toky in output")
                     sys.exit()
 
     fields = arcpy.ListFields(toky)
-    # field_names = [field.name for field in fields if field.type !=
-    # 'Geometry']
     field_names = [field.name for field in fields]
     toky_tmp = [[] for field in fields]
 
@@ -472,10 +324,7 @@ def prepare_streams(dmt, dmt_copy, mat_dmt_fill, null,
 
     del row
 
-    # all columns names in
-    """[u'FID', u'Shape', u'Id', u'Id_1', u'Id_12', u'Id_12_13', u'Id_12_1_14', u'Id_12_1_15', u'RASTERVALU', u'POINT_X', u'POINT_Y', u'Id_12_1_16', u'Id_12_1_17', u'Id_12_1_18', u'RASTERVA_1', u'POINT_X_1', u'POINT_Y_1', u'to_node', u'length', u'sklon', u'V_infl_ce', u'V_infl_us', u'V_infl', u'Q_outfl', u'V_outfl', u'V_outfl_tm', u'V_zbyt', u'V_zbyt_tm', u'V', u'h', u'vs', u'NS', u'total_Vic', u'total_Viu', u'max_Q', u'max_h', u'max_vs', u'total_Vo', u'total_Vi', u'total_NS', u'total_Vz', u'smoderp', u'CISLO', u'TVAR', u'B', u'M', u'DRSNOST', u'Q365']"""
-
-    tokylist = []  # Kubuv vyber
+    tokylist = []
     tokylist.append(toky_tmp[field_names.index('FID')])
     tokylist.append(toky_tmp[field_names.index('POINT_X')])
     tokylist.append(toky_tmp[field_names.index('POINT_Y')])

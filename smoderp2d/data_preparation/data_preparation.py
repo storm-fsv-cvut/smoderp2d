@@ -54,8 +54,8 @@ class PrepareData:
         tab_puda_veg = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE)
         tab_puda_veg_code = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE_CODE)
 
-        end_time = float(gp.GetParameterAsText(constants.PARAMETER_END_TIME)) * 60.0  # prevod na sekundy
-        surface_retention = float(gp.GetParameterAsText(constants.PARAMETER_SURFACE_RETENTION)) / 1000  # prevod z [mm] na [m]
+        end_time = float(gp.GetParameterAsText(constants.PARAMETER_END_TIME)) * 60.0  # prevod na s
+        surface_retention = float(gp.GetParameterAsText(constants.PARAMETER_SURFACE_RETENTION)) / 1000  # z [mm] na [m]
 
         stream = gp.GetParameterAsText(constants.PARAMETER_STREAM)
         tab_stream_tvar = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE)
@@ -65,7 +65,7 @@ class PrepareData:
         output = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
 
         # deleting output directory
-        shutil.rmtree(output) # why this is after setting workspace and output directory? (21.05.2018 MK)
+        shutil.rmtree(output)
 
         if not os.path.exists(output):
             os.makedirs(output)
@@ -136,12 +136,8 @@ class PrepareData:
             self.add_message("Stream preparation...")
 
             toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sp.prepare_streams(
-                dmt, dmt_copy, mat_dmt_fill, null_shp,
-                mat_nan, mat_fd, vpix,
-                spix, rows, cols, ll_corner,
-                NoDataValue, self.add_field,
-                self.del_field, output, dmt_clip,
-                intersect, null_shp, gp)
+                gp, listin, dmt, null_shp, mat_nan, spix, rows, cols, ll_corner, self.add_field, output,
+                dmt_clip, intersect)
 
             self.add_message("Stream preparation has finished")
 
