@@ -40,28 +40,21 @@ class PrepareData:
         # geoprocessor object
         gp = self.gp
 
-        # get input rasters/shapefile parameters
+        # get input parameters
         dmt = gp.GetParameterAsText(constants.PARAMETER_DMT)
         soil_indata = gp.GetParameterAsText(constants.PARAMETER_SOIL)
         ptyp = gp.GetParameterAsText(constants.PARAMETER_SOIL_TYPE)
         veg_indata = gp.GetParameterAsText(constants.PARAMETER_VEGETATION)
         vtyp = gp.GetParameterAsText(constants.PARAMETER_VEGETATION_TYPE)
         points = gp.GetParameterAsText(constants.PARAMETER_POINTS)
-
-        # rainfall file path
         rainfall_file_path = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_RAINFALL_FILE)
-
         tab_puda_veg = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE)
         tab_puda_veg_code = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE_CODE)
-
         end_time = float(gp.GetParameterAsText(constants.PARAMETER_END_TIME)) * 60.0  # prevod na s
         surface_retention = float(gp.GetParameterAsText(constants.PARAMETER_SURFACE_RETENTION)) / 1000  # z [mm] na [m]
-
         stream = gp.GetParameterAsText(constants.PARAMETER_STREAM)
         tab_stream_tvar = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE)
         tab_stream_tvar_code = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE_CODE)
-
-        # setting output directory as input parameter
         output = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
 
         # deleting output directory
@@ -106,23 +99,25 @@ class PrepareData:
         dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, temp,
                                                                                        "TRUE", "TRUE", "NONE")
 
+        # clip
         flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp = self.clip_data(gp, temp,
             dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig,
             flow_direction)
 
+        # raster2np
         array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
             combinatIndex, rows, cols, vpix, spix, x_coordinate, y_coordinate, ll_corner, pixel_area, \
             NoDataValue, poradi = self.raster2np(gp, dmt_clip, slope_clip, flow_direction_clip, temp, sfield, intersect, points,
                                          dmt_fill)
 
+        # hcrit, a, aa computing
         mat_hcrit, mat_a, mat_aa = self.par(all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix, temp)
 
         mat_efect_vrst, state_cell, mfda, sr, itera = self.contour(dmt_clip, temp, spix, rainfall_file_path,rows,cols)
 
         # pocitam vzdy s ryhama
         type_of_computing = 1
-        # pokud jsou zadane vsechny vstupy pro vypocet toku
-        # toky se pocitaji a type_of_computing je 3
+        # pokud jsou zadane vsechny vstupy pro vypocet toku, toky se pocitaji a type_of_computing je 3
         listin = [stream, tab_stream_tvar, tab_stream_tvar_code]
         tflistin = [len(i) > 1 for i in listin]
 
