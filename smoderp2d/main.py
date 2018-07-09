@@ -10,13 +10,24 @@ The computing itself is performed in src.runoff
  - mal by tam byl setup.py
 """
 
-from smoderp2d.providers import BaseProvider
-    
+import os
+
 def run():
     # initialize provider
-    provider = BaseProvider()
+    if os.getenv('ESRIACTIVEINSTALLATION'):
+        from smoderp2d.providers.arcgis import ArcGisProvider
+        provider_class = ArcGisProvider
+    elif os.getenv('GISRC'):
+        from smoderp2d.providers.grass import GrassProvider
+        provider_class = GrassProvider
+    else:
+        from smoderp2d.providers.cmd import CmdProvider
+        provider_class = CmdProvider
+    provider = provider_class()
+
     # load configuration (set global variables)
     provider.load()
+
     # print logo
     provider.logo()
 
