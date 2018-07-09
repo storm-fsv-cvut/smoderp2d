@@ -1,6 +1,7 @@
 # TODO: not tested yet
 import sys
 from base import BaseProvider
+# from smoderp2d import constants ?
 
 def get_argv(id_):
     iid_ = id_
@@ -34,7 +35,7 @@ class ArcGisProvider(BaseProvider):
         self.partial_comp = get_argv(constants.PARAMETER_PARTIAL_COMPUTING)
         sys.argv.append(type_of_computing)
 
-        # ???
+        # tohle nakonec nepotrebujeme nebo jo?
         sys.argv.append('#')  # mfda
         sys.argv.append(False)  # extra output
         sys.argv.append('outdata.save')  # in data
@@ -42,10 +43,14 @@ class ArcGisProvider(BaseProvider):
         sys.argv.append(False)  # debug print
         sys.argv.append('-')               # print times
 
+        # vykoumat k cemu ma landa v Base to parsovani??
+
     def _load_dpre(self):
         # TODO: rewrite
-        from smoderp2d.data_preparation import prepare_data
+        from smoderp2d.data_preparation.data_preparation import PrepareData
         from smoderp2d.tools.save_load_data import save_data
+
+        prep = PrepareData()
 
         boundaryRows, boundaryCols, mat_boundary, rrows, rcols, \
             outletCells, x_coordinate, y_coordinate,\
@@ -60,7 +65,7 @@ class ArcGisProvider(BaseProvider):
             output, pixel_area, points, poradi,  end_time, spix, state_cell, \
             temp, type_of_computing, vpix, mfda, sr, itera, \
             toky, cell_stream, mat_tok_usek, STREAM_RATIO, toky_loc = \
-            prepare_data(sys.argv)
+            prep.prepare_data()
 
         # TODO: use dict
         dataList = [
@@ -85,25 +90,26 @@ class ArcGisProvider(BaseProvider):
 
     def _load_full(self):
         # TODO: rewrite
-        from smoderp2d.data_preparation import prepare_data
-        return prepare_data(sys.argv)
+        _load_dpre()
+        _load_roff
+        return prep.prepare_data()
 
     def load(self):
-        if self._args.typecomp in ('roff', 'full'):
+        if self._args.typecomp == 'full':
             # TODO: ?
             logical_argv(constants.PARAMETER_ARCGIS)
             logical_argv(constants.PARAMETER_EXTRA_OUTPUT)
             logical_argv(constants.PARAMETER_MFDA)
 
-            if self._args.typecomp == 'roff':
-                data = self._load_roff(
-                    get_argv(constants.PARAMETER_INDATA)
-                )
-            else:
-                data = self._load_full()
+            data = self._load_full()
 
             self._set_globals(data)
             self._cleanup()
+
+        elif self._args.typecomp == 'roff':
+            data = self._load_roff(
+                get_argv(constants.PARAMETER_INDATA)
+            )
 
         elif self._args.typecomp == 'dpre':
             self._load_dpre()
