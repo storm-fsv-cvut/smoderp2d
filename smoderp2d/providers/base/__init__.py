@@ -18,25 +18,33 @@ class BaseProvider(object):
     def __init__(self):
         """Create argument parser."""
         # define CLI parser
-        self._parser = argparse.ArgumentParser()
+        self._parser = argparse.ArgumentParser(description='Run Smoderp2D.')
+
+        # type of computation
         self._parser.add_argument(
-            'typecomp',
+            '--typecomp',
             help='type of computation',
             type=str,
             choices=['full',
                      'dpre',
-                     'roff']
+                     'roff'],
+            required=True
         )
+
+        # data file (only required for runoff)
         self._parser.add_argument(
-            'indata',
-            help='file with input data',
+            '--indata',
+            help='file with prepared data',
             type=str
         )
         self._args = self._parser.parse_args()
 
         # load configuration
         self._config = ConfigParser()
-        self._config.read(self._args.indata)
+        if self._args.typecomp == 'roff':
+            if not self._args.indata:
+                self._parser.error('--indata required')
+            self._config.read(self._args.indata)
 
         # set logging level
         Logger.setLevel(self._config.get('Other', 'logging'))
