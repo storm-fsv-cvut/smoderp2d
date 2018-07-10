@@ -11,6 +11,8 @@ class ArcGisProvider(BaseProvider):
     def __init__(self):
         super(ArcGisProvider, self).__init__()
 
+        self._print_fn = arcpy.AddMessage
+
         # ArcGIS provider is designed to support only 'full' type of
         # computation
         self._args.typecomp = 'full'

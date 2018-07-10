@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 import sys
 import shutil
@@ -20,6 +22,8 @@ class Args:
 class BaseProvider(object):
     def __init__(self):
         self._args = Args()
+
+        self._print_fn = print
 
     def _load_dpre(self):
         """ Load configuration data from data preparation procedure.
@@ -177,14 +181,11 @@ class BaseProvider(object):
 
         return ret
 
-    @staticmethod
-    def logo():
+    def logo(self):
         """Print Smoderp2d ascii-style logo."""
         with open(os.path.join(os.path.dirname(__file__), 'txtlogo.txt'), 'r') as fd:
-            for line in fd.readlines():
-                sys.stdout.write(line)
-        sys.stdout.write(os.linesep)
-        sys.stdout.flush()
+            self._print_fn(fd.read())
+        self._print_fn() # extra line
 
     @staticmethod
     def _save_data(data, filename):
