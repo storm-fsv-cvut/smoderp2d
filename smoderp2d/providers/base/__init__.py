@@ -2,6 +2,7 @@ import os
 import sys
 import shutil
 import math
+import pickle
 
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
 from smoderp2d.providers.base.logger import logger
@@ -27,12 +28,11 @@ class BaseProvider(object):
 
         :return dict: loaded data
         """
-        from smoderp2d.tools.save_load_data import load_data
         from smoderp2d.processes import rainfall
 
         # the data are loared from a pickle file
         try:
-            data = load_data(indata)
+            data = self._load_data(indata)
             if isinstance(data, list):
                 raise ProviderError('Saved data out-dated. Please use utils/convert-saved-data.py for update.')
         except IOError as e:
@@ -160,3 +160,37 @@ class BaseProvider(object):
                 sys.stdout.write(line)
         sys.stdout.write(os.linesep)
         sys.stdout.flush()
+
+    @staticmethod
+    def _save_data(data, filename):
+        """Save data into pickle.
+        """
+        dirname = os.path.dirname(filename)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+
+        with open(filename, 'wb') as fd:
+            pickle.dump(data, fd)
+        Logger.debug('Size of saved data is {} bytes'.format(
+            sys.getsizeof(data))
+        )
+
+    @staticmethod
+    def _load_data(filename):
+        """Load data from pickle.
+
+        :param str filename: file to be loaded
+        """
+        with open(filename, 'rb') as fd:
+            if sys.version_info > (3, 0):
+                data = pickle.load(fd, encoding='bytes')
+                data = {
+                    key.decode(): val.decode if isinstance(val, bytes) else val for key, val in data.items()
+                }
+            else:
+                data = pickle.load(fd)
+        Logger.debug('Size of loaded data is {} bytes'.format(
+            sys.getsizeof(data))
+        )
+
+        return data

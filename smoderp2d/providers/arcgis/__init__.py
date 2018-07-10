@@ -41,12 +41,11 @@ class ArcGisProvider(BaseProvider):
             data = self._load_dpre()
             if self._args.typecomp == 'dpre':
                 # data preparation requested only
-                from smoderp2d.tools.save_load_data import save_data
                 out_file = os.path.join(
                     self._get_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY),
                     self._get_argv(constants.PARAMETER_INDATA)
                 )
-                save_data(data, out_file)
+                self._save_data(data, out_file)
                 return
 
         if self._args.typecomp == 'roff':
