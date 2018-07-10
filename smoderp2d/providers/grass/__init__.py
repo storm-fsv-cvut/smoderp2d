@@ -1,16 +1,14 @@
 # TODO: not tested yet
 
-from base import BaseProvider
+from smoderp2d.providers.base import BaseProvider
 
 class GrassProvider(BaseProvider):
-    from grass.pygrass.messages import Messenger
-    
     def __init__(self):
-        self._msgr = Messenger()
+        super(GrassProvider, self).__init__()
 
-    def message(self, line):
-        """Print string.
+    def _load_dpre(self):
+        """Load configuration data from data preparation procedure.
 
-        :param str line: string to be printed
+        :return dict: loaded data
         """
-        self._msgr.message(line)
+        raise NotImplemenetedError("To be implemented")
