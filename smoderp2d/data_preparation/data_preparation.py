@@ -149,17 +149,57 @@ class PrepareData:
 
         self.add_message("Data preparation has been finished")
 
-        return rrows, rcols, x_coordinate, y_coordinate, \
-            NoDataValue, array_points, \
-            cols, rows, combinatIndex, \
-            mat_pi, mat_ppl, mat_inf_index, mat_hcrit, mat_aa, mat_b, mat_ret, \
-            mat_fd, mat_dmt, mat_efect_vrst, mat_slope, mat_nan, \
-            mat_a, \
-            mat_n, \
-            output, pixel_area, end_time, \
-            temp, type_of_computing, mfda, sr, itera, \
-            toky, mat_tok_usek, tokyLoc
+        data = {
+            'br': None,                          \
+            'bc': None,                          \
+            'mat_boundary': None,                \
+            'rr': rrows,                         \
+            'rc': rcols,                         \
+            'outletCells': None,                 \
+            'xllcorner': x_coordinate,           \
+            'yllcorner': y_coordinate,           \
+            'NoDataValue': NoDataValue,          \
+            'array_points': array_points,        \
+            'c': cols,                           \
+            'r': rows,                           \
+            'combinatIndex': combinatIndex,      \
+            'delta_t': None,                     \
+            'mat_pi': mat_pi,                    \
+            'mat_ppl': mat_ppl,                  \
+            'surface_retention': None,           \
+            'mat_inf_index': mat_inf_index,      \
+            'mat_hcrit': mat_hcrit,              \
+            'mat_aa': mat_aa,                    \
+            'mat_b': mat_b,                      \
+            'mat_reten': mat_ret,                \
+            'mat_fd': mat_fd,                    \
+            'mat_dmt': mat_dmt,                  \
+            'mat_efect_vrst': mat_efect_vrst,    \
+            'mat_slope': mat_slope,              \
+            'mat_nan': mat_nan,                  \
+            'mat_a': mat_a,                      \
+            'mat_n': mat_n,                      \
+            'outdiroutdir': output,              \
+            'pixel_area': pixel_area,            \
+            'points': None,                      \
+            'poradi': None,                      \
+            'end_time': end_time,                \
+            'spix': None,                        \
+            'state_cell': None,                  \
+            'temp': temp,                        \
+            'type_of_computing': type_of_computing,\
+            'vpix': None,                        \
+            'mfda': mfda,                        \
+            'sr': sr,                            \
+            'itera': itera,                      \
+            'toky': toky,                        \
+            'cell_stream': cell_stream,          \
+            'mat_tok_reach': mat_tok_usek,       \
+            'STREAM_RATIO': None,                \
+            'toky_loc': tokyLoc
+            }
 
+        return data
 
     def add_field(self, input, newfield, datatyp, default_value):  # EDL
         # function for adding fields
