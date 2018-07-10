@@ -25,11 +25,11 @@ def run():
         provider_class = CmdProvider
     provider = provider_class()
 
-    # load configuration (set global variables)
-    provider.load()
-
     # print logo
     provider.logo()
+
+    # load configuration (set global variables)
+    provider.load()
 
     # must be called after initialization
     from smoderp2d.runoff import Runoff
