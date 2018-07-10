@@ -179,7 +179,7 @@ class PrepareData:
             'mat_nan': mat_nan,                  \
             'mat_a': mat_a,                      \
             'mat_n': mat_n,                      \
-            'outdiroutdir': output,              \
+            'outdir': output,              \
             'pixel_area': pixel_area,            \
             'points': None,                      \
             'poradi': None,                      \
