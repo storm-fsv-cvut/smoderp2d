@@ -5,6 +5,7 @@ if sys.version_info > (3, 0):
 else:
     from ConfigParser import ConfigParser
 
+from smoderp2d.core.general import Globals
 from smoderp2d.providers.base import BaseProvider, Logger
 
 class CmdProvider(BaseProvider):
@@ -44,18 +45,23 @@ class CmdProvider(BaseProvider):
         # set logging level
         Logger.setLevel(self._config.get('Other', 'logging'))
 
+        # must be defined for _cleanup() method
+        Globals.outdir = self._config.get('Other', 'outdir')
+
     def load(self):
         """Load configuration data.
 
         Only roff procedure supported.
         """
         if self._args.typecomp == 'roff':
+            # cleanup output directory first
+            self._cleanup()
+
             data = self._load_roff(
                 self._config.get('Other', 'indata')
             )
 
             self._set_globals(data)
-            self._cleanup()
         else:
             raise ProviderError('Unsupported partial computing: {}'.format(
                 self._args.typecomp

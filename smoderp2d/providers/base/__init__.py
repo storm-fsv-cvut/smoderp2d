@@ -91,7 +91,9 @@ class BaseProvider(object):
                 self._args.typecomp
             ))
 
+        # cleanup output directory first
         self._cleanup()
+
         data = None
         if self._args.typecomp in ('dpre', 'full'):
             data = self._load_dpre()
