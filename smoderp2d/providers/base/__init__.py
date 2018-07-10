@@ -91,6 +91,7 @@ class BaseProvider(object):
                 self._args.typecomp
             ))
 
+        self._cleanup()
         data = None
         if self._args.typecomp in ('dpre', 'full'):
             data = self._load_dpre()
@@ -104,7 +105,6 @@ class BaseProvider(object):
 
         # roff || full
         self._set_globals(data)
-        self._cleanup()
 
     def _set_globals(self, data):
         """Set global variables.
