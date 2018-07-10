@@ -13,8 +13,15 @@ class BaseProvider(object):
     def __init__(self):
         pass
 
+    def _load_dpre(self):
+        """ Load configuration data from data preparation procedure.
+
+        :return dict: loaded data
+        """
+        raise NotImplemenetedError()
+
     def _load_roff(self, indata):
-        """Load configuration data for roff compurtation only.
+        """Load configuration data from roff computation procedure.
 
         :param str indata: configuration filename
 
@@ -69,7 +76,12 @@ class BaseProvider(object):
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
 
         return data
-    
+
+    def load(self):
+        """Load configuration data.
+        """
+        raise NotImplementedError("Must be implemeneted by superclass")
+
     def _set_globals(self, data):
         """Set global variables.
 
@@ -103,20 +115,6 @@ class BaseProvider(object):
             shutil.rmtree(output)
         os.makedirs(output)
         
-    def load(self):
-        """Load configuration data."""
-        if self._args.typecomp == 'roff':
-            data = self._load_roff(
-                self._config.get('Other', 'indata')
-            )
-
-            self._set_globals(data)
-            self._cleanup()
-        else:
-            raise ProviderError('Unsupported partial computing: {}'.format(
-                self._args.typecomp
-            ))
-
     @staticmethod
     def _comp_type(tc):
         """Returns boolean information about the components of the computation.

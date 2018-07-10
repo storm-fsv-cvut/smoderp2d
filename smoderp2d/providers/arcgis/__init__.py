@@ -1,128 +1,60 @@
-# TODO: not tested yet
 import sys
-from base import BaseProvider
-# from smoderp2d import constants ?
 
-def get_argv(id_):
-    iid_ = id_
-    # print '!!!Bacha tools.get_argv jsou plus 1!!!';
-    iid_ += 1
-    return sys.argv[iid_]
+import arcpy
 
-# Transfers string 'true'/'false' in sys.argv to a logical True/False
-#
-def logical_argv(id_):
-    iid_ = id_
-    # print '!!!Bacha tools.get_argv jsou plus 1!!!';
-    iid_ += 1
-    if isinstance(sys.argv[iid_], str):
-        if sys.argv[iid_].lower().strip() == 'true':
-            sys.argv[iid_] = True
-        elif sys.argv[iid_].lower().strip() == 'false':
-            sys.argv[iid_] = False
-        else:
-            sys.exit('Logical parameter are not assign correctly...')
-    if isinstance(sys.argv[iid_], int):
-        sys.exit('Logical parameter are not assign correctly...')
-    if isinstance(sys.argv[iid_], float):
-        sys.exit('Logical parameter are not assign correctly...')
+from smoderp2d.providers.base import BaseProvider
+from smoderp2d.providers.arcgis import constants
 
 class ArcGisProvider(BaseProvider):
-    import arcpy
+    class Args:
+        typecomp = None
     
     def __init__(self):
-        # TODO
-        self.partial_comp = get_argv(constants.PARAMETER_PARTIAL_COMPUTING)
-        sys.argv.append(type_of_computing)
+        super(ArcGisProvider, self).__init__()
 
-        # tohle nakonec nepotrebujeme nebo jo?
-        sys.argv.append('#')  # mfda
-        sys.argv.append(False)  # extra output
-        sys.argv.append('outdata.save')  # in data
-        sys.argv.append('full')  # castence nee v arcgis
-        sys.argv.append(False)  # debug print
-        sys.argv.append('-')               # print times
+        self._agrs = Args()
+        self._args.typecomp = self._get_argv(
+            constants.PARAMETER_PARTIAL_COMPUTING
+        )
 
-        # vykoumat k cemu ma landa v Base to parsovani??
+        @staticmethod
+        def get_argv(idx):
+            return sys.argv[idx+1]
 
     def _load_dpre(self):
-        # TODO: rewrite
+        """Load configuration data from data preparation procedure.
+
+        :return dict: loaded data
+        """
         from smoderp2d.data_preparation.data_preparation import PrepareData
-        from smoderp2d.tools.save_load_data import save_data
-
-        prep = PrepareData()
-
-        boundaryRows, boundaryCols, mat_boundary, rrows, rcols, \
-            outletCells, x_coordinate, y_coordinate,\
-            NoDataValue, array_points, \
-            cols, rows, combinatIndex, delta_t,  \
-            mat_pi, mat_ppl, \
-            surface_retention, mat_inf_index, mat_hcrit, mat_aa, mat_b, \
-            mat_reten, \
-            mat_fd, mat_dmt, mat_efect_vrst, mat_slope, mat_nan, \
-            mat_a,   \
-            mat_n,   \
-            output, pixel_area, points, poradi,  end_time, spix, state_cell, \
-            temp, type_of_computing, vpix, mfda, sr, itera, \
-            toky, cell_stream, mat_tok_usek, STREAM_RATIO, toky_loc = \
-            prep.prepare_data()
-
-        # TODO: use dict
-        dataList = [
-            boundaryRows, boundaryCols, mat_boundary, rrows, rcols,
-            outletCells, x_coordinate, y_coordinate,
-            NoDataValue, array_points,
-            cols, rows, combinatIndex, delta_t,
-            mat_pi, mat_ppl,
-            surface_retention, mat_inf_index, mat_hcrit, mat_aa, mat_b, mat_reten,
-            mat_fd, mat_dmt, mat_efect_vrst, mat_slope, mat_nan,
-            mat_a,
-            mat_n,
-            output, pixel_area, points, poradi, end_time, spix, state_cell,
-            temp, type_of_computing, vpix, mfda, sr, itera,
-            toky, cell_stream, mat_tok_usek, STREAM_RATIO, toky_loc]
+       
+        return PrepareData().run()
         
-        outoutdat = get_argv(
-            os.path.join(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY),
-            get_argv(constants.PARAMETER_INDATA)
-        )
-        save_data(dataList, outoutdat)
-
-    def _load_full(self):
-        # TODO: rewrite
-        _load_dpre()
-        _load_roff
-        return prep.prepare_data()
-
     def load(self):
-        if self._args.typecomp == 'full':
-            # TODO: ?
-            logical_argv(constants.PARAMETER_ARCGIS)
-            logical_argv(constants.PARAMETER_EXTRA_OUTPUT)
-            logical_argv(constants.PARAMETER_MFDA)
-
-            data = self._load_full()
-
-            self._set_globals(data)
-            self._cleanup()
-
-        elif self._args.typecomp == 'roff':
-            data = self._load_roff(
-                get_argv(constants.PARAMETER_INDATA)
-            )
-
-        elif self._args.typecomp == 'dpre':
-            self._load_dpre()
-        else:
-            raise Exception('Unsupported partial computing: {}'.format(
+        """Load configuration data."""
+        if self._args.typecomp not in ('dpre', 'roff', 'full'):
+            raise ProviderError('Unsupported partial computing: {}'.format(
                 self._args.typecomp
             ))
 
-        return data
-    
-    def message(self, line):
-        """Print string.
+        data = None
+        if self._args.typecomp in ('dpre', 'full'):
+            data = self._load_dpre()
+            if self._args.typecomp == 'dpre':
+                # data preparation requested only
+                from smoderp2d.tools.save_load_data import save_data
+                out_file = os.path.join(
+                    self._get_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY),
+                    self._get_argv(constants.PARAMETER_INDATA)
+                )
+                save_data(data, out_file)
+                return
 
-        :param str line: string to be printed
-        """
-        arcpy.AddMessage(line)
+        if self._args.typecomp == 'roff':
+            data = self._load_roff(
+                self._get_argv(constants.PARAMETER_INDATA)
+            )
+
+        # roff || full
+        self._set_globals(data)
+        self._cleanup()

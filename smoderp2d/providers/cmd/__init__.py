@@ -13,10 +13,10 @@ class CmdProvider(BaseProvider):
         super(CmdProvider, self).__init__()
         
         # define CLI parser
-        self._parser = argparse.ArgumentParser(description='Run Smoderp2D.')
+        parser = argparse.ArgumentParser(description='Run Smoderp2D.')
 
         # type of computation
-        self._parser.add_argument(
+        parser.add_argument(
             '--typecomp',
             help='type of computation',
             type=str,
@@ -27,19 +27,36 @@ class CmdProvider(BaseProvider):
         )
 
         # data file (only required for runoff)
-        self._parser.add_argument(
+        parser.add_argument(
             '--indata',
             help='file with prepared data',
             type=str
         )
-        self._args = self._parser.parse_args()
+        self._args = parser.parse_args()
 
         # load configuration
         self._config = ConfigParser()
         if self._args.typecomp == 'roff':
             if not self._args.indata:
-                self._parser.error('--indata required')
+                parser.error('--indata required')
             self._config.read(self._args.indata)
 
         # set logging level
         Logger.setLevel(self._config.get('Other', 'logging'))
+
+    def load(self):
+        """Load configuration data.
+
+        Only roff procedure supported.
+        """
+        if self._args.typecomp == 'roff':
+            data = self._load_roff(
+                self._config.get('Other', 'indata')
+            )
+
+            self._set_globals(data)
+            self._cleanup()
+        else:
+            raise ProviderError('Unsupported partial computing: {}'.format(
+                self._args.typecomp
+            ))
