@@ -34,7 +34,7 @@ class PrepareData:
         # arcpy dependent
         arcpy.AddMessage(message)
 
-    def prepare_data(self):
+    def run(self):
     # main function of data_preparation class
 
         # geoprocessor object
@@ -193,7 +193,7 @@ class PrepareData:
             'sr': sr,                            \
             'itera': itera,                      \
             'toky': toky,                        \
-            'cell_stream': cell_stream,          \
+            'cell_stream': None,          \
             'mat_tok_reach': mat_tok_usek,       \
             'STREAM_RATIO': None,                \
             'toky_loc': tokyLoc
