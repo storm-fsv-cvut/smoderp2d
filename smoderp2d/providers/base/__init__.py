@@ -10,9 +10,16 @@ from smoderp2d.exceptions import ProviderError
 
 Logger = logger()
 
+class Args:
+    # type of computation ('dpre', 'roff', 'full')
+    typecomp = None
+    # path to data file (used by 'dpre' for output and 'roff' for
+    # input)
+    data_file = None
+
 class BaseProvider(object):
     def __init__(self):
-        pass
+        self._args = Args()
 
     def _load_dpre(self):
         """ Load configuration data from data preparation procedure.
@@ -78,9 +85,26 @@ class BaseProvider(object):
         return data
 
     def load(self):
-        """Load configuration data.
-        """
-        raise NotImplementedError("Must be implemeneted by superclass")
+        """Load configuration data."""
+        if self._args.typecomp not in ('dpre', 'roff', 'full'):
+            raise ProviderError('Unsupported partial computing: {}'.format(
+                self._args.typecomp
+            ))
+
+        data = None
+        if self._args.typecomp in ('dpre', 'full'):
+            data = self._load_dpre()
+            if self._args.typecomp == 'dpre':
+                # data preparation requested only
+                self._save_data(data, self._args.data_file)
+                return
+
+        if self._args.typecomp == 'roff':
+            data = self._load_roff(self._args.data_file)
+
+        # roff || full
+        self._set_globals(data)
+        self._cleanup()
 
     def _set_globals(self, data):
         """Set global variables.
@@ -165,6 +189,8 @@ class BaseProvider(object):
     def _save_data(data, filename):
         """Save data into pickle.
         """
+        if filename is None:
+            raise ProviderError('Output file for saving data not defined')
         dirname = os.path.dirname(filename)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
@@ -181,6 +207,8 @@ class BaseProvider(object):
 
         :param str filename: file to be loaded
         """
+        if filename is None:
+            raise ProviderError('Input file for loading data not defined')
         with open(filename, 'rb') as fd:
             if sys.version_info > (3, 0):
                 data = pickle.load(fd, encoding='bytes')
