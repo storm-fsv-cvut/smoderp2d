@@ -19,7 +19,7 @@ class ArcGisProvider(BaseProvider):
 
         :return dict: loaded data
         """
-        from smoderp2d.data_preparation.data_preparation import PrepareData
+        from smoderp2d.providers.arcgis.data_preparation import PrepareData
        
         prep = PrepareData()
         return prep.run()
