@@ -154,14 +154,15 @@ class Runoff(object):
         # opens files for storing hydrographs
         if Globals.points and Globals.points != "#":
             self.hydrographs = wf.Hydrographs()
-            arcgis = Globals.arcgis
-            if not arcgis:
-                with open(os.path.join(Globals.outdir, 'points.txt'), 'w') as fd:
-                    for i in range(len(Globals.array_points)):
-                        fd.write('{} {} {} {}'.format(
-                            Globals.array_points[i][0], Globals.array_points[i][3],
-                            Globals.array_points[i][4], os.linesep
-                        ))
+            ### TODO
+            # arcgis = Globals.arcgis
+            # if not arcgis:
+            #     with open(os.path.join(Globals.outdir, 'points.txt'), 'w') as fd:
+            #         for i in range(len(Globals.array_points)):
+            #             fd.write('{} {} {} {}'.format(
+            #                 Globals.array_points[i][0], Globals.array_points[i][3],
+            #                 Globals.array_points[i][4], os.linesep
+            #             ))
         else:
             self.hydrographs = wf.HydrographsPass()
 
