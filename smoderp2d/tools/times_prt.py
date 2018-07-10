@@ -9,7 +9,7 @@ from smoderp2d.core.general import Globals
 
 class TimesPrt(object):
     def __init__(self):
-        if Globals.prtTimes == '-':
+        if not Globals.prtTimes:
             self.fTimes = None
             return
 

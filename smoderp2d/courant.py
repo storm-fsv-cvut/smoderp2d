@@ -76,7 +76,7 @@ class Courant():
         # (math.sqrt(sur.pixel_area)*self.cour_least*self.cour_coef)/velGuess
 
         # return self.initGuess
-        return self.max_delta_t
+        return Gl.maxdt
 
     # Checks and store in each computational cell the maximum velocity and maximum Courant coefficient
     #

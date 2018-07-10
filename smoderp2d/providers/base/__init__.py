@@ -101,7 +101,7 @@ class BaseProvider(object):
         data = None
         if self._args.typecomp in ('dpre', 'full'):
             data = self._load_dpre()
-            if self._args.typecomp == 'dpre':
+            if self._args.typecomp == 'full':
                 # data preparation requested only
                 self._save_data(data, self._args.data_file)
                 return
@@ -185,7 +185,7 @@ class BaseProvider(object):
         """Print Smoderp2d ascii-style logo."""
         with open(os.path.join(os.path.dirname(__file__), 'txtlogo.txt'), 'r') as fd:
             self._print_fn(fd.read())
-        self._print_fn() # extra line
+        #self._print_fn() # extra line
 
     @staticmethod
     def _save_data(data, filename):

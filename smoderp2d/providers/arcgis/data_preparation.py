@@ -55,6 +55,7 @@ class PrepareData:
         tab_stream_tvar = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE)
         tab_stream_tvar_code = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE_CODE)
         output = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
+        maxdt = gp.GetParameter(constants.PARAMETER_MAX_DELTA_T)
 
         # deleting output directory
         shutil.rmtree(output)
@@ -163,7 +164,7 @@ class PrepareData:
             'c': cols,                           \
             'r': rows,                           \
             'combinatIndex': combinatIndex,      \
-            'delta_t': None,                     \
+            'maxdt': maxdt,                     \
             'mat_pi': mat_pi,                    \
             'mat_ppl': mat_ppl,                  \
             'surface_retention': None,           \
