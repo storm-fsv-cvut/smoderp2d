@@ -58,7 +58,6 @@ def prepare_streams(listin, dmt, null, mat_nan, spix, rows, cols, ll_corner, add
     stream = listin[0]
     tab_stream_tvar = listin[1]
     tab_stream_tvar_code = listin[2]
-    STREAM_RATIO = 1
 
     arcpy.env.snapRaster = dmt
 
@@ -240,8 +239,6 @@ def prepare_streams(listin, dmt, null, mat_nan, spix, rows, cols, ll_corner, add
                 mat_tok_usek[i][j] = 0
             else:
                 mat_tok_usek[i][j] += 1000
-                poz = [mat_tok_usek[i][j], i, j]
-                cell_stream.append(poz)
 
     for i in range(rows):
         for j in range(cols):
@@ -362,4 +359,4 @@ def prepare_streams(listin, dmt, null, mat_nan, spix, rows, cols, ll_corner, add
     except ValueError:
         tokylist.append(toky_tmp[field_names.index('Q365')])
 
-    return tokylist, cell_stream, mat_tok_usek, STREAM_RATIO, toky_loc
+    return tokylist, mat_tok_usek, toky_loc
