@@ -13,9 +13,7 @@ class ArcGisProvider(BaseProvider):
         super(ArcGisProvider, self).__init__()
 
         self._agrs = Args()
-        self._args.typecomp = self._get_argv(
-            constants.PARAMETER_PARTIAL_COMPUTING
-        )
+        self._args.typecomp = 'full'
 
         @staticmethod
         def get_argv(idx):
@@ -28,7 +26,8 @@ class ArcGisProvider(BaseProvider):
         """
         from smoderp2d.data_preparation.data_preparation import PrepareData
        
-        return PrepareData().run()
+        prep = PrepareData()
+        return prep.run()
         
     def load(self):
         """Load configuration data."""
