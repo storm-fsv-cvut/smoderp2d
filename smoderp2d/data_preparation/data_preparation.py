@@ -51,7 +51,6 @@ class PrepareData:
         tab_puda_veg = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE)
         tab_puda_veg_code = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE_CODE)
         end_time = float(gp.GetParameterAsText(constants.PARAMETER_END_TIME)) * 60.0  # prevod na s
-        surface_retention = float(gp.GetParameterAsText(constants.PARAMETER_SURFACE_RETENTION)) / 1000  # z [mm] na [m]
         stream = gp.GetParameterAsText(constants.PARAMETER_STREAM)
         tab_stream_tvar = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE)
         tab_stream_tvar_code = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE_CODE)
@@ -107,13 +106,13 @@ class PrepareData:
         # raster2np
         array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
             combinatIndex, rows, cols, vpix, spix, x_coordinate, y_coordinate, ll_corner, pixel_area, \
-            NoDataValue, poradi = self.raster2np(gp, dmt_clip, slope_clip, flow_direction_clip, temp, sfield, intersect, points,
+            NoDataValue = self.raster2np(gp, dmt_clip, slope_clip, flow_direction_clip, temp, sfield, intersect, points,
                                          dmt_fill)
 
         # hcrit, a, aa computing
         mat_hcrit, mat_a, mat_aa = self.par(all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix, temp)
 
-        mat_efect_vrst, state_cell, mfda, sr, itera = self.contour(dmt_clip, temp, spix, rainfall_file_path,rows,cols)
+        mat_efect_vrst, mfda, sr, itera = self.contour(dmt_clip, temp, spix, rainfall_file_path,rows,cols)
 
         # pocitam vzdy s ryhama
         type_of_computing = 1
@@ -130,24 +129,18 @@ class PrepareData:
 
             self.add_message("Stream preparation...")
 
-            toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc = sp.prepare_streams(listin, dmt, null_shp,
+            toky, mat_tok_usek, tokyLoc = sp.prepare_streams(listin, dmt, null_shp,
                 mat_nan, spix, rows, cols, ll_corner, self.add_field, output, dmt_clip, intersect)
 
             self.add_message("Stream preparation has finished")
 
         else:
             toky = None
-            cell_stream = None
             mat_tok_usek = None
-            STREAM_RATIO = None
             tokyLoc = None
 
-        boundaryRows, boundaryCols, rrows, rcols, mat_boundary = self.find_boudary_cells(
-            rows, cols, mat_nan, NoDataValue, mfda)
+        rrows, rcols = self.find_boudary_cells(rows, cols, mat_nan, NoDataValue)
 
-        outletCells = None
-
-        delta_t = "nechci"
         mat_n = all_attrib[2]
         mat_ppl = all_attrib[3]
         mat_pi = all_attrib[4]
@@ -156,17 +149,17 @@ class PrepareData:
 
         self.add_message("Data preparation has been finished")
 
-        return boundaryRows, boundaryCols, mat_boundary, rrows, rcols, outletCells, x_coordinate, y_coordinate, \
+        return rrows, rcols, x_coordinate, y_coordinate, \
             NoDataValue, array_points, \
-            cols, rows, combinatIndex, delta_t, \
-            mat_pi, mat_ppl, \
-            surface_retention, mat_inf_index, mat_hcrit, mat_aa, mat_b, mat_ret, \
+            cols, rows, combinatIndex, \
+            mat_pi, mat_ppl, mat_inf_index, mat_hcrit, mat_aa, mat_b, mat_ret, \
             mat_fd, mat_dmt, mat_efect_vrst, mat_slope, mat_nan, \
             mat_a, \
             mat_n, \
-            output, pixel_area, points, poradi, end_time, spix, state_cell, \
-            temp, type_of_computing, vpix, mfda, sr, itera, \
-            toky, cell_stream, mat_tok_usek, STREAM_RATIO, tokyLoc
+            output, pixel_area, end_time, \
+            temp, type_of_computing, mfda, sr, itera, \
+            toky, mat_tok_usek, tokyLoc
+
 
     def add_field(self, input, newfield, datatyp, default_value):  # EDL
         # function for adding fields
@@ -380,7 +373,7 @@ class PrepareData:
             all_attrib[poradi] = arcpy.RasterToNumPyArray(d)
             poradi = poradi + 1
 
-        return all_attrib, poradi
+        return all_attrib
 
     def raster2np(self, gp, dmt_clip, slope_clip, flow_direction_clip, temp, sfield, intersect, points, dmt_fill):
         # TODO: rozdelit raster2np do vic podfunkci, polovina veci s tim prevodem nesouvisi 23.05.2018 MK
@@ -419,7 +412,7 @@ class PrepareData:
         mat_dmt = dmt_array
         mat_nan = np.zeros([rows, cols], float)
 
-        all_attrib, poradi = self.get_attrib(temp, vpix, rows, cols, sfield, intersect)
+        all_attrib = self.get_attrib(temp, vpix, rows, cols, sfield, intersect)
 
         mat_k = all_attrib[0]
         mat_s = all_attrib[1]
@@ -507,7 +500,7 @@ class PrepareData:
 
         return array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
             combinatIndex, rows, cols, vpix, spix, x_coordinate, y_coordinate, ll_corner, pixel_area, \
-            NoDataValue, poradi
+            NoDataValue
 
     def par(self, all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix, temp):
 
@@ -608,15 +601,10 @@ class PrepareData:
         efect_vrst.save(temp + os.sep + "efect_vrst")
         mat_efect_vrst = arcpy.RasterToNumPyArray(efect_vrst)
 
-        state_cell = np.zeros([rows, cols], float)
-
-        # dokud neni mfda pripraven je toto zakomentovane
-        # mfda = arcpy.GetParameterAsText(constants.PARAMETER_MFDA)  # az se tohle odkomentuje, tak prehodit do
-                                                        #  prepare_data a sem to posilat jako argument 23.05.2018 MK
         mfda = False
         sr, itera = rainfall.load_precipitation(rainfall_file_path)
 
-        return mat_efect_vrst, state_cell, mfda, sr, itera
+        return mat_efect_vrst, mfda, sr, itera
 
     def save_raster(self, name, array_export, l_x, l_y, spix, vpix, NoDataValue, folder):
         ll_corner = arcpy.Point(l_x, l_y)
@@ -628,7 +616,7 @@ class PrepareData:
             NoDataValue)
         raster.save(folder + os.sep + name)
 
-    def find_boudary_cells(self, rows, cols, mat_nan, noData, mfda):
+    def find_boudary_cells(self, rows, cols, mat_nan, noData):
         # Identification of cells at the domain boundary
 
         mat_boundary = np.zeros([rows, cols], float)
@@ -638,9 +626,6 @@ class PrepareData:
 
         rcols = []
         rrows = []
-
-        boundaryCols = []
-        boundaryRows = []
 
         for i in nr:
             for j in nc:
@@ -667,7 +652,6 @@ class PrepareData:
             for j in nc:
 
                 if mat_boundary[i][j] == -99 and inBoundary == False:
-                    boundaryRows.append(i)
                     inBoundary = True
 
                 if mat_boundary[i][j] == -99 and inBoundary:
@@ -683,6 +667,5 @@ class PrepareData:
             inDomain = False
             inBoundary = False
             rcols.append(oneCol)
-            boundaryCols.append(oneColBoundary)
 
-        return boundaryRows, boundaryCols, rrows, rcols, mat_boundary
+        return rrows, rcols
