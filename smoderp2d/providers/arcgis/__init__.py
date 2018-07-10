@@ -21,7 +21,7 @@ class ArcGisProvider(BaseProvider):
         Globals.outdir = self._get_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
 
     @staticmethod
-    def get_argv(idx):
+    def _get_argv(idx):
         return sys.argv[idx+1]
 
     def _load_dpre(self):
