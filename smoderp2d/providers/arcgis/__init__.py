@@ -14,10 +14,6 @@ class ArcGisProvider(BaseProvider):
         # computation
         self._args.typecomp = 'full'
 
-    @staticmethod
-    def get_argv(idx):
-        return sys.argv[idx+1]
-
     def _load_dpre(self):
         """Load configuration data from data preparation procedure.
 
