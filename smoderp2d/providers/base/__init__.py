@@ -128,8 +128,7 @@ class BaseProvider(object):
         # TODO: lines below are part only of linux method
         Globals.isRill = self._comp_type(data['type_of_computing'])['rill']
         Globals.isStream = self._comp_type(data['type_of_computing'])['stream']
-        Globals.arcgis = False
-        Globals.prtTimes = data['prtTimes']
+        Globals.prtTimes = data.get('prtTimes', None)
 
     @staticmethod
     def _cleanup():
