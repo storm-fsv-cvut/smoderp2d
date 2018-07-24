@@ -233,8 +233,6 @@ class PrepareData:
         arcpy.Dissolve_management(veg_indata, veg_boundary, vtyp)
         arcpy.Dissolve_management(soil_indata, soil_boundary, ptyp)
 
-        # mask and clip data
-        self.add_message("Clip of the source data by intersect")
         group = [soil_boundary, veg_boundary, null_shp]
         intersect = output + os.sep + "interSoilLU.shp"
         arcpy.Intersect_analysis(group, intersect, "ALL", "", "INPUT")
@@ -246,40 +244,13 @@ class PrepareData:
                   slope_orig, flow_direction, soil_indata, veg_indata):
         # TODO: rozdelit na vic podfunkci 23.05.2018 MK
 
+        # mask and clip data
+        self.add_message("Clip of the source data by intersect")
+
+
         if points and (points != "#") and (points != ""):
-            tmpPoints = []
-            desc = arcpy.Describe(points)
-            shapefieldname = desc.ShapeFieldName
-            rows_p = arcpy.SearchCursor(points)
-            for row in rows_p:
-                feat = row.getValue(shapefieldname)
-                pnt = feat.getPart()
-                tmpPoints.append([pnt.X, pnt.Y])
-            del rows_p
+            points = self.clip_points(points, output, intersect)
 
-            pointsClipCheck = output + os.sep + "pointsCheck.shp"
-            arcpy.Clip_analysis(points, intersect, pointsClipCheck)
-
-            tmpPointsCheck = []
-            descCheck = arcpy.Describe(pointsClipCheck)
-            shapefieldnameCheck = descCheck.ShapeFieldName
-            rows_pch = arcpy.SearchCursor(pointsClipCheck)
-            for row2 in rows_pch:
-                featCheck = row2.getValue(shapefieldnameCheck)
-                pntChech = featCheck.getPart()
-                tmpPointsCheck.append([pntChech.X, pntChech.Y])
-            del rows_pch
-
-            diffpts = [c for c in tmpPoints if c not in tmpPointsCheck]
-            if len(diffpts) == 0:
-                pass
-            else:
-                self.add_message("!!! Points at coordinates [x,y]:")
-                for item in diffpts:
-                    self.add_message(item)
-                self.add_message("are outside the computation domain and will be ingnored !!!")
-
-            points = pointsClipCheck
 
         arcpy.env.extent = intersect
         soil_clip = temp + os.sep + "soil_clip.shp"
@@ -345,6 +316,41 @@ class PrepareData:
         flow_direction_clip.save(output + os.sep + "flowDir")
 
         return flow_direction_clip, slope_clip, dmt_clip, sfield, points
+
+    def clip_points(self, points, output, intersect):
+        tmpPoints = []
+        desc = arcpy.Describe(points)
+        shapefieldname = desc.ShapeFieldName
+        rows_p = arcpy.SearchCursor(points)
+        for row in rows_p:
+            feat = row.getValue(shapefieldname)
+            pnt = feat.getPart()
+            tmpPoints.append([pnt.X, pnt.Y])
+        del rows_p
+
+        pointsClipCheck = output + os.sep + "pointsCheck.shp"
+        arcpy.Clip_analysis(points, intersect, pointsClipCheck)
+
+        tmpPointsCheck = []
+        descCheck = arcpy.Describe(pointsClipCheck)
+        shapefieldnameCheck = descCheck.ShapeFieldName
+        rows_pch = arcpy.SearchCursor(pointsClipCheck)
+        for row2 in rows_pch:
+            featCheck = row2.getValue(shapefieldnameCheck)
+            pntChech = featCheck.getPart()
+            tmpPointsCheck.append([pntChech.X, pntChech.Y])
+        del rows_pch
+
+        diffpts = [c for c in tmpPoints if c not in tmpPointsCheck]
+        if len(diffpts) == 0:
+            pass
+        else:
+            self.add_message("!!! Points at coordinates [x,y]:")
+            for item in diffpts:
+                self.add_message(item)
+            self.add_message("are outside the computation domain and will be ingnored !!!")
+
+        return pointsClipCheck
 
     def get_attrib(self, temp, vpix, rows, cols, sfield, intersect):
 
