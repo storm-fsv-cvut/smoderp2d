@@ -13,7 +13,7 @@ from arcpy.sa import *
 import arcpy
 import arcgisscripting
 import smoderp2d.flow_algorithm.arcgis_dmtfce as arcgis_dmtfce
-from smoderp2d import constants # poradi parametru z arcgis tool
+import constants # poradi parametru z arcgis tool
 
 class PrepareData:
 
