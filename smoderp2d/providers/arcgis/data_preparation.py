@@ -101,8 +101,8 @@ class PrepareData:
         intersect, null_shp = self.intersect_analysis(dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output)
 
         # clip
-        points, flow_direction_clip, slope_clip, dmt_clip = self.clip_data(dmt_copy, intersect,
-                                                                           output, points, slope_orig, flow_direction)
+        points, flow_direction_clip, slope_clip, dmt_clip = self.clip_data(dmt_copy, intersect, output, points,
+                                                                           slope_orig, flow_direction)
 
         sfield = self.make_sfield(gp, intersect, vtyp, ptyp, tab_puda_veg, tab_puda_veg_code)
 
@@ -382,7 +382,6 @@ class PrepareData:
         return all_attrib
 
     def raster2np(self, gp, dmt_clip, slope_clip, flow_direction_clip, sfield, intersect, points, dmt_fill):
-        # TODO: rozdelit raster2np do vic podfunkci, polovina veci s tim prevodem nesouvisi 23.05.2018 MK
 
         # cropped raster info
         dmt_desc = arcpy.Describe(dmt_clip)
@@ -401,15 +400,7 @@ class PrepareData:
         mat_slope = arcpy.RasterToNumPyArray(slope_clip)
         mat_fd = arcpy.RasterToNumPyArray(flow_direction_clip)
 
-        self.save_raster(
-            "fl_dir",
-            mat_fd,
-            x_coordinate,
-            y_coordinate,
-            spix,
-            vpix,
-            NoDataValue,
-            self.temp)
+        self.save_raster("fl_dir", mat_fd, x_coordinate, y_coordinate, spix, vpix, NoDataValue, self.temp)
 
         # size of the raster [0] = number of rows; [1] = number of columns
         rows = dmt_array.shape[0]
