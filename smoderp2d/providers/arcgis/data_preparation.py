@@ -101,10 +101,8 @@ class PrepareData:
         intersect, null_shp = self.intersect_analysis(temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output)
 
         # clip
-        flow_direction_clip, slope_clip, dmt_clip, sfield, points = self.clip_data(gp, temp, dmt_copy, vtyp, ptyp,
-                                                                                   output, points, tab_puda_veg,
-                                                                                   tab_puda_veg_code, slope_orig,
-                                                                                   flow_direction)
+        flow_direction_clip, slope_clip, dmt_clip, sfield, points = self.clip_data(gp, temp, dmt_copy, intersect,
+                vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig, flow_direction)
 
         # raster2np
         array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
@@ -254,8 +252,8 @@ class PrepareData:
         return intersect, null_shp
 
 
-    def clip_data(self, gp, temp, dmt_copy, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig,
-                  flow_direction):
+    def clip_data(self, gp, temp, dmt_copy, intersect, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code,
+                  slope_orig, flow_direction):
         # TODO: rozdelit na vic podfunkci 23.05.2018 MK
 
         if points and (points != "#") and (points != ""):
@@ -365,7 +363,7 @@ class PrepareData:
         flow_direction_clip = ExtractByMask(flow_direction, maska)
         flow_direction_clip.save(output + os.sep + "flowDir")
 
-        return flow_direction_clip, slope_clip, dmt_clip, sfield, points, null_shp
+        return flow_direction_clip, slope_clip, dmt_clip, sfield, points
 
     def get_attrib(self, temp, vpix, rows, cols, sfield, intersect):
 
