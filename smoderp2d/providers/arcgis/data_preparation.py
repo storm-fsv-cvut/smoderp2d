@@ -98,11 +98,11 @@ class PrepareData:
                                                                                        "TRUE", "TRUE", "NONE")
 
         # intersect
-        intersect, null_shp, soil, veg = self.intersect_analysis(temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output)
+        intersect, null_shp = self.intersect_analysis(temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output)
 
         # clip
         flow_direction_clip, slope_clip, dmt_clip, sfield, points = self.clip_data(gp, temp, dmt_copy, intersect,
-                vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig, flow_direction, soil, veg)
+                vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig, flow_direction, soil_indata, veg_indata)
 
         # raster2np
         array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
@@ -227,21 +227,11 @@ class PrepareData:
         arcpy.gp.Reclassify_sa(dmt_copy, "VALUE", "-100000 100000 1", null, "DATA")  # reklasifikuje se vsechno na 1
         arcpy.RasterToPolygon_conversion(null, null_shp, "NO_SIMPLIFY")
 
-        # add filed for disslolving and masking
-        fieldname = "one"
-        veg = temp + os.sep + "LandCover.shp"
-        soil = temp + os.sep + "Siol_char.shp"
-        arcpy.Copy_management(veg_indata, veg)
-        arcpy.Copy_management(soil_indata, soil)
-
-        self.add_field(veg, fieldname, "SHORT", 2)
-        self.add_field(soil, fieldname, "SHORT", 2)
-
         soil_boundary = temp + os.sep + "s_b.shp"
         veg_boundary = temp + os.sep + "v_b.shp"
 
-        arcpy.Dissolve_management(veg, veg_boundary, vtyp)
-        arcpy.Dissolve_management(soil, soil_boundary, ptyp)
+        arcpy.Dissolve_management(veg_indata, veg_boundary, vtyp)
+        arcpy.Dissolve_management(soil_indata, soil_boundary, ptyp)
 
         # mask and clip data
         self.add_message("Clip of the source data by intersect")
@@ -249,11 +239,11 @@ class PrepareData:
         intersect = output + os.sep + "interSoilLU.shp"
         arcpy.Intersect_analysis(group, intersect, "ALL", "", "INPUT")
 
-        return intersect, null_shp, soil, veg
+        return intersect, null_shp
 
 
     def clip_data(self, gp, temp, dmt_copy, intersect, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code,
-                  slope_orig, flow_direction, soil, veg):
+                  slope_orig, flow_direction, soil_indata, veg_indata):
         # TODO: rozdelit na vic podfunkci 23.05.2018 MK
 
         if points and (points != "#") and (points != ""):
@@ -296,8 +286,8 @@ class PrepareData:
         veg_clip = temp + os.sep + "veg_clip.shp"
 
         # clipping of the soil and veg data
-        arcpy.Clip_analysis(soil, intersect, soil_clip)
-        arcpy.Clip_analysis(veg, intersect, veg_clip)
+        arcpy.Clip_analysis(soil_indata, intersect, soil_clip)
+        arcpy.Clip_analysis(veg_indata, intersect, veg_clip)
 
         if gp.ListFields(intersect, "puda_veg").Next():
             arcpy.DeleteField_management(intersect, "puda_veg", )
