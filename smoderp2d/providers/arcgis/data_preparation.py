@@ -46,7 +46,7 @@ class PrepareData:
         veg_indata = gp.GetParameterAsText(constants.PARAMETER_VEGETATION)
         vtyp = gp.GetParameterAsText(constants.PARAMETER_VEGETATION_TYPE)
         rainfall_file_path = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_RAINFALL_FILE)
-        maxdt = int(gp.GetParameterAsText(constants.PARAMETER_MAX_DELTA_T))
+        maxdt = float(gp.GetParameterAsText(constants.PARAMETER_MAX_DELTA_T))
         end_time = float(gp.GetParameterAsText(constants.PARAMETER_END_TIME)) * 60.0  # prevod na s
         points = gp.GetParameterAsText(constants.PARAMETER_POINTS)
         output = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
