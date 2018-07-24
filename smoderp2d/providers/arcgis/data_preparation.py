@@ -320,16 +320,7 @@ class PrepareData:
         arcpy.CopyRows_management(tab_puda_veg, puda_veg_dbf)
         sfield = ["k", "s", "n", "pi", "ppl", "ret", "b", "x", "y", "tau", "v"]
 
-        # sfield_txt = "k;s;n;pi;ppl;ret;b;x;y;tau;v"
-        arcpy.JoinField_management(
-            intersect,
-            "puda_veg",
-            puda_veg_dbf,
-            tab_puda_veg_code,
-            "k;s;n;pi;ppl;ret;b;x;y;tau;v")
-        # intersect1 = output+"\\puda_vegetace.shp"
-        self.del_field(veg, fieldname)
-        self.del_field(soil, fieldname)
+        arcpy.JoinField_management(intersect, "puda_veg", puda_veg_dbf,tab_puda_veg_code,"k;s;n;pi;ppl;ret;b;x;y;tau;v")
 
         with arcpy.da.SearchCursor(intersect, sfield) as cursor:
             for row in cursor:
