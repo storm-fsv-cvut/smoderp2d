@@ -97,10 +97,14 @@ class PrepareData:
         dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, temp,
                                                                                        "TRUE", "TRUE", "NONE")
 
+        # intersect
+        intersect, null_shp = self.intersect_analysis(temp, dmt_copy, veg_indata, soil_indata, output)
+
         # clip
-        flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp = self.clip_data(gp, temp,
-            dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig,
-            flow_direction)
+        flow_direction_clip, slope_clip, dmt_clip, sfield, points = self.clip_data(gp, temp, dmt_copy, vtyp, ptyp,
+                                                                                   output, points, tab_puda_veg,
+                                                                                   tab_puda_veg_code, slope_orig,
+                                                                                   flow_direction)
 
         # raster2np
         array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
@@ -217,15 +221,12 @@ class PrepareData:
         except:
             pass
 
-    def clip_data(self, gp, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, points, tab_puda_veg,
-                  tab_puda_veg_code, slope_orig, flow_direction):
-        # TODO: rozdelit na vic podfunkci 23.05.2018 MK
-
+    def intersect_analysis(self, temp, dmt_copy, veg_indata, soil_indata, output):
         # adding attribute for soil and vegetation into attribute table (type short int)
         # preparation for clip
         null = temp + os.sep + "hrance_rst"
         null_shp = temp + os.sep + "null.shp"
-        arcpy.gp.Reclassify_sa(dmt_copy, "VALUE", "-100000 100000 1", null, "DATA") # reklasifikuje se vsechno na 1
+        arcpy.gp.Reclassify_sa(dmt_copy, "VALUE", "-100000 100000 1", null, "DATA")  # reklasifikuje se vsechno na 1
         arcpy.RasterToPolygon_conversion(null, null_shp, "NO_SIMPLIFY")
 
         # add filed for disslolving and masking
@@ -249,6 +250,13 @@ class PrepareData:
         group = [soil_boundary, veg_boundary, null_shp]
         intersect = output + os.sep + "interSoilLU.shp"
         arcpy.Intersect_analysis(group, intersect, "ALL", "", "INPUT")
+
+        return intersect, null_shp
+
+
+    def clip_data(self, gp, temp, dmt_copy, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig,
+                  flow_direction):
+        # TODO: rozdelit na vic podfunkci 23.05.2018 MK
 
         if points and (points != "#") and (points != ""):
             tmpPoints = []
@@ -357,7 +365,7 @@ class PrepareData:
         flow_direction_clip = ExtractByMask(flow_direction, maska)
         flow_direction_clip.save(output + os.sep + "flowDir")
 
-        return flow_direction_clip, slope_clip, dmt_clip, intersect, sfield, points, null_shp
+        return flow_direction_clip, slope_clip, dmt_clip, sfield, points, null_shp
 
     def get_attrib(self, temp, vpix, rows, cols, sfield, intersect):
 
