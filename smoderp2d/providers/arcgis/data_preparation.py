@@ -17,7 +17,6 @@ from smoderp2d import constants # poradi parametru z arcgis tool
 
 class PrepareData:
 
-# hlavni funkce je prepare_data
     def __init__(self):
 
         # creating the geoprocessor object
@@ -46,16 +45,16 @@ class PrepareData:
         ptyp = gp.GetParameterAsText(constants.PARAMETER_SOIL_TYPE)
         veg_indata = gp.GetParameterAsText(constants.PARAMETER_VEGETATION)
         vtyp = gp.GetParameterAsText(constants.PARAMETER_VEGETATION_TYPE)
-        points = gp.GetParameterAsText(constants.PARAMETER_POINTS)
         rainfall_file_path = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_RAINFALL_FILE)
+        maxdt = int(gp.GetParameterAsText(constants.PARAMETER_MAX_DELTA_T))
+        end_time = float(gp.GetParameterAsText(constants.PARAMETER_END_TIME)) * 60.0  # prevod na s
+        points = gp.GetParameterAsText(constants.PARAMETER_POINTS)
+        output = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
         tab_puda_veg = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE)
         tab_puda_veg_code = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE_CODE)
-        end_time = float(gp.GetParameterAsText(constants.PARAMETER_END_TIME)) * 60.0  # prevod na s
         stream = gp.GetParameterAsText(constants.PARAMETER_STREAM)
         tab_stream_tvar = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE)
         tab_stream_tvar_code = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE_CODE)
-        output = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
-        maxdt = gp.GetParameter(constants.PARAMETER_MAX_DELTA_T)
 
         # deleting output directory
         shutil.rmtree(output)
@@ -634,7 +633,6 @@ class PrepareData:
         cosasp = arcpy.sa.Cos(asppii)
         sinsklon = arcpy.sa.Abs(sinasp)
         cossklon = arcpy.sa.Abs(cosasp)
-        # times1 = arcpy.sa.Times(cossklon, sinsklon)
         times1 = arcpy.sa.Plus(cossklon, sinsklon)
         times1.save(temp + os.sep + "ratio_cell")
 
