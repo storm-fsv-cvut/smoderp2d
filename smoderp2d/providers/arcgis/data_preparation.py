@@ -252,7 +252,7 @@ class PrepareData:
         arcpy.env.extent = intersect
 
         if gp.ListFields(intersect, "puda_veg").Next():
-            arcpy.DeleteField_management(intersect, "puda_veg", )
+            arcpy.DeleteField_management(intersect, "puda_veg")
         arcpy.AddField_management(intersect, "puda_veg", "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED","")
 
         if ptyp == vtyp:
@@ -339,7 +339,7 @@ class PrepareData:
             self.add_message("!!! Points at coordinates [x,y]:")
             for item in diffpts:
                 self.add_message(item)
-            self.add_message("are outside the computation domain and will be ingnored !!!")
+            self.add_message("are outside the computation domain and will be ignored !!!")
 
         return pointsClipCheck
 
