@@ -94,7 +94,6 @@ class PrepareData:
 
         self.add_message("DMT preparation...")
 
-        # corners deleting
         dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, temp,
                                                                                        "TRUE", "TRUE", "NONE")
 
@@ -201,18 +200,14 @@ class PrepareData:
 
         return data
 
-    def add_field(self, input, newfield, datatyp, default_value):  # EDL
+    def add_field(self, input, newfield, datatype, default_value):  # EDL
         # function for adding fields
         try:
             arcpy.DeleteField_management(input, newfield)
         except:
             pass
-        arcpy.AddField_management(input, newfield, datatyp)
-        arcpy.CalculateField_management(
-            input,
-            newfield,
-            default_value,
-            "PYTHON")
+        arcpy.AddField_management(input, newfield, datatype)
+        arcpy.CalculateField_management(input, newfield, default_value, "PYTHON")
         return input
 
     def del_field(self,input, field):
@@ -230,7 +225,7 @@ class PrepareData:
         # preparation for clip
         null = temp + os.sep + "hrance_rst"
         null_shp = temp + os.sep + "null.shp"
-        arcpy.gp.Reclassify_sa(dmt_copy, "VALUE", "-100000 100000 1", null, "DATA")
+        arcpy.gp.Reclassify_sa(dmt_copy, "VALUE", "-100000 100000 1", null, "DATA") # reklasifikuje se vsechno na 1
         arcpy.RasterToPolygon_conversion(null, null_shp, "NO_SIMPLIFY")
 
         # add filed for disslolving and masking
@@ -251,9 +246,9 @@ class PrepareData:
 
         # mask and clip data
         self.add_message("Clip of the source data by intersect")
-        grup = [soil_boundary, veg_boundary, null_shp]
+        group = [soil_boundary, veg_boundary, null_shp]
         intersect = output + os.sep + "interSoilLU.shp"
-        arcpy.Intersect_analysis(grup, intersect, "ALL", "", "INPUT")
+        arcpy.Intersect_analysis(group, intersect, "ALL", "", "INPUT")
 
         if points and (points != "#") and (points != ""):
             tmpPoints = []
@@ -300,17 +295,7 @@ class PrepareData:
 
         if gp.ListFields(intersect, "puda_veg").Next():
             arcpy.DeleteField_management(intersect, "puda_veg", )
-        arcpy.AddField_management(
-            intersect,
-            "puda_veg",
-            "TEXT",
-            "",
-            "",
-            "15",
-            "",
-            "NULLABLE",
-            "NON_REQUIRED",
-            "")
+        arcpy.AddField_management(intersect, "puda_veg", "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED","")
 
         if ptyp == vtyp:
             vtyp1 = vtyp + "_1"
@@ -361,16 +346,11 @@ class PrepareData:
         vpix = dmt_desc.MeanCellHeight
 
         maska = temp + os.sep + "maska"
-        arcpy.PolygonToRaster_conversion(
-            intersect,
-            "FID",
-            maska,
-            "MAXIMUM_AREA",
-            cellsize=vpix)
+        arcpy.PolygonToRaster_conversion(intersect, "FID", maska, "MAXIMUM_AREA", cellsize=vpix)
 
         # cropping rasters
         dmt_clip = ExtractByMask(dmt_copy, maska)
-        dmt_clip.save(output + os.sep + "DTM")
+        dmt_clip.save(output + os.sep + "DMT")
         slope_clip = ExtractByMask(slope_orig, maska)
         slope_clip.save(temp + os.sep + "slope_clip")
 
