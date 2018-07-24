@@ -282,9 +282,6 @@ class PrepareData:
                             "Values in soilveg tab are not correct - STOP, check shp file Prunik in output")
                         sys.exit()
 
-        # setting progressor
-        gp.SetProgressor("default", "Data preparations...") # mrknout na tohle, zatim nevim, co to je a kde by to melo byt 23.05.2018 MK
-
         # raster description
         dmt_desc = arcpy.Describe(dmt_copy)
 
