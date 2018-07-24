@@ -63,12 +63,12 @@ class PrepareData:
             os.makedirs(output)
         self.add_message("Creating of the output directory: " + output)
 
-        temp = output + os.sep + "temp"
+        self.temp = output + os.sep + "temp"
 
-        if not os.path.exists(temp):
-            os.makedirs(temp)
+        if not os.path.exists(self.temp):
+            os.makedirs(self.temp)
 
-        self.add_message("Creating of the temp: " + temp)
+        self.add_message("Creating of the temp: " + self.temp)
 
         arcpy.env.snapRaster = dmt
         # deleting content of output directory
@@ -84,38 +84,38 @@ class PrepareData:
             [shutil.rmtree(i) if os.path.isdir(i) else os.unlink(i)
              for i in contents]
 
-        if not os.path.exists(temp):
-            os.makedirs(temp)
+        if not os.path.exists(self.temp):
+            os.makedirs(self.temp)
 
-        temp_gdb = arcpy.CreateFileGDB_management (temp, "tempGDB.gdb")
-        dmt_copy = temp + os.sep + "tempGDB.gdb" + os.sep + "dmt_copy"
+        temp_gdb = arcpy.CreateFileGDB_management (self.temp, "tempGDB.gdb")
+        dmt_copy = self.temp + os.sep + "tempGDB.gdb" + os.sep + "dmt_copy"
 
         arcpy.CopyRaster_management(dmt, dmt_copy)
 
         self.add_message("DMT preparation...")
 
-        dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, temp,
+        dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, self.temp,
                                                                                        "TRUE", "TRUE", "NONE")
 
         # intersect
-        intersect, null_shp = self.intersect_analysis(temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output)
+        intersect, null_shp = self.intersect_analysis(dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output)
 
         # clip
-        points, flow_direction_clip, slope_clip, dmt_clip = self.clip_data(temp, dmt_copy, intersect,
+        points, flow_direction_clip, slope_clip, dmt_clip = self.clip_data(dmt_copy, intersect,
                                                                            output, points, slope_orig, flow_direction)
 
-        sfield = self.make_sfield(gp, temp, intersect, vtyp, ptyp, tab_puda_veg, tab_puda_veg_code)
+        sfield = self.make_sfield(gp, intersect, vtyp, ptyp, tab_puda_veg, tab_puda_veg_code)
 
         # raster2np
         array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
             combinatIndex, rows, cols, vpix, spix, x_coordinate, y_coordinate, ll_corner, pixel_area, \
-            NoDataValue = self.raster2np(gp, dmt_clip, slope_clip, flow_direction_clip, temp, sfield, intersect, points,
+            NoDataValue = self.raster2np(gp, dmt_clip, slope_clip, flow_direction_clip, sfield, intersect, points,
                                          dmt_fill)
 
         # hcrit, a, aa computing
-        mat_hcrit, mat_a, mat_aa = self.par(all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix, temp)
+        mat_hcrit, mat_a, mat_aa = self.par(all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix)
 
-        mat_efect_vrst, mfda, sr, itera = self.contour(dmt_clip, temp, spix, rainfall_file_path,rows,cols)
+        mat_efect_vrst, mfda, sr, itera = self.contour(dmt_clip, spix, rainfall_file_path,rows,cols)
 
         # pocitam vzdy s ryhama
         type_of_computing = 1
@@ -189,7 +189,7 @@ class PrepareData:
             'end_time': end_time,                \
             'spix': None,                        \
             'state_cell': None,                  \
-            'temp': temp,                        \
+            'temp': self.temp,                        \
             'type_of_computing': type_of_computing,\
             'vpix': None,                        \
             'mfda': mfda,                        \
@@ -221,16 +221,16 @@ class PrepareData:
         except:
             pass
 
-    def intersect_analysis(self, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output):
+    def intersect_analysis(self, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output):
         # adding attribute for soil and vegetation into attribute table (type short int)
         # preparation for clip
-        null = temp + os.sep + "hrance_rst"
-        null_shp = temp + os.sep + "null.shp"
+        null = self.temp + os.sep + "hrance_rst"
+        null_shp = self.temp + os.sep + "null.shp"
         arcpy.gp.Reclassify_sa(dmt_copy, "VALUE", "-100000 100000 1", null, "DATA")  # reklasifikuje se vsechno na 1
         arcpy.RasterToPolygon_conversion(null, null_shp, "NO_SIMPLIFY")
 
-        soil_boundary = temp + os.sep + "s_b.shp"
-        veg_boundary = temp + os.sep + "v_b.shp"
+        soil_boundary = self.temp + os.sep + "s_b.shp"
+        veg_boundary = self.temp + os.sep + "v_b.shp"
 
         arcpy.Dissolve_management(veg_indata, veg_boundary, vtyp)
         arcpy.Dissolve_management(soil_indata, soil_boundary, ptyp)
@@ -242,7 +242,7 @@ class PrepareData:
         return intersect, null_shp
 
 
-    def clip_data(self, temp, dmt_copy, intersect, output, points, slope_orig, flow_direction):
+    def clip_data(self, dmt_copy, intersect, output, points, slope_orig, flow_direction):
 
         # mask and clip data
         self.add_message("Clip of the source data by intersect")
@@ -261,21 +261,21 @@ class PrepareData:
         # size of cell
         vpix = dmt_desc.MeanCellHeight
 
-        maska = temp + os.sep + "maska"
+        maska = self.temp + os.sep + "maska"
         arcpy.PolygonToRaster_conversion(intersect, "FID", maska, "MAXIMUM_AREA", cellsize=vpix)
 
         # cropping rasters
         dmt_clip = ExtractByMask(dmt_copy, maska)
         dmt_clip.save(output + os.sep + "DMT")
         slope_clip = ExtractByMask(slope_orig, maska)
-        slope_clip.save(temp + os.sep + "slope_clip")
+        slope_clip.save(self.temp + os.sep + "slope_clip")
 
         flow_direction_clip = ExtractByMask(flow_direction, maska)
         flow_direction_clip.save(output + os.sep + "flowDir")
 
         return points, flow_direction_clip, slope_clip, dmt_clip
 
-    def make_sfield(self, gp, temp, intersect, vtyp, ptyp, tab_puda_veg, tab_puda_veg_code):
+    def make_sfield(self, gp, intersect, vtyp, ptyp, tab_puda_veg, tab_puda_veg_code):
 
         if gp.ListFields(intersect, "puda_veg").Next():
             arcpy.DeleteField_management(intersect, "puda_veg")
@@ -293,7 +293,7 @@ class PrepareData:
                 cursor.updateRow(row)
         del cursor
 
-        puda_veg_dbf = temp + os.sep + "puda_veg_tab_current.dbf"
+        puda_veg_dbf = self.temp + os.sep + "puda_veg_tab_current.dbf"
 
         arcpy.CopyRows_management(tab_puda_veg, puda_veg_dbf)
         sfield = ["k", "s", "n", "pi", "ppl", "ret", "b", "x", "y", "tau", "v"]
@@ -345,7 +345,7 @@ class PrepareData:
 
         return pointsClipCheck
 
-    def get_attrib(self, temp, vpix, rows, cols, sfield, intersect):
+    def get_attrib(self, vpix, rows, cols, sfield, intersect):
 
         mat_k = np.zeros([rows, cols], float)
         mat_s = np.zeros([rows, cols], float)
@@ -374,14 +374,14 @@ class PrepareData:
 
         poradi = 0
         for x in sfield:
-            d = temp + os.sep + "r" + str(x)
+            d = self.temp + os.sep + "r" + str(x)
             arcpy.PolygonToRaster_conversion(intersect, str(x), d, "MAXIMUM_AREA", "", vpix)
             all_attrib[poradi] = arcpy.RasterToNumPyArray(d)
             poradi = poradi + 1
 
         return all_attrib
 
-    def raster2np(self, gp, dmt_clip, slope_clip, flow_direction_clip, temp, sfield, intersect, points, dmt_fill):
+    def raster2np(self, gp, dmt_clip, slope_clip, flow_direction_clip, sfield, intersect, points, dmt_fill):
         # TODO: rozdelit raster2np do vic podfunkci, polovina veci s tim prevodem nesouvisi 23.05.2018 MK
 
         # cropped raster info
@@ -409,7 +409,7 @@ class PrepareData:
             spix,
             vpix,
             NoDataValue,
-            temp)
+            self.temp)
 
         # size of the raster [0] = number of rows; [1] = number of columns
         rows = dmt_array.shape[0]
@@ -418,7 +418,7 @@ class PrepareData:
         mat_dmt = dmt_array
         mat_nan = np.zeros([rows, cols], float)
 
-        all_attrib = self.get_attrib(temp, vpix, rows, cols, sfield, intersect)
+        all_attrib = self.get_attrib(vpix, rows, cols, sfield, intersect)
 
         mat_k = all_attrib[0]
         mat_s = all_attrib[1]
@@ -508,7 +508,7 @@ class PrepareData:
             combinatIndex, rows, cols, vpix, spix, x_coordinate, y_coordinate, ll_corner, pixel_area, \
             NoDataValue
 
-    def par(self, all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix, temp):
+    def par(self, all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix):
 
         mat_n = all_attrib[2]
         mat_b = all_attrib[6]
@@ -579,17 +579,17 @@ class PrepareData:
                     mat_hcrit[i][j] = NoDataValue
 
         rhcrit_tau = arcpy.NumPyArrayToRaster(mat_hcrit_tau, ll_corner, spix, vpix, "#")
-        rhcrit_tau.save(temp + os.sep + "hcrit_tau")
+        rhcrit_tau.save(self.temp + os.sep + "hcrit_tau")
 
         rhcrit_flux = arcpy.NumPyArrayToRaster(mat_hcrit_flux, ll_corner, spix, vpix, "#")
-        rhcrit_flux.save(temp + os.sep + "hcrit_flux")
+        rhcrit_flux.save(self.temp + os.sep + "hcrit_flux")
 
         rhcrit_v = arcpy.NumPyArrayToRaster(mat_hcrit_v, ll_corner, spix, vpix, "#")
-        rhcrit_v.save(temp + os.sep + "hcrit_v")
+        rhcrit_v.save(self.temp + os.sep + "hcrit_v")
 
         return mat_hcrit, mat_a, mat_aa
 
-    def contour(self,dmt_clip, temp, spix, rainfall_file_path,rows,cols):
+    def contour(self,dmt_clip, spix, rainfall_file_path,rows,cols):
 
         # fiktivni vrstevnice a priprava "state cell, jestli to je tok ci plocha
         pii = math.pi / 180.0
@@ -600,10 +600,10 @@ class PrepareData:
         sinsklon = arcpy.sa.Abs(sinasp)
         cossklon = arcpy.sa.Abs(cosasp)
         times1 = arcpy.sa.Plus(cossklon, sinsklon)
-        times1.save(temp + os.sep + "ratio_cell")
+        times1.save(self.temp + os.sep + "ratio_cell")
 
         efect_vrst = arcpy.sa.Times(times1, spix)
-        efect_vrst.save(temp + os.sep + "efect_vrst")
+        efect_vrst.save(self.temp + os.sep + "efect_vrst")
         mat_efect_vrst = arcpy.RasterToNumPyArray(efect_vrst)
 
         mfda = False
