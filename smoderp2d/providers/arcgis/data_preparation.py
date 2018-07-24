@@ -98,11 +98,11 @@ class PrepareData:
                                                                                        "TRUE", "TRUE", "NONE")
 
         # intersect
-        intersect, null_shp = self.intersect_analysis(temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output)
+        intersect, null_shp, soil, veg = self.intersect_analysis(temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output)
 
         # clip
         flow_direction_clip, slope_clip, dmt_clip, sfield, points = self.clip_data(gp, temp, dmt_copy, intersect,
-                vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig, flow_direction)
+                vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig, flow_direction, soil, veg)
 
         # raster2np
         array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
@@ -249,11 +249,11 @@ class PrepareData:
         intersect = output + os.sep + "interSoilLU.shp"
         arcpy.Intersect_analysis(group, intersect, "ALL", "", "INPUT")
 
-        return intersect, null_shp
+        return intersect, null_shp, soil, veg
 
 
     def clip_data(self, gp, temp, dmt_copy, intersect, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code,
-                  slope_orig, flow_direction):
+                  slope_orig, flow_direction, soil, veg):
         # TODO: rozdelit na vic podfunkci 23.05.2018 MK
 
         if points and (points != "#") and (points != ""):
