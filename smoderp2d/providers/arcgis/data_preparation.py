@@ -101,8 +101,10 @@ class PrepareData:
         intersect, null_shp = self.intersect_analysis(temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output)
 
         # clip
-        flow_direction_clip, slope_clip, dmt_clip, sfield, points = self.clip_data(gp, temp, dmt_copy, intersect,
-                vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code, slope_orig, flow_direction, soil_indata, veg_indata)
+        points, flow_direction_clip, slope_clip, dmt_clip = self.clip_data(temp, dmt_copy, intersect,
+                                                                           output, points, slope_orig, flow_direction)
+
+        sfield = self.make_sfield(gp, temp, intersect, vtyp, ptyp, tab_puda_veg, tab_puda_veg_code)
 
         # raster2np
         array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
@@ -240,8 +242,7 @@ class PrepareData:
         return intersect, null_shp
 
 
-    def clip_data(self, gp, temp, dmt_copy, intersect, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code,
-                  slope_orig, flow_direction, soil_indata, veg_indata):
+    def clip_data(self, temp, dmt_copy, intersect, output, points, slope_orig, flow_direction):
 
         # mask and clip data
         self.add_message("Clip of the source data by intersect")
@@ -250,6 +251,31 @@ class PrepareData:
             points = self.clip_points(points, output, intersect)
 
         arcpy.env.extent = intersect
+
+        # raster description
+        dmt_desc = arcpy.Describe(dmt_copy)
+
+        # output raster coordinate system
+        arcpy.env.outputCoordinateSystem = dmt_desc.SpatialReference
+
+        # size of cell
+        vpix = dmt_desc.MeanCellHeight
+
+        maska = temp + os.sep + "maska"
+        arcpy.PolygonToRaster_conversion(intersect, "FID", maska, "MAXIMUM_AREA", cellsize=vpix)
+
+        # cropping rasters
+        dmt_clip = ExtractByMask(dmt_copy, maska)
+        dmt_clip.save(output + os.sep + "DMT")
+        slope_clip = ExtractByMask(slope_orig, maska)
+        slope_clip.save(temp + os.sep + "slope_clip")
+
+        flow_direction_clip = ExtractByMask(flow_direction, maska)
+        flow_direction_clip.save(output + os.sep + "flowDir")
+
+        return points, flow_direction_clip, slope_clip, dmt_clip
+
+    def make_sfield(self, gp, temp, intersect, vtyp, ptyp, tab_puda_veg, tab_puda_veg_code):
 
         if gp.ListFields(intersect, "puda_veg").Next():
             arcpy.DeleteField_management(intersect, "puda_veg")
@@ -282,28 +308,7 @@ class PrepareData:
                             "Values in soilveg tab are not correct - STOP, check shp file Prunik in output")
                         sys.exit()
 
-        # raster description
-        dmt_desc = arcpy.Describe(dmt_copy)
-
-        # output raster coordinate system
-        arcpy.env.outputCoordinateSystem = dmt_desc.SpatialReference
-
-        # size of cell
-        vpix = dmt_desc.MeanCellHeight
-
-        maska = temp + os.sep + "maska"
-        arcpy.PolygonToRaster_conversion(intersect, "FID", maska, "MAXIMUM_AREA", cellsize=vpix)
-
-        # cropping rasters
-        dmt_clip = ExtractByMask(dmt_copy, maska)
-        dmt_clip.save(output + os.sep + "DMT")
-        slope_clip = ExtractByMask(slope_orig, maska)
-        slope_clip.save(temp + os.sep + "slope_clip")
-
-        flow_direction_clip = ExtractByMask(flow_direction, maska)
-        flow_direction_clip.save(output + os.sep + "flowDir")
-
-        return flow_direction_clip, slope_clip, dmt_clip, sfield, points
+        return sfield
 
     def clip_points(self, points, output, intersect):
         tmpPoints = []
