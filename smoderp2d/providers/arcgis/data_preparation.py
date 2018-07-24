@@ -242,23 +242,14 @@ class PrepareData:
 
     def clip_data(self, gp, temp, dmt_copy, intersect, vtyp, ptyp, output, points, tab_puda_veg, tab_puda_veg_code,
                   slope_orig, flow_direction, soil_indata, veg_indata):
-        # TODO: rozdelit na vic podfunkci 23.05.2018 MK
 
         # mask and clip data
         self.add_message("Clip of the source data by intersect")
 
-
         if points and (points != "#") and (points != ""):
             points = self.clip_points(points, output, intersect)
 
-
         arcpy.env.extent = intersect
-        soil_clip = temp + os.sep + "soil_clip.shp"
-        veg_clip = temp + os.sep + "veg_clip.shp"
-
-        # clipping of the soil and veg data
-        arcpy.Clip_analysis(soil_indata, intersect, soil_clip)
-        arcpy.Clip_analysis(veg_indata, intersect, veg_clip)
 
         if gp.ListFields(intersect, "puda_veg").Next():
             arcpy.DeleteField_management(intersect, "puda_veg", )
