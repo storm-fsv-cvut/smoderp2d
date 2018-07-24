@@ -98,7 +98,7 @@ class PrepareData:
                                                                                        "TRUE", "TRUE", "NONE")
 
         # intersect
-        intersect, null_shp = self.intersect_analysis(temp, dmt_copy, veg_indata, soil_indata, output)
+        intersect, null_shp = self.intersect_analysis(temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output)
 
         # clip
         flow_direction_clip, slope_clip, dmt_clip, sfield, points = self.clip_data(gp, temp, dmt_copy, vtyp, ptyp,
@@ -221,7 +221,7 @@ class PrepareData:
         except:
             pass
 
-    def intersect_analysis(self, temp, dmt_copy, veg_indata, soil_indata, output):
+    def intersect_analysis(self, temp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output):
         # adding attribute for soil and vegetation into attribute table (type short int)
         # preparation for clip
         null = temp + os.sep + "hrance_rst"
