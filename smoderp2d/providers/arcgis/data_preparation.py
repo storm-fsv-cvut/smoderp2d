@@ -126,30 +126,8 @@ class PrepareData:
 
         mat_efect_vrst, mfda, sr, itera = self.contour(dmt_clip, spix, rainfall_file_path,rows,cols)
 
-        # pocitam vzdy s ryhama
-        type_of_computing = 1
-        # pokud jsou zadane vsechny vstupy pro vypocet toku, toky se pocitaji a type_of_computing je 3
-        listin = [stream, tab_stream_tvar, tab_stream_tvar_code]
-        tflistin = [len(i) > 1 for i in listin]
-
-        if all(tflistin):
-            type_of_computing = 3
-        else:
-            pass
-
-        if (type_of_computing == 3) or (type_of_computing == 5):
-
-            self.add_message("Stream preparation...")
-
-            toky, mat_tok_usek, tokyLoc = sp.prepare_streams(listin, dmt, null_shp,
-                mat_nan, spix, rows, cols, ll_corner, self.add_field, output, dmt_clip, intersect)
-
-            self.add_message("Stream preparation has finished")
-
-        else:
-            toky = None
-            mat_tok_usek = None
-            tokyLoc = None
+        toky, mat_tok_usek, tokyLoc = self.stream_prep(stream, tab_stream_tvar, tab_stream_tvar_code, dmt, null_shp,
+                mat_nan, spix, rows, cols, ll_corner, output, dmt_clip, intersect)
 
         rrows, rcols = self.find_boundary_cells(rows, cols, mat_nan, NoDataValue)
 
@@ -595,6 +573,36 @@ class PrepareData:
         sr, itera = rainfall.load_precipitation(rainfall_file_path)
 
         return mat_efect_vrst, mfda, sr, itera
+
+    def stream_prep(self, stream, tab_stream_tvar, tab_stream_tvar_code, dmt, null_shp, mat_nan, spix, rows, cols,
+                    ll_corner, output, dmt_clip, intersect):
+        # pocitam vzdy s ryhama
+        type_of_computing = 1
+        # pokud jsou zadane vsechny vstupy pro vypocet toku, toky se pocitaji a type_of_computing je 3
+        listin = [stream, tab_stream_tvar, tab_stream_tvar_code]
+        tflistin = [len(i) > 1 for i in listin]
+
+        if all(tflistin):
+            type_of_computing = 3
+        else:
+            pass
+
+        if (type_of_computing == 3) or (type_of_computing == 5):
+
+            self.add_message("Stream preparation...")
+
+            toky, mat_tok_usek, tokyLoc = sp.prepare_streams(listin, dmt, null_shp,
+                                                             mat_nan, spix, rows, cols, ll_corner, self.add_field,
+                                                             output, dmt_clip, intersect)
+
+            self.add_message("Stream preparation has finished")
+
+        else:
+            toky = None
+            mat_tok_usek = None
+            tokyLoc = None
+
+        return toky, mat_tok_usek, tokyLoc
 
     def save_raster(self, name, array_export, l_x, l_y, spix, vpix, NoDataValue, folder):
         ll_corner = arcpy.Point(l_x, l_y)
