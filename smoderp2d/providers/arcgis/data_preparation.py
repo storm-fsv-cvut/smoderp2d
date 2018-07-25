@@ -98,13 +98,12 @@ class PrepareData:
                                                                                        "TRUE", "TRUE", "NONE")
 
         # intersect
-        intersect, null_shp = self.intersect_analysis(dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output)
+        intersect, null_shp, sfield = self.get_intersect(dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, gp,
+                                                         tab_puda_veg, tab_puda_veg_code)
 
         # clip
         points, flow_direction_clip, slope_clip, dmt_clip = self.clip_data(dmt_copy, intersect, output, points,
                                                                            slope_orig, flow_direction)
-
-        sfield = self.make_sfield(gp, intersect, vtyp, ptyp, tab_puda_veg, tab_puda_veg_code)
 
         # raster2np
         array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_fd, mat_inf_index, \
@@ -220,7 +219,7 @@ class PrepareData:
         except:
             pass
 
-    def intersect_analysis(self, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output):
+    def get_intersect(self, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, gp, tab_puda_veg, tab_puda_veg_code):
         # adding attribute for soil and vegetation into attribute table (type short int)
         # preparation for clip
         null = self.temp + os.sep + "hrance_rst"
@@ -238,7 +237,38 @@ class PrepareData:
         intersect = output + os.sep + "interSoilLU.shp"
         arcpy.Intersect_analysis(group, intersect, "ALL", "", "INPUT")
 
-        return intersect, null_shp
+        if gp.ListFields(intersect, "puda_veg").Next():
+            arcpy.DeleteField_management(intersect, "puda_veg")
+        arcpy.AddField_management(intersect, "puda_veg", "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED","")
+
+        if ptyp == vtyp:
+            vtyp1 = vtyp + "_1"
+        else:
+            vtyp1 = vtyp
+
+        fields = [ptyp, vtyp1, "puda_veg"]
+        with arcpy.da.UpdateCursor(intersect, fields) as cursor:
+            for row in cursor:
+                row[2] = row[0] + row[1]
+                cursor.updateRow(row)
+        del cursor
+
+        puda_veg_dbf = self.temp + os.sep + "puda_veg_tab_current.dbf"
+
+        arcpy.CopyRows_management(tab_puda_veg, puda_veg_dbf)
+        sfield = ["k", "s", "n", "pi", "ppl", "ret", "b", "x", "y", "tau", "v"]
+
+        arcpy.JoinField_management(intersect, "puda_veg", puda_veg_dbf,tab_puda_veg_code,"k;s;n;pi;ppl;ret;b;x;y;tau;v")
+
+        with arcpy.da.SearchCursor(intersect, sfield) as cursor:
+            for row in cursor:
+                for i in range(len(row)):
+                    if row[i] == " ":
+                        self.add_message(
+                            "Values in soilveg tab are not correct - STOP, check shp file Prunik in output")
+                        sys.exit()
+
+        return intersect, null_shp, sfield
 
 
     def clip_data(self, dmt_copy, intersect, output, points, slope_orig, flow_direction):
@@ -273,41 +303,6 @@ class PrepareData:
         flow_direction_clip.save(output + os.sep + "flowDir")
 
         return points, flow_direction_clip, slope_clip, dmt_clip
-
-    def make_sfield(self, gp, intersect, vtyp, ptyp, tab_puda_veg, tab_puda_veg_code):
-
-        if gp.ListFields(intersect, "puda_veg").Next():
-            arcpy.DeleteField_management(intersect, "puda_veg")
-        arcpy.AddField_management(intersect, "puda_veg", "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED","")
-
-        if ptyp == vtyp:
-            vtyp1 = vtyp + "_1"
-        else:
-            vtyp1 = vtyp
-
-        fields = [ptyp, vtyp1, "puda_veg"]
-        with arcpy.da.UpdateCursor(intersect, fields) as cursor:
-            for row in cursor:
-                row[2] = row[0] + row[1]
-                cursor.updateRow(row)
-        del cursor
-
-        puda_veg_dbf = self.temp + os.sep + "puda_veg_tab_current.dbf"
-
-        arcpy.CopyRows_management(tab_puda_veg, puda_veg_dbf)
-        sfield = ["k", "s", "n", "pi", "ppl", "ret", "b", "x", "y", "tau", "v"]
-
-        arcpy.JoinField_management(intersect, "puda_veg", puda_veg_dbf,tab_puda_veg_code,"k;s;n;pi;ppl;ret;b;x;y;tau;v")
-
-        with arcpy.da.SearchCursor(intersect, sfield) as cursor:
-            for row in cursor:
-                for i in range(len(row)):
-                    if row[i] == " ":
-                        self.add_message(
-                            "Values in soilveg tab are not correct - STOP, check shp file Prunik in output")
-                        sys.exit()
-
-        return sfield
 
     def clip_points(self, points, output, intersect):
         tmpPoints = []
@@ -377,7 +372,8 @@ class PrepareData:
             arcpy.PolygonToRaster_conversion(intersect, str(x), d, "MAXIMUM_AREA", "", vpix)
             all_attrib[poradi] = self.rst2np(d)
             poradi = poradi + 1
-
+            self.add_message('all_atrib:')
+            self.add_message(all_attrib[poradi-1])
         return all_attrib
 
     def rst2np(self,raster):
