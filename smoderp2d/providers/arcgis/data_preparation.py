@@ -124,7 +124,11 @@ class PrepareData:
         mat_hcrit, mat_a, mat_aa = self.crit_water(all_attrib, rows, cols, mat_slope, NoDataValue,
                                                    ll_corner, vpix, spix)
 
-        mat_efect_vrst, mfda, sr, itera = self.contour(dmt_clip, spix, rainfall_file_path,rows,cols)
+        sr, itera = rainfall.load_precipitation(rainfall_file_path)
+
+        mat_efect_vrst = self.slope_dir(dmt_clip, spix)
+
+        mfda = False
 
         toky, mat_tok_usek, tokyLoc = self.stream_prep(stream, tab_stream_tvar, tab_stream_tvar_code, dmt, null_shp,
                 mat_nan, spix, rows, cols, ll_corner, output, dmt_clip, intersect)
@@ -552,7 +556,7 @@ class PrepareData:
 
         return mat_hcrit, mat_a, mat_aa
 
-    def contour(self,dmt_clip, spix, rainfall_file_path,rows,cols):
+    def slope_dir(self,dmt_clip, spix):
 
         # fiktivni vrstevnice a priprava "state cell, jestli to je tok ci plocha
         pii = math.pi / 180.0
@@ -569,10 +573,7 @@ class PrepareData:
         efect_vrst.save(self.temp + os.sep + "efect_vrst")
         mat_efect_vrst = self.rst2np(efect_vrst)
 
-        mfda = False
-        sr, itera = rainfall.load_precipitation(rainfall_file_path)
-
-        return mat_efect_vrst, mfda, sr, itera
+        return mat_efect_vrst
 
     def stream_prep(self, stream, tab_stream_tvar, tab_stream_tvar_code, dmt, null_shp, mat_nan, spix, rows, cols,
                     ll_corner, output, dmt_clip, intersect):
