@@ -212,13 +212,6 @@ class PrepareData:
         arcpy.CalculateField_management(input, newfield, default_value, "PYTHON")
         return input
 
-    def del_field(self,input, field):
-        #function for deleting fields
-        try:
-            arcpy.DeleteField_management(input, newfield) # to je asi chyba ne? spatnej argument (21.05.2018 MK)
-        except:
-            pass
-
     def get_intersect(self, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, output, gp, tab_puda_veg, tab_puda_veg_code):
         # adding attribute for soil and vegetation into attribute table (type short int)
         # preparation for clip
@@ -372,8 +365,6 @@ class PrepareData:
             arcpy.PolygonToRaster_conversion(intersect, str(x), d, "MAXIMUM_AREA", "", vpix)
             all_attrib[poradi] = self.rst2np(d)
             poradi = poradi + 1
-            self.add_message('all_atrib:')
-            self.add_message(all_attrib[poradi-1])
         return all_attrib
 
     def rst2np(self,raster):
