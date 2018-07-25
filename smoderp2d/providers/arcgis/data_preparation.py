@@ -105,13 +105,24 @@ class PrepareData:
         points, flow_direction_clip, slope_clip, dmt_clip = self.clip_data(dmt_copy, intersect, output, points,
                                                                            slope_orig, flow_direction)
 
-        # raster2np
-        array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_fd, mat_inf_index, \
-            combinatIndex, rows, cols, vpix, spix, x_coordinate, y_coordinate, ll_corner, pixel_area, \
-            NoDataValue = self.raster2np(gp, dmt_clip, slope_clip, flow_direction_clip, sfield, intersect, points)
+        # self.save_raster("fl_dir", mat_fd, x_coordinate, y_coordinate, spix, vpix, NoDataValue, self.temp)
 
-        # hcrit, a, aa computing
-        mat_hcrit, mat_a, mat_aa = self.par(all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix)
+        # raster to numpy array conversion
+        dmt_array = self.rst2np(dmt_clip)
+        mat_slope = self.rst2np(slope_clip)
+        mat_fd = self.rst2np(flow_direction_clip)
+
+        x_coordinate, y_coordinate, NoDataValue, vpix, spix, pixel_area, ll_corner, rows, cols \
+            = self.get_raster_dim(dmt_clip, dmt_array)
+
+        # mat_par
+        all_attrib, mat_nan, mat_slope, mat_dmt, mat_fd, mat_inf_index, combinatIndex, \
+            = self.get_mat_par(gp, sfield, intersect, dmt_array, mat_slope, mat_fd)
+
+        array_points = self.get_array_points(gp, points, rows, vpix, x_coordinate, y_coordinate)
+
+        mat_hcrit, mat_a, mat_aa = self.crit_water(all_attrib, rows, cols, mat_slope, NoDataValue,
+                                                   ll_corner, vpix, spix)
 
         mat_efect_vrst, mfda, sr, itera = self.contour(dmt_clip, spix, rainfall_file_path,rows,cols)
 
@@ -370,7 +381,7 @@ class PrepareData:
     def rst2np(self,raster):
         return arcpy.RasterToNumPyArray(raster)
 
-    def get_llcoords(self,dmt_clip):
+    def get_raster_dim(self,dmt_clip, dmt_array):
 
         # cropped raster info
         dmt_desc = arcpy.Describe(dmt_clip)
@@ -383,35 +394,29 @@ class PrepareData:
         pixel_area = spix * vpix
         ll_corner = arcpy.Point(x_coordinate, y_coordinate)
 
-        return x_coordinate, y_coordinate, NoDataValue, vpix, spix, pixel_area, ll_corner
-
-    def raster2np(self, gp, dmt_clip, slope_clip, flow_direction_clip, sfield, intersect, points):
-
-        x_coordinate, y_coordinate, NoDataValue, vpix, spix, pixel_area, ll_corner = self.get_llcoords(dmt_clip)
-
-        # raster to numpy array conversion
-        dmt_array = self.rst2np(dmt_clip)
-        mat_slope = self.rst2np(slope_clip)
-        mat_fd = self.rst2np(flow_direction_clip)
-
-        self.save_raster("fl_dir", mat_fd, x_coordinate, y_coordinate, spix, vpix, NoDataValue, self.temp)
-
         # size of the raster [0] = number of rows; [1] = number of columns
         rows = dmt_array.shape[0]
         cols = dmt_array.shape[1]
 
+        return x_coordinate, y_coordinate, NoDataValue, vpix, spix, pixel_area, ll_corner, rows, cols
+
+    def get_mat_par(self, gp, sfield, intersect, dmt_array, mat_slope, mat_fd):
+
         all_attrib = self.get_attrib(vpix, rows, cols, sfield, intersect)
+
         mat_dmt = dmt_array
         mat_nan = np.zeros([rows, cols], float)
         mat_k = all_attrib[0]
         mat_s = all_attrib[1]
+        mat_inf_index = None
+        combinatIndex = None
 
         infiltration_type = int(0)  # "Phillip"
         if infiltration_type == int(0):  #to se rovna vzdycky ne? nechapu tuhle podminku 23.05.2018 MK
             mat_inf_index = np.zeros([rows, cols], int)
             combinat = []
             combinatIndex = []
-            for i in range(rows):  # tady to chce jeste nejak prepsat ty ccc, sss, kkk 23.05.2018 MK
+            for i in range(rows):
                 for j in range(cols):
                     kkk = mat_k[i][j]
                     sss = mat_s[i][j]
@@ -424,6 +429,25 @@ class PrepareData:
                         combinatIndex.append([combinat.index(ccc), kkk, sss, 0])
                         mat_inf_index[i][j] = combinat.index(ccc)
 
+        # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u sklonu a acc
+        i = 0
+        j = 0
+
+        # data value vector intersection
+        for i in range(rows):
+            for j in range(cols):
+                x_mat_dmt = mat_dmt[i][j]
+                slp = mat_slope[i][j]
+                if x_mat_dmt == NoDataValue or slp == NoDataValue:
+                    mat_nan[i][j] = NoDataValue
+                    mat_slope[i][j] = NoDataValue
+                    mat_dmt[i][j] = NoDataValue
+                else:
+                    mat_nan[i][j] = 0
+
+        return all_attrib, mat_nan, mat_slope, mat_dmt, mat_fd, mat_inf_index, combinatIndex
+
+    def get_array_points(self, gp, points, rows, vpix, x_coordinate, y_coordinate):
         # getting points coordinates from optional input shapefile
         if points and (points != "#") and (points != ""):
             # identify the geometry field
@@ -459,37 +483,17 @@ class PrepareData:
         else:
             array_points = None
 
-        # trimming the edge cells
-
-        # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u sklonu a acc
-        i = 0
-        j = 0
-
-        # data value vector intersection
-        for i in range(rows):
-            for j in range(cols):
-                x_mat_dmt = mat_dmt[i][j]
-                slp = mat_slope[i][j]
-                if x_mat_dmt == NoDataValue or slp == NoDataValue:
-                    mat_nan[i][j] = NoDataValue
-                    mat_slope[i][j] = NoDataValue
-                    mat_dmt[i][j] = NoDataValue
-                else:
-                    mat_nan[i][j] = 0
-
         # checking for points at the edge of the raster
         if points and points != "#":
             for kyk in range(array_points.shape[0] - 1):
                 if array_points[kyk][1] == i and array_points[kyk][2] == j:
                     gp.AddMessage("Point FID = " + str(
-                        int(array_points[kyk][0])) + " is at the edge of the raster. This point will not be included in results.")
+                        int(array_points[kyk][
+                                0])) + " is at the edge of the raster. This point will not be included in results.")
                     array_points = np.delete(array_points, kyk, 0)
+        return array_points
 
-        return array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_fd, mat_inf_index, \
-            combinatIndex, rows, cols, vpix, spix, x_coordinate, y_coordinate, ll_corner, pixel_area, \
-            NoDataValue
-
-    def par(self, all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix):
+    def crit_water(self, all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix):
 
         mat_n = all_attrib[2]
         mat_b = all_attrib[6]
