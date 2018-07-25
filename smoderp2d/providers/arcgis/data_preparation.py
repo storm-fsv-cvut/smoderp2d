@@ -117,9 +117,9 @@ class PrepareData:
 
         # mat_par
         all_attrib, mat_nan, mat_slope, mat_dmt, mat_fd, mat_inf_index, combinatIndex, \
-            = self.get_mat_par(gp, sfield, intersect, dmt_array, mat_slope, mat_fd)
+            = self.get_mat_par(vpix, rows, cols, NoDataValue, sfield, intersect, dmt_array, mat_slope, mat_fd)
 
-        array_points = self.get_array_points(gp, points, rows, vpix, x_coordinate, y_coordinate)
+        array_points = self.get_array_points(gp, points, rows, vpix, spix, x_coordinate, y_coordinate)
 
         mat_hcrit, mat_a, mat_aa = self.crit_water(all_attrib, rows, cols, mat_slope, NoDataValue,
                                                    ll_corner, vpix, spix)
@@ -400,7 +400,7 @@ class PrepareData:
 
         return x_coordinate, y_coordinate, NoDataValue, vpix, spix, pixel_area, ll_corner, rows, cols
 
-    def get_mat_par(self, gp, sfield, intersect, dmt_array, mat_slope, mat_fd):
+    def get_mat_par(self, vpix, rows, cols, NoDataValue, sfield, intersect, dmt_array, mat_slope, mat_fd):
 
         all_attrib = self.get_attrib(vpix, rows, cols, sfield, intersect)
 
@@ -447,7 +447,7 @@ class PrepareData:
 
         return all_attrib, mat_nan, mat_slope, mat_dmt, mat_fd, mat_inf_index, combinatIndex
 
-    def get_array_points(self, gp, points, rows, vpix, x_coordinate, y_coordinate):
+    def get_array_points(self, gp, points, rows, vpix, spix, x_coordinate, y_coordinate):
         # getting points coordinates from optional input shapefile
         if points and (points != "#") and (points != ""):
             # identify the geometry field
