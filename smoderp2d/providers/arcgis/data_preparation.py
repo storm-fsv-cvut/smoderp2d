@@ -408,6 +408,8 @@ class PrepareData:
         mat_slope = self.rst2np(slope_clip)
         mat_fd = self.rst2np(flow_direction_clip)
 
+        self.save_raster("fl_dir", mat_fd, x_coordinate, y_coordinate, spix, vpix, NoDataValue, self.temp)
+
         # size of the raster [0] = number of rows; [1] = number of columns
         rows = dmt_array.shape[0]
         cols = dmt_array.shape[1]
