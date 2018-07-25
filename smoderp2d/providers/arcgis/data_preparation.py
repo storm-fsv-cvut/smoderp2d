@@ -140,7 +140,7 @@ class PrepareData:
             mat_tok_usek = None
             tokyLoc = None
 
-        rrows, rcols = self.find_boudary_cells(rows, cols, mat_nan, NoDataValue)
+        rrows, rcols = self.find_boundary_cells(rows, cols, mat_nan, NoDataValue)
 
         mat_n = all_attrib[2]
         mat_ppl = all_attrib[3]
@@ -602,7 +602,7 @@ class PrepareData:
             NoDataValue)
         raster.save(folder + os.sep + name)
 
-    def find_boudary_cells(self, rows, cols, mat_nan, noData):
+    def find_boundary_cells(self, rows, cols, mat_nan, noData):
         # Identification of cells at the domain boundary
 
         mat_boundary = np.zeros([rows, cols], float)
