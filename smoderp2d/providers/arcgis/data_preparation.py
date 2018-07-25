@@ -376,16 +376,18 @@ class PrepareData:
         for x in sfield:
             d = self.temp + os.sep + "r" + str(x)
             arcpy.PolygonToRaster_conversion(intersect, str(x), d, "MAXIMUM_AREA", "", vpix)
-            all_attrib[poradi] = arcpy.RasterToNumPyArray(d)
+            all_attrib[poradi] = self.rst2np(d)
             poradi = poradi + 1
 
         return all_attrib
 
-    def raster2np(self, gp, dmt_clip, slope_clip, flow_direction_clip, sfield, intersect, points, dmt_fill):
+    def rst2np(self,raster):
+        return arcpy.RasterToNumPyArray(raster)
+
+    def get_llcoords(self,dmt_clip):
 
         # cropped raster info
         dmt_desc = arcpy.Describe(dmt_clip)
-
         # lower left corner coordinates
         x_coordinate = dmt_desc.Extent.XMin
         y_coordinate = dmt_desc.Extent.YMin
@@ -395,22 +397,24 @@ class PrepareData:
         pixel_area = spix * vpix
         ll_corner = arcpy.Point(x_coordinate, y_coordinate)
 
-        # raster to numpy array conversion
-        dmt_array = arcpy.RasterToNumPyArray(dmt_clip)
-        mat_slope = arcpy.RasterToNumPyArray(slope_clip)
-        mat_fd = arcpy.RasterToNumPyArray(flow_direction_clip)
+        return x_coordinate, y_coordinate, NoDataValue, vpix, spix, pixel_area, ll_corner
 
-        self.save_raster("fl_dir", mat_fd, x_coordinate, y_coordinate, spix, vpix, NoDataValue, self.temp)
+    def raster2np(self, gp, dmt_clip, slope_clip, flow_direction_clip, sfield, intersect, points, dmt_fill):
+
+        x_coordinate, y_coordinate, NoDataValue, vpix, spix, pixel_area, ll_corner = self.get_llcoords(dmt_clip)
+
+        # raster to numpy array conversion
+        dmt_array = self.rst2np(dmt_clip)
+        mat_slope = self.rst2np(slope_clip)
+        mat_fd = self.rst2np(flow_direction_clip)
 
         # size of the raster [0] = number of rows; [1] = number of columns
         rows = dmt_array.shape[0]
         cols = dmt_array.shape[1]
 
+        all_attrib = self.get_attrib(vpix, rows, cols, sfield, intersect)
         mat_dmt = dmt_array
         mat_nan = np.zeros([rows, cols], float)
-
-        all_attrib = self.get_attrib(vpix, rows, cols, sfield, intersect)
-
         mat_k = all_attrib[0]
         mat_s = all_attrib[1]
 
@@ -469,7 +473,7 @@ class PrepareData:
 
         # trimming the edge cells
         # convert dmt to array
-        mat_dmt_fill = arcpy.RasterToNumPyArray(dmt_fill)
+        mat_dmt_fill = self.rst2np(dmt_fill)
 
         # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u sklonu a acc
         i = 0
@@ -595,7 +599,7 @@ class PrepareData:
 
         efect_vrst = arcpy.sa.Times(times1, spix)
         efect_vrst.save(self.temp + os.sep + "efect_vrst")
-        mat_efect_vrst = arcpy.RasterToNumPyArray(efect_vrst)
+        mat_efect_vrst = self.rst2np(efect_vrst)
 
         mfda = False
         sr, itera = rainfall.load_precipitation(rainfall_file_path)
