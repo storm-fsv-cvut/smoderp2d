@@ -107,10 +107,9 @@ class PrepareData:
         sfield = self.make_sfield(gp, intersect, vtyp, ptyp, tab_puda_veg, tab_puda_veg_code)
 
         # raster2np
-        array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
+        array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_fd, mat_inf_index, \
             combinatIndex, rows, cols, vpix, spix, x_coordinate, y_coordinate, ll_corner, pixel_area, \
-            NoDataValue = self.raster2np(gp, dmt_clip, slope_clip, flow_direction_clip, sfield, intersect, points,
-                                         dmt_fill)
+            NoDataValue = self.raster2np(gp, dmt_clip, slope_clip, flow_direction_clip, sfield, intersect, points)
 
         # hcrit, a, aa computing
         mat_hcrit, mat_a, mat_aa = self.par(all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix)
@@ -399,7 +398,7 @@ class PrepareData:
 
         return x_coordinate, y_coordinate, NoDataValue, vpix, spix, pixel_area, ll_corner
 
-    def raster2np(self, gp, dmt_clip, slope_clip, flow_direction_clip, sfield, intersect, points, dmt_fill):
+    def raster2np(self, gp, dmt_clip, slope_clip, flow_direction_clip, sfield, intersect, points):
 
         x_coordinate, y_coordinate, NoDataValue, vpix, spix, pixel_area, ll_corner = self.get_llcoords(dmt_clip)
 
@@ -474,8 +473,6 @@ class PrepareData:
             array_points = None
 
         # trimming the edge cells
-        # convert dmt to array
-        mat_dmt_fill = self.rst2np(dmt_fill)
 
         # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u sklonu a acc
         i = 0
@@ -501,7 +498,7 @@ class PrepareData:
                         int(array_points[kyk][0])) + " is at the edge of the raster. This point will not be included in results.")
                     array_points = np.delete(array_points, kyk, 0)
 
-        return array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_dmt_fill, mat_fd, mat_inf_index, \
+        return array_points, all_attrib, mat_nan, mat_slope, mat_dmt, mat_fd, mat_inf_index, \
             combinatIndex, rows, cols, vpix, spix, x_coordinate, y_coordinate, ll_corner, pixel_area, \
             NoDataValue
 
