@@ -121,8 +121,9 @@ class PrepareData:
 
         array_points = self.get_array_points(gp, points, rows, vpix, spix, x_coordinate, y_coordinate)
 
-        mat_hcrit, mat_a, mat_aa = self.crit_water(all_attrib, rows, cols, mat_slope, NoDataValue,
-                                                   ll_corner, vpix, spix)
+        mat_a, mat_aa = self.get_a(all_attrib, rows, cols, mat_slope, NoDataValue)
+
+        mat_hcrit = self.crit_water( all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix, mat_aa)
 
         sr, itera = rainfall.load_precipitation(rainfall_file_path)
 
@@ -475,14 +476,10 @@ class PrepareData:
                     array_points = np.delete(array_points, kyk, 0)
         return array_points
 
-    def crit_water(self, all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix):
-
+    def get_a(self,all_attrib, rows, cols, mat_slope, NoDataValue):
         mat_n = all_attrib[2]
-        mat_b = all_attrib[6]
         mat_x = all_attrib[7]
         mat_y = all_attrib[8]
-        mat_tau = all_attrib[9]
-        mat_v = all_attrib[10]
         mat_a = np.zeros([rows, cols], float)
         mat_aa = np.zeros([rows, cols], float)
 
@@ -508,6 +505,13 @@ class PrepareData:
 
                 mat_a[i][j] = par_a
                 mat_aa[i][j] = par_aa
+        return mat_a, mat_aa
+
+    def crit_water(self, all_attrib, rows, cols, mat_slope, NoDataValue, ll_corner, vpix, spix, mat_aa):
+
+        mat_b = all_attrib[6]
+        mat_tau = all_attrib[9]
+        mat_v = all_attrib[10]
 
         # critical water level
         self.add_message("Computing critical level")
@@ -554,7 +558,7 @@ class PrepareData:
         rhcrit_v = arcpy.NumPyArrayToRaster(mat_hcrit_v, ll_corner, spix, vpix, "#")
         rhcrit_v.save(self.temp + os.sep + "hcrit_v")
 
-        return mat_hcrit, mat_a, mat_aa
+        return mat_hcrit
 
     def slope_dir(self,dmt_clip, spix):
 
