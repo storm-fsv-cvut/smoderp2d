@@ -8,6 +8,8 @@ import csv
 import smoderp2d.processes.rainfall as rainfall
 import smoderp2d.stream_functions.stream_preparation as sp
 
+from smoderp2d.providers.base import Logger
+
 # arcpy imports
 from arcpy.sa import *
 import arcpy
@@ -92,7 +94,7 @@ class PrepareData:
 
         arcpy.CopyRaster_management(dmt, dmt_copy)
 
-        self.add_message("DMT preparation...")
+        Logger.info("DMT preparation...")
 
         dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, self.temp,
                                                                                        "TRUE", "TRUE", "NONE")
