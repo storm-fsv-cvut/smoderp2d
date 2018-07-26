@@ -14,7 +14,7 @@ import shutil
 
 
 import smoderp2d.tools.tools as tools
-import smoderp2d.constants as constants
+import smoderp2d.providers.arcgis.constants as constants
 
 from smoderp2d.core.general import Globals as Gl
 

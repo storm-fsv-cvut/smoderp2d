@@ -8,7 +8,7 @@ import math
 import numpy as np
 
 
-import smoderp2d.constants as constants
+import smoderp2d.providers.arcgis.constants as constants
 import smoderp2d.flow_algorithm.py_dmtfce as py_dmtfce
 from smoderp2d.providers import Logger
 

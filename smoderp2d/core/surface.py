@@ -10,7 +10,7 @@ from smoderp2d.core.general import Globals, GridGlobals, Size
 
 import smoderp2d.processes.rill as rill
 import smoderp2d.processes.surface as surfacefce
-import smoderp2d.constants as constants
+import smoderp2d.providers.arcgis.constants as constants
 
 from smoderp2d.providers import Logger
 

@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-import smoderp2d.constants as constants
+import smoderp2d.providers.arcgis.constants as constants
 from smoderp2d.providers import Logger
 
 def neighbors(i, j, array, x, y):  # function to determine all neighbor cell to actual cell in the raster dataset
