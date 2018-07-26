@@ -111,7 +111,8 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
     #
 
     def __init__(self):
-        super(Cumulative, self).__init__()
+        super(GridGlobals, self).__init__()
+
         Logger.info('Save cumulative and maximum values from: Surface')
 
         # Dictionary stores the python arrays identification.
@@ -161,49 +162,44 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
                       }
                 # 12 : 'MaxVeloRill',
 
-        r = self.r
-        c = self.c
-
         # array count stored in the class
         self.n = 13
         # cumulative infiltrated volume [m3]
-        self.infiltration = np.zeros([r, c], float)
+        self.infiltration = np.zeros([self.r, self.c], float)
         # cumulative precipitation volume [m3]
-        self.precipitation = np.zeros([r, c], float)
+        self.precipitation = np.zeros([self.r, self.c], float)
         # maximum surface water level [m]
-        self.h_sur = np.zeros([r, c], float)
+        self.h_sur = np.zeros([self.r, self.c], float)
         # maximum surface discharge [m3s-1]
-        self.q_sur = np.zeros([r, c], float)
+        self.q_sur = np.zeros([self.r, self.c], float)
         # cumulative surface runoff volume [m3]
-        self.v_sur = np.zeros([r, c], float)
+        self.v_sur = np.zeros([self.r, self.c], float)
         # cumulative surface runoff volume [m3]
-        self.v_sur_r = np.zeros([r, c], float)
+        self.v_sur_r = np.zeros([self.r, self.c], float)
         # maximum surface velocity [ms-1]
-        self.v_sur = np.zeros([r, c], float)
+        self.v_sur = np.zeros([self.r, self.c], float)
         # maximum surface shear stress [Pa]
-        self.shear_sur = np.zeros([r, c], float)
+        self.shear_sur = np.zeros([self.r, self.c], float)
         # cumulative surface inflow volume [m3]
-        self.inflow_sur = np.zeros([r, c], float)
+        self.inflow_sur = np.zeros([self.r, self.c], float)
         # maximum water level in rills [m]
-        self.h_rill = np.zeros([r, c], float)
+        self.h_rill = np.zeros([self.r, self.c], float)
         # maximum discharge in rills [m3s-1]
-        self.q_rill = np.zeros([r, c], float)
+        self.q_rill = np.zeros([self.r, self.c], float)
         # cumulative runoff volume in rills [m3]
-        self.v_rill = np.zeros([r, c], float)
+        self.v_rill = np.zeros([self.r, self.c], float)
         # cumulative runoff volume in rills [m3]
-        self.v_rill_r = np.zeros([r, c], float)
+        self.v_rill_r = np.zeros([self.r, self.c], float)
         # maximum rill width [m]
-        self.b_rill = np.zeros([r, c], float)
+        self.b_rill = np.zeros([self.r, self.c], float)
         # maximum velocity in rills [ms-1]
-        self.v_rill = np.zeros([r, c], float)
+        self.v_rill = np.zeros([self.r, self.c], float)
         # maximum surface retention [m]
-        self.sur_ret = np.zeros([r, c], float)
+        self.sur_ret = np.zeros([self.r, self.c], float)
         # maximal total surface flow [m3/s]
-        self.q_sur_tot = np.zeros([r, c], float)
+        self.q_sur_tot = np.zeros([self.r, self.c], float)
         # cumulative total surface flow [m3/s]
-        self.v_sur_tot = np.zeros([r, c], float)
-
-        super(Cumulative, self).__init__()
+        self.v_sur_tot = np.zeros([self.r, self.c], float)
 
     # Method is used after each time step to save the desired variables.
     #

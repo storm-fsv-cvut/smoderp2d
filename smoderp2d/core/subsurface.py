@@ -37,7 +37,7 @@ class SubArrs:
         self.vg_l = vg_l
 
 
-class SubsurfaceC(Diffuse if Globals.diffuse else Kinematic, Size):
+class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
     def __init__(self, L_sub, Ks, vg_n, vg_l):
         """TODO.
 
@@ -46,16 +46,8 @@ class SubsurfaceC(Diffuse if Globals.diffuse else Kinematic, Size):
         :param vg_n: TODO
         :param vg_l: TODO
         """
-        r = Globals.r
-        c = Globals.c
-
-        if (Globals.r is None or Globals.r is None):
-            raise SmoderpError("Global variables are not assigned")
-        super(SubsurfaceC, self).__init__()
-
-        # TODO self.r?
-        self.arr = np.empty((self.r, self.c), dtype=object)
-
+        GridGlobals.__init__()
+        
         for i in range(self.r):
             for j in range(self.c):
                 self.arr[i][j] = SubArrs(
@@ -65,15 +57,11 @@ class SubsurfaceC(Diffuse if Globals.diffuse else Kinematic, Size):
                     vg_l,
                     mat_dmt[i][j] - L_sub,
                     mat_dmt[i][j])
-        # raw_input()
 
         for i in self.rr:
             for j in self.rc[i]:
                 self.arr[i][j].slope = mat_slope[i][j]
-                # self.slope_(i,j)
 
-                # print mat_slope[i][j], self.arr[i][j].slope
-                # raw_input()
         self.Kr = darcy.relative_unsat_conductivity
         self.darcy = darcy.darcy
 
