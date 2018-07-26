@@ -20,7 +20,7 @@ import numpy as np
 from arcpy.sa import *
 import math
 
-from smoderp2d.providers.base.logger import BaseLogger
+from smoderp2d.providers.base import Logger
 # definice erroru  na urovni modulu
 #
 class Error(Exception):
@@ -72,8 +72,6 @@ def prepare_streams(listin, dmt, null, mat_nan, spix, rows, cols, ll_corner, add
     dmt_fill, flow_direction, flow_accumulation, slope = arcgis_dmtfce.dmtfce(
         dmt_clip, temp_dp, "TRUE", "TRUE", "NONE")
 
-    log = BaseLogger("temp") #ZMENIT
-
     # Setnull
     try:
         setnull = arcpy.sa.SetNull(
@@ -82,7 +80,7 @@ def prepare_streams(listin, dmt, null, mat_nan, spix, rows, cols, ll_corner, add
             "VALUE < 300")  # hodnota value??
         setnull.save(temp_dp + os.sep + "setnull")
     except:
-        log.info(
+        Logger.info(
             "Unexpected error during setnull calculation:",
             sys.exc_info()[0])
         raise
@@ -108,15 +106,15 @@ def prepare_streams(listin, dmt, null, mat_nan, spix, rows, cols, ll_corner, add
          "UTOKJN_F"])
 
     # Feature vertices to points - START
-    log.info("Feature vertices to points - START...")
+    Logger.info("Feature vertices to points - START...")
     start = arcpy.FeatureVerticesToPoints_management(toky, temp_dp + os.sep + "start", "START")
 
     # Feature vertices to points - END
-    log.info("Feature vertices to points - END...")
+    Logger.info("Feature vertices to points - END...")
     end = arcpy.FeatureVerticesToPoints_management(toky, temp_dp + os.sep + "end", "END")
 
     # Extract value to points - END
-    log.info("Extract value to points - END...")
+    Logger.info("Extract value to points - END...")
     xxx = temp_dp + os.sep + "end_point"
     end_point = arcpy.sa.ExtractValuesToPoints(end, dmt_clip, xxx, "NONE", "VALUE_ONLY")
 
@@ -143,7 +141,7 @@ def prepare_streams(listin, dmt, null, mat_nan, spix, rows, cols, ll_corner, add
          "ORIG_FID_1"])
 
     # Flip selected lines
-    log.info("Flip lines...")  # mat_tok_usek
+    Logger.info("Flip lines...")  # mat_tok_usek
 
     toky_t = arcpy.MakeFeatureLayer_management(toky, temp_dp + os.sep + "tok_t.shp")
 
@@ -153,20 +151,20 @@ def prepare_streams(listin, dmt, null, mat_nan, spix, rows, cols, ll_corner, add
     arcpy.DeleteField_management(toky, ["RASTERVALU", "RASTERVA_1", "ORIG_FID", "ORIG_FID_1"])
 
     # Feature vertices to points - START
-    log.info("Feature vertices to points - START...")
+    Logger.info("Feature vertices to points - START...")
     start = arcpy.FeatureVerticesToPoints_management(toky, temp_dp + os.sep + "start", "START")
 
     # Feature vertices to points - END
-    log.info("Feature vertices to points - END...")
+    Logger.info("Feature vertices to points - END...")
     end = arcpy.FeatureVerticesToPoints_management(toky, temp_dp + os.sep + "end", "END")
 
     # Extract value to points - START
-    log.info("Extract value to points - START...")
+    Logger.info("Extract value to points - START...")
     start_point_check = arcpy.sa.ExtractValuesToPoints(start,dmt,temp_dp+os.sep+"start_point_check","NONE","VALUE_ONLY")
     arcpy.AddXY_management(start_point_check)
 
     # Extract value to points - END
-    log.info("Extract value to points - END...")
+    Logger.info("Extract value to points - END...")
     end_point_check = arcpy.sa.ExtractValuesToPoints(end, dmt, temp_dp+os.sep+"end_point_check", "NONE","VALUE_ONLY")
     arcpy.AddXY_management(end_point_check)
 
@@ -183,7 +181,7 @@ def prepare_streams(listin, dmt, null, mat_nan, spix, rows, cols, ll_corner, add
             if row[1] > row[3]:
                 continue
             else:
-                log.info("Flip line")
+                Logger.info("Flip line")
                 arcpy.FlipLine_edit(fc)
     addfield(toky, "to_node", "DOUBLE", -9999)
 
@@ -306,7 +304,7 @@ def prepare_streams(listin, dmt, null, mat_nan, spix, rows, cols, ll_corner, add
         for row in cursor:
             for i in range(len(row)):
                 if row[i] == " ":
-                    log.info("Value in tab_stream_tvar are no correct - STOP, check shp file toky in output")
+                    Logger.info("Value in tab_stream_tvar are no correct - STOP, check shp file toky in output")
                     sys.exit()
 
     fields = arcpy.ListFields(toky)
