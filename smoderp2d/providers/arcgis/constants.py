@@ -1,10 +1,3 @@
-#!/usr/bin/python
-# -*- coding: latin-1 -*-
-# SMODERP 2D
-# Created by Jan Zajicek, FCE, CTU Prague, 2012-2013
-
-import math
-
 # input parameters constants
 PARAMETER_DMT = 0
 PARAMETER_SOIL = 1
@@ -36,10 +29,3 @@ PARAMETER_PARTIAL_COMPUTING = 19
 PARAMETER_DEBUG_PRT = 20
 PARAMETER_PRINT_TIME = 21
 PARAMETER_TYPE_COMPUTING = 22     # nula jen docasne, typ vypoctu se resi jinak
-
-# calculation constants
-FB = math.pi / 4  # facet boundary
-PI_HALF = math.pi / 2
-THREE_PI_HALF = 3 * math.pi / 2
-VE = 4  # variable exponent
-RILL_RATIO = 0.7

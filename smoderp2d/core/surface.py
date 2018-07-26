@@ -10,7 +10,6 @@ from smoderp2d.core.general import Globals, GridGlobals, Size
 
 import smoderp2d.processes.rill as rill
 import smoderp2d.processes.surface as surfacefce
-import smoderp2d.providers.arcgis.constants as constants
 
 from smoderp2d.providers import Logger
 
@@ -300,7 +299,7 @@ def rill_runoff(i, j, sur, dt, efect_vrst, ratio):
 
     v_to_rill = sur.h_rill * Globals.get_pixel_area()
     h, b = rill.update_hb(
-        v_to_rill, constants.RILL_RATIO, efect_vrst, sur.rillWidth, ratio, ppp
+        v_to_rill, RILL_RATIO, efect_vrst, sur.rillWidth, ratio, ppp
     )
     r_rill = (h * b) / (b + 2 * h)
 

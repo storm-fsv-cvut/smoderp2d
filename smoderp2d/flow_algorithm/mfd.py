@@ -7,9 +7,8 @@
 import math
 import numpy as np
 
-
-import smoderp2d.providers.arcgis.constants as constants
-import smoderp2d.flow_algorithm.py_dmtfce as py_dmtfce
+from smoderp2d.flow_algorithm.py_dmtfce import removeCellsWithSameHeightNeighborhood, \
+    neighbors, dirSlope, boolToInt, FB, VE
 from smoderp2d.providers import Logger
 
 def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
@@ -28,7 +27,7 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
 
     # function determines if cell neighborhood has miltiple cell with exactly
     # same values of height and than it saves that cell as NoData
-    mat_dmt, mat_nan = py_dmtfce.removeCellsWithSameHeightNeighborhood(
+    mat_dmt, mat_nan = removeCellsWithSameHeightNeighborhood(
         mat_dmt, mat_nan, rows, cols)
 
     # for i in range(rows):
@@ -50,8 +49,8 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
             else:
                 possible_circulation = 0
 
-                nbrs = py_dmtfce.neighbors(i, j, mat_dmt, rows, cols)
-                fldir, flsp = py_dmtfce.dirSlope(point_m, nbrs, vpix, spix)
+                nbrs = neighbors(i, j, mat_dmt, rows, cols)
+                fldir, flsp = dirSlope(point_m, nbrs, vpix, spix)
 
                 flprop = np.zeros(8, float)
                 sum_slgr = 0
@@ -74,7 +73,7 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
                         else:
                             sum_slgr = math.pow(
                                 slgr,
-                                constants.VE) + sum_slgr  # sum of slope gradient
+                                VE) + sum_slgr  # sum of slope gradient
                     if sum_slgr == 0:
                         for m in range(8):
                             if fldir[m] == 0:
@@ -119,7 +118,7 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
                             else:
                                 fl_prop = math.pow(
                                     slgr,
-                                    constants.VE) / sum_slgr  # flow proportions
+                                    VE) / sum_slgr  # flow proportions
                                 flprop[k] = fl_prop
 
                     flow_amount_cell = np.zeros(8, float)
@@ -130,19 +129,19 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
 
                         if flowcells > 0:
 
-                            prop =  (fldir[l] / constants.FB ) * \
+                            prop =  (fldir[l] / FB ) * \
                                 flowcells  # percentage part into 1st cell
                             prop2 = (
-                                1 - fldir[l] / constants.FB) * flowcells  # to second cell
+                                1 - fldir[l] / FB) * flowcells  # to second cell
 
-                            if l == 0 and fldir[l] > 0 and fldir[l] < constants.FB:  # division to two cells
+                            if l == 0 and fldir[l] > 0 and fldir[l] < FB:  # division to two cells
                                 flow_amount_cell[0] = prop2
                                 flow_amount_cell[1] = prop
                                 state2 = 1  # because of last cell in the loop
                             elif l == 0 and fldir[l] == 0:  # only to one cell division
                                 flow_amount_cell[0] = flowcells
 
-                            if l == 1 and fldir[l] > 0 and fldir[l] < constants.FB:
+                            if l == 1 and fldir[l] > 0 and fldir[l] < FB:
                                 if state2 == 1:
                                     flow_amount_cell[
                                         1] = flow_amount_cell[
@@ -154,7 +153,7 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
                             elif l == 1 and fldir[l] == 0:
                                 flow_amount_cell[1] = flowcells
 
-                            if l == 2 and fldir[l] > 0 and fldir[l] < constants.FB:
+                            if l == 2 and fldir[l] > 0 and fldir[l] < FB:
                                 if state == 2:
                                     flow_amount_cell[
                                         2] = flow_amount_cell[
@@ -166,7 +165,7 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
                             elif l == 2 and fldir[l] == 0:
                                 flow_amount_cell[2] = flowcells
 
-                            if l == 3 and fldir[l] > 0 and fldir[l] < constants.FB:
+                            if l == 3 and fldir[l] > 0 and fldir[l] < FB:
                                 if state == 3:
                                     flow_amount_cell[
                                         4] = flow_amount_cell[
@@ -178,7 +177,7 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
                             elif l == 3 and fldir[l] == 0:
                                 flow_amount_cell[4] = flowcells
 
-                            if l == 4 and fldir[l] > 0 and fldir[l] < constants.FB:
+                            if l == 4 and fldir[l] > 0 and fldir[l] < FB:
                                 if state == 4:
                                     flow_amount_cell[
                                         7] = flow_amount_cell[
@@ -190,7 +189,7 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
                             elif l == 4 and fldir[l] == 0:
                                 flow_amount_cell[7] = flowcells
 
-                            if l == 5 and fldir[l] > 0 and fldir[l] < constants.FB:
+                            if l == 5 and fldir[l] > 0 and fldir[l] < FB:
                                 if state == 5:
                                     flow_amount_cell[
                                         6] = flow_amount_cell[
@@ -202,7 +201,7 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
                             elif l == 5 and fldir[l] == 0:
                                 flow_amount_cell[6] = flowcells
 
-                            if l == 6 and fldir[l] > 0 and fldir[l] < constants.FB:
+                            if l == 6 and fldir[l] > 0 and fldir[l] < FB:
                                 if state == 6:
                                     flow_amount_cell[
                                         5] = flow_amount_cell[
@@ -214,7 +213,7 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
                             elif l == 6 and fldir[l] == 0:
                                 flow_amount_cell[5] = flowcells
 
-                            if l == 7 and fldir[l] > 0 and fldir[l] < constants.FB:
+                            if l == 7 and fldir[l] > 0 and fldir[l] < FB:
                                 if state == 7:
                                     flow_amount_cell[
                                         3] = flow_amount_cell[
@@ -252,7 +251,7 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
                         else:
                             fldirr[n] = 0
 
-                    int_val = py_dmtfce.boolToInt(fldirr)
+                    int_val = boolToInt(fldirr)
                     val_array2[i][j] = int_val
 
                     val_array[i][j] = flow_direction
@@ -315,11 +314,3 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
     return val_array, fd_rill
 
 # final rasters creation
-
-
-# pokud budu chtit
-# gp.overwriteoutput = 1
-# output = gp.workspace
-# ll_corner = arcpy.Point(x_coordinate, y_coordinate) # lower left corner
-# flow_dir = arcpy.NumPyArrayToRaster(val_array2, ll_corner, spix, vpix, "#" )
-# flow_dir.save(output+"/MFD")

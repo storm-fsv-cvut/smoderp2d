@@ -1,11 +1,4 @@
 # @package smoderp2d.post_proc Contain a function for the post-processing
-#
-#  the functions are defined according to the  smoderp2d.constants.PARAMETER_ARCGIS \n
-#  if smoderp2d.constants.PARAMETER_ARCGIS == True: Gl.arcgis rasters are created \n
-#  \n
-#  if smoderp2d.constants.PARAMETER_ARCGIS == False: ascii rasters are created \n
-#
-
 
 import numpy as np
 import os
@@ -14,8 +7,6 @@ import shutil
 
 
 import smoderp2d.tools.tools as tools
-import smoderp2d.providers.arcgis.constants as constants
-
 from smoderp2d.core.general import Globals as Gl
 
 def do(cumulative, mat_slope, G, surArr):

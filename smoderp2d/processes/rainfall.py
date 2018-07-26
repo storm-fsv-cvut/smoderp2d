@@ -5,7 +5,6 @@
 
 import sys
 import numpy as np
-import smoderp2d.providers.arcgis.constants as constants
 
 from smoderp2d.providers import Logger
 

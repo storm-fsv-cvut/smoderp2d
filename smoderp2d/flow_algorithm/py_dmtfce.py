@@ -1,8 +1,12 @@
 import numpy as np
 import math
 
-import smoderp2d.providers.arcgis.constants as constants
 from smoderp2d.providers import Logger
+
+FB = math.pi / 4  # facet boundary
+PI_HALF = math.pi / 2
+THREE_PI_HALF = 3 * math.pi / 2
+VE = 4  # variable exponent
 
 def neighbors(i, j, array, x, y):  # function to determine all neighbor cell to actual cell in the raster dataset
     "Return all neigbours to actuall cell in the raster dataset"
@@ -188,7 +192,7 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 s0 = (point_m - nbrs[0]) / VPIX_SQRT
             # one of two neighbor points has NoData value
             elif nbrs[1] > 0 and nbrs[0] < 0 or (abs(point_m - nbrs[1]) < 1e-8 and nbrs[0] > point_m):
-                d0 = constants.FB
+                d0 = FB
                 s0 = (point_m - nbrs[1]) / vpix
             else:
                 x1 = spix
@@ -207,14 +211,14 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 elif nx == 0 and ny < 0:
                     d0 = math.pi
                 elif nx > 0:
-                    d0 = constants.PI_HALF - math.atan2(ny, nx)
+                    d0 = PI_HALF - math.atan2(ny, nx)
                 elif nx < 0:
-                    d0 = constants.THREE_PI_HALF - math.atan2(ny, nx)
+                    d0 = THREE_PI_HALF - math.atan2(ny, nx)
                 s0 = math.sqrt(z1 * z1 / y1 / y1 / 2 + z2 / y2 * z2 / y2)
 
-                if d0 > constants.FB:
+                if d0 > FB:
                     if point_m >= nbrs[1] and nbrs[0] >= nbrs[1]:
-                        d0 = constants.FB
+                        d0 = FB
                         s0 = (point_m - nbrs[1]) / vpix
                     elif point_m >= nbrs[0] and nbrs[1] >= nbrs[0]:
                         d0 = 0
@@ -231,7 +235,7 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 d1 = 0
                 s0 = (point_m - nbrs[1]) / vpix
             elif nbrs[2] > 0 and nbrs[1] < 0 or (abs(point_m - nbrs[2]) < 1e-8 and nbrs[1] > point_m):
-                d1 = constants.FB
+                d1 = FB
                 s0 = (point_m - nbrs[2]) / VPIX_SQRT
             else:
                 x1 = 0
@@ -250,14 +254,14 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 elif nx == 0 and ny < 0:
                     d1 = math.pi
                 elif nx > 0:
-                    d1 = constants.PI_HALF - math.atan2(ny, nx)
+                    d1 = PI_HALF - math.atan2(ny, nx)
                 elif nx < 0:
-                    d1 = constants.THREE_PI_HALF - math.atan2(ny, nx)
+                    d1 = THREE_PI_HALF - math.atan2(ny, nx)
                 s1 = math.sqrt(z1 / y1 * z1 / y1 + z2 / x2 * z2 / x2)
 
-                if d1 > constants.FB:
+                if d1 > FB:
                     if point_m >= nbrs[2] and nbrs[1] >= nbrs[2]:
-                        d1 = constants.FB
+                        d1 = FB
                         s1 = (point_m - nbrs[2]) / VPIX_SQRT
                     elif point_m >= nbrs[1] and nbrs[2] >= nbrs[1]:
                         d1 = 0
@@ -274,7 +278,7 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 d2 = 0
                 s2 = (point_m - nbrs[2]) / VPIX_SQRT
             elif nbrs[4] > 0 and nbrs[2] < 0 or (abs(point_m - nbrs[4]) < 1e-8 and nbrs[2] > point_m):
-                d2 = constants.FB
+                d2 = FB
                 s2 = (point_m - nbrs[4]) / spix
             else:
                 x1 = spix
@@ -293,14 +297,14 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 elif nx == 0 and ny < 0:
                     d2 = math.pi
                 elif nx > 0:
-                    d2 = constants.PI_HALF - math.atan2(ny, nx)
+                    d2 = PI_HALF - math.atan2(ny, nx)
                 elif nx < 0:
-                    d2 = constants.THREE_PI_HALF - math.atan2(ny, nx)
+                    d2 = THREE_PI_HALF - math.atan2(ny, nx)
                 s2 = math.sqrt(z1 * z1 / y1 / y1 / 2 + z2 / y1 * z2 / y1)
 
-                if d2 > constants.FB:
+                if d2 > FB:
                     if point_m >= nbrs[4] and nbrs[2] >= nbrs[4]:
-                        d2 = constants.FB
+                        d2 = FB
                         s2 = (point_m - nbrs[4]) / spix
 
                     elif point_m >= nbrs[2] and nbrs[4] >= nbrs[2]:
@@ -318,7 +322,7 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 d3 = 0
                 s3 = (point_m - nbrs[4]) / spix
             elif nbrs[7] > 0 and nbrs[4] < 0 or (abs(point_m - nbrs[7]) < 1e-8 and nbrs[4] > point_m):
-                d3 = constants.FB
+                d3 = FB
                 s3 = (point_m - nbrs[7]) / VPIX_SQRT
             else:
                 x1 = spix
@@ -337,14 +341,14 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 elif nx == 0 and ny < 0:
                     d3 = math.pi
                 elif nx > 0:
-                    d3 = constants.PI_HALF - math.atan2(ny, nx)
+                    d3 = PI_HALF - math.atan2(ny, nx)
                 elif nx < 0:
-                    d3 = constants.THREE_PI_HALF - math.atan2(ny, nx)
+                    d3 = THREE_PI_HALF - math.atan2(ny, nx)
                 s3 = math.sqrt(z1 / x1 * z1 / x1 + z2 / y2 * z2 / y2)
 
-                if d3 > constants.FB:
+                if d3 > FB:
                     if point_m >= nbrs[7] and nbrs[4] >= nbrs[7]:
-                        d3 = constants.FB
+                        d3 = FB
                         s3 = (point_m - nbrs[7]) / VPIX_SQRT
                     elif point_m >= nbrs[4] and nbrs[7] >= nbrs[4]:
                         d3 = 0
@@ -361,7 +365,7 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 d4 = 0
                 s4 = (point_m - nbrs[7]) / VPIX_SQRT
             elif nbrs[6] > 0 and nbrs[7] < 0 or (abs(point_m - nbrs[6]) < 1e-8 and nbrs[7] > point_m):
-                d4 = constants.FB
+                d4 = FB
                 s4 = (point_m - nbrs[6]) / vpix
             else:
                 x1 = spix
@@ -380,14 +384,14 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 elif nx == 0 and ny < 0:
                     d4 = math.pi
                 elif nx > 0:
-                    d4 = constants.PI_HALF - math.atan2(ny, nx)
+                    d4 = PI_HALF - math.atan2(ny, nx)
                 elif nx < 0:
-                    d4 = constants.THREE_PI_HALF - math.atan2(ny, nx)
+                    d4 = THREE_PI_HALF - math.atan2(ny, nx)
                 s4 = math.sqrt(z1 * z1 / y1 / y1 / 2 + z2 / x1 * z2 / x1)
 
-                if d4 > constants.FB:
+                if d4 > FB:
                     if point_m >= nbrs[6] and nbrs[7] >= nbrs[6]:
-                        d4 = constants.FB
+                        d4 = FB
                         s4 = (point_m - nbrs[6]) / vpix
                     elif point_m >= nbrs[7] and nbrs[6] >= nbrs[7]:
                         d4 = 0
@@ -404,7 +408,7 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 d5 = 0
                 s5 = (point_m - nbrs[6]) / vpix
             elif nbrs[5] > 0 and nbrs[6] < 0 or (abs(point_m - nbrs[5]) < 1e-8 and nbrs[6] > point_m):
-                d5 = constants.FB
+                d5 = FB
                 s5 = (point_m - nbrs[5]) / VPIX_SQRT
             else:
                 x1 = 0
@@ -423,14 +427,14 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 elif nx == 0 and ny < 0:
                     d5 = math.pi
                 elif nx > 0:
-                    d5 = constants.PI_HALF - math.atan2(ny, nx)
+                    d5 = PI_HALF - math.atan2(ny, nx)
                 elif nx < 0:
-                    d5 = constants.THREE_PI_HALF - math.atan2(ny, nx)
+                    d5 = THREE_PI_HALF - math.atan2(ny, nx)
                 s5 = math.sqrt(z1 / y1 * z1 / y1 + z2 / x2 * z2 / x2)
 
-                if d5 > constants.FB:
+                if d5 > FB:
                     if point_m >= nbrs[5] and nbrs[6] >= nbrs[5]:
-                        d5 = constants.FB
+                        d5 = FB
                         s5 = (point_m - nbrs[5]) / VPIX_SQRT
                     elif point_m >= nbrs[6] and nbrs[5] >= nbrs[6]:
                         d5 = 0
@@ -447,7 +451,7 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 d6 = 0
                 s6 = (point_m - nbrs[5]) / VPIX_SQRT
             elif nbrs[3] > 0 and nbrs[5] < 0 or (abs(point_m - nbrs[3]) < 1e-8 and nbrs[5] > point_m):
-                d6 = constants.FB
+                d6 = FB
                 s6 = (point_m - nbrs[3]) / spix
             else:
                 x1 = spix
@@ -466,14 +470,14 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 elif nx == 0 and ny < 0:
                     d6 = math.pi
                 elif nx > 0:
-                    d6 = constants.PI_HALF - math.atan2(ny, nx)
+                    d6 = PI_HALF - math.atan2(ny, nx)
                 elif nx < 0:
-                    d6 = constants.THREE_PI_HALF - math.atan2(ny, nx)
+                    d6 = THREE_PI_HALF - math.atan2(ny, nx)
                 s6 = math.sqrt(z1 * z1 / y1 / y1 / 2 + z2 / y1 * z2 / y1)
 
-                if d6 > constants.FB:
+                if d6 > FB:
                     if point_m >= nbrs[3] and nbrs[5] >= nbrs[3]:
-                        d6 = constants.FB
+                        d6 = FB
                         s6 = (point_m - nbrs[3]) / spix
                     elif point_m >= nbrs[5] and nbrs[3] >= nbrs[5]:
                         d6 = 0
@@ -490,7 +494,7 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 d7 = 0
                 s7 = (point_m - nbrs[3]) / spix
             elif nbrs[0] > 0 and nbrs[3] < 0 or (abs(point_m - nbrs[0]) < 1e-8 and nbrs[3] > point_m):
-                d7 = constants.FB
+                d7 = FB
                 s7 = (point_m - nbrs[0]) / VPIX_SQRT
             else:
                 x1 = spix
@@ -509,14 +513,14 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 elif nx == 0 and ny < 0:
                     d7 = math.pi
                 elif nx > 0:
-                    d7 = constants.PI_HALF - math.atan2(ny, nx)
+                    d7 = PI_HALF - math.atan2(ny, nx)
                 elif nx < 0:
-                    d7 = constants.THREE_PI_HALF - math.atan2(ny, nx)
+                    d7 = THREE_PI_HALF - math.atan2(ny, nx)
                 s7 = math.sqrt(z1 / x1 * z1 / x1 + z2 / y2 * z2 / y2)
 
-                if d7 > constants.FB:
+                if d7 > FB:
                     if point_m >= nbrs[0] and nbrs[3] >= nbrs[0]:
-                        d7 = constants.FB
+                        d7 = FB
                         s7 = (point_m - nbrs[0]) / VPIX_SQRT
                     elif point_m >= nbrs[3] and nbrs[0] >= nbrs[3]:
                         d7 = 0
@@ -525,56 +529,56 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                         d7 = -1
                         s7 = -1
 
-    if (d7 == constants.FB and d0 == 0) or (d0 > 0 and d0 < constants.FB):
+    if (d7 == FB and d0 == 0) or (d0 > 0 and d0 < FB):
         direction[0] = d0
         slope[0] = s0
     else:
         direction[0] = -1
         slope[0] = -1
 
-    if (d0 == constants.FB and d1 == 0) or (d1 > 0 and d1 < constants.FB):
+    if (d0 == FB and d1 == 0) or (d1 > 0 and d1 < FB):
         direction[1] = d1
         slope[1] = s1
     else:
         direction[1] = -1
         slope[1] = -1
 
-    if (d1 == constants.FB and d2 == 0) or (d2 > 0 and d2 < constants.FB):
+    if (d1 == FB and d2 == 0) or (d2 > 0 and d2 < FB):
         direction[2] = d2
         slope[2] = s2
     else:
         direction[2] = -1
         slope[2] = -1
 
-    if (d2 == constants.FB and d3 == 0) or (d3 > 0 and d3 < constants.FB):
+    if (d2 == FB and d3 == 0) or (d3 > 0 and d3 < FB):
         direction[3] = d3
         slope[3] = s3
     else:
         direction[3] = -1
         slope[3] = -1
 
-    if (d3 == constants.FB and d4 == 0) or (d4 > 0 and d4 < constants.FB):
+    if (d3 == FB and d4 == 0) or (d4 > 0 and d4 < FB):
         direction[4] = d4
         slope[4] = s4
     else:
         direction[4] = -1
         slope[4] = -1
 
-    if (d4 == constants.FB and d5 == 0) or (d5 > 0 and d5 < constants.FB):
+    if (d4 == FB and d5 == 0) or (d5 > 0 and d5 < FB):
         direction[5] = d5
         slope[5] = s5
     else:
         direction[5] = -1
         slope[5] = -1
 
-    if (d5 == constants.FB and d6 == 0) or (d6 > 0 and d6 < constants.FB):
+    if (d5 == FB and d6 == 0) or (d6 > 0 and d6 < FB):
         direction[6] = d6
         slope[6] = s6
     else:
         direction[6] = -1
         slope[6] = -1
 
-    if (d6 == constants.FB and d7 == 0) or (d7 > 0 and d7 < constants.FB):
+    if (d6 == FB and d7 == 0) or (d7 > 0 and d7 < FB):
         direction[7] = d7
         slope[7] = s7
     else:

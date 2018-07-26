@@ -1,7 +1,6 @@
 import os
 import sys
 import numpy as np
-import smoderp2d.providers.arcgis.constants as constants
 
 # Make a asc raster output from a numpy array
 #
