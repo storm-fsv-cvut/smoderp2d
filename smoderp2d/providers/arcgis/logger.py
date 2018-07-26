@@ -28,5 +28,3 @@ class ArcPyLogHandler(logging.Handler):
             arcpy.AddWarning(msg)
         elif record.levelno >= logging.INFO:
             arcpy.AddMessage(msg)
-
-        super(ArcPyLogHandler, self).emit(record)
