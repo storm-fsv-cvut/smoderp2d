@@ -5,7 +5,7 @@ import numpy as np
 import math
 
 from smoderp2d.core.kinematic_diffuse import Kinematic
-from smoderp2d.core.stream import Stream
+from smoderp2d.core.stream import Stream, StreamPass
 from smoderp2d.core.general import Globals, GridGlobals, Size
 
 import smoderp2d.processes.rill as rill
@@ -14,6 +14,7 @@ import smoderp2d.processes.surface as surfacefce
 from smoderp2d.providers import Logger
 
 courantMax = 1.0
+RILL_RATIO = 0.7
 
 class SurArrs(object):
     """Surface attributes."""
