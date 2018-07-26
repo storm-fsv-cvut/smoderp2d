@@ -94,6 +94,7 @@ class PrepareData:
 
         arcpy.CopyRaster_management(dmt, dmt_copy)
 
+        self.add_message("DMT preparation (addMessage)")
         Logger.info("DMT preparation...")
 
         dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, self.temp,
@@ -133,10 +134,8 @@ class PrepareData:
 
         mfda = False
 
-        type_of_computing = 1
-
-        toky, mat_tok_usek, tokyLoc = self.stream_prep(type_of_computing, stream, tab_stream_tvar, tab_stream_tvar_code, dmt, null_shp,
-                mat_nan, spix, rows, cols, ll_corner, output, dmt_clip, intersect)
+        type_of_computing, toky, mat_tok_usek, tokyLoc = self.stream_prep(stream, tab_stream_tvar,
+                tab_stream_tvar_code, dmt, null_shp, mat_nan, spix, rows, cols, ll_corner, output, dmt_clip, intersect)
 
         rrows, rcols = self.find_boundary_cells(rows, cols, mat_nan, NoDataValue)
 
@@ -583,8 +582,11 @@ class PrepareData:
 
         return mat_efect_vrst
 
-    def stream_prep(self, type_of_computing, stream, tab_stream_tvar, tab_stream_tvar_code, dmt, null_shp, mat_nan,
+    def stream_prep(self, stream, tab_stream_tvar, tab_stream_tvar_code, dmt, null_shp, mat_nan,
                     spix, rows, cols, ll_corner, output, dmt_clip, intersect):
+
+        type_of_computing = 1
+
         # pocitam vzdy s ryhama
         # pokud jsou zadane vsechny vstupy pro vypocet toku, toky se pocitaji a type_of_computing je 3
         listin = [stream, tab_stream_tvar, tab_stream_tvar_code]
@@ -610,7 +612,7 @@ class PrepareData:
             mat_tok_usek = None
             tokyLoc = None
 
-        return toky, mat_tok_usek, tokyLoc
+        return type_of_computing, toky, mat_tok_usek, tokyLoc
 
     def save_raster(self, name, array_export, l_x, l_y, spix, vpix, NoDataValue, folder):
         ll_corner = arcpy.Point(l_x, l_y)
