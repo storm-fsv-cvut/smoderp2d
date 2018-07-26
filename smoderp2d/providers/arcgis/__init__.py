@@ -5,6 +5,7 @@ import arcpy
 from smoderp2d.core.general import Globals
 from smoderp2d.providers.base import BaseProvider
 from smoderp2d.providers.arcgis import constants
+from smoderp2d.providers.arcgis.logger import ArcPyLogHandler
 
 class ArcGisProvider(BaseProvider):
     
@@ -19,6 +20,13 @@ class ArcGisProvider(BaseProvider):
 
         # must be defined for _cleanup() method
         Globals.outdir = self._get_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
+
+        # logger
+        handler = ArcPyLogHandler()
+        formatter = logging.Formatter("%(levelname)-8s %(message)s")
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG)
 
     @staticmethod
     def _get_argv(idx):
