@@ -3,4 +3,4 @@ Distributed event-based model for surface and subsurface runoff and erosion
 
 ## Quick test
 
-    python start-smoderp2d.py roff a.in
+   ./bin/start-smoderp2d.py --typecomp roff --indata test.ini
