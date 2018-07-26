@@ -1,20 +1,12 @@
+from smoderp2d.stream_functions import stream_f
 from smoderp2d.core.general import GridGlobals, Globals as Gl
 from smoderp2d.providers import Logger
 
-import smoderp2d.stream_functions.stream_f as stream_f
-
-class Reach():
-
+class Reach(object):
     def __init__(self, id_, POINT_X, POINT_Y, POINT_X_1, POINT_Y_1,
                  to_node, length, sklon, smoderp, CISLO, TVAR, B, M, DRSNOST, Q365):
 
-        # TVAR = 1
-        # print '\n!\n!\n!\ntvar je na tvrdo 1'
-        # raw_input('classes_main_arrays 299\n!\n!\n!')
-
         self.id_ = id_
-        # self.imat = i  #jj melo byt pozice v matici, ale to mozna nani treba kdyz zanech mat_tok_reach a tam id useku
-        # self.jmat = j
         self.pointsFrom = [POINT_X, POINT_Y]
         self.pointsTo = [POINT_X_1, POINT_Y_1]
         self.to_node = to_node
@@ -57,9 +49,6 @@ class Reach():
         else:
             self.outflow_method = stream_f.rectangle
 
-        # print TVAR, B, M
-        # raw_input()
-
 
 # Documentation for a class.
 #
@@ -73,15 +62,7 @@ class Stream(object):
 
     def __init__(self):
         super(Stream, self).__init__()
-
         Logger.info('Stream: ON')
-
-        # pak kouknout co je treba jen uvnitr tridy
-        # self.temp_dp = sp.temp_dp
-
-        # listy v poradi 'FID' 'POINT_X' 'POINT_Y' 'POINT_X_1' 'POINT_Y_1'
-        # 'to_node' 'length' 'sklon' 'smoderp' 'CISLO' 'TVAR' 'B' 'M' 'DRSNOST'
-        # 'Q365'
         self.toky = Gl.toky  # tu jsou nactena data z data preparation cca lajna 970
 
         self.nReaches = len(self.toky[0])
