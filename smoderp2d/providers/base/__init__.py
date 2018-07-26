@@ -101,7 +101,7 @@ class BaseProvider(object):
         data = None
         if self._args.typecomp in ('dpre', 'full'):
             data = self._load_dpre()
-            if self._args.typecomp == 'full':
+            if self._args.typecomp == 'dpre':
                 # data preparation requested only
                 self._save_data(data, self._args.data_file)
                 return
