@@ -283,11 +283,8 @@ class PrepareData:
         # output raster coordinate system
         arcpy.env.outputCoordinateSystem = dmt_desc.SpatialReference
 
-        # size of cell
-        self.data['vpix'] = dmt_desc.MeanCellHeight
-
         maska = self.data['temp'] + os.sep + "maska"
-        arcpy.PolygonToRaster_conversion(intersect, "FID", maska, "MAXIMUM_AREA", cellsize=self.data['vpix'])
+        arcpy.PolygonToRaster_conversion(intersect, "FID", maska, "MAXIMUM_AREA", cellsize = dmt_desc.MeanCellHeight)
 
         # cropping rasters
         dmt_clip = ExtractByMask(dmt_copy, maska)
