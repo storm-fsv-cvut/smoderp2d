@@ -32,11 +32,19 @@ class PrepareData:
         self.gp.overwriteoutput = 1
 
     def _add_message(self,message):
-        # arcpy dependent
+        """
+        Pops up a message into arcgis and saves it into log file.
+        :param message: Message to be printed.
+        """
         Logger.info(message)
 
     def run(self):
-    # main function of data_preparation class
+        """
+        Main function of data_preparation class. Returns computed parameters from input data using arcgis in a form
+        of a dictionary.
+
+        :return data: dictionary with model parameters.
+        """
 
         Logger.info("DMT preparation...")
 
@@ -127,6 +135,11 @@ class PrepareData:
         return self.data
 
     def _create_output(self):
+        """
+        Creates and clears directories, to which created files are saved.
+        Creates temporary geodatabase.
+        """
+
         # deleting output directory
         shutil.rmtree(self.data['outdir'])
 
@@ -161,6 +174,10 @@ class PrepareData:
 
 
     def _create_dict(self):
+        """
+        Creates dictionary to which model parameters are computed.
+        """
+
         self.data = {
             'br': None,
             'bc': None,
@@ -212,7 +229,17 @@ class PrepareData:
             }
 
     def _add_field(self, input, newfield, datatype, default_value):  # EDL
-        # function for adding fields
+        """
+        Adds field into attribute field of feature class.
+
+        :param input: Feature class to which new field is to be added.
+        :param newfield:
+        :param datatype:
+        :param default_value:
+
+        :return input: Feature class with new field.
+        """
+
         try:
             arcpy.DeleteField_management(input, newfield)
         except:
@@ -222,6 +249,22 @@ class PrepareData:
         return input
 
     def _get_intersect(self, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, gp, tab_puda_veg, tab_puda_veg_code):
+        """
+
+        :param dmt_copy:
+        :param veg_indata:
+        :param soil_indata:
+        :param vtyp:
+        :param ptyp:
+        :param gp:
+        :param tab_puda_veg:
+        :param tab_puda_veg_code:
+
+        :return intersect:
+        :return null_shp:
+        :return sfield:
+        """
+
         # adding attribute for soil and vegetation into attribute table (type short int)
         # preparation for clip
         null = self.data['temp'] + os.sep + "hrance_rst"
@@ -274,6 +317,17 @@ class PrepareData:
 
 
     def _clip_data(self, dmt_copy, intersect, slope_orig, flow_direction):
+        """
+
+        :param dmt_copy:
+        :param intersect:
+        :param slope_orig:
+        :param flow_direction:
+
+        :return flow_direction_clip:
+        :return slope_clip:
+        :return dmt_clip:
+        """
 
         # mask and clip data
         self._add_message("Clip of the source data by intersect")
@@ -304,6 +358,10 @@ class PrepareData:
         return flow_direction_clip, slope_clip, dmt_clip
 
     def _clip_points(self, intersect):
+        """
+
+        :param intersect:
+        """
         tmpPoints = []
         desc = arcpy.Describe(self.data['points'])
         shapefieldname = desc.ShapeFieldName
@@ -339,6 +397,13 @@ class PrepareData:
         self.data['points'] = pointsClipCheck
 
     def _get_attrib(self, sfield, intersect):
+        """
+
+        :param sfield:
+        :param intersect:
+
+        :return all_atrib:
+        """
 
         mat_k   = np.zeros([self.data['r'], self.data['c']], float)
         mat_s   = np.zeros([self.data['r'], self.data['c']], float)
@@ -374,9 +439,21 @@ class PrepareData:
         return all_attrib
 
     def _rst2np(self,raster):
+        """
+
+        :param raster:
+
+        :return:
+        """
         return arcpy.RasterToNumPyArray(raster)
 
     def _get_raster_dim(self,dmt_clip):
+        """
+
+        :param dmt_clip:
+
+        :return ll_corner:
+        """
 
         # cropped raster info
         dmt_desc = arcpy.Describe(dmt_clip)
@@ -396,7 +473,13 @@ class PrepareData:
         return ll_corner
 
     def _get_mat_par(self, sfield, intersect):
+        """
 
+        :param sfield:
+        :param intersect:
+
+        :return all_atrib:
+        """
         all_attrib = self._get_attrib(sfield, intersect)
 
         self.data['mat_nan'] = np.zeros([self.data['r'], self.data['c']], float)
@@ -442,6 +525,11 @@ class PrepareData:
         return all_attrib
 
     def _get_array_points(self, gp):
+        """
+
+        :param gp:
+        """
+
         # getting points coordinates from optional input shapefile
         if self.data['points'] and (self.data['points'] != "#") and (self.data['points'] != ""):
             # identify the geometry field
@@ -487,6 +575,11 @@ class PrepareData:
                     self.data['array_points'] = np.delete(self.data['array_points'], kyk, 0)
 
     def _get_a(self,all_attrib):
+        """
+
+        :param all_attrib:
+        """
+
         mat_n = all_attrib[2]
         mat_x = all_attrib[7]
         mat_y = all_attrib[8]
@@ -517,6 +610,11 @@ class PrepareData:
                 self.data['mat_aa'][i][j] = par_aa
 
     def _get_crit_water(self, all_attrib, ll_corner):
+        """
+
+        :param all_attrib:
+        :param ll_corner:
+        """
 
         mat_b = all_attrib[6]
         mat_tau = all_attrib[9]
@@ -568,6 +666,10 @@ class PrepareData:
         rhcrit_v.save(self.data['temp'] + os.sep + "hcrit_v")
 
     def _get_slope_dir(self,dmt_clip):
+        """
+
+        :param dmt_clip:
+        """
 
         # fiktivni vrstevnice a priprava "state cell, jestli to je tok ci plocha
         pii = math.pi / 180.0
@@ -585,7 +687,17 @@ class PrepareData:
         self.data['mat_efect_vrst'] = self._rst2np(efect_vrst)
 
     def _prepare_streams(self, stream, tab_stream_tvar, tab_stream_tvar_code, dmt, null_shp, ll_corner, dmt_clip, intersect):
+        """
 
+        :param stream:
+        :param tab_stream_tvar:
+        :param tab_stream_tvar_code:
+        :param dmt:
+        :param null_shp:
+        :param ll_corner:
+        :param dmt_clip:
+        :param intersect:
+        """
         self.data['type_of_computing'] = 1
 
         # pocitam vzdy s ryhama
@@ -614,6 +726,14 @@ class PrepareData:
             self.data['toky_loc'] = None
 
     def _save_raster(self, name, array_export, l_x, l_y, folder):
+        """
+
+        :param name:
+        :param array_export:
+        :param l_x:
+        :param l_y:
+        :param folder:
+        """
         ll_corner = arcpy.Point(l_x, l_y)
         raster = arcpy.NumPyArrayToRaster(
             array_export,
@@ -624,6 +744,9 @@ class PrepareData:
         raster.save(folder + os.sep + name)
 
     def _find_boundary_cells(self):
+        """
+
+        """
         # Identification of cells at the domain boundary
 
         self.data['mat_boundary'] = np.zeros([self.data['r'], self.data['c']], float)
