@@ -38,6 +38,8 @@ class PrepareData:
     def run(self):
     # main function of data_preparation class
 
+        Logger.info("DMT preparation...")
+
         self._create_dict()
 
         # geoprocessor object
@@ -65,43 +67,12 @@ class PrepareData:
         self.data['outdir'] = output
         self.data['points'] = points
 
-        # deleting output directory
-        shutil.rmtree(self.data['outdir'])
+        self._create_output()
 
-        if not os.path.exists(self.data['outdir']):
-            os.makedirs(self.data['outdir'])
-        self._add_message("Creating of the output directory: " + self.data['outdir'])
-
-        self.data['temp'] = self.data['outdir'] + os.sep + "temp"
-
-        if not os.path.exists(self.data['temp']):
-            os.makedirs(self.data['temp'])
-
-        self._add_message("Creating of the temp: " + self.data['temp'])
-
-        arcpy.env.snapRaster = dmt
-        # deleting content of output directory
-        dirList = os.listdir(self.data['outdir'])  # arcgis bug - locking shapefiles
-        ab = 0
-        for fname in dirList:
-            if "sr.lock" in fname:
-                ab = 1
-
-        if ab == 0:
-            contents = [os.path.join(self.data['outdir'], i) for i in os.listdir(self.data['outdir'])]
-
-            [shutil.rmtree(i) if os.path.isdir(i) else os.unlink(i)
-             for i in contents]
-
-        if not os.path.exists(self.data['temp']):
-            os.makedirs(self.data['temp'])
-
-        temp_gdb = arcpy.CreateFileGDB_management (self.data['temp'], "tempGDB.gdb")
         dmt_copy = self.data['temp'] + os.sep + "tempGDB.gdb" + os.sep + "dmt_copy"
 
         arcpy.CopyRaster_management(dmt, dmt_copy)
-
-        Logger.info("DMT preparation...")
+        arcpy.env.snapRaster = dmt
 
         dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, self.data['temp'],
                                                                                        "TRUE", "TRUE", "NONE")
@@ -153,6 +124,40 @@ class PrepareData:
         self._add_message("Data preparation has been finished")
 
         return self.data
+
+    def _create_output(self):
+        # deleting output directory
+        shutil.rmtree(self.data['outdir'])
+
+        if not os.path.exists(self.data['outdir']):
+            os.makedirs(self.data['outdir'])
+        self._add_message("Creating of the output directory: " + self.data['outdir'])
+
+        self.data['temp'] = self.data['outdir'] + os.sep + "temp"
+
+        if not os.path.exists(self.data['temp']):
+            os.makedirs(self.data['temp'])
+
+        self._add_message("Creating of the temp: " + self.data['temp'])
+
+        # deleting content of output directory
+        dirList = os.listdir(self.data['outdir'])  # arcgis bug - locking shapefiles
+        ab = 0
+        for fname in dirList:
+            if "sr.lock" in fname:
+                ab = 1
+
+        if ab == 0:
+            contents = [os.path.join(self.data['outdir'], i) for i in os.listdir(self.data['outdir'])]
+
+            [shutil.rmtree(i) if os.path.isdir(i) else os.unlink(i)
+             for i in contents]
+
+        if not os.path.exists(self.data['temp']):
+            os.makedirs(self.data['temp'])
+
+        temp_gdb = arcpy.CreateFileGDB_management(self.data['temp'], "tempGDB.gdb")
+
 
     def _create_dict(self):
         self.data = {
