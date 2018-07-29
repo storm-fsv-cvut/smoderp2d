@@ -84,8 +84,6 @@ class PrepareData:
         # clip
         flow_direction_clip, slope_clip, dmt_clip = self._clip_data(dmt_copy, intersect, slope_orig, flow_direction)
 
-        # self.save_raster("fl_dir", mat_fd, x_coordinate, y_coordinate, spix, vpix, NoDataValue, self.temp)
-
         # raster to numpy array conversion
         self.data['mat_dmt']    = self._rst2np(dmt_clip)
         self.data['mat_slope']  = self._rst2np(slope_clip)
@@ -108,6 +106,9 @@ class PrepareData:
         self._prepare_streams(stream, tab_stream_tvar, tab_stream_tvar_code, dmt, null_shp, ll_corner, dmt_clip, intersect)
 
         self._find_boundary_cells()
+
+        self.save_raster("fl_dir", self.data['mat_fd'], self.data['xllcorner'], self.data['yllcorner'],
+                     self.data['spix'], self.data['vpix'], self.data['NoDataValue'], self.data['temp'])
 
         self.data['mat_n']     = all_attrib[2]
         self.data['mat_ppl']   = all_attrib[3]
