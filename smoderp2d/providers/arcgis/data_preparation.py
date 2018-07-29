@@ -31,14 +31,14 @@ class PrepareData:
         arcpy.CheckOutExtension("Spatial") # TODO - raise an exception (21.05.2018 MK)
         self.gp.overwriteoutput = 1
 
-    def add_message(self,message):
+    def _add_message(self,message):
         # arcpy dependent
         Logger.info(message)
 
     def run(self):
     # main function of data_preparation class
 
-        self.create_dict()
+        self._create_dict()
 
         # geoprocessor object
         gp = self.gp
@@ -70,14 +70,14 @@ class PrepareData:
 
         if not os.path.exists(self.data['outdir']):
             os.makedirs(self.data['outdir'])
-        self.add_message("Creating of the output directory: " + self.data['outdir'])
+        self._add_message("Creating of the output directory: " + self.data['outdir'])
 
         self.data['temp'] = self.data['outdir'] + os.sep + "temp"
 
         if not os.path.exists(self.data['temp']):
             os.makedirs(self.data['temp'])
 
-        self.add_message("Creating of the temp: " + self.data['temp'])
+        self._add_message("Creating of the temp: " + self.data['temp'])
 
         arcpy.env.snapRaster = dmt
         # deleting content of output directory
@@ -107,36 +107,36 @@ class PrepareData:
                                                                                        "TRUE", "TRUE", "NONE")
 
         # intersect
-        intersect, null_shp, sfield = self.get_intersect(dmt_copy, veg_indata, soil_indata, vtyp, ptyp, gp,
+        intersect, null_shp, sfield = self._get_intersect(dmt_copy, veg_indata, soil_indata, vtyp, ptyp, gp,
                                                          tab_puda_veg, tab_puda_veg_code)
 
         # clip
-        flow_direction_clip, slope_clip, dmt_clip = self.clip_data(dmt_copy, intersect, slope_orig, flow_direction)
+        flow_direction_clip, slope_clip, dmt_clip = self._clip_data(dmt_copy, intersect, slope_orig, flow_direction)
 
         # self.save_raster("fl_dir", mat_fd, x_coordinate, y_coordinate, spix, vpix, NoDataValue, self.temp)
 
         # raster to numpy array conversion
-        self.data['mat_dmt']    = self.rst2np(dmt_clip)
-        self.data['mat_slope']  = self.rst2np(slope_clip)
-        self.data['mat_fd']     = self.rst2np(flow_direction_clip)
+        self.data['mat_dmt']    = self._rst2np(dmt_clip)
+        self.data['mat_slope']  = self._rst2np(slope_clip)
+        self.data['mat_fd']     = self._rst2np(flow_direction_clip)
 
-        ll_corner = self.get_raster_dim(dmt_clip)
+        ll_corner = self._get_raster_dim(dmt_clip)
 
-        all_attrib = self.get_mat_par(sfield, intersect)
+        all_attrib = self._get_mat_par(sfield, intersect)
 
-        self.get_array_points(gp)
+        self._get_array_points(gp)
 
-        self.get_a(all_attrib)
+        self._get_a(all_attrib)
 
-        self.crit_water( all_attrib, ll_corner)
+        self._get_crit_water(all_attrib, ll_corner)
 
         self.data['sr'], self.data['itera'] = rainfall.load_precipitation(rainfall_file_path)
 
-        self.slope_dir(dmt_clip)
+        self._get_slope_dir(dmt_clip)
 
-        self.stream_prep(stream, tab_stream_tvar, tab_stream_tvar_code, dmt, null_shp, ll_corner, dmt_clip, intersect)
+        self._prepare_streams(stream, tab_stream_tvar, tab_stream_tvar_code, dmt, null_shp, ll_corner, dmt_clip, intersect)
 
-        self.find_boundary_cells()
+        self._find_boundary_cells()
 
         self.data['mat_n']     = all_attrib[2]
         self.data['mat_ppl']   = all_attrib[3]
@@ -150,11 +150,11 @@ class PrepareData:
         self.data['spix']   = None
         self.data['vpix']   = None
 
-        self.add_message("Data preparation has been finished")
+        self._add_message("Data preparation has been finished")
 
         return self.data
 
-    def create_dict(self):
+    def _create_dict(self):
         self.data = {
             'br': None,
             'bc': None,
@@ -205,7 +205,7 @@ class PrepareData:
             'toky_loc': None
             }
 
-    def add_field(self, input, newfield, datatype, default_value):  # EDL
+    def _add_field(self, input, newfield, datatype, default_value):  # EDL
         # function for adding fields
         try:
             arcpy.DeleteField_management(input, newfield)
@@ -215,7 +215,7 @@ class PrepareData:
         arcpy.CalculateField_management(input, newfield, default_value, "PYTHON")
         return input
 
-    def get_intersect(self, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, gp, tab_puda_veg, tab_puda_veg_code):
+    def _get_intersect(self, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, gp, tab_puda_veg, tab_puda_veg_code):
         # adding attribute for soil and vegetation into attribute table (type short int)
         # preparation for clip
         null = self.data['temp'] + os.sep + "hrance_rst"
@@ -260,20 +260,20 @@ class PrepareData:
             for row in cursor:
                 for i in range(len(row)):
                     if row[i] == " ":
-                        self.add_message(
+                        self._add_message(
                             "Values in soilveg tab are not correct - STOP, check shp file Prunik in output")
                         sys.exit()
 
         return intersect, null_shp, sfield
 
 
-    def clip_data(self, dmt_copy, intersect, slope_orig, flow_direction):
+    def _clip_data(self, dmt_copy, intersect, slope_orig, flow_direction):
 
         # mask and clip data
-        self.add_message("Clip of the source data by intersect")
+        self._add_message("Clip of the source data by intersect")
 
         if self.data['points'] and (self.data['points'] != "#") and (self.data['points'] != ""):
-            self.data['points'] = self.clip_points(intersect)
+            self.data['points'] = self._clip_points(intersect)
 
         arcpy.env.extent = intersect
 
@@ -297,7 +297,7 @@ class PrepareData:
 
         return flow_direction_clip, slope_clip, dmt_clip
 
-    def clip_points(self, intersect):
+    def _clip_points(self, intersect):
         tmpPoints = []
         desc = arcpy.Describe(self.data['points'])
         shapefieldname = desc.ShapeFieldName
@@ -325,14 +325,14 @@ class PrepareData:
         if len(diffpts) == 0:
             pass
         else:
-            self.add_message("!!! Points at coordinates [x,y]:")
+            self._add_message("!!! Points at coordinates [x,y]:")
             for item in diffpts:
-                self.add_message(item)
-            self.add_message("are outside the computation domain and will be ignored !!!")
+                self._add_message(item)
+            self._add_message("are outside the computation domain and will be ignored !!!")
 
         self.data['points'] = pointsClipCheck
 
-    def get_attrib(self, sfield, intersect):
+    def _get_attrib(self, sfield, intersect):
 
         mat_k   = np.zeros([self.data['r'], self.data['c']], float)
         mat_s   = np.zeros([self.data['r'], self.data['c']], float)
@@ -363,14 +363,14 @@ class PrepareData:
         for x in sfield:
             d = self.data['temp'] + os.sep + "r" + str(x)
             arcpy.PolygonToRaster_conversion(intersect, str(x), d, "MAXIMUM_AREA", "", self.data['vpix'])
-            all_attrib[poradi] = self.rst2np(d)
+            all_attrib[poradi] = self._rst2np(d)
             poradi = poradi + 1
         return all_attrib
 
-    def rst2np(self,raster):
+    def _rst2np(self,raster):
         return arcpy.RasterToNumPyArray(raster)
 
-    def get_raster_dim(self,dmt_clip):
+    def _get_raster_dim(self,dmt_clip):
 
         # cropped raster info
         dmt_desc = arcpy.Describe(dmt_clip)
@@ -389,9 +389,9 @@ class PrepareData:
 
         return ll_corner
 
-    def get_mat_par(self, sfield, intersect):
+    def _get_mat_par(self, sfield, intersect):
 
-        all_attrib = self.get_attrib(sfield, intersect)
+        all_attrib = self._get_attrib(sfield, intersect)
 
         self.data['mat_nan'] = np.zeros([self.data['r'], self.data['c']], float)
         mat_k = all_attrib[0]
@@ -435,7 +435,7 @@ class PrepareData:
 
         return all_attrib
 
-    def get_array_points(self, gp):
+    def _get_array_points(self, gp):
         # getting points coordinates from optional input shapefile
         if self.data['points'] and (self.data['points'] != "#") and (self.data['points'] != ""):
             # identify the geometry field
@@ -480,7 +480,7 @@ class PrepareData:
                                 0])) + " is at the edge of the raster. This point will not be included in results.")
                     self.data['array_points'] = np.delete(self.data['array_points'], kyk, 0)
 
-    def get_a(self,all_attrib):
+    def _get_a(self,all_attrib):
         mat_n = all_attrib[2]
         mat_x = all_attrib[7]
         mat_y = all_attrib[8]
@@ -510,14 +510,14 @@ class PrepareData:
                 self.data['mat_a'][i][j] = par_a
                 self.data['mat_aa'][i][j] = par_aa
 
-    def crit_water(self, all_attrib, ll_corner):
+    def _get_crit_water(self, all_attrib, ll_corner):
 
         mat_b = all_attrib[6]
         mat_tau = all_attrib[9]
         mat_v = all_attrib[10]
 
         # critical water level
-        self.add_message("Computing critical level")
+        self._add_message("Computing critical level")
         mat_hcrit_tau   = np.zeros([self.data['r'], self.data['c']], float)
         mat_hcrit_v     = np.zeros([self.data['r'], self.data['c']], float)
         mat_hcrit_flux  = np.zeros([self.data['r'], self.data['c']], float)
@@ -561,7 +561,7 @@ class PrepareData:
         rhcrit_v = arcpy.NumPyArrayToRaster(mat_hcrit_v, ll_corner, self.data['spix'], self.data['vpix'], "#")
         rhcrit_v.save(self.data['temp'] + os.sep + "hcrit_v")
 
-    def slope_dir(self,dmt_clip):
+    def _get_slope_dir(self,dmt_clip):
 
         # fiktivni vrstevnice a priprava "state cell, jestli to je tok ci plocha
         pii = math.pi / 180.0
@@ -576,9 +576,9 @@ class PrepareData:
 
         efect_vrst = arcpy.sa.Times(times1, self.data['spix'])
         efect_vrst.save(self.data['temp'] + os.sep + "efect_vrst")
-        self.data['mat_efect_vrst'] = self.rst2np(efect_vrst)
+        self.data['mat_efect_vrst'] = self._rst2np(efect_vrst)
 
-    def stream_prep(self, stream, tab_stream_tvar, tab_stream_tvar_code, dmt, null_shp, ll_corner, dmt_clip, intersect):
+    def _prepare_streams(self, stream, tab_stream_tvar, tab_stream_tvar_code, dmt, null_shp, ll_corner, dmt_clip, intersect):
 
         self.data['type_of_computing'] = 1
 
@@ -594,20 +594,20 @@ class PrepareData:
 
         if (self.data['type_of_computing'] == 3) or (self.data['type_of_computing'] == 5):
 
-            self.add_message("Stream preparation...")
+            self._add_message("Stream preparation...")
 
             self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = sp.prepare_streams(listin, dmt, null_shp, self.data['mat_nan'], self.data['spix'],
-                                                             self.data['r'], self.data['c'], ll_corner, self.add_field,
+                                                             self.data['r'], self.data['c'], ll_corner, self._add_field,
                                                              self.data['outdir'], dmt_clip, intersect)
 
-            self.add_message("Stream preparation has finished")
+            self._add_message("Stream preparation has finished")
 
         else:
             self.data['toky'] = None
             self.data['mat_tok_reach'] = None
             self.data['toky_loc'] = None
 
-    def save_raster(self, name, array_export, l_x, l_y, folder):
+    def _save_raster(self, name, array_export, l_x, l_y, folder):
         ll_corner = arcpy.Point(l_x, l_y)
         raster = arcpy.NumPyArrayToRaster(
             array_export,
@@ -617,7 +617,7 @@ class PrepareData:
             self.data['NoDataValue'])
         raster.save(folder + os.sep + name)
 
-    def find_boundary_cells(self):
+    def _find_boundary_cells(self):
         # Identification of cells at the domain boundary
 
         self.data['mat_boundary'] = np.zeros([self.data['r'], self.data['c']], float)
