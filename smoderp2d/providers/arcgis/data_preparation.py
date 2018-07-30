@@ -6,7 +6,7 @@ import math
 import csv
 
 import smoderp2d.processes.rainfall as rainfall
-import smoderp2d.stream_functions.stream_preparation as sp
+import stream_preparation as sp
 
 from smoderp2d.providers.base import Logger
 
@@ -14,7 +14,7 @@ from smoderp2d.providers.base import Logger
 from arcpy.sa import *
 import arcpy
 import arcgisscripting
-import smoderp2d.flow_algorithm.arcgis_dmtfce as arcgis_dmtfce
+import arcgis_dmtfce
 import constants # poradi parametru z arcgis tool
 
 class PrepareData:

@@ -7,7 +7,7 @@
 __author__ = "edlman"
 __date__ = "$29.12.2015 18:20:20$"
 
-import smoderp2d.flow_algorithm.arcgis_dmtfce as arcgis_dmtfce
+import arcgis_dmtfce
 
 
 # importing system moduls
