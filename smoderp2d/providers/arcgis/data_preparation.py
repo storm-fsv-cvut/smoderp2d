@@ -115,7 +115,7 @@ class PrepareData:
 
         self._find_boundary_cells()
 
-        self.save_raster("fl_dir", self.data['mat_fd'], self.data['xllcorner'], self.data['yllcorner'],
+        self._save_raster("fl_dir", self.data['mat_fd'], self.data['xllcorner'], self.data['yllcorner'],
                      self.data['spix'], self.data['vpix'], self.data['NoDataValue'], self.data['temp'])
 
         self.data['mat_n']     = all_attrib[2]
@@ -725,22 +725,25 @@ class PrepareData:
             self.data['mat_tok_reach'] = None
             self.data['toky_loc'] = None
 
-    def _save_raster(self, name, array_export, l_x, l_y, folder):
+    def _save_raster(self, name, array_export, l_x, l_y, spix, vpix, no_data_value, folder):
         """
 
         :param name:
         :param array_export:
         :param l_x:
         :param l_y:
+        :param spix:
+        :param vpix:
+        :param no_data_value:
         :param folder:
         """
         ll_corner = arcpy.Point(l_x, l_y)
         raster = arcpy.NumPyArrayToRaster(
             array_export,
             ll_corner,
-            self.data['spix'],
-            self.data['vpix'],
-            self.data['NoDataValue'])
+            spix,
+            vpix,
+            no_data_value)
         raster.save(folder + os.sep + name)
 
     def _find_boundary_cells(self):
