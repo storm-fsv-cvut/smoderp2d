@@ -6,7 +6,7 @@ import math
 import csv
 
 import smoderp2d.processes.rainfall as rainfall
-import stream_preparation as sp
+from stream_preparation import StreamPreparation
 
 from smoderp2d.providers.base import Logger
 
@@ -704,6 +704,8 @@ class PrepareData:
         # pokud jsou zadane vsechny vstupy pro vypocet toku, toky se pocitaji a type_of_computing je 3
         listin = [stream, tab_stream_tvar, tab_stream_tvar_code]
         tflistin = [len(i) > 1 for i in listin]
+        arcpy.AddMessage("tflistin")
+        arcpy.AddMessage(tflistin)
 
         if all(tflistin):
             self.data['type_of_computing'] = 3
@@ -714,9 +716,22 @@ class PrepareData:
 
             self._add_message("Stream preparation...")
 
-            self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = sp.prepare_streams(listin, dmt, null_shp, self.data['mat_nan'], self.data['spix'],
-                                                             self.data['r'], self.data['c'], ll_corner, self._add_field,
-                                                             self.data['outdir'], dmt_clip, intersect)
+            input = [stream,
+                     tab_stream_tvar,
+                     tab_stream_tvar_code,
+                     dmt,
+                     null_shp,
+                     self.data['mat_nan'],
+                     self.data['spix'],
+                     self.data['r'],
+                     self.data['c'],
+                     ll_corner,
+                     self._add_field,
+                     self.data['outdir'],
+                     dmt_clip,
+                     intersect]
+            sp = StreamPreparation()
+            self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = StreamPreparation.prepare_streams(sp, input)
 
             self._add_message("Stream preparation has finished")
 
