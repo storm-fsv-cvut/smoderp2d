@@ -56,7 +56,7 @@ class StreamPreparation:
         self.rows = input[6]
         self.cols = input[7]
         self.ll_corner = input[8]
-        self.addfield = input[9]  # udelat funkci tady
+        self._add_field = input[9]
         self.output = input[10]  # ulozit do temp/streamprep
         self.dmt_clip = input[11]
         self.intersect = input[12]
@@ -197,7 +197,7 @@ class StreamPreparation:
                 else:
                     Logger.info("Flip line")
                     arcpy.FlipLine_edit(fc)
-        self.addfield(toky, "to_node", "DOUBLE", -9999)
+        self._add_field(toky, "to_node", "DOUBLE", -9999)
 
         fc = toky
         field_end = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
@@ -260,29 +260,29 @@ class StreamPreparation:
                     continue
 
         # HYDRAULIKA TOKU
-        self.addfield(toky, "length", "DOUBLE", 0.0)  # (m)
-        self.addfield(toky, "sklon", "DOUBLE", 0.0)  # (-)
-        self.addfield(toky, "V_infl_ce", "DOUBLE", 0.0)  # (m3)
-        self.addfield(toky, "V_infl_us", "DOUBLE", 0.0)  # (m3)
-        self.addfield(toky, "V_infl", "DOUBLE", 0.0)  # (m3)
-        self.addfield(toky, "Q_outfl", "DOUBLE", 0.0)  # (m3/s)
-        self.addfield(toky, "V_outfl", "DOUBLE", 0.0)  # (m3)
-        self.addfield(toky, "V_outfl_tm", "DOUBLE", 0.0)  # (m3)
-        self.addfield(toky, "V_zbyt", "DOUBLE", 0.0)  # (m3)
-        self.addfield(toky, "V_zbyt_tm", "DOUBLE", 0.0)  # (m3)
-        self.addfield(toky, "V", "DOUBLE", 0.0)  # (m3)
-        self.addfield(toky, "h", "DOUBLE", 0.0)  # (m)
-        self.addfield(toky, "vs", "DOUBLE", 0.0)  # (m/s)
-        self.addfield(toky, "NS", "DOUBLE", 0.0)  # (m)
-        self.addfield(toky, "total_Vic", "DOUBLE", 0.0)  # (m3)
-        self.addfield(toky, "total_Viu", "DOUBLE", 0.0)  # (m3)
-        self.addfield(toky, "max_Q", "DOUBLE", 0.0)  # (m3/s)
-        self.addfield(toky, "max_h", "DOUBLE", 0.0)  # (m)
-        self.addfield(toky, "max_vs", "DOUBLE", 0.0)  # (m/s)
-        self.addfield(toky, "total_Vo", "DOUBLE", 0.0)  # (m3)
-        self.addfield(toky, "total_Vi", "DOUBLE", 0.0)  # (m3)
-        self.addfield(toky, "total_NS", "DOUBLE", 0.0)  # (m3)
-        self.addfield(toky, "total_Vz", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "length", "DOUBLE", 0.0)  # (m)
+        self._add_field(toky, "sklon", "DOUBLE", 0.0)  # (-)
+        self._add_field(toky, "V_infl_ce", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "V_infl_us", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "V_infl", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "Q_outfl", "DOUBLE", 0.0)  # (m3/s)
+        self._add_field(toky, "V_outfl", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "V_outfl_tm", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "V_zbyt", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "V_zbyt_tm", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "V", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "h", "DOUBLE", 0.0)  # (m)
+        self._add_field(toky, "vs", "DOUBLE", 0.0)  # (m/s)
+        self._add_field(toky, "NS", "DOUBLE", 0.0)  # (m)
+        self._add_field(toky, "total_Vic", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "total_Viu", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "max_Q", "DOUBLE", 0.0)  # (m3/s)
+        self._add_field(toky, "max_h", "DOUBLE", 0.0)  # (m)
+        self._add_field(toky, "max_vs", "DOUBLE", 0.0)  # (m/s)
+        self._add_field(toky, "total_Vo", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "total_Vi", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "total_NS", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "total_Vz", "DOUBLE", 0.0)  # (m3)
 
         # sklon
         fc = toky
@@ -306,8 +306,7 @@ class StreamPreparation:
             arcpy.JoinField_management(toky, self.tab_stream_tvar_code, stream_tvar_dbf, self.tab_stream_tvar_code,
                                         "cislo;tvar;b;m;drsnost;Q365")
         except:
-            arcpy.AddField_management(toky, "smoderp", "TEXT")
-            arcpy.CalculateField_management(toky, "smoderp", "0", "PYTHON")
+            self._add_field(toky, "smoderp", "TEXT", "0")
             arcpy.JoinField_management(toky, self.tab_stream_tvar_code, stream_tvar_dbf, self.tab_stream_tvar_code,
                                        "cislo;tvar;b;m;drsnost;Q365")
 
