@@ -111,8 +111,7 @@ class PrepareData:
 
         self._find_boundary_cells()
 
-        self._save_raster("fl_dir", self.data['mat_fd'], self.data['xllcorner'], self.data['yllcorner'],
-                     self.data['spix'], self.data['vpix'], self.data['NoDataValue'], self.data['temp'])
+        self._save_raster("fl_dir", self.data['mat_fd'], self.data['temp'])
 
         self.data['mat_n']     = all_attrib[2]
         self.data['mat_ppl']   = all_attrib[3]
@@ -502,6 +501,8 @@ class PrepareData:
                 else:
                     self.data['mat_nan'][i][j] = 0
 
+        self._save_raster("mat_nan", self.data['mat_nan'], self.data['temp'])
+
         return all_attrib
 
     def _get_array_points(self, gp):
@@ -684,8 +685,6 @@ class PrepareData:
         # pokud jsou zadane vsechny vstupy pro vypocet toku, toky se pocitaji a type_of_computing je 3
         listin = [stream, tab_stream_tvar, tab_stream_tvar_code]
         tflistin = [len(i) > 1 for i in listin]
-        arcpy.AddMessage("tflistin")
-        arcpy.AddMessage(tflistin)
 
         if all(tflistin):
             self.data['type_of_computing'] = 3
@@ -701,7 +700,6 @@ class PrepareData:
                      tab_stream_tvar_code,
                      dmt,
                      null_shp,
-                     self.data['mat_nan'],
                      self.data['spix'],
                      self.data['r'],
                      self.data['c'],
@@ -711,7 +709,7 @@ class PrepareData:
                      dmt_clip,
                      intersect]
 
-            self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = StreamPreparation().prepare_streams(input)
+            self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = StreamPreparation(input).prepare_streams()
 
             self._add_message("Stream preparation has finished")
 
@@ -740,25 +738,19 @@ class PrepareData:
         arcpy.CalculateField_management(input, newfield, default_value, "PYTHON")
         return input
 
-    def _save_raster(self, name, array_export, l_x, l_y, spix, vpix, no_data_value, folder):
+    def _save_raster(self, name, array_export, folder):
         """
 
         :param name:
         :param array_export:
-        :param l_x:
-        :param l_y:
-        :param spix:
-        :param vpix:
-        :param no_data_value:
         :param folder:
         """
-        ll_corner = arcpy.Point(l_x, l_y)
-        raster = arcpy.NumPyArrayToRaster(
-            array_export,
-            ll_corner,
-            spix,
-            vpix,
-            no_data_value)
+
+        raster = arcpy.NumPyArrayToRaster(array_export,
+                                          arcpy.Point(self.data['xllcorner'], self.data['yllcorner']),
+                                          self.data['spix'],
+                                          self.data['vpix'],
+                                          self.data['NoDataValue'])
         raster.save(folder + os.sep + name)
 
     def _find_boundary_cells(self):

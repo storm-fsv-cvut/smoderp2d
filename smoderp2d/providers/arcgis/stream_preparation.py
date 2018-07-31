@@ -45,25 +45,23 @@ class ZeroSlopeError(Error):
 
 class StreamPreparation:
 
-    def __init__(self):
-        pass
+    def __init__(self, input):
 
-    def prepare_streams(self, input):
+        self.stream = input[0]
+        self.tab_stream_tvar = input[1]
+        self.tab_stream_tvar_code = input[2]
+        self.dmt = input[3]
+        self.null = input[4]
+        self.spix = input[5]
+        self.rows = input[6]
+        self.cols = input[7]
+        self.ll_corner = input[8]
+        self.addfield = input[9]  # udelat funkci tady
+        self.output = input[10]  # ulozit do temp/streamprep
+        self.dmt_clip = input[11]
+        self.intersect = input[12]
 
-        stream = input[0]
-        tab_stream_tvar = input[1]
-        tab_stream_tvar_code = input[2]
-        dmt = input[3]
-        null = input[4]
-        mat_nan = input[5]
-        spix = input[6]
-        rows = input[7]
-        cols = input[8]
-        ll_corner = input[9]
-        addfield = input[10]
-        output = input[11]
-        dmt_clip = input[12]
-        intersect = input[13]
+    def prepare_streams(self):
 
         # Overwriting output
         arcpy.env.overwriteOutput = 1
@@ -75,10 +73,10 @@ class StreamPreparation:
         # Set input
         # tvar koryt
 
-        arcpy.env.snapRaster = dmt
+        arcpy.env.snapRaster = self.dmt
 
         # Set output
-        temp_dp = output + os.sep + "temp_dp"
+        temp_dp = self.output + os.sep + "temp_dp"
         if not os.path.exists(temp_dp):
             os.makedirs(temp_dp)
         tempgdb_dp = arcpy.CreateFileGDB_management(temp_dp, "temp_dp.gdb")
@@ -86,7 +84,7 @@ class StreamPreparation:
         # WATER FLOWS ACCORDING DMT:
 
         dmt_fill, flow_direction, flow_accumulation, slope = arcgis_dmtfce.dmtfce(
-            dmt_clip, temp_dp, "TRUE", "TRUE", "NONE")
+            self.dmt_clip, temp_dp, "TRUE", "TRUE", "NONE")
 
         # Setnull
         try:
@@ -106,10 +104,10 @@ class StreamPreparation:
         toky = temp_dp + os.sep + "toky.shp"
         toky_loc = temp_dp + os.sep + "toky.shp"
         hranice = temp_dp + os.sep + "hranice.shp"
-        hranice = arcpy.Clip_analysis(null, intersect, hranice)
-        hranice2 = arcpy.Buffer_analysis(hranice, temp_dp + os.sep + "hranice2.shp", -spix / 3, "FULL", "ROUND", "NONE")
+        hranice = arcpy.Clip_analysis(self.null, self.intersect, hranice)
+        hranice2 = arcpy.Buffer_analysis(hranice, temp_dp + os.sep + "hranice2.shp", -self.spix  / 3, "FULL", "ROUND", "NONE")
 
-        toky = arcpy.Clip_analysis(stream, hranice2, toky)
+        toky = arcpy.Clip_analysis(self.stream, hranice2, toky)
 
         arcpy.DeleteField_management(
             toky,
@@ -132,12 +130,12 @@ class StreamPreparation:
         # Extract value to points - END
         Logger.info("Extract value to points - END...")
         xxx = temp_dp + os.sep + "end_point"
-        end_point = arcpy.sa.ExtractValuesToPoints(end, dmt_clip, xxx, "NONE", "VALUE_ONLY")
+        end_point = arcpy.sa.ExtractValuesToPoints(end, self.dmt_clip, xxx, "NONE", "VALUE_ONLY")
 
         # Extract value to points - START
         arcpy.AddMessage("Extract value to points - START...")
         xxx = temp_dp + os.sep + "start_point"
-        start_point = arcpy.sa.ExtractValuesToPoints(start, dmt_clip, xxx, "NONE", "VALUE_ONLY")
+        start_point = arcpy.sa.ExtractValuesToPoints(start, self.dmt_clip, xxx, "NONE", "VALUE_ONLY")
 
         # Join
         arcpy.JoinField_management(toky, "FID", start_point, "ORIG_FID")
@@ -176,12 +174,12 @@ class StreamPreparation:
 
         # Extract value to points - START
         Logger.info("Extract value to points - START...")
-        start_point_check = arcpy.sa.ExtractValuesToPoints(start,dmt,temp_dp+os.sep+"start_point_check","NONE","VALUE_ONLY")
+        start_point_check = arcpy.sa.ExtractValuesToPoints(start,self.dmt,temp_dp+os.sep+"start_point_check","NONE","VALUE_ONLY")
         arcpy.AddXY_management(start_point_check)
 
         # Extract value to points - END
         Logger.info("Extract value to points - END...")
-        end_point_check = arcpy.sa.ExtractValuesToPoints(end, dmt, temp_dp+os.sep+"end_point_check", "NONE","VALUE_ONLY")
+        end_point_check = arcpy.sa.ExtractValuesToPoints(end, self.dmt, temp_dp+os.sep+"end_point_check", "NONE","VALUE_ONLY")
         arcpy.AddXY_management(end_point_check)
 
         # Join
@@ -199,7 +197,7 @@ class StreamPreparation:
                 else:
                     Logger.info("Flip line")
                     arcpy.FlipLine_edit(fc)
-        addfield(toky, "to_node", "DOUBLE", -9999)
+        self.addfield(toky, "to_node", "DOUBLE", -9999)
 
         fc = toky
         field_end = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
@@ -237,57 +235,54 @@ class StreamPreparation:
         arcpy.DeleteField_management(toky, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"])
 
         stream_rst1 = temp_dp + os.sep + "stream_rst"
-        stream_rst = arcpy.PolylineToRaster_conversion(toky, "FID", stream_rst1, "MAXIMUM_LENGTH", "NONE", spix)
+        stream_rst = arcpy.PolylineToRaster_conversion(toky, "FID", stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix )
         tok_usek = temp_dp + os.sep + "tok_usek"
 
         arcpy.gp.Reclassify_sa(stream_rst, "VALUE", "NoDataValue 1000", tok_usek, "DATA")
-        mat_tok_usek = arcpy.RasterToNumPyArray(temp_dp + os.sep + "tok_usek", ll_corner, cols, rows)
-        mat_tok = arcpy.RasterToNumPyArray(temp_dp + os.sep + "tok_usek", ll_corner, cols, rows)
+        mat_tok_usek = arcpy.RasterToNumPyArray(temp_dp + os.sep + "tok_usek", self.ll_corner, self.cols, self.rows)
+        mat_tok = arcpy.RasterToNumPyArray(temp_dp + os.sep + "tok_usek", self.ll_corner, self.cols, self.rows)
 
         cell_stream = []
         mat_tok_usek = mat_tok_usek.astype('int16')
 
-        for i in range(rows):
-            for j in range(cols):
+        for i in range(self.rows):
+            for j in range(self.cols):
                 if mat_tok_usek[i][j] < 0:
                     mat_tok_usek[i][j] = 0
                 else:
                     mat_tok_usek[i][j] += 1000
 
-        for i in range(rows):
-            for j in range(cols):
+        for i in range(self.rows):
+            for j in range(self.cols):
                 if mat_tok[i][j] != 255:
                     mat_tok[i][j] = 3
                 else:
                     continue
 
-        mat_nan = arcpy.NumPyArrayToRaster(mat_nan, ll_corner, spix)
-        mat_nan.save(temp_dp + os.sep + "mat_nan")
-
         # HYDRAULIKA TOKU
-        addfield(toky, "length", "DOUBLE", 0.0)  # (m)
-        addfield(toky, "sklon", "DOUBLE", 0.0)  # (-)
-        addfield(toky, "V_infl_ce", "DOUBLE", 0.0)  # (m3)
-        addfield(toky, "V_infl_us", "DOUBLE", 0.0)  # (m3)
-        addfield(toky, "V_infl", "DOUBLE", 0.0)  # (m3)
-        addfield(toky, "Q_outfl", "DOUBLE", 0.0)  # (m3/s)
-        addfield(toky, "V_outfl", "DOUBLE", 0.0)  # (m3)
-        addfield(toky, "V_outfl_tm", "DOUBLE", 0.0)  # (m3)
-        addfield(toky, "V_zbyt", "DOUBLE", 0.0)  # (m3)
-        addfield(toky, "V_zbyt_tm", "DOUBLE", 0.0)  # (m3)
-        addfield(toky, "V", "DOUBLE", 0.0)  # (m3)
-        addfield(toky, "h", "DOUBLE", 0.0)  # (m)
-        addfield(toky, "vs", "DOUBLE", 0.0)  # (m/s)
-        addfield(toky, "NS", "DOUBLE", 0.0)  # (m)
-        addfield(toky, "total_Vic", "DOUBLE", 0.0)  # (m3)
-        addfield(toky, "total_Viu", "DOUBLE", 0.0)  # (m3)
-        addfield(toky, "max_Q", "DOUBLE", 0.0)  # (m3/s)
-        addfield(toky, "max_h", "DOUBLE", 0.0)  # (m)
-        addfield(toky, "max_vs", "DOUBLE", 0.0)  # (m/s)
-        addfield(toky, "total_Vo", "DOUBLE", 0.0)  # (m3)
-        addfield(toky, "total_Vi", "DOUBLE", 0.0)  # (m3)
-        addfield(toky, "total_NS", "DOUBLE", 0.0)  # (m3)
-        addfield(toky, "total_Vz", "DOUBLE", 0.0)  # (m3)
+        self.addfield(toky, "length", "DOUBLE", 0.0)  # (m)
+        self.addfield(toky, "sklon", "DOUBLE", 0.0)  # (-)
+        self.addfield(toky, "V_infl_ce", "DOUBLE", 0.0)  # (m3)
+        self.addfield(toky, "V_infl_us", "DOUBLE", 0.0)  # (m3)
+        self.addfield(toky, "V_infl", "DOUBLE", 0.0)  # (m3)
+        self.addfield(toky, "Q_outfl", "DOUBLE", 0.0)  # (m3/s)
+        self.addfield(toky, "V_outfl", "DOUBLE", 0.0)  # (m3)
+        self.addfield(toky, "V_outfl_tm", "DOUBLE", 0.0)  # (m3)
+        self.addfield(toky, "V_zbyt", "DOUBLE", 0.0)  # (m3)
+        self.addfield(toky, "V_zbyt_tm", "DOUBLE", 0.0)  # (m3)
+        self.addfield(toky, "V", "DOUBLE", 0.0)  # (m3)
+        self.addfield(toky, "h", "DOUBLE", 0.0)  # (m)
+        self.addfield(toky, "vs", "DOUBLE", 0.0)  # (m/s)
+        self.addfield(toky, "NS", "DOUBLE", 0.0)  # (m)
+        self.addfield(toky, "total_Vic", "DOUBLE", 0.0)  # (m3)
+        self.addfield(toky, "total_Viu", "DOUBLE", 0.0)  # (m3)
+        self.addfield(toky, "max_Q", "DOUBLE", 0.0)  # (m3/s)
+        self.addfield(toky, "max_h", "DOUBLE", 0.0)  # (m)
+        self.addfield(toky, "max_vs", "DOUBLE", 0.0)  # (m/s)
+        self.addfield(toky, "total_Vo", "DOUBLE", 0.0)  # (m3)
+        self.addfield(toky, "total_Vi", "DOUBLE", 0.0)  # (m3)
+        self.addfield(toky, "total_NS", "DOUBLE", 0.0)  # (m3)
+        self.addfield(toky, "total_Vz", "DOUBLE", 0.0)  # (m3)
 
         # sklon
         fc = toky
@@ -304,16 +299,16 @@ class StreamPreparation:
         # tvar koryt
 
         stream_tvar_dbf = temp_dp + os.sep + "stream_tvar.dbf"
-        arcpy.CopyRows_management(tab_stream_tvar, stream_tvar_dbf)
+        arcpy.CopyRows_management(self.tab_stream_tvar, stream_tvar_dbf)
         sfield = ["cislo", "smoderp", "tvar", "b", "m", "drsnost", "Q365"]
 
         try:
-            arcpy.JoinField_management(toky, tab_stream_tvar_code, stream_tvar_dbf, tab_stream_tvar_code,
+            arcpy.JoinField_management(toky, self.tab_stream_tvar_code, stream_tvar_dbf, self.tab_stream_tvar_code,
                                         "cislo;tvar;b;m;drsnost;Q365")
         except:
             arcpy.AddField_management(toky, "smoderp", "TEXT")
             arcpy.CalculateField_management(toky, "smoderp", "0", "PYTHON")
-            arcpy.JoinField_management(toky, tab_stream_tvar_code, stream_tvar_dbf, tab_stream_tvar_code,
+            arcpy.JoinField_management(toky, self.tab_stream_tvar_code, stream_tvar_dbf, self.tab_stream_tvar_code,
                                        "cislo;tvar;b;m;drsnost;Q365")
 
         with arcpy.da.SearchCursor(toky, sfield) as cursor:
