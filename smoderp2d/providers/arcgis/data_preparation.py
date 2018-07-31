@@ -31,13 +31,6 @@ class PrepareData:
         arcpy.CheckOutExtension("Spatial") # TODO - raise an exception (21.05.2018 MK)
         self.gp.overwriteoutput = 1
 
-    def _add_message(self,message):
-        """
-        Pops up a message into arcgis and saves it into log file.
-        :param message: Message to be printed.
-        """
-        Logger.info(message)
-
     def run(self):
         """
         Main function of data_preparation class. Returns computed parameters from input data using arcgis in a form
@@ -46,14 +39,14 @@ class PrepareData:
         :return data: dictionary with model parameters.
         """
 
-        Logger.info("DMT preparation...")
+        self._add_message("DMT preparation...")
 
         self._create_dict()
 
         # geoprocessor object
         gp = self.gp
 
-        # get input parameters
+        # get input parameters from Arcgis toolbox
         dmt = gp.GetParameterAsText(constants.PARAMETER_DMT)
         soil_indata = gp.GetParameterAsText(constants.PARAMETER_SOIL)
         ptyp = gp.GetParameterAsText(constants.PARAMETER_SOIL_TYPE)
@@ -70,24 +63,27 @@ class PrepareData:
         tab_stream_tvar = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE)
         tab_stream_tvar_code = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE_CODE)
 
+        # set dict parameters from input data
         self.data['maxdt'] = maxdt
         self.data['end_time'] = end_time
         self.data['outdir'] = output
         self.data['points'] = points
 
+        # create output folder, where temporary data are stored
         self._create_output()
 
+        # copy of dmt for ?? TODO
         dmt_copy = self.data['temp'] + os.sep + "tempGDB.gdb" + os.sep + "dmt_copy"
-
         arcpy.CopyRaster_management(dmt, dmt_copy)
+
         arcpy.env.snapRaster = dmt
 
         dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, self.data['temp'],
                                                                                        "TRUE", "TRUE", "NONE")
 
         # intersect
-        intersect, null_shp, sfield = self._get_intersect(dmt_copy, veg_indata, soil_indata, vtyp, ptyp, gp,
-                                                         tab_puda_veg, tab_puda_veg_code)
+        intersect, null_shp, sfield = self._get_intersect(gp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp,
+                                                          tab_puda_veg, tab_puda_veg_code)
 
         # clip
         flow_direction_clip, slope_clip, dmt_clip = self._clip_data(dmt_copy, intersect, slope_orig, flow_direction)
@@ -134,44 +130,12 @@ class PrepareData:
 
         return self.data
 
-    def _create_output(self):
+    def _add_message(self, message):
         """
-        Creates and clears directories, to which created files are saved.
-        Creates temporary geodatabase.
+        Pops up a message into arcgis and saves it into log file.
+        :param message: Message to be printed.
         """
-
-        # deleting output directory
-        shutil.rmtree(self.data['outdir'])
-
-        if not os.path.exists(self.data['outdir']):
-            os.makedirs(self.data['outdir'])
-        self._add_message("Creating of the output directory: " + self.data['outdir'])
-
-        self.data['temp'] = self.data['outdir'] + os.sep + "temp"
-
-        if not os.path.exists(self.data['temp']):
-            os.makedirs(self.data['temp'])
-
-        self._add_message("Creating of the temp: " + self.data['temp'])
-
-        # deleting content of output directory
-        dirList = os.listdir(self.data['outdir'])  # arcgis bug - locking shapefiles
-        ab = 0
-        for fname in dirList:
-            if "sr.lock" in fname:
-                ab = 1
-
-        if ab == 0:
-            contents = [os.path.join(self.data['outdir'], i) for i in os.listdir(self.data['outdir'])]
-
-            [shutil.rmtree(i) if os.path.isdir(i) else os.unlink(i)
-             for i in contents]
-
-        if not os.path.exists(self.data['temp']):
-            os.makedirs(self.data['temp'])
-
-        temp_gdb = arcpy.CreateFileGDB_management(self.data['temp'], "tempGDB.gdb")
-
+        Logger.info(message)
 
     def _create_dict(self):
         """
@@ -228,35 +192,52 @@ class PrepareData:
             'toky_loc': None
             }
 
-    def _add_field(self, input, newfield, datatype, default_value):  # EDL
+    def _create_output(self):
         """
-        Adds field into attribute field of feature class.
-
-        :param input: Feature class to which new field is to be added.
-        :param newfield:
-        :param datatype:
-        :param default_value:
-
-        :return input: Feature class with new field.
+        Creates and clears directories, to which created files are saved.
+        Creates temporary geodatabase.
         """
 
-        try:
-            arcpy.DeleteField_management(input, newfield)
-        except:
-            pass
-        arcpy.AddField_management(input, newfield, datatype)
-        arcpy.CalculateField_management(input, newfield, default_value, "PYTHON")
-        return input
+        # deleting output directory
+        shutil.rmtree(self.data['outdir'])
 
-    def _get_intersect(self, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, gp, tab_puda_veg, tab_puda_veg_code):
+        if not os.path.exists(self.data['outdir']):
+            os.makedirs(self.data['outdir'])
+        self._add_message("Creating of the output directory: " + self.data['outdir'])
+
+        self.data['temp'] = self.data['outdir'] + os.sep + "temp"
+
+        if not os.path.exists(self.data['temp']):
+            os.makedirs(self.data['temp'])
+
+        self._add_message("Creating of the temp: " + self.data['temp'])
+
+        # deleting content of output directory
+        dirList = os.listdir(self.data['outdir'])  # arcgis bug - locking shapefiles
+        ab = 0
+        for fname in dirList:
+            if "sr.lock" in fname:
+                ab = 1
+
+        if ab == 0:
+            contents = [os.path.join(self.data['outdir'], i) for i in os.listdir(self.data['outdir'])]
+
+            [shutil.rmtree(i) if os.path.isdir(i) else os.unlink(i)
+             for i in contents]
+
+        if not os.path.exists(self.data['temp']):
+            os.makedirs(self.data['temp'])
+
+        temp_gdb = arcpy.CreateFileGDB_management(self.data['temp'], "tempGDB.gdb")
+
+    def _get_intersect(self, gp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, tab_puda_veg, tab_puda_veg_code):
         """
-
+        :param gp:
         :param dmt_copy:
         :param veg_indata:
         :param soil_indata:
         :param vtyp:
         :param ptyp:
-        :param gp:
         :param tab_puda_veg:
         :param tab_puda_veg_code:
 
@@ -314,7 +295,6 @@ class PrepareData:
                         sys.exit()
 
         return intersect, null_shp, sfield
-
 
     def _clip_data(self, dmt_copy, intersect, slope_orig, flow_direction):
         """
@@ -739,6 +719,26 @@ class PrepareData:
             self.data['toky'] = None
             self.data['mat_tok_reach'] = None
             self.data['toky_loc'] = None
+
+    def _add_field(self, input, newfield, datatype, default_value):  # EDL
+        """
+        Adds field into attribute field of feature class.
+
+        :param input: Feature class to which new field is to be added.
+        :param newfield:
+        :param datatype:
+        :param default_value:
+
+        :return input: Feature class with new field.
+        """
+
+        try:
+            arcpy.DeleteField_management(input, newfield)
+        except:
+            pass
+        arcpy.AddField_management(input, newfield, datatype)
+        arcpy.CalculateField_management(input, newfield, default_value, "PYTHON")
+        return input
 
     def _save_raster(self, name, array_export, l_x, l_y, spix, vpix, no_data_value, folder):
         """
