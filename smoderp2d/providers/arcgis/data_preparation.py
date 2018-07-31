@@ -730,8 +730,8 @@ class PrepareData:
                      self.data['outdir'],
                      dmt_clip,
                      intersect]
-            sp = StreamPreparation()
-            self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = StreamPreparation.prepare_streams(sp, input)
+
+            self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = StreamPreparation().prepare_streams(input)
 
             self._add_message("Stream preparation has finished")
 
