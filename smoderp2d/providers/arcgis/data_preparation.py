@@ -282,8 +282,7 @@ class PrepareData:
 
         arcpy.CopyRows_management(tab_puda_veg, puda_veg_dbf)
         sfield = ["k", "s", "n", "pi", "ppl", "ret", "b", "x", "y", "tau", "v"]
-
-        arcpy.JoinField_management(intersect, "puda_veg", puda_veg_dbf,tab_puda_veg_code,"k;s;n;pi;ppl;ret;b;x;y;tau;v")
+        self._join_table(intersect, "puda_veg", puda_veg_dbf,tab_puda_veg_code,"k;s;n;pi;ppl;ret;b;x;y;tau;v")
 
         with arcpy.da.SearchCursor(intersect, sfield) as cursor:
             for row in cursor:
@@ -704,10 +703,11 @@ class PrepareData:
                      self.data['r'],
                      self.data['c'],
                      ll_corner,
-                     self._add_field,
                      self.data['outdir'],
                      dmt_clip,
-                     intersect]
+                     intersect,
+                     self._add_field,
+                     self._join_table]
 
             self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = StreamPreparation(input).prepare_streams()
 
@@ -737,6 +737,21 @@ class PrepareData:
         arcpy.AddField_management(input, newfield, datatype)
         arcpy.CalculateField_management(input, newfield, default_value, "PYTHON")
         return input
+
+    def _join_table(self, in_data, in_field, join_table, join_field, fields = None):
+        """
+
+        :param in_data:
+        :param in_field:
+        :param join_table:
+        :param join_field:
+        :param fields:
+        :return:
+        """
+        if fields == None:
+            arcpy.JoinField_management(in_data, in_field, join_table, join_field)
+        else:
+            arcpy.JoinField_management(in_data, in_field, join_table, join_field, fields)
 
     def _save_raster(self, name, array_export, folder):
         """

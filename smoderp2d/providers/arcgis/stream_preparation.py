@@ -56,10 +56,11 @@ class StreamPreparation:
         self.rows = input[6]
         self.cols = input[7]
         self.ll_corner = input[8]
-        self._add_field = input[9]
-        self.output = input[10]  # ulozit do temp/streamprep
-        self.dmt_clip = input[11]
-        self.intersect = input[12]
+        self.output = input[9]  # ulozit do temp/streamprep
+        self.dmt_clip = input[10]
+        self.intersect = input[11]
+        self._add_field = input[12]
+        self._join_table = input[13]
 
     def prepare_streams(self):
 
@@ -138,8 +139,8 @@ class StreamPreparation:
         start_point = arcpy.sa.ExtractValuesToPoints(start, self.dmt_clip, xxx, "NONE", "VALUE_ONLY")
 
         # Join
-        arcpy.JoinField_management(toky, "FID", start_point, "ORIG_FID")
-        arcpy.JoinField_management(toky, "FID", end_point, "ORIG_FID")
+        self._join_table(toky, "FID", start_point, "ORIG_FID")
+        self._join_table(toky, "FID", end_point, "ORIG_FID")
         arcpy.DeleteField_management(
             toky,
             ["SHAPE_LEN",
@@ -183,8 +184,8 @@ class StreamPreparation:
         arcpy.AddXY_management(end_point_check)
 
         # Join
-        A = arcpy.JoinField_management(toky, "FID", start_point_check, "ORIG_FID")
-        B = arcpy.JoinField_management(toky, "FID", end_point_check, "ORIG_FID")
+        self._join_table(toky, "FID", start_point_check, "ORIG_FID")
+        self._join_table(toky, "FID", end_point_check, "ORIG_FID")
         arcpy.DeleteField_management(toky, ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"])
 
         fc = toky
@@ -303,11 +304,11 @@ class StreamPreparation:
         sfield = ["cislo", "smoderp", "tvar", "b", "m", "drsnost", "Q365"]
 
         try:
-            arcpy.JoinField_management(toky, self.tab_stream_tvar_code, stream_tvar_dbf, self.tab_stream_tvar_code,
+            self._join_table(toky, self.tab_stream_tvar_code, stream_tvar_dbf, self.tab_stream_tvar_code,
                                         "cislo;tvar;b;m;drsnost;Q365")
         except:
             self._add_field(toky, "smoderp", "TEXT", "0")
-            arcpy.JoinField_management(toky, self.tab_stream_tvar_code, stream_tvar_dbf, self.tab_stream_tvar_code,
+            self._join_table(toky, self.tab_stream_tvar_code, stream_tvar_dbf, self.tab_stream_tvar_code,
                                        "cislo;tvar;b;m;drsnost;Q365")
 
         with arcpy.da.SearchCursor(toky, sfield) as cursor:
