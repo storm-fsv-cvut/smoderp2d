@@ -147,7 +147,7 @@ class StreamPreparation:
         end_point = arcpy.sa.ExtractValuesToPoints(end, self.dmt_clip, xxx, "NONE", "VALUE_ONLY")
 
         # Extract value to points - START
-        arcpy.AddMessage("Extract value to points - START...")
+        self._add_message("Extract value to points - START...")
         xxx = self.temp_dp + os.sep + "start_point"
         start_point = arcpy.sa.ExtractValuesToPoints(start, self.dmt_clip, xxx, "NONE", "VALUE_ONLY")
 
@@ -334,60 +334,44 @@ class StreamPreparation:
                         sys.exit()
 
         fields = arcpy.ListFields(toky)
-        field_names = [field.name for field in fields]
-        toky_tmp = [[] for field in fields]
+        self.field_names = [field.name for field in fields]
+        self.toky_tmp = [[] for field in fields]
 
         for row in arcpy.SearchCursor(toky):
-            field_vals = [row.getValue(field) for field in field_names]
+            field_vals = [row.getValue(field) for field in self.field_names]
             # field_vals
             for i in range(len(field_vals)):
-                toky_tmp[i].append(field_vals[i])
+                self.toky_tmp[i].append(field_vals[i])
 
         del row
 
-        tokylist = []
-        tokylist.append(toky_tmp[field_names.index('FID')])
-        tokylist.append(toky_tmp[field_names.index('POINT_X')])
-        tokylist.append(toky_tmp[field_names.index('POINT_Y')])
-        tokylist.append(toky_tmp[field_names.index('POINT_X_1')])
-        tokylist.append(toky_tmp[field_names.index('POINT_Y_1')])
-        tokylist.append(toky_tmp[field_names.index('to_node')])
-        tokylist.append(toky_tmp[field_names.index('length')])
-        tokylist.append(toky_tmp[field_names.index('sklon')])
-        
-        try:
-            tokylist.append(toky_tmp[field_names.index('smoderp')])
-        except ValueError:
-            tokylist.append(toky_tmp[field_names.index('SMODERP')])
+        self.tokylist = []
+        self._append_value('FID')
+        self._append_value('POINT_X')
+        self._append_value('POINT_Y')
+        self._append_value('POINT_X_1')
+        self._append_value('POINT_Y_1')
+        self._append_value('to_node')
+        self._append_value('length')
+        self._append_value('sklon')
 
-        try:
-            tokylist.append(toky_tmp[field_names.index('cislo')])
-        except ValueError:
-            tokylist.append(toky_tmp[field_names.index('CISLO')])
+        self._append_value('smoderp', 'SMODERP')
+        self._append_value('cislo', 'CISLO')
+        self._append_value('tvar','TVAR')
+        self._append_value('b', 'B')
+        self._append_value('m', 'M')
+        self._append_value('drsnost', 'DRSNOST')
+        self._append_value('q365', 'Q365')
 
-        try:
-            tokylist.append(toky_tmp[field_names.index('tvar')])
-        except ValueError:
-            tokylist.append(toky_tmp[field_names.index('TVAR')])
+        return self.tokylist, mat_tok_usek, toky_loc
 
-        try:
-            tokylist.append(toky_tmp[field_names.index('b')])
-        except ValueError:
-            tokylist.append(toky_tmp[field_names.index('B')])
+    def _append_value(self, field_name_try, field_name_except = None):
 
-        try:
-            tokylist.append(toky_tmp[field_names.index('m')])
-        except ValueError:
-            tokylist.append(toky_tmp[field_names.index('M')])
+        if field_name_except == None:
+            self.tokylist.append(self.toky_tmp[self.field_names.index(field_name_try)])
+        else:
+            try:
+                self.tokylist.append(self.toky_tmp[self.field_names.index(field_name_try)])
+            except ValueError:
+                self.tokylist.append(self.toky_tmp[self.field_names.index(field_name_except)])
 
-        try:
-            tokylist.append(toky_tmp[field_names.index('drsnost')])
-        except ValueError:
-            tokylist.append(toky_tmp[field_names.index('DRSNOST')])
-
-        try:
-            tokylist.append(toky_tmp[field_names.index('q365')])
-        except ValueError:
-            tokylist.append(toky_tmp[field_names.index('Q365')])
-
-        return tokylist, mat_tok_usek, toky_loc
