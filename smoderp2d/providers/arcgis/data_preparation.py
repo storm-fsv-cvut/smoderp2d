@@ -70,7 +70,7 @@ class PrepareData:
         self.data['points'] = points
 
         # create output folder, where temporary data are stored
-        self._create_output()
+        self._set_output()
 
         # copy of dmt for ?? TODO
         dmt_copy = self.data['temp'] + os.sep + "tempGDB.gdb" + os.sep + "dmt_copy"
@@ -191,7 +191,7 @@ class PrepareData:
             'toky_loc': None
             }
 
-    def _create_output(self):
+    def _set_output(self):
         """
         Creates and clears directories, to which created files are saved.
         Creates temporary geodatabase.
