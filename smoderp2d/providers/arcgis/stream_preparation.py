@@ -70,40 +70,6 @@ class StreamPreparation:
 
         arcpy.env.snapRaster = self.dmt
 
-    def _add_message(self, message):
-        """
-        Pops up a message into arcgis and saves it into log file.
-        :param message: Message to be printed.
-        """
-        Logger.info(message)
-
-    def _set_output(self):
-        """
-        Define output temporary folder and geodatabase.
-        """
-
-        # Set output
-        self.temp_dp = self.output + os.sep + "temp_dp"
-        if not os.path.exists(self.temp_dp):
-            os.makedirs(self.temp_dp)
-        self.tempgdb_dp = arcpy.CreateFileGDB_management(self.temp_dp, "temp_dp.gdb")
-
-    def _setnull(self):
-        """
-        Setnull calculation.
-        """
-
-        # WATER FLOWS ACCORDING DMT:
-        dmt_fill, flow_direction, flow_accumulation, slope = arcgis_dmtfce.dmtfce(self.dmt_clip, self.temp_dp,
-                                                                                  "TRUE", "TRUE", "NONE")
-
-        try:
-            setnull = arcpy.sa.SetNull(flow_accumulation, 1, "VALUE < 300")  # hodnota value??
-            setnull.save(self.temp_dp + os.sep + "setnull")
-        except:
-            self._add_message("Unexpected error during setnull calculation: " + sys.exc_info()[0])
-            raise Exception("Unexpected error during setnull calculation: " + sys.exc_info()[0])
-
     def prepare_streams(self):
 
         self._set_output()
@@ -242,30 +208,7 @@ class StreamPreparation:
                 else:
                     continue
 
-        # HYDRAULIKA TOKU
-        self._add_field(toky, "length", "DOUBLE", 0.0)  # (m)
-        self._add_field(toky, "sklon", "DOUBLE", 0.0)  # (-)
-        self._add_field(toky, "V_infl_ce", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "V_infl_us", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "V_infl", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "Q_outfl", "DOUBLE", 0.0)  # (m3/s)
-        self._add_field(toky, "V_outfl", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "V_outfl_tm", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "V_zbyt", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "V_zbyt_tm", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "V", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "h", "DOUBLE", 0.0)  # (m)
-        self._add_field(toky, "vs", "DOUBLE", 0.0)  # (m/s)
-        self._add_field(toky, "NS", "DOUBLE", 0.0)  # (m)
-        self._add_field(toky, "total_Vic", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "total_Viu", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "max_Q", "DOUBLE", 0.0)  # (m3/s)
-        self._add_field(toky, "max_h", "DOUBLE", 0.0)  # (m)
-        self._add_field(toky, "max_vs", "DOUBLE", 0.0)  # (m/s)
-        self._add_field(toky, "total_Vo", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "total_Vi", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "total_NS", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "total_Vz", "DOUBLE", 0.0)  # (m3)
+        toky = self._stream_hydraulics(toky)
 
         # sklon
         fc = toky
@@ -312,6 +255,79 @@ class StreamPreparation:
 
         del row
 
+        self._create_tokylist()
+
+        return self.tokylist, mat_tok_usek, toky_loc
+
+    def _add_message(self, message):
+        """
+        Pops up a message into arcgis and saves it into log file.
+        :param message: Message to be printed.
+        """
+        Logger.info(message)
+
+    def _set_output(self):
+        """
+        Define output temporary folder and geodatabase.
+        """
+
+        # Set output
+        self.temp_dp = self.output + os.sep + "temp_dp"
+        if not os.path.exists(self.temp_dp):
+            os.makedirs(self.temp_dp)
+        self.tempgdb_dp = arcpy.CreateFileGDB_management(self.temp_dp, "temp_dp.gdb")
+
+    def _setnull(self):
+        """
+        Setnull calculation.
+        """
+
+        # WATER FLOWS ACCORDING DMT:
+        dmt_fill, flow_direction, flow_accumulation, slope = arcgis_dmtfce.dmtfce(self.dmt_clip, self.temp_dp,
+                                                                                  "TRUE", "TRUE", "NONE")
+
+        try:
+            setnull = arcpy.sa.SetNull(flow_accumulation, 1, "VALUE < 300")  # hodnota value??
+            setnull.save(self.temp_dp + os.sep + "setnull")
+        except:
+            self._add_message("Unexpected error during setnull calculation: " + sys.exc_info()[0])
+            raise Exception("Unexpected error during setnull calculation: " + sys.exc_info()[0])
+
+    def _delete_fields(self, table, fields):
+
+        arcpy.DeleteField_management(table, fields)
+
+    def _stream_hydraulics(self, toky):
+
+        # HYDRAULIKA TOKU
+        self._add_field(toky, "length", "DOUBLE", 0.0)  # (m)
+        self._add_field(toky, "sklon", "DOUBLE", 0.0)  # (-)
+        self._add_field(toky, "V_infl_ce", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "V_infl_us", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "V_infl", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "Q_outfl", "DOUBLE", 0.0)  # (m3/s)
+        self._add_field(toky, "V_outfl", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "V_outfl_tm", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "V_zbyt", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "V_zbyt_tm", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "V", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "h", "DOUBLE", 0.0)  # (m)
+        self._add_field(toky, "vs", "DOUBLE", 0.0)  # (m/s)
+        self._add_field(toky, "NS", "DOUBLE", 0.0)  # (m)
+        self._add_field(toky, "total_Vic", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "total_Viu", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "max_Q", "DOUBLE", 0.0)  # (m3/s)
+        self._add_field(toky, "max_h", "DOUBLE", 0.0)  # (m)
+        self._add_field(toky, "max_vs", "DOUBLE", 0.0)  # (m/s)
+        self._add_field(toky, "total_Vo", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "total_Vi", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "total_NS", "DOUBLE", 0.0)  # (m3)
+        self._add_field(toky, "total_Vz", "DOUBLE", 0.0)  # (m3)
+
+        return toky
+
+    def _create_tokylist(self):
+
         self.tokylist = []
         self._append_value('FID')
         self._append_value('POINT_X')
@@ -329,12 +345,6 @@ class StreamPreparation:
         self._append_value('m', 'M')
         self._append_value('drsnost', 'DRSNOST')
         self._append_value('q365', 'Q365')
-
-        return self.tokylist, mat_tok_usek, toky_loc
-
-    def _delete_fields(self, table, fields):
-
-        arcpy.DeleteField_management(table, fields)
 
     def _append_value(self, field_name_try, field_name_except = None):
 
