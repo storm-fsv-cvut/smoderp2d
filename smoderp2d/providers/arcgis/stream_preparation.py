@@ -208,7 +208,7 @@ class StreamPreparation:
                 else:
                     continue
 
-        toky = self._stream_hydraulics(toky)
+        self._stream_hydraulics(toky)
 
         # sklon
         fc = toky
@@ -323,8 +323,6 @@ class StreamPreparation:
         self._add_field(toky, "total_Vi", "DOUBLE", 0.0)  # (m3)
         self._add_field(toky, "total_NS", "DOUBLE", 0.0)  # (m3)
         self._add_field(toky, "total_Vz", "DOUBLE", 0.0)  # (m3)
-
-        return toky
 
     def _create_tokylist(self):
 
