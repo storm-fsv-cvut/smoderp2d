@@ -61,6 +61,7 @@ class StreamPreparation:
         self.intersect = input[11]
         self._add_field = input[12]
         self._join_table = input[13]
+        self.gp = input[14]
 
         # Overwriting output
         arcpy.env.overwriteOutput = 1
@@ -71,6 +72,8 @@ class StreamPreparation:
         arcpy.env.snapRaster = self.dmt
 
     def prepare_streams(self):
+
+        gp = self.gp
 
         self._set_output()
 
@@ -222,8 +225,8 @@ class StreamPreparation:
                 cursor.updateRow(row)
                 row[5] = row[4]
                 cursor.updateRow(row)
-        # tvar koryt
 
+        # tvar koryt
         stream_tvar_dbf = self.temp_dp + os.sep + "stream_tvar.dbf"
         arcpy.CopyRows_management(self.tab_stream_tvar, stream_tvar_dbf)
         sfield = ["cislo", "smoderp", "tvar", "b", "m", "drsnost", "Q365"]
