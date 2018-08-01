@@ -122,15 +122,7 @@ class StreamPreparation:
         toky = arcpy.Clip_analysis(self.stream, hranice_buffer, toky)
 
         # MK - nevim proc se maze neco, co v atributove tabulce vubec neni
-        arcpy.DeleteField_management(
-            toky,
-            ["EX_JH",
-             "POZN",
-             "PRPROP_Z",
-             "IDVT",
-             "UTOKJ_ID",
-             "UTOKJN_ID",
-             "UTOKJN_F"])
+        self._delete_fields(toky, ["EX_JH", "POZN", "PRPROP_Z", "IDVT", "UTOKJ_ID", "UTOKJN_ID", "UTOKJN_F"])
 
 
         # Feature vertices to points - START
@@ -155,19 +147,8 @@ class StreamPreparation:
         self._join_table(toky, "FID", start_point, "ORIG_FID")
         self._join_table(toky, "FID", end_point, "ORIG_FID")
 
-        arcpy.DeleteField_management(
-            toky,
-            ["SHAPE_LEN",
-             "SHAPE_LENG",
-             "SHAPE_LE_1",
-             "NAZ_TOK_1",
-             "TOK_ID_1",
-             "SHAPE_LE_2",
-             "SHAPE_LE_3",
-             "NAZ_TOK_12",
-             "TOK_ID_12",
-             "SHAPE_LE_4",
-             "ORIG_FID_1"])
+        self._delete_fields(toky, ["SHAPE_LEN", "SHAPE_LENG", "SHAPE_LE_1", "NAZ_TOK_1", "TOK_ID_1", "SHAPE_LE_2",
+                                   "SHAPE_LE_3", "NAZ_TOK_12", "TOK_ID_12", "SHAPE_LE_4", "ORIG_FID_1"])
 
         # Flip selected lines
         self._add_message("Flip lines...")  # mat_tok_usek
@@ -177,7 +158,7 @@ class StreamPreparation:
         arcpy.SelectLayerByAttribute_management(toky_t, "NEW_SELECTION", "RASTERVALU < RASTERVA_1")
         arcpy.FlipLine_edit(toky_t)
 
-        arcpy.DeleteField_management(toky, ["RASTERVALU", "RASTERVA_1", "ORIG_FID", "ORIG_FID_1"])
+        self._delete_fields(toky, ["RASTERVALU", "RASTERVA_1", "ORIG_FID", "ORIG_FID_1"])
 
         # Feature vertices to points - START
         self._add_message("Feature vertices to points - START...")
@@ -200,7 +181,7 @@ class StreamPreparation:
         # Join
         self._join_table(toky, "FID", start_point_check, "ORIG_FID")
         self._join_table(toky, "FID", end_point_check, "ORIG_FID")
-        arcpy.DeleteField_management(toky, ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"])
+        self._delete_fields(toky, ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"])
 
         fc = toky
         field = ["FID", "RASTERVALU", "POINT_X", "RASTERVA_1", "POINT_X_1"]
@@ -230,25 +211,11 @@ class StreamPreparation:
                         else:
                             row[5] = "-9999"
 
-        arcpy.DeleteField_management(
-            toky,
-            ["SHAPE_LEN",
-             "SHAPE_LE_1",
-             "SHAPE_LE_2",
-             "SHAPE_LE_3",
-             "SHAPE_LE_4",
-             "SHAPE_LE_5",
-             "SHAPE_LE_6",
-             "SHAPE_LE_7",
-             "SHAPE_LE_8",
-             "SHAPE_LE_9",
-             "SHAPE_L_10",
-             "SHAPE_L_11",
-             "SHAPE_L_12",
-             "SHAPE_L_13",
-             "SHAPE_L_14"])
+        self._delete_fields(toky, ["SHAPE_LEN", "SHAPE_LE_1", "SHAPE_LE_2", "SHAPE_LE_3", "SHAPE_LE_4", "SHAPE_LE_5",
+                                   "SHAPE_LE_6", "SHAPE_LE_7", "SHAPE_LE_8", "SHAPE_LE_9", "SHAPE_L_10", "SHAPE_L_11",
+                                   "SHAPE_L_12", "SHAPE_L_13", "SHAPE_L_14"])
 
-        arcpy.DeleteField_management(toky, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"])
+        self._delete_fields(toky, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"])
 
         stream_rst1 = self.temp_dp + os.sep + "stream_rst"
         stream_rst = arcpy.PolylineToRaster_conversion(toky, "FID", stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix )
@@ -364,6 +331,10 @@ class StreamPreparation:
         self._append_value('q365', 'Q365')
 
         return self.tokylist, mat_tok_usek, toky_loc
+
+    def _delete_fields(self, table, fields):
+
+        arcpy.DeleteField_management(table, fields)
 
     def _append_value(self, field_name_try, field_name_except = None):
 
