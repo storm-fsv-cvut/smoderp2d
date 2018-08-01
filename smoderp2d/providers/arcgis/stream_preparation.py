@@ -62,19 +62,22 @@ class StreamPreparation:
         self._add_field = input[12]
         self._join_table = input[13]
 
-    def prepare_streams(self):
-
         # Overwriting output
         arcpy.env.overwriteOutput = 1
         # Check extensions
         arcpy.CheckOutExtension("3D")
         arcpy.CheckOutExtension("Spatial")
 
-        # SET INPUT:
-        # Set input
-        # tvar koryt
-
         arcpy.env.snapRaster = self.dmt
+
+    def _add_message(self, message):
+        """
+        Pops up a message into arcgis and saves it into log file.
+        :param message: Message to be printed.
+        """
+        Logger.info(message)
+
+    def prepare_streams(self):
 
         # Set output
         temp_dp = self.output + os.sep + "temp_dp"
@@ -84,21 +87,16 @@ class StreamPreparation:
 
         # WATER FLOWS ACCORDING DMT:
 
-        dmt_fill, flow_direction, flow_accumulation, slope = arcgis_dmtfce.dmtfce(
-            self.dmt_clip, temp_dp, "TRUE", "TRUE", "NONE")
+        dmt_fill, flow_direction, flow_accumulation, slope = arcgis_dmtfce.dmtfce(self.dmt_clip, temp_dp,
+                                                                                  "TRUE", "TRUE", "NONE")
 
         # Setnull
         try:
-            setnull = arcpy.sa.SetNull(
-                flow_accumulation,
-                1,
-                "VALUE < 300")  # hodnota value??
+            setnull = arcpy.sa.SetNull(flow_accumulation, 1, "VALUE < 300")  # hodnota value??
             setnull.save(temp_dp + os.sep + "setnull")
         except:
-            Logger.info(
-                "Unexpected error during setnull calculation:",
-                sys.exc_info()[0])
-            raise
+            self._add_message("Unexpected error during setnull calculation: " + sys.exc_info()[0])
+            raise Exception("Unexpected error during setnull calculation: " + sys.exc_info()[0])
 
         # WATER FLOWS ACCORDING DIBAVOD:
         # Clip
@@ -121,15 +119,15 @@ class StreamPreparation:
              "UTOKJN_F"])
 
         # Feature vertices to points - START
-        Logger.info("Feature vertices to points - START...")
+        self._add_message("Feature vertices to points - START...")
         start = arcpy.FeatureVerticesToPoints_management(toky, temp_dp + os.sep + "start", "START")
 
         # Feature vertices to points - END
-        Logger.info("Feature vertices to points - END...")
+        self._add_message("Feature vertices to points - END...")
         end = arcpy.FeatureVerticesToPoints_management(toky, temp_dp + os.sep + "end", "END")
 
         # Extract value to points - END
-        Logger.info("Extract value to points - END...")
+        self._add_message("Extract value to points - END...")
         xxx = temp_dp + os.sep + "end_point"
         end_point = arcpy.sa.ExtractValuesToPoints(end, self.dmt_clip, xxx, "NONE", "VALUE_ONLY")
 
@@ -156,7 +154,7 @@ class StreamPreparation:
              "ORIG_FID_1"])
 
         # Flip selected lines
-        Logger.info("Flip lines...")  # mat_tok_usek
+        self._add_message("Flip lines...")  # mat_tok_usek
 
         toky_t = arcpy.MakeFeatureLayer_management(toky, temp_dp + os.sep + "tok_t.shp")
 
@@ -166,20 +164,20 @@ class StreamPreparation:
         arcpy.DeleteField_management(toky, ["RASTERVALU", "RASTERVA_1", "ORIG_FID", "ORIG_FID_1"])
 
         # Feature vertices to points - START
-        Logger.info("Feature vertices to points - START...")
+        self._add_message("Feature vertices to points - START...")
         start = arcpy.FeatureVerticesToPoints_management(toky, temp_dp + os.sep + "start", "START")
 
         # Feature vertices to points - END
-        Logger.info("Feature vertices to points - END...")
+        self._add_message("Feature vertices to points - END...")
         end = arcpy.FeatureVerticesToPoints_management(toky, temp_dp + os.sep + "end", "END")
 
         # Extract value to points - START
-        Logger.info("Extract value to points - START...")
+        self._add_message("Extract value to points - START...")
         start_point_check = arcpy.sa.ExtractValuesToPoints(start,self.dmt,temp_dp+os.sep+"start_point_check","NONE","VALUE_ONLY")
         arcpy.AddXY_management(start_point_check)
 
         # Extract value to points - END
-        Logger.info("Extract value to points - END...")
+        self._add_message("Extract value to points - END...")
         end_point_check = arcpy.sa.ExtractValuesToPoints(end, self.dmt, temp_dp+os.sep+"end_point_check", "NONE","VALUE_ONLY")
         arcpy.AddXY_management(end_point_check)
 
@@ -196,7 +194,7 @@ class StreamPreparation:
                 if row[1] > row[3]:
                     continue
                 else:
-                    Logger.info("Flip line")
+                    self._add_message("Flip line")
                     arcpy.FlipLine_edit(fc)
         self._add_field(toky, "to_node", "DOUBLE", -9999)
 
@@ -315,7 +313,7 @@ class StreamPreparation:
             for row in cursor:
                 for i in range(len(row)):
                     if row[i] == " ":
-                        Logger.info("Value in tab_stream_tvar are no correct - STOP, check shp file toky in output")
+                        self._add_message("Value in tab_stream_tvar are no correct - STOP, check shp file toky in output")
                         sys.exit()
 
         fields = arcpy.ListFields(toky)
