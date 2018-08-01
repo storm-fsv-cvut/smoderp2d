@@ -88,14 +88,15 @@ class StreamPreparation:
             os.makedirs(self.temp_dp)
         self.tempgdb_dp = arcpy.CreateFileGDB_management(self.temp_dp, "temp_dp.gdb")
 
-    def prepare_streams(self):
+    def _setnull(self):
+        """
+        Setnull calculation.
+        """
 
         # WATER FLOWS ACCORDING DMT:
-
         dmt_fill, flow_direction, flow_accumulation, slope = arcgis_dmtfce.dmtfce(self.dmt_clip, self.temp_dp,
                                                                                   "TRUE", "TRUE", "NONE")
 
-        # Setnull
         try:
             setnull = arcpy.sa.SetNull(flow_accumulation, 1, "VALUE < 300")  # hodnota value??
             setnull.save(self.temp_dp + os.sep + "setnull")
@@ -103,16 +104,24 @@ class StreamPreparation:
             self._add_message("Unexpected error during setnull calculation: " + sys.exc_info()[0])
             raise Exception("Unexpected error during setnull calculation: " + sys.exc_info()[0])
 
+    def prepare_streams(self):
+
+        self._set_output()
+
+        self._setnull() #not used for anything, just saves setnull
+
         # WATER FLOWS ACCORDING DIBAVOD:
         # Clip
         toky = self.temp_dp + os.sep + "toky.shp"
         toky_loc = self.temp_dp + os.sep + "toky.shp"
         hranice = self.temp_dp + os.sep + "hranice.shp"
         hranice = arcpy.Clip_analysis(self.null, self.intersect, hranice)
-        hranice2 = arcpy.Buffer_analysis(hranice, self.temp_dp + os.sep + "hranice2.shp", -self.spix  / 3, "FULL", "ROUND", "NONE")
+        hranice_buffer = arcpy.Buffer_analysis(hranice, self.temp_dp + os.sep + "hranice_buffer.shp",
+                                               -self.spix  / 3, "FULL", "ROUND", "NONE")
 
-        toky = arcpy.Clip_analysis(self.stream, hranice2, toky)
+        toky = arcpy.Clip_analysis(self.stream, hranice_buffer, toky)
 
+        # MK - nevim proc se maze neco, co v atributove tabulce vubec neni
         arcpy.DeleteField_management(
             toky,
             ["EX_JH",
@@ -122,6 +131,7 @@ class StreamPreparation:
              "UTOKJ_ID",
              "UTOKJN_ID",
              "UTOKJN_F"])
+
 
         # Feature vertices to points - START
         self._add_message("Feature vertices to points - START...")
@@ -144,6 +154,7 @@ class StreamPreparation:
         # Join
         self._join_table(toky, "FID", start_point, "ORIG_FID")
         self._join_table(toky, "FID", end_point, "ORIG_FID")
+
         arcpy.DeleteField_management(
             toky,
             ["SHAPE_LEN",
@@ -236,6 +247,7 @@ class StreamPreparation:
              "SHAPE_L_12",
              "SHAPE_L_13",
              "SHAPE_L_14"])
+
         arcpy.DeleteField_management(toky, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"])
 
         stream_rst1 = self.temp_dp + os.sep + "stream_rst"
@@ -342,30 +354,37 @@ class StreamPreparation:
         tokylist.append(toky_tmp[field_names.index('to_node')])
         tokylist.append(toky_tmp[field_names.index('length')])
         tokylist.append(toky_tmp[field_names.index('sklon')])
+        
         try:
             tokylist.append(toky_tmp[field_names.index('smoderp')])
         except ValueError:
             tokylist.append(toky_tmp[field_names.index('SMODERP')])
+
         try:
             tokylist.append(toky_tmp[field_names.index('cislo')])
         except ValueError:
             tokylist.append(toky_tmp[field_names.index('CISLO')])
+
         try:
             tokylist.append(toky_tmp[field_names.index('tvar')])
         except ValueError:
             tokylist.append(toky_tmp[field_names.index('TVAR')])
+
         try:
             tokylist.append(toky_tmp[field_names.index('b')])
         except ValueError:
             tokylist.append(toky_tmp[field_names.index('B')])
+
         try:
             tokylist.append(toky_tmp[field_names.index('m')])
         except ValueError:
             tokylist.append(toky_tmp[field_names.index('M')])
+
         try:
             tokylist.append(toky_tmp[field_names.index('drsnost')])
         except ValueError:
             tokylist.append(toky_tmp[field_names.index('DRSNOST')])
+
         try:
             tokylist.append(toky_tmp[field_names.index('q365')])
         except ValueError:
