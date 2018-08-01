@@ -77,34 +77,39 @@ class StreamPreparation:
         """
         Logger.info(message)
 
-    def prepare_streams(self):
+    def _set_output(self):
+        """
+        Define output temporary folder and geodatabase.
+        """
 
         # Set output
-        temp_dp = self.output + os.sep + "temp_dp"
-        if not os.path.exists(temp_dp):
-            os.makedirs(temp_dp)
-        tempgdb_dp = arcpy.CreateFileGDB_management(temp_dp, "temp_dp.gdb")
+        self.temp_dp = self.output + os.sep + "temp_dp"
+        if not os.path.exists(self.temp_dp):
+            os.makedirs(self.temp_dp)
+        self.tempgdb_dp = arcpy.CreateFileGDB_management(self.temp_dp, "temp_dp.gdb")
+
+    def prepare_streams(self):
 
         # WATER FLOWS ACCORDING DMT:
 
-        dmt_fill, flow_direction, flow_accumulation, slope = arcgis_dmtfce.dmtfce(self.dmt_clip, temp_dp,
+        dmt_fill, flow_direction, flow_accumulation, slope = arcgis_dmtfce.dmtfce(self.dmt_clip, self.temp_dp,
                                                                                   "TRUE", "TRUE", "NONE")
 
         # Setnull
         try:
             setnull = arcpy.sa.SetNull(flow_accumulation, 1, "VALUE < 300")  # hodnota value??
-            setnull.save(temp_dp + os.sep + "setnull")
+            setnull.save(self.temp_dp + os.sep + "setnull")
         except:
             self._add_message("Unexpected error during setnull calculation: " + sys.exc_info()[0])
             raise Exception("Unexpected error during setnull calculation: " + sys.exc_info()[0])
 
         # WATER FLOWS ACCORDING DIBAVOD:
         # Clip
-        toky = temp_dp + os.sep + "toky.shp"
-        toky_loc = temp_dp + os.sep + "toky.shp"
-        hranice = temp_dp + os.sep + "hranice.shp"
+        toky = self.temp_dp + os.sep + "toky.shp"
+        toky_loc = self.temp_dp + os.sep + "toky.shp"
+        hranice = self.temp_dp + os.sep + "hranice.shp"
         hranice = arcpy.Clip_analysis(self.null, self.intersect, hranice)
-        hranice2 = arcpy.Buffer_analysis(hranice, temp_dp + os.sep + "hranice2.shp", -self.spix  / 3, "FULL", "ROUND", "NONE")
+        hranice2 = arcpy.Buffer_analysis(hranice, self.temp_dp + os.sep + "hranice2.shp", -self.spix  / 3, "FULL", "ROUND", "NONE")
 
         toky = arcpy.Clip_analysis(self.stream, hranice2, toky)
 
@@ -120,20 +125,20 @@ class StreamPreparation:
 
         # Feature vertices to points - START
         self._add_message("Feature vertices to points - START...")
-        start = arcpy.FeatureVerticesToPoints_management(toky, temp_dp + os.sep + "start", "START")
+        start = arcpy.FeatureVerticesToPoints_management(toky, self.temp_dp + os.sep + "start", "START")
 
         # Feature vertices to points - END
         self._add_message("Feature vertices to points - END...")
-        end = arcpy.FeatureVerticesToPoints_management(toky, temp_dp + os.sep + "end", "END")
+        end = arcpy.FeatureVerticesToPoints_management(toky, self.temp_dp + os.sep + "end", "END")
 
         # Extract value to points - END
         self._add_message("Extract value to points - END...")
-        xxx = temp_dp + os.sep + "end_point"
+        xxx = self.temp_dp + os.sep + "end_point"
         end_point = arcpy.sa.ExtractValuesToPoints(end, self.dmt_clip, xxx, "NONE", "VALUE_ONLY")
 
         # Extract value to points - START
         arcpy.AddMessage("Extract value to points - START...")
-        xxx = temp_dp + os.sep + "start_point"
+        xxx = self.temp_dp + os.sep + "start_point"
         start_point = arcpy.sa.ExtractValuesToPoints(start, self.dmt_clip, xxx, "NONE", "VALUE_ONLY")
 
         # Join
@@ -156,7 +161,7 @@ class StreamPreparation:
         # Flip selected lines
         self._add_message("Flip lines...")  # mat_tok_usek
 
-        toky_t = arcpy.MakeFeatureLayer_management(toky, temp_dp + os.sep + "tok_t.shp")
+        toky_t = arcpy.MakeFeatureLayer_management(toky, self.temp_dp + os.sep + "tok_t.shp")
 
         arcpy.SelectLayerByAttribute_management(toky_t, "NEW_SELECTION", "RASTERVALU < RASTERVA_1")
         arcpy.FlipLine_edit(toky_t)
@@ -165,20 +170,20 @@ class StreamPreparation:
 
         # Feature vertices to points - START
         self._add_message("Feature vertices to points - START...")
-        start = arcpy.FeatureVerticesToPoints_management(toky, temp_dp + os.sep + "start", "START")
+        start = arcpy.FeatureVerticesToPoints_management(toky, self.temp_dp + os.sep + "start", "START")
 
         # Feature vertices to points - END
         self._add_message("Feature vertices to points - END...")
-        end = arcpy.FeatureVerticesToPoints_management(toky, temp_dp + os.sep + "end", "END")
+        end = arcpy.FeatureVerticesToPoints_management(toky, self.temp_dp + os.sep + "end", "END")
 
         # Extract value to points - START
         self._add_message("Extract value to points - START...")
-        start_point_check = arcpy.sa.ExtractValuesToPoints(start,self.dmt,temp_dp+os.sep+"start_point_check","NONE","VALUE_ONLY")
+        start_point_check = arcpy.sa.ExtractValuesToPoints(start,self.dmt,self.temp_dp+os.sep+"start_point_check","NONE","VALUE_ONLY")
         arcpy.AddXY_management(start_point_check)
 
         # Extract value to points - END
         self._add_message("Extract value to points - END...")
-        end_point_check = arcpy.sa.ExtractValuesToPoints(end, self.dmt, temp_dp+os.sep+"end_point_check", "NONE","VALUE_ONLY")
+        end_point_check = arcpy.sa.ExtractValuesToPoints(end, self.dmt, self.temp_dp+os.sep+"end_point_check", "NONE","VALUE_ONLY")
         arcpy.AddXY_management(end_point_check)
 
         # Join
@@ -233,13 +238,13 @@ class StreamPreparation:
              "SHAPE_L_14"])
         arcpy.DeleteField_management(toky, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"])
 
-        stream_rst1 = temp_dp + os.sep + "stream_rst"
+        stream_rst1 = self.temp_dp + os.sep + "stream_rst"
         stream_rst = arcpy.PolylineToRaster_conversion(toky, "FID", stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix )
-        tok_usek = temp_dp + os.sep + "tok_usek"
+        tok_usek = self.temp_dp + os.sep + "tok_usek"
 
         arcpy.gp.Reclassify_sa(stream_rst, "VALUE", "NoDataValue 1000", tok_usek, "DATA")
-        mat_tok_usek = arcpy.RasterToNumPyArray(temp_dp + os.sep + "tok_usek", self.ll_corner, self.cols, self.rows)
-        mat_tok = arcpy.RasterToNumPyArray(temp_dp + os.sep + "tok_usek", self.ll_corner, self.cols, self.rows)
+        mat_tok_usek = arcpy.RasterToNumPyArray(self.temp_dp + os.sep + "tok_usek", self.ll_corner, self.cols, self.rows)
+        mat_tok = arcpy.RasterToNumPyArray(self.temp_dp + os.sep + "tok_usek", self.ll_corner, self.cols, self.rows)
 
         cell_stream = []
         mat_tok_usek = mat_tok_usek.astype('int16')
@@ -297,7 +302,7 @@ class StreamPreparation:
                 cursor.updateRow(row)
         # tvar koryt
 
-        stream_tvar_dbf = temp_dp + os.sep + "stream_tvar.dbf"
+        stream_tvar_dbf = self.temp_dp + os.sep + "stream_tvar.dbf"
         arcpy.CopyRows_management(self.tab_stream_tvar, stream_tvar_dbf)
         sfield = ["cislo", "smoderp", "tvar", "b", "m", "drsnost", "Q365"]
 
