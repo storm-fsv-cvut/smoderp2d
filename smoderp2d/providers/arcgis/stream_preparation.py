@@ -79,20 +79,10 @@ class StreamPreparation:
 
         self._setnull() #not used for anything, just saves setnull
 
-        # WATER FLOWS ACCORDING DIBAVOD:
-        # Clip
-        toky = self.temp + os.sep + "toky.shp"
-        toky_loc = self.temp + os.sep + "toky.shp"
-        hranice = self.temp + os.sep + "hranice.shp"
-        hranice = arcpy.Clip_analysis(self.null, self.intersect, hranice)
-        hranice_buffer = arcpy.Buffer_analysis(hranice, self.temp + os.sep + "hranice_buffer.shp",
-                                               -self.spix  / 3, "FULL", "ROUND", "NONE")
-
-        toky = arcpy.Clip_analysis(self.stream, hranice_buffer, toky)
+        toky, toky_loc = self._clip_streams()
 
         # MK - nevim proc se maze neco, co v atributove tabulce vubec neni
         self._delete_fields(toky, ["EX_JH", "POZN", "PRPROP_Z", "IDVT", "UTOKJ_ID", "UTOKJN_ID", "UTOKJN_F"])
-
 
         # Feature vertices to points - START
         self._add_message("Feature vertices to points - START...")
@@ -295,6 +285,20 @@ class StreamPreparation:
         except:
             self._add_message("Unexpected error during setnull calculation: " + sys.exc_info()[0])
             raise Exception("Unexpected error during setnull calculation: " + sys.exc_info()[0])
+
+    def _clip_streams(self):
+        # WATER FLOWS ACCORDING DIBAVOD:
+        # Clip
+        toky = self.temp + os.sep + "toky.shp"
+        toky_loc = self.temp + os.sep + "toky.shp"
+        hranice = self.temp + os.sep + "hranice.shp"
+        hranice = arcpy.Clip_analysis(self.null, self.intersect, hranice)
+        hranice_buffer = arcpy.Buffer_analysis(hranice, self.temp + os.sep + "hranice_buffer.shp",
+                                               -self.spix / 3, "FULL", "ROUND", "NONE")
+
+        toky = arcpy.Clip_analysis(self.stream, hranice_buffer, toky)
+
+        return toky, toky_loc
 
     def _delete_fields(self, table, fields):
 
