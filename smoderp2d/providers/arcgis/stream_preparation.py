@@ -81,8 +81,6 @@ class StreamPreparation:
 
         toky, toky_loc = self._clip_streams()
 
-        # MK - nevim proc se maze neco, co v atributove tabulce vubec neni
-        self._delete_fields(toky, ["EX_JH", "POZN", "PRPROP_Z", "IDVT", "UTOKJ_ID", "UTOKJN_ID", "UTOKJN_F"])
 
         # Feature vertices to points - START
         self._add_message("Feature vertices to points - START...")
@@ -92,18 +90,17 @@ class StreamPreparation:
         self._add_message("Feature vertices to points - END...")
         end = arcpy.FeatureVerticesToPoints_management(toky, self.temp + os.sep + "end", "END")
 
-        # Extract value to points - END
-        self._add_message("Extract value to points - END...")
-        xxx = self.temp + os.sep + "end_point"
-        end_point = arcpy.sa.ExtractValuesToPoints(end, self.dmt_clip, xxx, "NONE", "VALUE_ONLY")
-
         # Extract value to points - START
         self._add_message("Extract value to points - START...")
-        xxx = self.temp + os.sep + "start_point"
-        start_point = arcpy.sa.ExtractValuesToPoints(start, self.dmt_clip, xxx, "NONE", "VALUE_ONLY")
+        start_point = arcpy.sa.ExtractValuesToPoints(start, self.dmt_clip, self.temp + os.sep + "start_point", "NONE",
+                                                     "VALUE_ONLY")
+        # Extract value to points - END
+        self._add_message("Extract value to points - END...")
+        end_point = arcpy.sa.ExtractValuesToPoints(end, self.dmt_clip, self.temp + os.sep + "end_point", "NONE",
+                                                   "VALUE_ONLY")
 
         # Join
-        self._join_table(toky, "FID", start_point, "ORIG_FID")
+        self._join_table(toky, "FID", start_point, "ORIG_FID")  #tady je dulezite udrzet poradi
         self._join_table(toky, "FID", end_point, "ORIG_FID")
 
         self._delete_fields(toky, ["SHAPE_LEN", "SHAPE_LENG", "SHAPE_LE_1", "NAZ_TOK_1", "TOK_ID_1", "SHAPE_LE_2",
@@ -142,26 +139,24 @@ class StreamPreparation:
         self._join_table(toky, "FID", end_point_check, "ORIG_FID")
         self._delete_fields(toky, ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"])
 
-        fc = toky
         field = ["FID", "RASTERVALU", "POINT_X", "RASTERVA_1", "POINT_X_1"]
 
-        with arcpy.da.SearchCursor(fc, field) as cursor:
+        with arcpy.da.SearchCursor(toky, field) as cursor:
             for row in cursor:
                 if row[1] > row[3]:
                     continue
                 else:
                     self._add_message("Flip line")
-                    arcpy.FlipLine_edit(fc)
+                    arcpy.FlipLine_edit(toky)
         self._add_field(toky, "to_node", "DOUBLE", -9999)
 
-        fc = toky
-        field_end = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
         field_start = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
-        with arcpy.da.SearchCursor(fc, field_start) as cursor_start:
+        field_end = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
+        with arcpy.da.SearchCursor(toky, field_start) as cursor_start:
             for row in cursor_start:
                 a = (row[1], row[2])
                 d = row[0]
-                with arcpy.da.UpdateCursor(fc, field_end) as cursor_end:
+                with arcpy.da.UpdateCursor(toky, field_end) as cursor_end:
                     for row in cursor_end:
                         b = (row[3], row[4])
                         if a == b:
@@ -204,9 +199,8 @@ class StreamPreparation:
         self._stream_hydraulics(toky)
 
         # sklon
-        fc = toky
         field = ["FID", "RASTERVALU", "RASTERVA_1", "sklon", "SHAPE@LENGTH", "length"]
-        with arcpy.da.UpdateCursor(fc, field) as cursor:
+        with arcpy.da.UpdateCursor(toky, field) as cursor:
             for row in cursor:
                 sklon_koryta = (row[1] - row[2]) / row[4]
                 if sklon_koryta == 0:
@@ -297,6 +291,9 @@ class StreamPreparation:
                                                -self.spix / 3, "FULL", "ROUND", "NONE")
 
         toky = arcpy.Clip_analysis(self.stream, hranice_buffer, toky)
+
+        # MK - nevim proc se maze neco, co v atributove tabulce vubec neni
+        self._delete_fields(toky, ["EX_JH", "POZN", "PRPROP_Z", "IDVT", "UTOKJ_ID", "UTOKJN_ID", "UTOKJN_F"])
 
         return toky, toky_loc
 
