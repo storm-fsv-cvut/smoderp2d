@@ -171,30 +171,7 @@ class StreamPreparation:
 
         self._delete_fields(toky, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"])
 
-        stream_rst1 = self.temp + os.sep + "stream_rst"
-        stream_rst = arcpy.PolylineToRaster_conversion(toky, "FID", stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix )
-        tok_usek = self.temp + os.sep + "tok_usek"
-
-        arcpy.gp.Reclassify_sa(stream_rst, "VALUE", "NoDataValue 1000", tok_usek, "DATA")
-        mat_tok_usek = arcpy.RasterToNumPyArray(self.temp + os.sep + "tok_usek", self.ll_corner, self.cols, self.rows)
-        mat_tok = arcpy.RasterToNumPyArray(self.temp + os.sep + "tok_usek", self.ll_corner, self.cols, self.rows)
-
-        cell_stream = []
-        mat_tok_usek = mat_tok_usek.astype('int16')
-
-        for i in range(self.rows):
-            for j in range(self.cols):
-                if mat_tok_usek[i][j] < 0:
-                    mat_tok_usek[i][j] = 0
-                else:
-                    mat_tok_usek[i][j] += 1000
-
-        for i in range(self.rows):
-            for j in range(self.cols):
-                if mat_tok[i][j] != 255:
-                    mat_tok[i][j] = 3
-                else:
-                    continue
+        mat_tok_usek = self._get_mat_tok_usek(toky)
 
         self._stream_hydraulics(toky)
 
@@ -239,8 +216,6 @@ class StreamPreparation:
             # field_vals
             for i in range(len(field_vals)):
                 self.toky_tmp[i].append(field_vals[i])
-
-        del row
 
         self._create_tokylist()
 
@@ -300,6 +275,30 @@ class StreamPreparation:
     def _delete_fields(self, table, fields):
 
         arcpy.DeleteField_management(table, fields)
+
+    def _get_mat_tok_usek(self, toky):
+        """
+        :param toky:
+        :return mat_tok_usek:
+        """
+
+        stream_rst1 = self.temp + os.sep + "stream_rst"
+        stream_rst = arcpy.PolylineToRaster_conversion(toky, "FID", stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix)
+        tok_usek = self.temp + os.sep + "tok_usek"
+
+        arcpy.gp.Reclassify_sa(stream_rst, "VALUE", "NoDataValue 1000", tok_usek, "DATA")
+
+        mat_tok_usek = arcpy.RasterToNumPyArray(self.temp + os.sep + "tok_usek", self.ll_corner, self.cols, self.rows)
+        mat_tok_usek = mat_tok_usek.astype('int16')
+
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if mat_tok_usek[i][j] < 0:
+                    mat_tok_usek[i][j] = 0
+                else:
+                    mat_tok_usek[i][j] += 1000
+
+        return mat_tok_usek
 
     def _stream_hydraulics(self, toky):
 
