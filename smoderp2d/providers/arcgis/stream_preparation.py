@@ -177,37 +177,7 @@ class StreamPreparation:
 
         self._stream_slope(toky)
 
-        # tvar koryt
-        stream_tvar_dbf = self.temp + os.sep + "stream_tvar.dbf"
-        arcpy.CopyRows_management(self.tab_stream_tvar, stream_tvar_dbf)
-        sfield = ["cislo", "smoderp", "tvar", "b", "m", "drsnost", "Q365"]
-
-        try:
-            self._join_table(toky, self.tab_stream_tvar_code, stream_tvar_dbf, self.tab_stream_tvar_code,
-                                        "cislo;tvar;b;m;drsnost;Q365")
-        except:
-            self._add_field(toky, "smoderp", "TEXT", "0")
-            self._join_table(toky, self.tab_stream_tvar_code, stream_tvar_dbf, self.tab_stream_tvar_code,
-                                       "cislo;tvar;b;m;drsnost;Q365")
-
-        with arcpy.da.SearchCursor(toky, sfield) as cursor:
-            for row in cursor:
-                for i in range(len(row)):
-                    if row[i] == " ":
-                        self._add_message("Value in tab_stream_tvar are no correct - STOP, check shp file toky in output")
-                        sys.exit()
-
-        fields = arcpy.ListFields(toky)
-        self.field_names = [field.name for field in fields]
-        self.toky_tmp = [[] for field in fields]
-
-        for row in arcpy.SearchCursor(toky):
-            field_vals = [row.getValue(field) for field in self.field_names]
-            # field_vals
-            for i in range(len(field_vals)):
-                self.toky_tmp[i].append(field_vals[i])
-
-        self._create_tokylist()
+        self._get_tokylist(toky)
 
         return self.tokylist, mat_tok_usek, toky_loc
 
@@ -333,7 +303,41 @@ class StreamPreparation:
                 row[5] = row[4]
                 cursor.updateRow(row)
 
-    def _create_tokylist(self):
+    def _get_tokylist(self, toky):
+        """
+        :param toky:
+        """
+
+        # tvar koryt
+        stream_tvar_dbf = self.temp + os.sep + "stream_tvar.dbf"
+        arcpy.CopyRows_management(self.tab_stream_tvar, stream_tvar_dbf)
+        sfield = ["cislo", "smoderp", "tvar", "b", "m", "drsnost", "Q365"]
+
+        try:
+            self._join_table(toky, self.tab_stream_tvar_code, stream_tvar_dbf, self.tab_stream_tvar_code,
+                             "cislo;tvar;b;m;drsnost;Q365")
+        except:
+            self._add_field(toky, "smoderp", "TEXT", "0")
+            self._join_table(toky, self.tab_stream_tvar_code, stream_tvar_dbf, self.tab_stream_tvar_code,
+                             "cislo;tvar;b;m;drsnost;Q365")
+
+        with arcpy.da.SearchCursor(toky, sfield) as cursor:
+            for row in cursor:
+                for i in range(len(row)):
+                    if row[i] == " ":
+                        self._add_message(
+                            "Value in tab_stream_tvar are no correct - STOP, check shp file toky in output")
+                        sys.exit()
+
+        fields = arcpy.ListFields(toky)
+        self.field_names = [field.name for field in fields]
+        self.toky_tmp = [[] for field in fields]
+
+        for row in arcpy.SearchCursor(toky):
+            field_vals = [row.getValue(field) for field in self.field_names]
+            # field_vals
+            for i in range(len(field_vals)):
+                self.toky_tmp[i].append(field_vals[i])
 
         self.tokylist = []
         self._append_value('FID')
