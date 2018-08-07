@@ -61,7 +61,6 @@ class StreamPreparation:
         self.intersect = input[11]
         self._add_field = input[12]
         self._join_table = input[13]
-        self.gp = input[14]
 
         # Overwriting output
         arcpy.env.overwriteOutput = 1
@@ -72,8 +71,6 @@ class StreamPreparation:
         arcpy.env.snapRaster = self.dmt
 
     def prepare_streams(self):
-
-        gp = self.gp
 
         self._set_output()
 

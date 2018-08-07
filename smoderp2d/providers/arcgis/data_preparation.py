@@ -707,8 +707,7 @@ class PrepareData:
                      dmt_clip,
                      intersect,
                      self._add_field,
-                     self._join_table,
-                     self.gp]
+                     self._join_table]
 
             self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = StreamPreparation(input).prepare_streams()
 
