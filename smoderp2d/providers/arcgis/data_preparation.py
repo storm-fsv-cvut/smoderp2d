@@ -39,7 +39,8 @@ class PrepareData:
         :return data: dictionary with model parameters.
         """
 
-        self._add_message("DMT preparation...")
+        self._add_message("DATA PREPARATION")
+        self._add_message("----------------")
 
         self._create_dict()
 
@@ -70,6 +71,7 @@ class PrepareData:
         self.data['points'] = points
 
         # create output folder, where temporary data are stored
+        self._add_message("Creating output...")
         self._set_output()
 
         # copy of dmt for ?? TODO
@@ -78,16 +80,20 @@ class PrepareData:
 
         arcpy.env.snapRaster = dmt
 
+        self._add_message("Computing fill, flow direction, flow accumulation, slope...")
         dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, self.data['temp'],
                                                                                        "TRUE", "TRUE", "NONE")
 
         # intersect
+        self._add_message("Computing intersect of input data...")
         intersect, null_shp, sfield = self._get_intersect(gp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp,
                                                           tab_puda_veg, tab_puda_veg_code)
 
         # clip
+        self._add_message("Clip of the source data by intersect...")
         flow_direction_clip, slope_clip, dmt_clip = self._clip_data(dmt_copy, intersect, slope_orig, flow_direction)
 
+        self._add_message("Computing parameters of DMT...")
         # raster to numpy array conversion
         self.data['mat_dmt']    = self._rst2np(dmt_clip)
         self.data['mat_slope']  = self._rst2np(slope_clip)
@@ -107,6 +113,7 @@ class PrepareData:
 
         self._get_slope_dir(dmt_clip)
 
+        self._add_message("\nSTREAM PREPARATION")
         self._prepare_streams(stream, tab_stream_tvar, tab_stream_tvar_code, dmt, null_shp, ll_corner, dmt_clip, intersect)
 
         self._find_boundary_cells()
@@ -125,7 +132,7 @@ class PrepareData:
         self.data['spix']   = None
         self.data['vpix']   = None
 
-        self._add_message("Data preparation has been finished")
+        self._add_message("\nData preparation has been finished\n")
 
         return self.data
 
@@ -308,7 +315,6 @@ class PrepareData:
         """
 
         # mask and clip data
-        self._add_message("Clip of the source data by intersect")
 
         if self.data['points'] and (self.data['points'] != "#") and (self.data['points'] != ""):
             self.data['points'] = self._clip_points(intersect)
@@ -692,8 +698,6 @@ class PrepareData:
 
         if (self.data['type_of_computing'] == 3) or (self.data['type_of_computing'] == 5):
 
-            self._add_message("Stream preparation...")
-
             input = [stream,
                      tab_stream_tvar,
                      tab_stream_tvar_code,
@@ -710,8 +714,6 @@ class PrepareData:
                      self._join_table]
 
             self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = StreamPreparation(input).prepare_streams()
-
-            self._add_message("Stream preparation has finished")
 
         else:
             self.data['toky'] = None

@@ -72,16 +72,20 @@ class StreamPreparation:
 
     def prepare_streams(self):
 
+        self._add_message("Creating output...")
         self._set_output()
 
         self._setnull() #not used for anything, just saves setnull
 
+        self._add_message("Clip streams...")
         toky, toky_loc = self._clip_streams()
 
+        self._add_message("Computing stream direction and elevation...")
         self._stream_direction(toky)
 
         mat_tok_usek = self._get_mat_tok_usek(toky)
 
+        self._add_message("Computing stream hydraulics...")
         self._stream_hydraulics(toky)
 
         self._stream_slope(toky)
@@ -191,7 +195,6 @@ class StreamPreparation:
                 if row[1] > row[3]:
                     continue
                 else:
-                    self._add_message("Flip line")
                     arcpy.FlipLine_edit(toky)
         self._add_field(toky, "to_node", "DOUBLE", -9999)
 
