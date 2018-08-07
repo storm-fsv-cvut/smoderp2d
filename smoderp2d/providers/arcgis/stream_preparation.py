@@ -175,17 +175,7 @@ class StreamPreparation:
 
         self._stream_hydraulics(toky)
 
-        # sklon
-        field = ["FID", "RASTERVALU", "RASTERVA_1", "sklon", "SHAPE@LENGTH", "length"]
-        with arcpy.da.UpdateCursor(toky, field) as cursor:
-            for row in cursor:
-                sklon_koryta = (row[1] - row[2]) / row[4]
-                if sklon_koryta == 0:
-                    raise ZeroSlopeError(row(0))
-                row[3] = sklon_koryta
-                cursor.updateRow(row)
-                row[5] = row[4]
-                cursor.updateRow(row)
+        self._stream_slope(toky)
 
         # tvar koryt
         stream_tvar_dbf = self.temp + os.sep + "stream_tvar.dbf"
@@ -326,6 +316,22 @@ class StreamPreparation:
         self._add_field(toky, "total_Vi", "DOUBLE", 0.0)  # (m3)
         self._add_field(toky, "total_NS", "DOUBLE", 0.0)  # (m3)
         self._add_field(toky, "total_Vz", "DOUBLE", 0.0)  # (m3)
+
+    def _stream_slope(self, toky):
+        """
+        :param toky:
+        """
+        # sklon
+        field = ["FID", "RASTERVALU", "RASTERVA_1", "sklon", "SHAPE@LENGTH", "length"]
+        with arcpy.da.UpdateCursor(toky, field) as cursor:
+            for row in cursor:
+                sklon_koryta = (row[1] - row[2]) / row[4]
+                if sklon_koryta == 0:
+                    raise ZeroSlopeError(row[0])
+                row[3] = sklon_koryta
+                cursor.updateRow(row)
+                row[5] = row[4]
+                cursor.updateRow(row)
 
     def _create_tokylist(self):
 
