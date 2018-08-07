@@ -129,6 +129,12 @@ class StreamPreparation:
             raise Exception("Unexpected error during setnull calculation: " + sys.exc_info()[0])
 
     def _clip_streams(self):
+        """
+        Clip streams with intersect of input data (from data_preparation).
+        :return toky:
+        :return toky_loc:
+        """
+
         # WATER FLOWS ACCORDING DIBAVOD:
         # Clip
         toky = self.temp + os.sep + "toky.shp"
@@ -288,6 +294,7 @@ class StreamPreparation:
 
     def _get_tokylist(self, toky):
         """
+        Compute shape of streams.
         :param toky:
         """
 
