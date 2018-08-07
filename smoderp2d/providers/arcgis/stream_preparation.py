@@ -81,95 +81,7 @@ class StreamPreparation:
 
         toky, toky_loc = self._clip_streams()
 
-
-        # Feature vertices to points - START
-        self._add_message("Feature vertices to points - START...")
-        start = arcpy.FeatureVerticesToPoints_management(toky, self.temp + os.sep + "start", "START")
-
-        # Feature vertices to points - END
-        self._add_message("Feature vertices to points - END...")
-        end = arcpy.FeatureVerticesToPoints_management(toky, self.temp + os.sep + "end", "END")
-
-        # Extract value to points - START
-        self._add_message("Extract value to points - START...")
-        start_point = arcpy.sa.ExtractValuesToPoints(start, self.dmt_clip, self.temp + os.sep + "start_point", "NONE",
-                                                     "VALUE_ONLY")
-        # Extract value to points - END
-        self._add_message("Extract value to points - END...")
-        end_point = arcpy.sa.ExtractValuesToPoints(end, self.dmt_clip, self.temp + os.sep + "end_point", "NONE",
-                                                   "VALUE_ONLY")
-
-        # Join
-        self._join_table(toky, "FID", start_point, "ORIG_FID")  #tady je dulezite udrzet poradi
-        self._join_table(toky, "FID", end_point, "ORIG_FID")
-
-        self._delete_fields(toky, ["SHAPE_LEN", "SHAPE_LENG", "SHAPE_LE_1", "NAZ_TOK_1", "TOK_ID_1", "SHAPE_LE_2",
-                                   "SHAPE_LE_3", "NAZ_TOK_12", "TOK_ID_12", "SHAPE_LE_4", "ORIG_FID_1"])
-
-        # Flip selected lines
-        self._add_message("Flip lines...")  # mat_tok_usek
-
-        toky_t = arcpy.MakeFeatureLayer_management(toky, self.temp + os.sep + "tok_t.shp")
-
-        arcpy.SelectLayerByAttribute_management(toky_t, "NEW_SELECTION", "RASTERVALU < RASTERVA_1")
-        arcpy.FlipLine_edit(toky_t)
-
-        self._delete_fields(toky, ["RASTERVALU", "RASTERVA_1", "ORIG_FID", "ORIG_FID_1"])
-
-        # Feature vertices to points - START
-        self._add_message("Feature vertices to points - START...")
-        start = arcpy.FeatureVerticesToPoints_management(toky, self.temp + os.sep + "start", "START")
-
-        # Feature vertices to points - END
-        self._add_message("Feature vertices to points - END...")
-        end = arcpy.FeatureVerticesToPoints_management(toky, self.temp + os.sep + "end", "END")
-
-        # Extract value to points - START
-        self._add_message("Extract value to points - START...")
-        start_point_check = arcpy.sa.ExtractValuesToPoints(start,self.dmt,self.temp+os.sep+"start_point_check","NONE","VALUE_ONLY")
-        arcpy.AddXY_management(start_point_check)
-
-        # Extract value to points - END
-        self._add_message("Extract value to points - END...")
-        end_point_check = arcpy.sa.ExtractValuesToPoints(end, self.dmt, self.temp+os.sep+"end_point_check", "NONE","VALUE_ONLY")
-        arcpy.AddXY_management(end_point_check)
-
-        # Join
-        self._join_table(toky, "FID", start_point_check, "ORIG_FID")
-        self._join_table(toky, "FID", end_point_check, "ORIG_FID")
-        self._delete_fields(toky, ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"])
-
-        field = ["FID", "RASTERVALU", "POINT_X", "RASTERVA_1", "POINT_X_1"]
-
-        with arcpy.da.SearchCursor(toky, field) as cursor:
-            for row in cursor:
-                if row[1] > row[3]:
-                    continue
-                else:
-                    self._add_message("Flip line")
-                    arcpy.FlipLine_edit(toky)
-        self._add_field(toky, "to_node", "DOUBLE", -9999)
-
-        field_start = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
-        field_end = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
-        with arcpy.da.SearchCursor(toky, field_start) as cursor_start:
-            for row in cursor_start:
-                a = (row[1], row[2])
-                d = row[0]
-                with arcpy.da.UpdateCursor(toky, field_end) as cursor_end:
-                    for row in cursor_end:
-                        b = (row[3], row[4])
-                        if a == b:
-                            row[5] = d
-                            cursor_end.updateRow(row)
-                        else:
-                            row[5] = "-9999"
-
-        self._delete_fields(toky, ["SHAPE_LEN", "SHAPE_LE_1", "SHAPE_LE_2", "SHAPE_LE_3", "SHAPE_LE_4", "SHAPE_LE_5",
-                                   "SHAPE_LE_6", "SHAPE_LE_7", "SHAPE_LE_8", "SHAPE_LE_9", "SHAPE_L_10", "SHAPE_L_11",
-                                   "SHAPE_L_12", "SHAPE_L_13", "SHAPE_L_14"])
-
-        self._delete_fields(toky, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"])
+        self._stream_direction(toky)
 
         mat_tok_usek = self._get_mat_tok_usek(toky)
 
@@ -236,6 +148,77 @@ class StreamPreparation:
 
         arcpy.DeleteField_management(table, fields)
 
+    def _stream_direction(self, toky):
+        """
+        Compute elevation of start/end point of stream parts.
+        Add code of ascending stream part into attribute table.
+        :param toky:
+        :return:
+        """
+        # TODO: vyresit mazani atributu v atributove tabulce (jestli je to potreba)
+        # TODO: vyresit nasledujici:
+        # Nasledujici blok je redundantni, nicmene do "toky" pridava nekolik sloupecku, u kterych jsem nemohl dohledat,
+        # jestli se s nimi neco dela. Proto to tu zatim nechavam.
+        #--------------------------------------------------------------------------------------------------------------
+        start = arcpy.FeatureVerticesToPoints_management(toky, self.temp + os.sep + "start", "START")
+        end = arcpy.FeatureVerticesToPoints_management(toky, self.temp + os.sep + "end", "END")
+        arcpy.sa.ExtractMultiValuesToPoints(start, [[self.dmt_clip,"start_elev"]], "NONE")
+        arcpy.sa.ExtractMultiValuesToPoints(end, [[self.dmt_clip,"end_elev"]], "NONE")
+
+        # Join
+        self._join_table(toky, "FID", start, "ORIG_FID")
+        self._join_table(toky, "FID", end, "ORIG_FID")
+
+        self._delete_fields(toky, ["SHAPE_LEN", "SHAPE_LENG", "SHAPE_LE_1", "NAZ_TOK_1", "TOK_ID_1", "SHAPE_LE_2",
+                                   "SHAPE_LE_3", "NAZ_TOK_12", "TOK_ID_12", "SHAPE_LE_4", "ORIG_FID_1"])
+        self._delete_fields(toky, ["start_elev", "end_elev", "ORIG_FID", "ORIG_FID_1"])
+        #--------------------------------------------------------------------------------------------------------------
+
+        start = arcpy.FeatureVerticesToPoints_management(toky, self.temp + os.sep + "start", "START")
+        end = arcpy.FeatureVerticesToPoints_management(toky, self.temp + os.sep + "end", "END")
+        arcpy.sa.ExtractMultiValuesToPoints(start, [[self.dmt_clip, "start_elev"]], "NONE")
+        arcpy.sa.ExtractMultiValuesToPoints(end, [[self.dmt_clip, "end_elev"]], "NONE")
+        arcpy.AddXY_management(start)
+        arcpy.AddXY_management(end)
+
+        # Join
+        self._join_table(toky, "FID", start, "ORIG_FID")
+        self._join_table(toky, "FID", end, "ORIG_FID")
+
+        self._delete_fields(toky, ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"])
+
+        field = ["FID", "start_elev", "POINT_X", "end_elev", "POINT_X_1"]
+
+        with arcpy.da.SearchCursor(toky, field) as cursor:
+            for row in cursor:
+                if row[1] > row[3]:
+                    continue
+                else:
+                    self._add_message("Flip line")
+                    arcpy.FlipLine_edit(toky)
+        self._add_field(toky, "to_node", "DOUBLE", -9999)
+
+        field_start = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
+        field_end = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
+        with arcpy.da.SearchCursor(toky, field_start) as cursor_start:
+            for row in cursor_start:
+                a = (row[1], row[2])
+                d = row[0]
+                with arcpy.da.UpdateCursor(toky, field_end) as cursor_end:
+                    for row in cursor_end:
+                        b = (row[3], row[4])
+                        if a == b:
+                            row[5] = d
+                            cursor_end.updateRow(row)
+                        else:
+                            row[5] = "-9999"
+
+        self._delete_fields(toky, ["SHAPE_LEN", "SHAPE_LE_1", "SHAPE_LE_2", "SHAPE_LE_3", "SHAPE_LE_4", "SHAPE_LE_5",
+                                   "SHAPE_LE_6", "SHAPE_LE_7", "SHAPE_LE_8", "SHAPE_LE_9", "SHAPE_L_10", "SHAPE_L_11",
+                                   "SHAPE_L_12", "SHAPE_L_13", "SHAPE_L_14"])
+
+        self._delete_fields(toky, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"])
+
     def _get_mat_tok_usek(self, toky):
         """
         :param toky:
@@ -292,7 +275,7 @@ class StreamPreparation:
         :param toky:
         """
         # sklon
-        field = ["FID", "RASTERVALU", "RASTERVA_1", "sklon", "SHAPE@LENGTH", "length"]
+        field = ["FID", "start_elev", "end_elev", "sklon", "SHAPE@LENGTH", "length"]
         with arcpy.da.UpdateCursor(toky, field) as cursor:
             for row in cursor:
                 sklon_koryta = (row[1] - row[2]) / row[4]
