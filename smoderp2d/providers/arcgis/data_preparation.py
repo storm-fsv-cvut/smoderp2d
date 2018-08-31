@@ -38,7 +38,6 @@ class PrepareData:
 
         :return data: dictionary with model parameters.
         """
-
         self._add_message("DATA PREPARATION")
         self._add_message("----------------")
 
@@ -531,34 +530,41 @@ class PrepareData:
             self.data['array_points'] = np.zeros([int(count), 5], float)
 
             i = 0
-            # each point is saved into matrix from second row to the end. First row
-            # is for maximal value from flow accumulation array
             for row in rows_p:
                 # getting points ID
                 fid = row.getValue('FID')
-                self.data['array_points'][i][0] = fid
                 # create the geometry object 'feat'
                 feat = row.getValue(shapefieldname)
                 pnt = feat.getPart()
+
                 # position i,j in raster
-                self.data['array_points'][i][1] = self.data['r'] - ((pnt.Y - self.data['yllcorner']) // self.data['vpix']) - 1  # i
-                self.data['array_points'][i][2] = (pnt.X - self.data['xllcorner']) // self.data['spix']  # j
-                # x,y coordinates of current point stored in an array
-                self.data['array_points'][i][3] = pnt.X
-                self.data['array_points'][i][4] = pnt.Y
-                i = i + 1
+                r = self.data['r'] - ((pnt.Y - self.data['yllcorner']) // self.data['vpix']) - 1  # i from 0
+                c = (pnt.X - self.data['xllcorner']) // self.data['spix']  # j
+
+                # if point is not on the edge of raster or its neighbours are not "NoDataValue", it will be saved into
+                # array_points array
+                if r != 0 and r != self.data['r'] and c != 0 and c != self.data['c'] and \
+                   self.data['mat_dmt'][r][c] != self.data['NoDataValue'] and \
+                   self.data['mat_dmt'][r-1][c] != self.data['NoDataValue'] and \
+                   self.data['mat_dmt'][r+1][c] != self.data['NoDataValue'] and \
+                   self.data['mat_dmt'][r][c-1] != self.data['NoDataValue'] and \
+                   self.data['mat_dmt'][r][c+1] != self.data['NoDataValue']:
+
+                    self.data['array_points'][i][0] = fid
+                    self.data['array_points'][i][1] = r
+                    self.data['array_points'][i][2] = c
+                    # x,y coordinates of current point stored in an array
+                    self.data['array_points'][i][3] = pnt.X
+                    self.data['array_points'][i][4] = pnt.Y
+                    i = i + 1
+                else:
+                    self._add_message("Point FID = " + str(int(fid)) +
+                                      " is at the edge of the raster. This point will not be included in results.")
 
         else:
             self.data['array_points'] = None
 
-        # checking for points at the edge of the raster
-        if self.data['points'] and self.data['points'] != "#":
-            for kyk in range(self.data['array_points'].shape[0] - 1):
-                if self.data['array_points'][kyk][1] == i and self.data['array_points'][kyk][2] == j:
-                    gp.AddMessage("Point FID = " + str(
-                        int(self.data['array_points'][kyk][
-                                0])) + " is at the edge of the raster. This point will not be included in results.")
-                    self.data['array_points'] = np.delete(self.data['array_points'], kyk, 0)
+
 
     def _get_a(self,all_attrib):
         """
