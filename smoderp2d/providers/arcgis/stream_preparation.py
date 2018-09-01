@@ -227,8 +227,11 @@ class StreamPreparation:
 
     def _get_mat_tok_usek(self, toky):
         """
-        :param toky:
-        :return mat_tok_usek:
+        Get numpy array of integers detecting whether there is a stream on corresponding pixel of raster (number equal
+        or greater than 1000 in return numpy array) or not (number 0 in return numpy array).
+
+        :param toky: Polyline with streams in the area.
+        :return mat_tok_usek: Numpy array
         """
 
         stream_rst1 = self.temp + os.sep + "stream_rst"
@@ -236,17 +239,19 @@ class StreamPreparation:
         tok_usek = self.temp + os.sep + "tok_usek"
 
         arcpy.gp.Reclassify_sa(stream_rst, "VALUE", "NoDataValue 1000", tok_usek, "DATA")
-
         mat_tok_usek = arcpy.RasterToNumPyArray(self.temp + os.sep + "tok_usek", self.ll_corner, self.cols, self.rows)
         mat_tok_usek = mat_tok_usek.astype('int16')
 
+        count = arcpy.GetCount_management(tok_usek)
+        no_of_streams = int(count.getOutput(0))
+
+        # each element of stream has a number assigned from 0 to no. of stream parts
         for i in range(self.rows):
             for j in range(self.cols):
-                if mat_tok_usek[i][j] < 0:
+                if mat_tok_usek[i][j] > no_of_streams - 1:
                     mat_tok_usek[i][j] = 0
                 else:
                     mat_tok_usek[i][j] += 1000
-
         return mat_tok_usek
 
     def _stream_hydraulics(self, toky):
