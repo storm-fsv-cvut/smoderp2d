@@ -94,9 +94,9 @@ class PrepareData:
 
         self._add_message("Computing parameters of DMT...")
         # raster to numpy array conversion
-        self.data['mat_dmt']    = self._rst2np(dmt_clip)
-        self.data['mat_slope']  = self._rst2np(slope_clip)
-        self.data['mat_fd']     = self._rst2np(flow_direction_clip)
+        self.data['mat_dmt'] = self._rst2np(dmt_clip)
+        self.data['mat_slope'] = self._rst2np(slope_clip)
+        self.data['mat_fd'] = self._rst2np(flow_direction_clip)
 
         ll_corner = self._get_raster_dim(dmt_clip)
 
@@ -113,23 +113,24 @@ class PrepareData:
         self._get_slope_dir(dmt_clip)
 
         self._add_message("\nSTREAM PREPARATION")
-        self._prepare_streams(stream, tab_stream_tvar, tab_stream_tvar_code, dmt, null_shp, ll_corner, dmt_clip, intersect)
+        self._prepare_streams(stream, tab_stream_tvar, tab_stream_tvar_code,
+                              dmt, null_shp, ll_corner, dmt_clip, intersect)
 
         self._find_boundary_cells()
 
         self._save_raster("fl_dir", self.data['mat_fd'], self.data['temp'])
 
-        self.data['mat_n']     = all_attrib[2]
-        self.data['mat_ppl']   = all_attrib[3]
-        self.data['mat_pi']    = all_attrib[4]
+        self.data['mat_n'] = all_attrib[2]
+        self.data['mat_ppl'] = all_attrib[3]
+        self.data['mat_pi'] = all_attrib[4]
         self.data['mat_reten'] = all_attrib[5]
-        self.data['mat_b']     = all_attrib[6]
+        self.data['mat_b'] = all_attrib[6]
 
-        self.data['mfda']    = False
+        self.data['mfda'] = False
         self.data['mat_boundary'] = None
         self.data['points'] = None
-        self.data['spix']   = None
-        self.data['vpix']   = None
+        self.data['spix'] = None
+        self.data['vpix'] = None
 
         self._add_message("\nData preparation has been finished\n")
 
@@ -388,17 +389,17 @@ class PrepareData:
         :return all_atrib:
         """
 
-        mat_k   = np.zeros([self.data['r'], self.data['c']], float)
-        mat_s   = np.zeros([self.data['r'], self.data['c']], float)
-        mat_n   = np.zeros([self.data['r'], self.data['c']], float)
+        mat_k = np.zeros([self.data['r'], self.data['c']], float)
+        mat_s = np.zeros([self.data['r'], self.data['c']], float)
+        mat_n = np.zeros([self.data['r'], self.data['c']], float)
         mat_ppl = np.zeros([self.data['r'], self.data['c']], float)
-        mat_pi  = np.zeros([self.data['r'], self.data['c']], float)
+        mat_pi = np.zeros([self.data['r'], self.data['c']], float)
         mat_ret = np.zeros([self.data['r'], self.data['c']], float)
-        mat_b   = np.zeros([self.data['r'], self.data['c']], float)
-        mat_x   = np.zeros([self.data['r'], self.data['c']], float)
-        mat_y   = np.zeros([self.data['r'], self.data['c']], float)
+        mat_b = np.zeros([self.data['r'], self.data['c']], float)
+        mat_x = np.zeros([self.data['r'], self.data['c']], float)
+        mat_y = np.zeros([self.data['r'], self.data['c']], float)
         mat_tau = np.zeros([self.data['r'], self.data['c']], float)
-        mat_v   = np.zeros([self.data['r'], self.data['c']], float)
+        mat_v = np.zeros([self.data['r'], self.data['c']], float)
 
         all_attrib = [
             mat_k,
@@ -614,9 +615,9 @@ class PrepareData:
 
         # critical water level
         self._add_message("Computing critical level")
-        mat_hcrit_tau   = np.zeros([self.data['r'], self.data['c']], float)
-        mat_hcrit_v     = np.zeros([self.data['r'], self.data['c']], float)
-        mat_hcrit_flux  = np.zeros([self.data['r'], self.data['c']], float)
+        mat_hcrit_tau = np.zeros([self.data['r'], self.data['c']], float)
+        mat_hcrit_v = np.zeros([self.data['r'], self.data['c']], float)
+        mat_hcrit_flux = np.zeros([self.data['r'], self.data['c']], float)
         self.data['mat_hcrit'] = np.zeros([self.data['r'], self.data['c']], float)
         for i in range(self.data['r']):
             for j in range(self.data['c']):
