@@ -119,7 +119,7 @@ class StreamPreparation:
 
         # WATER FLOWS ACCORDING DMT:
         dmt_fill, flow_direction, flow_accumulation, slope = arcgis_dmtfce.dmtfce(self.dmt_clip, self.temp,
-                                                                                  "TRUE", "TRUE", "NONE")
+                                                                                  "NONE")
 
         try:
             setnull = arcpy.sa.SetNull(flow_accumulation, 1, "VALUE < 300")  # hodnota value??

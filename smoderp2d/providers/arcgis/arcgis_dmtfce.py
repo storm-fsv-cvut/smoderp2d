@@ -5,7 +5,7 @@ import sys
 import os
 
 
-def dmtfce(dmt, save_dir, fill, filtr, fl_dir):
+def dmtfce(dmt, save_dir, fl_dir):
     # loading file soil_type_values
     # filling the sink areas in raster
     try:

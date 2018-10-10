@@ -81,7 +81,7 @@ class PrepareData:
 
         self._add_message("Computing fill, flow direction, flow accumulation, slope...")
         dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, self.data['temp'],
-                                                                                       "TRUE", "TRUE", "NONE")
+                                                                                       "NONE")
 
         # intersect
         self._add_message("Computing intersect of input data...")
