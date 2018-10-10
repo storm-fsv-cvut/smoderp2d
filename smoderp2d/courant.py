@@ -98,7 +98,7 @@ class Courant():
     #
     #  Also returns the ratio for the rill computation division.
     #
-    def courant(self, rainfall, delta_t, efect_vrst, ratio):
+    def courant(self, rainfall, delta_t, ratio):
 
         # ratio se muze zmensit  a max_delta_t_mult zvetsit
         # pokud je courant v ryhach <= 0.2
@@ -140,7 +140,7 @@ class Courant():
                 return self.max_delta_t * self.max_delta_t_mult, ratio
 
             dt = round(
-                (efect_vrst * self.cour_crit * self.cour_coef) /
+                (Gl.mat_efect_vrst[self.i, self.j] * self.cour_crit * self.cour_coef) /
                  self.cour_speed,
                 4)
 

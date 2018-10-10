@@ -235,7 +235,7 @@ class Runoff(object):
                 # update time step size if necessary (based on the courant
                 # condition)
                 self.delta_t, self.flow_control.ratio = self.courant.courant(
-                    potRain, self.delta_t, Globals.spix, self.flow_control.ratio
+                    potRain, self.delta_t, self.flow_control.ratio
                 )
 
                 # courant conditions is satisfied (time step did
