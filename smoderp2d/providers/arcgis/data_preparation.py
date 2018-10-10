@@ -28,7 +28,7 @@ class PrepareData:
         self.gp.workspace = self.gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
 
         # checking arcgis if ArcGIS Spatial extension is available
-        arcpy.CheckOutExtension("Spatial") # TODO - raise an exception (21.05.2018 MK)
+        arcpy.CheckOutExtension("Spatial")
         self.gp.overwriteoutput = 1
 
     def run(self):
