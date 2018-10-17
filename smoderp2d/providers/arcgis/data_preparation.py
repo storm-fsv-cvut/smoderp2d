@@ -9,15 +9,16 @@ import smoderp2d.processes.rainfall as rainfall
 from stream_preparation import StreamPreparation
 
 from smoderp2d.providers.base import Logger
+from smoderp2d.providers.base.data_preparation import PrepareDataBase
 
 # arcpy imports
 from arcpy.sa import *
 import arcpy
 import arcgisscripting
-import arcgis_dmtfce
+from arcgis_dmtfce import dmtfce
 import constants # poradi parametru z arcgis tool
 
-class PrepareData:
+class PrepareData(PrepareDataBase):
 
     def __init__(self):
 
@@ -32,9 +33,9 @@ class PrepareData:
         self.gp.overwriteoutput = 1
 
     def run(self):
-        """
-        Main function of data_preparation class. Returns computed parameters from input data using arcgis in a form
-        of a dictionary.
+        """Main function of data_preparation class. Returns computed
+        parameters from input data using ArcGIS in a form of a
+        dictionary.
 
         :return data: dictionary with model parameters.
         """
@@ -43,27 +44,24 @@ class PrepareData:
 
         self._create_dict()
 
-        # geoprocessor object
-        gp = self.gp
+        # get input parameters from ArcGIS toolbox
+        dmt = self.gp.GetParameterAsText(constants.PARAMETER_DMT)
+        soil_indata = self.gp.GetParameterAsText(constants.PARAMETER_SOIL)
+        ptyp = self.gp.GetParameterAsText(constants.PARAMETER_SOIL_TYPE)
+        veg_indata = self.gp.GetParameterAsText(constants.PARAMETER_VEGETATION)
+        vtyp = self.gp.GetParameterAsText(constants.PARAMETER_VEGETATION_TYPE)
+        rainfall_file_path = self.gp.GetParameterAsText(constants.PARAMETER_PATH_TO_RAINFALL_FILE)
+        maxdt = float(self.gp.GetParameterAsText(constants.PARAMETER_MAX_DELTA_T))
+        end_time = float(self.gp.GetParameterAsText(constants.PARAMETER_END_TIME)) * 60.0  # prevod na s
+        points = self.gp.GetParameterAsText(constants.PARAMETER_POINTS)
+        output = self.gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
+        tab_puda_veg = self.gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE)
+        tab_puda_veg_code = self.gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE_CODE)
+        stream = self.gp.GetParameterAsText(constants.PARAMETER_STREAM)
+        tab_stream_tvar = self.gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE)
+        tab_stream_tvar_code = self.gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE_CODE)
 
-        # get input parameters from Arcgis toolbox
-        dmt = gp.GetParameterAsText(constants.PARAMETER_DMT)
-        soil_indata = gp.GetParameterAsText(constants.PARAMETER_SOIL)
-        ptyp = gp.GetParameterAsText(constants.PARAMETER_SOIL_TYPE)
-        veg_indata = gp.GetParameterAsText(constants.PARAMETER_VEGETATION)
-        vtyp = gp.GetParameterAsText(constants.PARAMETER_VEGETATION_TYPE)
-        rainfall_file_path = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_RAINFALL_FILE)
-        maxdt = float(gp.GetParameterAsText(constants.PARAMETER_MAX_DELTA_T))
-        end_time = float(gp.GetParameterAsText(constants.PARAMETER_END_TIME)) * 60.0  # prevod na s
-        points = gp.GetParameterAsText(constants.PARAMETER_POINTS)
-        output = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
-        tab_puda_veg = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE)
-        tab_puda_veg_code = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE_CODE)
-        stream = gp.GetParameterAsText(constants.PARAMETER_STREAM)
-        tab_stream_tvar = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE)
-        tab_stream_tvar_code = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE_CODE)
-
-        # set dict parameters from input data
+        # set dict parameters from input data (fixed)
         self.data['maxdt'] = maxdt
         self.data['end_time'] = end_time
         self.data['outdir'] = output
@@ -74,23 +72,29 @@ class PrepareData:
         self._set_output()
 
         # copy of dmt for ?? TODO
-        dmt_copy = self.data['temp'] + os.sep + "tempGDB.gdb" + os.sep + "dmt_copy"
+        # TODO: move to _create_mask
+        dmt_copy = os.path.join(self.data['temp'], "tempGDB.gdb", "dmt_copy")
         arcpy.CopyRaster_management(dmt, dmt_copy)
 
         arcpy.env.snapRaster = dmt
 
-        self._add_message("Computing fill, flow direction, flow accumulation, slope...")
-        dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, self.data['temp'],
-                                                                                       "NONE")
+        self._add_message(
+            "Computing fill, flow direction, flow accumulation, slope..."
+        )
+        dmt_fill, flow_direction, flow_accumulation, slope_orig = \
+            dmtfce(dmt_copy, self.data['temp'], "NONE")
 
         # intersect
         self._add_message("Computing intersect of input data...")
-        intersect, null_shp, sfield = self._get_intersect(gp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp,
-                                                          tab_puda_veg, tab_puda_veg_code)
+        intersect, null_shp, sfield = self._get_intersect(
+            gp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp,
+            tab_puda_veg, tab_puda_veg_code
+        )
 
         # clip
         self._add_message("Clip of the source data by intersect...")
-        flow_direction_clip, slope_clip, dmt_clip = self._clip_data(dmt_copy, intersect, slope_orig, flow_direction)
+        flow_direction_clip, slope_clip, dmt_clip = self._clip_data(
+            dmt_copy, intersect, slope_orig, flow_direction)
 
         self._add_message("Computing parameters of DMT...")
         # raster to numpy array conversion
@@ -98,6 +102,7 @@ class PrepareData:
         self.data['mat_slope'] = self._rst2np(slope_clip)
         self.data['mat_fd'] = self._rst2np(flow_direction_clip)
 
+        # TODO: add comments, describe
         ll_corner = self._get_raster_dim(dmt_clip)
 
         all_attrib = self._get_mat_par(sfield, intersect)
@@ -108,14 +113,18 @@ class PrepareData:
 
         self._get_crit_water(all_attrib, ll_corner)
 
-        self.data['sr'], self.data['itera'] = rainfall.load_precipitation(rainfall_file_path)
+        # load precipitation input file
+        self.data['sr'], self.data['itera'] = \
+            rainfall.load_precipitation(rainfall_file_path)
 
+        # compute aspect
         self._get_slope_dir(dmt_clip)
 
         self._add_message("\nSTREAM PREPARATION")
         self._prepare_streams(stream, tab_stream_tvar, tab_stream_tvar_code,
                               dmt, null_shp, ll_corner, dmt_clip, intersect)
 
+        # determine cells on the boundary
         self._find_boundary_cells()
 
         self._save_raster("fl_dir", self.data['mat_fd'], self.data['temp'])
@@ -143,60 +152,6 @@ class PrepareData:
         """
         Logger.info(message)
 
-    def _create_dict(self):
-        """
-        Creates dictionary to which model parameters are computed.
-        """
-
-        self.data = {
-            'br': None,
-            'bc': None,
-            'mat_boundary': None,
-            'rr': None,
-            'rc': None,
-            'outletCells': None,
-            'xllcorner': None,
-            'yllcorner': None,
-            'NoDataValue': None,
-            'array_points': None,
-            'c': None,
-            'r': None,
-            'combinatIndex': None,
-            'maxdt': None,
-            'mat_pi': None,
-            'mat_ppl': None,
-            'surface_retention': None,
-            'mat_inf_index': None,
-            'mat_hcrit': None,
-            'mat_aa': None,
-            'mat_b': None,
-            'mat_reten': None,
-            'mat_fd': None,
-            'mat_dmt': None,
-            'mat_efect_vrst': None,
-            'mat_slope': None,
-            'mat_nan': None,
-            'mat_a': None,
-            'mat_n': None,
-            'outdir': None,
-            'pixel_area': None,
-            'points': None,
-            'poradi': None,
-            'end_time': None,
-            'spix': None,
-            'state_cell': None,
-            'temp': None,
-            'type_of_computing': None,
-            'vpix': None,
-            'mfda': None,
-            'sr': None,
-            'itera': None,
-            'toky': None,
-            'cell_stream': None,
-            'mat_tok_reach': None,
-            'STREAM_RATIO': None,
-            'toky_loc': None
-            }
 
     def _set_output(self):
         """
@@ -256,7 +211,7 @@ class PrepareData:
         # preparation for clip
         null = self.data['temp'] + os.sep + "hrance_rst"
         null_shp = self.data['temp'] + os.sep + "null.shp"
-        arcpy.gp.Reclassify_sa(dmt_copy, "VALUE", "-100000 100000 1", null, "DATA")  # reklasifikuje se vsechno na 1
+        self.gp.Reclassify_sa(dmt_copy, "VALUE", "-100000 100000 1", null, "DATA")  # reklasifikuje se vsechno na 1
         arcpy.RasterToPolygon_conversion(null, null_shp, "NO_SIMPLIFY")
 
         soil_boundary = self.data['temp'] + os.sep + "s_b.shp"
@@ -269,7 +224,7 @@ class PrepareData:
         intersect = self.data['outdir'] + os.sep + "interSoilLU.shp"
         arcpy.Intersect_analysis(group, intersect, "ALL", "", "INPUT")
 
-        if gp.ListFields(intersect, "puda_veg").Next():
+        if self.gp.ListFields(intersect, "puda_veg").Next():
             arcpy.DeleteField_management(intersect, "puda_veg")
         arcpy.AddField_management(intersect, "puda_veg", "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED","")
 
