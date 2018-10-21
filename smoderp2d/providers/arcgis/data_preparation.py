@@ -43,25 +43,22 @@ class PrepareData:
 
         self._create_dict()
 
-        # geoprocessor object
-        gp = self.gp
-
         # get input parameters from Arcgis toolbox
-        dmt = gp.GetParameterAsText(constants.PARAMETER_DMT)
-        soil_indata = gp.GetParameterAsText(constants.PARAMETER_SOIL)
-        ptyp = gp.GetParameterAsText(constants.PARAMETER_SOIL_TYPE)
-        veg_indata = gp.GetParameterAsText(constants.PARAMETER_VEGETATION)
-        vtyp = gp.GetParameterAsText(constants.PARAMETER_VEGETATION_TYPE)
-        rainfall_file_path = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_RAINFALL_FILE)
-        maxdt = float(gp.GetParameterAsText(constants.PARAMETER_MAX_DELTA_T))
-        end_time = float(gp.GetParameterAsText(constants.PARAMETER_END_TIME)) * 60.0  # prevod na s
-        points = gp.GetParameterAsText(constants.PARAMETER_POINTS)
-        output = gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
-        tab_puda_veg = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE)
-        tab_puda_veg_code = gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE_CODE)
-        stream = gp.GetParameterAsText(constants.PARAMETER_STREAM)
-        tab_stream_tvar = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE)
-        tab_stream_tvar_code = gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE_CODE)
+        dmt = self.gp.GetParameterAsText(constants.PARAMETER_DMT)
+        soil_indata = self.gp.GetParameterAsText(constants.PARAMETER_SOIL)
+        ptyp = self.gp.GetParameterAsText(constants.PARAMETER_SOIL_TYPE)
+        veg_indata = self.gp.GetParameterAsText(constants.PARAMETER_VEGETATION)
+        vtyp = self.gp.GetParameterAsText(constants.PARAMETER_VEGETATION_TYPE)
+        rainfall_file_path = self.gp.GetParameterAsText(constants.PARAMETER_PATH_TO_RAINFALL_FILE)
+        maxdt = float(self.gp.GetParameterAsText(constants.PARAMETER_MAX_DELTA_T))
+        end_time = float(self.gp.GetParameterAsText(constants.PARAMETER_END_TIME)) * 60.0  # prevod na s
+        points = self.gp.GetParameterAsText(constants.PARAMETER_POINTS)
+        output = self.gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
+        tab_puda_veg = self.gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE)
+        tab_puda_veg_code = self.gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE_CODE)
+        stream = self.gp.GetParameterAsText(constants.PARAMETER_STREAM)
+        tab_stream_tvar = self.gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE)
+        tab_stream_tvar_code = self.gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE_CODE)
 
         # set dict parameters from input data
         self.data['maxdt'] = maxdt
@@ -80,12 +77,14 @@ class PrepareData:
         arcpy.env.snapRaster = dmt
 
         self._add_message("Computing fill, flow direction, flow accumulation, slope...")
+
         dmt_fill, flow_direction, flow_accumulation, slope_orig = arcgis_dmtfce.dmtfce(dmt_copy, self.data['temp'],
                                                                                        "NONE")
 
         # intersect
         self._add_message("Computing intersect of input data...")
-        intersect, null_shp, sfield = self._get_intersect(gp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp,
+
+        intersect, null_shp, sfield = self._get_intersect(dmt_copy, veg_indata, soil_indata, vtyp, ptyp,
                                                           tab_puda_veg, tab_puda_veg_code)
 
         # clip
@@ -102,7 +101,7 @@ class PrepareData:
 
         all_attrib = self._get_mat_par(sfield, intersect)
 
-        self._get_array_points(gp)
+        self._get_array_points()
 
         self._get_a(all_attrib)
 
@@ -236,9 +235,8 @@ class PrepareData:
 
         temp_gdb = arcpy.CreateFileGDB_management(self.data['temp'], "tempGDB.gdb")
 
-    def _get_intersect(self, gp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, tab_puda_veg, tab_puda_veg_code):
+    def _get_intersect(self, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, tab_puda_veg, tab_puda_veg_code):
         """
-        :param gp:
         :param dmt_copy:
         :param veg_indata:
         :param soil_indata:
@@ -256,7 +254,7 @@ class PrepareData:
         # preparation for clip
         null = self.data['temp'] + os.sep + "hrance_rst"
         null_shp = self.data['temp'] + os.sep + "null.shp"
-        arcpy.gp.Reclassify_sa(dmt_copy, "VALUE", "-100000 100000 1", null, "DATA")  # reklasifikuje se vsechno na 1
+        self.gp.Reclassify_sa(dmt_copy, "VALUE", "-100000 100000 1", null, "DATA")  # reklasifikuje se vsechno na 1
         arcpy.RasterToPolygon_conversion(null, null_shp, "NO_SIMPLIFY")
 
         soil_boundary = self.data['temp'] + os.sep + "s_b.shp"
@@ -269,7 +267,7 @@ class PrepareData:
         intersect = self.data['outdir'] + os.sep + "interSoilLU.shp"
         arcpy.Intersect_analysis(group, intersect, "ALL", "", "INPUT")
 
-        if gp.ListFields(intersect, "puda_veg").Next():
+        if self.gp.ListFields(intersect, "puda_veg").Next():
             arcpy.DeleteField_management(intersect, "puda_veg")
         arcpy.AddField_management(intersect, "puda_veg", "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED","")
 
@@ -510,10 +508,9 @@ class PrepareData:
 
         return all_attrib
 
-    def _get_array_points(self, gp):
+    def _get_array_points(self):
         """
 
-        :param gp:
         """
 
         # getting points coordinates from optional input shapefile
