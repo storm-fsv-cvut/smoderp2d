@@ -10,6 +10,7 @@ from stream_preparation import StreamPreparation
 
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
+from smoderp2d.providers.base.exception import DataPreparationInvalidInput
 
 # arcpy imports
 from arcpy.sa import *
@@ -32,6 +33,40 @@ class PrepareData(PrepareDataBase):
         arcpy.CheckOutExtension("Spatial")
         self.gp.overwriteoutput = 1
 
+    def _get_input_params(self):
+        """Get input parameters from ArcGIS toolbox.
+        """
+        self._input_params['dmt'] = self.gp.GetParameterAsText(
+            constants.PARAMETER_DMT)
+        self._input_params['soil_indata'] = self.gp.GetParameterAsText(
+            constants.PARAMETER_SOIL)
+        self._input_params['stype'] = self.gp.GetParameterAsText(
+            constants.PARAMETER_SOIL_TYPE)
+        self._input_params['veg_indata'] = self.gp.GetParameterAsText(
+            constants.PARAMETER_VEGETATION)
+        self._input_params['vtype'] = self.gp.GetParameterAsText(
+            constants.PARAMETER_VEGETATION_TYPE)
+        self._input_params['rainfall_file_path'] = self.gp.GetParameterAsText(
+            constants.PARAMETER_PATH_TO_RAINFALL_FILE)
+        self._input_params['maxdt'] = float(self.gp.GetParameterAsText(
+            constants.PARAMETER_MAX_DELTA_T))
+        self._input_params['end_time'] = float(self.gp.GetParameterAsText(
+            constants.PARAMETER_END_TIME)) * 60.0  # prevod na s
+        self._input_params['points'] = self.gp.GetParameterAsText(
+            constants.PARAMETER_POINTS)
+        self._input_params['output'] = self.gp.GetParameterAsText(
+            constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
+        self._input_params['tab_puda_veg'] = self.gp.GetParameterAsText(
+            constants.PARAMETER_SOILVEGTABLE)
+        self._input_params['tab_puda_veg_code'] = self.gp.GetParameterAsText(
+            constants.PARAMETER_SOILVEGTABLE_CODE)
+        self._input_params['stream'] = self.gp.GetParameterAsText(
+            constants.PARAMETER_STREAM)
+        self._input_params['tab_stream_tvar'] = self.gp.GetParameterAsText(
+            constants.PARAMETER_STREAMTABLE)
+        self._input_params['tab_stream_tvar_code'] = self.gp.GetParameterAsText(
+            constants.PARAMETER_STREAMTABLE_CODE)
+
     def run(self):
         """Main function of data_preparation class. Returns computed
         parameters from input data using ArcGIS in a form of a
@@ -39,62 +74,8 @@ class PrepareData(PrepareDataBase):
 
         :return data: dictionary with model parameters.
         """
-        self._add_message("DATA PREPARATION")
-        self._add_message("----------------")
+        super(PrepareData, self).run()
 
-        self._create_dict()
-
-        # get input parameters from ArcGIS toolbox
-        dmt = self.gp.GetParameterAsText(constants.PARAMETER_DMT)
-        soil_indata = self.gp.GetParameterAsText(constants.PARAMETER_SOIL)
-        ptyp = self.gp.GetParameterAsText(constants.PARAMETER_SOIL_TYPE)
-        veg_indata = self.gp.GetParameterAsText(constants.PARAMETER_VEGETATION)
-        vtyp = self.gp.GetParameterAsText(constants.PARAMETER_VEGETATION_TYPE)
-        rainfall_file_path = self.gp.GetParameterAsText(constants.PARAMETER_PATH_TO_RAINFALL_FILE)
-        maxdt = float(self.gp.GetParameterAsText(constants.PARAMETER_MAX_DELTA_T))
-        end_time = float(self.gp.GetParameterAsText(constants.PARAMETER_END_TIME)) * 60.0  # prevod na s
-        points = self.gp.GetParameterAsText(constants.PARAMETER_POINTS)
-        output = self.gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
-        tab_puda_veg = self.gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE)
-        tab_puda_veg_code = self.gp.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE_CODE)
-        stream = self.gp.GetParameterAsText(constants.PARAMETER_STREAM)
-        tab_stream_tvar = self.gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE)
-        tab_stream_tvar_code = self.gp.GetParameterAsText(constants.PARAMETER_STREAMTABLE_CODE)
-
-        # set dict parameters from input data (fixed)
-        self.data['maxdt'] = maxdt
-        self.data['end_time'] = end_time
-        self.data['outdir'] = output
-        self.data['points'] = points
-
-        # create output folder, where temporary data are stored
-        self._add_message("Creating output...")
-        self._set_output()
-
-        # copy of dmt for ?? TODO
-        # TODO: move to _create_mask
-        dmt_copy = os.path.join(self.data['temp'], "tempGDB.gdb", "dmt_copy")
-        arcpy.CopyRaster_management(dmt, dmt_copy)
-
-        arcpy.env.snapRaster = dmt
-
-        self._add_message(
-            "Computing fill, flow direction, flow accumulation, slope..."
-        )
-        dmt_fill, flow_direction, flow_accumulation, slope_orig = \
-            dmtfce(dmt_copy, self.data['temp'], "NONE")
-
-        # intersect
-        self._add_message("Computing intersect of input data...")
-        intersect, null_shp, sfield = self._get_intersect(
-            dmt_copy, veg_indata, soil_indata, vtyp, ptyp,
-            tab_puda_veg, tab_puda_veg_code
-        )
-
-        # clip
-        self._add_message("Clip of the source data by intersect...")
-        flow_direction_clip, slope_clip, dmt_clip = self._clip_data(
-            dmt_copy, intersect, slope_orig, flow_direction)
 
         self._add_message("Computing parameters of DMT...")
         # raster to numpy array conversion
@@ -154,125 +135,131 @@ class PrepareData(PrepareDataBase):
 
 
     def _set_output(self):
+        """Creates empty output and temporary directories to which created
+        files are saved. Creates temporary ArcGIS File Geodatabase.
+
         """
-        Creates and clears directories, to which created files are saved.
-        Creates temporary geodatabase.
+        super(PrepareData, self)._set_output()
+
+        # create temporary ArcGIS File Geodatabase
+        arcpy.CreateFileGDB_management(
+            self.data['temp'], "tempGDB.gdb"
+        )
+
+    def _set_mask(self):
+        """TODO"""
+        dmt_copy = os.path.join(
+            self.data['temp'], "tempGDB.gdb", "dmt_copy")
+        arcpy.CopyRaster_management(dmt, dmt_copy)
+
+        # align computation region to DMT grid
+        arcpy.env.snapRaster = dmt
+
+        dmt_mask = os.path.join(self.data['temp'], "dmt_mask")
+        self.gp.Reclassify_sa(
+            dmt_copy, "VALUE", "-100000 100000 1", dmt_mask, "DATA"
+        )  # reklasifikuje se vsechno na 1
+        
+        return dmt_copy, dmt_mask
+
+    def _dmtfce(self, dmt):
+        return dmtfce(dmt, self.data['temp'])
+    
+     def _get_intersect(self, dmt, mask,
+                        veg_indata, soil_indata, vtype, stype,
+                        tab_puda_veg, tab_puda_veg_code):
         """
+        :param str dmt: DMT raster name
+        :param str mask: raster mask name
+        :param str veg_indata: vegetation input vector name
+        :param soil_indata: soil input vector name
+        :param vtype: attribute vegetation column for dissolve
+        :param stype: attribute soil column for dissolve
+        :param tab_puda_veg: soil table to join
+        :param tab_puda_veg_code: key soil attribute 
 
-        # deleting output directory
-        shutil.rmtree(self.data['outdir'])
-
-        if not os.path.exists(self.data['outdir']):
-            os.makedirs(self.data['outdir'])
-        self._add_message("Creating of the output directory: " + self.data['outdir'])
-
-        self.data['temp'] = self.data['outdir'] + os.sep + "temp"
-
-        if not os.path.exists(self.data['temp']):
-            os.makedirs(self.data['temp'])
-
-        self._add_message("Creating of the temp: " + self.data['temp'])
-
-        # deleting content of output directory
-        dirList = os.listdir(self.data['outdir'])  # arcgis bug - locking shapefiles
-        ab = 0
-        for fname in dirList:
-            if "sr.lock" in fname:
-                ab = 1
-
-        if ab == 0:
-            contents = [os.path.join(self.data['outdir'], i) for i in os.listdir(self.data['outdir'])]
-
-            [shutil.rmtree(i) if os.path.isdir(i) else os.unlink(i)
-             for i in contents]
-
-        if not os.path.exists(self.data['temp']):
-            os.makedirs(self.data['temp'])
-
-        temp_gdb = arcpy.CreateFileGDB_management(self.data['temp'], "tempGDB.gdb")
-
-    def _get_intersect(self, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, tab_puda_veg, tab_puda_veg_code):
+        :return intersect: intersect vector name
+        :return mask_shp: vector mask name
+        :return sfield: list of selected attributes
         """
-        :param dmt_copy:
-        :param veg_indata:
-        :param soil_indata:
-        :param vtyp:
-        :param ptyp:
-        :param tab_puda_veg:
-        :param tab_puda_veg_code:
+        # convert mask into polygon feature class
+        mask_shp = os.path.join(self.data['temp'], "mask.shp")
+        arcpy.RasterToPolygon_conversion(
+            mask, mask_shp, "NO_SIMPLIFY")
 
-        :return intersect:
-        :return null_shp:
-        :return sfield:
-        """
+        # dissolve soil and vegetation polygons
+        soil_boundary = os.path.join(
+            self.data['temp'], "s_b.shp")
+        veg_boundary = os.path.join(
+            self.data['temp'], "v_b.shp")
+        arcpy.Dissolve_management(veg_indata, veg_boundary, vtype)
+        arcpy.Dissolve_management(soil_indata, soil_boundary, stype)
 
-        # adding attribute for soil and vegetation into attribute table (type short int)
-        # preparation for clip
-        null = self.data['temp'] + os.sep + "hrance_rst"
-        null_shp = self.data['temp'] + os.sep + "null.shp"
-        self.gp.Reclassify_sa(dmt_copy, "VALUE", "-100000 100000 1", null, "DATA")  # reklasifikuje se vsechno na 1
-        arcpy.RasterToPolygon_conversion(null, null_shp, "NO_SIMPLIFY")
-
-        soil_boundary = self.data['temp'] + os.sep + "s_b.shp"
-        veg_boundary = self.data['temp'] + os.sep + "v_b.shp"
-
-        arcpy.Dissolve_management(veg_indata, veg_boundary, vtyp)
-        arcpy.Dissolve_management(soil_indata, soil_boundary, ptyp)
-
-        group = [soil_boundary, veg_boundary, null_shp]
-        intersect = self.data['outdir'] + os.sep + "interSoilLU.shp"
+        # do intersection
+        group = [soil_boundary, veg_boundary, mask_shp]
+        intersect = os.path.join(
+            self.data['outdir'], "interSoilLU.shp")
         arcpy.Intersect_analysis(group, intersect, "ALL", "", "INPUT")
 
+        # remove "puda_veg" if exists and create a new one
         if self.gp.ListFields(intersect, "puda_veg").Next():
             arcpy.DeleteField_management(intersect, "puda_veg")
-        arcpy.AddField_management(intersect, "puda_veg", "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED","")
+        arcpy.AddField_management(
+            intersect, "puda_veg", "TEXT", "", "", "15", "",
+            "NULLABLE", "NON_REQUIRED","")
 
-        if ptyp == vtyp:
-            vtyp1 = vtyp + "_1"
-        else:
-            vtyp1 = vtyp
-
-        fields = [ptyp, vtyp1, "puda_veg"]
+        # compute "puda_veg" values (stype + vtype)
+        vtype1 = vtype + "_1" if stype == vtype else vtype
+        fields = [stype, vtype1, "puda_veg"]
         with arcpy.da.UpdateCursor(intersect, fields) as cursor:
             for row in cursor:
                 row[2] = row[0] + row[1]
                 cursor.updateRow(row)
-        del cursor
 
-        puda_veg_dbf = self.data['temp'] + os.sep + "puda_veg_tab_current.dbf"
-
+        # copy attribute table to DBF file for modifications
+        puda_veg_dbf = os.path.join(
+            self.data['temp'], "puda_veg_tab_current.dbf")
         arcpy.CopyRows_management(tab_puda_veg, puda_veg_dbf)
-        sfield = ["k", "s", "n", "pi", "ppl", "ret", "b", "x", "y", "tau", "v"]
-        self._join_table(intersect, "puda_veg", puda_veg_dbf,tab_puda_veg_code,"k;s;n;pi;ppl;ret;b;x;y;tau;v")
+
+        # join table copy to intersect feature class
+        sfield = ["k", "s", "n", "pi", "ppl",
+                  "ret", "b", "x", "y", "tau", "v"]
+        self._join_table(
+            intersect, "puda_veg", puda_veg_dbf, tab_puda_veg_code,
+            ";".join(sfield)
+        )
 
         with arcpy.da.SearchCursor(intersect, sfield) as cursor:
             for row in cursor:
                 for i in range(len(row)):
-                    if row[i] == " ":
-                        self._add_message(
-                            "Values in soilveg tab are not correct - STOP, check shp file Prunik in output")
-                        sys.exit()
+                    if row[i] == " ": # TODO: empty string or NULL value?
+                        raise DataPreparationInvalidInput(
+                            "Values in soilveg tab are not correct"
+                        )
 
-        return intersect, null_shp, sfield
+        return intersect, mask_shp, sfield
 
-    def _clip_data(self, dmt_copy, intersect, slope_orig, flow_direction):
+    def _clip_data(self, dmt, intersect, slope, flow_direction):
         """
+        Clip input data based on AOI.
 
-        :param dmt_copy:
-        :param intersect:
-        :param slope_orig:
-        :param flow_direction:
+        :param str dmt: raster DMT name
+        :param str intersect: vector intersect feature call name
+        :param str slope: raster slope name
+        :param str flow_direction: raster flow direction name
 
-        :return flow_direction_clip:
-        :return slope_clip:
-        :return dmt_clip:
+        :return str dmt_clip: output clipped DMT name
+        :return str slope_clip: output clipped slope name
+        :return str flow_direction_clip: ouput clipped flow direction name
+
         """
-
-        # mask and clip data
-
-        if self.data['points'] and (self.data['points'] != "#") and (self.data['points'] != ""):
+        # TODO: check only None value
+        # clip input vectors based on AOI
+        if self.data['points'] and \
+           (self.data['points'] != "#") and (self.data['points'] != ""):
             self.data['points'] = self._clip_points(intersect)
 
+        # set extent from intersect vector map
         arcpy.env.extent = intersect
 
         # raster description
@@ -281,56 +268,42 @@ class PrepareData(PrepareDataBase):
         # output raster coordinate system
         arcpy.env.outputCoordinateSystem = dmt_desc.SpatialReference
 
-        maska = self.data['temp'] + os.sep + "maska"
-        arcpy.PolygonToRaster_conversion(intersect, "FID", maska, "MAXIMUM_AREA", cellsize = dmt_desc.MeanCellHeight)
+        # create raster mask based on interesect feature calll
+        mask = os.path.join(self.data['temp'], "mask")
+        arcpy.PolygonToRaster_conversion(
+            intersect, "FID", mask, "MAXIMUM_AREA",
+            cellsize = dmt_desc.MeanCellHeight)
 
         # cropping rasters
-        dmt_clip = ExtractByMask(dmt_copy, maska)
-        dmt_clip.save(self.data['outdir'] + os.sep + "DMT")
-        slope_clip = ExtractByMask(slope_orig, maska)
-        slope_clip.save(self.data['temp'] + os.sep + "slope_clip")
+        dmt_clip = ExtractByMask(dmt_copy, mask)
+        dmt_clip.save(os.path.join(self.data['outdir'], "dmt_clip"))
+        slope_clip = ExtractByMask(slope_orig, mask)
+        slope_clip.save(os.path.join(self.data['temp'], "slope_clip"))
+        flow_direction_clip = ExtractByMask(flow_direction, mask)
+        flow_direction_clip.save(os.path.join(self.data['outdir'], "flow_clip"))
 
-        flow_direction_clip = ExtractByMask(flow_direction, maska)
-        flow_direction_clip.save(self.data['outdir'] + os.sep + "flowDir")
-
-        return flow_direction_clip, slope_clip, dmt_clip
+        return dmt_clip, slope_clip, flow_direction_clip
 
     def _clip_points(self, intersect):
         """
-
-        :param intersect:
+        :param intersect: vector intersect feature class
         """
-        tmpPoints = []
-        desc = arcpy.Describe(self.data['points'])
-        shapefieldname = desc.ShapeFieldName
-        rows_p = arcpy.SearchCursor(self.data['points'])
-        for row in rows_p:
-            feat = row.getValue(shapefieldname)
-            pnt = feat.getPart()
-            tmpPoints.append([pnt.X, pnt.Y])
-        del rows_p
+        # clip vector points based on intersect
+        pointsClipCheck = os.path.join(
+            self.data['outdir'], "pointsCheck.shp")
+        arcpy.Clip_analysis(
+            self.data['points'], intersect, pointsClipCheck
+        )
 
-        pointsClipCheck = self.data['outdir'] + os.sep + "pointsCheck.shp"
-        arcpy.Clip_analysis(self.data['points'], intersect, pointsClipCheck)
-
-        tmpPointsCheck = []
-        descCheck = arcpy.Describe(pointsClipCheck)
-        shapefieldnameCheck = descCheck.ShapeFieldName
-        rows_pch = arcpy.SearchCursor(pointsClipCheck)
-        for row2 in rows_pch:
-            featCheck = row2.getValue(shapefieldnameCheck)
-            pntChech = featCheck.getPart()
-            tmpPointsCheck.append([pntChech.X, pntChech.Y])
-        del rows_pch
-
-        diffpts = [c for c in tmpPoints if c not in tmpPointsCheck]
-        if len(diffpts) == 0:
-            pass
-        else:
-            self._add_message("!!! Points at coordinates [x,y]:")
-            for item in diffpts:
-                self._add_message(item)
-            self._add_message("are outside the computation domain and will be ignored !!!")
+        # count number of features (rows)
+        npoints = arcpy.GetCount_management(self._input_params['points'])
+        npoints_clipped = arcpy.GetCount_management(pointsClipCheck)
+                
+        diffpts = npoints - npoints_clipped
+        if len(diffpts) > 0:
+            Logger.warning(
+                "{} points outside of computation domain will be ignored".format(len(diffpts))
+            )
 
         self.data['points'] = pointsClipCheck
 
@@ -700,7 +673,7 @@ class PrepareData(PrepareDataBase):
         arcpy.CalculateField_management(input, newfield, default_value, "PYTHON")
         return input
 
-    def _join_table(self, in_data, in_field, join_table, join_field, fields = None):
+    def _join_table(self, in_data, in_field, join_table, join_field, fields=None):
         """
 
         :param in_data:
@@ -711,9 +684,11 @@ class PrepareData(PrepareDataBase):
         :return:
         """
         if fields == None:
-            arcpy.JoinField_management(in_data, in_field, join_table, join_field)
+            arcpy.JoinField_management(
+                in_data, in_field, join_table, join_field)
         else:
-            arcpy.JoinField_management(in_data, in_field, join_table, join_field, fields)
+            arcpy.JoinField_management(
+                in_data, in_field, join_table, join_field, fields)
 
     def _save_raster(self, name, array_export, folder):
         """

@@ -1,44 +1,41 @@
 class PrepareDataBase(object):
+    def __init__(self):
+        self._input_params = {}
+
     def run(self):
         Logger.info("DATA PREPARATION")
         Logger.info("----------------")
 
-        self._create_dict()
+        # get input parameters
+        self._get_input_params()
 
-        # get input parameters from GRASS UI
-        # TODO: TBD
-
-        # set dict parameters from input data (fixed)
-        # TODO: code duplication
-        self.data['maxdt'] = maxdt
-        self.data['end_time'] = end_time
-        self.data['outdir'] = output
-        self.data['points'] = points
+        # set output data directory
+        self._set_output_data()
 
         # create output folder, where temporary data are stored
-        # TODO: code duplication
-        self._add_message("Creating output...")
         self._set_output() 
-        self._set_mask()   #  TODO
+        dmt_copy, dmt_mask = self._set_mask()
 
+        # DMT computation
         Logger.info(
             "Computing fill, flow direction, flow accumulation, slope..."
         )
-        dmt_fill, flow_direction, flow_accumulation, slope_orig = \
-            dmtfce(dmt_copy, self.data['temp'], "NONE") # TODO
+        dmt_fill, flow_direction, flow_accumulation, slope = \
+            self._dmtfce(dmt_copy)
 
         # intersect
         Logger.info("Computing intersect of input data...")
         intersect, null_shp, sfield = self._get_intersect(
-            gp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp,
-            tab_puda_veg, tab_puda_veg_code
+            dmt_copy,
+            self._input_params['veg_indata'], self._input_params['soil_indata'],
+            self._input_params['vtype'], self._input_params['ptype'],
+            self._input_params['tab_puda_veg'], self._input_params['tab_puda_veg_code']
         )
 
         # clip
         Logger.info("Clip of the source data by intersect...")
-        flow_direction_clip, slope_clip, dmt_clip = self._clip_data(
-            dmt_copy, intersect, slope_orig, flow_direction
-        )
+        dmt_clip, slope_clip, flow_direction_clip = self._clip_data(
+            dmt_copy, intersect, slope, flow_direction)
 
         Logger.info("Computing parameters of DMT...")
         # raster to numpy array conversion
@@ -88,7 +85,7 @@ class PrepareDataBase(object):
 
         return self.data
 
-    def _create_dict(self):
+    def _set_output_data(self):
         """
         Creates dictionary to which model parameters are computed.
         """
@@ -107,7 +104,7 @@ class PrepareDataBase(object):
             'c': None,
             'r': None,
             'combinatIndex': None,
-            'maxdt': None,
+            'maxdt': self._input_params['maxdt'],
             'mat_pi': None,
             'mat_ppl': None,
             'surface_retention': None,
@@ -123,11 +120,11 @@ class PrepareDataBase(object):
             'mat_nan': None,
             'mat_a': None,
             'mat_n': None,
-            'outdir': None,
+            'outdir': self._input_params['output'],
             'pixel_area': None,
-            'points': None,
+            'points': self._input_params['points'], # TODO: used outside?
             'poradi': None,
-            'end_time': None,
+            'end_time': self._input_params['end_time'],
             'spix': None,
             'state_cell': None,
             'temp': None,
@@ -142,4 +139,37 @@ class PrepareDataBase(object):
             'STREAM_RATIO': None,
             'toky_loc': None
             }
+
+    def _set_output(self):
+        """Creates empty output and temporary directories to which created
+        files are saved.
+        """
+        # delete output directory if exists and create new one
+        Logger.info(
+            "Creating output directory {}".format(self.data['outdir'])
+        )
+        if os.path.exists(self.data['outdir']):
+            shutil.rmtree(self.data['outdir'])
+        os.makedirs(self.data['outdir'])
+
+        # create temporary ArcGIS File Geodatabase
+        Logger.debug(
+            "Creating temp directory {}".format(self.data['temp'])
+        )
+        self.data['temp'] = os.path.join(
+            self.data['outdir'], "temp"
+        )
+        os.makedirs(self.data['temp'])
+        
+    def set_mask(self):
+        raise NotImplemented("Not implemented for base provider")
     
+    def _dmtfce(self, dmt):
+        raise NotImplemented("Not implemented for base provider")
+
+    def _get_intersect(self, dmt_copy, veg_indata, soil_indata,
+                       stype, stype, tab_puda_veg, tab_puda_veg_code):
+        raise NotImplemented("Not implemented for base provider")
+
+    def _get_input_params(self):
+        raise NotImplemented("Not implemented for base provider")

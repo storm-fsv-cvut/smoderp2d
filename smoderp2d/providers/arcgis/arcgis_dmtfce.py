@@ -1,29 +1,32 @@
 import arcpy
-import arcgisscripting
-gp = arcgisscripting.create()
 import sys
 import os
 
+def dmtfce(dmt, save_dir, fl_dir=None):
+    """
 
-def dmtfce(dmt, save_dir, fl_dir):
+    :param str dmt: DMT raster name
+    :param str save_dir: directory where to save output
+    :param str fl_dir: flow direction raster name or None
+    """
     # loading file soil_type_values
     # filling the sink areas in raster
     try:
         dmt_fill = arcpy.sa.Fill(dmt)
     except:
+        # TODO: use our own exceptions...
         arcpy.AddMessage(
             "Unexpected error during raster fill calculation:",
             sys.exc_info()[0])
         raise
 
     # flow direction calculation
-    try:  # tady by pak meslo jit pridavat pripraven fl dir
-        if fl_dir == "NONE":
+    try:
+        if not fl_dir:
             flow_direction = arcpy.sa.FlowDirection(dmt_fill)
-            flow_direction.save(save_dir + os.sep + "fl_dir")
+            flow_direction.save(os.path.join(save_dir, "fl_dir")
         else:
             flow_direction = fl_dir
-
     except:
         arcpy.AddMessage(
             "Unexpected error during flow direction calculation:",
@@ -33,8 +36,7 @@ def dmtfce(dmt, save_dir, fl_dir):
     # flow accumulation calculation
     try:
         flow_accumulation = arcpy.sa.FlowAccumulation(flow_direction)
-        flow_accumulation.save(save_dir + os.sep + "facc")
-        # mat_fa = arcpy.RasterToNumPyArray(flow_accumulation)
+        flow_accumulation.save(os.path.join(save_dir, "facc"))
     except:
         arcpy.AddMessage(
             "Unexpected error during flow accumulation calculation:",
@@ -44,11 +46,11 @@ def dmtfce(dmt, save_dir, fl_dir):
     # slope calculation
     try:
         slope = arcpy.sa.Slope(dmt, "PERCENT_RISE", 1)
-        # ExtractByMask (slope, raster_dmt)
-        slope.save(save_dir + "\\slope")
+        slope.save(os.path.join(save_dir, "slope"))
     except:
         arcpy.AddMessage(
             "Unexpected error during slope calculation:",
             sys.exc_info()[0])
         raise
+
     return dmt_fill, flow_direction, flow_accumulation, slope

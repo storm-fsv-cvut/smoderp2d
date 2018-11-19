@@ -12,4 +12,6 @@ class PrepareData(PrepareDataBase):
 
         :return data: dictionary with model parameters.
         """
-        pass
+        # get input parameters from GRASS UI
+        # TODO: TBD
+
