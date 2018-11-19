@@ -87,7 +87,7 @@ class PrepareData(PrepareDataBase):
         # intersect
         self._add_message("Computing intersect of input data...")
         intersect, null_shp, sfield = self._get_intersect(
-            gp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp,
+            dmt_copy, veg_indata, soil_indata, vtyp, ptyp,
             tab_puda_veg, tab_puda_veg_code
         )
 
@@ -107,7 +107,7 @@ class PrepareData(PrepareDataBase):
 
         all_attrib = self._get_mat_par(sfield, intersect)
 
-        self._get_array_points(gp)
+        self._get_array_points()
 
         self._get_a(all_attrib)
 
@@ -191,9 +191,8 @@ class PrepareData(PrepareDataBase):
 
         temp_gdb = arcpy.CreateFileGDB_management(self.data['temp'], "tempGDB.gdb")
 
-    def _get_intersect(self, gp, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, tab_puda_veg, tab_puda_veg_code):
+    def _get_intersect(self, dmt_copy, veg_indata, soil_indata, vtyp, ptyp, tab_puda_veg, tab_puda_veg_code):
         """
-        :param gp:
         :param dmt_copy:
         :param veg_indata:
         :param soil_indata:
@@ -465,10 +464,9 @@ class PrepareData(PrepareDataBase):
 
         return all_attrib
 
-    def _get_array_points(self, gp):
+    def _get_array_points(self):
         """
 
-        :param gp:
         """
 
         # getting points coordinates from optional input shapefile
