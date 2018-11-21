@@ -7,7 +7,7 @@
 __author__ = "edlman"
 __date__ = "$29.12.2015 18:20:20$"
 
-import arcgis_dmtfce
+from smoderp2d.providers.arcgis.dmtfce import dmtfce
 
 
 # importing system moduls
@@ -58,7 +58,7 @@ class StreamPreparation(StreamPreparationBase):
 
         # WATER FLOWS ACCORDING DMT:
         dmt_fill, flow_direction, flow_accumulation, slope = \
-            arcgis_dmtfce.dmtfce(self.dmt_clip, self.temp, None)
+            dmtfce(self.dmt_clip, self.temp, None)
 
         try:
             setnull = arcpy.sa.SetNull(

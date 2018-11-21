@@ -2,6 +2,8 @@ import os
 import shutil
 import numpy as np
 
+import smoderp2d.processes.rainfall as rainfall
+
 from smoderp2d.providers.base import Logger
 
 class PrepareDataBase(object):
@@ -31,7 +33,7 @@ class PrepareDataBase(object):
 
         # intersect
         Logger.info("Computing intersect of input data...")
-        intersect, null_shp, sfield = self._get_intersect(
+        intersect, mask_shp, sfield = self._get_intersect(
             dmt_copy, dmt_mask,
             self._input_params['veg_indata'], self._input_params['soil_indata'],
             self._input_params['vtype'], self._input_params['stype'],
@@ -62,18 +64,17 @@ class PrepareDataBase(object):
         self._get_a(all_attrib)
 
         Logger.info("Computing critical level...")
-        self._get_crit_water(all_attrib, ll_corner)
+        self._get_crit_water(all_attrib)
 
         # load precipitation input file
         self.data['sr'], self.data['itera'] = \
-            rainfall.load_precipitation(rainfall_file_path)
+            rainfall.load_precipitation(self._input_params['rainfall_file_path'])
 
         # compute aspect
         self._get_slope_dir(dmt_clip)
 
         Logger.info("Computing stream preparation...")
-        self._prepare_streams(stream, tab_stream_tvar, tab_stream_tvar_code,
-                              dmt, mask_shp, dmt_clip, intersect
+        self._prepare_streams(mask_shp, dmt_clip, intersect
         )
 
         # ?
@@ -244,9 +245,7 @@ class PrepareDataBase(object):
     def _get_slope_dir(self, dmt_clip):
         raise NotImplemented("Not implemented for base provider")
 
-    def _prepare_streams(self, stream, tab_stream_tvar,
-                         tab_stream_tvar_code, dmt,
-                         null_shp, dmt_clip, intersect):
+    def _prepare_streams(self, mask_shp, dmt_clip, intersect):
         raise NotImplemented("Not implemented for base provider")
 
     def _find_boundary_cells(self):

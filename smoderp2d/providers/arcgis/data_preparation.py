@@ -547,17 +547,10 @@ class PrepareData(PrepareDataBase):
         efect_vrst.save(os.path.join(self.data['temp'], "efect_vrst"))
         self.data['mat_efect_vrst'] = self._rst2np(efect_vrst)
 
-    def _prepare_streams(self, stream, tab_stream_tvar,
-                         tab_stream_tvar_code, dmt,
-                         mask_shp, dmt_clip, intersect):
+    def _prepare_streams(self, mask_shp, dmt_clip, intersect):
         """
 
-        :param stream:
-        :param tab_stream_tvar:
-        :param tab_stream_tvar_code:
-        :param dmt:
-        :param null_shp:
-        :param ll_corner:
+        :param mask_shp:
         :param dmt_clip:
         :param intersect:
         """
@@ -569,7 +562,9 @@ class PrepareData(PrepareDataBase):
 
         # pocitam vzdy s ryhama pokud jsou zadane vsechny vstupy pro
         # vypocet toku, toky se pocitaji a type_of_computing je 3
-        listin = [stream, tab_stream_tvar, tab_stream_tvar_code]
+        listin = [self._input_params['stream'],
+                  self._input_params['tab_stream_tvar'],
+                  self._input_params['tab_stream_tvar_code']]
         tflistin = [len(i) > 1 for i in listin]
 
         if all(tflistin):
@@ -578,10 +573,10 @@ class PrepareData(PrepareDataBase):
         if self.data['type_of_computing'] == 3 or \
            self.data['type_of_computing'] == 5:
 
-            input = [stream,
-                     tab_stream_tvar,
-                     tab_stream_tvar_code,
-                     dmt,
+            input = [self._input_params['stream'],
+                     self._input_params['tab_stream_tvar'],
+                     self._input_params['tab_stream_tvar_code'],
+                     self._input_params['dmt'],
                      mask_shp,
                      self.data['spix'],
                      self.data['r'],
