@@ -1,10 +1,16 @@
+import os
+import shutil
+import numpy as np
+
+from smoderp2d.providers.base import Logger
+
 class PrepareDataBase(object):
-    def __init__(self):
-        self._input_params = {}
 
     def run(self):
         Logger.info("DATA PREPARATION")
         Logger.info("----------------")
+
+        self._input_params = {}
 
         # get input parameters
         self._get_input_params()
@@ -26,9 +32,9 @@ class PrepareDataBase(object):
         # intersect
         Logger.info("Computing intersect of input data...")
         intersect, null_shp, sfield = self._get_intersect(
-            dmt_copy,
+            dmt_copy, dmt_mask,
             self._input_params['veg_indata'], self._input_params['soil_indata'],
-            self._input_params['vtype'], self._input_params['ptype'],
+            self._input_params['vtype'], self._input_params['stype'],
             self._input_params['tab_puda_veg'], self._input_params['tab_puda_veg_code']
         )
 
@@ -171,8 +177,8 @@ class PrepareDataBase(object):
     def _dmtfce(self, dmt):
         raise NotImplemented("Not implemented for base provider")
 
-    def _get_intersect(self, dmt_copy, veg_indata, soil_indata,
-                       stype, stype, tab_puda_veg, tab_puda_veg_code):
+    def _get_intersect(self, dmt_copy, mask, veg_indata, soil_indata,
+                       vtype, stype, tab_puda_veg, tab_puda_veg_code):
         raise NotImplemented("Not implemented for base provider")
 
     def _get_input_params(self):

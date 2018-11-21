@@ -103,10 +103,10 @@ class PrepareData(PrepareDataBase):
         """TODO"""
         dmt_copy = os.path.join(
             self.data['temp'], "tempGDB.gdb", "dmt_copy")
-        arcpy.CopyRaster_management(dmt, dmt_copy)
+        arcpy.CopyRaster_management(self._input_params['dmt'], dmt_copy)
 
         # align computation region to DMT grid
-        arcpy.env.snapRaster = dmt
+        arcpy.env.snapRaster = self._input_params['dmt']
 
         dmt_mask = os.path.join(self.data['temp'], "dmt_mask")
         self.gp.Reclassify_sa(
@@ -118,7 +118,7 @@ class PrepareData(PrepareDataBase):
     def _dmtfce(self, dmt):
         return dmtfce(dmt, self.data['temp'])
     
-     def _get_intersect(self, dmt, mask,
+    def _get_intersect(self, dmt, mask,
                         veg_indata, soil_indata, vtype, stype,
                         tab_puda_veg, tab_puda_veg_code):
         """
@@ -216,7 +216,7 @@ class PrepareData(PrepareDataBase):
         arcpy.env.extent = intersect
 
         # raster description
-        dmt_desc = arcpy.Describe(dmt_copy)
+        dmt_desc = arcpy.Describe(dmt)
 
         # output raster coordinate system
         arcpy.env.outputCoordinateSystem = dmt_desc.SpatialReference
@@ -228,9 +228,9 @@ class PrepareData(PrepareDataBase):
             cellsize = dmt_desc.MeanCellHeight)
 
         # cropping rasters
-        dmt_clip = ExtractByMask(dmt_copy, mask)
+        dmt_clip = ExtractByMask(dmt, mask)
         dmt_clip.save(os.path.join(self.data['outdir'], "dmt_clip"))
-        slope_clip = ExtractByMask(slope_orig, mask)
+        slope_clip = ExtractByMask(slope, mask)
         slope_clip.save(os.path.join(self.data['temp'], "slope_clip"))
         flow_direction_clip = ExtractByMask(flow_direction, mask)
         flow_direction_clip.save(os.path.join(self.data['outdir'], "flow_clip"))
@@ -252,10 +252,10 @@ class PrepareData(PrepareDataBase):
         npoints = arcpy.GetCount_management(self._input_params['points'])
         npoints_clipped = arcpy.GetCount_management(pointsClipCheck)
                 
-        diffpts = npoints - npoints_clipped
-        if len(diffpts) > 0:
+        diffpts = int(npoints[0]) - int(npoints_clipped[0])
+        if diffpts > 0:
             Logger.warning(
-                "{} points outside of computation domain will be ignored".format(len(diffpts))
+                "{} points outside of computation domain will be ignored".format(diffpts)
             )
 
         self.data['points'] = pointsClipCheck

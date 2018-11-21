@@ -24,7 +24,7 @@ def dmtfce(dmt, save_dir, fl_dir=None):
     try:
         if not fl_dir:
             flow_direction = arcpy.sa.FlowDirection(dmt_fill)
-            flow_direction.save(os.path.join(save_dir, "fl_dir")
+            flow_direction.save(os.path.join(save_dir, "fl_dir"))
         else:
             flow_direction = fl_dir
     except:
