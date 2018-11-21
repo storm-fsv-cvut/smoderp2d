@@ -37,20 +37,25 @@ class PrepareDataBase(object):
         dmt_clip, slope_clip, flow_direction_clip = self._clip_data(
             dmt_copy, intersect, slope, flow_direction)
 
-        Logger.info("Computing parameters of DMT...")
         # raster to numpy array conversion
+        Logger.info("Computing parameters of DMT...")
         self.data['mat_dmt'] = self._rst2np(dmt_clip)
         self.data['mat_slope'] = self._rst2np(slope_clip)
         self.data['mat_fd'] = self._rst2np(flow_direction_clip)
 
-        ll_corner = self._get_raster_dim(dmt_clip)
+        # update data dict for spatial ref info
+        self._get_raster_dim(dmt_clip)
 
+        # build numpy array from selected attributes
         all_attrib = self._get_mat_par(sfield, intersect)
 
-        self._get_array_points(gp)
+        # build points array
+        self._get_array_points()
 
+        # build a/aa arrays
         self._get_a(all_attrib)
 
+        Logger.info("Computing critical level...")
         self._get_crit_water(all_attrib, ll_corner)
 
         # load precipitation input file
@@ -62,12 +67,11 @@ class PrepareDataBase(object):
 
         Logger.info("Computing stream preparation...")
         self._prepare_streams(stream, tab_stream_tvar, tab_stream_tvar_code,
-                              dmt, null_shp, ll_corner, dmt_clip, intersect
+                              dmt, mask_shp, dmt_clip, intersect
         )
-        
-        self._find_boundary_cells()
 
-        self._save_raster("fl_dir", self.data['mat_fd'], self.data['temp'])
+        # ?
+        self._find_boundary_cells()
 
         self.data['mat_n'] = all_attrib[2]
         self.data['mat_ppl'] = all_attrib[3]
@@ -173,3 +177,134 @@ class PrepareDataBase(object):
 
     def _get_input_params(self):
         raise NotImplemented("Not implemented for base provider")
+
+    def _rst2np(self,raster):
+        raise NotImplemented("Not implemented for base provider")
+
+    def _get_attrib(self, sfield, intersect):
+        raise NotImplemented("Not implemented for base provider")
+
+    def _get_mat_par(self, sfield, intersect):
+        raise NotImplemented("Not implemented for base provider")
+
+    def _get_array_points(self):
+        raise NotImplemented("Not implemented for base provider")
+        
+    def _get_a(self, all_attrib):
+        """
+        Build 'a' array.
+
+        :param all_attrib: list of attributes (numpy arrays)
+        """
+        mat_n = all_attrib[2]
+        mat_x = all_attrib[7]
+        mat_y = all_attrib[8]
+        
+        self.data['mat_a']  = np.zeros(
+            [self.data['r'], self.data['c']], float
+        )
+        self.data['mat_aa'] = np.zeros(
+            [self.data['r'], self.data['c']], float
+        )
+
+        # calculating the "a" parameter
+        for i in range(self.data['r']):
+            for j in range(self.data['c']):
+                slope = self.data['mat_slope'][i][j]
+                par_x = mat_x[i][j]
+                par_y = mat_y[i][j]
+
+                if par_x == self.data['NoDataValue'] or \
+                   par_y == self.data['NoDataValue'] or \
+                   slope == self.data['NoDataValue']:
+                    par_a = self.data['NoDataValue']
+                    par_aa = self.data['NoDataValue']
+                elif par_x == self.data['NoDataValue'] or \
+                     par_y == self.data['NoDataValue'] or \
+                     slope == 0.0:
+                    par_a = 0.0001
+                    par_aa = par_a / 100 / mat_n[i][j]
+                else:
+                    exp = np.power(slope, par_y)
+                    par_a = par_x * exp
+                    par_aa = par_a / 100 / mat_n[i][j]
+
+                self.data['mat_a'][i][j] = par_a
+                self.data['mat_aa'][i][j] = par_aa
+
+    def _get_crit_water(self, all_attrib):
+        raise NotImplemented("Not implemented for base provider")
+
+    def _get_slope_dir(self, dmt_clip):
+        raise NotImplemented("Not implemented for base provider")
+
+    def _prepare_streams(self, stream, tab_stream_tvar,
+                         tab_stream_tvar_code, dmt,
+                         null_shp, dmt_clip, intersect):
+        raise NotImplemented("Not implemented for base provider")
+
+    def _find_boundary_cells(self):
+        """
+        ? TODO: is it used?
+        """
+        # Identification of cells at the domain boundary
+
+        self.data['mat_boundary'] = np.zeros(
+            [self.data['r'], self.data['c']], float
+        )
+
+        nr = range(self.data['r'])
+        nc = range(self.data['c'])
+
+        self.data['rc'] = []
+        self.data['rr'] = []
+
+        for i in nr:
+            for j in nc:
+                val = self.data['mat_nan'][i][j]
+                if i == 0 or j == 0 or \
+                   i == (self.data['r'] - 1) or j == (self.data['c'] - 1):
+                    if val != self.data['NoDataValue']:
+                        val = -99
+                else:
+                    if val != self.data['NoDataValue']:
+                        if  self.data['mat_nan'][i - 1][j] == self.data['NoDataValue'] or \
+                            self.data['mat_nan'][i + 1][j] == self.data['NoDataValue'] or \
+                            self.data['mat_nan'][i][j - 1] == self.data['NoDataValue'] or \
+                            self.data['mat_nan'][i][j - 1] == self.data['NoDataValue']:
+
+                            val = -99
+
+                        if  self.data['mat_nan'][i - 1][j + 1] == self.data['NoDataValue'] or \
+                            self.data['mat_nan'][i + 1][j + 1] == self.data['NoDataValue'] or \
+                            self.data['mat_nan'][i - 1][j - 1] == self.data['NoDataValue'] or \
+                            self.data['mat_nan'][i + 1][j - 1] == self.data['NoDataValue']:
+
+                            val = -99.
+
+                self.data['mat_boundary'][i][j] = val
+
+        inDomain = False
+        inBoundary = False
+
+        for i in nr:
+            oneCol = []
+            oneColBoundary = []
+            for j in nc:
+
+                if self.data['mat_boundary'][i][j] == -99 and inBoundary == False:
+                    inBoundary = True
+
+                if self.data['mat_boundary'][i][j] == -99 and inBoundary:
+                    oneColBoundary.append(j)
+
+                if (self.data['mat_boundary'][i][j] == 0.0) and inDomain == False:
+                    self.data['rr'].append(i)
+                    inDomain = True
+
+                if (self.data['mat_boundary'][i][j] == 0.0) and inDomain:
+                    oneCol.append(j)
+
+            inDomain = False
+            inBoundary = False
+            self.data['rc'].append(oneCol)

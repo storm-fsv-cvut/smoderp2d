@@ -21,96 +21,35 @@ from arcpy.sa import *
 import math
 
 from smoderp2d.providers.base import Logger
-# definice erroru  na urovni modulu
-#
-class Error(Exception):
 
-    """Base class for exceptions in this module."""
-    pass
+from smoderp2d.providers.base.stream_preparation import StreamPreparationBase, Error, ZeroSlopeError
 
-
-class ZeroSlopeError(Error):
-
-    """Exception raised for zero slope of a reach.
-
-    Attributes:
-        msg  -- explanation of the error
-    """
-
-    def __init__(self, fid):
-        self.msg = 'Reach FID:' + str(fid) + ' has zero slope.'
-
-    def __str__(self):
-        return repr(self.msg)
-
-class StreamPreparation:
+class StreamPreparation(StreamPreparationBase):
 
     def __init__(self, input):
-
-        self.stream = input[0]
-        self.tab_stream_tvar = input[1]
-        self.tab_stream_tvar_code = input[2]
-        self.dmt = input[3]
-        self.null = input[4]
-        self.spix = input[5]
-        self.rows = input[6]
-        self.cols = input[7]
-        self.ll_corner = input[8]
-        self.output = input[9]
-        self.dmt_clip = input[10]
-        self.intersect = input[11]
-        self._add_field = input[12]
-        self._join_table = input[13]
-
+        super(StreamPreparation, self).__init__(input)
+        
         # Overwriting output
         arcpy.env.overwriteOutput = 1
+        
         # Check extensions
         arcpy.CheckOutExtension("3D")
         arcpy.CheckOutExtension("Spatial")
 
         arcpy.env.snapRaster = self.dmt
 
-    def prepare_streams(self):
-
-        self._add_message("Creating output...")
-        self._set_output()
-
-        self._setnull() #not used for anything, just saves setnull
-
-        self._add_message("Clip streams...")
-        toky, toky_loc = self._clip_streams()
-
-        self._add_message("Computing stream direction and elevation...")
-        self._stream_direction(toky)
-
-        mat_tok_usek = self._get_mat_tok_usek(toky)
-
-        self._add_message("Computing stream hydraulics...")
-        self._stream_hydraulics(toky)
-
-        self._stream_slope(toky)
-
-        self._get_tokylist(toky)
-
-        return self.tokylist, mat_tok_usek, toky_loc
-
-    def _add_message(self, message):
-        """
-        Pops up a message into arcgis and saves it into log file.
-        :param message: Message to be printed.
-        """
-        Logger.info(message)
 
     def _set_output(self):
         """
         Define output temporary folder and geodatabase.
         """
-
         # Set output
-        self.temp = self.output + os.sep + "stream_prep"
+        self.temp = os.path.join(self.output, "stream_prep")
         if not os.path.exists(self.temp):
             os.makedirs(self.temp)
-        self.tempgdb = arcpy.CreateFileGDB_management(self.temp, "stream_prep.gdb")
+        self.tempgdb = arcpy.CreateFileGDB_management(
+            self.temp, "stream_prep.gdb"
+        )
 
     def _setnull(self):
         """
@@ -118,14 +57,16 @@ class StreamPreparation:
         """
 
         # WATER FLOWS ACCORDING DMT:
-        dmt_fill, flow_direction, flow_accumulation, slope = arcgis_dmtfce.dmtfce(self.dmt_clip, self.temp,
-                                                                                  "NONE")
+        dmt_fill, flow_direction, flow_accumulation, slope = \
+            arcgis_dmtfce.dmtfce(self.dmt_clip, self.temp, None)
 
         try:
-            setnull = arcpy.sa.SetNull(flow_accumulation, 1, "VALUE < 300")  # hodnota value??
-            setnull.save(self.temp + os.sep + "setnull")
+            setnull = arcpy.sa.SetNull(
+                flow_accumulation, 1, "VALUE < 300")  # hodnota value??
+            setnull.save(os.path.join(self.temp, "setnull"))
         except:
-            self._add_message("Unexpected error during setnull calculation: " + sys.exc_info()[0])
+            Logger.critical(
+                "Unexpected error during setnull calculation: " + sys.exc_info()[0])
             raise Exception("Unexpected error during setnull calculation: " + sys.exc_info()[0])
 
     def _clip_streams(self):
@@ -137,22 +78,29 @@ class StreamPreparation:
 
         # WATER FLOWS ACCORDING DIBAVOD:
         # Clip
-        toky = self.temp + os.sep + "toky.shp"
-        toky_loc = self.temp + os.sep + "toky.shp"
-        hranice = self.temp + os.sep + "hranice.shp"
-        hranice = arcpy.Clip_analysis(self.null, self.intersect, hranice)
-        hranice_buffer = arcpy.Buffer_analysis(hranice, self.temp + os.sep + "hranice_buffer.shp",
-                                               -self.spix / 3, "FULL", "ROUND", "NONE")
+        toky = os.path.join(self.temp, "toky.shp")
+        toky_loc = os.path.join(self.temp, "toky.shp")
+        hranice = os.path.join(self.temp, "hranice.shp")
+        hranice = arcpy.Clip_analysis(
+            self.null, self.intersect, hranice
+        )
+        hranice_buffer = arcpy.Buffer_analysis(
+            hranice,
+            os.path.join(self.temp, "hranice_buffer.shp"),
+            -self.spix / 3, "FULL", "ROUND", "NONE")
 
-        toky = arcpy.Clip_analysis(self.stream, hranice_buffer, toky)
+        toky = arcpy.Clip_analysis(
+            self.stream, hranice_buffer, toky
+        )
 
         # MK - nevim proc se maze neco, co v atributove tabulce vubec neni
-        self._delete_fields(toky, ["EX_JH", "POZN", "PRPROP_Z", "IDVT", "UTOKJ_ID", "UTOKJN_ID", "UTOKJN_F"])
+        self._delete_fields(
+            toky, ["EX_JH", "POZN", "PRPROP_Z", "IDVT", "UTOKJ_ID", "UTOKJN_ID", "UTOKJN_F"]
+        )
 
         return toky, toky_loc
 
     def _delete_fields(self, table, fields):
-
         arcpy.DeleteField_management(table, fields)
 
     def _stream_direction(self, toky):
@@ -167,24 +115,43 @@ class StreamPreparation:
         # Nasledujici blok je redundantni, nicmene do "toky" pridava nekolik sloupecku, u kterych jsem nemohl dohledat,
         # jestli se s nimi neco dela. Proto to tu zatim nechavam.
         #--------------------------------------------------------------------------------------------------------------
-        start = arcpy.FeatureVerticesToPoints_management(toky, self.temp + os.sep + "start", "START")
-        end = arcpy.FeatureVerticesToPoints_management(toky, self.temp + os.sep + "end", "END")
-        arcpy.sa.ExtractMultiValuesToPoints(start, [[self.dmt_clip,"start_elev"]], "NONE")
-        arcpy.sa.ExtractMultiValuesToPoints(end, [[self.dmt_clip,"end_elev"]], "NONE")
+        start = arcpy.FeatureVerticesToPoints_management(
+            toky, os.path.join(self.temp, "start"), "START"
+        )
+        end = arcpy.FeatureVerticesToPoints_management(
+            toky, os.path.join(self.temp, "end"), "END"
+        )
+        arcpy.sa.ExtractMultiValuesToPoints(
+            start, [[self.dmt_clip, "start_elev"]], "NONE"
+        )
+        arcpy.sa.ExtractMultiValuesToPoints(
+            end, [[self.dmt_clip, "end_elev"]], "NONE"
+        )
 
         # Join
         self._join_table(toky, "FID", start, "ORIG_FID")
         self._join_table(toky, "FID", end, "ORIG_FID")
 
-        self._delete_fields(toky, ["SHAPE_LEN", "SHAPE_LENG", "SHAPE_LE_1", "NAZ_TOK_1", "TOK_ID_1", "SHAPE_LE_2",
-                                   "SHAPE_LE_3", "NAZ_TOK_12", "TOK_ID_12", "SHAPE_LE_4", "ORIG_FID_1"])
-        self._delete_fields(toky, ["start_elev", "end_elev", "ORIG_FID", "ORIG_FID_1"])
+        self._delete_fields(toky,
+                            ["SHAPE_LEN", "SHAPE_LENG", "SHAPE_LE_1", "NAZ_TOK_1", "TOK_ID_1", "SHAPE_LE_2",
+                             "SHAPE_LE_3", "NAZ_TOK_12", "TOK_ID_12", "SHAPE_LE_4", "ORIG_FID_1"]
+        )
+        self._delete_fields(toky,
+                            ["start_elev", "end_elev", "ORIG_FID", "ORIG_FID_1"]
+        )
         #--------------------------------------------------------------------------------------------------------------
 
-        start = arcpy.FeatureVerticesToPoints_management(toky, self.temp + os.sep + "start", "START")
-        end = arcpy.FeatureVerticesToPoints_management(toky, self.temp + os.sep + "end", "END")
-        arcpy.sa.ExtractMultiValuesToPoints(start, [[self.dmt_clip, "start_elev"]], "NONE")
-        arcpy.sa.ExtractMultiValuesToPoints(end, [[self.dmt_clip, "end_elev"]], "NONE")
+        start = arcpy.FeatureVerticesToPoints_management(
+            toky, self.temp + os.sep + "start", "START")
+        end = arcpy.FeatureVerticesToPoints_management(
+            toky, self.temp + os.sep + "end", "END")
+        arcpy.sa.ExtractMultiValuesToPoints(
+            start,
+            [[self.dmt_clip, "start_elev"]], "NONE"
+        )
+        arcpy.sa.ExtractMultiValuesToPoints(
+            end, [[self.dmt_clip, "end_elev"]], "NONE"
+        )
         arcpy.AddXY_management(start)
         arcpy.AddXY_management(end)
 
@@ -192,7 +159,9 @@ class StreamPreparation:
         self._join_table(toky, "FID", start, "ORIG_FID")
         self._join_table(toky, "FID", end, "ORIG_FID")
 
-        self._delete_fields(toky, ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"])
+        self._delete_fields(toky,
+                            ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"]
+        )
 
         field = ["FID", "start_elev", "POINT_X", "end_elev", "POINT_X_1"]
 
@@ -219,11 +188,16 @@ class StreamPreparation:
                         else:
                             row[5] = "-9999"
 
-        self._delete_fields(toky, ["SHAPE_LEN", "SHAPE_LE_1", "SHAPE_LE_2", "SHAPE_LE_3", "SHAPE_LE_4", "SHAPE_LE_5",
-                                   "SHAPE_LE_6", "SHAPE_LE_7", "SHAPE_LE_8", "SHAPE_LE_9", "SHAPE_L_10", "SHAPE_L_11",
-                                   "SHAPE_L_12", "SHAPE_L_13", "SHAPE_L_14"])
-
-        self._delete_fields(toky, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"])
+        self._delete_fields(
+            toky,
+            ["SHAPE_LEN", "SHAPE_LE_1", "SHAPE_LE_2", "SHAPE_LE_3", "SHAPE_LE_4", "SHAPE_LE_5",
+             "SHAPE_LE_6", "SHAPE_LE_7", "SHAPE_LE_8", "SHAPE_LE_9", "SHAPE_L_10", "SHAPE_L_11",
+             "SHAPE_L_12", "SHAPE_L_13", "SHAPE_L_14"]
+        )
+        
+        self._delete_fields(
+            toky, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"]
+        )
 
     def _get_mat_tok_usek(self, toky):
         """
@@ -234,12 +208,18 @@ class StreamPreparation:
         :return mat_tok_usek: Numpy array
         """
 
-        stream_rst1 = self.temp + os.sep + "stream_rst"
-        stream_rst = arcpy.PolylineToRaster_conversion(toky, "FID", stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix)
-        tok_usek = self.temp + os.sep + "tok_usek"
+        stream_rst1 = os.path.join(self.temp, "stream_rst")
+        stream_rst = arcpy.PolylineToRaster_conversion(
+            toky, "FID", stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix
+        )
+        tok_usek = os.path.join(self.temp, "tok_usek")
 
-        arcpy.gp.Reclassify_sa(stream_rst, "VALUE", "NoDataValue 1000", tok_usek, "DATA")
-        mat_tok_usek = arcpy.RasterToNumPyArray(self.temp + os.sep + "tok_usek", self.ll_corner, self.cols, self.rows)
+        arcpy.gp.Reclassify_sa(
+            stream_rst, "VALUE", "NoDataValue 1000", tok_usek, "DATA"
+        )
+        mat_tok_usek = arcpy.RasterToNumPyArray(
+            tok_usek, self.ll_corner, self.cols, self.rows
+        )
         mat_tok_usek = mat_tok_usek.astype('int16')
 
         count = arcpy.GetCount_management(tok_usek)
@@ -252,34 +232,9 @@ class StreamPreparation:
                     mat_tok_usek[i][j] = 0
                 else:
                     mat_tok_usek[i][j] += 1000
+        
         return mat_tok_usek
 
-    def _stream_hydraulics(self, toky):
-
-        # HYDRAULIKA TOKU
-        self._add_field(toky, "length", "DOUBLE", 0.0)  # (m)
-        self._add_field(toky, "sklon", "DOUBLE", 0.0)  # (-)
-        self._add_field(toky, "V_infl_ce", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "V_infl_us", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "V_infl", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "Q_outfl", "DOUBLE", 0.0)  # (m3/s)
-        self._add_field(toky, "V_outfl", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "V_outfl_tm", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "V_zbyt", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "V_zbyt_tm", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "V", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "h", "DOUBLE", 0.0)  # (m)
-        self._add_field(toky, "vs", "DOUBLE", 0.0)  # (m/s)
-        self._add_field(toky, "NS", "DOUBLE", 0.0)  # (m)
-        self._add_field(toky, "total_Vic", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "total_Viu", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "max_Q", "DOUBLE", 0.0)  # (m3/s)
-        self._add_field(toky, "max_h", "DOUBLE", 0.0)  # (m)
-        self._add_field(toky, "max_vs", "DOUBLE", 0.0)  # (m/s)
-        self._add_field(toky, "total_Vo", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "total_Vi", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "total_NS", "DOUBLE", 0.0)  # (m3)
-        self._add_field(toky, "total_Vz", "DOUBLE", 0.0)  # (m3)
 
     def _stream_slope(self, toky):
         """
@@ -304,25 +259,29 @@ class StreamPreparation:
         """
 
         # tvar koryt
-        stream_tvar_dbf = self.temp + os.sep + "stream_tvar.dbf"
+        stream_tvar_dbf = os.path.join(self.temp, "stream_tvar.dbf")
         arcpy.CopyRows_management(self.tab_stream_tvar, stream_tvar_dbf)
         sfield = ["cislo", "smoderp", "tvar", "b", "m", "drsnost", "Q365"]
 
         try:
-            self._join_table(toky, self.tab_stream_tvar_code, stream_tvar_dbf, self.tab_stream_tvar_code,
-                             "cislo;tvar;b;m;drsnost;Q365")
+            self._join_table(
+                toky, self.tab_stream_tvar_code, stream_tvar_dbf,
+                self.tab_stream_tvar_code,
+                "cislo;tvar;b;m;drsnost;Q365"
+            )
         except:
             self._add_field(toky, "smoderp", "TEXT", "0")
-            self._join_table(toky, self.tab_stream_tvar_code, stream_tvar_dbf, self.tab_stream_tvar_code,
+            self._join_table(toky, self.tab_stream_tvar_code,
+                             stream_tvar_dbf, self.tab_stream_tvar_code,
                              "cislo;tvar;b;m;drsnost;Q365")
 
         with arcpy.da.SearchCursor(toky, sfield) as cursor:
             for row in cursor:
                 for i in range(len(row)):
                     if row[i] == " ":
-                        self._add_message(
+                        Logger.info(
                             "Value in tab_stream_tvar are no correct - STOP, check shp file toky in output")
-                        sys.exit()
+                        # sys.exit() -> raise
 
         fields = arcpy.ListFields(toky)
         self.field_names = [field.name for field in fields]
@@ -351,14 +310,4 @@ class StreamPreparation:
         self._append_value('m', 'M')
         self._append_value('drsnost', 'DRSNOST')
         self._append_value('q365', 'Q365')
-
-    def _append_value(self, field_name_try, field_name_except = None):
-
-        if field_name_except == None:
-            self.tokylist.append(self.toky_tmp[self.field_names.index(field_name_try)])
-        else:
-            try:
-                self.tokylist.append(self.toky_tmp[self.field_names.index(field_name_try)])
-            except ValueError:
-                self.tokylist.append(self.toky_tmp[self.field_names.index(field_name_except)])
 

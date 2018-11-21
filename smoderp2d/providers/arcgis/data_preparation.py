@@ -6,21 +6,20 @@ import math
 import csv
 
 import smoderp2d.processes.rainfall as rainfall
-from stream_preparation import StreamPreparation
 
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.base.exception import DataPreparationInvalidInput
 
-# arcpy imports
+from smoderp2d.providers.arcgis.stream_preparation import StreamPreparation
+from smoderp2d.providers.arcgis.dmtfce import dmtfce
+import smoderp2d.providers.arcgis.constants as constants
+
 from arcpy.sa import *
 import arcpy
 import arcgisscripting
-from arcgis_dmtfce import dmtfce
-import constants # poradi parametru z arcgis tool
 
 class PrepareData(PrepareDataBase):
-
     def __init__(self):
 
         # creating the geoprocessor object
@@ -76,56 +75,10 @@ class PrepareData(PrepareDataBase):
         """
         super(PrepareData, self).run()
 
-
-        self._add_message("Computing parameters of DMT...")
-        # raster to numpy array conversion
-        self.data['mat_dmt'] = self._rst2np(dmt_clip)
-        self.data['mat_slope'] = self._rst2np(slope_clip)
-        self.data['mat_fd'] = self._rst2np(flow_direction_clip)
-
-        # TODO: add comments, describe
-        ll_corner = self._get_raster_dim(dmt_clip)
-
-        all_attrib = self._get_mat_par(sfield, intersect)
-
-        self._get_array_points()
-
-        self._get_a(all_attrib)
-
-        self._get_crit_water(all_attrib, ll_corner)
-
-        # load precipitation input file
-        self.data['sr'], self.data['itera'] = \
-            rainfall.load_precipitation(rainfall_file_path)
-
-        # compute aspect
-        self._get_slope_dir(dmt_clip)
-
-        self._add_message("\nSTREAM PREPARATION")
-        self._prepare_streams(stream, tab_stream_tvar, tab_stream_tvar_code,
-                              dmt, null_shp, ll_corner, dmt_clip, intersect)
-
-        # determine cells on the boundary
-        self._find_boundary_cells()
-
         self._save_raster("fl_dir", self.data['mat_fd'], self.data['temp'])
 
-        self.data['mat_n'] = all_attrib[2]
-        self.data['mat_ppl'] = all_attrib[3]
-        self.data['mat_pi'] = all_attrib[4]
-        self.data['mat_reten'] = all_attrib[5]
-        self.data['mat_b'] = all_attrib[6]
-
-        self.data['mfda'] = False
-        self.data['mat_boundary'] = None
-        self.data['points'] = None
-        self.data['spix'] = None
-        self.data['vpix'] = None
-
-        self._add_message("\nData preparation has been finished\n")
-
         return self.data
-
+    
     def _add_message(self, message):
         """
         Pops up a message into arcgis and saves it into log file.
@@ -309,24 +262,26 @@ class PrepareData(PrepareDataBase):
 
     def _get_attrib(self, sfield, intersect):
         """
+        Get numpy arrays of selected attributes.
 
-        :param sfield:
-        :param intersect:
+        :param sfield: list of attributes
+        :param intersect: vector intersect name
 
-        :return all_atrib:
+        :return all_atrib: list of numpy array
         """
-
-        mat_k = np.zeros([self.data['r'], self.data['c']], float)
-        mat_s = np.zeros([self.data['r'], self.data['c']], float)
-        mat_n = np.zeros([self.data['r'], self.data['c']], float)
-        mat_ppl = np.zeros([self.data['r'], self.data['c']], float)
-        mat_pi = np.zeros([self.data['r'], self.data['c']], float)
-        mat_ret = np.zeros([self.data['r'], self.data['c']], float)
-        mat_b = np.zeros([self.data['r'], self.data['c']], float)
-        mat_x = np.zeros([self.data['r'], self.data['c']], float)
-        mat_y = np.zeros([self.data['r'], self.data['c']], float)
-        mat_tau = np.zeros([self.data['r'], self.data['c']], float)
-        mat_v = np.zeros([self.data['r'], self.data['c']], float)
+        dim = [self.data['r'], self.data['c']]
+        
+        mat_k = np.zeros(dim, float)
+        mat_s = np.zeros(dim, float)
+        mat_n = np.zeros(dim, float)
+        mat_ppl = np.zeros(dim, float)
+        mat_pi = np.zeros(dim, float)
+        mat_ret = np.zeros(dim, float)
+        mat_b = np.zeros(dim, float)
+        mat_x = np.zeros(dim, float)
+        mat_y = np.zeros(dim, float)
+        mat_tau = np.zeros(dim, float)
+        mat_v = np.zeros(dim, float)
 
         all_attrib = [
             mat_k,
@@ -339,35 +294,39 @@ class PrepareData(PrepareDataBase):
             mat_x,
             mat_y,
             mat_tau,
-            mat_v]  # parametry, ktere se generuji ze shp
+            mat_v
+        ] 
 
-        poradi = 0
-        for x in sfield:
-            d = self.data['temp'] + os.sep + "r" + str(x)
-            arcpy.PolygonToRaster_conversion(intersect, str(x), d, "MAXIMUM_AREA", "", self.data['vpix'])
-            all_attrib[poradi] = self._rst2np(d)
-            poradi = poradi + 1
+        idx = 0
+        for field in sfield:
+            output = os.path.join(self.data['temp'], "r{}".format(field))
+            arcpy.PolygonToRaster_conversion(
+                intersect, field, output,
+                "MAXIMUM_AREA", "", self.data['vpix']
+            )
+            all_attrib[idx] = self._rst2np(output)
+            idx += 1
+            
         return all_attrib
 
-    def _rst2np(self,raster):
+    def _rst2np(self, raster):
         """
+        Convert raster data into numpy array
 
-        :param raster:
+        :param raster: raster name
 
-        :return:
+        :return: numpy array
         """
         return arcpy.RasterToNumPyArray(raster)
 
-    def _get_raster_dim(self,dmt_clip):
+    def _get_raster_dim(self, dmt_clip):
         """
+        Get raster spatial reference info.
 
-        :param dmt_clip:
-
-        :return ll_corner:
+        :param dmt_clip: clipped dmt raster map
         """
-
-        # cropped raster info
         dmt_desc = arcpy.Describe(dmt_clip)
+        
         # lower left corner coordinates
         self.data['xllcorner'] = dmt_desc.Extent.XMin
         self.data['yllcorner'] = dmt_desc.Extent.YMin
@@ -375,13 +334,10 @@ class PrepareData(PrepareDataBase):
         self.data['vpix'] = dmt_desc.MeanCellHeight
         self.data['spix'] = dmt_desc.MeanCellWidth
         self.data['pixel_area'] = self.data['spix'] * self.data['vpix']
-        ll_corner = arcpy.Point(self.data['xllcorner'], self.data['yllcorner'])
 
         # size of the raster [0] = number of rows; [1] = number of columns
         self.data['r'] = self.data['mat_dmt'].shape[0]
         self.data['c'] = self.data['mat_dmt'].shape[1]
-
-        return ll_corner
 
     def _get_mat_par(self, sfield, intersect):
         """
@@ -393,15 +349,22 @@ class PrepareData(PrepareDataBase):
         """
         all_attrib = self._get_attrib(sfield, intersect)
 
-        self.data['mat_nan'] = np.zeros([self.data['r'], self.data['c']], float)
+        self.data['mat_nan'] = np.zeros(
+            [self.data['r'], self.data['c']], float
+        )
+        
         mat_k = all_attrib[0]
         mat_s = all_attrib[1]
+        
         self.data['mat_inf_index'] = None
         self.data['combinatIndex'] = None
 
-        infiltration_type = int(0)  # "Phillip"
-        if infiltration_type == int(0):  #to se rovna vzdycky ne? nechapu tuhle podminku 23.05.2018 MK
-            self.data['mat_inf_index'] = np.zeros([self.data['r'], self.data['c']], int)
+        infiltration_type = 0  # "Phillip"
+        if infiltration_type == 0:
+            # to se rovna vzdycky ne? nechapu tuhle podminku 23.05.2018 MK
+            self.data['mat_inf_index'] = np.zeros(
+                [self.data['r'], self.data['c']], int
+            )
             combinat = []
             self.data['combinatIndex'] = []
             for i in range(self.data['r']):
@@ -414,19 +377,24 @@ class PrepareData(PrepareDataBase):
                             self.data['mat_inf_index'][i][j] = combinat.index(ccc)
                     except:
                         combinat.append(ccc)
-                        self.data['combinatIndex'].append([combinat.index(ccc), kkk, sss, 0])
-                        self.data['mat_inf_index'][i][j] = combinat.index(ccc)
+                        self.data['combinatIndex'].append(
+                            [combinat.index(ccc), kkk, sss, 0]
+                        )
+                        self.data['mat_inf_index'][i][j] = combinat.index(
+                            ccc
+                        )
 
-        # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u sklonu a acc
-        i = 0
-        j = 0
+        # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u
+        # sklonu a acc
+        i = j = 0
 
         # data value vector intersection
         for i in range(self.data['r']):
             for j in range(self.data['c']):
                 x_mat_dmt = self.data['mat_dmt'][i][j]
                 slp = self.data['mat_slope'][i][j]
-                if x_mat_dmt == self.data['NoDataValue'] or slp == self.data['NoDataValue']:
+                if x_mat_dmt == self.data['NoDataValue'] or \
+                   slp == self.data['NoDataValue']:
                     self.data['mat_nan'][i][j] = self.data['NoDataValue']
                     self.data['mat_slope'][i][j] = self.data['NoDataValue']
                     self.data['mat_dmt'][i][j] = self.data['NoDataValue']
@@ -438,17 +406,18 @@ class PrepareData(PrepareDataBase):
         return all_attrib
 
     def _get_array_points(self):
-        """
+        """Get array of points. Points near AOI border are skipped.
 
         """
-
         # getting points coordinates from optional input shapefile
-        if self.data['points'] and (self.data['points'] != "#") and (self.data['points'] != ""):
+        if self.data['points'] and \
+           (self.data['points'] != "#") and (self.data['points'] != ""):
             # identify the geometry field
             desc = arcpy.Describe(self.data['points'])
             shapefieldname = desc.ShapeFieldName
             # create search cursor
             rows_p = arcpy.SearchCursor(self.data['points'])
+            
             # getting number of points in shapefile
             count = arcpy.GetCount_management(self.data['points'])  # result
             count = count.getOutput(0)
@@ -470,7 +439,8 @@ class PrepareData(PrepareDataBase):
 
                 # if point is not on the edge of raster or its neighbours are not "NoDataValue", it will be saved into
                 # array_points array
-                if r != 0 and r != self.data['r'] and c != 0 and c != self.data['c'] and \
+                if r != 0 and r != self.data['r'] \
+                   and c != 0 and c != self.data['c'] and \
                    self.data['mat_dmt'][r][c] != self.data['NoDataValue'] and \
                    self.data['mat_dmt'][r-1][c] != self.data['NoDataValue'] and \
                    self.data['mat_dmt'][r+1][c] != self.data['NoDataValue'] and \
@@ -483,52 +453,17 @@ class PrepareData(PrepareDataBase):
                     # x,y coordinates of current point stored in an array
                     self.data['array_points'][i][3] = pnt.X
                     self.data['array_points'][i][4] = pnt.Y
-                    i = i + 1
+                    i += 1
                 else:
-                    self._add_message("Point FID = " + str(int(fid)) +
-                                      " is at the edge of the raster. This point will not be included in results.")
-
+                    Logger.info(
+                        "Point FID = {} is at the edge of the raster." 
+                        "This point will not be included in results.".format(
+                            fid
+                    ))
         else:
             self.data['array_points'] = None
 
-
-
-    def _get_a(self,all_attrib):
-        """
-
-        :param all_attrib:
-        """
-
-        mat_n = all_attrib[2]
-        mat_x = all_attrib[7]
-        mat_y = all_attrib[8]
-        self.data['mat_a']  = np.zeros([self.data['r'], self.data['c']], float)
-        self.data['mat_aa'] = np.zeros([self.data['r'], self.data['c']], float)
-
-        # calculating the "a" parameter
-        for i in range(self.data['r']):
-            for j in range(self.data['c']):
-                slope = self.data['mat_slope'][i][j]
-                par_x = mat_x[i][j]
-                par_y = mat_y[i][j]
-
-                if par_x == self.data['NoDataValue'] or par_y == self.data['NoDataValue'] or slope == self.data['NoDataValue']:
-                    par_a = self.data['NoDataValue']
-                    par_aa = self.data['NoDataValue']
-
-                elif par_x == self.data['NoDataValue'] or par_y == self.data['NoDataValue'] or slope == 0.0:
-                    par_a = 0.0001
-                    par_aa = par_a / 100 / mat_n[i][j]
-
-                else:
-                    exp = np.power(slope, par_y)
-                    par_a = par_x * exp
-                    par_aa = par_a / 100 / mat_n[i][j]
-
-                self.data['mat_a'][i][j] = par_a
-                self.data['mat_aa'][i][j] = par_aa
-
-    def _get_crit_water(self, all_attrib, ll_corner):
+    def _get_crit_water(self, all_attrib):
         """
 
         :param all_attrib:
@@ -539,15 +474,20 @@ class PrepareData(PrepareDataBase):
         mat_tau = all_attrib[9]
         mat_v = all_attrib[10]
 
+        ll_corner = arcpy.Point(
+            self.data['xllcorner'], self.data['yllcorner']
+        )
+
         # critical water level
-        self._add_message("Computing critical level")
         mat_hcrit_tau = np.zeros([self.data['r'], self.data['c']], float)
         mat_hcrit_v = np.zeros([self.data['r'], self.data['c']], float)
         mat_hcrit_flux = np.zeros([self.data['r'], self.data['c']], float)
         self.data['mat_hcrit'] = np.zeros([self.data['r'], self.data['c']], float)
+        
         for i in range(self.data['r']):
             for j in range(self.data['c']):
-                if self.data['mat_slope'][i][j] != self.data['NoDataValue'] and mat_tau[i][j] != self.data['NoDataValue']:
+                if self.data['mat_slope'][i][j] != self.data['NoDataValue'] \
+                   and mat_tau[i][j] != self.data['NoDataValue']:
                     slope = self.data['mat_slope'][i][j]
                     tau_crit = mat_tau[i][j]
                     v_crit = mat_v[i][j]
@@ -584,13 +524,15 @@ class PrepareData(PrepareDataBase):
         rhcrit_v = arcpy.NumPyArrayToRaster(mat_hcrit_v, ll_corner, self.data['spix'], self.data['vpix'], "#")
         rhcrit_v.save(self.data['temp'] + os.sep + "hcrit_v")
 
-    def _get_slope_dir(self,dmt_clip):
+    def _get_slope_dir(self, dmt_clip):
         """
+        ?
 
         :param dmt_clip:
         """
 
-        # fiktivni vrstevnice a priprava "state cell, jestli to je tok ci plocha
+        # fiktivni vrstevnice a priprava "state cell, jestli to je tok
+        # ci plocha
         pii = math.pi / 180.0
         asp = arcpy.sa.Aspect(dmt_clip)
         asppii = arcpy.sa.Times(asp, pii)
@@ -599,13 +541,15 @@ class PrepareData(PrepareDataBase):
         sinsklon = arcpy.sa.Abs(sinasp)
         cossklon = arcpy.sa.Abs(cosasp)
         times1 = arcpy.sa.Plus(cossklon, sinsklon)
-        times1.save(self.data['temp'] + os.sep + "ratio_cell")
+        times1.save(os.path.join(self.data['temp'], "ratio_cell"))
 
         efect_vrst = arcpy.sa.Times(times1, self.data['spix'])
-        efect_vrst.save(self.data['temp'] + os.sep + "efect_vrst")
+        efect_vrst.save(os.path.join(self.data['temp'], "efect_vrst"))
         self.data['mat_efect_vrst'] = self._rst2np(efect_vrst)
 
-    def _prepare_streams(self, stream, tab_stream_tvar, tab_stream_tvar_code, dmt, null_shp, ll_corner, dmt_clip, intersect):
+    def _prepare_streams(self, stream, tab_stream_tvar,
+                         tab_stream_tvar_code, dmt,
+                         mask_shp, dmt_clip, intersect):
         """
 
         :param stream:
@@ -619,23 +563,26 @@ class PrepareData(PrepareDataBase):
         """
         self.data['type_of_computing'] = 1
 
-        # pocitam vzdy s ryhama
-        # pokud jsou zadane vsechny vstupy pro vypocet toku, toky se pocitaji a type_of_computing je 3
+        ll_corner = arcpy.Point(
+            self.data['xllcorner'], self.data['yllcorner']
+        )
+
+        # pocitam vzdy s ryhama pokud jsou zadane vsechny vstupy pro
+        # vypocet toku, toky se pocitaji a type_of_computing je 3
         listin = [stream, tab_stream_tvar, tab_stream_tvar_code]
         tflistin = [len(i) > 1 for i in listin]
 
         if all(tflistin):
             self.data['type_of_computing'] = 3
-        else:
-            pass
 
-        if (self.data['type_of_computing'] == 3) or (self.data['type_of_computing'] == 5):
+        if self.data['type_of_computing'] == 3 or \
+           self.data['type_of_computing'] == 5:
 
             input = [stream,
                      tab_stream_tvar,
                      tab_stream_tvar_code,
                      dmt,
-                     null_shp,
+                     mask_shp,
                      self.data['spix'],
                      self.data['r'],
                      self.data['c'],
@@ -647,7 +594,6 @@ class PrepareData(PrepareDataBase):
                      self._join_table]
 
             self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = StreamPreparation(input).prepare_streams()
-
         else:
             self.data['toky'] = None
             self.data['mat_tok_reach'] = None
@@ -705,65 +651,3 @@ class PrepareData(PrepareDataBase):
                                           self.data['NoDataValue'])
         raster.save(folder + os.sep + name)
 
-    def _find_boundary_cells(self):
-        """
-
-        """
-        # Identification of cells at the domain boundary
-
-        self.data['mat_boundary'] = np.zeros([self.data['r'], self.data['c']], float)
-
-        nr = range(self.data['r'])
-        nc = range(self.data['c'])
-
-        self.data['rc'] = []
-        self.data['rr'] = []
-
-        for i in nr:
-            for j in nc:
-                val = self.data['mat_nan'][i][j]
-                if i == 0 or j == 0 or i == (self.data['r'] - 1) or j == (self.data['c'] - 1):
-                    if val != self.data['NoDataValue']:
-                        val = -99
-                else:
-                    if val != self.data['NoDataValue']:
-                        if  self.data['mat_nan'][i - 1][j] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i + 1][j] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i][j - 1] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i][j - 1] == self.data['NoDataValue']:
-
-                            val = -99
-
-                        if  self.data['mat_nan'][i - 1][j + 1] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i + 1][j + 1] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i - 1][j - 1] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i + 1][j - 1] == self.data['NoDataValue']:
-
-                            val = -99.
-
-                self.data['mat_boundary'][i][j] = val
-
-        inDomain = False
-        inBoundary = False
-
-        for i in nr:
-            oneCol = []
-            oneColBoundary = []
-            for j in nc:
-
-                if self.data['mat_boundary'][i][j] == -99 and inBoundary == False:
-                    inBoundary = True
-
-                if self.data['mat_boundary'][i][j] == -99 and inBoundary:
-                    oneColBoundary.append(j)
-
-                if (self.data['mat_boundary'][i][j] == 0.0) and inDomain == False:
-                    self.data['rr'].append(i)
-                    inDomain = True
-
-                if (self.data['mat_boundary'][i][j] == 0.0) and inDomain:
-                    oneCol.append(j)
-
-            inDomain = False
-            inBoundary = False
-            self.data['rc'].append(oneCol)
