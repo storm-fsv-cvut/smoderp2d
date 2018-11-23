@@ -4,7 +4,7 @@
 import math
 from smoderp2d.providers import Logger
 
-from smoderp2d.core.general import Globals as Gl
+from smoderp2d.core.general import Globals as Gl, GridGlobals
 
 # Contains variables and methods needed for time step size handling
 #
@@ -79,20 +79,13 @@ class Courant():
 
     # Checks and store in each computational cell the maximum velocity and maximum Courant coefficient
     #
-    def CFL(self, i, j, h0, v, delta_t, efect_vrst, co, rill_courant):
-        cour = v / self.cour_coef * delta_t / efect_vrst
-        cour = max(cour, rill_courant)
+    def CFL(self, v_sheet_new, delta_t):
+        cour = v_sheet_new * delta_t / GridGlobals.get_size()[0]
+        #cour = max(cour, rill_courant)
         # print cour
 
         if cour > self.cour_most:
-            self.i = i
-            self.j = j
-            self.co = co
             self.cour_most = cour
-            self.maxh = h0
-            self.cour_speed = v
-        # if rill_courant > self.cour_most_rill:
-            # self.cour_most_rill = rill_courant
 
     # Returns the adjusted/unchanged time step after a time step computation is completed.
     #
