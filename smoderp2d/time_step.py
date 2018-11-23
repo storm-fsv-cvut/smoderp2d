@@ -23,9 +23,66 @@ max_infilt_capa = 0.003  # [m]
 #  the class also contains methods to store the important arrays to reload that if the time step is adjusted
 #
 class TimeStep:
+    
+    def do_sheet_flow(self, surface, subsurface, delta_t, flow_control, courant):
+        rr, rc = GridGlobals.get_region_dim()
+        mat_efect_vrst = Globals.get_mat_efect_vrst()
+        fc = flow_control
+        sr = Globals.get_sr()
+        itera = Globals.get_itera()
+
+        # calculate potential rainfall
+        potRain, fc.tz = rain_f.timestepRainfall(
+            itera, fc.total_time, delta_t, fc.tz, sr)
+        
+        infilt_capa += potRain
+        if (infilt_capa < max_infilt_capa):
+            infilt_time += delta_t
+            actRain = 0.0
+            potRain = 0.0
+            for i in rr:
+                for j in rc[i]:
+                    hydrographs.write_hydrographs_record(
+                        i,
+                        j,
+                        flow_control,
+                        courant,
+                        delta_t,
+                        surface,
+                        subsurface,
+                        actRain)
+            return actRain
+
+        for iii in combinatIndex:
+            index = iii[0]
+            k = iii[1]
+            s = iii[2]
+            # jj * 100.0 !!! smazat
+            iii[3] = infilt.phlilip(
+                k,
+                s,
+                delta_t,
+                fc.total_time - infilt_time,
+                NoDataValue)
+            # print total_time-infilt_time, iii[3]*1000, k, s
+
+        infilt.set_combinatIndex(combinatIndex)
+
+        #
+        # nulovani na zacatku kazdeho kola
+        #
+        surface.reset_inflows()
+        surface.new_inflows()
+        subsurface.fill_slope()
+        subsurface.new_inflows()
+        
+        for i in rr:
+            for j in rc[i]:
+                pass 
+        
+        
 
     def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
-        surface, subsurface, delta_t, flow_control, courant
 
         rr, rc = GridGlobals.get_region_dim()
         mat_efect_vrst = Globals.get_mat_efect_vrst()
