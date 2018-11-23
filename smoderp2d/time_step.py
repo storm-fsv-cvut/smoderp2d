@@ -114,6 +114,8 @@ class TimeStep:
                 surface.arr[i][j].infiltration = infiltration
 
                 surface.arr[i][j].h_sheet_new = sur_bil
+                
+                courant.CFL(outflow/delta_t, delta_t)
 
                 hydrographs.write_hydrographs_record(
                     i,
