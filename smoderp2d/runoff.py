@@ -23,6 +23,7 @@ from smoderp2d.tools.times_prt import TimesPrt
 from smoderp2d.io_functions import post_proc
 from smoderp2d.io_functions import hydrographs as wf
 
+from smoderp2d.tools.tools import make_sur_raster
 from smoderp2d.providers import Logger
 
 from smoderp2d.exceptions import MaxIterationExceeded
@@ -293,7 +294,9 @@ class Runoff(object):
                 self.flow_control.iter_,
                 self.flow_control.total_time + self.delta_t
             )
-
+            
+            make_sur_raster(self.surface.arr, Globals, self.flow_control.total_time, Globals.outdir)
+            
             # calculate outflow from each reach of the stream network
             self.surface.stream_reach_outflow(self.delta_t)
             # calculate inflow to reaches
