@@ -95,50 +95,50 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
         arr = self.arr[i][j]
 
         # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
-        if not extra_out:
-            line = '{0}{sep}{1}{sep}{2}'.format(
-                arr.h_total_new,
-                arr.v_runoff / dt + arr.v_runoff_rill / dt,
-                arr.v_runoff + arr.v_runoff_rill,
-                sep=sep
-            )
-            bil_ = ''
-        else:
-            line = '{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}{sep}{7}{sep}{8}'.format(
-                arr.h_sheet,
-                arr.v_runoff / dt,
-                arr.v_runoff,
-                arr.v_rest,
-                arr.infiltration,
-                arr.cur_sur_ret,
-                arr.state,
-                arr.inflow_tm,
-                arr.h_total_new,
-                sep=sep
-            )
+        #if not extra_out:
+            #line = '{0}{sep}{1}{sep}{2}'.format(
+                #arr.h_total_new,
+                #arr.v_runoff / dt + arr.v_runoff_rill / dt,
+                #arr.v_runoff + arr.v_runoff_rill,
+                #sep=sep
+            #)
+            #bil_ = ''
+        #else:
+        line = '{0}{sep}'.format(
+            arr.h_sheet_new,
+            #arr.v_runoff / dt,
+            #arr.v_runoff,
+            #arr.v_rest,
+            #arr.infiltration,
+            #arr.cur_sur_ret,
+            #arr.state,
+            #arr.inflow_tm,
+            #arr.h_total_new,
+            sep=sep
+        )
 
-            if Globals.isRill:
-                line += '{sep}{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}'.format(
-                    arr.h_rill,
-                    arr.rillWidth,
-                    arr.v_runoff_rill / dt,
-                    arr.v_runoff_rill,
-                    arr.v_rill_rest,
-                    arr.v_runoff / dt + arr.v_runoff_rill / dt,
-                    arr.v_runoff + arr.v_runoff_rill,
-                    sep=sep
-                )
+            #if Globals.isRill:
+                #line += '{sep}{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}'.format(
+                    #arr.h_rill,
+                    #arr.rillWidth,
+                    #arr.v_runoff_rill / dt,
+                    #arr.v_runoff_rill,
+                    #arr.v_rill_rest,
+                    #arr.v_runoff / dt + arr.v_runoff_rill / dt,
+                    #arr.v_runoff + arr.v_runoff_rill,
+                    #sep=sep
+                #)
 
-            bil_ = arr.h_total_pre * self.pixel_area + \
-                arr.cur_rain * self.pixel_area + \
-                arr.inflow_tm - \
-                (arr.v_runoff + arr.v_runoff_rill +
-                 arr.infiltration * self.pixel_area) - \
-                (arr.cur_sur_ret * self.pixel_area) - \
-                arr.h_total_new * self.pixel_area
+            #bil_ = arr.h_total_pre * self.pixel_area + \
+                #arr.cur_rain * self.pixel_area + \
+                #arr.inflow_tm - \
+                #(arr.v_runoff + arr.v_runoff_rill +
+                 #arr.infiltration * self.pixel_area) - \
+                #(arr.cur_sur_ret * self.pixel_area) - \
+                #arr.h_total_new * self.pixel_area
             # << + arr.v_rest + arr.v_rill_rest) + (arr.v_rest_pre + arr.v_rill_rest_pre)
 
-        return line, bil_
+        return line #, bil_
 
 
 def __runoff(i, j, sur, dt, efect_vrst, ratio):
