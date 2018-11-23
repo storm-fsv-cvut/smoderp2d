@@ -17,11 +17,13 @@
 #
 
 
-from smoderp2d.core.general import Globals
+from smoderp2d.core.general import Globals, GridGlobals
 
 import smoderp2d.flow_algorithm.mfd as mfd
 import smoderp2d.flow_algorithm.D8 as D8_
 from smoderp2d.providers import Logger
+import smoderp2d.processes.surface as surfacefce
+
 
 # Defines methods for executing the one direction flow algorithm D8.
 #
@@ -79,6 +81,35 @@ class D8(object):
 
         return inflow_from_cells
 
+    def cell_sheet_inflows(self, i, j, dt):
+        """ Calculates flow into cell i j based on inflows list of lists
+
+        :param i:  index of row  in a matrix
+        :param j:  index of cols in a matrix
+        :param dt: actual time step
+
+        :return inflow_from_cells: sum of inflows from adjecent cells. Must be a height
+        """
+
+        inflow_from_cells = 0.0
+        for z in range(len(self.inflows[i][j])):
+            ax = self.inflows[i][j][z][0]
+            bx = self.inflows[i][j][z][1]
+            iax = i + ax
+            jbx = j + bx
+            try:
+                # as specific discharge
+                insurfflow_from_cell = surfacefce.shallowSurfaceKinematic(
+                    self.arr[iax][jbx])
+                # as a height
+                insurfflow_from_cell = dt * q_sheet * \
+                    GridGlobals.get_size()[0] / GridGlobals.get_pixel_area()
+            except:
+                insurfflow_from_cell = 0.0
+            inflow_from_cells = inflow_from_cells + insurfflow_from_cell
+
+        return inflow_from_cells
+
 
 # Defines methods for executing the multiple flow direction algorithm mfda.
 #
@@ -128,7 +159,7 @@ class Mfda(object):
                 bx = self.inflowsRill[i][j][z][1]
                 iax = i + ax
                 jbx = j + bx
-                if self.arr[i][j].state == 1 or self.arr[i][j].state == 2: # rill
+                if self.arr[i][j].state == 1 or self.arr[i][j].state == 2:  # rill
                     try:
                         inflow_from_cells += \
                             self.V_runoff_rill_pre[iax][jbx]  # toto jeste predelat u ryh
