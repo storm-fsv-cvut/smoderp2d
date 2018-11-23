@@ -35,28 +35,16 @@ class SurArrs(object):
         self.sur_ret = sur_ret
         self.cur_sur_ret = 0.
         self.cur_rain = 0.
-        self.h_sheet = 0.
-        self.h_total_new = 0.
-        self.h_total_pre = 0.
-        self.v_runoff = 0.
-        # self.v_runoff_pre = float(0)
-        self.v_rest = 0.
-        # self.v_rest_pre =   float(0)
+        self.h_sheet_new = 0.
+        self.h_sheet_pre = 0.
         self.inflow_tm = 0.
         self.soil_type = inf_index
         self.infiltration = 0.
         self.h_crit = hcrit
         self.a = a
         self.b = b
-        self.h_rill = 0.
-        self.h_rillPre = 0.
-        self.v_runoff_rill = 0.
-        # self.v_runoff_rill_pre= float(0)
-        self.v_rill_rest = 0.
-        # self.v_rill_rest_pre =  float(0)
         self.rillWidth = 0.
         self.v_to_rill = 0.
-        self.h_last_state1 = 0.
 
 
 class Surface(GridGlobals, Size, Stream, Kinematic):
