@@ -102,7 +102,7 @@ class D8(object):
                 insurfflow_from_cell = surfacefce.shallowSurfaceKinematic(
                     self.arr[iax][jbx])
                 # as a height
-                insurfflow_from_cell = dt * q_sheet * \
+                insurfflow_from_cell = dt * insurfflow_from_cell * \
                     GridGlobals.get_size()[0] / GridGlobals.get_pixel_area()
             except:
                 insurfflow_from_cell = 0.0
