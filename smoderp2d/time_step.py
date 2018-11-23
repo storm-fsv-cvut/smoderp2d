@@ -78,7 +78,33 @@ class TimeStep:
         
         for i in rr:
             for j in rc[i]:
-                pass 
+                
+                # sheet water level in previous time step
+                h_sheet_old = surface.arr[i][j].h_sheet_old
+                
+                # actual rainfall 
+                act_rain, fc.sum_interception, rain_arr.arr[i][j].veg_true = rain_f.current_rain(
+                    rain_arr.arr[i][j], potRain, fc.sum_interception)
+                # store current rain
+                surface.arr[i][j].cur_rain = act_rain
+                
+                # sheet inflows
+                inflows = surface.cell_sheet_inflows(i,j,delta_t)
+                
+                # sheet outflow 
+                outflow = surface.sheet_runoff(surface.arr[i][j], delta_t)
+                
+                # calculate surface balance
+                sur_bil = h_sheet_old + actua inflows - outflow
+                
+                # reduce be infiltration
+                sur_bil, infiltration = infilt.philip_infiltration(
+                        surface.arr[i][j].soil_type, sur_bil)
+                
+                # store current infiltration
+                surface.arr[i][j].infiltration = infiltration
+                
+                surface.arr[i][j].h_sheet_new = sur_bil
         
         
 
