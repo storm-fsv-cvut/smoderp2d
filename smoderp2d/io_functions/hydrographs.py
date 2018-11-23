@@ -99,6 +99,7 @@ class Hydrographs:
 
                 if not Globals.extraOut:
                     header += '# time[s];deltaTime[s];rainfall[m];totalWaterLevel[m];surfaceFlow[m3/s];surfaceVolRunoff[m3]{}'
+                    header = 'time;h_sheet'
                 else:
                     header += '# time[s];deltaTime[s];Rainfall[m];Water_level_[m];Sheet_Flow[m3/s];Sheet_V_runoff[m3];Sheet_V_rest[m3];Infiltration[m];Surface_retetion[m];State;V_inflow[m3];WlevelTotal[m]'
 
@@ -128,12 +129,23 @@ class Hydrographs:
 
         Logger.info("Hydrographs files has been created...")
 
-    def write_hydrographs_record(self, i, j, fc, courant, dt, surface, subsurface,
-                                 currRain, inStream=False, sep=';'):
+    def write_hydrographs_record(self, i, j, time, h_sheet_new, sep=';'):
+        
+        for ip in self.inSurface:
+            l = self.point_int[ip][1]
+            m = self.point_int[ip][2]
+            if i == l and j == m:
+                line = '{0}{sep}{1}{linesep}'.format(
+                                time, h_sheet_new,
+                                sep=sep,linesep = os.linesep
+                            )
+                self.files[ip].writelines(line)
+        
+        """
         ratio = fc.ratio
         total_time = fc.total_time + dt
         iter_ = fc.iter_
-
+         
         courantMost = courant.cour_most
         courantRill = courant.cour_most_rill
 
@@ -167,12 +179,12 @@ class Hydrographs:
                             sep=sep)
                     line += os.linesep
                     self.files[ip].writelines(line)
+        """
 
     def __del__(self):
         for fd in self.files:
             Logger.debug('Hydrographs file "{}" closed'.format(fd.name))
             fd.close()
-
 class HydrographsPass:
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface, subsurface,
                                  currRain, inStream=False, sep=';'):
