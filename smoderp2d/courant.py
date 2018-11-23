@@ -82,7 +82,6 @@ class Courant():
     def CFL(self, v_sheet_new, delta_t):
         cour = v_sheet_new * delta_t / GridGlobals.get_size()[0]
         #cour = max(cour, rill_courant)
-        # print cour
 
         if cour > self.cour_most:
             self.cour_most = cour
