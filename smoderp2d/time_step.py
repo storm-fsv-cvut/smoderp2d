@@ -102,7 +102,7 @@ class TimeStep:
                     # store current infiltration
                     surface.arr[i][j].infiltration = infiltration
 
-                    courant.CFL(outflow/delta_t, delta_t)
+                    courant.CFL(i, j, outflow/delta_t, delta_t)
 
                 surface.arr[i][j].h_sheet_new = sur_bil
 
