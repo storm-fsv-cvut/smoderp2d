@@ -85,7 +85,7 @@ class TimeStep:
         subsurface.new_inflows()
 
         # count inactive cell in the computaino domain
-        skip_cell = 0
+        skipped_cell = 0
 
         for i in rr:
             for j in rc[i]:
@@ -93,10 +93,11 @@ class TimeStep:
                 # sheet water level in previous time step
 
                 h_sheet_pre = surface.arr[i][j].h_sheet_pre
-
-                if ((h_sheet_pre == 0.0) and (potRain == 0.0)):
+                
+                skip = (h_sheet_pre == 0.0) and (potRain == 0.0)
+                if (skip):
                     sur_bil = h_sheet_pre
-                    skip_cell += 1
+                    skipped_cell += 1
                 else:
                     # actual rainfall
                     # TODO actual rainfall is still potential rainfall
@@ -134,8 +135,8 @@ class TimeStep:
                 )
        
         Logger.debug('Highest courant value {0:.5f}'.format(courant.cour_most))
-        if (not(skip_cell == 0)):
-            Logger.debug('Inactive cells were skipped: {}'.format(skip_cell))
+        if (not(skipped_cell == 0)):
+            Logger.debug('Inactive cells were skipped: {}'.format(skipped_cell))
 
     def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
 
