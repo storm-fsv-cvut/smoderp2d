@@ -148,7 +148,7 @@ class Runoff(object):
 
         # handle times step changes based on Courant condition
         self.courant = Courant()
-        self.delta_t = self.courant.initial_time_step(self.surface)
+        self.delta_t = self.courant.initial_time_step()
         self.courant.set_time_step(self.delta_t)
         Logger.info('Corrected time step is {} [s]'.format(self.delta_t))
 
@@ -231,7 +231,7 @@ class Runoff(object):
 
                 # update time step size if necessary (based on the courant
                 # condition)
-                self.delta_t= self.courant.courant(self.delta_t)
+                self.delta_t = self.courant.courant(self.delta_t)
 
                 # courant conditions is satisfied (time step did
                 # change) the iteration loop breaks
