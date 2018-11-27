@@ -208,72 +208,39 @@ class Runoff(object):
             self.flow_control.refresh_iter()
 
             # iteration loop
-            #while self.flow_control.max_iter_reached():
+            while self.flow_control.max_iter_reached():
 
-            self.flow_control.upload_iter()
-            self.flow_control.restore_vars()
+                self.flow_control.upload_iter()
+                self.flow_control.restore_vars()
 
-            # reset of the courant condition
-            self.courant.reset()
-            self.flow_control.save_ratio()
-            
-            self.time_step.do_sheet_flow(
-                self.surface,
-                self.subsurface,
-                self.delta_t,
-                self.flow_control,
-                self.courant,
-                self.hydrographs
-            )
-                    
+                # reset of the courant condition
+                self.courant.reset()
+                self.flow_control.save_ratio()
+                
+                self.time_step.do_sheet_flow(
+                    self.surface,
+                    self.subsurface,
+                    self.delta_t,
+                    self.flow_control,
+                    self.courant,
+                    self.hydrographs
+                )
 
                 # stores current time step
-                #delta_t_tmp = self.delta_t
+                delta_t_tmp = self.delta_t
 
                 # update time step size if necessary (based on the courant
                 # condition)
-                #self.delta_t, self.flow_control.ratio = self.courant.courant(
-                    #potRain, self.delta_t, self.flow_control.ratio
-                #)
+                self.delta_t= self.courant.courant(self.delta_t)
 
                 # courant conditions is satisfied (time step did
                 # change) the iteration loop breaks
-                #if delta_t_tmp == self.delta_t and self.flow_control.compare_ratio():
-                    #break
+                if delta_t_tmp == self.delta_t and self.flow_control.compare_ratio():
+                    break
 
-            # Calculate actual rainfall and adds up interception todo:
-            # AP - actual is not storred in hydrographs
-            #actRain = self.time_step.do_next_h(
-                #self.surface,
-                #self.subsurface,
-                #self.rain_arr,
-                #self.cumulative,
-                #self.hydrographs,
-                #self.flow_control,
-                #self.courant,
-                #potRain,
-                #self.delta_t
-            #)
-
-            # if the iteration exceed the maximal amount of iteration
-            # last results are stored in hydrographs
-            # and error is raised
-            #if not self.flow_control.max_iter_reached():
-                #for i in Globals.rr:
-                    #for j in Globals.rc[i]:
-                        #self.hydrographs.write_hydrographs_record(
-                            #i,
-                            #j,
-                            #self.flow_control,
-                            #self.courant,
-                            #self.delta_t,
-                            #self.surface,
-                            #self.subsurface,
-                            #self.curr_rain
-                        #)
-                ## TODO
-                ## post_proc.do(self.cumulative, Globals.mat_slope, Gl, surface.arr)
-                #raise MaxIterationExceeded(max_iter, total_time)
+            
+            if not self.flow_control.max_iter_reached():
+                raise MaxIterationExceeded(max_iter, total_time)
 
             # adjusts the last time step size
             if (Globals.end_time - self.flow_control.total_time) < self.delta_t and \
