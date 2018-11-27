@@ -107,7 +107,10 @@ class TimeStep:
                 surface.arr[i][j].h_sheet_new = sur_bil
 
        
-        Logger.debug('Highest courant value {0:.5f}'.format(courant.cour_most))
+        Logger.debug('Highest courant value          {0:.5f}'.format(courant.cour_most))
+        Logger.debug('Highest veloviy value          {0:.5f}'.format(courant.cour_most))
+        Logger.debug('i of the highest courant value {}'.format(courant.i))
+        Logger.debug('j of the highest courant value {}'.format(courant.j))
         if (not(skipped_cell == 0)):
             Logger.debug('Inactive cells were skipped: {}'.format(skipped_cell))
 
