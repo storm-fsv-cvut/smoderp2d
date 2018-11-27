@@ -15,6 +15,7 @@ import smoderp2d.processes.surface as surfacefce
 
 from smoderp2d.providers import Logger
 
+
 courantMax = 1.0
 RILL_RATIO = 0.7
 
@@ -353,7 +354,14 @@ def surface_retention(bil, sur):
     return bil
 
 
-if Globals.isRill:
-    runoff = __runoff
-else:
-    runoff = __runoff_zero_comp_type
+def sheet_to_rill(sur):
+    rr, rc = GridGlobals.get_region_dim()
+    for i in rr:
+        for j in rc[i]:
+            if (sur.arr[i][j].h_sheet_new > sur.arr[i][j].h_crit) : 
+                sur.arr[i][j].h_sheet_to_rill = sur.arr[i][j].h_sheet_new - sur.arr[i][j].h_crit 
+                sur.arr[i][j].h_sheet_new = sur.arr[i][j].h_crit 
+            else : 
+                sur.arr[i][j].h_sheet_to_rill = 0.0
+
+
