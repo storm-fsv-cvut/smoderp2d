@@ -32,7 +32,7 @@ class Courant():
         self.co_pre = 'sheet'
         self.maxratio = 10
         self.max_delta_t = Gl.maxdt
-        self.max_delta_t_mult = 1.0
+        self.max_delta_t_mult = 1.2
 
     # Store the original guess time step
     #
@@ -70,9 +70,12 @@ class Courant():
             if (self.cour_speed == 0.0):
                 return self.max_delta_t
             dt = delta_t / self.max_delta_t_mult
+            Logger.warning('Decrease time step to {0:.4f}'.format(dt))
             return dt
 
         if (self.cour_most < self.cour_least):
-            return delta_t * self.max_delta_t_mult
+            dt = min(delta_t * self.max_delta_t_mult, self.max_delta_t)
+            Logger.warning('Increase time step to {0:.4f}'.format(dt))
+            return dt
 
         return delta_t
