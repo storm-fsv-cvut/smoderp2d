@@ -41,6 +41,8 @@ class SurArrs(object):
         self.infiltration = 0.
         self.h_sheet_new = 0.
         self.h_sheet_pre = 0.
+        self.h_rill_new = 0.
+        self.h_rill_pre = 0.
         self.h_rill_to_sheet = 0.
         self.h_sheet_to_rill = 0.
         self.soil_type = inf_index
