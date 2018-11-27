@@ -12,6 +12,7 @@ import numpy as np
 
 from smoderp2d.core.surface import sheet_runoff
 from smoderp2d.core.surface import surface_retention
+from smoderp2d.providers import Logger
 
 infilt_capa = 0
 infilt_time = 0
@@ -83,39 +84,47 @@ class TimeStep:
         subsurface.fill_slope()
         subsurface.new_inflows()
 
+        # count inactive cell in the computaino domain
+        skip_cell = 0
+
         for i in rr:
             for j in rc[i]:
 
                 # sheet water level in previous time step
+
                 h_sheet_pre = surface.arr[i][j].h_sheet_pre
 
-                # actual rainfall
-                # TODO actual rainfall is still potential rainfall
-                act_rain = potRain
-                # act_rain, fc.sum_interception, rain_arr.arr[i][j].veg_true = rain_f.current_rain(
-                # rain_arr.arr[i][j], potRain, fc.sum_interception)
-                # store current rain
-                surface.arr[i][j].cur_rain = act_rain
+                if ((h_sheet_pre == 0.0) and (potRain == 0.0)):
+                    sur_bil = h_sheet_pre
+                    skip_cell += 1
+                else:
+                    # actual rainfall
+                    # TODO actual rainfall is still potential rainfall
+                    act_rain = potRain
+                    # act_rain, fc.sum_interception, rain_arr.arr[i][j].veg_true = rain_f.current_rain(
+                    # rain_arr.arr[i][j], potRain, fc.sum_interception)
+                    # store current rain
+                    surface.arr[i][j].cur_rain = act_rain
 
-                # sheet inflows
-                inflows = surface.cell_sheet_inflows(i, j, delta_t)
+                    # sheet inflows
+                    inflows = surface.cell_sheet_inflows(i, j, delta_t)
 
-                # sheet outflow
-                outflow = sheet_runoff(surface.arr[i][j], delta_t)
+                    # sheet outflow
+                    outflow = sheet_runoff(surface.arr[i][j], delta_t)
 
-                # calculate surface balance
-                sur_bil = h_sheet_pre + act_rain + inflows - outflow
+                    # calculate surface balance
+                    sur_bil = h_sheet_pre + act_rain + inflows - outflow
 
-                # reduce be infiltration
-                sur_bil, infiltration = infilt.philip_infiltration(
-                    surface.arr[i][j].soil_type, sur_bil)
+                    # reduce be infiltration
+                    sur_bil, infiltration = infilt.philip_infiltration(
+                        surface.arr[i][j].soil_type, sur_bil)
 
-                # store current infiltration
-                surface.arr[i][j].infiltration = infiltration
+                    # store current infiltration
+                    surface.arr[i][j].infiltration = infiltration
+
+                    courant.CFL(outflow/delta_t, delta_t)
 
                 surface.arr[i][j].h_sheet_new = sur_bil
-                
-                courant.CFL(outflow/delta_t, delta_t)
 
                 hydrographs.write_hydrographs_record(
                     i,
@@ -123,6 +132,9 @@ class TimeStep:
                     fc.total_time + delta_t,
                     sur_bil
                 )
+
+        if (not(skip_cell == 0)):
+            Logger.debug('{} inactive cells were skipped'.format(skip_cell))
 
     def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
 
