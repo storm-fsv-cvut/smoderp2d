@@ -132,7 +132,8 @@ class TimeStep:
                     fc.total_time + delta_t,
                     sur_bil
                 )
-
+       
+        Logger.debug(courant.cour_most)
         if (not(skip_cell == 0)):
             Logger.debug('{} inactive cells were skipped'.format(skip_cell))
 
