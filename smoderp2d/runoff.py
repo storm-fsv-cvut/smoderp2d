@@ -202,6 +202,7 @@ class Runoff(object):
 
         # main loop: until the end time
         i = j = 0
+        rr, rc = GridGlobals.get_region_dim()
         while self.flow_control.compare_time(Globals.end_time):
 
             self.flow_control.save_vars()
@@ -264,6 +265,15 @@ class Runoff(object):
             
             make_sur_raster(self.surface.arr, Globals, self.flow_control.total_time, Globals.outdir)
             
+            for i in rr:
+                for j in rc[i]:            
+                    self.hydrographs.write_hydrographs_record(
+                    i,
+                    j,
+                    self.flow_control.total_time + self.delta_t,
+                    self.surface.arr[i][j].h_sheet_new
+                )
+                    
             # calculate outflow from each reach of the stream network
             self.surface.stream_reach_outflow(self.delta_t)
             # calculate inflow to reaches

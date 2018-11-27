@@ -127,12 +127,6 @@ class TimeStep:
 
                 surface.arr[i][j].h_sheet_new = sur_bil
 
-                hydrographs.write_hydrographs_record(
-                    i,
-                    j,
-                    fc.total_time + delta_t,
-                    sur_bil
-                )
        
         Logger.debug('Highest courant value {0:.5f}'.format(courant.cour_most))
         if (not(skipped_cell == 0)):
