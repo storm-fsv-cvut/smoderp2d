@@ -21,8 +21,8 @@ class Courant():
         self.maxh = 0
         self.cour_speed = 0
         # citical courant value
-        self.cour_crit = 0.95
-        self.cour_most = self.cour_crit + 1.0
+        self.cour_crit = 0.75
+        self.cour_most = 0.0
         self.cour_most_rill = self.cour_crit + 1.0
         self.cour_coef = 0.5601
         self.cour_least = 0.3
@@ -59,6 +59,7 @@ class Courant():
         if cour > self.cour_most:
             self.i = i
             self.j = j
+            self.cour_most = cour
             self.cour_speed = v_sheet_new
 
     def courant(self, delta_t):
