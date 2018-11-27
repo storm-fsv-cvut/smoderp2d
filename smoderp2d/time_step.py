@@ -32,7 +32,6 @@ class TimeStep:
         global infilt_time
 
         rr, rc = GridGlobals.get_region_dim()
-        mat_efect_vrst = Globals.get_mat_efect_vrst()
         fc = flow_control
         sr = Globals.get_sr()
         itera = Globals.get_itera()
@@ -43,36 +42,16 @@ class TimeStep:
         potRain, fc.tz = rain_f.timestepRainfall(
             itera, fc.total_time, delta_t, fc.tz, sr)
 
-        infilt_capa += potRain
-        if (infilt_capa < max_infilt_capa):
-            infilt_time += delta_t
-            actRain = 0.0
-            potRain = 0.0
-            # for i in rr:
-            # for j in rc[i]:
-            # hydrographs.write_hydrographs_record(
-            # i,
-            # j,
-            # flow_control,
-            # courant,
-            # delta_t,
-            # surface,
-            # subsurface,
-            # actRain)
-            return 0
-
         for iii in combinatIndex:
             index = iii[0]
             k = iii[1]
             s = iii[2]
-            # jj * 100.0 !!! smazat
             iii[3] = infilt.phlilip(
                 k,
                 s,
                 delta_t,
                 fc.total_time - infilt_time,
                 NoDataValue)
-            # print total_time-infilt_time, iii[3]*1000, k, s
 
         infilt.set_combinatIndex(combinatIndex)
 
