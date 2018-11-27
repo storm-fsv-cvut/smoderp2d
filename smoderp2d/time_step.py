@@ -133,9 +133,9 @@ class TimeStep:
                     sur_bil
                 )
        
-        Logger.debug(courant.cour_most)
+        Logger.debug('Highest courant value {0:.5f}'.format(courant.cour_most))
         if (not(skip_cell == 0)):
-            Logger.debug('{} inactive cells were skipped'.format(skip_cell))
+            Logger.debug('Inactive cells were skipped: {}'.format(skip_cell))
 
     def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
 
