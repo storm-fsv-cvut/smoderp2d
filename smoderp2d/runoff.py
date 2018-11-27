@@ -184,18 +184,6 @@ class Runoff(object):
                     0,
                     0.0
                 )
-        # record values into stream hydrographs at time zero
-        # self.hydrographs.write_hydrographs_record(
-            # i,
-            # j,
-            # self.flow_control,
-            # self.courant,
-            # self.delta_t,
-            # self.surface,
-            # self.subsurface,
-            # 0.0,
-            # True
-        # )
 
         Logger.info('-' * 80)
 
@@ -204,9 +192,9 @@ class Runoff(object):
         start = time.time()
         Logger.info('Start of computing...')
 
-        # main loop: until the end time
         i = j = 0
         rr, rc = GridGlobals.get_region_dim()
+        # main loop: until the end time
         while self.flow_control.compare_time(Globals.end_time):
 
             self.flow_control.save_vars()
