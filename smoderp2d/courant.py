@@ -52,12 +52,13 @@ class Courant():
 
     # Checks and store in each computational cell the maximum velocity and maximum Courant coefficient
     #
-    def CFL(self, v_sheet_new, delta_t):
+    def CFL(self, i, j, v_sheet_new, delta_t):
         cour = v_sheet_new * delta_t / GridGlobals.get_size()[0]
         # cour = max(cour, rill_courant)
 
         if cour > self.cour_most:
-            self.cour_most = cour
+            self.i = i
+            self.j = j
             self.cour_speed = v_sheet_new
 
     def courant(self, delta_t):
