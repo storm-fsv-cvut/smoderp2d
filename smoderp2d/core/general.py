@@ -237,9 +237,13 @@ class Globals:
     @classmethod
     def get_mat_efect_vrst(cls):
         return cls.mat_efect_vrst
+    
+    @classmethod
+    def get_efect_vrst(cls,i,j):
+        return cls.mat_efect_vrst[i][j]
 
     @classmethod
-    def get_mat_slope(cls, i, j):
+    def get_slope(cls, i, j):
         return cls.mat_slope[i][j]
 
     @classmethod
@@ -251,7 +255,7 @@ class Globals:
         return cls.mat_a
 
     @classmethod
-    def get_mat_n(cls, i, j):
+    def get_n(cls, i, j):
         return cls.mat_n[i][j]
 
     @classmethod
