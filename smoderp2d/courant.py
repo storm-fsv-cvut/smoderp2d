@@ -84,3 +84,22 @@ class Courant():
             return dt
 
         return delta_t
+
+
+    def courant_rill(self, N):
+        """ adjust the time step 
+        
+        :param delta_t: current time step
+        """
+
+        if (self.cour_crit <= self.cour_most):
+            if (self.cour_speed == 0.0):
+                return 1
+            N = min(N+1, 20)
+            return N
+
+        if (self.cour_most < self.cour_least):
+            N = max(N-1, 1)
+            return N
+
+        return N
