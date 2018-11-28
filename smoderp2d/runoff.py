@@ -187,6 +187,7 @@ class Runoff(object):
                     j,
                     0,
                     0,
+                    0,
                     0.0
                 )
 
@@ -289,7 +290,8 @@ class Runoff(object):
                         j,
                         self.flow_control.total_time + self.delta_t,
                         self.surface.arr[i][j].h_sheet_new,
-                        self.surface.arr[i][j].h_rill_new
+                        self.surface.arr[i][j].h_rill_new,
+                        self.surface.arr[i][j].rill_width
                     )
 
             # calculate outflow from each reach of the stream network
