@@ -49,5 +49,7 @@ def rill(i, j, sur):
         (2.0 / 3.0)) * 1 / n * math.pow(slope / 100,
                                         0.5)  # m/s
     q = v * rillratio * b * b  # [m3/s]
+    
+    sur.rill_width = b
 
     return q
