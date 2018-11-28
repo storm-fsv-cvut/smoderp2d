@@ -153,11 +153,11 @@ class Runoff(object):
         # handle times step changes based on Courant condition
         self.courant = Courant()
         self.courant_rill = Courant()
-        
+
         self.delta_t = self.courant.initial_time_step()
         self.courant.set_time_step(self.delta_t)
         self.courant_rill.set_time_step(self.delta_t)
-        
+
         Logger.info('Corrected time step is {} [s]'.format(self.delta_t))
 
         # opens files for storing hydrographs
@@ -223,7 +223,6 @@ class Runoff(object):
                     self.courant,
                     self.hydrographs
                 )
-                
 
                 # stores current time step
                 delta_t_tmp = self.delta_t
@@ -239,16 +238,13 @@ class Runoff(object):
 
             if not self.flow_control.max_iter_reached():
                 raise MaxIterationExceeded(max_iter, total_time)
-            
-            
-            
+
             # calculate sheet to rill
             sheet_to_rill(self.surface)
-            
-            
+
             N = 5
             # calculates the rill h
-            for k in range(N) :
+            for k in range(N):
                 self.time_step.do_rill_flow(
                     self.surface,
                     self.delta_t,
@@ -259,11 +255,6 @@ class Runoff(object):
                 for i in rr:
                     for j in rc[i]:
                         self.surface.arr[i][j].h_rill_pre = self.surface.arr[i][j].h_rill_new
-                
-                
-            
-                
-                
 
             # adjusts the last time step size
             if (Globals.end_time - self.flow_control.total_time) < self.delta_t and \
@@ -290,7 +281,7 @@ class Runoff(object):
                             self.flow_control.total_time, Globals.outdir)
 
             #print self.surface.arr[i][j].h_sheet_new, self.surface.arr[i][j].h_rill_new,self.surface.arr[i][j].h_sheet_new+self.surface.arr[i][j].h_rill_new
-            #raw_input()
+            # raw_input()
             for i in rr:
                 for j in rc[i]:
                     self.hydrographs.write_hydrographs_record(
