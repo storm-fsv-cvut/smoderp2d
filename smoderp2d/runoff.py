@@ -152,8 +152,12 @@ class Runoff(object):
 
         # handle times step changes based on Courant condition
         self.courant = Courant()
+        self.courant_rill = Courant()
+        
         self.delta_t = self.courant.initial_time_step()
         self.courant.set_time_step(self.delta_t)
+        self.courant_rill.set_time_step(self.delta_t)
+        
         Logger.info('Corrected time step is {} [s]'.format(self.delta_t))
 
         # opens files for storing hydrographs
@@ -249,7 +253,7 @@ class Runoff(object):
                     self.surface,
                     self.delta_t,
                     self.flow_control,
-                    self.courant,
+                    self.courant_rill,
                     N
                 )
                 for i in rr:

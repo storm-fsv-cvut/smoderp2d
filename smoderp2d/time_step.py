@@ -78,7 +78,6 @@ class TimeStep:
                 h_sheet_pre = surface.arr[i][j].h_sheet_pre
                 
                 skip = (h_sheet_pre == 0.0) and (potRain == 0.0)
-                skip = False
                 if (skip):
                     sur_bil = h_sheet_pre
                     skipped_cell += 1
@@ -130,15 +129,17 @@ class TimeStep:
 
         rr, rc = GridGlobals.get_region_dim()
         delta_t_rill = delta_t / N
+        
+        skipped_cell = 0
         for i in rr:
             for j in rc[i]:
                 
                 h_rill_pre = surface.arr[i][j].h_rill_pre
                 
                 skip = (h_rill_pre == 0.0) and (self.potRain == 0.0)
-                skip = False
                 if (skip) :
                     rill_bill = 0
+                    skipped_cell += 1
                 else :
                     
                     h_sheet_to_rill = surface.arr[i][j].h_sheet_to_rill/N
@@ -147,12 +148,19 @@ class TimeStep:
                     # rill out pre
                     outflow = rill_runoff(i, j, surface, delta_t_rill)
                     
+                    courant.CFL(i, j, outflow/delta_t_rill, delta_t_rill)
+                    
                     rill_bill = h_rill_pre + max(0.0, h_sheet_to_rill - outflow)
                     #print h_sheet_to_rill, outflow
                     
                 surface.arr[i][j].h_rill_new = rill_bill
                 
-                
+        Logger.debug('Highest courant value          {0:.5f}'.format(courant.cour_most))
+        Logger.debug('Highest veloviy value          {0:.5f}'.format(courant.cour_speed))
+        Logger.debug('i of the highest courant value {}'.format(courant.i))
+        Logger.debug('j of the highest courant value {}'.format(courant.j))
+        if (not(skipped_cell == 0)):
+            Logger.debug('Inactive cells were skipped: {}'.format(skipped_cell))
     
     
     
