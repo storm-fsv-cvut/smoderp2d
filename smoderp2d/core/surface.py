@@ -12,6 +12,7 @@ else:
 from smoderp2d.core.kinematic_diffuse import Kinematic
 import smoderp2d.processes.rill as rill
 import smoderp2d.processes.surface as surfacefce
+import smoderp2d.processes.rill as rillfce
 
 from smoderp2d.providers import Logger
 
@@ -50,7 +51,7 @@ class SurArrs(object):
         self.h_crit = hcrit
         self.a = a
         self.b = b
-        self.rillWidth = 0.
+        self.rill_width = 0.
         self.v_to_rill = 0.
 
 
@@ -100,50 +101,50 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
         arr = self.arr[i][j]
 
         # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
-        #if not extra_out:
-            #line = '{0}{sep}{1}{sep}{2}'.format(
-                #arr.h_total_new,
-                #arr.v_runoff / dt + arr.v_runoff_rill / dt,
-                #arr.v_runoff + arr.v_runoff_rill,
-                #sep=sep
-            #)
-            #bil_ = ''
-        #else:
+        # if not extra_out:
+        # line = '{0}{sep}{1}{sep}{2}'.format(
+        # arr.h_total_new,
+        #arr.v_runoff / dt + arr.v_runoff_rill / dt,
+        #arr.v_runoff + arr.v_runoff_rill,
+        # sep=sep
+        # )
+        #bil_ = ''
+        # else:
         line = '{0}{sep}'.format(
             arr.h_sheet_new,
             #arr.v_runoff / dt,
-            #arr.v_runoff,
-            #arr.v_rest,
-            #arr.infiltration,
-            #arr.cur_sur_ret,
-            #arr.state,
-            #arr.inflow_tm,
-            #arr.h_total_new,
+            # arr.v_runoff,
+            # arr.v_rest,
+            # arr.infiltration,
+            # arr.cur_sur_ret,
+            # arr.state,
+            # arr.inflow_tm,
+            # arr.h_total_new,
             sep=sep
         )
 
-            #if Globals.isRill:
-                #line += '{sep}{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}'.format(
-                    #arr.h_rill,
-                    #arr.rillWidth,
-                    #arr.v_runoff_rill / dt,
-                    #arr.v_runoff_rill,
-                    #arr.v_rill_rest,
-                    #arr.v_runoff / dt + arr.v_runoff_rill / dt,
-                    #arr.v_runoff + arr.v_runoff_rill,
-                    #sep=sep
-                #)
+        # if Globals.isRill:
+        # line += '{sep}{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}'.format(
+        # arr.h_rill,
+        # arr.rillWidth,
+        #arr.v_runoff_rill / dt,
+        # arr.v_runoff_rill,
+        # arr.v_rill_rest,
+        #arr.v_runoff / dt + arr.v_runoff_rill / dt,
+        #arr.v_runoff + arr.v_runoff_rill,
+        # sep=sep
+        # )
 
-            #bil_ = arr.h_total_pre * self.pixel_area + \
-                #arr.cur_rain * self.pixel_area + \
-                #arr.inflow_tm - \
-                #(arr.v_runoff + arr.v_runoff_rill +
-                 #arr.infiltration * self.pixel_area) - \
-                #(arr.cur_sur_ret * self.pixel_area) - \
-                #arr.h_total_new * self.pixel_area
-            # << + arr.v_rest + arr.v_rill_rest) + (arr.v_rest_pre + arr.v_rill_rest_pre)
+        # bil_ = arr.h_total_pre * self.pixel_area + \
+        # arr.cur_rain * self.pixel_area + \
+        # arr.inflow_tm - \
+        # (arr.v_runoff + arr.v_runoff_rill +
+        # arr.infiltration * self.pixel_area) - \
+        # (arr.cur_sur_ret * self.pixel_area) - \
+        #arr.h_total_new * self.pixel_area
+        # << + arr.v_rest + arr.v_rill_rest) + (arr.v_rest_pre + arr.v_rill_rest_pre)
 
-        return line #, bil_
+        return line  # , bil_
 
 
 def __runoff(i, j, sur, dt, efect_vrst, ratio):
@@ -279,64 +280,19 @@ def sheet_runoff(sur, dt):
     return h_sheet
 
 
-def rill_runoff(i, j, sur, dt, efect_vrst, ratio):
-    """TODO.
+def rill_runoff(i, j, sur, dt):
 
-    :param i: row index
-    :param j: col index
-    :param sur: TODO
-    :param dt: TODO
-    :param efect_vrst: TODO
-    :param ratio: TODO
+    q_rill = rillfce.rill(i, j, sur.arr[i][j])
+    h_rill = dt * q_rill / GridGlobals.get_pixel_area()
 
-    :return: TODO
-    """
-
-    ppp = False
-
-    n = Globals.get_mat_n(i, j)
-    slope = Globals.get_mat_slope(i, j)
-
-    v_to_rill = sur.h_rill * Globals.get_pixel_area()
-    h, b = rill.update_hb(
-        v_to_rill, RILL_RATIO, efect_vrst, sur.rillWidth, ratio, ppp
-    )
-    r_rill = (h * b) / (b + 2 * h)
-
-    v_rill = math.pow(r_rill, (2.0 / 3.0)) * \
-        1. / n * math.pow(slope / 100, 0.5)
-
-    q_rill = v_rill * h * b
-
-    v = q_rill * dt
-
-    # original based on speed
-    courant = (v_rill * dt) / efect_vrst
-
-    # celerita
-    # courant = (1 + s*b/(3*(b+2*h))) * q_rill/(b*h)
-
-    sur.v_to_rill = v_to_rill
-    sur.rillWidth = b
-    if courant <= courantMax:
-        if v > v_to_rill:
-            sur.v_rill_rest = 0
-            sur.v_runoff_rill = v_to_rill
-        else:
-            sur.v_rill_rest = v_to_rill - v
-            sur.v_runoff_rill = v
-
-    else:
-        return q_rill, v_rill, ratio, courant
-
-    return q_rill, v_rill, ratio, courant
+    return h_rill
 
 
 def surface_retention(bil, sur):
     """TODO.
 
     :param bil: TODO
-    param sur: TODO
+    :param sur: TODO
     """
     reten = sur.sur_ret
     pre_reten = reten
@@ -357,13 +313,17 @@ def surface_retention(bil, sur):
 
 
 def sheet_to_rill(sur):
+    """ Calculate part the the h_sheet which goes to the rill.
+    if h_sheet is supercitical, h_sheet_to_rill is nono zero
+    
+    :param sur: core surface array
+    """ 
     rr, rc = GridGlobals.get_region_dim()
     for i in rr:
         for j in rc[i]:
-            if (sur.arr[i][j].h_sheet_new > sur.arr[i][j].h_crit) : 
-                sur.arr[i][j].h_sheet_to_rill = sur.arr[i][j].h_sheet_new - sur.arr[i][j].h_crit 
-                sur.arr[i][j].h_sheet_new = sur.arr[i][j].h_crit 
-            else : 
+            if (sur.arr[i][j].h_sheet_new > sur.arr[i][j].h_crit):
+                sur.arr[i][j].h_sheet_to_rill = sur.arr[i][j].h_sheet_new - \
+                    sur.arr[i][j].h_crit
+                sur.arr[i][j].h_sheet_new = sur.arr[i][j].h_crit
+            else:
                 sur.arr[i][j].h_sheet_to_rill = 0.0
-
-
