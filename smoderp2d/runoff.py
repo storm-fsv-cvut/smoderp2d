@@ -22,7 +22,7 @@ from smoderp2d.courant import Courant
 from smoderp2d.tools.times_prt import TimesPrt
 from smoderp2d.io_functions import post_proc
 from smoderp2d.io_functions import hydrographs as wf
-
+from smoderp2d.core.surface import sheet_to_rill
 from smoderp2d.tools.tools import make_sur_raster
 from smoderp2d.providers import Logger
 
@@ -182,6 +182,7 @@ class Runoff(object):
                     i,
                     j,
                     0,
+                    0,
                     0.0
                 )
 
@@ -200,7 +201,7 @@ class Runoff(object):
             self.flow_control.save_vars()
             self.flow_control.refresh_iter()
 
-            # iteration loop
+            # iteration loop for sheet flow
             while self.flow_control.max_iter_reached():
 
                 self.flow_control.upload_iter()
@@ -218,6 +219,7 @@ class Runoff(object):
                     self.courant,
                     self.hydrographs
                 )
+                
 
                 # stores current time step
                 delta_t_tmp = self.delta_t
@@ -233,6 +235,31 @@ class Runoff(object):
 
             if not self.flow_control.max_iter_reached():
                 raise MaxIterationExceeded(max_iter, total_time)
+            
+            
+            
+            # calculate sheet to rill
+            sheet_to_rill(self.surface)
+            
+            
+            N = 5
+            # calculates the rill h
+            for k in range(N) :
+                self.time_step.do_rill_flow(
+                    self.surface,
+                    self.delta_t,
+                    self.flow_control,
+                    self.courant,
+                    N
+                )
+                for i in rr:
+                    for j in rc[i]:
+                        self.surface.arr[i][j].h_rill_pre = self.surface.arr[i][j].h_rill_new
+                
+                
+            
+                
+                
 
             # adjusts the last time step size
             if (Globals.end_time - self.flow_control.total_time) < self.delta_t and \
@@ -258,13 +285,16 @@ class Runoff(object):
             make_sur_raster(self.surface.arr, Globals,
                             self.flow_control.total_time, Globals.outdir)
 
+            #print self.surface.arr[i][j].h_sheet_new, self.surface.arr[i][j].h_rill_new,self.surface.arr[i][j].h_sheet_new+self.surface.arr[i][j].h_rill_new
+            #raw_input()
             for i in rr:
                 for j in rc[i]:
                     self.hydrographs.write_hydrographs_record(
                         i,
                         j,
                         self.flow_control.total_time + self.delta_t,
-                        self.surface.arr[i][j].h_sheet_new
+                        self.surface.arr[i][j].h_sheet_new,
+                        self.surface.arr[i][j].h_rill_new
                     )
 
             # calculate outflow from each reach of the stream network

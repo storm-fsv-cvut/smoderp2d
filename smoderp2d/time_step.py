@@ -11,6 +11,7 @@ import numpy as np
 
 
 from smoderp2d.core.surface import sheet_runoff
+from smoderp2d.core.surface import rill_runoff
 from smoderp2d.core.surface import surface_retention
 from smoderp2d.core.surface import sheet_to_rill
 from smoderp2d.providers import Logger
@@ -42,6 +43,8 @@ class TimeStep:
         # calculate potential rainfall
         potRain, fc.tz = rain_f.timestepRainfall(
             itera, fc.total_time, delta_t, fc.tz, sr)
+        
+        self.potRain = potRain
 
         for iii in combinatIndex:
             index = iii[0]
@@ -75,6 +78,7 @@ class TimeStep:
                 h_sheet_pre = surface.arr[i][j].h_sheet_pre
                 
                 skip = (h_sheet_pre == 0.0) and (potRain == 0.0)
+                skip = False
                 if (skip):
                     sur_bil = h_sheet_pre
                     skipped_cell += 1
@@ -89,12 +93,18 @@ class TimeStep:
 
                     # sheet inflows
                     inflows = surface.cell_sheet_inflows(i, j, delta_t)
+                    
+                    # rill in pre
+                    if surface.arr[i][j].h_rill_pre > 0 :
+                        inflows_rill = surface.cell_rill_inflows(i, j, delta_t)
+                    else : 
+                        inflows_rill = 0.0
 
                     # sheet outflow
                     outflow = sheet_runoff(surface.arr[i][j], delta_t)
 
                     # calculate surface balance
-                    sur_bil = h_sheet_pre + act_rain + inflows - outflow
+                    sur_bil = h_sheet_pre + act_rain + inflows + inflows_rill - outflow
 
                     # reduce be infiltration
                     sur_bil, infiltration = infilt.philip_infiltration(
@@ -116,6 +126,50 @@ class TimeStep:
             Logger.debug('Inactive cells were skipped: {}'.format(skipped_cell))
 
 
-    def do_rill_flow(self, surface, subsurface, delta_t, flow_control, courant, hydrographs):
+    def do_rill_flow(self, surface, delta_t, flow_control, courant, N):
 
-        pass 
+        rr, rc = GridGlobals.get_region_dim()
+        delta_t_rill = delta_t / N
+        for i in rr:
+            for j in rc[i]:
+                
+                h_rill_pre = surface.arr[i][j].h_rill_pre
+                
+                skip = (h_rill_pre == 0.0) and (self.potRain == 0.0)
+                skip = False
+                if (skip) :
+                    rill_bill = 0
+                else :
+                    
+                    h_sheet_to_rill = surface.arr[i][j].h_sheet_to_rill/N
+                    #surface.arr[i][j].h_sheet_to_rill = 0.0
+                    
+                    # rill out pre
+                    outflow = rill_runoff(i, j, surface, delta_t_rill)
+                    
+                    rill_bill = h_rill_pre + max(0.0, h_sheet_to_rill - outflow)
+                    #print h_sheet_to_rill, outflow
+                    
+                surface.arr[i][j].h_rill_new = rill_bill
+                
+                
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
