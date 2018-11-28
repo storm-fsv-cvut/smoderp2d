@@ -23,6 +23,7 @@ import smoderp2d.flow_algorithm.mfd as mfd
 import smoderp2d.flow_algorithm.D8 as D8_
 from smoderp2d.providers import Logger
 import smoderp2d.processes.surface as surfacefce
+import smoderp2d.processes.rill as rillfce
 
 
 # Defines methods for executing the one direction flow algorithm D8.
@@ -52,16 +53,15 @@ class D8(object):
     def update_inflows(self, fd):
         self.inflows = D8_.new_inflows(fd)
 
-    # returns the water volume water flows into cell i , j from the previous time step based on the
-    # inflows list, \n
-    #
-    # inflows list definition is shown in the method  new_inflows() in the package smoderp2d.flow_algorithm.D8
-    #
-    #  The total inflow is sum of sheet and rill runoff volume.
-    #
-    #  @return inflow_from_cells inflow volume from the adjacent cells
-    #
-    def cell_runoff(self, i, j):
+    def cell_rill_inflows(self, i, j, dt):
+        """ Calculates rill flow into cell i j based on inflows list of lists
+
+        :param i:  index of row  in a matrix
+        :param j:  index of cols in a matrix
+        :param dt: actual time step
+
+        :return inflow_from_cells: sum of rill inflows from adjecent cells. Must be a height
+        """
         inflow_from_cells = 0.0
         for z in range(len(self.inflows[i][j])):
             ax = self.inflows[i][j][z][0]
@@ -69,17 +69,15 @@ class D8(object):
             iax = i + ax
             jbx = j + bx
             try:
-                insurfflow_from_cell = self.arr[iax][jbx].V_runoff
-            except:
-                insurfflow_from_cell = 0.0
-            try:
-                inrillflow_from_cell = self.arr[iax][jbx].V_runoff_rill
+                inrillflow_from_cell = rillfce.rill(iax, ibx, self.arr[iax][jbx])
+                inrillflow_from_cell = dt*inrillflow_from_cell / GridGlobals.get_pixel_area()
             except:
                 inrillflow_from_cell = 0.0
-            inflow_from_cells = inflow_from_cells + \
-                insurfflow_from_cell + inrillflow_from_cell
+            inflow_from_cells += inrillflow_from_cell
 
         return inflow_from_cells
+
+
 
     def cell_sheet_inflows(self, i, j, dt):
         """ Calculates flow into cell i j based on inflows list of lists
@@ -106,7 +104,7 @@ class D8(object):
                     GridGlobals.get_size()[0] / GridGlobals.get_pixel_area()
             except:
                 insurfflow_from_cell = 0.0
-            inflow_from_cells = inflow_from_cells + insurfflow_from_cell
+            inflow_from_cells += insurfflow_from_cell
 
         return inflow_from_cells
 
