@@ -15,6 +15,8 @@ from smoderp2d.core.general import Globals, GridGlobals
 #  @param output output directory
 #
 #
+
+
 def make_sur_raster(surArr, G, t, output):
     rr, rc = GridGlobals.get_region_dim()
     arr = np.zeros(np.shape(surArr), float)
@@ -22,10 +24,13 @@ def make_sur_raster(surArr, G, t, output):
     for i in rr:
         for j in rc[i]:
             arr[i][j] = surArr[i][j].h_sheet_new
-
+            arrrill[i][j] = surArr[i][j].h_rill_new
     outName = output + os.sep + 'prubeh' + \
         os.sep + str(int(t)).zfill(10) + 'h' + ".asc"
     make_ASC_raster(outName, arr)
+    outName = output + os.sep + 'prubeh' + \
+        os.sep + str(int(t)).zfill(10) + 'hrill' + ".asc"
+    make_ASC_raster(outName, arrrill)
 
 
 def make_state_raster(surArr, G, t):
@@ -51,7 +56,8 @@ def make_sub_raster(subArr, G, t, output):
     outName = output + os.sep + 'prubeh' + \
         os.sep + str(int(t)).zfill(10) + 'hsub' + ".asc"
     make_ASC_raster(outName, arr)
-    
+
+
 def make_ASC_raster(name_, numpy_arr):
 
     gl = Globals()
