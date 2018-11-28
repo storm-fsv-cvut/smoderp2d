@@ -186,6 +186,5 @@ class Hydrographs:
             Logger.debug('Hydrographs file "{}" closed'.format(fd.name))
             fd.close()
 class HydrographsPass:
-    def write_hydrographs_record(self, i, j, fc, courant, dt, surface, subsurface,
-                                 currRain, inStream=False, sep=';'):
+    def write_hydrographs_record(self, i, j, time, h_sheet_new, h_rill_new, sep=';'):
         pass
