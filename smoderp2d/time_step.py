@@ -150,7 +150,7 @@ class TimeStep:
                     
                     courant.CFL(i, j, outflow/delta_t_rill, delta_t_rill)
                     
-                    rill_bill = h_rill_pre + max(0.0, h_sheet_to_rill - outflow)
+                    rill_bill = max(h_rill_pre + h_sheet_to_rill - outflow, 0.0)
                     #print h_sheet_to_rill, outflow
                     
                 surface.arr[i][j].h_rill_new = rill_bill
