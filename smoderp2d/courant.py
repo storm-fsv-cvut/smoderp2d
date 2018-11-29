@@ -44,7 +44,7 @@ class Courant():
     def reset(self):
         self.cour_most = 0
         self.cour_speed = 0
-        self.cour_most_rill = 0
+        self.tot_cour_most = 0
 
     def initial_time_step(self):
         """ init time step """
@@ -59,7 +59,7 @@ class Courant():
         if cour > self.cour_most:
             self.i = i
             self.j = j
-            self.cour_most = cour
+            self.cour_most = self.tot_cour_most = cour
             self.cour_speed = v_sheet_new
 
     def courant(self, delta_t):
