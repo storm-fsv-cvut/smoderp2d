@@ -44,7 +44,6 @@ class Courant():
     def reset(self):
         self.cour_most = 0
         self.cour_speed = 0
-        self.tot_cour_most = 0
 
     def initial_time_step(self):
         """ init time step """

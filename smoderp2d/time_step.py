@@ -89,13 +89,13 @@ class TimeStep:
                     surface.arr[i][j].cur_rain = act_rain
 
                     # sheet inflows
-                    inflows = surface.cell_sheet_inflows(i, j, delta_t)
+                    inflows = surface.cell_sheet_inflows(i, j, delta_t, courant)
                     
                     # rill in pre
                     inflows_rill = surface.cell_rill_inflows(i, j, delta_t, courant_rill)
                     
                     # sheet outflow
-                    outflow = sheet_runoff(surface.arr[i][j], delta_t)
+                    outflow = sheet_runoff(i, j, surface.arr[i][j], delta_t, courant)
 
                     # calculate surface balance
                     sur_bil = h_sheet_pre + act_rain + inflows + inflows_rill - outflow
@@ -106,8 +106,6 @@ class TimeStep:
 
                     # store current infiltration
                     surface.arr[i][j].infiltration = infiltration
-
-                    courant.CFL(i, j, outflow/delta_t, delta_t)
 
                 surface.arr[i][j].h_sheet_new = sur_bil
 

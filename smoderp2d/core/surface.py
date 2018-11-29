@@ -266,8 +266,8 @@ def compute_h_hrill(h_total_pre, h_crit, state, rill_width, h_rill_pre):
         return h_sheet, h_rill, h_rill_pre
 
 
-def sheet_runoff(sur, dt):
-    """TODO.
+def sheet_runoff(i, j, sur, dt, courant):
+    """ Calculates the 
 
     :param sur: element of surface array
     :param dt: actual time step
@@ -275,12 +275,15 @@ def sheet_runoff(sur, dt):
     :return: sheet runoff as height
     """
     q_sheet = surfacefce.shallowSurfaceKinematic(sur)
+    v = q_sheet / sur.h_sheet_pre
+    courant.CFL(i,j,v,dt)
     h_sheet = dt * q_sheet * \
         GridGlobals.get_size()[0] / GridGlobals.get_pixel_area()
     return h_sheet
 
 
 def rill_runoff(i, j, sur, dt, courant_rill):
+    
 
     q_rill, v = rillfce.rill(i, j, sur.arr[i][j])
     courant_rill.CFL(i,j,v,dt)
