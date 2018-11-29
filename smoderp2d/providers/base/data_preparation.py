@@ -6,6 +6,7 @@ import smoderp2d.processes.rainfall as rainfall
 
 from smoderp2d.providers.base import Logger
 
+
 class PrepareDataBase(object):
 
     def run(self):
@@ -21,7 +22,7 @@ class PrepareDataBase(object):
         self._set_output_data()
 
         # create output folder, where temporary data are stored
-        self._set_output() 
+        self._set_output()
         dmt_copy, dmt_mask = self._set_mask()
 
         # DMT computation
@@ -68,14 +69,15 @@ class PrepareDataBase(object):
 
         # load precipitation input file
         self.data['sr'], self.data['itera'] = \
-            rainfall.load_precipitation(self._input_params['rainfall_file_path'])
+            rainfall.load_precipitation(
+                self._input_params['rainfall_file_path'])
 
         # compute aspect
         self._get_slope_dir(dmt_clip)
 
         Logger.info("Computing stream preparation...")
         self._prepare_streams(mask_shp, dmt_clip, intersect
-        )
+                              )
 
         # ?
         self._find_boundary_cells()
@@ -133,7 +135,7 @@ class PrepareDataBase(object):
             'mat_n': None,
             'outdir': self._input_params['output'],
             'pixel_area': None,
-            'points': self._input_params['points'], # TODO: used outside?
+            'points': self._input_params['points'],  # TODO: used outside?
             'poradi': None,
             'end_time': self._input_params['end_time'],
             'spix': None,
@@ -149,7 +151,7 @@ class PrepareDataBase(object):
             'mat_tok_reach': None,
             'STREAM_RATIO': None,
             'toky_loc': None
-            }
+        }
 
     def _set_output(self):
         """Creates empty output and temporary directories to which created
@@ -171,10 +173,10 @@ class PrepareDataBase(object):
             self.data['outdir'], "temp"
         )
         os.makedirs(self.data['temp'])
-        
+
     def set_mask(self):
         raise NotImplemented("Not implemented for base provider")
-    
+
     def _dmtfce(self, dmt):
         raise NotImplemented("Not implemented for base provider")
 
@@ -185,7 +187,7 @@ class PrepareDataBase(object):
     def _get_input_params(self):
         raise NotImplemented("Not implemented for base provider")
 
-    def _rst2np(self,raster):
+    def _rst2np(self, raster):
         raise NotImplemented("Not implemented for base provider")
 
     def _get_attrib(self, sfield, intersect):
@@ -196,7 +198,7 @@ class PrepareDataBase(object):
 
     def _get_array_points(self):
         raise NotImplemented("Not implemented for base provider")
-        
+
     def _get_a(self, all_attrib):
         """
         Build 'a' array.
@@ -206,8 +208,8 @@ class PrepareDataBase(object):
         mat_n = all_attrib[2]
         mat_x = all_attrib[7]
         mat_y = all_attrib[8]
-        
-        self.data['mat_a']  = np.zeros(
+
+        self.data['mat_a'] = np.zeros(
             [self.data['r'], self.data['c']], float
         )
         self.data['mat_aa'] = np.zeros(
@@ -227,8 +229,8 @@ class PrepareDataBase(object):
                     par_a = self.data['NoDataValue']
                     par_aa = self.data['NoDataValue']
                 elif par_x == self.data['NoDataValue'] or \
-                     par_y == self.data['NoDataValue'] or \
-                     slope == 0.0:
+                        par_y == self.data['NoDataValue'] or \
+                        slope == 0.0:
                     par_a = 0.0001
                     par_aa = par_a / 100 / mat_n[i][j]
                 else:
@@ -273,17 +275,17 @@ class PrepareDataBase(object):
                         val = -99
                 else:
                     if val != self.data['NoDataValue']:
-                        if  self.data['mat_nan'][i - 1][j] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i + 1][j] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i][j - 1] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i][j - 1] == self.data['NoDataValue']:
+                        if self.data['mat_nan'][i - 1][j] == self.data['NoDataValue'] or \
+                                self.data['mat_nan'][i + 1][j] == self.data['NoDataValue'] or \
+                                self.data['mat_nan'][i][j - 1] == self.data['NoDataValue'] or \
+                                self.data['mat_nan'][i][j - 1] == self.data['NoDataValue']:
 
                             val = -99
 
-                        if  self.data['mat_nan'][i - 1][j + 1] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i + 1][j + 1] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i - 1][j - 1] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i + 1][j - 1] == self.data['NoDataValue']:
+                        if self.data['mat_nan'][i - 1][j + 1] == self.data['NoDataValue'] or \
+                                self.data['mat_nan'][i + 1][j + 1] == self.data['NoDataValue'] or \
+                                self.data['mat_nan'][i - 1][j - 1] == self.data['NoDataValue'] or \
+                                self.data['mat_nan'][i + 1][j - 1] == self.data['NoDataValue']:
 
                             val = -99.
 

@@ -3,6 +3,7 @@ import arcpy
 from smoderp2d.base.general import GridGlobals, Globals
 from smoderp2d.base.output import RasterAsciiBase
 
+
 class RasterAscii(RasterAsciiBase):
     def __init__(self, filename):
         super(RasterAscii, self).__init__(filename)
@@ -12,7 +13,7 @@ class RasterAscii(RasterAsciiBase):
     def write(self, array, fs=None):
         ll_corner = arcpy.Point(*GridGlobals.get_llcorner())
         size = GridGlobals.get_size()
-        
+
         outName = output + os.sep + outname
         saveAG = arcpy.NumPyArrayToRaster(
             out_array,

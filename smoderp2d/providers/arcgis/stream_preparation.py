@@ -24,20 +24,20 @@ from smoderp2d.providers.base import Logger
 
 from smoderp2d.providers.base.stream_preparation import StreamPreparationBase, Error, ZeroSlopeError
 
+
 class StreamPreparation(StreamPreparationBase):
 
     def __init__(self, input):
         super(StreamPreparation, self).__init__(input)
-        
+
         # Overwriting output
         arcpy.env.overwriteOutput = 1
-        
+
         # Check extensions
         arcpy.CheckOutExtension("3D")
         arcpy.CheckOutExtension("Spatial")
 
         arcpy.env.snapRaster = self.dmt
-
 
     def _set_output(self):
         """
@@ -67,7 +67,8 @@ class StreamPreparation(StreamPreparationBase):
         except:
             Logger.critical(
                 "Unexpected error during setnull calculation: " + sys.exc_info()[0])
-            raise Exception("Unexpected error during setnull calculation: " + sys.exc_info()[0])
+            raise Exception(
+                "Unexpected error during setnull calculation: " + sys.exc_info()[0])
 
     def _clip_streams(self):
         """
@@ -95,7 +96,8 @@ class StreamPreparation(StreamPreparationBase):
 
         # MK - nevim proc se maze neco, co v atributove tabulce vubec neni
         self._delete_fields(
-            toky, ["EX_JH", "POZN", "PRPROP_Z", "IDVT", "UTOKJ_ID", "UTOKJN_ID", "UTOKJN_F"]
+            toky, ["EX_JH", "POZN", "PRPROP_Z", "IDVT",
+                   "UTOKJ_ID", "UTOKJN_ID", "UTOKJN_F"]
         )
 
         return toky, toky_loc
@@ -114,7 +116,7 @@ class StreamPreparation(StreamPreparationBase):
         # TODO: vyresit nasledujici:
         # Nasledujici blok je redundantni, nicmene do "toky" pridava nekolik sloupecku, u kterych jsem nemohl dohledat,
         # jestli se s nimi neco dela. Proto to tu zatim nechavam.
-        #--------------------------------------------------------------------------------------------------------------
+        # --------------------------------------------------------------------------------------------------------------
         start = arcpy.FeatureVerticesToPoints_management(
             toky, os.path.join(self.temp, "start"), "START"
         )
@@ -135,11 +137,11 @@ class StreamPreparation(StreamPreparationBase):
         self._delete_fields(toky,
                             ["SHAPE_LEN", "SHAPE_LENG", "SHAPE_LE_1", "NAZ_TOK_1", "TOK_ID_1", "SHAPE_LE_2",
                              "SHAPE_LE_3", "NAZ_TOK_12", "TOK_ID_12", "SHAPE_LE_4", "ORIG_FID_1"]
-        )
+                            )
         self._delete_fields(toky,
                             ["start_elev", "end_elev", "ORIG_FID", "ORIG_FID_1"]
-        )
-        #--------------------------------------------------------------------------------------------------------------
+                            )
+        # --------------------------------------------------------------------------------------------------------------
 
         start = arcpy.FeatureVerticesToPoints_management(
             toky, self.temp + os.sep + "start", "START")
@@ -161,7 +163,7 @@ class StreamPreparation(StreamPreparationBase):
 
         self._delete_fields(toky,
                             ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"]
-        )
+                            )
 
         field = ["FID", "start_elev", "POINT_X", "end_elev", "POINT_X_1"]
 
@@ -173,8 +175,10 @@ class StreamPreparation(StreamPreparationBase):
                     arcpy.FlipLine_edit(toky)
         self._add_field(toky, "to_node", "DOUBLE", -9999)
 
-        field_start = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
-        field_end = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
+        field_start = ["FID", "POINT_X", "POINT_Y",
+                       "POINT_X_1", "POINT_Y_1", "to_node"]
+        field_end = ["FID", "POINT_X", "POINT_Y",
+                     "POINT_X_1", "POINT_Y_1", "to_node"]
         with arcpy.da.SearchCursor(toky, field_start) as cursor_start:
             for row in cursor_start:
                 a = (row[1], row[2])
@@ -194,7 +198,7 @@ class StreamPreparation(StreamPreparationBase):
              "SHAPE_LE_6", "SHAPE_LE_7", "SHAPE_LE_8", "SHAPE_LE_9", "SHAPE_L_10", "SHAPE_L_11",
              "SHAPE_L_12", "SHAPE_L_13", "SHAPE_L_14"]
         )
-        
+
         self._delete_fields(
             toky, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"]
         )
@@ -232,16 +236,16 @@ class StreamPreparation(StreamPreparationBase):
                     mat_tok_usek[i][j] = 0
                 else:
                     mat_tok_usek[i][j] += 1000
-        
-        return mat_tok_usek
 
+        return mat_tok_usek
 
     def _stream_slope(self, toky):
         """
         :param toky:
         """
         # sklon
-        field = ["FID", "start_elev", "end_elev", "sklon", "SHAPE@LENGTH", "length"]
+        field = ["FID", "start_elev", "end_elev",
+                 "sklon", "SHAPE@LENGTH", "length"]
         with arcpy.da.UpdateCursor(toky, field) as cursor:
             for row in cursor:
                 sklon_koryta = (row[1] - row[2]) / row[4]
@@ -305,9 +309,8 @@ class StreamPreparation(StreamPreparationBase):
 
         self._append_value('smoderp', 'SMODERP')
         self._append_value('cislo', 'CISLO')
-        self._append_value('tvar','TVAR')
+        self._append_value('tvar', 'TVAR')
         self._append_value('b', 'B')
         self._append_value('m', 'M')
         self._append_value('drsnost', 'DRSNOST')
         self._append_value('q365', 'Q365')
-

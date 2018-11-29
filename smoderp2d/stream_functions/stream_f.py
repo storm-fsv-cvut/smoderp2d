@@ -73,7 +73,7 @@ def rectangle(reach, dt):
         R,
         0.6666) * math.pow(
         reach.slope,
-         0.5) / (
+        0.5) / (
             reach.roughness)  # rychlost
     reach.Q_out = S * \
         reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt                   # prutok
@@ -102,7 +102,7 @@ def trapezoid(reach, dt):
         A=(reach.V_in_from_field + reach.V_rest +
            reach.V_in_from_reach) / reach.length,
         m=reach.m,
-     b=reach.b)
+        b=reach.b)
     H = hp + h  # celkova vyska
     O = B + 2.0 * H * math.pow(1 + reach.m * reach.m, 0.5)
     S = B * H + reach.m * H * H
@@ -113,7 +113,7 @@ def trapezoid(reach, dt):
         R,
         0.6666) * math.pow(
         reach.slope,
-         0.5) / (
+        0.5) / (
             reach.roughness)  # v
     reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
@@ -125,10 +125,9 @@ def trapezoid(reach, dt):
         reach.Q_out = reach.V_out / dt
         reach.V_rest = dV - reach.V_out  # V_zbyt
     reach.h = H
-    
-    
+
     #print reach.V_in_from_field, reach.V_rest, reach.V_in_from_reach, reach.length
-    #raw_input()
+    # raw_input()
     # prt.mujout.writelines(str(reach.id_) + ';' + str(reach.h) + ';' +
     # str(reach.V_in_from_field) + ';' + str(reach.V_rest) + ';' + str(
     # reach.V_in_from_reach) + ';' + str(reach.V_out) + ';' +
@@ -154,7 +153,7 @@ def triangle(reach, dt):
     Ve = (
         reach.V_in_from_field +
         reach.V_rest +
-     reach.V_in_from_reach)     # objem z epizody
+        reach.V_in_from_reach)     # objem z epizody
     #
     # vyska z epizody co pribude na trouhelnik z baseflow (takze lichobeznik)
     #                       ____                                          __
@@ -162,7 +161,7 @@ def triangle(reach, dt):
     he = compute_h(
         A=Ve / reach.length,
         m=reach.m,
-     b=B)  # funkce pouzita pro lichobeznik  ____
+        b=B)  # funkce pouzita pro lichobeznik  ____
     H = hp + \
         he                                     # vyska vysledneho trouhelniku    \  /
     O = 2.0 * H * math.pow(
@@ -176,7 +175,7 @@ def triangle(reach, dt):
         R,
         0.6666) * math.pow(
         reach.slope,
-         0.5) / (
+        0.5) / (
             reach.roughness)  # v
     reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
@@ -211,8 +210,8 @@ def parabola(reach, dt):
     # reach.Q_out = S*math.pow(R,0.66666)*math.pow(reach.slope,0.5)/(reach.roughness) # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     # reach.V_out = reach.Q_out*dt
     # if reach.V_out > dV:
-        # reach.V_out = dV
-        # reach.Q_out = dV/dt
+    # reach.V_out = dV
+    # reach.Q_out = dV/dt
     # reach.vs = math.pow(R,0.6666)*math.pow(reach.slope,0.5)/(reach.roughness) #v
     # reach.V_rest = dV - reach.V_out
     # reach.h = H
@@ -222,37 +221,37 @@ def parabola(reach, dt):
     # fc = toky
     # field2 = ["FID","V_infl_ce","total_Vic","V_infl","total_Vi","V_outfl","total_Vo","NS","total_NS","Q_outfl","max_Q","h","max_h","vs","max_vs","V_zbyt","total_Vz","V_infl_us", "total_Viu"]
     # with arcpy.da.UpdateCursor(fc, field2) as cursor:
-        # for row in cursor:
-        # row[2] = row[2] + row[1]
-        # cursor.updateRow (row)
-        # row[4] = row[4] + row[3]
-        # cursor.updateRow (row)
-        # row[6] = row[6] + row[5]
-        # cursor.updateRow (row)
-        # row[8] = row[8] + row[7]
-        # cursor.updateRow (row)
-        # row[16] = row[16] + row[15]
-        # cursor.updateRow (row)
-        # row[18] = row[18] + row[17]
-        # cursor.updateRow (row)
-        # if row[10] < row[9]:
-          # row[10] = row[9]
-          # cursor.updateRow (row)
-        # if row[12] < row[11]:
-          # row[12] = row[11]
-          # cursor.updateRow (row)
-        # if row[14] < row[13]:
-          # row[14] = row[13]
-          # cursor.updateRow (row)
+    # for row in cursor:
+    # row[2] = row[2] + row[1]
+    # cursor.updateRow (row)
+    # row[4] = row[4] + row[3]
+    # cursor.updateRow (row)
+    # row[6] = row[6] + row[5]
+    # cursor.updateRow (row)
+    # row[8] = row[8] + row[7]
+    # cursor.updateRow (row)
+    # row[16] = row[16] + row[15]
+    # cursor.updateRow (row)
+    # row[18] = row[18] + row[17]
+    # cursor.updateRow (row)
+    # if row[10] < row[9]:
+    # row[10] = row[9]
+    # cursor.updateRow (row)
+    # if row[12] < row[11]:
+    # row[12] = row[11]
+    # cursor.updateRow (row)
+    # if row[14] < row[13]:
+    # row[14] = row[13]
+    # cursor.updateRow (row)
 
 
 # def safe_outflows(toky):
     # if type_of_computing == 3:
-        # fc = toky
-        # field3 = ["V_outfl","V_outfl_tm","V_zbyt","V_zbyt_tm"]
-        # with arcpy.da.UpdateCursor(fc, field3) as cursor:
-        # for row in cursor:
-          # row[1] = row[0]
-          # cursor.updateRow (row)
-          # row[3] = row[2]
-          # cursor.updateRow (row)
+    # fc = toky
+    # field3 = ["V_outfl","V_outfl_tm","V_zbyt","V_zbyt_tm"]
+    # with arcpy.da.UpdateCursor(fc, field3) as cursor:
+    # for row in cursor:
+    # row[1] = row[0]
+    # cursor.updateRow (row)
+    # row[3] = row[2]
+    # cursor.updateRow (row)

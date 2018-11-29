@@ -69,16 +69,15 @@ class D8(object):
             iax = i + ax
             jbx = j + bx
             try:
-                inrillflow_from_cell, v = rillfce.rill(iax, ibx, self.arr[iax][jbx])
-                courant_rill.CFL(i, j , v, dt)
+                inrillflow_from_cell, v = rillfce.rill(
+                    iax, ibx, self.arr[iax][jbx])
+                courant_rill.CFL(i, j, v, dt)
                 inrillflow_from_cell = dt*inrillflow_from_cell / GridGlobals.get_pixel_area()
             except:
                 inrillflow_from_cell = 0.0
             inflow_from_cells += inrillflow_from_cell
 
         return inflow_from_cells
-
-
 
     def cell_sheet_inflows(self, i, j, dt, courant):
         """ Calculates flow into cell i j based on inflows list of lists
@@ -101,9 +100,10 @@ class D8(object):
                 q = surfacefce.shallowSurfaceKinematic(
                     self.arr[iax][jbx])
                 v = q / self.arr[iax][jbx].h_sheet_pre
-                courant.CFL(i, j , v, dt)
+                courant.CFL(i, j, v, dt)
                 # as a height
-                insurfflow_from_cell = dt * q * GridGlobals.get_size()[0] / GridGlobals.get_pixel_area()
+                insurfflow_from_cell = dt * q * \
+                    GridGlobals.get_size()[0] / GridGlobals.get_pixel_area()
             except:
                 insurfflow_from_cell = 0.0
             inflow_from_cells += insurfflow_from_cell

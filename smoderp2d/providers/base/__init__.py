@@ -12,12 +12,14 @@ from smoderp2d.exceptions import ProviderError
 
 Logger = logger()
 
+
 class Args:
     # type of computation ('dpre', 'roff', 'full')
     typecomp = None
     # path to data file (used by 'dpre' for output and 'roff' for
     # input)
     data_file = None
+
 
 class BaseProvider(object):
     def __init__(self):
@@ -45,7 +47,8 @@ class BaseProvider(object):
         try:
             data = self._load_data(indata)
             if isinstance(data, list):
-                raise ProviderError('Saved data out-dated. Please use utils/convert-saved-data.py for update.')
+                raise ProviderError(
+                    'Saved data out-dated. Please use utils/convert-saved-data.py for update.')
         except IOError as e:
             raise ProviderError('{}'.format(e))
 
@@ -143,11 +146,11 @@ class BaseProvider(object):
         if os.path.exists(output):
             shutil.rmtree(output)
         os.makedirs(output)
-        
+
     @staticmethod
     def _comp_type(tc):
         """Returns boolean information about the components of the computation.
-        
+
         Return 4 true/values for rill, subflow, stream, diffuse
         presence/non-presence.
 
@@ -185,7 +188,7 @@ class BaseProvider(object):
         """Print Smoderp2d ascii-style logo."""
         with open(os.path.join(os.path.dirname(__file__), 'txtlogo.txt'), 'r') as fd:
             self._print_fn(fd.read())
-        #self._print_fn() # extra line
+        # self._print_fn() # extra line
 
     @staticmethod
     def _save_data(data, filename):

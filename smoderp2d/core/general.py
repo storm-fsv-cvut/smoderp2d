@@ -2,17 +2,19 @@ import numpy as np
 
 from smoderp2d.exceptions import SmoderpError
 
+
 class Size(object):
     @staticmethod
     def size(arrayNBytes, m=1.0):
         """Method to compute size of class arrays.    
-        
+
         :param <numpy array>.nbytes arrayNBytes:
         :param float m: value in denominator to get bytes, kilobytes
         (m=2**10), megabytes (m=2**10+m**10) and so on.
         """
         # arrayNBytes eq self.state.nbytes
         return (self.n * arrayNBytes) / m
+
 
 class GridGlobals(object):
     # number of raster rows (int)
@@ -49,7 +51,7 @@ class GridGlobals(object):
 
         self.arr = np.empty((self.r, self.c), dtype=object)
 
-    @classmethod        
+    @classmethod
     def get_dim(cls):
         return (cls.r, cls.c)
 
@@ -78,6 +80,7 @@ class GridGlobals(object):
         # TODO: int?
         return cls.NoDataValue
 
+
 class DataGlobals:
     # raster contains leaf area data
     mat_ppl = None
@@ -85,7 +88,8 @@ class DataGlobals:
     @classmethod
     def get_mat_ppl(cls, i, j):
         return cls.mat_ppl[i][j]
-    
+
+
 class Globals:
     """Globals contains global variables from data_preparation, in
     instance of class needed the data are taken from import of this
@@ -201,7 +205,6 @@ class Globals:
     def get_mat_pi(cls):
         return cls.mat_pi
 
-
     @classmethod
     def get_surface_retention(cls):
         return cls.surface_retention
@@ -237,9 +240,9 @@ class Globals:
     @classmethod
     def get_mat_efect_vrst(cls):
         return cls.mat_efect_vrst
-    
+
     @classmethod
-    def get_efect_vrst(cls,i,j):
+    def get_efect_vrst(cls, i, j):
         return cls.mat_efect_vrst[i][j]
 
     @classmethod

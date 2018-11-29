@@ -12,6 +12,7 @@ The computing itself is performed in src.runoff
 
 import os
 
+
 def run():
     # initialize provider
     if os.getenv('ESRIACTIVEINSTALLATION'):
@@ -33,10 +34,11 @@ def run():
 
     # must be called after initialization
     from smoderp2d.runoff import Runoff
-    
+
     # the computation
     runoff = Runoff(provider)
     runoff.run()
+
 
 if __name__ == "__main__":
     run()

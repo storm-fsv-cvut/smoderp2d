@@ -35,7 +35,7 @@ class TimesPrt(object):
     def prt(self, time, dt, sur):
         if not self.fTimes:
             return
-        
+
         if self.__n == len(self.times):
             return
 

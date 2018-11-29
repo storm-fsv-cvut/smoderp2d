@@ -63,7 +63,7 @@ class Courant():
 
     def courant(self, delta_t):
         """ adjust the time step 
-        
+
         :param delta_t: current time step
         """
 
@@ -75,19 +75,18 @@ class Courant():
             return dt
 
         if (self.cour_most < self.cour_least):
-            if (delta_t * self.max_delta_t_mult > self.max_delta_t) :
+            if (delta_t * self.max_delta_t_mult > self.max_delta_t):
                 dt = self.max_delta_t
-            else :
-                dt = delta_t * self.max_delta_t_mult 
+            else:
+                dt = delta_t * self.max_delta_t_mult
                 Logger.warning('Increase time step to {0:.4f}'.format(dt))
             return dt
 
         return delta_t
 
-
     def courant_rill(self, N):
         """ adjust the time step 
-        
+
         :param delta_t: current time step
         """
 

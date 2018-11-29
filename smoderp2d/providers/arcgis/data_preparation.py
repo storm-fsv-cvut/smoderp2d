@@ -19,6 +19,7 @@ from arcpy.sa import *
 import arcpy
 import arcgisscripting
 
+
 class PrepareData(PrepareDataBase):
     def __init__(self):
 
@@ -26,7 +27,8 @@ class PrepareData(PrepareDataBase):
         self.gp = arcgisscripting.create()
 
         # setting the workspace environment
-        self.gp.workspace = self.gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
+        self.gp.workspace = self.gp.GetParameterAsText(
+            constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
 
         # checking arcgis if ArcGIS Spatial extension is available
         arcpy.CheckOutExtension("Spatial")
@@ -78,14 +80,13 @@ class PrepareData(PrepareDataBase):
         self._save_raster("fl_dir", self.data['mat_fd'], self.data['temp'])
 
         return self.data
-    
+
     def _add_message(self, message):
         """
         Pops up a message into arcgis and saves it into log file.
         :param message: Message to be printed.
         """
         Logger.info(message)
-
 
     def _set_output(self):
         """Creates empty output and temporary directories to which created
@@ -112,15 +113,15 @@ class PrepareData(PrepareDataBase):
         self.gp.Reclassify_sa(
             dmt_copy, "VALUE", "-100000 100000 1", dmt_mask, "DATA"
         )  # reklasifikuje se vsechno na 1
-        
+
         return dmt_copy, dmt_mask
 
     def _dmtfce(self, dmt):
         return dmtfce(dmt, self.data['temp'])
-    
+
     def _get_intersect(self, dmt, mask,
-                        veg_indata, soil_indata, vtype, stype,
-                        tab_puda_veg, tab_puda_veg_code):
+                       veg_indata, soil_indata, vtype, stype,
+                       tab_puda_veg, tab_puda_veg_code):
         """
         :param str dmt: DMT raster name
         :param str mask: raster mask name
@@ -159,7 +160,7 @@ class PrepareData(PrepareDataBase):
             arcpy.DeleteField_management(intersect, "puda_veg")
         arcpy.AddField_management(
             intersect, "puda_veg", "TEXT", "", "", "15", "",
-            "NULLABLE", "NON_REQUIRED","")
+            "NULLABLE", "NON_REQUIRED", "")
 
         # compute "puda_veg" values (stype + vtype)
         vtype1 = vtype + "_1" if stype == vtype else vtype
@@ -185,7 +186,7 @@ class PrepareData(PrepareDataBase):
         with arcpy.da.SearchCursor(intersect, sfield) as cursor:
             for row in cursor:
                 for i in range(len(row)):
-                    if row[i] == " ": # TODO: empty string or NULL value?
+                    if row[i] == " ":  # TODO: empty string or NULL value?
                         raise DataPreparationInvalidInput(
                             "Values in soilveg tab are not correct"
                         )
@@ -225,7 +226,7 @@ class PrepareData(PrepareDataBase):
         mask = os.path.join(self.data['temp'], "mask")
         arcpy.PolygonToRaster_conversion(
             intersect, "FID", mask, "MAXIMUM_AREA",
-            cellsize = dmt_desc.MeanCellHeight)
+            cellsize=dmt_desc.MeanCellHeight)
 
         # cropping rasters
         dmt_clip = ExtractByMask(dmt, mask)
@@ -233,7 +234,8 @@ class PrepareData(PrepareDataBase):
         slope_clip = ExtractByMask(slope, mask)
         slope_clip.save(os.path.join(self.data['temp'], "slope_clip"))
         flow_direction_clip = ExtractByMask(flow_direction, mask)
-        flow_direction_clip.save(os.path.join(self.data['outdir'], "flow_clip"))
+        flow_direction_clip.save(os.path.join(
+            self.data['outdir'], "flow_clip"))
 
         return dmt_clip, slope_clip, flow_direction_clip
 
@@ -251,11 +253,12 @@ class PrepareData(PrepareDataBase):
         # count number of features (rows)
         npoints = arcpy.GetCount_management(self._input_params['points'])
         npoints_clipped = arcpy.GetCount_management(pointsClipCheck)
-                
+
         diffpts = int(npoints[0]) - int(npoints_clipped[0])
         if diffpts > 0:
             Logger.warning(
-                "{} points outside of computation domain will be ignored".format(diffpts)
+                "{} points outside of computation domain will be ignored".format(
+                    diffpts)
             )
 
         self.data['points'] = pointsClipCheck
@@ -270,7 +273,7 @@ class PrepareData(PrepareDataBase):
         :return all_atrib: list of numpy array
         """
         dim = [self.data['r'], self.data['c']]
-        
+
         mat_k = np.zeros(dim, float)
         mat_s = np.zeros(dim, float)
         mat_n = np.zeros(dim, float)
@@ -295,7 +298,7 @@ class PrepareData(PrepareDataBase):
             mat_y,
             mat_tau,
             mat_v
-        ] 
+        ]
 
         idx = 0
         for field in sfield:
@@ -306,7 +309,7 @@ class PrepareData(PrepareDataBase):
             )
             all_attrib[idx] = self._rst2np(output)
             idx += 1
-            
+
         return all_attrib
 
     def _rst2np(self, raster):
@@ -326,7 +329,7 @@ class PrepareData(PrepareDataBase):
         :param dmt_clip: clipped dmt raster map
         """
         dmt_desc = arcpy.Describe(dmt_clip)
-        
+
         # lower left corner coordinates
         self.data['xllcorner'] = dmt_desc.Extent.XMin
         self.data['yllcorner'] = dmt_desc.Extent.YMin
@@ -352,10 +355,10 @@ class PrepareData(PrepareDataBase):
         self.data['mat_nan'] = np.zeros(
             [self.data['r'], self.data['c']], float
         )
-        
+
         mat_k = all_attrib[0]
         mat_s = all_attrib[1]
-        
+
         self.data['mat_inf_index'] = None
         self.data['combinatIndex'] = None
 
@@ -374,7 +377,8 @@ class PrepareData(PrepareDataBase):
                     ccc = [kkk, sss]
                     try:
                         if combinat.index(ccc):
-                            self.data['mat_inf_index'][i][j] = combinat.index(ccc)
+                            self.data['mat_inf_index'][i][j] = combinat.index(
+                                ccc)
                     except:
                         combinat.append(ccc)
                         self.data['combinatIndex'].append(
@@ -417,7 +421,7 @@ class PrepareData(PrepareDataBase):
             shapefieldname = desc.ShapeFieldName
             # create search cursor
             rows_p = arcpy.SearchCursor(self.data['points'])
-            
+
             # getting number of points in shapefile
             count = arcpy.GetCount_management(self.data['points'])  # result
             count = count.getOutput(0)
@@ -434,7 +438,9 @@ class PrepareData(PrepareDataBase):
                 pnt = feat.getPart()
 
                 # position i,j in raster
-                r = self.data['r'] - ((pnt.Y - self.data['yllcorner']) // self.data['vpix']) - 1  # i from 0
+                # i from 0
+                r = self.data['r'] - \
+                    ((pnt.Y - self.data['yllcorner']) // self.data['vpix']) - 1
                 c = (pnt.X - self.data['xllcorner']) // self.data['spix']  # j
 
                 # if point is not on the edge of raster or its neighbours are not "NoDataValue", it will be saved into
@@ -456,10 +462,10 @@ class PrepareData(PrepareDataBase):
                     i += 1
                 else:
                     Logger.info(
-                        "Point FID = {} is at the edge of the raster." 
+                        "Point FID = {} is at the edge of the raster."
                         "This point will not be included in results.".format(
                             fid
-                    ))
+                        ))
         else:
             self.data['array_points'] = None
 
@@ -482,8 +488,9 @@ class PrepareData(PrepareDataBase):
         mat_hcrit_tau = np.zeros([self.data['r'], self.data['c']], float)
         mat_hcrit_v = np.zeros([self.data['r'], self.data['c']], float)
         mat_hcrit_flux = np.zeros([self.data['r'], self.data['c']], float)
-        self.data['mat_hcrit'] = np.zeros([self.data['r'], self.data['c']], float)
-        
+        self.data['mat_hcrit'] = np.zeros(
+            [self.data['r'], self.data['c']], float)
+
         for i in range(self.data['r']):
             for j in range(self.data['c']):
                 if self.data['mat_slope'][i][j] != self.data['NoDataValue'] \
@@ -500,9 +507,12 @@ class PrepareData(PrepareDataBase):
                         hcrit_tau = hcrit_v = hcrit_flux = 1000
 
                     else:
-                        hcrit_v = np.power((v_crit / aa), exp)  # h critical from v
+                        # h critical from v
+                        hcrit_v = np.power((v_crit / aa), exp)
                         hcrit_tau = tau_crit / 98.07 / slope  # h critical from tau
-                        hcrit_flux = np.power((flux_crit / slope / 98.07 / aa),(1 / mat_b[i][j]))  # kontrola jednotek
+                        # kontrola jednotek
+                        hcrit_flux = np.power(
+                            (flux_crit / slope / 98.07 / aa), (1 / mat_b[i][j]))
 
                     mat_hcrit_tau[i][j] = hcrit_tau
                     mat_hcrit_v[i][j] = hcrit_v
@@ -515,13 +525,16 @@ class PrepareData(PrepareDataBase):
                     mat_hcrit_flux[i][j] = self.data['NoDataValue']
                     self.data['mat_hcrit'][i][j] = self.data['NoDataValue']
 
-        rhcrit_tau = arcpy.NumPyArrayToRaster(mat_hcrit_tau, ll_corner, self.data['spix'], self.data['vpix'], "#")
+        rhcrit_tau = arcpy.NumPyArrayToRaster(
+            mat_hcrit_tau, ll_corner, self.data['spix'], self.data['vpix'], "#")
         rhcrit_tau.save(self.data['temp'] + os.sep + "hcrit_tau")
 
-        rhcrit_flux = arcpy.NumPyArrayToRaster(mat_hcrit_flux, ll_corner, self.data['spix'], self.data['vpix'], "#")
+        rhcrit_flux = arcpy.NumPyArrayToRaster(
+            mat_hcrit_flux, ll_corner, self.data['spix'], self.data['vpix'], "#")
         rhcrit_flux.save(self.data['temp'] + os.sep + "hcrit_flux")
 
-        rhcrit_v = arcpy.NumPyArrayToRaster(mat_hcrit_v, ll_corner, self.data['spix'], self.data['vpix'], "#")
+        rhcrit_v = arcpy.NumPyArrayToRaster(
+            mat_hcrit_v, ll_corner, self.data['spix'], self.data['vpix'], "#")
         rhcrit_v.save(self.data['temp'] + os.sep + "hcrit_v")
 
     def _get_slope_dir(self, dmt_clip):
@@ -588,7 +601,8 @@ class PrepareData(PrepareDataBase):
                      self._add_field,
                      self._join_table]
 
-            self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = StreamPreparation(input).prepare_streams()
+            self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = StreamPreparation(
+                input).prepare_streams()
         else:
             self.data['toky'] = None
             self.data['mat_tok_reach'] = None
@@ -611,7 +625,8 @@ class PrepareData(PrepareDataBase):
         except:
             pass
         arcpy.AddField_management(input, newfield, datatype)
-        arcpy.CalculateField_management(input, newfield, default_value, "PYTHON")
+        arcpy.CalculateField_management(
+            input, newfield, default_value, "PYTHON")
         return input
 
     def _join_table(self, in_data, in_field, join_table, join_field, fields=None):
@@ -640,9 +655,9 @@ class PrepareData(PrepareDataBase):
         """
 
         raster = arcpy.NumPyArrayToRaster(array_export,
-                                          arcpy.Point(self.data['xllcorner'], self.data['yllcorner']),
+                                          arcpy.Point(
+                                              self.data['xllcorner'], self.data['yllcorner']),
                                           self.data['spix'],
                                           self.data['vpix'],
                                           self.data['NoDataValue'])
         raster.save(folder + os.sep + name)
-

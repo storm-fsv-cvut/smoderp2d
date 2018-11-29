@@ -137,7 +137,7 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
                      16: 'v_sur_tot'
                      }
 
-                # 12 : 'v_rill',
+        # 12 : 'v_rill',
 
         # Dictionary stores the the arrays name used in the output rasters.
         #
@@ -160,7 +160,7 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
                       15: 'msurfl_m3_s',
                       16: 'csurvout_m3_s'
                       }
-                # 12 : 'MaxVeloRill',
+        # 12 : 'MaxVeloRill',
 
         # array count stored in the class
         self.n = 13

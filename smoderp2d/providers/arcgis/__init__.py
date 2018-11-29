@@ -9,8 +9,9 @@ from smoderp2d.providers.arcgis import constants
 from smoderp2d.providers.arcgis.logger import ArcPyLogHandler
 from smoderp2d.providers.base import Logger
 
+
 class ArcGisProvider(BaseProvider):
-    
+
     def __init__(self):
         super(ArcGisProvider, self).__init__()
 
@@ -21,7 +22,8 @@ class ArcGisProvider(BaseProvider):
         self._args.typecomp = 'full'
 
         # must be defined for _cleanup() method
-        Globals.outdir = self._get_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
+        Globals.outdir = self._get_argv(
+            constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
 
         # logger
         handler = ArcPyLogHandler()
@@ -40,6 +42,6 @@ class ArcGisProvider(BaseProvider):
         :return dict: loaded data
         """
         from smoderp2d.providers.arcgis.data_preparation import PrepareData
-       
+
         prep = PrepareData()
         return prep.run()

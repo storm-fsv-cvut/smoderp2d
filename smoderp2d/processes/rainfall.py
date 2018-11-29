@@ -46,8 +46,8 @@ class ErrorInRainfallRecord(Error):
 
     def __str__(self):
         return repr(self.msg)
-    
-    
+
+
 def load_precipitation(fh):
     y2 = 0
     try:
@@ -60,11 +60,13 @@ def load_precipitation(fh):
             elif z[0].find('#') >= 0:
                 continue
             else:
-                if (len(z) == 0) : # if raw in text file is empty
+                if (len(z) == 0):  # if raw in text file is empty
                     continue
-                elif ((float(z[0])==0) & (float(z[1])>0)) : # if the record start with zero minutes the line has to be corrected
+                # if the record start with zero minutes the line has to be corrected
+                elif ((float(z[0]) == 0) & (float(z[1]) > 0)):
                     raise ErrorInRainfallRecord()
-                elif ((float(z[0])==0) & (float(z[1])==0)) : # if the record start with zero minutes and rainfall the line is ignored
+                # if the record start with zero minutes and rainfall the line is ignored
+                elif ((float(z[0]) == 0) & (float(z[1]) == 0)):
                     continue
                 else:
                     y0 = float(z[0]) * 60.0  # prevod na vteriny
@@ -109,7 +111,7 @@ def load_precipitation(fh):
                     sr[i][0] = x[i][0]
                     sr[i][1] = sr_int
 
-        #for  i, item in enumerate(sr):
+        # for  i, item in enumerate(sr):
             #print item[0], '\t', item[1]
         return sr, itera
 

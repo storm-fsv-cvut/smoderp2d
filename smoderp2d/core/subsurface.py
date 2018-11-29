@@ -9,6 +9,7 @@ from smoderp2d.providers import Logger
 
 import smoderp2d.processes.subsurface as darcy
 
+
 class SubArrs:
     def __init__(self, L_sub, Ks, vg_n, vg_l, z, ele):
         """Subsurface attributes.
@@ -47,7 +48,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
         :param vg_l: TODO
         """
         GridGlobals.__init__()
-        
+
         for i in range(self.r):
             for j in range(self.c):
                 self.arr[i][j] = SubArrs(
@@ -155,7 +156,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
 
     def return_str_vals(self, i, j, sep, dt):
         arr = self.arr[i][j]
-         #';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[],exfiltration[];'
+        # ';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[],exfiltration[];'
         line = str(
             arr.h) + sep + str(
                 arr.V_runoff / dt) + sep + str(

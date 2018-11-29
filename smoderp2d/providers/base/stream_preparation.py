@@ -2,6 +2,8 @@ from smoderp2d.providers.base import Logger
 
 # definice erroru  na urovni modulu
 #
+
+
 class Error(Exception):
 
     """Base class for exceptions in this module."""
@@ -21,6 +23,7 @@ class ZeroSlopeError(Error):
 
     def __str__(self):
         return repr(self.msg)
+
 
 class StreamPreparationBase(object):
     def __init__(self, input):
@@ -44,7 +47,7 @@ class StreamPreparationBase(object):
         Logger.info("Creating output...")
         self._set_output()
 
-        self._setnull() #not used for anything, just saves setnull
+        self._setnull()  # not used for anything, just saves setnull
 
         Logger.info("Clip streams...")
         toky, toky_loc = self._clip_streams()
@@ -109,9 +112,9 @@ class StreamPreparationBase(object):
         self._add_field(toky, "total_Vz", "DOUBLE", 0.0)  # (m3)
 
     def _get_tokylist(self, toky):
-        raise NotImplemented("Not implemented for base provider") 
+        raise NotImplemented("Not implemented for base provider")
 
-    def _append_value(self, field_name_try, field_name_except = None):
+    def _append_value(self, field_name_try, field_name_except=None):
         if field_name_except == None:
             self.tokylist.append(
                 self.toky_tmp[self.field_names.index(field_name_try)]

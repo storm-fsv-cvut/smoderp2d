@@ -276,17 +276,16 @@ def sheet_runoff(i, j, sur, dt, courant):
     """
     q_sheet = surfacefce.shallowSurfaceKinematic(sur)
     v = q_sheet / sur.h_sheet_pre
-    courant.CFL(i,j,v,dt)
+    courant.CFL(i, j, v, dt)
     h_sheet = dt * q_sheet * \
         GridGlobals.get_size()[0] / GridGlobals.get_pixel_area()
     return h_sheet
 
 
 def rill_runoff(i, j, sur, dt, courant_rill):
-    
 
     q_rill, v = rillfce.rill(i, j, sur.arr[i][j])
-    courant_rill.CFL(i,j,v,dt)
+    courant_rill.CFL(i, j, v, dt)
     h_rill = dt * q_rill / GridGlobals.get_pixel_area()
 
     return h_rill
@@ -319,9 +318,9 @@ def surface_retention(bil, sur):
 def sheet_to_rill(sur):
     """ Calculate part the the h_sheet which goes to the rill.
     if h_sheet is supercitical, h_sheet_to_rill is nono zero
-    
+
     :param sur: core surface array
-    """ 
+    """
     rr, rc = GridGlobals.get_region_dim()
     for i in rr:
         for j in rc[i]:

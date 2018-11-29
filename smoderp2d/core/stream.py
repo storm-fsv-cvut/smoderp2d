@@ -2,6 +2,7 @@ from smoderp2d.stream_functions import stream_f
 from smoderp2d.core.general import GridGlobals, Globals as Gl
 from smoderp2d.providers import Logger
 
+
 class Reach(object):
     def __init__(self, id_, POINT_X, POINT_Y, POINT_X_1, POINT_Y_1,
                  to_node, length, sklon, smoderp, CISLO, TVAR, B, M, DRSNOST, Q365):
@@ -12,7 +13,8 @@ class Reach(object):
         self.to_node = to_node
         self.length = length
         if sklon < 0:
-            Logger.info("Slope in reach part {} indicated minus slope in stream".format(id_))
+            Logger.info(
+                "Slope in reach part {} indicated minus slope in stream".format(id_))
         self.slope = abs(sklon)
         self.smoderp = smoderp
         self.no = CISLO
@@ -36,7 +38,6 @@ class Reach(object):
         self.Q_max = 0.0
         self.timeQ_max = 0.0
         self.V_out_domain = 0.0
-
 
         if TVAR == 0:  # obdelnik
             self.outflow_method = stream_f.rectangle
@@ -88,8 +89,7 @@ class Stream(object):
                       self.toky[12][i],
                       self.toky[13][i],
                       self.toky[14][i]))
-        
-        
+
         self.toky_loc = Gl.toky_loc
         self.mat_tok_reach = Gl.mat_tok_reach
 

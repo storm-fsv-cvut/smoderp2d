@@ -11,6 +11,7 @@ from smoderp2d.flow_algorithm.py_dmtfce import removeCellsWithSameHeightNeighbor
     neighbors, dirSlope, boolToInt, FB, VE
 from smoderp2d.providers import Logger
 
+
 def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
     state = 0
     state2 = 0
@@ -22,8 +23,8 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
     Logger.info("Computing multiple flow direction algorithm...")
 
     # for i in range(rows):
-      # for j in range(cols):
-        # print i,j,mat_dmt[i][j]
+    # for j in range(cols):
+    # print i,j,mat_dmt[i][j]
 
     # function determines if cell neighborhood has miltiple cell with exactly
     # same values of height and than it saves that cell as NoData
@@ -31,8 +32,8 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
         mat_dmt, mat_nan, rows, cols)
 
     # for i in range(rows):
-      # for j in range(cols):
-        # print i,j,mat_dmt[i][j]
+    # for j in range(cols):
+    # print i,j,mat_dmt[i][j]
 
     # main multiple-flow direction algorithm calculation
     for i in range(rows):
@@ -129,16 +130,18 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
 
                         if flowcells > 0:
 
-                            prop =  (fldir[l] / FB ) * \
+                            prop = (fldir[l] / FB) * \
                                 flowcells  # percentage part into 1st cell
                             prop2 = (
                                 1 - fldir[l] / FB) * flowcells  # to second cell
 
-                            if l == 0 and fldir[l] > 0 and fldir[l] < FB:  # division to two cells
+                            # division to two cells
+                            if l == 0 and fldir[l] > 0 and fldir[l] < FB:
                                 flow_amount_cell[0] = prop2
                                 flow_amount_cell[1] = prop
                                 state2 = 1  # because of last cell in the loop
-                            elif l == 0 and fldir[l] == 0:  # only to one cell division
+                            # only to one cell division
+                            elif l == 0 and fldir[l] == 0:
                                 flow_amount_cell[0] = flowcells
 
                             if l == 1 and fldir[l] > 0 and fldir[l] < FB:
@@ -232,10 +235,12 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
                     state = 0
 
                     if (abs(sum(flprop) - 1.0) > 1e-5):
-                        Logger.info("Error - sum of flow proportions is not eqaul to 1.0")
+                        Logger.info(
+                            "Error - sum of flow proportions is not eqaul to 1.0")
                         Logger.info(sum(flprop), i, j)
                     if (abs(sum(flow_amount_cell) - 1.0) > 1e-5):
-                        Logger.info("Error - sum of flow amount in cell is not eqaul to 1.0")
+                        Logger.info(
+                            "Error - sum of flow amount in cell is not eqaul to 1.0")
                         Logger.info(sum(flow_amount_cell), i, j)
 
                     # same direction as in ArcGIS

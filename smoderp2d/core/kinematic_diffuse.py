@@ -4,6 +4,7 @@ from smoderp2d.providers import Logger
 
 import smoderp2d.flow_algorithm.flow_direction as flow_direction
 
+
 class Kinematic(Mfda if Globals.mfda else D8):
 
     def __init__(self):

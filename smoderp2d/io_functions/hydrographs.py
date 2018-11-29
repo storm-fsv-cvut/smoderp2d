@@ -3,6 +3,7 @@ import os
 from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers import Logger
 
+
 class Hydrographs:
     def __init__(self):
         points = Globals.get_array_points()
@@ -84,7 +85,8 @@ class Hydrographs:
                 header += '# {}{}'.format(self.pixel_area, os.linesep)
 
                 if not Globals.extraOut:
-                    header += '# time[s];deltaTime[s];rainfall[m];reachWaterLevel[m];reachFlow[m3/s];reachVolRunoff[m3]{}'.format(os.linesep)
+                    header += '# time[s];deltaTime[s];rainfall[m];reachWaterLevel[m];reachFlow[m3/s];reachVolRunoff[m3]{}'.format(
+                        os.linesep)
                 else:
                     header += '# time[s];deltaTime[s];Rainfall[m];Waterlevel[m];V_runoff[m3];Q[m3/s];V_from_field[m3];V_rests_in_stream[m3]{}'.format(
                         os.linesep)
@@ -118,7 +120,8 @@ class Hydrographs:
         self.files = []
         for i in range(self.n):
             fd = open(
-                os.path.join(outdir, 'point{}.dat'.format(str(self.point_int[i][0]).zfill(3))),
+                os.path.join(outdir, 'point{}.dat'.format(
+                    str(self.point_int[i][0]).zfill(3))),
                 'w'
             )
             fd.writelines(self.header[i])
@@ -130,17 +133,17 @@ class Hydrographs:
         Logger.info("Hydrographs files has been created...")
 
     def write_hydrographs_record(self, i, j, time, h_sheet_new, h_rill_new, rill_width, sep=';'):
-        
+
         for ip in self.inSurface:
             l = self.point_int[ip][1]
             m = self.point_int[ip][2]
             if i == l and j == m:
                 line = '{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{linesep}'.format(
-                                time, h_sheet_new,h_rill_new,h_sheet_new+h_rill_new,rill_width,
-                                sep=sep,linesep = os.linesep
-                            )
+                    time, h_sheet_new, h_rill_new, h_sheet_new+h_rill_new, rill_width,
+                    sep=sep, linesep=os.linesep
+                )
                 self.files[ip].writelines(line)
-        
+
         """
         ratio = fc.ratio
         total_time = fc.total_time + dt
@@ -185,6 +188,8 @@ class Hydrographs:
         for fd in self.files:
             Logger.debug('Hydrographs file "{}" closed'.format(fd.name))
             fd.close()
+
+
 class HydrographsPass:
     def write_hydrographs_record(self, i, j, time, h_sheet_new, h_rill_new, sep=';'):
         pass

@@ -8,11 +8,12 @@ else:
 from smoderp2d.core.general import Globals
 from smoderp2d.providers.base import BaseProvider, Logger
 
+
 class CmdProvider(BaseProvider):
     def __init__(self):
         """Create argument parser."""
         super(CmdProvider, self).__init__()
-        
+
         # define CLI parser
         parser = argparse.ArgumentParser(description='Run Smoderp2D.')
 

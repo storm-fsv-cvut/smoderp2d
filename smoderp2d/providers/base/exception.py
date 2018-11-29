@@ -1,6 +1,7 @@
 class DataPreparationError(Exception):
     pass
 
+
 class DataPreparationInvalidInput(DataPreparationError):
     def __init__(self, msg):
         Logger.fatal(

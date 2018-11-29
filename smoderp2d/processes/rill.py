@@ -43,14 +43,15 @@ def rill(i, j, sur):
 
     V_to_rill = h_rill_pre * GridGlobals.pixel_area
     h, b = update_hb(V_to_rill, rillratio, l, b)
-    if b == 0 : return 0.0, 0.0
+    if b == 0:
+        return 0.0, 0.0
     R_rill = (h * b) / (b + 2 * h)
     v = math.pow(
         R_rill,
         (2.0 / 3.0)) * 1 / n * math.pow(slope / 100,
                                         0.5)  # m/s
     q = v * rillratio * b * b  # [m3/s]
-    
+
     sur.rill_width = b
-    
+
     return [q, v]

@@ -8,7 +8,9 @@ PI_HALF = math.pi / 2
 THREE_PI_HALF = 3 * math.pi / 2
 VE = 4  # variable exponent
 
-def neighbors(i, j, array, x, y):  # function to determine all neighbor cell to actual cell in the raster dataset
+
+# function to determine all neighbor cell to actual cell in the raster dataset
+def neighbors(i, j, array, x, y):
     "Return all neigbours to actuall cell in the raster dataset"
     if i > 0 and i < (x - 1) and j > 0 and j < (y - 1):  # non edge cells
         nb1 = array[i - 1][j - 1]
@@ -103,7 +105,8 @@ def neighbors(i, j, array, x, y):  # function to determine all neighbor cell to 
     return nb1, nb2, nb3, nb4, nb5, nb6, nb7, nb8
 
 
-def removeCellsWithSameHeightNeighborhood(mat_dmt, mat_nan, rows, cols):  # function determines if cell neighborhood has exactly same values of height a and than it save that cell as NoData
+# function determines if cell neighborhood has exactly same values of height a and than it save that cell as NoData
+def removeCellsWithSameHeightNeighborhood(mat_dmt, mat_nan, rows, cols):
     "Returns an array with the values of heights, adjusted for the value of NoData cells"
 
     bad_cells = []
@@ -115,7 +118,8 @@ def removeCellsWithSameHeightNeighborhood(mat_dmt, mat_nan, rows, cols):  # func
             count_nbrs = 0
             point_m = mat_dmt[i][j]
 
-            if i > 0 and i < (rows - 1) and j > 0 and j < (cols - 1):  # non edge cells - edge cells are excluded thanks to slope trimming
+            # non edge cells - edge cells are excluded thanks to slope trimming
+            if i > 0 and i < (rows - 1) and j > 0 and j < (cols - 1):
 
                 nbrs = [mat_dmt[i - 1][j - 1],
                         mat_dmt[i - 1][j],
@@ -157,7 +161,8 @@ def removeCellsWithSameHeightNeighborhood(mat_dmt, mat_nan, rows, cols):  # func
     return mat_dmt, mat_nan
 
 
-def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangular facet outflow direction and slope
+# function calculates for each triangular facet outflow direction and slope
+def dirSlope(point_m, nbrs, vpix, spix):
     "Return a list of direction a slope values for each triangular facet"
     direction = np.zeros(8)
     slope = np.zeros(8)

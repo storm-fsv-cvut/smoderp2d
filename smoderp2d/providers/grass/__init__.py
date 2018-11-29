@@ -2,6 +2,7 @@
 
 from smoderp2d.providers.base import BaseProvider
 
+
 class GrassProvider(BaseProvider):
     def __init__(self):
         super(GrassProvider, self).__init__()

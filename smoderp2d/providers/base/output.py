@@ -2,6 +2,7 @@ import numpy as np
 
 from smoderp2d.base.general import GridGlobals, Globals
 
+
 class RasterAsciiBase(object):
     def __init__(self, filename):
         self.filename = filename
@@ -17,7 +18,7 @@ class RasterAsciiBase(object):
         if np.issubdtype(array.dtype, int):
             self.no_data = Globals.NoDataInt
         else:
-            self.no_data =e Globals.NoDataValue
+            self.no_data = e Globals.NoDataValue
         if self._fd:
             self._fd.write("nodata_value {0}{nl}".format(
                 self.no_data, nl=os.linesep
@@ -38,6 +39,7 @@ class RasterAsciiBase(object):
 
         return out_array
 
+
 class RasterAscii(RasterAsciiBase):
     def __init__(self, filename):
         super(RasterAscii, self).__init__(filename)
@@ -57,10 +59,10 @@ class RasterAscii(RasterAsciiBase):
 
     def __del__(self):
         self._fd.close()
-    
+
     def write(self, array, fs=None):
         out_array = create_array(array, fs)
-        
+
         # write array to target file
         nrows, ncols = GridGlobals.get_dim()
         for i in range(nrows):
