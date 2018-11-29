@@ -243,7 +243,7 @@ class Runoff(object):
             # calculate sheet to rill
             sheet_to_rill(self.surface)
 
-            N = 5
+            N = 1
             # calculates the rill h
             for k in range(N):
                 self.time_step.do_rill_flow(
@@ -340,7 +340,11 @@ class Runoff(object):
                     # if self.surface.arr[i][j].state == 2:
                     # if self.surface.arr[i][j].h_total_new > self.surface.arr[i][j].h_last_state1:
                     #self.surface.arr[i][j].state = 1
-
+        
+        Logger.debug('Max courant in sheet flow {}'.format(self.courant.cour_most))
+        Logger.debug('Max courant in rill  flow {}'.format(self.courant_rill.cour_most))
+        
+        
         Logger.info('Saving data...')
 
         Logger.info('')
