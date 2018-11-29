@@ -44,8 +44,6 @@ class TimeStep:
         potRain, fc.tz = rain_f.timestepRainfall(
             itera, fc.total_time, delta_t, fc.tz, sr)
         
-        self.potRain = potRain
-
         for iii in combinatIndex:
             index = iii[0]
             k = iii[1]
@@ -135,15 +133,13 @@ class TimeStep:
             for j in rc[i]:
                 
                 h_rill_pre = surface.arr[i][j].h_rill_pre
+                h_sheet_to_rill = surface.arr[i][j].h_sheet_to_rill/N
                 
-                skip = (h_rill_pre == 0.0) and (self.potRain == 0.0)
+                skip = (h_rill_pre == 0.0) and (h_sheet_to_rill == 0.0)
                 if (skip) :
                     rill_bill = 0
                     skipped_cell += 1
                 else :
-                    
-                    h_sheet_to_rill = surface.arr[i][j].h_sheet_to_rill/N
-                    #surface.arr[i][j].h_sheet_to_rill = 0.0
                     
                     # rill out pre
                     outflow = rill_runoff(i, j, surface, delta_t_rill)
