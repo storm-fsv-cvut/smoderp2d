@@ -27,7 +27,7 @@ max_infilt_capa = 0.00  # [m]
 #
 class TimeStep:
 
-    def do_sheet_flow(self, surface, subsurface, delta_t, flow_control, courant):
+    def do_sheet_flow(self, surface, subsurface, delta_t, flow_control, courant, courant_rill):
 
         global infilt_capa
         global max_infilt_capa
@@ -92,11 +92,8 @@ class TimeStep:
                     inflows = surface.cell_sheet_inflows(i, j, delta_t)
                     
                     # rill in pre
-                    if surface.arr[i][j].h_rill_pre > 0 :
-                        inflows_rill = surface.cell_rill_inflows(i, j, delta_t)
-                    else : 
-                        inflows_rill = 0.0
-
+                    inflows_rill = surface.cell_rill_inflows(i, j, delta_t, courant_rill)
+                    
                     # sheet outflow
                     outflow = sheet_runoff(surface.arr[i][j], delta_t)
 
@@ -123,7 +120,7 @@ class TimeStep:
             Logger.debug('Inactive cells were skipped: {}'.format(skipped_cell))
 
 
-    def do_rill_flow(self, surface, delta_t, flow_control, courant, N):
+    def do_rill_flow(self, surface, delta_t, flow_control, courant_rill, N):
 
         rr, rc = GridGlobals.get_region_dim()
         delta_t_rill = delta_t / N
@@ -142,19 +139,19 @@ class TimeStep:
                 else :
                     
                     # rill out pre
-                    outflow = rill_runoff(i, j, surface, delta_t_rill)
+                    outflow = rill_runoff(i, j, surface, delta_t_rill, courant_rill)
                     
-                    courant.CFL(i, j, outflow/delta_t_rill, delta_t_rill)
+                    #courant.CFL(i, j, outflow/delta_t_rill, delta_t_rill)
                     
                     rill_bill = max(h_rill_pre + h_sheet_to_rill - outflow, 0.0)
                     #print h_sheet_to_rill, outflow
                     
                 surface.arr[i][j].h_rill_new = rill_bill
                 
-        Logger.debug('Highest courant value          {0:.5f}'.format(courant.cour_most))
-        Logger.debug('Highest veloviy value          {0:.5f}'.format(courant.cour_speed))
-        Logger.debug('i of the highest courant value {}'.format(courant.i))
-        Logger.debug('j of the highest courant value {}'.format(courant.j))
+        Logger.debug('Highest courant value          {0:.5f}'.format(courant_rill.cour_most))
+        Logger.debug('Highest veloviy value          {0:.5f}'.format(courant_rill.cour_speed))
+        Logger.debug('i of the highest courant value {}'.format(courant_rill.i))
+        Logger.debug('j of the highest courant value {}'.format(courant_rill.j))
         if (not(skipped_cell == 0)):
             Logger.debug('Inactive cells were skipped: {}'.format(skipped_cell))
     

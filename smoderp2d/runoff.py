@@ -221,7 +221,8 @@ class Runoff(object):
                     self.subsurface,
                     self.delta_t,
                     self.flow_control,
-                    self.courant
+                    self.courant,
+                    self.courant_rill
                 )
 
                 # stores current time step
@@ -242,7 +243,7 @@ class Runoff(object):
             # calculate sheet to rill
             sheet_to_rill(self.surface)
 
-            N = 1
+            N = 3
             # calculates the rill h
             for k in range(N):
                 self.time_step.do_rill_flow(

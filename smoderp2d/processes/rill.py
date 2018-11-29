@@ -31,6 +31,7 @@ def rill(i, j, sur):
     :param sur: element of a surface array
 
     :return: discharge from cell in in m3/s
+    :return: rill flow velocity in in m/s
     """
 
     h_rill_pre = sur.h_rill_pre
@@ -42,7 +43,7 @@ def rill(i, j, sur):
 
     V_to_rill = h_rill_pre * GridGlobals.pixel_area
     h, b = update_hb(V_to_rill, rillratio, l, b)
-    if b == 0 : return 0.0
+    if b == 0 : return 0.0, 0.0
     R_rill = (h * b) / (b + 2 * h)
     v = math.pow(
         R_rill,
@@ -51,5 +52,5 @@ def rill(i, j, sur):
     q = v * rillratio * b * b  # [m3/s]
     
     sur.rill_width = b
-
-    return q
+    
+    return [q, v]

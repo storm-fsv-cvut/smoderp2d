@@ -53,7 +53,7 @@ class D8(object):
     def update_inflows(self, fd):
         self.inflows = D8_.new_inflows(fd)
 
-    def cell_rill_inflows(self, i, j, dt):
+    def cell_rill_inflows(self, i, j, dt, courant_rill):
         """ Calculates rill flow into cell i j based on inflows list of lists
 
         :param i:  index of row  in a matrix
@@ -69,7 +69,8 @@ class D8(object):
             iax = i + ax
             jbx = j + bx
             try:
-                inrillflow_from_cell = rillfce.rill(iax, ibx, self.arr[iax][jbx])
+                inrillflow_from_cell, v = rillfce.rill(iax, ibx, self.arr[iax][jbx])
+                courant_rill.CFL(i, j , v, dt)
                 inrillflow_from_cell = dt*inrillflow_from_cell / GridGlobals.get_pixel_area()
             except:
                 inrillflow_from_cell = 0.0

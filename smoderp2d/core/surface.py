@@ -280,9 +280,10 @@ def sheet_runoff(sur, dt):
     return h_sheet
 
 
-def rill_runoff(i, j, sur, dt):
+def rill_runoff(i, j, sur, dt, courant_rill):
 
-    q_rill = rillfce.rill(i, j, sur.arr[i][j])
+    q_rill, v = rillfce.rill(i, j, sur.arr[i][j])
+    courant_rill.CFL(i,j,v,dt)
     h_rill = dt * q_rill / GridGlobals.get_pixel_area()
 
     return h_rill
