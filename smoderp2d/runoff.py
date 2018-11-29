@@ -221,8 +221,7 @@ class Runoff(object):
                     self.subsurface,
                     self.delta_t,
                     self.flow_control,
-                    self.courant,
-                    self.hydrographs
+                    self.courant
                 )
 
                 # stores current time step

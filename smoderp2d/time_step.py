@@ -27,7 +27,7 @@ max_infilt_capa = 0.00  # [m]
 #
 class TimeStep:
 
-    def do_sheet_flow(self, surface, subsurface, delta_t, flow_control, courant, hydrographs):
+    def do_sheet_flow(self, surface, subsurface, delta_t, flow_control, courant):
 
         global infilt_capa
         global max_infilt_capa
