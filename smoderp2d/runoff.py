@@ -178,6 +178,7 @@ class Runoff(object):
                     0,
                     0,
                     0,
+                    0,
                     0.0
                 )
 
@@ -238,7 +239,6 @@ class Runoff(object):
             # calculate sheet to rill
             # result stored in the self.surface instance 
             sheet_to_rill(self.surface)
-            
             
             # CALCULATES THE RILL FLOW
             for k in range(self.flow_control.N):
@@ -312,7 +312,8 @@ class Runoff(object):
                         self.surface.arr[i][j].h_sheet_new,
                         self.surface.arr[i][j].h_rill_new,
                         self.surface.arr[i][j].rill_width,
-                        self.surface.arr[i][j].h_sheet_to_rill
+                        self.surface.arr[i][j].h_sheet_to_rill,
+                        self.surface.arr[i][j].state
                     )
 
             # calculate outflow from each reach of the stream network

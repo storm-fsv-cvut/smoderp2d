@@ -132,14 +132,14 @@ class Hydrographs:
 
         Logger.info("Hydrographs files has been created...")
 
-    def write_hydrographs_record(self, i, j, time, h_sheet_new, h_rill_new, rill_width, h_sheet_to_rill, sep=';'):
+    def write_hydrographs_record(self, i, j, time, h_sheet_new, h_rill_new, rill_width, h_sheet_to_rill, state, sep=';'):
 
         for ip in self.inSurface:
             l = self.point_int[ip][1]
             m = self.point_int[ip][2]
             if i == l and j == m:
-                line = '{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{linesep}'.format(
-                    time, h_sheet_new, h_rill_new, h_sheet_new+h_rill_new, rill_width,h_sheet_to_rill,
+                line = '{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}{linesep}'.format(
+                    time, h_sheet_new, h_rill_new, h_sheet_new+h_rill_new, rill_width,h_sheet_to_rill,state,
                     sep=sep, linesep=os.linesep
                 )
                 self.files[ip].writelines(line)
