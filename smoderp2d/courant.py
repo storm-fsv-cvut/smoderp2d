@@ -26,7 +26,7 @@ class Courant():
         self.cour_most_rill = self.cour_crit + 1.0
         self.tot_cour_most = 0
         self.cour_coef = 0.5601
-        self.cour_least = 0.5
+        self.cour_least = 0.3
         self.i = -1
         self.j = -1
         self.co = 'sheet'
