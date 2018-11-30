@@ -85,19 +85,23 @@ class Courant():
         return delta_t
 
     def courant_rill(self, N):
-        """ adjust the time step 
+        """ adjust the N (rill flow time step divider)
 
-        :param delta_t: current time step
+        :param N: rill time step divider
         """
 
         if (self.cour_crit <= self.cour_most):
             if (self.cour_speed == 0.0):
                 return 1
-            N = min(N+1, 20)
+            N = min(20, N+1)
+            Logger.warning(
+                'Increase N for till time step divider {}'.format(N))
             return N
 
         if (self.cour_most < self.cour_least):
-            N = max(N-1, 1)
+            N = max(1, N-1)
+            Logger.warning(
+                'Decrease N for till time step divider {}'.format(N))
             return N
 
         return N
