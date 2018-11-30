@@ -177,6 +177,7 @@ class Runoff(object):
                     0,
                     0,
                     0,
+                    0,
                     0.0
                 )
 
@@ -310,7 +311,8 @@ class Runoff(object):
                         self.flow_control.total_time + self.delta_t,
                         self.surface.arr[i][j].h_sheet_new,
                         self.surface.arr[i][j].h_rill_new,
-                        self.surface.arr[i][j].rill_width
+                        self.surface.arr[i][j].rill_width,
+                        self.surface.arr[i][j].h_sheet_to_rill
                     )
 
             # calculate outflow from each reach of the stream network
@@ -352,12 +354,3 @@ class Runoff(object):
         post_proc.stream_table(Globals.outdir + os.sep,
                                self.surface, Globals.toky_loc)
 
-        # TODO: print stats in better way
-        # import platform
-        # if platform.system() == "Linux":
-        #     pid = os.getpid()
-        #     Logger.info("/proc/{}/status reading".format(pid))
-        #     with open(os.path.join('/', 'proc', str(pid), "status"), 'r') as fp:
-        #         for i, line in enumerate(fp):
-        #             if i >= 11 and i <= 23:
-        #                 Logger.info(line.rstrip(os.linesep))
