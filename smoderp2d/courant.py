@@ -21,11 +21,12 @@ class Courant():
         self.maxh = 0
         self.cour_speed = 0
         # citical courant value
-        self.cour_crit = 0.75
+        self.cour_crit = 0.6
         self.cour_most = 0.0
         self.cour_most_rill = self.cour_crit + 1.0
+        self.tot_cour_most = 0
         self.cour_coef = 0.5601
-        self.cour_least = 0.3
+        self.cour_least = 0.5
         self.i = -1
         self.j = -1
         self.co = 'sheet'
@@ -58,8 +59,12 @@ class Courant():
         if cour > self.cour_most:
             self.i = i
             self.j = j
-            self.cour_most = self.tot_cour_most = cour
+            self.cour_most = cour
             self.cour_speed = v_sheet_new
+            
+    def save_cour_most(self):
+        if self.cour_most > self.tot_cour_most :
+            self.tot_cour_most = self.cour_most
 
     def courant(self, delta_t):
         """ adjust the time step 

@@ -112,6 +112,8 @@ class TimeStep:
 
                 surface.arr[i][j].h_sheet_new = sur_bil
 
+        
+        courant.save_cour_most()
         Logger.debug(
             'Highest courant value          {0:.5f}'.format(courant.cour_most))
         Logger.debug('Highest veloviy value          {0:.5f}'.format(
@@ -152,6 +154,8 @@ class TimeStep:
 
                 surface.arr[i][j].h_rill_new = rill_bill
 
+        courant_rill.save_cour_most()
+        
         Logger.debug('Highest courant value          {0:.5f}'.format(
             courant_rill.cour_most))
         Logger.debug('Highest veloviy value          {0:.5f}'.format(
