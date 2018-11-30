@@ -68,15 +68,13 @@ class D8(object):
             bx = self.inflows[i][j][z][1]
             iax = i + ax
             jbx = j + bx
-            try:
-                inrillflow_from_cell, v = rillfce.rill(
-                    iax, ibx, self.arr[iax][jbx])
-                courant_rill.CFL(i, j, v, dt)
-                inrillflow_from_cell = dt*inrillflow_from_cell / GridGlobals.get_pixel_area()
-            except:
-                inrillflow_from_cell = 0.0
+            inrillflow_from_cell, v = rillfce.rill(
+                iax, jbx, self.arr[iax][jbx])
+            courant_rill.CFL(i, j, v, dt)
+            inrillflow_from_cell = dt*inrillflow_from_cell / GridGlobals.get_pixel_area()
             inflow_from_cells += inrillflow_from_cell
-
+        
+        
         return inflow_from_cells
 
     def cell_sheet_inflows(self, i, j, dt, courant):
