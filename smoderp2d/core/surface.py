@@ -78,7 +78,7 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
                     Globals.get_mat_reten(i, j),
                     Globals.get_mat_inf_index(i, j),
                     Globals.get_mat_hcrit(i, j),
-                    #0.01,
+                    #0.004,
                     Globals.get_mat_aa(i, j),
                     Globals.get_mat_b(i, j)
                 )
@@ -331,5 +331,7 @@ def sheet_to_rill(sur):
                 sur.arr[i][j].h_sheet_to_rill = sur.arr[i][j].h_sheet_new - \
                     sur.arr[i][j].h_crit
                 sur.arr[i][j].h_sheet_new = sur.arr[i][j].h_crit
+                sur.arr[i][j].state = 1
             else:
                 sur.arr[i][j].h_sheet_to_rill = 0.0
+                sur.arr[i][j].state = 0
