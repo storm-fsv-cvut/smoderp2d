@@ -77,11 +77,14 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
                 self.arr[i][j] = SurArrs(
                     Globals.get_mat_reten(i, j),
                     Globals.get_mat_inf_index(i, j),
-                    Globals.get_mat_hcrit(i, j),
+                    #Globals.get_mat_hcrit(i, j),
+                    0.01,
                     Globals.get_mat_aa(i, j),
                     Globals.get_mat_b(i, j)
                 )
 
+        Logger.warning('hcrit na tvrdo')
+        raw_input()
         Stream.__init__(self)
 
         Logger.info("\tRill flow: {}".format(
