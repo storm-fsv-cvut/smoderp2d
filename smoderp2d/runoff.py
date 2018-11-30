@@ -34,11 +34,6 @@ class FlowControl(object):
     computational loop."""
 
     def __init__(self):
-        # type of infiltration
-        #  - 0 for philip infiltration is the only
-        #    one in current version
-        # TODO: seems to be not used (?)
-        self.infiltration_type = 0
 
         # actual time in calculation
         self.total_time = 0.0
@@ -49,9 +44,8 @@ class FlowControl(object):
         # stores cumulative interception
         self.sum_interception = 0
 
-        # factor deviding the time step for rill calculation
-        # currently inactive
-        self.ratio = 1
+        # factor deviding the rill dt
+        self.N = 1
 
         # naximum amount of iterations
         self.max_iter = 40
@@ -89,11 +83,6 @@ class FlowControl(object):
         """Check if iteration exceed a maximum allowed amount.
         """
         return self.iter_ < self.max_iter
-
-    def save_ratio(self):
-        """Saves ration in case of interation within time step.
-        """
-        self.ratio_tmp = self.ratio
 
     def compare_ratio(self):
         """Check for changing ratio after rill courant criterion check.
@@ -198,24 +187,28 @@ class Runoff(object):
         start = time.time()
         Logger.info('Start of computing...')
 
-        i = j = 0
         rr, rc = GridGlobals.get_region_dim()
         # main loop: until the end time
         while self.flow_control.compare_time(Globals.end_time):
 
+            # store variables in case of repeating time step
             self.flow_control.save_vars()
+            # set iterator to zero
             self.flow_control.refresh_iter()
 
-            # iteration loop for sheet flow
+            # 
+            # ITERATION LOOP FOR SHEET FLOW
             while self.flow_control.max_iter_reached():
-
+                
+                # increase iteration by one
                 self.flow_control.upload_iter()
+                # load stored variables
                 self.flow_control.restore_vars()
 
                 # reset of the courant condition
                 self.courant.reset()
-                self.flow_control.save_ratio()
 
+                # CALCULATES THE SHEET FLOW
                 self.time_step.do_sheet_flow(
                     self.surface,
                     self.subsurface,
@@ -234,28 +227,56 @@ class Runoff(object):
 
                 # courant conditions is satisfied (time step did
                 # change) the iteration loop breaks
-                if delta_t_tmp == self.delta_t and self.flow_control.compare_ratio():
+                if delta_t_tmp == self.delta_t:
                     break
 
+            # in case the iterator reach max iteration count
             if not self.flow_control.max_iter_reached():
                 raise MaxIterationExceeded(max_iter, total_time)
 
             # calculate sheet to rill
+            # result stored in the self.surface instance 
             sheet_to_rill(self.surface)
-
-            N = 3
-            # calculates the rill h
-            for k in range(N):
-                self.time_step.do_rill_flow(
-                    self.surface,
-                    self.delta_t,
-                    self.flow_control,
-                    self.courant_rill,
-                    N
-                )
+            
+            
+            # CALCULATES THE RILL FLOW
+            for k in range(self.flow_control.N):
+                
+                # set iterator to zero
+                self.flow_control.refresh_iter()
+                # 
+                # ITERATION LOOP FOR RILL FLOW
+                while self.flow_control.max_iter_reached():
+                    
+                    # increase iteration by one
+                    self.flow_control.upload_iter()
+                    
+                    self.courant_rill.reset()
+                
+                    self.time_step.do_rill_flow(
+                        self.surface,
+                        self.delta_t,
+                        self.flow_control,
+                        self.courant_rill,
+                        self.flow_control.N
+                    )
+                    
+                    # stores current N (delta_t divider)
+                    N_tmp = self.flow_control.N
+                    
+                    # update N (delta_t divider)
+                    # based on the courant criterion
+                    self.flow_control.N = self.courant_rill.courant_rill(self.flow_control.N)
+                    
+                    # if N doesn't change break the loop
+                    if N_tmp == self.flow_control.N:
+                        break
+                    
+            
                 for i in rr:
                     for j in rc[i]:
                         self.surface.arr[i][j].h_rill_pre = self.surface.arr[i][j].h_rill_new
+
 
             # adjusts the last time step size
             if (Globals.end_time - self.flow_control.total_time) < self.delta_t and \
@@ -281,8 +302,6 @@ class Runoff(object):
             make_sur_raster(self.surface.arr, Globals,
                             self.flow_control.total_time, Globals.outdir)
 
-            #print self.surface.arr[i][j].h_sheet_new, self.surface.arr[i][j].h_rill_new,self.surface.arr[i][j].h_sheet_new+self.surface.arr[i][j].h_rill_new
-            # raw_input()
             for i in rr:
                 for j in rc[i]:
                     self.hydrographs.write_hydrographs_record(
@@ -305,19 +324,6 @@ class Runoff(object):
             # set current times to previous time step
             self.subsurface.curr_to_pre()
 
-            # write hydrographs of reaches
-            # self.hydrographs.write_hydrographs_record(
-            # i,
-            # j,
-            # self.flow_control,
-            # self.courant,
-            # self.delta_t,
-            # self.surface,
-            # self.subsurface,
-            # actRain,
-            # True
-            # )
-
             # print raster results in given time steps
             self.times_prt.prt(self.flow_control.total_time,
                                self.delta_t, self.surface)
@@ -328,18 +334,6 @@ class Runoff(object):
                 for j in self.surface.rc[i]:
 
                     self.surface.arr[i][j].h_sheet_pre = self.surface.arr[i][j].h_sheet_new
-                    # if self.surface.arr[i][j].state == 0:
-                    # if self.surface.arr[i][j].h_total_new > self.surface.arr[i][j].h_crit:
-                    #self.surface.arr[i][j].state = 1
-
-                    # if self.surface.arr[i][j].state == 1:
-                    # if self.surface.arr[i][j].h_total_new < self.surface.arr[i][j].h_total_pre:
-                    #self.surface.arr[i][j].h_last_state1 = self.surface.arr[i][j].h_total_pre
-                    #self.surface.arr[i][j].state = 2
-
-                    # if self.surface.arr[i][j].state == 2:
-                    # if self.surface.arr[i][j].h_total_new > self.surface.arr[i][j].h_last_state1:
-                    #self.surface.arr[i][j].state = 1
 
         Logger.debug('Max courant in sheet flow {}'.format(
             self.courant.tot_cour_most))
