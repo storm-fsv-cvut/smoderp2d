@@ -20,7 +20,8 @@ def philip_infiltration(soil, bil):
         if soil == z[0]:
             infiltration = z[3]
             if bil < 0:
-                print 'mass balance error'
+                #TODO raise error
+                pass
             if infiltration > bil:
                 infiltration = bil
                 bil = 0

@@ -2,13 +2,8 @@
 
 
 import math
-import smoderp2d.constants as constants
-from smoderp2d.tools.tools import comp_type
-from smoderp2d.tools.tools import get_argv
-import smoderp2d.io_functions.prt as prt
-
-
-from smoderp2d.main_classes.General import Globals as Gl
+from smoderp2d.providers import Logger
+from smoderp2d.core.general import Globals as Gl
 
 # Contains variables and methods needed for time step size handling
 #
@@ -79,7 +74,7 @@ class Courant():
         # (math.sqrt(sur.pixel_area)*self.cour_least*self.cour_coef)/velGuess
 
         # return self.initGuess
-        return self.max_delta_t
+        return Gl.maxdt
 
     # Checks and store in each computational cell the maximum velocity and maximum Courant coefficient
     #
@@ -102,7 +97,7 @@ class Courant():
     #
     #  Also returns the ratio for the rill computation division.
     #
-    def courant(self, rainfall, delta_t, efect_vrst, ratio):
+    def courant(self, rainfall, delta_t, ratio):
 
         # ratio se muze zmensit  a max_delta_t_mult zvetsit
         # pokud je courant v ryhach <= 0.2
@@ -135,17 +130,18 @@ class Courant():
         #                                      xor
         if ((self.cour_most < self.cour_least) != (self.cour_crit <= self.cour_most)):
 
-            # pokud se na povrchu nic nedeje
-            # nema se zmena dt cim ridit
-            # a zmeni se podle maxima nasobeneho max_delta_t_mult
-            # max_delta_t_mult se meni podle ryh, vyse v teto funkci
-            #
+
+        # pokud se na povrchu nic nedeje
+        # nema se zmena dt cim ridit
+        # a zmeni se podle maxima nasobeneho max_delta_t_mult
+        # max_delta_t_mult se meni podle ryh, vyse v teto funkci
+        #
             if (self.cour_speed == 0.0):
                 return self.max_delta_t * self.max_delta_t_mult, ratio
 
             dt = round(
-                (efect_vrst * self.cour_crit * self.cour_coef) /
-                self.cour_speed,
+                (Gl.mat_efect_vrst[self.i, self.j] * self.cour_crit * self.cour_coef) /
+                 self.cour_speed,
                 4)
 
             # nove dt nesmi byt vetsi nez je maxdt * max_delta_t_mult
@@ -168,5 +164,6 @@ class Courant():
             else:
                 return delta_t * self.max_delta_t_mult, ratio
 
-        prt.error(
-            'courant.cour() missed all its time step conditions\n no rule to preserve or change the time step!')
+        Logger.critical(
+            'courant.cour() missed all its time step conditions\n no rule to preserve or change the time step!'
+        )

@@ -2,3 +2,6 @@
 *.save
 *.tbx
 prt_times.in
+indata/
+*~
+out/

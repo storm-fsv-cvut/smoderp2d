@@ -2,9 +2,9 @@
 
 import math
 import sys
-import smoderp2d.io_functions.prt as prt
 from inspect import currentframe, getframeinfo
 
+from smoderp2d.providers import Logger
 # Jen na debug, umi to zjistit nazev souboru a radek odkud se\n
 #  <em>print frameinfo.filename, frameinfo.lineno</em>\n
 #  tiskne
@@ -25,7 +25,7 @@ frameinfo = getframeinfo(currentframe())
 #
 #   @return h water level in the trapezoid
 #
-def compute_h(A, m, b, err=0.0001, maxIter=20):
+def compute_h(A, m, b, err=0.0001, max_iter=20):
     def feval(h):
         return b * h + m * h * h - A
 
@@ -38,16 +38,16 @@ def compute_h(A, m, b, err=0.0001, maxIter=20):
     while (feval(h_pre) > err):
         h = h_pre - feval(h_pre) / dfdheval(h_pre)
         h_pre = h
-        if iter_ >= maxIter:
-            prt.error(
+        if iter_ >= max_iter:
+            Logger.error(
                 "if file",
                 frameinfo.filename,
                 "near line ",
                 frameinfo.lineno,
                 "\n\t newton solver didnt converge after",
-                maxIter,
-                'iterations (maxIter=',
-                maxIter,
+                max_iter,
+                'iterations (max_iter=',
+                max_iter,
                 ')')
             break
         iter_ += 1
@@ -72,7 +72,7 @@ def rectangle(reach, dt):
         R,
         0.6666) * math.pow(
         reach.slope,
-        0.5) / (
+         0.5) / (
             reach.roughness)  # rychlost
     reach.Q_out = S * \
         reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt                   # prutok
@@ -101,7 +101,7 @@ def trapezoid(reach, dt):
         A=(reach.V_in_from_field + reach.V_rest +
            reach.V_in_from_reach) / reach.length,
         m=reach.m,
-        b=reach.b)
+     b=reach.b)
     H = hp + h  # celkova vyska
     O = B + 2.0 * H * math.pow(1 + reach.m * reach.m, 0.5)
     S = B * H + reach.m * H * H
@@ -112,7 +112,7 @@ def trapezoid(reach, dt):
         R,
         0.6666) * math.pow(
         reach.slope,
-        0.5) / (
+         0.5) / (
             reach.roughness)  # v
     reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
@@ -124,10 +124,6 @@ def trapezoid(reach, dt):
         reach.Q_out = reach.V_out / dt
         reach.V_rest = dV - reach.V_out  # V_zbyt
     reach.h = H
-    # prt.mujout.writelines(str(reach.id_) + ';' + str(reach.h) + ';' +
-    # str(reach.V_in_from_field) + ';' + str(reach.V_rest) + ';' + str(
-    # reach.V_in_from_reach) + ';' + str(reach.V_out) + ';' +
-    # str(reach.to_node)+'\n')
 
 
 # Function calculates the discharge in triangular shaped reach of a stream.
@@ -206,8 +202,6 @@ def parabola(reach, dt):
     # reach.Q_out = S*math.pow(R,0.66666)*math.pow(reach.slope,0.5)/(reach.roughness) # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     # reach.V_out = reach.Q_out*dt
     # if reach.V_out > dV:
-    # reach.V_out = dV
-    # reach.Q_out = dV/dt
     # reach.vs = math.pow(R,0.6666)*math.pow(reach.slope,0.5)/(reach.roughness) #v
     # reach.V_rest = dV - reach.V_out
     # reach.h = H
@@ -243,6 +237,7 @@ def parabola(reach, dt):
 
 # def safe_outflows(toky):
     # if type_of_computing == 3:
+
     # fc = toky
     # field3 = ["V_outfl","V_outfl_tm","V_zbyt","V_zbyt_tm"]
     # with arcpy.da.UpdateCursor(fc, field3) as cursor:

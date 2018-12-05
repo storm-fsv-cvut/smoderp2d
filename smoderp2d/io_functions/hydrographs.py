@@ -1,39 +1,18 @@
-import sys
-import numpy as np
 import os
-from smoderp2d.tools.tools import comp_type
-import smoderp2d.io_functions.prt as prt
-from smoderp2d.tools.tools import get_argv
-import smoderp2d.constants as constants
 
-
-from smoderp2d.main_classes.General import Globals as Gl
-
-# extraout = get_argv(constants.PARAMETER_EXTRA_OUTPUT)
-
-# rill, subflow, stream, diffuse = comp_type()
-
-rill = Gl.isRill
-subflow = Gl.subflow
-stream = Gl.isStream
-extraout = Gl.extraOut
-
+from smoderp2d.core.general import GridGlobals, Globals
+from smoderp2d.providers import Logger
 
 class Hydrographs:
-
     def __init__(self):
-
-        gl = Gl()
-
-        points = gl.get_array_points()
+        points = Globals.get_array_points()
         ipi = points.shape[0]
         jpj = 5
         point_int = [[0] * jpj for i in range(ipi)]
 
-        outdir = gl.get_outdir()
-        rr = gl.get_rrows()
-        rc = gl.get_rcols()
-        pixel_area = gl.get_pixel_area()
+        outdir = Globals.get_outdir()
+        rr, rc = GridGlobals.get_region_dim()
+        pixel_area = GridGlobals.get_pixel_area()
 
         self.inSurface = []
         self.inStream = []
@@ -45,9 +24,6 @@ class Hydrographs:
         for ip in range(ipi):
             for jp in [3, 4]:
                 point_int[ip][jp] = points[ip][jp]
-
-        # for ttt in point_int:
-            # print ttt
 
         # tento cylkus meze budy, ktere jsou
         # v i,j cylku o jednu vedle rrows a rcols
@@ -67,24 +43,16 @@ class Hydrographs:
         point_int = [i for j, i in enumerate(point_int) if j not in del_]
         ipi -= len(del_)
 
-        # for ttt in point_int:
-        # print ttt
-
-        # for ip in range(ipi):
-        # l = point_int[ip][1]
-        # m = point_int[ip][2]
-        # print mat_tok_usek[ip][jp]
-
         counter = 0
 
         # mat_tok_usek is alway presented if stream == True
         # if (mat_tok_usek != None) and (stream == True):
-        if (stream):
+        if Globals.isStream:
             for ip in range(ipi):
                 l = point_int[ip][1]
                 m = point_int[ip][2]
 
-                if gl.get_mat_reach(l, m) >= 1000:
+                if Globals.get_mat_tok_reach(l, m) >= 1000:
                     self.inStream.append(counter)
                     counter += 1
                 else:
@@ -98,12 +66,10 @@ class Hydrographs:
 
         self.n = ipi
         self.point_int = point_int
-        self.subflow = subflow
-        self.rill = rill
-        self.stream = stream
+        self.subflow = Globals.subflow
+        self.rill = Globals.isRill
+        self.stream = Globals.isStream
         self.pixel_area = pixel_area
-        # print self.point_int
-        # raw_input()
 
         iStream = 0
         iSurface = 0
@@ -111,121 +77,103 @@ class Hydrographs:
         self.header = []
 
         for i in range(self.n):
-
             if i == self.inStream[iStream]:
+                header = '# Hydrograph at the point with coordinates: {} {}{}'.format(
+                    self.point_int[i][3], self.point_int[i][4], os.linesep)
+                header += '# A pixel size is [m2]:{}'.format(os.linesep)
+                header += '# {}{}'.format(self.pixel_area, os.linesep)
 
-                header = '# Hydrograph at the point with coordinates: ' + \
-                    str(self.point_int[i][3]) + ' ' + str(
-                        self.point_int[i][4]) + '\n'
-                header += '# A pixel size is [m2]:\n'
-                header += '# ' + str(self.pixel_area) + '\n'
-
-                if not(extraout):
-                    header += '# time[s];deltaTime[s];rainfall[m];reachWaterLevel[m];reachFlow[m3/s];reachVolRunoff[m3]\n'
+                if not Globals.extraOut:
+                    header += '# time[s];deltaTime[s];rainfall[m];reachWaterLevel[m];reachFlow[m3/s];reachVolRunoff[m3]{}'.format(os.linesep)
                 else:
-                    header += '# time[s];deltaTime[s];Rainfall[m];Waterlevel[m];V_runoff[m3];Q[m3/s];V_from_field[m3];V_rests_in_stream[m3]\n'
+                    header += '# time[s];deltaTime[s];Rainfall[m];Waterlevel[m];V_runoff[m3];Q[m3/s];V_from_field[m3];V_rests_in_stream[m3]{}'.format(
+                        os.linesep)
                 self.header.append(header)
                 iStream += 1
 
             elif i == self.inSurface[iSurface]:
-                header = '# Hydrograph at the point with coordinates: ' + \
-                    str(self.point_int[i][3]) + ' ' + str(
-                        self.point_int[i][4]) + '\n'
-                header += '# A pixel size is [m2]:\n'
-                header += '# ' + str(self.pixel_area) + '\n'
+                header = '# Hydrograph at the point with coordinates: {} {}{}'.format(
+                    self.point_int[i][3], self.point_int[i][4], os.linesep)
+                header += '# A pixel size is [m2]:{}'.format(os.linesep)
+                header += '# {}{}'.format(self.pixel_area, os.linesep)
 
-                if not(extraout):
-                    header += '# time[s];deltaTime[s];rainfall[m];totalWaterLevel[m];surfaceFlow[m3/s];surfaceVolRunoff[m3]'
+                if not Globals.extraOut:
+                    header += '# time[s];deltaTime[s];rainfall[m];totalWaterLevel[m];surfaceFlow[m3/s];surfaceVolRunoff[m3]{}'
                 else:
                     header += '# time[s];deltaTime[s];Rainfall[m];Water_level_[m];Sheet_Flow[m3/s];Sheet_V_runoff[m3];Sheet_V_rest[m3];Infiltration[m];Surface_retetion[m];State;V_inflow[m3];WlevelTotal[m]'
 
-                    if rill:
+                    if Globals.isRill:
                         header += ';WlevelRill[m];Rill_width[m];Rill_flow[m3/s];Rill_V_runoff[m3];Rill_V_rest;Surface_Flow[m3/s];Surface_V_runoff[m3]'
                     header += ';SurfaceBil[m3]'
-                    if subflow:
+                    if Globals.subflow:
                         header += ';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[];exfiltration[]'
-                    if extraout:
+                    if Globals.extraOut:
                         header += ';V_to_rill.m3.;ratio;courant;courantrill;iter'
 
-                header += '\n'
+                header += os.linesep
                 iSurface += 1
                 self.header.append(header)
 
         self.files = []
         for i in range(self.n):
-            name_ = outdir + os.sep + 'point' + \
-                str(self.point_int[i][0]).zfill(3) + '.dat'
-            file_ = open(name_, 'w')
-            file_.writelines(self.header[i])
-            self.files.append(file_)
+            fd = open(
+                os.path.join(outdir, 'point{}.dat'.format(str(self.point_int[i][0]).zfill(3))),
+                'w'
+            )
+            fd.writelines(self.header[i])
+            self.files.append(fd)
 
         del self.inStream[-1]
         del self.inSurface[-1]
 
-        prt.message("Hydrographs files has been created...")
+        Logger.info("Hydrographs files has been created...")
 
-    def write_hydrographs_record(
-            self, i, j, fc, courant, dt, surface, subsurface, currRain, inStream=False, sep=';'):
-
+    def write_hydrographs_record(self, i, j, fc, courant, dt, surface, subsurface,
+                                 currRain, inStream=False, sep=';'):
         ratio = fc.ratio
         total_time = fc.total_time + dt
         iter_ = fc.iter_
 
         courantMost = courant.cour_most
-        courantRill = courant. cour_most_rill
+        courantRill = courant.cour_most_rill
 
         if inStream:
             for ip in self.inStream:
                 l = self.point_int[ip][1]
                 m = self.point_int[ip][2]
-                line = str(total_time) + sep
-                line += str(dt) + sep
-                line += str(currRain) + sep
-                line += surface.return_stream_str_vals(l, m, sep, dt, extraout)
-                line += '\n'
-                self.files[ip].writelines(line)
-
+                self.files[ip].writelines(
+                    '{0}{sep}{1}{sep}{2}{sep}{3}{linesep}'.format(
+                    total_time, dt, currRain,
+                    surface.return_stream_str_vals(l, m, sep, dt, Globals.extraOut),
+                    sep=sep, linesep=os.linesep
+                ))
         else:
             for ip in self.inSurface:
                 l = self.point_int[ip][1]
                 m = self.point_int[ip][2]
                 if i == l and j == m:
-                    line = str(total_time) + sep
-                    line += str(dt) + sep
-                    line += str(currRain) + sep
-                    linebil = surface.return_str_vals(l, m, sep, dt, extraout)
-                    line += linebil[0] + sep
-                    line += str(linebil[1])  # + sep
+                    linebil = surface.return_str_vals(l, m, sep, dt, Globals.extraOut)
+                    line = '{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}'.format(
+                        total_time, dt, currRain,
+                        linebil[0], linebil[1],
+                        sep=sep
+                    )
                     # line += subsurface.return_str_vals(l,m,sep,dt) + sep   #
                     # prozatim
-                    if extraout:
-                        line += sep + str(surface.arr[l][m].V_to_rill) + sep
-                        line += str(ratio) + sep
-                        line += str(courantMost) + sep
-                        line += str(courantRill) + sep
-                        line += str(iter_)
-
-                    line += '\n'
+                    if Globals.extraOut:
+                        line += '{sep}{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}'.format(
+                            surface.arr[l][m].v_to_rill,
+                            ratio, courantMost, courantRill, iter_,
+                            sep=sep)
+                    line += os.linesep
                     self.files[ip].writelines(line)
 
-    # def write_hydrographs_usek(self,dt,total_time,surface,currRain,sep=';'):
-        # line = str(total_time) + sep
-        # line += str(dt) + sep
-        # line += str(currRain) + sep
-        # line += surface.return_stream_str_vals(0,0,sep,dt)
-        # line += '\n'
-        # self.tokusek.writelines(line)
-
-    def closeHydrographs(self):
-        for i in range(self.n):
-            self.files[i].close()
-
+    def __del__(self):
+        for fd in self.files:
+            Logger.debug('Hydrographs file "{}" closed'.format(fd.name))
+            fd.close()
 
 class HydrographsPass:
-
-    def write_hydrographs_record(
-            self, i, j, fc, courant, dt, surface, subsurface, currRain, inStream=False, sep=';'):
-        pass
-
-    def closeHydrographs(self):
+    def write_hydrographs_record(self, i, j, fc, courant, dt, surface, subsurface,
+                                 currRain, inStream=False, sep=';'):
         pass

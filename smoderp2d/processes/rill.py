@@ -1,14 +1,15 @@
 import math
 
+from smoderp2d.exceptions import SmoderpError
+from smoderp2d.providers import Logger
+
 courantMax = 1.0
 courantMin = 0.2
-
 
 def update_hb(loc_V_to_rill, rillRatio, l, b, ratio, ppp=False):
     V = loc_V_to_rill
     if V < 0:
-        print "chybka", V
-        raw_input()
+        raise SmoderpError()
     newb = math.sqrt(V / (rillRatio * l))
     # if ppp :  print 'zvetsuje', newb, b, V
     if (V > 0):
@@ -110,16 +111,13 @@ def rillCalculations(
 
         b = b_tmp
         # if sur.state != 2 :
-        # b = 0
-
         # print '\t', b,
         b, V_rill_runoff, V_rill_rest, q, v, courant = rill(
             V_to_rill, rillRatio, l, b, delta_t, ratio, n, slope, pixelArea, ppp)
         # if ppp :
-        print '\t', b, V_rill_runoff, V_rill_rest, courant
+        ### print '\t', b, V_rill_runoff, V_rill_rest, courant
         if (courant > courantMax):
-            print '------ ratio += 1 -----'
-            raw_input()
+            Logger.debug('------ ratio += 1 -----')
             ratio += 1
             if (ratio > 10):
                 return b_tmp, V_to_rill, V_rill_runoff, V_rill_rest, 0.0, 0.0, 11, courant
