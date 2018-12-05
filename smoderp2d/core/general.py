@@ -313,3 +313,9 @@ class Globals:
     @classmethod
     def get_toky_loc(cls):
         return cls.toky_loc
+    
+    @classmethod
+    def get_infiltratin_type():
+        #TODO 1 stands for philips infiltration
+        #     the philips infiltration is the only implemented now
+        return 1
