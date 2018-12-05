@@ -16,12 +16,6 @@ def set_combinatIndex(newCombinatIndex):
     combinatIndex = newCombinatIndex
 
 
-def philip(k, s, deltaT, totalT, NoDataValue):
-    if k and s == NoDataValue:
-        infiltration = NoDataValue
-    else:
-        infiltration = (0.5 * s / math.sqrt(totalT + deltaT) + k) * deltaT
-    return infiltration
 
 
 # base infiltration is philips infiltration
@@ -30,6 +24,15 @@ class BaseInfiltration(object):
     def __init__(self, combinatIndex):
 
         self._combinat_index = combinatIndex
+        
+    def _philip(self,k, s, deltaT, totalT, NoDataValue):
+        """ pilips formula """
+        if k and s == NoDataValue:
+            infiltration = NoDataValue
+        else:
+            infiltration = (0.5 * s / math.sqrt(totalT + deltaT) + k) * deltaT
+        return infiltration
+    
 
     def precalc(self, dt, total_time):
         """ Precalculates potential infiltration got a given soil.
@@ -42,7 +45,7 @@ class BaseInfiltration(object):
             index = iii[0]
             k = iii[1]
             s = iii[2]
-            iii[3] = philip(
+            iii[3] = self._philip(
                 k,
                 s,
                 dt,
