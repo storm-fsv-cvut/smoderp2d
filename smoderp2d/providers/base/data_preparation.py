@@ -163,7 +163,7 @@ class PrepareDataBase(object):
             shutil.rmtree(self.data['outdir'])
         os.makedirs(self.data['outdir'])
 
-        # create temporary ArcGIS File Geodatabase
+        # create temporary dir
         Logger.debug(
             "Creating temp directory {}".format(self.data['temp'])
         )
@@ -192,7 +192,70 @@ class PrepareDataBase(object):
         raise NotImplemented("Not implemented for base provider")
 
     def _get_mat_par(self, sfield, intersect):
-        raise NotImplemented("Not implemented for base provider")
+        """
+
+        :param sfield:
+        :param intersect:
+
+        :return all_atrib:
+        """
+        all_attrib = self._get_attrib(sfield, intersect)
+
+        self.data['mat_nan'] = np.zeros(
+            [self.data['r'], self.data['c']], float
+        )
+
+        mat_k = all_attrib[0]
+        mat_s = all_attrib[1]
+
+        self.data['mat_inf_index'] = None
+        self.data['combinatIndex'] = None
+
+        infiltration_type = 0  # "Phillip"
+        if infiltration_type == 0:
+            # to se rovna vzdycky ne? nechapu tuhle podminku 23.05.2018 MK
+            self.data['mat_inf_index'] = np.zeros(
+                [self.data['r'], self.data['c']], int
+            )
+            combinat = []
+            self.data['combinatIndex'] = []
+            for i in range(self.data['r']):
+                for j in range(self.data['c']):
+                    kkk = mat_k[i][j]
+                    sss = mat_s[i][j]
+                    ccc = [kkk, sss]
+                    try:
+                        if combinat.index(ccc):
+                            self.data['mat_inf_index'][i][j] = combinat.index(ccc)
+                    except:
+                        combinat.append(ccc)
+                        self.data['combinatIndex'].append(
+                            [combinat.index(ccc), kkk, sss, 0]
+                        )
+                        self.data['mat_inf_index'][i][j] = combinat.index(
+                            ccc
+                        )
+
+        # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u
+        # sklonu a acc
+        i = j = 0
+
+        # data value vector intersection
+        for i in range(self.data['r']):
+            for j in range(self.data['c']):
+                x_mat_dmt = self.data['mat_dmt'][i][j]
+                slp = self.data['mat_slope'][i][j]
+                if x_mat_dmt == self.data['NoDataValue'] or \
+                   slp == self.data['NoDataValue']:
+                    self.data['mat_nan'][i][j] = self.data['NoDataValue']
+                    self.data['mat_slope'][i][j] = self.data['NoDataValue']
+                    self.data['mat_dmt'][i][j] = self.data['NoDataValue']
+                else:
+                    self.data['mat_nan'][i][j] = 0
+
+        self._save_raster("mat_nan", self.data['mat_nan'], self.data['temp'])
+
+        return all_attrib
 
     def _get_array_points(self):
         raise NotImplemented("Not implemented for base provider")
@@ -240,7 +303,55 @@ class PrepareDataBase(object):
                 self.data['mat_aa'][i][j] = par_aa
 
     def _get_crit_water(self, all_attrib):
-        raise NotImplemented("Not implemented for base provider")
+        """
+
+        :param all_attrib:
+        """
+
+        mat_b = all_attrib[6]
+        mat_tau = all_attrib[9]
+        mat_v = all_attrib[10]
+
+        # critical water level
+        mat_hcrit_tau = np.zeros([self.data['r'], self.data['c']], float)
+        mat_hcrit_v = np.zeros([self.data['r'], self.data['c']], float)
+        mat_hcrit_flux = np.zeros([self.data['r'], self.data['c']], float)
+        self.data['mat_hcrit'] = np.zeros([self.data['r'], self.data['c']], float)
+
+        for i in range(self.data['r']):
+            for j in range(self.data['c']):
+                if self.data['mat_slope'][i][j] != self.data['NoDataValue'] \
+                   and mat_tau[i][j] != self.data['NoDataValue']:
+                    slope = self.data['mat_slope'][i][j]
+                    tau_crit = mat_tau[i][j]
+                    v_crit = mat_v[i][j]
+                    b = mat_b[i][j]
+                    aa = self.data['mat_aa'][i][j]
+                    flux_crit = tau_crit * v_crit
+                    exp = 1 / (b - 1)
+
+                    if slope == 0.0:
+                        hcrit_tau = hcrit_v = hcrit_flux = 1000
+
+                    else:
+                        hcrit_v = np.power((v_crit / aa), exp)  # h critical from v
+                        hcrit_tau = tau_crit / 98.07 / slope  # h critical from tau
+                        hcrit_flux = np.power((flux_crit / slope / 98.07 / aa),(1 / mat_b[i][j]))  # kontrola jednotek
+
+                    mat_hcrit_tau[i][j] = hcrit_tau
+                    mat_hcrit_v[i][j] = hcrit_v
+                    mat_hcrit_flux[i][j] = hcrit_flux
+                    hcrit = min(hcrit_tau, hcrit_v, hcrit_flux)
+                    self.data['mat_hcrit'][i][j] = hcrit
+                else:
+                    mat_hcrit_tau[i][j] = self.data['NoDataValue']
+                    mat_hcrit_v[i][j] = self.data['NoDataValue']
+                    mat_hcrit_flux[i][j] = self.data['NoDataValue']
+                    self.data['mat_hcrit'][i][j] = self.data['NoDataValue']
+
+        self._save_raster("hcrit_tau", mat_hcrit_tau)
+        self._save_raster("hcrit_flux", mat_hcrit_flux)
+        self._save_raster("hcrit_v", rhcrit_v)
 
     def _get_slope_dir(self, dmt_clip):
         raise NotImplemented("Not implemented for base provider")
