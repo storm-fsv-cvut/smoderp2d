@@ -327,7 +327,7 @@ def sheet_to_rill(sur):
     rr, rc = GridGlobals.get_region_dim()
     for i in rr:
         for j in rc[i]:
-            if (sur.arr[i][j].h_sheet_new > sur.arr[i][j].h_crit):
+            if (sur.arr[i][j].h_sheet_new >= sur.arr[i][j].h_crit):
                 sur.arr[i][j].h_sheet_to_rill = sur.arr[i][j].h_sheet_new - \
                     sur.arr[i][j].h_crit
                 sur.arr[i][j].h_sheet_new = sur.arr[i][j].h_crit
