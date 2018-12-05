@@ -16,23 +16,20 @@ def set_combinatIndex(newCombinatIndex):
     combinatIndex = newCombinatIndex
 
 
-
-
 # base infiltration is philips infiltration
 class BaseInfiltration(object):
 
     def __init__(self, combinatIndex):
 
         self._combinat_index = combinatIndex
-        
-    def _philip(self,k, s, deltaT, totalT, NoDataValue):
+
+    def _philip(self, k, s, deltaT, totalT, NoDataValue):
         """ pilips formula """
         if k and s == NoDataValue:
             infiltration = NoDataValue
         else:
             infiltration = (0.5 * s / math.sqrt(totalT + deltaT) + k) * deltaT
         return infiltration
-    
 
     def precalc(self, dt, total_time):
         """ Precalculates potential infiltration got a given soil.
@@ -69,36 +66,3 @@ class BaseInfiltration(object):
                 else:
                     bil = bil - infiltration
         return bil, infiltration
-
-
-class GreenAmptInfiltration(BaseInfiltration):
-
-    def __init__(self, combinatIndex):
-
-        self._combinat_index = combinatIndex
-        #TODO include into inputs, should be changeable
-        self._psi = -10/100 # soil water potential at the wetting front
-        #TODO include into inputs, should be changeable
-        self._d_theta = 0.4 # theta difference
-        
-        
-    
-
-    def precalc(self, dt, total_time):
-        raise NotImplemented("Not implemented for Green Ampt infiltration")
-
-    def current_infiltration(self, soil, bil):
-        raise NotImplemented("Not implemented for Green Ampt infiltration")
-
-
-class RichardsInfiltration(BaseInfiltration):
-
-    def __init__(self, combinatIndex):
-
-        self._combinat_index = combinatIndex
-
-    def precalc(self, dt, total_time):
-        raise NotImplemented("Not implemented for Richards infiltration")
-
-    def current_infiltration(self, soil, bil):
-        raise NotImplemented("Not implemented for Richards infiltration")
