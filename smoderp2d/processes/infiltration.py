@@ -1,6 +1,7 @@
 import numpy as np
 import math
 from smoderp2d.exceptions import NegativeWaterLevel
+from smoderp2d.core.general import Globals, GridGlobals
 
 
 # combinatIndex muze byt tady jako globalni
@@ -14,25 +15,57 @@ def set_combinatIndex(newCombinatIndex):
     global combinatIndex
     combinatIndex = newCombinatIndex
 
-
-def philip_infiltration(soil, bil):
-    for z in combinatIndex:
-        if soil == z[0]:
-            infiltration = z[3]
-            if bil < 0:
-                raise NegativeWaterLevel()
-            if infiltration > bil:
-                infiltration = bil
-                bil = 0
-            else:
-                bil = bil - infiltration
-    return bil, infiltration
-
-
-def phlilip(k, s, deltaT, totalT, NoDataValue):
+def philip(k, s, deltaT, totalT, NoDataValue):
     if k and s == NoDataValue:
         infiltration = NoDataValue
     else:
-
         infiltration = (0.5 * s / math.sqrt(totalT + deltaT) + k) * deltaT
     return infiltration
+
+
+
+# base infiltration is philips infiltration
+class BaseInfiltration(object):
+    
+    def __init__(self,combinatIndex) :
+        
+        self._combinat_index = combinatIndex
+        
+    def precalc(self,dt, total_time) :
+        """ Precalculates potential infiltration got a given soil.
+        The precalculated value is storred in the self._combinat_index
+        """
+        
+        NoDataValue = GridGlobals.get_no_data()
+        
+        for iii in self._combinat_index:
+            index = iii[0]
+            k = iii[1]
+            s = iii[2]
+            iii[3] = philip(
+                k,
+                s,
+                dt,
+                total_time,
+                NoDataValue)
+            
+    def current_infiltration(self,soil,bil) :
+        """ Returns the actual infiltrated water height 
+        
+        :param soil: soil type in current cell
+        :param bil: current water level
+        """
+        for z in self._combinat_index:
+            if soil == z[0]:
+                infiltration = z[3]
+                if bil < 0:
+                    raise NegativeWaterLevel()
+                if infiltration > bil:
+                    infiltration = bil
+                    bil = 0
+                else:
+                    bil = bil - infiltration
+        return bil, infiltration
+
+            
+            

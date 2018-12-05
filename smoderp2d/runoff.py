@@ -26,6 +26,7 @@ from smoderp2d.io_functions import hydrographs as wf
 from smoderp2d.providers import Logger
 
 from smoderp2d.exceptions import MaxIterationExceeded
+from smoderp2d.exceptions import SmoderpError
 
 class FlowControl(object):
     """FlowControl manage variables contains variables related to main
@@ -129,6 +130,14 @@ class Runoff(object):
 
         # handling the surface processes
         self.surface = Surface()
+        
+        # instance of infiltration calc
+        # TODO currently only philips infiltation is implemented 
+        if Globals.get_infiltration_type() == 1 :
+            from smoderp2d.processes.infiltration import BaseInfiltration
+            self.infiltration = BaseInfiltration(Globals.get_combinatIndex())
+        else :
+            raise SmoderpError()
 
         # class handling the subsurface processes if desir
         # TODO: include in data preprocessing
@@ -250,6 +259,7 @@ class Runoff(object):
                 self.subsurface,
                 self.rain_arr,
                 self.cumulative,
+                self.infiltration,
                 self.hydrographs,
                 self.flow_control,
                 self.courant,

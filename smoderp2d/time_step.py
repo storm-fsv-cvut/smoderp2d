@@ -75,7 +75,7 @@ class TimeStep:
 # self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
 # courant, total_time, delta_t, combinatIndex, NoDataValue,
 # sum_interception, mat_efect_vrst, ratio, iter_
-    def do_next_h(self, surface, subsurface, rain_arr, cumulative,                  
+    def do_next_h(self, surface, subsurface, rain_arr, cumulative,infiltration,
                   hydrographs, flow_control, courant, potRain, delta_t):
         global infilt_capa
         global max_infilt_capa
@@ -104,21 +104,9 @@ class TimeStep:
                         subsurface,
                         actRain)
             return actRain
-
-        for iii in combinatIndex:
-            index = iii[0]
-            k = iii[1]
-            s = iii[2]
-            # jj * 100.0 !!! smazat
-            iii[3] = infilt.phlilip(
-                k,
-                s,
-                delta_t,
-                fc.total_time - infilt_time,
-                NoDataValue)
-            # print total_time-infilt_time, iii[3]*1000, k, s
-
-        infilt.set_combinatIndex(combinatIndex)
+        
+        # precalculate infiltration for soil types
+        infiltration.precalc(delta_t,fc.total_time-infilt_time)
 
         #
         # nulovani na zacatku kazdeho kola
@@ -159,12 +147,12 @@ class TimeStep:
                 #
                 if subsurface.get_exfiltration(i, j) > 0:
                     surface.arr[i][j].infiltration = 0.0
-                    infiltration = 0.0
+                    infilt = 0.0
 
                 else:
-                    surBIL, infiltration = infilt.philip_infiltration(
+                    surBIL, infilt = infiltration.current_infiltration(
                         surface.arr[i][j].soil_type, surBIL)
-                    surface.arr[i][j].infiltration = infiltration
+                    surface.arr[i][j].infiltration = infilt
 
                 # surface retention
                 surBIL += subsurface.get_exfiltration(i, j)
