@@ -1,4 +1,9 @@
-#from smoderp2d.processes.infiltration import BaseInfiltration
+try: 
+    from smoderp2d.processes.infiltration import BaseInfiltration
+except ImportError:
+    print 'test version of richards infiltration'
+    instance = True
+    BaseInfiltration = object
 
 
 class SoilProfile():
@@ -12,12 +17,13 @@ class SoilProfile():
 
         self.theta_r = tr
         self.theta_s = ts
-        self.vg_alpha = a
-        self.vg_n = n
-        self.vg_m = 1-1/self._vg_n
+        self.vg_alpha = vg_a
+        self.vg_n = vg_n
+        self.vg_m = 1-1/self.vg_n
         
 
-class RichardsInfiltration(object):
+class RichardsInfiltration(BaseInfiltration):
+
 
     def __init__(self, combinatIndex):
 
@@ -100,5 +106,5 @@ class RichardsInfiltration(object):
 
 
 
-
-t = RichardsInfiltration([0,0.3,2,0])
+if instance :
+    t = RichardsInfiltration([[0,0.3,2,0],[1,0.4,2,0]])
