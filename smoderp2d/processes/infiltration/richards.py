@@ -227,7 +227,7 @@ class RichardsInfiltration(BaseInfiltration):
 
     def current_infiltration(self, soil, bil):
         raise NotImplemented("Not implemented for Richards infiltration")
-
+ 
 
 if instance:
     t = RichardsInfiltration([[0, 2.777e-6, 2, 0]])
