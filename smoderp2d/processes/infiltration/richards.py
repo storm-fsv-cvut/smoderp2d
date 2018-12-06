@@ -27,7 +27,7 @@ class SoilProfile():
 
         # t-1 solution with dirichlet boundary condition
         self.dir_pre = np.zeros([n], float)
-        self.dir_pre.fill(-1)
+        self.dir_pre.fill(-0)
         # t   solution with dirichlet boundary condition
         self.dir_new = np.zeros([n], float)
         self.dir_new.fill(-1)
@@ -68,14 +68,14 @@ class RichardsInfiltration(BaseInfiltration):
 
         for i in range(self._n_soils):
             self._soil.append(SoilProfile(n=self._n, dx=self._dx, tr=0.2,
-                                          ts=0.5, vg_a=0.01, vg_n=1.5, ks=self._combinat_index[i][1]))
+                                          ts=0.5, vg_a=0.99, vg_n=3.5, ks=self._combinat_index[i][1]))
 
     def _fill_Ab(self, sp, dt):
         #  Fills the linear system for dirichlet boundary condition.
 
         for i in range(self._n):
             if (i == 0):
-                self._b[i] = -0.05
+                self._b[i] = -0.00
                 self._A[i][i] = 1.
             elif (i == (self._n-1)):
                 self._b[i] = -1.0
@@ -86,7 +86,7 @@ class RichardsInfiltration(BaseInfiltration):
                 K1 = self._mualem_K(sp, (sp.dir_new[i+1] + sp.dir_new[i])/2)
                 K2 = self._mualem_K(sp, (sp.dir_new[i] + sp.dir_new[i-1])/2)
 
-                self._b[i] = - C_pre/dt*h_ipre - (K1/sp.dx - K2/sp.dx)
+                self._b[i] = - C_pre/dt*h_ipre - ( + K1/sp.dx - K2/sp.dx)
 
                 self._A[i][i-1] = K1/sp.dx**2.
 
@@ -94,33 +94,6 @@ class RichardsInfiltration(BaseInfiltration):
                 self._A[i][i] = - (C_new/dt + K1/sp.dx**2. + K2/sp.dx**2.)
 
                 self._A[i][i+1] = K2/sp.dx**2.
-
-    """
-    def _fill_Ab(self, sp, dt):
-        #  Fills the linear system for dirichlet boundary condition.
-
-        for i in range(self._n):
-            if (i == 0):
-                self._b[i] = -0.05
-                self._A[i][i] = 1.
-            elif (i == (self._n-1)):
-                self._b[i] = -1.0
-                self._A[i][i] = 1.
-            else:
-                C = self._dvg_theta_dh(sp, sp.dir_pre[i])
-                h_it = sp.dir_pre[i]
-                K = self._mualem_K(sp, sp.dir_new[i])
-                self._b[i] = -C*h_it/dt - K/sp.dx
-
-                K = self._mualem_K(sp, (sp.dir_new[i]))
-                self._A[i][i-1] = K/sp.dx**2.
-
-                C = self._dvg_theta_dh(sp, sp.dir_new[i])
-                self._A[i][i] = - (C/dt + 2*K/sp.dx**2.)
-
-                K = self._mualem_K(sp, (sp.dir_new[i] + sp.dir_new[i-1])/2)
-                self._A[i][i+1] = K/sp.dx**2
-    """
 
     def _solve_step(self, sp, dt):
         """ Solve one step in richards equation for i ingle soil profile.
@@ -141,7 +114,7 @@ class RichardsInfiltration(BaseInfiltration):
             iter_ += 1
         sp.dir_pre = sp.dir_new.copy()
         for i, item in enumerate(sp.dir_new):
-            print -i, item
+            print i, item
 
     def _no_converged(self, err):
         """ Convergence criterion"""
@@ -230,22 +203,18 @@ class RichardsInfiltration(BaseInfiltration):
  
 
 if instance:
-    t = RichardsInfiltration([[0, 2.777e-6, 2, 0]])
+    t = RichardsInfiltration([[0, 2.777e-1, 2, 0]])
     #t.precalc(1, 5.0)
     #t.precalc(1, 5.0)
     #t.precalc(1, 5.0)
     #t.precalc(1, 5.0)
     t.precalc(1, 5.0)
+    t.precalc(1, 5.0)
+    t.precalc(1, 5.0)
+    t.precalc(5, 5.0)
     #t.precalc(1, 5.0)
     #t.precalc(1, 5.0)
     t.precalc(20, 5.0)
-    t.precalc(1200, 5.0)
-    t.precalc(1200, 5.0)
-    t.precalc(1200, 5.0)
-    t.precalc(1200, 5.0)
-    t.precalc(1200, 5.0)
-    t.precalc(1200, 5.0)
-    t.precalc(1200, 5.0)
-    t.precalc(1200, 5.0)
-    t.precalc(1200, 5.0)
-    t.precalc(1200, 5.0)
+    t.precalc(20, 5.0)
+    t.precalc(20, 5.0)
+    
