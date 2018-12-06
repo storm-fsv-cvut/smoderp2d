@@ -1,4 +1,4 @@
-try: 
+try:
     from smoderp2d.processes.infiltration import BaseInfiltration
 except ImportError:
     print 'test version of richards infiltration'
@@ -7,10 +7,10 @@ except ImportError:
 
 
 class SoilProfile():
-    
-    def __init__(self,n,dx,tr,ts,vg_a,vg_n,ks):
+
+    def __init__(self, n, dx, tr, ts, vg_a, vg_n, ks):
         """ Allocates the soil profiles and linear system with paramaters
-        
+
         :param int n: number of nodes for discretiataion
         :param real dx: spatial step of discretiataion
         """
@@ -20,10 +20,9 @@ class SoilProfile():
         self.vg_alpha = vg_a
         self.vg_n = vg_n
         self.vg_m = 1-1/self.vg_n
-        
+
 
 class RichardsInfiltration(BaseInfiltration):
-
 
     def __init__(self, combinatIndex):
 
@@ -33,19 +32,20 @@ class RichardsInfiltration(BaseInfiltration):
         self._dx = 0.05
 
         self._n_soils = len(combinatIndex)
-        
-        # this list of soil profile instances 
+
+        # this list of soil profile instances
         # should in terms of indices correspond
         # to id in combinatIndex array
         self._soil = []
 
         for i in range(self._n_soils):
             print i
-            self._soil.append(SoilProfile(n=self._n,dx=self._dx,tr=0.2,ts=0.5,vg_a=0.01,vg_n=2.5,ks=self._combinat_index[i][1]))
+            self._soil.append(SoilProfile(n=self._n, dx=self._dx, tr=0.2,
+                                          ts=0.5, vg_a=0.01, vg_n=2.5, ks=self._combinat_index[i][1]))
 
     def _mualem_K(self, sp, h):
         """ Mualem Genuchten unsaturated hydraulic conductivity 
-        
+
         :param sp: instance of SoilProfile class
         """
         a = sp.vg_alpha
@@ -62,7 +62,7 @@ class RichardsInfiltration(BaseInfiltration):
 
     def _vg_theta(self, sp, h):
         """ Van genuchten retention curve 
-        
+
         :param sp: instance of SoilProfile class
         """
 
@@ -105,6 +105,5 @@ class RichardsInfiltration(BaseInfiltration):
         raise NotImplemented("Not implemented for Richards infiltration")
 
 
-
-if instance :
-    t = RichardsInfiltration([[0,0.3,2,0],[1,0.4,2,0]])
+if instance:
+    t = RichardsInfiltration([[0, 0.3, 2, 0], [1, 0.4, 2, 0]])
