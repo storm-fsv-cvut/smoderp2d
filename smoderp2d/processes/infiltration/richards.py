@@ -1,33 +1,49 @@
 from smoderp2d.processes.infiltration import BaseInfiltration
 
 
+class SoilProfile():
+    
+    def __init__(self,n,dx,tr,ts,a,n,ks):
+        """ Allocates the soil profiles and linear system with paramaters
+        
+        :param int n: number of nodes for discretiataion
+        :param real dx: spatial step of discretiataion
+        """
+
+        self.theta_r = tr
+        self.theta_s = ts
+        self.vg_alpha = a
+        self.vg_n = n
+        self.vg_m = 1-1/self._vg_n
+        
+
 class RichardsInfiltration(BaseInfiltration):
 
     def __init__(self, combinatIndex):
 
         self._combinat_index = combinatIndex
 
-        self._theta_r = 0.5
-        self._theta_s = 0.12
-        self._vg_alpha = 0.12
-        self._vg_n = 2.5
-        self._vg_m = 1-1/self._vg_n
-
         self._n = 20
         self._dx = 0.05
 
         self._n_soils = len(combinatIndex)
+        
+        # this list of soil profile instances 
+        # should in terms of indices correspond
+        # to id in combinatIndex array
         self._soil = []
 
-        # TODO create lists to store solutions
-        # for i in range(self._n_soils):
-        # self._soil.append()
+        for i in range(self._n_soils):
+            self._soil.append(SoilProfile())
 
-    def _mualem_K(self, ks, h):
-        """ Mualem Genuchten unsaturated hydraulic conductivity """
-        a = self._vg_alpha
-        n = self._vg_n
-        m = self._vg_m
+    def _mualem_K(self, sp, h):
+        """ Mualem Genuchten unsaturated hydraulic conductivity 
+        
+        :param sp: instance of SoilProfile class
+        """
+        a = sp.vg_alpha
+        n = sp.vg_n
+        m = sp.vg_m
 
         if h >= 0:
             kr = 1
@@ -37,14 +53,17 @@ class RichardsInfiltration(BaseInfiltration):
 
         return kr*ks
 
-    def _vg_theta(self, h):
-        """ Van genuchten retention curve """
+    def _vg_theta(self, sp, h):
+        """ Van genuchten retention curve 
+        
+        :param sp: instance of SoilProfile class
+        """
 
-        a = self._vg_alpha
-        n = self._vg_n
-        m = self._vg_m
-        tr = self._theta_r
-        ts = self._theta_s
+        a = sp.vg_alpha
+        n = sp.vg_n
+        m = sp.vg_m
+        tr = sp.theta_r
+        ts = sp.theta_s
 
         if h >= 0:
             theta = ts
@@ -54,14 +73,14 @@ class RichardsInfiltration(BaseInfiltration):
 
         return theta
 
-    def _dvg_theta_dh(self, h):
+    def _dvg_theta_dh(self, sp, h):
         """ First derivative of van genuchten retention curve, so called capilar capacity """
 
-        a = self._vg_alpha
-        n = self._vg_n
-        m = self._vg_m
-        tr = self._theta_r
-        ts = self._theta_s
+        a = sp.vg_alpha
+        n = sp.vg_n
+        m = sp.vg_m
+        tr = sp.theta_r
+        ts = sp.theta_s
 
         if h >= 0:
             # TODO consider to use specific storativity
