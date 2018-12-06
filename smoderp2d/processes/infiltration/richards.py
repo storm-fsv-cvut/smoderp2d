@@ -5,11 +5,13 @@ except ImportError:
     instance = True
     BaseInfiltration = object
 
+import numpy as np
+
 
 class SoilProfile():
 
     def __init__(self, n, dx, tr, ts, vg_a, vg_n, ks):
-        """ Allocates the soil profiles and linear system with paramaters
+        """ Store parameters which are soil profile specific. 
 
         :param int n: number of nodes for discretiataion
         :param real dx: spatial step of discretiataion
@@ -20,6 +22,16 @@ class SoilProfile():
         self.vg_alpha = vg_a
         self.vg_n = vg_n
         self.vg_m = 1-1/self.vg_n
+
+        # t-1 solution with dirichlet boundary condition
+        self.dir_pre = np.zeros([n], float)
+        # t   solution with dirichlet boundary condition
+        self.dir_new = np.zeros([n], float)
+
+        # t-1 solution with neumann boundary condition
+        self.neu_pre = np.zeros([n], float)
+        # t   solution with neumann boundary condition
+        self.neu_new = np.zeros([n], float)
 
 
 class RichardsInfiltration(BaseInfiltration):
