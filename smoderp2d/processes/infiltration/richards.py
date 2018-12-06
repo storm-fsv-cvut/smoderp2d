@@ -1,9 +1,9 @@
-from smoderp2d.processes.infiltration import BaseInfiltration
+#from smoderp2d.processes.infiltration import BaseInfiltration
 
 
 class SoilProfile():
     
-    def __init__(self,n,dx,tr,ts,a,n,ks):
+    def __init__(self,n,dx,tr,ts,vg_a,vg_n,ks):
         """ Allocates the soil profiles and linear system with paramaters
         
         :param int n: number of nodes for discretiataion
@@ -17,7 +17,7 @@ class SoilProfile():
         self.vg_m = 1-1/self._vg_n
         
 
-class RichardsInfiltration(BaseInfiltration):
+class RichardsInfiltration(object):
 
     def __init__(self, combinatIndex):
 
@@ -34,7 +34,8 @@ class RichardsInfiltration(BaseInfiltration):
         self._soil = []
 
         for i in range(self._n_soils):
-            self._soil.append(SoilProfile())
+            print i
+            self._soil.append(SoilProfile(n=self._n,dx=self._dx,tr=0.2,ts=0.5,vg_a=0.01,vg_n=2.5,ks=self._combinat_index[i][1]))
 
     def _mualem_K(self, sp, h):
         """ Mualem Genuchten unsaturated hydraulic conductivity 
@@ -96,3 +97,8 @@ class RichardsInfiltration(BaseInfiltration):
 
     def current_infiltration(self, soil, bil):
         raise NotImplemented("Not implemented for Richards infiltration")
+
+
+
+
+t = RichardsInfiltration([0,0.3,2,0])
