@@ -142,6 +142,9 @@ class Runoff(object):
         elif Globals.get_infiltration_type() == 3 : 
             from smoderp2d.processes.infiltration.richards import RichardsInfiltration
             self.infiltration = RichardsInfiltration(Globals.get_combinatIndex())
+        elif Globals.get_infiltration_type() == 4 : 
+            from smoderp2d.processes.infiltration.richards import GreenAmptInfiltrationUnsteadyRain
+            self.infiltration = GreenAmptInfiltrationUnsteadyRain(Globals.get_combinatIndex())
         else :
             raise SmoderpError()
 
