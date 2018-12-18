@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>324</width>
-    <height>483</height>
+    <width>459</width>
+    <height>558</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -37,18 +37,77 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-331</y>
-             <width>263</width>
-             <height>728</height>
+             <y>0</y>
+             <width>415</width>
+             <height>472</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_33">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label">
+            <item row="10" column="0">
+             <widget class="QLabel" name="label_9">
               <property name="text">
-               <string>Input surface raster</string>
+               <string>Input points features (optional)</string>
               </property>
              </widget>
+            </item>
+            <item row="11" column="0">
+             <layout class="QGridLayout" name="gridLayout_6">
+              <item row="0" column="1">
+               <widget class="QToolButton" name="toolButton_5">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLineEdit" name="lineEdit_7"/>
+              </item>
+             </layout>
+            </item>
+            <item row="12" column="0">
+             <widget class="QLabel" name="label_10">
+              <property name="text">
+               <string>Output folder</string>
+              </property>
+             </widget>
+            </item>
+            <item row="13" column="0">
+             <layout class="QGridLayout" name="gridLayout_7">
+              <item row="0" column="0">
+               <widget class="QLineEdit" name="lineEdit_8"/>
+              </item>
+              <item row="0" column="1">
+               <widget class="QToolButton" name="toolButton_6">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="8" column="0">
+             <widget class="QLabel" name="label_6">
+              <property name="text">
+               <string>Land use types</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="0">
+             <layout class="QGridLayout" name="gridLayout_5">
+              <item row="0" column="0">
+               <widget class="QLineEdit" name="lineEdit_4"/>
+              </item>
+              <item row="0" column="1">
+               <widget class="QToolButton" name="toolButton_4">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="9" column="0">
+             <widget class="QComboBox" name="comboBox_2"/>
             </item>
             <item row="1" column="0">
              <layout class="QGridLayout" name="gridLayout">
@@ -63,6 +122,13 @@
                <widget class="QLineEdit" name="lineEdit"/>
               </item>
              </layout>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Input surface raster</string>
+              </property>
+             </widget>
             </item>
             <item row="2" column="0">
              <widget class="QLabel" name="label_2">
@@ -92,9 +158,6 @@
               </property>
              </widget>
             </item>
-            <item row="5" column="0">
-             <widget class="QComboBox" name="comboBox"/>
-            </item>
             <item row="6" column="0">
              <widget class="QLabel" name="label_4">
               <property name="text">
@@ -102,152 +165,17 @@
               </property>
              </widget>
             </item>
-            <item row="7" column="0">
-             <layout class="QGridLayout" name="gridLayout_5">
-              <item row="0" column="0">
-               <widget class="QLineEdit" name="lineEdit_4"/>
-              </item>
-              <item row="0" column="1">
-               <widget class="QToolButton" name="toolButton_4">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="8" column="0">
-             <widget class="QLabel" name="label_6">
-              <property name="text">
-               <string>Land use types</string>
-              </property>
-             </widget>
-            </item>
-            <item row="9" column="0">
-             <widget class="QComboBox" name="comboBox_2"/>
-            </item>
-            <item row="10" column="0">
-             <widget class="QLabel" name="label_5">
-              <property name="text">
-               <string>Rainfall file</string>
-              </property>
-             </widget>
-            </item>
-            <item row="11" column="0">
-             <layout class="QGridLayout" name="gridLayout_4">
-              <item row="0" column="0">
-               <widget class="QLineEdit" name="lineEdit_3"/>
-              </item>
-              <item row="0" column="1">
-               <widget class="QToolButton" name="toolButton_3">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="12" column="0">
-             <widget class="QLabel" name="label_7">
-              <property name="text">
-               <string>Max time step [sec]</string>
-              </property>
-             </widget>
-            </item>
-            <item row="13" column="0">
-             <widget class="QLineEdit" name="lineEdit_5"/>
+            <item row="5" column="0">
+             <widget class="QComboBox" name="comboBox"/>
             </item>
             <item row="14" column="0">
-             <widget class="QLabel" name="label_8">
-              <property name="text">
-               <string>Total running time [min]</string>
-              </property>
-             </widget>
-            </item>
-            <item row="15" column="0">
-             <widget class="QLineEdit" name="lineEdit_6"/>
-            </item>
-            <item row="16" column="0">
-             <widget class="QLabel" name="label_9">
-              <property name="text">
-               <string>Input points features (optional)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="17" column="0">
-             <layout class="QGridLayout" name="gridLayout_6">
-              <item row="0" column="1">
-               <widget class="QToolButton" name="toolButton_5">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLineEdit" name="lineEdit_7"/>
-              </item>
-             </layout>
-            </item>
-            <item row="18" column="0">
-             <widget class="QLabel" name="label_10">
-              <property name="text">
-               <string>Output folder</string>
-              </property>
-             </widget>
-            </item>
-            <item row="19" column="0">
-             <layout class="QGridLayout" name="gridLayout_7">
-              <item row="0" column="0">
-               <widget class="QLineEdit" name="lineEdit_8"/>
-              </item>
-              <item row="0" column="1">
-               <widget class="QToolButton" name="toolButton_6">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="20" column="0">
-             <widget class="QLabel" name="label_11">
-              <property name="text">
-               <string>Table of soil and land use information</string>
-              </property>
-             </widget>
-            </item>
-            <item row="21" column="0">
-             <layout class="QGridLayout" name="gridLayout_8">
-              <item row="0" column="0">
-               <widget class="QLineEdit" name="lineEdit_9"/>
-              </item>
-              <item row="0" column="1">
-               <widget class="QToolButton" name="toolButton_7">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="22" column="0">
-             <widget class="QLabel" name="label_12">
-              <property name="text">
-               <string>Soil land use code</string>
-              </property>
-             </widget>
-            </item>
-            <item row="23" column="0">
-             <widget class="QComboBox" name="comboBox_3"/>
-            </item>
-            <item row="24" column="0">
              <widget class="QLabel" name="label_13">
               <property name="text">
                <string>Reach feature (optional)</string>
               </property>
              </widget>
             </item>
-            <item row="25" column="0">
+            <item row="15" column="0">
              <layout class="QGridLayout" name="gridLayout_9">
               <item row="0" column="0">
                <widget class="QLineEdit" name="lineEdit_10"/>
@@ -261,38 +189,7 @@
               </item>
              </layout>
             </item>
-            <item row="26" column="0">
-             <widget class="QLabel" name="label_14">
-              <property name="text">
-               <string>Reach shapes table (optinal)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="27" column="0">
-             <layout class="QGridLayout" name="gridLayout_10">
-              <item row="0" column="0">
-               <widget class="QLineEdit" name="lineEdit_11"/>
-              </item>
-              <item row="0" column="1">
-               <widget class="QToolButton" name="toolButton_9">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="28" column="0">
-             <widget class="QLabel" name="label_15">
-              <property name="text">
-               <string>Reach shape table code (optional)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="29" column="0">
-             <widget class="QComboBox" name="comboBox_4"/>
-            </item>
-            <item row="30" column="0">
+            <item row="16" column="0">
              <widget class="QCheckBox" name="checkBox">
               <property name="text">
                <string>AG output</string>
@@ -309,25 +206,60 @@
        <attribute name="title">
         <string>Computation</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_13">
-        <item row="1" column="0">
+       <layout class="QGridLayout" name="gridLayout_15">
+        <item row="0" column="0">
          <widget class="QLabel" name="label_16">
           <property name="text">
            <string>Input pickle</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QLineEdit" name="lineEdit_12"/>
+        <item row="1" column="0">
+         <layout class="QGridLayout" name="gridLayout_12">
+          <item row="0" column="0">
+           <widget class="QLineEdit" name="lineEdit_12"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QToolButton" name="toolButton_10">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
-        <item row="2" column="1">
-         <widget class="QToolButton" name="toolButton_10">
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_7">
           <property name="text">
-           <string>...</string>
+           <string>Rainfall file</string>
           </property>
          </widget>
         </item>
         <item row="3" column="0">
+         <layout class="QGridLayout" name="gridLayout_10">
+          <item row="0" column="0">
+           <widget class="QLineEdit" name="lineEdit_5"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QToolButton" name="toolButton_7">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_20">
+          <property name="text">
+           <string>Max time step [sec]</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLineEdit" name="lineEdit_16"/>
+        </item>
+        <item row="6" column="0">
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -346,6 +278,114 @@
        <attribute name="title">
         <string>Settings</string>
        </attribute>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_18">
+          <property name="text">
+           <string>Total running time [min]</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLineEdit" name="lineEdit_14"/>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_17">
+          <property name="text">
+           <string>Table of soil and land use information</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <layout class="QGridLayout" name="gridLayout_13">
+          <item row="0" column="0">
+           <widget class="QLineEdit" name="lineEdit_13"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QToolButton" name="toolButton_11">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_21">
+          <property name="text">
+           <string>Soil land use code</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QComboBox" name="comboBox_5"/>
+        </item>
+        <item row="6" column="0">
+         <widget class="QLabel" name="label_19">
+          <property name="text">
+           <string>Reach shapes table (optinal)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0">
+         <layout class="QGridLayout" name="gridLayout_14">
+          <item row="0" column="1">
+           <widget class="QToolButton" name="toolButton_12">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLineEdit" name="lineEdit_15"/>
+          </item>
+         </layout>
+        </item>
+        <item row="8" column="0">
+         <widget class="QLabel" name="label_23">
+          <property name="text">
+           <string>Reach shape table code (optional)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="0">
+         <widget class="QComboBox" name="comboBox_6"/>
+        </item>
+        <item row="10" column="0">
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>Main output folder</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="0">
+         <layout class="QGridLayout" name="gridLayout_16">
+          <item row="0" column="0">
+           <widget class="QLineEdit" name="lineEdit_11"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QToolButton" name="toolButton_13">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="12" column="0">
+         <spacer name="verticalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
