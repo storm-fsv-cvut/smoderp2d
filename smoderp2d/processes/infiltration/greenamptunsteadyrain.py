@@ -81,7 +81,9 @@ class GreenAmptInfiltrationUnsteadyRain(BaseInfiltration):
 
 
 if __name__ == "__main__":
+    
     sr = [[0., 0.], [7.167, 0.0206], [7.333, 0.0212], [7.417, 0.0244], [
         7.583, 0.0270], [7.667, 0.0308], [7.917, 0.0313], [8.000, 0.0346]]
     #sr = [[0.,0.],[0.083,0.0013],[0.667,0.0013],[0.917,0.0216],[1.167,0.0221]]
+    
     t = GreenAmptInfiltrationUnsteadyRain([[0, 2.777e-1, 2, 0]])
