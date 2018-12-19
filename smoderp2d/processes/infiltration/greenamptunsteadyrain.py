@@ -146,22 +146,21 @@ class SingleSoilGAIUR(object):
 
 
 class GreenAmptInfiltrationUnsteadyRain(BaseInfiltration):
-    
+
     def __init__(self, soils_data):
         """ make instances of SingleSoilGAIUR for each soil type 
-        
+
         :param soils_data: combinat_index in the smoderp2d code
         """
-        
+
         n = len(soils_data)
         self._soil = []
         for i in range(n):
-            self._soil.append(SingleSoilGAIUR(ks = soils_data[i][1], sm = soils_data[i][2]))
-            
+            self._soil.append(SingleSoilGAIUR(
+                ks=soils_data[i][1], sm=soils_data[i][2]))
+
     def precalc(self):
-        pass 
-        
-        
+        pass
 
 
 if __name__ == "__main__":
@@ -170,4 +169,5 @@ if __name__ == "__main__":
         7.583, 0.0270], [7.667, 0.0308], [7.917, 0.0313], [8.000, 0.0346]]
     #sr = [[0.,0.],[0.083,0.0013],[0.667,0.0013],[0.917,0.0216],[1.167,0.0221]]
 
-    t = GreenAmptInfiltrationUnsteadyRain([[0, 2.777e-1, 2, 0],[0, 0.0142, 0.036, 0]])
+    t = GreenAmptInfiltrationUnsteadyRain(
+        [[0, 2.777e-1, 2, 0], [0, 0.0142, 0.036, 0]])
