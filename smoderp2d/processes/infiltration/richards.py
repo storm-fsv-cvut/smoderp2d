@@ -204,17 +204,7 @@ class RichardsInfiltration(BaseInfiltration):
 
 if instance:
     t = RichardsInfiltration([[0, 2.777e-1, 2, 0]])
-    #t.precalc(1, 5.0)
-    #t.precalc(1, 5.0)
-    #t.precalc(1, 5.0)
-    #t.precalc(1, 5.0)
+    # calc timestep 1 sec
     t.precalc(1, 5.0)
-    t.precalc(1, 5.0)
-    t.precalc(1, 5.0)
+    # calc timestep 5 secs
     t.precalc(5, 5.0)
-    #t.precalc(1, 5.0)
-    #t.precalc(1, 5.0)
-    t.precalc(20, 5.0)
-    t.precalc(20, 5.0)
-    t.precalc(20, 5.0)
-    
