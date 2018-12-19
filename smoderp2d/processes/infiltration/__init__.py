@@ -31,16 +31,18 @@ class SingleSoilBI(object):
 
     def philip(self, deltaT, totalT):
         """ pilips formula """
-        
+
         NoDataValue = GridGlobals.get_no_data()
-        
+
         if self._ks and self._s == NoDataValue:
             self.infiltration = NoDataValue
         else:
-            self.infiltration = (0.5 * self._s / math.sqrt(totalT + deltaT) + self._ks) * deltaT
-            
-class BaseInfiltration(object) :
-    
+            self.infiltration = (
+                0.5 * self._s / math.sqrt(totalT + deltaT) + self._ks) * deltaT
+
+
+class BaseInfiltration(object):
+
     def __init__(self, soils_data):
         """ make instances of SingleSoilBI for each soil type 
 
@@ -52,23 +54,23 @@ class BaseInfiltration(object) :
         for i in range(self._n):
             self._soil.append(SingleSoilBI(
                 ks=soils_data[i][1], s=soils_data[i][2]))
-        
+
     def precalc(self, dt, total_time):
         """ Precalculates potential infiltration got a given soil.
         The precalculated value is storred in the self._combinat_index
         """
-        
+
         for i in range(self._n):
             self._soil[i].philip(dt, total_time)
-            
+
     def current_infiltration(self, soil_id, bil):
         """ Returns the actual infiltrated water height 
 
         :param soil_id: soil type in current cell
         :param bil: current water level
         """
-        
-        infiltration = self._soil[soil_id]
+
+        infiltration = self._soil[soil_id].infiltration
         if bil < 0:
             raise NegativeWaterLevel()
         if infiltration > bil:
@@ -76,6 +78,5 @@ class BaseInfiltration(object) :
             bil = 0
         else:
             bil = bil - infiltration
-            
-        print infiltration
+
         return bil, infiltration
