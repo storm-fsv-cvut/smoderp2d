@@ -1,3 +1,5 @@
+# TODO include also the surface retention as it is in Chu (1978)
+
 import math
 from scipy.optimize import newton
 try:
@@ -31,116 +33,146 @@ class SingleSoilGAIUR(object):
         self._r_n_1 = self._r_n = 0.0
         # cumulative infiltration
         self._f_n_1 = self._f_n = 0.0
+        # previous time
+        self._t_n_1 = 0.0
 
-    def _indicator(self, p_n, r_n_1, ks, sm, i):
+        self._ponded = False
+        self._beginning = True
+
+    def _indicator(self, i):
         """ indicating the ponding if the value is larger thant zero 
 
         C_u in Chu (1978)
 
-        :param p_n: current cumulative precipitation
-        :param r_n_1: previous cumulative runoff 
-        :param ks: saturated hydraulic conductivity
-        :param sm: suction pressure at the wetting front (s) time difference of the moisture (m)
         :param i: current precipitation intenzity
         """
 
-        return p_n - r_n_1 - k*sm/(i-k)
+        #print self._p_n, self._r_n_1, self._ks, self._sm, i
 
-    def _time_ponding(self, p_n_1, r_n_1, ks, sm, i, t_n_1):
-        """ returns time of ponding in current time step
+        return self._p_n - self._r_n_1 - self._ks*self._sm/(i-self._ks)
+
+    def _time_ponding(self, i):
+        """ Calculates ponding time in a time interva
+        where ponding is indicated.
 
         t_p in Chu (1978)
 
-        :param p_n_1: previous cumulative precipitation
-        :param r_n_1: previous cumulative runoff 
-        :param ks: saturated hydraulic conductivity
-        :param sm: suction pressure at the wetting front (s) time difference of the moisture (m)
         :param i: current precipitation intenzity
-        :param t_n_1: previous time
         """
+        return (self._ks*self._sm/(i-self._ks) - self._p_n_1 + self._r_n_1) / i + self._t_n_1
 
-        return (ks*sm/(i-ks) - p_n_1 + r_n_1)/i + t_n_1
+    def _prec_at_ponding(self, i, t_p):
+        """ Calculates precipitatino at the ponding time.
 
-    def _pseudo_time(self, pt_p, r_n_1, k, sm, i):
-        """ calculates preudo time 
+        P(t_p) in Chu (1978)
+
+        :param i: current precipitation intenzity
+        """
+        return self._p_n_1 + (t_p - self._t_n_1)*i
+
+    def _pseudo_time(self, i, pt_p):
+        """ Calculates preudo time. 
+
+        This shift is a core of the Chu (1978) approach
 
         t_s in Chu (1978)
 
-        :param p_n_1: precipitation at ponding time 
-        :param r_n_1: previous cumulative runoff 
-        :param ks: saturated hydraulic conductivity
-        :param sm: suction pressure at the wetting front (s) time difference of the moisture (m)
         :param i: current precipitation intenzity
-        :param t_n_1: previous time
+        :param pt_p: precipitation at ponding time 
         """
 
-        return ((pt_p - r_n_1)/sm - math.log(1+(pt_p - r_n_1)/sm))*sm/k
+        return ((pt_p - self._r_n_1)/self._sm - math.log(1.+(pt_p - self._r_n_1)/self._sm))*self._sm/self._ks
 
-    def _greenampt_f(self, fp, ks, t, sm):
+    def _shifted_time(self, t_s, t_p):
+        """ Calculates shifted time. 
+
+        This shifted time shifts the time in the green ampt.
+        This shifted is a core of the Chu (1978) approach
+
+        t_s in Chu (1978)
+
+        :param t_s: time shift
+        :param t_p: time of ponding 
+        """
+
+        return self._t_n - t_p + t_s
+
+    def _greenampt_f(self, fn, T_shifted):
         """ green ampt formula 
 
 
-        :param fp: cumulative infiltration
-        :param ks: saturated hydraulic conductivity
-        :param t: time 
-        :param sm: suction pressure at the wetting front (s) time difference of the moisture (m)
-        """
+        :param fn: cumulative infiltration
+        :param T_shifted: shifted time 
+        :param sm: suction pressure at the wetting front (s) time difference of the moisture (m) """
 
-        return ks*t/sm - (fp/sm - math.log(1+fp/sm))
+        return self._ks*T_shifted/self._sm - (fn/self._sm - math.log(1+fn/self._sm))
 
-    def _cumulative_f(self, fp, ks, t, sm):
+    def _cumulative_f(self, fn, T_shifted):
         """ Solve current cumulative infiltration ne newton's mehod 
 
-        :param fp: cumulative infiltration
-        :param ks: saturated hydraulic conductivity
-        :param t: time 
-        :param sm: suction pressure at the wetting front (s) time difference of the moisture (m)
+        :param fn: cumulative infiltration
+        :param T_shifted: shifted time 
         """
 
         # set variebls into green-ampt
-        def ffp(fp): return _greenampt_f(fp, ks, t, sm)
+        def ffp(fn): return self._greenampt_f(fn, T_shifted)
 
         # compute current cumulative infiltration
-        return newton(ffp, ks*t)
+        return newton(ffp, self._ks*T_shifted)
 
-    def calc_next(self, sr, t, dt):
+    def _store_to_previous(self):
+        """ Set new values into previous. """
+        self._p_n_1 = self._p_n
+        self._f_n_1 = self._f_n
+        self._r_n_1 = self._r_n
+        self._t_n_1 = self._t_n
+
+    def _prt_vals(self):
+        print '{:8.4f}  {:8.4f}  {:8.4f}  {:8.4f}'.format(
+            self._t_n, self._p_n, self._f_n, self._r_n)
+
+    def ga_unsteadyrain(self, cprec, t, dt):
         """ calculates next cumulative infiltration for a single soil type
-        :param sr: current rainfall height 
+        :param float sr: current rainfall height [m]
         :param t: current time 
         :param dt: current time step
         """
 
         ponded = False
 
-        n = len(sr)
+        # current precipitation intensity
+        i = cprec/dt
 
-        for i in range(1, n):
-            I = (sr[i][1]-sr[i-1][1])/(sr[i][0]-sr[i-1][0])
-            P_n = sr[i][1]
+        # add current precipitation height to cumulative precipitation
+        self._p_n += cprec
+        # new time
+        self._t_n = t + dt
 
-            if (I > K):
-                if (not(ponded)):
-                    Cu = indicator(P_n, R_n_1, K, SM, I)
-                    if (Cu <= 0):
-                        F_n = F_n_1 + sr[i][1] - R_n_1
-                        R_n = R_n_1
-                    else:
-                        ponded = True
-                if (ponded):
-                    t_n = sr[i][0]
-                    t_n_1 = sr[i-1][0]
-                    t_p = time_ponding(P_n_1, R_n_1, K, SM, I, t_n_1)
-                    Pt_p = P_n_1 + (t_p - t_n_1)*I
-                    t_s = pseudo_time(Pt_p, R_n_1, K, SM, I)
-                    T = t_n - t_p + t_s
-                    F_n = _cumulative_F(F_n, K, T, SM)
-                    R_n = P_n - F_n - 0.0
+        # calculates indicator of unpunded to ponded
+        Cu = self._indicator(i)
+        # calculates indicator of punded to unponded
+        Cp = self._p_n - self._f_n - self._r_n_1
 
+        if (self._beginning):
+            # TODO it condition shloud may be <=, check the literature
+            if ((Cu < 0.0) | (self._ks >= i)):  # no ponding
+                self._r_n = 0.0
+                self._f_n = self._p_n - self._r_n
             else:
-                F_n = F_n_1 + sr[i][1]
-                R_n = R_n_1
+                self._ponded = True
+                self._beginning = False
 
-            P_n_1 = P_n
+        if (self._ponded):
+            # TODO t_p and t_s is fixed until the ponding stops
+            t_p = self._time_ponding(i)
+            pt_p = self._prec_at_ponding(i, t_p)
+            t_s = self._pseudo_time(i, pt_p)
+            T_shifted = self._shifted_time(t_s, t_p)
+            self._f_n = self._cumulative_f(self._f_n, T_shifted)
+            self._r_n = self._p_n - self._f_n
+
+        self._store_to_previous()
+        self._prt_vals()
 
         return 1
 
@@ -153,21 +185,37 @@ class GreenAmptInfiltrationUnsteadyRain(BaseInfiltration):
         :param soils_data: combinat_index in the smoderp2d code
         """
 
-        n = len(soils_data)
+        self._n = len(soils_data)
         self._soil = []
-        for i in range(n):
+        for i in range(self._n):
             self._soil.append(SingleSoilGAIUR(
                 ks=soils_data[i][1], sm=soils_data[i][2]))
 
-    def precalc(self):
-        pass
+    def precalc(self, dt, total_time, cprec):
+        """ Precalculates potential infiltration got a given soil.
+
+        :param cprec: current precipitation height
+        """
+
+        for i in range(self._n):
+            self._soil[i].ga_unsteadyrain(cprec, total_time, dt)
 
 
 if __name__ == "__main__":
 
     sr = [[0., 0.], [7.167, 0.0206], [7.333, 0.0212], [7.417, 0.0244], [
         7.583, 0.0270], [7.667, 0.0308], [7.917, 0.0313], [8.000, 0.0346]]
-    #sr = [[0.,0.],[0.083,0.0013],[0.667,0.0013],[0.917,0.0216],[1.167,0.0221]]
+    sr = [[0., 0.], [0.083, 0.0013], [0.667, 0.0013],
+          [0.917, 0.0216], [1.167, 0.0221]]
 
-    t = GreenAmptInfiltrationUnsteadyRain(
-        [[0, 2.777e-1, 2, 0], [0, 0.0142, 0.036, 0]])
+    # z Chu
+    data = [[0, 2.777e-1, 2, 0], [0, 0.0142, 0.036, 0]]
+    data = [[0, 0.0142, 0.036, 0]]
+    t = GreenAmptInfiltrationUnsteadyRain([[0, 0.0142, 0.036, 0]])
+
+    tt = 0
+    for i in range(1, len(sr)):
+        dt = sr[i][0] - sr[i-1][0]
+        csr = sr[i][1] - sr[i-1][1]
+        t.precalc(dt=dt, total_time=tt, cprec=csr)
+        tt += dt
