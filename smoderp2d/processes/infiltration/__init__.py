@@ -17,52 +17,65 @@ def set_combinatIndex(newCombinatIndex):
 
 
 # base infiltration is philips infiltration
-class BaseInfiltration(object):
+class SingleSoilBI(object):
+    """ infiltration for single soil class """
 
-    def __init__(self, combinatIndex):
+    def __init__(self, ks, s):
 
-        self._combinat_index = combinatIndex
+        # saturated hydraulic conductivity
+        self._ks = ks
+        # sorbtion
+        self._s = s
+        # current infiltration height
+        self.infiltration = 0
 
-    def _philip(self, k, s, deltaT, totalT, NoDataValue):
+    def philip(self, deltaT, totalT):
         """ pilips formula """
-        if k and s == NoDataValue:
-            infiltration = NoDataValue
+        
+        NoDataValue = GridGlobals.get_no_data()
+        
+        if self._ks and self._s == NoDataValue:
+            self.infiltration = NoDataValue
         else:
-            infiltration = (0.5 * s / math.sqrt(totalT + deltaT) + k) * deltaT
-        return infiltration
+            self.infiltration = (0.5 * self._s / math.sqrt(totalT + deltaT) + self._ks) * deltaT
+            
+class BaseInfiltration(object) :
+    
+    def __init__(self, soils_data):
+        """ make instances of SingleSoilBI for each soil type 
 
+        :param soils_data: combinat_index in the smoderp2d code
+        """
+
+        self._n = len(soils_data)
+        self._soil = []
+        for i in range(self._n):
+            self._soil.append(SingleSoilBI(
+                ks=soils_data[i][1], s=soils_data[i][2]))
+        
     def precalc(self, dt, total_time):
         """ Precalculates potential infiltration got a given soil.
         The precalculated value is storred in the self._combinat_index
         """
-
-        NoDataValue = GridGlobals.get_no_data()
-
-        for iii in self._combinat_index:
-            index = iii[0]
-            k = iii[1]
-            s = iii[2]
-            iii[3] = self._philip(
-                k,
-                s,
-                dt,
-                total_time,
-                NoDataValue)
-
-    def current_infiltration(self, soil, bil):
+        
+        for i in range(self._n):
+            self._soil[i].philip(dt, total_time)
+            
+    def current_infiltration(self, soil_id, bil):
         """ Returns the actual infiltrated water height 
 
-        :param soil: soil type in current cell
+        :param soil_id: soil type in current cell
         :param bil: current water level
         """
-        for z in self._combinat_index:
-            if soil == z[0]:
-                infiltration = z[3]
-                if bil < 0:
-                    raise NegativeWaterLevel()
-                if infiltration > bil:
-                    infiltration = bil
-                    bil = 0
-                else:
-                    bil = bil - infiltration
+        
+        infiltration = self._soil[soil_id]
+        if bil < 0:
+            raise NegativeWaterLevel()
+        if infiltration > bil:
+            infiltration = bil
+            bil = 0
+        else:
+            bil = bil - infiltration
+            
+        print infiltration
         return bil, infiltration
