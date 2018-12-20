@@ -2,12 +2,14 @@
 
 import math
 from scipy.optimize import newton
-try:
-    from smoderp2d.processes.infiltration import BaseInfiltration
-except ImportError:
+
+# option for stand alone testing of the class
+if __name__ == "__main__":
     print '\n\n\n\ntest version of green-ampt infiltration\n\n\n\n'
-    instance = True
+    stand_alone = True
     BaseInfiltration = object
+else:
+    from smoderp2d.processes.infiltration import BaseInfiltration
 
 
 class SingleSoilGAIUR(object):
@@ -37,19 +39,29 @@ class SingleSoilGAIUR(object):
         self._t_n_1 = 0.0
 
         self._ponded = False
-        self._beginning = True
+        #self._beginning = True
 
-    def _indicator(self, i):
+        # only flobal variable
+        # stores the infiltration height
+        # for a given time step
+        self.infiltration = 0.0
+
+    def _indicator_u(self, i):
         """ indicating the ponding if the value is larger thant zero 
 
         C_u in Chu (1978)
 
         :param i: current precipitation intenzity
         """
-
-        #print self._p_n, self._r_n_1, self._ks, self._sm, i
-
         return self._p_n - self._r_n_1 - self._ks*self._sm/(i-self._ks)
+
+    def _indicator_p(self):
+        """ indicating the unponding if the value is larger thant zero 
+        and the surface is ponded
+
+        C_p in Chu (1978)
+        """
+        return self._p_n - self._f_n - self._r_n_1
 
     def _time_ponding(self, i):
         """ Calculates ponding time in a time interva
@@ -100,7 +112,6 @@ class SingleSoilGAIUR(object):
     def _greenampt_f(self, fn, T_shifted):
         """ green ampt formula 
 
-
         :param fn: cumulative infiltration
         :param T_shifted: shifted time 
         :param sm: suction pressure at the wetting front (s) time difference of the moisture (m) """
@@ -138,8 +149,6 @@ class SingleSoilGAIUR(object):
         :param dt: current time step
         """
 
-        ponded = False
-
         # current precipitation intensity
         i = cprec/dt
 
@@ -149,38 +158,43 @@ class SingleSoilGAIUR(object):
         self._t_n = t + dt
 
         # calculates indicator of unpunded to ponded
-        Cu = self._indicator(i)
+        Cu = self._indicator_u(i)
         # calculates indicator of punded to unponded
-        Cp = self._p_n - self._f_n - self._r_n_1
 
-        if (self._beginning):
+        if (not(self._ponded)):
             # TODO it condition shloud may be <=, check the literature
             if ((Cu < 0.0) | (self._ks >= i)):  # no ponding
                 self._r_n = 0.0
                 self._f_n = self._p_n - self._r_n
             else:
                 self._ponded = True
-                self._beginning = False
+                #self._beginning = False
+                self._t_p = self._time_ponding(i)
+                pt_p = self._prec_at_ponding(i, self._t_p)
+                self._t_s = self._pseudo_time(i, pt_p)
 
         if (self._ponded):
-            # TODO t_p and t_s is fixed until the ponding stops
-            t_p = self._time_ponding(i)
-            pt_p = self._prec_at_ponding(i, t_p)
-            t_s = self._pseudo_time(i, pt_p)
-            T_shifted = self._shifted_time(t_s, t_p)
+            T_shifted = self._shifted_time(self._t_s, self._t_p)
             self._f_n = self._cumulative_f(self._f_n, T_shifted)
+            Cp = self._indicator_p()
+            if (Cp < 0.0):
+                self._f_n = self._p_n - self._r_n_1
+                self._ponded = False
             self._r_n = self._p_n - self._f_n
 
-        self._store_to_previous()
-        self._prt_vals()
+        if (stand_alone):
+            self._prt_vals()
 
-        return 1
+        # set infiltration for the time step
+        self.infiltration = self._f_n - self._f_n_1
+        # set new variables as old
+        self._store_to_previous()
 
 
 class GreenAmptInfiltrationUnsteadyRain(BaseInfiltration):
 
     def __init__(self, soils_data):
-        """ make instances of SingleSoilGAIUR for each soil type 
+        """ make instance of SingleSoilGAIUR for each soil type 
 
         :param soils_data: combinat_index in the smoderp2d code
         """
@@ -201,15 +215,17 @@ class GreenAmptInfiltrationUnsteadyRain(BaseInfiltration):
             self._soil[i].ga_unsteadyrain(cprec, total_time, dt)
 
 
+# option for stand alone testing of the class
 if __name__ == "__main__":
 
+    # from Chu 1978
     sr = [[0., 0.], [7.167, 0.0206], [7.333, 0.0212], [7.417, 0.0244], [
         7.583, 0.0270], [7.667, 0.0308], [7.917, 0.0313], [8.000, 0.0346]]
-    sr = [[0., 0.], [0.083, 0.0013], [0.667, 0.0013],
-          [0.917, 0.0216], [1.167, 0.0221]]
+    # sr = [[0., 0.], [0.083, 0.0013], [0.667, 0.0013],
+    #[0.917, 0.0216], [1.167, 0.0221]]
 
-    # z Chu
     data = [[0, 2.777e-1, 2, 0], [0, 0.0142, 0.036, 0]]
+    # from Chu 1978
     data = [[0, 0.0142, 0.036, 0]]
     t = GreenAmptInfiltrationUnsteadyRain([[0, 0.0142, 0.036, 0]])
 
