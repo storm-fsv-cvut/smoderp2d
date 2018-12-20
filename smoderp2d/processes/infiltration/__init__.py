@@ -26,7 +26,9 @@ class SingleSoilBI(object):
         self._ks = ks
         # sorbtion
         self._s = s
-        # current infiltration height
+        # only flobal variable
+        # stores the infiltration height
+        # for a given time step
         self.infiltration = 0
 
     def philip(self, deltaT, totalT):
