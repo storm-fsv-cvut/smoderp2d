@@ -1,4 +1,4 @@
-# smoderp
+# Smoderp 2D
 Distributed event-based model for surface and subsurface runoff and erosion
 
 ## Quick test
