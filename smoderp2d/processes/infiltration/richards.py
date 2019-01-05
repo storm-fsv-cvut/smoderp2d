@@ -1,4 +1,3 @@
-
 try:
     from smoderp2d.processes.infiltration import BaseInfiltration
 except ImportError:
