@@ -86,7 +86,7 @@ class RichardsInfiltration(BaseInfiltration):
                 K1 = self._mualem_K(sp, (sp.dir_new[i+1] + sp.dir_new[i])/2)
                 K2 = self._mualem_K(sp, (sp.dir_new[i] + sp.dir_new[i-1])/2)
 
-                self._b[i] = - C_pre/dt*h_ipre - ( + K1/sp.dx - K2/sp.dx)
+                self._b[i] = - C_pre/dt*h_ipre - (+ K1/sp.dx - K2/sp.dx)
 
                 self._A[i][i-1] = K1/sp.dx**2.
 
@@ -200,7 +200,7 @@ class RichardsInfiltration(BaseInfiltration):
 
     def current_infiltration(self, soil, bil):
         raise NotImplemented("Not implemented for Richards infiltration")
- 
+
 
 if instance:
     t = RichardsInfiltration([[0, 2.777e-1, 2, 0]])
