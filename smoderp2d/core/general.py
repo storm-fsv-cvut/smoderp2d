@@ -168,6 +168,9 @@ class Globals:
     maxdt = None
     # ???
     extraOut = None
+    # infiltration_type
+    infiltration_type = None
+    
 
     @classmethod
     def get_type_of_computing(cls):
@@ -318,4 +321,4 @@ class Globals:
     def get_infiltration_type(cls):
         #TODO 1 stands for philips infiltration
         #     the philips infiltration is the only implemented now
-        return 1
+        return cls.infiltration_type

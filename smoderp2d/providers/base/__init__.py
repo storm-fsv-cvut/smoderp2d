@@ -85,7 +85,12 @@ class BaseProvider(object):
         data['prtTimes'] = self._config.get('Other', 'printtimes')
 
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
-
+        
+        # infiltration type 
+        # 1 for Philips infiltration (default)
+        # 2 - 4 experimental 
+        data['infiltration_type'] = self._config.getint('Infiltration', 'type')
+        #print data['maxdt']
         return data
 
     def load(self):
@@ -135,7 +140,7 @@ class BaseProvider(object):
         Globals.isRill = self._comp_type(data['type_of_computing'])['rill']
         Globals.isStream = self._comp_type(data['type_of_computing'])['stream']
         Globals.prtTimes = data.get('prtTimes', None)
-
+        
     @staticmethod
     def _cleanup():
         """Clean-up output directory."""
