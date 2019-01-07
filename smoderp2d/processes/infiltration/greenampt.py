@@ -1,3 +1,4 @@
+from smoderp2d.core.general import GridGlobals
 from smoderp2d.processes.infiltration import BaseInfiltration
 from scipy.optimize import newton
 
@@ -10,7 +11,7 @@ class GreenAmptInfiltration(BaseInfiltration):
 
         self._combinat_index = combinatIndex
         # TODO include into inputs should be different for different soils
-        self._psi = 10/100  # soil water potential at the wetting front
+        self._psi = 10./100.  # soil water potential at the wetting front
         # TODO include into inputs should be different for different soils
         self._d_theta = 0.4  # theta difference
 
@@ -23,7 +24,6 @@ class GreenAmptInfiltration(BaseInfiltration):
         :param k: hydraulic conductivity
         :param t: t
         """
-
         return F - k*t + self._psi * self._d_theta * math.log(1 + F/(self._psi * self._d_theta))
 
     def _cumulative_F(self, k, t):
@@ -64,7 +64,7 @@ class GreenAmptInfiltration(BaseInfiltration):
 
         for iii in self._combinat_index:
             k = iii[1]
-            iii[3] = self._philip(
+            iii[3] = self._greenampt_f(
                 k,
                 dt,
                 total_time,
