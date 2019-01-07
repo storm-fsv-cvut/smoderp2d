@@ -15,7 +15,7 @@ class SingleSoilGA(object):
         """
 
         self._ks = ks
-        
+
         # experimenal
         # depth of plough_pan
         self._z_plough_pan = 10
@@ -30,19 +30,19 @@ class SingleSoilGA(object):
         # stores the infiltration height
         # for a given time step
         self.infiltration = 0.0
-        
+
     def _reduce_ks(self):
         """ reduces self._ks when the cumulative infiltraion reaches 
         reaches the plough pan 
-        
+
         for experimenal purpoces is the plough pan ks one tenth
         of the top soil ks
-        
+
         # TODO the psi and d_theta needs to be changed in the ploughpan as well
         """
-        
+
         self._ks = math.sqrt(self._ks*self._ks/10.0)
-        
+
     def _greenampt_F(self, F, t):
         """ Green-Ampt formula for cumulative infiltration 
 
@@ -81,11 +81,12 @@ class SingleSoilGA(object):
                 F_t = self._cumulative_F(t)
                 self.infiltration = self._ks * \
                     ((self._psi * self._d_theta)/F_t + 1.)*dt
-                
+
                 # if ploughpan is reached the ks changed
-                if (F_t > self._z_plough_pan and not(self._plough_pan_reached)) :
+                if (F_t > self._z_plough_pan and not(self._plough_pan_reached)):
                     self._plough_pan_reached = True
                     self._reduce_ks()
+
 
 class GreenAmptInfiltration(BaseInfiltration):
 
