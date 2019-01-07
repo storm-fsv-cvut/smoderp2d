@@ -11,6 +11,9 @@ The computing itself is performed in src.runoff
 """
 
 import os
+import sys
+
+from smoderp2d.exceptions import ProviderError
 
 def run():
     # initialize provider
@@ -29,7 +32,10 @@ def run():
     provider.logo()
 
     # load configuration (set global variables)
-    provider.load()
+    try:
+        provider.load()
+    except ProviderError as e:
+        sys.exit(e)
 
     # must be called after initialization
     from smoderp2d.runoff import Runoff
@@ -38,5 +44,7 @@ def run():
     runoff = Runoff(provider)
     runoff.run()
 
+    return 0
+
 if __name__ == "__main__":
-    run()
+    sys.exit(run())

@@ -45,7 +45,10 @@ class BaseProvider(object):
         try:
             data = self._load_data(indata)
             if isinstance(data, list):
-                raise ProviderError('Saved data out-dated. Please use utils/convert-saved-data.py for update.')
+                raise ProviderError(
+                    'Saved data out-dated. Please use '
+                    'utils/convert-saved-data.py for update.'
+                )
         except IOError as e:
             raise ProviderError('{}'.format(e))
 
@@ -185,7 +188,7 @@ class BaseProvider(object):
         """Print Smoderp2d ascii-style logo."""
         with open(os.path.join(os.path.dirname(__file__), 'txtlogo.txt'), 'r') as fd:
             self._print_fn(fd.read())
-        #self._print_fn() # extra line
+        self._print_fn() # extra line
 
     @staticmethod
     def _save_data(data, filename):
