@@ -15,8 +15,7 @@ from smoderp2d.core.surface import surface_retention
 
 infilt_capa = 0
 infilt_time = 0
-max_infilt_capa = 0.003  # [m]
-
+max_infilt_capa = 0.00        # [m]
 
 # Class manages the one time step operation
 #

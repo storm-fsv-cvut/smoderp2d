@@ -12,13 +12,12 @@ class SingleSoilGA(object):
         """ for each soil type sets the variables 
 
         ks - saturated hydraulic conductivity
-        sm - suction pressure at the wetting front (s) time difference of the moisture (m)
         """
 
         self._ks = ks
-
+        
         # TODO include into inputs should be different for different soils
-        self._psi = 0.1  # soil water potential at the wetting front
+        self._psi = 0.01  # soil water potential at the wetting front
         # TODO include into inputs should be different for different soils
         self._d_theta = 0.4  # theta difference
 
