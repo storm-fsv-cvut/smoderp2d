@@ -31,7 +31,7 @@ def logger():
     )
 
     logging.setLoggerClass(BaseLogger)
-    logger = logging.getLogger('Smoderp')
+    logger = logging.getLogger('Smoderp_{}'.format(time.time()))
     logger.setLevel(logging.DEBUG)
 
     return logger

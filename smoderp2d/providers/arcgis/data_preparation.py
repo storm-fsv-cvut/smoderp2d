@@ -339,72 +339,6 @@ class PrepareData(PrepareDataBase):
         self.data['r'] = self.data['mat_dmt'].shape[0]
         self.data['c'] = self.data['mat_dmt'].shape[1]
 
-    def _get_mat_par(self, sfield, intersect):
-        """
-
-        :param sfield:
-        :param intersect:
-
-        :return all_atrib:
-        """
-        all_attrib = self._get_attrib(sfield, intersect)
-
-        self.data['mat_nan'] = np.zeros(
-            [self.data['r'], self.data['c']], float
-        )
-        
-        mat_k = all_attrib[0]
-        mat_s = all_attrib[1]
-        
-        self.data['mat_inf_index'] = None
-        self.data['combinatIndex'] = None
-
-        infiltration_type = 0  # "Phillip"
-        if infiltration_type == 0:
-            # to se rovna vzdycky ne? nechapu tuhle podminku 23.05.2018 MK
-            self.data['mat_inf_index'] = np.zeros(
-                [self.data['r'], self.data['c']], int
-            )
-            combinat = []
-            self.data['combinatIndex'] = []
-            for i in range(self.data['r']):
-                for j in range(self.data['c']):
-                    kkk = mat_k[i][j]
-                    sss = mat_s[i][j]
-                    ccc = [kkk, sss]
-                    try:
-                        if combinat.index(ccc):
-                            self.data['mat_inf_index'][i][j] = combinat.index(ccc)
-                    except:
-                        combinat.append(ccc)
-                        self.data['combinatIndex'].append(
-                            [combinat.index(ccc), kkk, sss, 0]
-                        )
-                        self.data['mat_inf_index'][i][j] = combinat.index(
-                            ccc
-                        )
-
-        # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u
-        # sklonu a acc
-        i = j = 0
-
-        # data value vector intersection
-        for i in range(self.data['r']):
-            for j in range(self.data['c']):
-                x_mat_dmt = self.data['mat_dmt'][i][j]
-                slp = self.data['mat_slope'][i][j]
-                if x_mat_dmt == self.data['NoDataValue'] or \
-                   slp == self.data['NoDataValue']:
-                    self.data['mat_nan'][i][j] = self.data['NoDataValue']
-                    self.data['mat_slope'][i][j] = self.data['NoDataValue']
-                    self.data['mat_dmt'][i][j] = self.data['NoDataValue']
-                else:
-                    self.data['mat_nan'][i][j] = 0
-
-        self._save_raster("mat_nan", self.data['mat_nan'], self.data['temp'])
-
-        return all_attrib
-
     def _get_array_points(self):
         """Get array of points. Points near AOI border are skipped.
 
@@ -462,67 +396,6 @@ class PrepareData(PrepareDataBase):
                     ))
         else:
             self.data['array_points'] = None
-
-    def _get_crit_water(self, all_attrib):
-        """
-
-        :param all_attrib:
-        :param ll_corner:
-        """
-
-        mat_b = all_attrib[6]
-        mat_tau = all_attrib[9]
-        mat_v = all_attrib[10]
-
-        ll_corner = arcpy.Point(
-            self.data['xllcorner'], self.data['yllcorner']
-        )
-
-        # critical water level
-        mat_hcrit_tau = np.zeros([self.data['r'], self.data['c']], float)
-        mat_hcrit_v = np.zeros([self.data['r'], self.data['c']], float)
-        mat_hcrit_flux = np.zeros([self.data['r'], self.data['c']], float)
-        self.data['mat_hcrit'] = np.zeros([self.data['r'], self.data['c']], float)
-        
-        for i in range(self.data['r']):
-            for j in range(self.data['c']):
-                if self.data['mat_slope'][i][j] != self.data['NoDataValue'] \
-                   and mat_tau[i][j] != self.data['NoDataValue']:
-                    slope = self.data['mat_slope'][i][j]
-                    tau_crit = mat_tau[i][j]
-                    v_crit = mat_v[i][j]
-                    b = mat_b[i][j]
-                    aa = self.data['mat_aa'][i][j]
-                    flux_crit = tau_crit * v_crit
-                    exp = 1 / (b - 1)
-
-                    if slope == 0.0:
-                        hcrit_tau = hcrit_v = hcrit_flux = 1000
-
-                    else:
-                        hcrit_v = np.power((v_crit / aa), exp)  # h critical from v
-                        hcrit_tau = tau_crit / 98.07 / slope  # h critical from tau
-                        hcrit_flux = np.power((flux_crit / slope / 98.07 / aa),(1 / mat_b[i][j]))  # kontrola jednotek
-
-                    mat_hcrit_tau[i][j] = hcrit_tau
-                    mat_hcrit_v[i][j] = hcrit_v
-                    mat_hcrit_flux[i][j] = hcrit_flux
-                    hcrit = min(hcrit_tau, hcrit_v, hcrit_flux)
-                    self.data['mat_hcrit'][i][j] = hcrit
-                else:
-                    mat_hcrit_tau[i][j] = self.data['NoDataValue']
-                    mat_hcrit_v[i][j] = self.data['NoDataValue']
-                    mat_hcrit_flux[i][j] = self.data['NoDataValue']
-                    self.data['mat_hcrit'][i][j] = self.data['NoDataValue']
-
-        rhcrit_tau = arcpy.NumPyArrayToRaster(mat_hcrit_tau, ll_corner, self.data['spix'], self.data['vpix'], "#")
-        rhcrit_tau.save(self.data['temp'] + os.sep + "hcrit_tau")
-
-        rhcrit_flux = arcpy.NumPyArrayToRaster(mat_hcrit_flux, ll_corner, self.data['spix'], self.data['vpix'], "#")
-        rhcrit_flux.save(self.data['temp'] + os.sep + "hcrit_flux")
-
-        rhcrit_v = arcpy.NumPyArrayToRaster(mat_hcrit_v, ll_corner, self.data['spix'], self.data['vpix'], "#")
-        rhcrit_v.save(self.data['temp'] + os.sep + "hcrit_v")
 
     def _get_slope_dir(self, dmt_clip):
         """
@@ -631,18 +504,21 @@ class PrepareData(PrepareDataBase):
             arcpy.JoinField_management(
                 in_data, in_field, join_table, join_field, fields)
 
-    def _save_raster(self, name, array_export, folder):
+    def _save_raster(self, name, array_export, folder=None):
         """
+        Convert numpy array into raster file.
 
-        :param name:
-        :param array_export:
-        :param folder:
+        :param name: raster file
+        :param array_export: data array
+        :param folder: target folder (if not specified use temporary directory)
         """
-
-        raster = arcpy.NumPyArrayToRaster(array_export,
-                                          arcpy.Point(self.data['xllcorner'], self.data['yllcorner']),
-                                          self.data['spix'],
-                                          self.data['vpix'],
-                                          self.data['NoDataValue'])
-        raster.save(folder + os.sep + name)
+        if not folder:
+            folder = self.data['temp']
+        raster = arcpy.NumPyArrayToRaster(
+            array_export,
+            arcpy.Point(self.data['xllcorner'], self.data['yllcorner']),
+            self.data['spix'],
+            self.data['vpix'],
+            self.data['NoDataValue'])
+        raster.save(os.path.join(folder, name))
 

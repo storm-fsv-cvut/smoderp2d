@@ -1,0 +1,8 @@
+COMMAND: v.in.ogr -o input="/home/martin/geodata/smoderp/original" layer="puda" output="puda" min_area=0.0001 type="" snap=-1
+GISDBASE: /opt/grassdata
+LOCATION: smoderp MAPSET: PERMANENT USER: martin DATE: Wed Dec  5 13:59:33 2018
+-----------------------------------------------------
+7 input polygons
+Total area: 733989 (8 areas)
+Overlapping area: 3282.08 (1 areas)
+Area without category: 0 (0 areas)

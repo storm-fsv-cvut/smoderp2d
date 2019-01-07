@@ -300,7 +300,7 @@ def rill_runoff(i, j, sur, dt, efect_vrst, ratio):
     n = Globals.get_mat_n(i, j)
     slope = Globals.get_mat_slope(i, j)
 
-    v_to_rill = sur.h_rill * Globals.get_pixel_area()
+    v_to_rill = sur.h_rill * GridGlobals.get_pixel_area()
     h, b = rill.update_hb(
         v_to_rill, RILL_RATIO, efect_vrst, sur.rillWidth, ratio, ppp
     )
