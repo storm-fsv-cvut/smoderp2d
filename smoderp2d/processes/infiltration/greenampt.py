@@ -4,9 +4,10 @@ from scipy.optimize import newton
 
 import math
 
+
 class SingleSoilGA(object):
     """ Green ampt infiltration for single soil type """
-    
+
     def __init__(self, ks):
         """ for each soil type sets the variables 
 
@@ -20,7 +21,7 @@ class SingleSoilGA(object):
         self._psi = 0.1  # soil water potential at the wetting front
         # TODO include into inputs should be different for different soils
         self._d_theta = 0.4  # theta difference
-        
+
         # only flobal variable
         # stores the infiltration height
         # for a given time step
@@ -56,14 +57,15 @@ class SingleSoilGA(object):
         """
         NoDataValue = GridGlobals.get_no_data()
         if (t == 0.0):
-            self.infiltration = 1e108
+            self.infiltration = 1.e108
         else:
             if self._ks == NoDataValue:
                 self.infiltration = NoDataValue
             else:
                 F_t = self._cumulative_F(t)
-                self.infiltration = self._ks*((self._psi * self._d_theta)/F_t + 1)
-                
+                self.infiltration = self._ks * \
+                    ((self._psi * self._d_theta)/F_t + 1.)
+
 
 class GreenAmptInfiltration(BaseInfiltration):
 
@@ -79,11 +81,9 @@ class GreenAmptInfiltration(BaseInfiltration):
             self._soil.append(SingleSoilGA(
                 ks=soils_data[i][1]))
 
-
     def precalc(self, dt, total_time):
         """ Precalculates potential infiltration got a given soil.
         The precalculated value is storred in the self._combinat_index """
-        
+
         for i in range(self._n):
             self._soil[i].greenampt_f(total_time, dt)
-
