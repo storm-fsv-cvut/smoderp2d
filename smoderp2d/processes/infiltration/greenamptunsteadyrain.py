@@ -10,6 +10,7 @@ if __name__ == "__main__":
     BaseInfiltration = object
 else:
     from smoderp2d.processes.infiltration import BaseInfiltration
+    stand_alone = False
 
 
 class SingleSoilGAIUR(object):
@@ -26,8 +27,8 @@ class SingleSoilGAIUR(object):
         sm - suction pressure at the wetting front (s) time difference of the moisture (m)
         """
 
-        self._ks = ks
-        self._sm = sm
+        self._ks = 1e-5 
+        self._sm = 1e-2
 
         # cumulative rainfall
         self._p_n_1 = self._p_n = 0.0

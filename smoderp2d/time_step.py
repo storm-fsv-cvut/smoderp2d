@@ -105,7 +105,9 @@ class TimeStep:
             return actRain
         
         # precalculate infiltration for soil types
-        infiltration.precalc(delta_t,fc.total_time-infilt_time)
+        # TODO the actual rainfall should be assight here
+        #      in the future shloud be mover into main loop bellow
+        infiltration.precalc(delta_t,fc.total_time-infilt_time, potRain)
 
         #
         # nulovani na zacatku kazdeho kola
@@ -116,7 +118,7 @@ class TimeStep:
         subsurface.fill_slope()
         subsurface.new_inflows()
 
-        # print 'bbilll'
+        # MAIN COMPUTAION LOOP
         for i in rr:
             for j in rc[i]:
 

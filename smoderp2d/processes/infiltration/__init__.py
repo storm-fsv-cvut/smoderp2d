@@ -58,7 +58,7 @@ class BaseInfiltration(object):
             self._soil.append(SingleSoilBI(
                 ks=soils_data[i][1], s=soils_data[i][2]))
 
-    def precalc(self, dt, total_time):
+    def precalc(self, dt, total_time, cprec):
         """ Precalculates potential infiltration got a given soil.
         The precalculated value is storred in the self._combinat_index
         """

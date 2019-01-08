@@ -19,13 +19,13 @@ class SingleSoilGA(object):
         
         # experimenal
         # depth of plough_pan
-        self._z_plough_pan = 10
+        self._z_plough_pan = 1000
         self._plough_pan_reached = False
 
         # TODO include into inputs should be different for different soils
-        self._psi = 0.005  # soil water potential at the wetting front
+        self._psi = 1e-2  # soil water potential at the wetting front
         # TODO include into inputs should be different for different soils
-        self._d_theta = 0.45  # theta difference
+        self._d_theta = 1  # theta difference
 
         # only flobal variable
         # stores the infiltration height
@@ -103,7 +103,7 @@ class GreenAmptInfiltration(BaseInfiltration):
             self._soil.append(SingleSoilGA(
                 ks=soils_data[i][1]))
 
-    def precalc(self, dt, total_time):
+    def precalc(self, dt, total_time, cpred):
         """ Precalculates potential infiltration got a given soil.
         The precalculated value is storred in the self._combinat_index """
 
