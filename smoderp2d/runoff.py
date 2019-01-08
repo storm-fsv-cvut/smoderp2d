@@ -27,6 +27,7 @@ from smoderp2d.providers import Logger
 
 from smoderp2d.exceptions import MaxIterationExceeded
 from smoderp2d.exceptions import SmoderpError
+from smoderp2d.exceptions import IncorrectInfiltrationType
 
 class FlowControl(object):
     """FlowControl manage variables contains variables related to main
@@ -143,10 +144,10 @@ class Runoff(object):
             from smoderp2d.processes.infiltration.richards import RichardsInfiltration
             self.infiltration = RichardsInfiltration(Globals.get_combinatIndex())
         elif Globals.get_infiltration_type() == 4 : 
-            from smoderp2d.processes.infiltration.richards import GreenAmptInfiltrationUnsteadyRain
+            from smoderp2d.processes.infiltration.greenamptunsteadyrain import GreenAmptInfiltrationUnsteadyRain
             self.infiltration = GreenAmptInfiltrationUnsteadyRain(Globals.get_combinatIndex())
         else :
-            raise SmoderpError()
+            raise IncorrectInfiltrationType(Globals.get_infiltration_type())
 
         # class handling the subsurface processes if desir
         # TODO: include in data preprocessing

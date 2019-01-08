@@ -42,3 +42,16 @@ class NegativeWaterLevel(SmoderpError):
 
     def __str__(self):
         return repr(self.msg)
+
+
+class IncorrectInfiltrationType(SmoderpError):
+
+    """Exception raised if the water level goes to negative values.
+
+    """
+
+    def __init__(self, infiltration_type):
+        self.msg = 'Incorrect infiltration type: the infiltraion id should be in the range 1 - 4. {} was assign in the config'.format(infiltration_type)
+
+    def __str__(self):
+        return repr(self.msg)
