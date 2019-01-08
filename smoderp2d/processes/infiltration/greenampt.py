@@ -15,16 +15,17 @@ class SingleSoilGA(object):
         """
 
         self._ks = ks
-
+        self._ks = 1e-5
+        
         # experimenal
         # depth of plough_pan
         self._z_plough_pan = 10
         self._plough_pan_reached = False
 
         # TODO include into inputs should be different for different soils
-        self._psi = 0.01  # soil water potential at the wetting front
+        self._psi = 0.005  # soil water potential at the wetting front
         # TODO include into inputs should be different for different soils
-        self._d_theta = 0.4  # theta difference
+        self._d_theta = 0.45  # theta difference
 
         # only flobal variable
         # stores the infiltration height
