@@ -66,11 +66,6 @@
 #% description:  Input points features
 #% required: no
 #%end
-#%option G_OPT_M_DIR
-#% key: output
-#% description: Output folder
-#% required: yes
-#%end
 #%option G_OPT_DB_TABLE
 #% key: table_soil_vegetation
 #% description: Table of soil and land use information
@@ -98,12 +93,18 @@ import sys
 import grass.script as gs
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from smoderp2d import run
+from smoderp2d import Runner
 from smoderp2d.exceptions import ProviderError
+
+class GrassRunner(Runner):
+    def set_options(self, options):
+        self._provider.set_options(options)
 
 if __name__ == "__main__":
     options, flags = gs.parser()
     try:
-        sys.exit(run())
+        runner = GrassRunner()
+        runner.set_options(options) # flags skipped (empty)
+        sys.exit(runner.run())
     except ProviderError as e:
-        sys.exit(e)
+        gs.fatal(e)

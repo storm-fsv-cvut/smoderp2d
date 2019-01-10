@@ -14,7 +14,7 @@ class ArcGisProvider(BaseProvider):
     def __init__(self):
         super(ArcGisProvider, self).__init__()
 
-        self._print_fn = arcpy.AddMessage
+        self._print_fn = self._print_logo_fn = arcpy.AddMessage
 
         # ArcGIS provider is designed to support only 'full' type of
         # computation
@@ -35,7 +35,7 @@ class ArcGisProvider(BaseProvider):
         return sys.argv[idx+1]
 
     def _load_dpre(self):
-        """Load configuration data from data preparation procedure.
+        """Run data preparation procedure.
 
         :return dict: loaded data
         """

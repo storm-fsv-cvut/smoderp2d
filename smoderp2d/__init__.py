@@ -23,30 +23,37 @@ The computational options are as follows:
 
 import os
 
-def run():
-    # initialize provider
-    if os.getenv('ESRIACTIVEINSTALLATION'):
-        from smoderp2d.providers.arcgis import ArcGisProvider
-        provider_class = ArcGisProvider
-    elif os.getenv('GISRC'):
-        from smoderp2d.providers.grass import GrassProvider
-        provider_class = GrassProvider
-    else:
-        from smoderp2d.providers.cmd import CmdProvider
-        provider_class = CmdProvider
-    provider = provider_class()
+class Runner(object):
+    def __init__(self):
+        self._provider = self._provider_factory()
 
-    # print logo
-    provider.logo()
+    def _provider_factory(self):
+        # initialize provider
+        if os.getenv('ESRIACTIVEINSTALLATION'):
+            from smoderp2d.providers.arcgis import ArcGisProvider
+            provider_class = ArcGisProvider
+        elif os.getenv('GISRC'):
+            from smoderp2d.providers.grass import GrassGisProvider
+            provider_class = GrassGisProvider
+        else:
+            from smoderp2d.providers.cmd import CmdProvider
+            provider_class = CmdProvider
+        provider = provider_class()
 
-    # load configuration (set global variables)
-    provider.load()
+        return provider
 
-    # must be called after initialization (!)
-    from smoderp2d.runoff import Runoff
+    def run(self):
+        # print logo
+        self._provider.logo()
 
-    # the computation
-    runoff = Runoff(provider)
-    runoff.run()
+        # load configuration (set global variables)
+        self._provider.load()
 
-    return 0
+        # must be called after initialization (!)
+        from smoderp2d.runoff import Runoff
+
+        # the computation
+        runoff = Runoff(self._provider)
+        runoff.run()
+
+        return 0

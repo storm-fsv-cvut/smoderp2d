@@ -37,7 +37,6 @@ class PrepareData(PrepareDataBase):
         # get input parameters
         self._get_input_params()
 
-
     def _get_input_params(self):
         """Get input parameters from ArcGIS toolbox.
         """
@@ -74,19 +73,6 @@ class PrepareData(PrepareDataBase):
                 constants.PARAMETER_STREAMTABLE_CODE)
         }
 
-    def run(self):
-        """Main function of data_preparation class. Returns computed
-        parameters from input data using ArcGIS in a form of a
-        dictionary.
-
-        :return data: dictionary with model parameters.
-        """
-        super(PrepareData, self).run()
-
-        self._save_raster("fl_dir", self.data['mat_fd'], self.data['temp'])
-
-        return self.data
-    
     def _add_message(self, message):
         """
         Pops up a message into arcgis and saves it into log file.
@@ -108,20 +94,26 @@ class PrepareData(PrepareDataBase):
         )
 
     def _set_mask(self):
-        """TODO"""
-        dmt_copy = os.path.join(
-            self.data['temp'], "tempGDB.gdb", "dmt_copy")
-        arcpy.CopyRaster_management(self._input_params['elevation'], dmt_copy)
+        """Set mask from elevation map.
+
+        :return: dmt copy, mask
+        """
+        elev_copy = os.path.join(
+            self.data['temp'], "tempGDB.gdb", "elevation_copy"
+        )
+        arcpy.CopyRaster_management(
+            self._input_params['elevation'], elev_copy
+        )
 
         # align computation region to DMT grid
         arcpy.env.snapRaster = self._input_params['elevation']
 
-        dmt_mask = os.path.join(self.data['temp'], "dmt_mask")
+        elev_mask = os.path.join(self.data['temp'], "elevation_mask")
         self.gp.Reclassify_sa(
-            dmt_copy, "VALUE", "-100000 100000 1", dmt_mask, "DATA"
-        )  # reklasifikuje se vsechno na 1
+            elev_copy, "VALUE", "-100000 100000 1", dmt_mask, "DATA"
+        )
         
-        return dmt_copy, dmt_mask
+        return elev_copy, elev_mask
 
     def _dmtfce(self, dmt):
         return dmtfce(dmt, self.data['temp'])

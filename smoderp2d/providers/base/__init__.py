@@ -24,9 +24,12 @@ class BaseProvider(object):
         self._args = Args()
 
         self._print_fn = print
+        self._print_logo_fn = print
 
     def _load_dpre(self):
-        """ Load configuration data from data preparation procedure.
+        """Run data preparation procedure.
+
+        See ArcGisProvider and GrassGisProvider for implementation issues.
 
         :return dict: loaded data
         """
@@ -143,11 +146,17 @@ class BaseProvider(object):
 
     @staticmethod
     def _cleanup():
-        """Clean-up output directory."""
-        output = Globals.outdir
-        if os.path.exists(output):
-            shutil.rmtree(output)
-        os.makedirs(output)
+        """Clean-up output directory.
+
+        :param output_dir: output directory to clean up
+        """
+        output_dir = Globals.outdir
+        if not output_dir:
+            # no output directory defined
+            return
+        if os.path.exists(output_dir):
+            shutil.rmtree(output_dir)
+        os.makedirs(output_dir)
         
     @staticmethod
     def _comp_type(tc):
@@ -188,9 +197,10 @@ class BaseProvider(object):
 
     def logo(self):
         """Print Smoderp2d ascii-style logo."""
-        with open(os.path.join(os.path.dirname(__file__), 'txtlogo.txt'), 'r') as fd:
-            self._print_fn(fd.read())
-        self._print_fn('') # extra line
+        logo_file = os.path.join(os.path.dirname(__file__), 'txtlogo.txt')
+        with open(logo_file, 'r') as fd:
+            self._print_logo_fn(fd.read())
+        self._print_logo_fn('') # extra line
 
     @staticmethod
     def _save_data(data, filename):

@@ -1,17 +1,36 @@
+import os
+
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 
+import grass.script as gs
+
 class PrepareData(PrepareDataBase):
-    def __init__(self):
+    def __init__(self, options):
         os.environ['GRASS_OVERWRITE'] = '1'
-        
-    def run(self):
-        """Main function of data_preparation class. Returns computed
-        parameters from input data using GRASS GIS in a form of a
-        dictionary.
 
-        :return data: dictionary with model parameters.
+        # get input parameters
+        self._get_input_params(options)
+
+    def _get_input_params(self, options):
+        """Get input parameters from ArcGIS toolbox.
         """
-        # get input parameters from GRASS UI
-        # TODO: TBD
+        self._input_params = options
+        # output directory not defined by GRASS (data are written into
+        # current mapset by default)
+        self._input_params['output'] = None
 
+    def _set_mask(self):
+        """Set mask from elevation map.
+
+        :return: copy, mask (due to ArcGIS provider)
+        """
+        elev = self._input_params['elevation']
+        gs.run_command('g.region',
+                       raster=elev
+        )
+        gs.run_command('r.mask',
+                       raster=elev
+        )
+
+        return elev, elev

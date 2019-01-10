@@ -46,6 +46,8 @@ class PrepareDataBase(object):
         self.data['mat_slope'] = self._rst2np(slope_clip)
         self.data['mat_fd'] = self._rst2np(flow_direction_clip)
 
+        self._save_raster("fl_dir", self.data['mat_fd'], self.data['temp'])
+
         # update data dict for spatial ref info
         self._get_raster_dim(dmt_clip)
 
@@ -151,6 +153,10 @@ class PrepareDataBase(object):
         """Creates empty output and temporary directories to which created
         files are saved.
         """
+        if not self.data['outdir']:
+            # no output directory defined, nothing to do
+            return
+
         # delete output directory if exists and create new one
         Logger.info(
             "Creating output directory <{}>".format(self.data['outdir'])
@@ -168,7 +174,7 @@ class PrepareDataBase(object):
         )
         os.makedirs(self.data['temp'])
         
-    def set_mask(self):
+    def _set_mask(self):
         raise NotImplemented("Not implemented for base provider")
     
     def _dmtfce(self, dmt):
