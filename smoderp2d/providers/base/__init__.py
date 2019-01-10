@@ -93,6 +93,8 @@ class BaseProvider(object):
 
     def load(self):
         """Load configuration data."""
+        if not self._args.typecomp:
+            raise ProviderError('Computing type not defined')
         if self._args.typecomp not in ('dpre', 'roff', 'full'):
             raise ProviderError('Unsupported partial computing: {}'.format(
                 self._args.typecomp
