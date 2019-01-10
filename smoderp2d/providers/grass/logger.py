@@ -1,16 +1,12 @@
 import logging
 
-import arcpy
+from grass.script.core import fatal, warning, message
 
-class ArcPyLogHandler(logging.Handler):
-    """Custom logging class that bounces messages to the arcpy tool
-    window.
-
-    Taken from
-    https://gis.stackexchange.com/questions/135920/logging-arcpy-error-messages
+class GrassGisLogHandler(logging.Handler):
+    """Custom logging class that bounces messages to the GRASS GIS.
     """
     def __init__(self):
-        super(ArcPyLogHandler, self).__init__()
+        super(GrassGisLogHandler, self).__init__()
 
     def emit(self, record):
         """ Write the log message.
@@ -23,8 +19,10 @@ class ArcPyLogHandler(logging.Handler):
             msg = record.msg
 
         if record.levelno >= logging.ERROR:
-            arcpy.AddError(msg)
+            fatal(msg)
         elif record.levelno >= logging.WARNING:
-            arcpy.AddWarning(msg)
+            warning(msg)
         elif record.levelno >= logging.INFO:
-            arcpy.AddMessage(msg)
+            message(msg)
+        elif record.levelno >= logging.INFO:
+            debug(msg)
