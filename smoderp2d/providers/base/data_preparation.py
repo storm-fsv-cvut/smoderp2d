@@ -9,8 +9,8 @@ from smoderp2d.providers.base import Logger
 class PrepareDataBase(object):
 
     def run(self):
+        Logger.info('-' * 80)
         Logger.info("DATA PREPARATION")
-        Logger.info("----------------")
 
         # set output data directory
         self._set_output_data()
@@ -30,9 +30,9 @@ class PrepareDataBase(object):
         Logger.info("Computing intersect of input data...")
         intersect, mask_shp, sfield = self._get_intersect(
             dmt_copy, dmt_mask,
-            self._input_params['veg_indata'], self._input_params['soil_indata'],
-            self._input_params['vtype'], self._input_params['stype'],
-            self._input_params['tab_puda_veg'], self._input_params['tab_puda_veg_code']
+            self._input_params['vegetation'], self._input_params['soil'],
+            self._input_params['vegetation_type'], self._input_params['soil_type'],
+            self._input_params['table_soil_vegetation'], self._input_params['table_soil_vegetation_code']
         )
 
         # clip
@@ -63,7 +63,7 @@ class PrepareDataBase(object):
 
         # load precipitation input file
         self.data['sr'], self.data['itera'] = \
-            rainfall.load_precipitation(self._input_params['rainfall_file_path'])
+            rainfall.load_precipitation(self._input_params['rainfall_file'])
 
         # compute aspect
         self._get_slope_dir(dmt_clip)
@@ -88,6 +88,7 @@ class PrepareDataBase(object):
         self.data['vpix'] = None
 
         Logger.info("Data preparation has been finished")
+        Logger.info('-' * 80)
 
         return self.data
 
@@ -152,7 +153,7 @@ class PrepareDataBase(object):
         """
         # delete output directory if exists and create new one
         Logger.info(
-            "Creating output directory {}".format(self.data['outdir'])
+            "Creating output directory <{}>".format(self.data['outdir'])
         )
         if os.path.exists(self.data['outdir']):
             shutil.rmtree(self.data['outdir'])
@@ -173,8 +174,9 @@ class PrepareDataBase(object):
     def _dmtfce(self, dmt):
         raise NotImplemented("Not implemented for base provider")
 
-    def _get_intersect(self, dmt_copy, mask, veg_indata, soil_indata,
-                       vtype, stype, tab_puda_veg, tab_puda_veg_code):
+    def _get_intersect(self, dmt_copy, mask, vegetation, soil,
+                       vegetation_type, soil_type,
+                       table_soil_vegetation, table_soil_vegetation_code):
         raise NotImplemented("Not implemented for base provider")
 
     def _get_input_params(self):

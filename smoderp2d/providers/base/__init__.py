@@ -188,7 +188,7 @@ class BaseProvider(object):
         """Print Smoderp2d ascii-style logo."""
         with open(os.path.join(os.path.dirname(__file__), 'txtlogo.txt'), 'r') as fd:
             self._print_fn(fd.read())
-        self._print_fn() # extra line
+        self._print_fn('') # extra line
 
     @staticmethod
     def _save_data(data, filename):
