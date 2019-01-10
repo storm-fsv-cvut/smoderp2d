@@ -31,8 +31,11 @@ def logger():
     )
 
     logging.setLoggerClass(BaseLogger)
-    # create unique logger for each run (see ArcGIS issue #22)
-    logger = logging.getLogger('Smoderp_{}'.format(time.time()))
+    logger_name = 'Smoderp2d'
+    if os.getenv('ESRIACTIVEINSTALLATION'):
+        # create unique logger for each run (see ArcGIS issue #22)
+        logger_name += '_{}'.format(time.time())
+    logger = logging.getLogger(logger_name)
     logger.setLevel(logging.DEBUG)
 
     return logger
