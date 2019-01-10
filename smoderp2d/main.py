@@ -32,10 +32,7 @@ def run():
     provider.logo()
 
     # load configuration (set global variables)
-    try:
-        provider.load()
-    except ProviderError as e:
-        sys.exit(e)
+    provider.load()
 
     # must be called after initialization
     from smoderp2d.runoff import Runoff
@@ -47,4 +44,7 @@ def run():
     return 0
 
 if __name__ == "__main__":
-    sys.exit(run())
+    try:
+        sys.exit(run())
+    except ProviderError as e:
+        sys.exit(e)
