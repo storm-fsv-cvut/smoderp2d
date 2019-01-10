@@ -99,7 +99,7 @@ class PrepareData(PrepareDataBase):
         :return: dmt copy, mask
         """
         elev_copy = os.path.join(
-            self.data['temp'], "tempGDB.gdb", "elevation_copy"
+            self.data['temp'], "tempGDB.gdb", "elev_copy"
         )
         arcpy.CopyRaster_management(
             self._input_params['elevation'], elev_copy
@@ -108,9 +108,9 @@ class PrepareData(PrepareDataBase):
         # align computation region to DMT grid
         arcpy.env.snapRaster = self._input_params['elevation']
 
-        elev_mask = os.path.join(self.data['temp'], "elevation_mask")
+        elev_mask = os.path.join(self.data['temp'], "elev_mask")
         self.gp.Reclassify_sa(
-            elev_copy, "VALUE", "-100000 100000 1", dmt_mask, "DATA"
+            elev_copy, "VALUE", "-100000 100000 1", elev_mask, "DATA"
         )
         
         return elev_copy, elev_mask
