@@ -31,6 +31,7 @@ def logger():
     )
 
     logging.setLoggerClass(BaseLogger)
+    # create unique logger for each run (see ArcGIS issue #22)
     logger = logging.getLogger('Smoderp_{}'.format(time.time()))
     logger.setLevel(logging.DEBUG)
 
