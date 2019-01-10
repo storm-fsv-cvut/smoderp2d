@@ -26,45 +26,53 @@ class PrepareData(PrepareDataBase):
         self.gp = arcgisscripting.create()
 
         # setting the workspace environment
-        self.gp.workspace = self.gp.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
+        self.gp.workspace = self.gp.GetParameterAsText(
+            constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY
+        )
 
         # checking arcgis if ArcGIS Spatial extension is available
         arcpy.CheckOutExtension("Spatial")
         self.gp.overwriteoutput = 1
 
+        # get input parameters
+        self._get_input_params()
+
+
     def _get_input_params(self):
         """Get input parameters from ArcGIS toolbox.
         """
-        self._input_params['dmt'] = self.gp.GetParameterAsText(
-            constants.PARAMETER_DMT)
-        self._input_params['soil_indata'] = self.gp.GetParameterAsText(
-            constants.PARAMETER_SOIL)
-        self._input_params['stype'] = self.gp.GetParameterAsText(
-            constants.PARAMETER_SOIL_TYPE)
-        self._input_params['veg_indata'] = self.gp.GetParameterAsText(
-            constants.PARAMETER_VEGETATION)
-        self._input_params['vtype'] = self.gp.GetParameterAsText(
-            constants.PARAMETER_VEGETATION_TYPE)
-        self._input_params['rainfall_file_path'] = self.gp.GetParameterAsText(
-            constants.PARAMETER_PATH_TO_RAINFALL_FILE)
-        self._input_params['maxdt'] = float(self.gp.GetParameterAsText(
-            constants.PARAMETER_MAX_DELTA_T))
-        self._input_params['end_time'] = float(self.gp.GetParameterAsText(
-            constants.PARAMETER_END_TIME)) * 60.0  # prevod na s
-        self._input_params['points'] = self.gp.GetParameterAsText(
-            constants.PARAMETER_POINTS)
-        self._input_params['output'] = self.gp.GetParameterAsText(
-            constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
-        self._input_params['tab_puda_veg'] = self.gp.GetParameterAsText(
-            constants.PARAMETER_SOILVEGTABLE)
-        self._input_params['tab_puda_veg_code'] = self.gp.GetParameterAsText(
-            constants.PARAMETER_SOILVEGTABLE_CODE)
-        self._input_params['stream'] = self.gp.GetParameterAsText(
-            constants.PARAMETER_STREAM)
-        self._input_params['tab_stream_tvar'] = self.gp.GetParameterAsText(
-            constants.PARAMETER_STREAMTABLE)
-        self._input_params['tab_stream_tvar_code'] = self.gp.GetParameterAsText(
-            constants.PARAMETER_STREAMTABLE_CODE)
+        self._input_params = {
+            'elevation': self.gp.GetParameterAsText(
+                constants.PARAMETER_DMT),
+            'soil': self.gp.GetParameterAsText(
+                constants.PARAMETER_SOIL),
+            'soil_type': self.gp.GetParameterAsText(
+                constants.PARAMETER_SOIL_TYPE),
+            'vegetation': self.gp.GetParameterAsText(
+                constants.PARAMETER_VEGETATION),
+            'vegetation_type': self.gp.GetParameterAsText(
+                constants.PARAMETER_VEGETATION_TYPE),
+            'rainfall_file': self.gp.GetParameterAsText(
+                constants.PARAMETER_PATH_TO_RAINFALL_FILE),
+            'maxdt': float(self.gp.GetParameterAsText(
+                constants.PARAMETER_MAX_DELTA_T)),
+            'end_time': float(self.gp.GetParameterAsText(
+                constants.PARAMETER_END_TIME)) * 60.0,  # prevod na s
+            'points': self.gp.GetParameterAsText(
+                constants.PARAMETER_POINTS),
+            'output': self.gp.GetParameterAsText(
+                constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY),
+            'table_soil_vegetation': self.gp.GetParameterAsText(
+                constants.PARAMETER_SOILVEGTABLE),
+            'table_soil_vegetation_code': self.gp.GetParameterAsText(
+                constants.PARAMETER_SOILVEGTABLE_CODE),
+            'stream': self.gp.GetParameterAsText(
+                constants.PARAMETER_STREAM),
+            'table_stream_shape': self.gp.GetParameterAsText(
+                constants.PARAMETER_STREAMTABLE),
+            'table_stream_shape_code': self.gp.GetParameterAsText(
+                constants.PARAMETER_STREAMTABLE_CODE)
+        }
 
     def run(self):
         """Main function of data_preparation class. Returns computed
@@ -103,10 +111,10 @@ class PrepareData(PrepareDataBase):
         """TODO"""
         dmt_copy = os.path.join(
             self.data['temp'], "tempGDB.gdb", "dmt_copy")
-        arcpy.CopyRaster_management(self._input_params['dmt'], dmt_copy)
+        arcpy.CopyRaster_management(self._input_params['elevation'], dmt_copy)
 
         # align computation region to DMT grid
-        arcpy.env.snapRaster = self._input_params['dmt']
+        arcpy.env.snapRaster = self._input_params['elevation']
 
         dmt_mask = os.path.join(self.data['temp'], "dmt_mask")
         self.gp.Reclassify_sa(
@@ -119,17 +127,17 @@ class PrepareData(PrepareDataBase):
         return dmtfce(dmt, self.data['temp'])
     
     def _get_intersect(self, dmt, mask,
-                        veg_indata, soil_indata, vtype, stype,
-                        tab_puda_veg, tab_puda_veg_code):
+                        vegetation, soil, vegetation_type, soil_type,
+                        table_soil_vegetation, table_soil_vegetation_code):
         """
         :param str dmt: DMT raster name
         :param str mask: raster mask name
-        :param str veg_indata: vegetation input vector name
-        :param soil_indata: soil input vector name
-        :param vtype: attribute vegetation column for dissolve
-        :param stype: attribute soil column for dissolve
-        :param tab_puda_veg: soil table to join
-        :param tab_puda_veg_code: key soil attribute 
+        :param str vegetation: vegetation input vector name
+        :param soil: soil input vector name
+        :param vegetation_type: attribute vegetation column for dissolve
+        :param soil_type: attribute soil column for dissolve
+        :param table_soil_vegetation: soil table to join
+        :param table_soil_vegetation_code: key soil attribute 
 
         :return intersect: intersect vector name
         :return mask_shp: vector mask name
@@ -145,8 +153,8 @@ class PrepareData(PrepareDataBase):
             self.data['temp'], "s_b.shp")
         veg_boundary = os.path.join(
             self.data['temp'], "v_b.shp")
-        arcpy.Dissolve_management(veg_indata, veg_boundary, vtype)
-        arcpy.Dissolve_management(soil_indata, soil_boundary, stype)
+        arcpy.Dissolve_management(vegetation, veg_boundary, vegetation_type)
+        arcpy.Dissolve_management(soil, soil_boundary, soil_type)
 
         # do intersection
         group = [soil_boundary, veg_boundary, mask_shp]
@@ -161,9 +169,9 @@ class PrepareData(PrepareDataBase):
             intersect, "puda_veg", "TEXT", "", "", "15", "",
             "NULLABLE", "NON_REQUIRED","")
 
-        # compute "puda_veg" values (stype + vtype)
-        vtype1 = vtype + "_1" if stype == vtype else vtype
-        fields = [stype, vtype1, "puda_veg"]
+        # compute "puda_veg" values (soil_type + vegetation_type)
+        vtype1 = vegetation_type + "_1" if soil_type == vegetation_type else vegetation_type
+        fields = [soil_type, vtype1, "puda_veg"]
         with arcpy.da.UpdateCursor(intersect, fields) as cursor:
             for row in cursor:
                 row[2] = row[0] + row[1]
@@ -172,13 +180,13 @@ class PrepareData(PrepareDataBase):
         # copy attribute table to DBF file for modifications
         puda_veg_dbf = os.path.join(
             self.data['temp'], "puda_veg_tab_current.dbf")
-        arcpy.CopyRows_management(tab_puda_veg, puda_veg_dbf)
+        arcpy.CopyRows_management(table_soil_vegetation, puda_veg_dbf)
 
         # join table copy to intersect feature class
         sfield = ["k", "s", "n", "pi", "ppl",
                   "ret", "b", "x", "y", "tau", "v"]
         self._join_table(
-            intersect, "puda_veg", puda_veg_dbf, tab_puda_veg_code,
+            intersect, "puda_veg", puda_veg_dbf, table_soil_vegetation_code,
             ";".join(sfield)
         )
 
@@ -436,8 +444,8 @@ class PrepareData(PrepareDataBase):
         # pocitam vzdy s ryhama pokud jsou zadane vsechny vstupy pro
         # vypocet toku, toky se pocitaji a type_of_computing je 3
         listin = [self._input_params['stream'],
-                  self._input_params['tab_stream_tvar'],
-                  self._input_params['tab_stream_tvar_code']]
+                  self._input_params['table_stream_shape'],
+                  self._input_params['table_stream_shape_code']]
         tflistin = [len(i) > 1 for i in listin]
 
         if all(tflistin):
@@ -447,9 +455,9 @@ class PrepareData(PrepareDataBase):
            self.data['type_of_computing'] == 5:
 
             input = [self._input_params['stream'],
-                     self._input_params['tab_stream_tvar'],
-                     self._input_params['tab_stream_tvar_code'],
-                     self._input_params['dmt'],
+                     self._input_params['table_stream_shape'],
+                     self._input_params['table_stream_shape_code'],
+                     self._input_params['elevation'],
                      mask_shp,
                      self.data['spix'],
                      self.data['r'],

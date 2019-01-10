@@ -12,11 +12,6 @@ class PrepareDataBase(object):
         Logger.info("DATA PREPARATION")
         Logger.info("----------------")
 
-        self._input_params = {}
-
-        # get input parameters
-        self._get_input_params()
-
         # set output data directory
         self._set_output_data()
 
