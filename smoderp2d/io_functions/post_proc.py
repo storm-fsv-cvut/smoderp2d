@@ -124,7 +124,7 @@ def do(cumulative, mat_slope, G, surArr):
 
         # for i in rrows:
             # for j in rcols[i]:
-                # vRest[i][j] =    surArr[i][j].v_rest
+                # vRest[i][j] =    surArr[i][j].vol_rest
                 # finState[i][j] = int(surArr[i][j].state)
 
         # outName = 'reachFID'
@@ -218,7 +218,7 @@ def do(cumulative, mat_slope, G, surArr):
 
         # for i in rrows:
             # for j in rcols[i]:
-                # vRest[i][j] =    surArr[i][j].v_rest
+                # vRest[i][j] =    surArr[i][j].vol_rest
                 # finState[i][j] = int(surArr[i][j].state)
                 # hCrit[i][j] =    surArr[i][j].h_crit
 
@@ -302,7 +302,7 @@ def do(cumulative, mat_slope, G, surArr):
 #                     str(surface.reach[iReach].id_) + sep +  \
 #                     str(surface.reach[iReach].v_out_cum) + sep +   \
 #                       str(surface.reach[iReach].Q_max) + sep + str(surface.reach[iReach].timeQ_max)  + sep + str(surface.reach[iReach].h_max) + sep + \
-#                         str(surface.reach[iReach].v_rest) + sep + \
+#                         str(surface.reach[iReach].vol_rest) + sep + \
 #                           str(surface.reach[iReach].to_node) + '\n'
 
 #                 f.write(line)
@@ -338,7 +338,7 @@ def do(cumulative, mat_slope, G, surArr):
 #                     str(surface.reach[iReach].id_) + sep +  \
 #                     str(surface.reach[iReach].V_out_cum) + sep +   \
 #                       str(surface.reach[iReach].Q_max) + sep + str(surface.reach[iReach].timeQ_max)  + sep + str(surface.reach[iReach].h_max) + sep + \
-#                         str(surface.reach[iReach].V_rest) + sep + \
+#                         str(surface.reach[iReach].vol_rest) + sep + \
 #                         str(surface.reach[iReach].to_node) + '\n'
 
 #                 f.write(line)

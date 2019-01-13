@@ -62,7 +62,7 @@ def compute_h(A, m, b, err=0.0001, max_iter=20):
 def rectangle(reach, dt):
     Vp = reach.Q365 * dt                # objem           : baseflow
     hp = Vp / (reach.b * reach.length)    # vyska hladiny   : baseflow
-    dV = reach.V_in_from_field + reach.V_rest + \
+    dV = reach.V_in_from_field + reach.vol_rest + \
         reach.V_in_from_reach    # z okoli, predtim, odtok  : epizoda
     h = dV / (reach.b * reach.length)  # vyska hladiny   : epizoda
     H = hp + h                        # total vyska hl. : epizoda
@@ -82,10 +82,10 @@ def rectangle(reach, dt):
     if reach.V_out > dV:
         reach.V_out = dV
         reach.Q_out = dV / dt
-        reach.V_rest = 0.0
+        reach.vol_rest = 0.0
     else:
         reach.Q_out = reach.V_out / dt
-        reach.V_rest = dV - reach.V_out  # V_zbyt
+        reach.vol_rest = dV - reach.V_out  # V_zbyt
     reach.h = H
 
 
@@ -99,7 +99,7 @@ def trapezoid(reach, dt):
     B = reach.b + 2.0 * hp * reach.m  # b pro pocatecni stav (Q365)
     Bb = B + hp * reach.m
     h = compute_h(
-        A=(reach.V_in_from_field + reach.V_rest +
+        A=(reach.V_in_from_field + reach.vol_rest +
            reach.V_in_from_reach) / reach.length,
         m=reach.m,
      b=reach.b)
@@ -120,17 +120,17 @@ def trapezoid(reach, dt):
     if reach.V_out > dV:
         reach.V_out = dV
         reach.Q_out = dV / dt
-        reach.V_rest
+        reach.vol_rest
     else:
         reach.Q_out = reach.V_out / dt
-        reach.V_rest = dV - reach.V_out  # V_zbyt
+        reach.vol_rest = dV - reach.V_out  # V_zbyt
     reach.h = H
     
     
-    #print reach.V_in_from_field, reach.V_rest, reach.V_in_from_reach, reach.length
+    #print reach.V_in_from_field, reach.vol_rest, reach.V_in_from_reach, reach.length
     #raw_input()
     # prt.mujout.writelines(str(reach.id_) + ';' + str(reach.h) + ';' +
-    # str(reach.V_in_from_field) + ';' + str(reach.V_rest) + ';' + str(
+    # str(reach.V_in_from_field) + ';' + str(reach.vol_rest) + ';' + str(
     # reach.V_in_from_reach) + ';' + str(reach.V_out) + ';' +
     # str(reach.to_node)+'\n')
 
@@ -148,12 +148,12 @@ def triangle(reach, dt):
     B = 2.0 * hp * \
         reach.m                             # sirka zakladny  : baseflow \/
     # Bb = B + reach.h*reach.m                                                                # tohle nechapu, takze jsem to zakomantoval...
-    # h  = (reach.V_in_from_field + reach.V_rest + reach.V_in_from_reach)/(Bb
+    # h  = (reach.V_in_from_field + reach.vol_rest + reach.V_in_from_reach)/(Bb
     # * reach.length) # tohle nechapu...
 
     Ve = (
         reach.V_in_from_field +
-        reach.V_rest +
+        reach.vol_rest +
      reach.V_in_from_reach)     # objem z epizody
     #
     # vyska z epizody co pribude na trouhelnik z baseflow (takze lichobeznik)
@@ -183,10 +183,10 @@ def triangle(reach, dt):
     if reach.V_out > Ve:
         reach.V_out = Ve
         reach.Q_out = Ve / dt
-        reach.V_rest = 0
+        reach.vol_rest = 0
     else:
         reach.Q_out = reach.V_out / dt
-        reach.V_rest = Ve - reach.V_out
+        reach.vol_rest = Ve - reach.V_out
     reach.h = H
 
 
@@ -200,7 +200,7 @@ def parabola(reach, dt):
     # Vp = reach.Q365*dt
     # hp = math.pow(Vp*3/(2*reach.length*u),0.5)
     # B = u*hp #sirka hladiny #b = 3*a/(2*h)
-    # reach.h = math.pow((reach.V_in_from_field + reach.V_rest)/(2*reach.length*math.pow(hp,0.5))+math.pow(hp,1.5),0.6666)  # h = (dV/2.L.hp^0,5+hp^1,5)^0,666
+    # reach.h = math.pow((reach.V_in_from_field + reach.vol_rest)/(2*reach.length*math.pow(hp,0.5))+math.pow(hp,1.5),0.6666)  # h = (dV/2.L.hp^0,5+hp^1,5)^0,666
     # H = hp + reach.h
     # Bb = u*H
     # O = Bb+8*H*H/(3*Bb)
@@ -214,7 +214,7 @@ def parabola(reach, dt):
         # reach.V_out = dV
         # reach.Q_out = dV/dt
     # reach.vs = math.pow(R,0.6666)*math.pow(reach.slope,0.5)/(reach.roughness) #v
-    # reach.V_rest = dV - reach.V_out
+    # reach.vol_rest = dV - reach.V_out
     # reach.h = H
 
 
