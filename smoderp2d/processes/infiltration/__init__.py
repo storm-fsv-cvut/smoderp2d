@@ -24,9 +24,8 @@ class SingleSoilBI(object):
 
         # saturated hydraulic conductivity
         self._ks = ks
-        self._ks = 1e-5
         # sorbtion
-        self._s = 5e-5
+        self._s = s
         # only flobal variable
         # stores the infiltration height
         # for a given time step
