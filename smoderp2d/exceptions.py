@@ -14,3 +14,16 @@ class MaxIterationExceeded(SmoderpError):
 
     def __str__(self):
         return repr(self.msg)
+
+
+class NegativeWaterLevel(SmoderpError):
+
+    """Exception raised if the water level goes to negative values.
+
+    """
+
+    def __init__(self):
+        self.msg = 'Water level reached negative value'
+
+    def __str__(self):
+        return repr(self.msg)
