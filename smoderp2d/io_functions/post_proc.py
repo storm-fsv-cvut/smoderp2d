@@ -148,7 +148,7 @@ def do(cumulative, mat_slope, G, surArr):
 #                     str(surface.reach[iReach].id_) + sep +  \
 #                     str(surface.reach[iReach].v_out_cum) + sep +   \
 #                       str(surface.reach[iReach].Q_max) + sep + str(surface.reach[iReach].timeQ_max)  + sep + str(surface.reach[iReach].h_max) + sep + \
-#                         str(surface.reach[iReach].v_rest) + sep + \
+#                         str(surface.reach[iReach].vol_rest) + sep + \
 #                           str(surface.reach[iReach].to_node) + '\n'
 
 #                 f.write(line)
@@ -184,7 +184,7 @@ def do(cumulative, mat_slope, G, surArr):
 #                     str(surface.reach[iReach].id_) + sep +  \
 #                     str(surface.reach[iReach].V_out_cum) + sep +   \
 #                       str(surface.reach[iReach].Q_max) + sep + str(surface.reach[iReach].timeQ_max)  + sep + str(surface.reach[iReach].h_max) + sep + \
-#                         str(surface.reach[iReach].V_rest) + sep + \
+#                         str(surface.reach[iReach].vol_rest) + sep + \
 #                         str(surface.reach[iReach].to_node) + '\n'
 
 #                 f.write(line)

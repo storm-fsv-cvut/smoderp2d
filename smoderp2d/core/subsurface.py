@@ -26,9 +26,9 @@ class SubArrs:
         self.z = z
         self.slope = 0.
         self.exfiltration = 0.
-        self.V_runoff = 0.
-        self.V_runoff_pre = 0.
-        self.V_rest = 0.
+        self.vol_runoff = 0.
+        self.vol_runoff_pre = 0.
+        self.vol_rest = 0.
         self.Ks = Ks
         self.cum_percolation = 0.
         self.percolation = 0.
@@ -93,9 +93,9 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
     def bilance(self, i, j, infilt, inflow, dt):
 
         arr = self.arr[i][j]
-        bil = infilt + arr.V_rest / self.pixel_area + inflow
+        bil = infilt + arr.vol_rest / self.pixel_area + inflow
 
-        # print bil, infilt , arr.V_rest/self.pixel_area , inflow
+        # print bil, infilt , arr.vol_rest/self.pixel_area , inflow
         percolation = self.calc_percolation(i, j, bil, dt)
         arr.cum_percolation += percolation
         bil -= percolation
@@ -103,7 +103,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
         arr.percolation = percolation
         arr.h, arr.exfiltration = self.calc_exfiltration(i, j, bil)
         # print arr.h
-        # print arr.h, infilt, arr.V_rest/self.pixel_area, inflow
+        # print arr.h, infilt, arr.vol_rest/self.pixel_area, inflow
 
     def calc_percolation(self, i, j, bil, dt):
 
@@ -140,27 +140,27 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
         # print arr .Ks
         self.q_subsurface = self.darcy(arr, efect_vrst)
         # print arr.h
-        arr.V_runoff = delta_t * self.q_subsurface
-        arr.V_rest = arr.h * self.pixel_area - delta_t * self.q_subsurface
+        arr.vol_runoff = delta_t * self.q_subsurface
+        arr.vol_rest = arr.h * self.pixel_area - delta_t * self.q_subsurface
 
     def runoff_stream_cell(self, i, j):
-        self.arr[i][j].V_runoff = 0.0
-        self.arr[i][j].V_rest = 0.0
+        self.arr[i][j].vol_runoff = 0.0
+        self.arr[i][j].vol_rest = 0.0
         return self.arr[i][j].h
 
     def curr_to_pre(self):
         for i in self.rr:
             for j in self.rc[i]:
-                self.arr[i][j].V_runoff_pre = self.arr[i][j].V_runoff
+                self.arr[i][j].vol_runoff_pre = self.arr[i][j].vol_runoff
 
     def return_str_vals(self, i, j, sep, dt):
         arr = self.arr[i][j]
          #';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[],exfiltration[];'
         line = str(
             arr.h) + sep + str(
-                arr.V_runoff / dt) + sep + str(
-            arr.V_runoff) + sep + str(
-                arr.V_rest) + sep + str(
+                arr.vol_runoff / dt) + sep + str(
+            arr.vol_runoff) + sep + str(
+                arr.vol_rest) + sep + str(
                     arr.percolation) + sep + str(
                         arr.exfiltration)
         return line

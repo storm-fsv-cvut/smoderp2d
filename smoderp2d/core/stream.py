@@ -26,7 +26,7 @@ class Reach(object):
         self.V_in_from_field_cum = 0.0
         self.V_in_from_reach = 0.0
         self.V_out_cum = 0.0   # L^3
-        self.V_rest = 0.0
+        self.vol_rest = 0.0
         self.h = 0.0  # jj mozna pocatecni podminka? ikdyz to je asi Q365 co...
         self.h_max = 0.0
         self.timeh_max = 0.0
@@ -149,7 +149,7 @@ class Stream(object):
         else:
             line = str(self.reach[id_].h) + sep + str(self.reach[id_].V_out) + sep + str(self.reach[id_].Q_out) + sep + \
                 str(self.reach[id_].V_in_from_field) + sep + str(
-                self.reach[id_].V_rest)
+                self.reach[id_].vol_rest)
         return line
 
 

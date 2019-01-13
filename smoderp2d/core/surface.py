@@ -38,10 +38,10 @@ class SurArrs(object):
         self.h_sheet = 0.
         self.h_total_new = 0.
         self.h_total_pre = 0.
-        self.v_runoff = 0.
-        # self.v_runoff_pre = float(0)
-        self.v_rest = 0.
-        # self.v_rest_pre =   float(0)
+        self.vol_runoff = 0.
+        # self.vol_runoff_pre = float(0)
+        self.vol_rest = 0.
+        # self.vol_rest_pre =   float(0)
         self.inflow_tm = 0.
         self.soil_type = inf_index
         self.infiltration = 0.
@@ -50,8 +50,8 @@ class SurArrs(object):
         self.b = b
         self.h_rill = 0.
         self.h_rillPre = 0.
-        self.v_runoff_rill = 0.
-        # self.v_runoff_rill_pre= float(0)
+        self.vol_runoff_rill = 0.
+        # self.vol_runoff_rill_pre= float(0)
         self.v_rill_rest = 0.
         # self.v_rill_rest_pre =  float(0)
         self.rillWidth = 0.
@@ -106,17 +106,17 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
         if not extra_out:
             line = '{0}{sep}{1}{sep}{2}'.format(
                 arr.h_total_new,
-                arr.v_runoff / dt + arr.v_runoff_rill / dt,
-                arr.v_runoff + arr.v_runoff_rill,
+                arr.vol_runoff / dt + arr.vol_runoff_rill / dt,
+                arr.vol_runoff + arr.vol_runoff_rill,
                 sep=sep
             )
             bil_ = ''
         else:
             line = '{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}{sep}{7}{sep}{8}'.format(
                 arr.h_sheet,
-                arr.v_runoff / dt,
-                arr.v_runoff,
-                arr.v_rest,
+                arr.vol_runoff / dt,
+                arr.vol_runoff,
+                arr.vol_rest,
                 arr.infiltration,
                 arr.cur_sur_ret,
                 arr.state,
@@ -129,22 +129,22 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
                 line += '{sep}{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}'.format(
                     arr.h_rill,
                     arr.rillWidth,
-                    arr.v_runoff_rill / dt,
-                    arr.v_runoff_rill,
+                    arr.vol_runoff_rill / dt,
+                    arr.vol_runoff_rill,
                     arr.v_rill_rest,
-                    arr.v_runoff / dt + arr.v_runoff_rill / dt,
-                    arr.v_runoff + arr.v_runoff_rill,
+                    arr.vol_runoff / dt + arr.vol_runoff_rill / dt,
+                    arr.vol_runoff + arr.vol_runoff_rill,
                     sep=sep
                 )
 
             bil_ = arr.h_total_pre * self.pixel_area + \
                    arr.cur_rain * self.pixel_area + \
                    arr.inflow_tm - \
-                   (arr.v_runoff + arr.v_runoff_rill + \
+                   (arr.vol_runoff + arr.vol_runoff_rill + \
                     arr.infiltration * self.pixel_area) - \
                     (arr.cur_sur_ret * self.pixel_area) - \
                     arr.h_total_new * self.pixel_area
-            # << + arr.v_rest + arr.v_rill_rest) + (arr.v_rest_pre + arr.v_rill_rest_pre)
+            # << + arr.vol_rest + arr.v_rill_rest) + (arr.vol_rest_pre + arr.v_rill_rest_pre)
 
         return line, bil_
 
@@ -277,8 +277,8 @@ def sheet_runoff(sur, dt):
     :return: TODO
     """
     q_sheet = surfacefce.shallowSurfaceKinematic(sur)
-    sur.v_runoff = dt * q_sheet * GridGlobals.get_size()[0]
-    sur.v_rest = sur.h_sheet * GridGlobals.get_pixel_area() - sur.v_runoff
+    sur.vol_runoff = dt * q_sheet * GridGlobals.get_size()[0]
+    sur.vol_rest = sur.h_sheet * GridGlobals.get_pixel_area() - sur.vol_runoff
 
     return q_sheet
 
@@ -324,10 +324,10 @@ def rill_runoff(i, j, sur, dt, efect_vrst, ratio):
     if courant <= courantMax:
         if v > v_to_rill:
             sur.v_rill_rest = 0
-            sur.v_runoff_rill = v_to_rill
+            sur.vol_runoff_rill = v_to_rill
         else:
             sur.v_rill_rest = v_to_rill - v
-            sur.v_runoff_rill = v
+            sur.vol_runoff_rill = v
 
     else:
         return q_rill, v_rill, ratio, courant

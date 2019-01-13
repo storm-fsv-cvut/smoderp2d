@@ -75,7 +75,7 @@ class CumulativeSubsurface(object):
 
         self.exfiltration[i][j] += sub.exfiltration * self.pixel_area
         self.percolation[i][j] += sub.percolation * self.pixel_area
-        self.v_sub[i][j] += sub.v_runoff
+        self.v_sub[i][j] += sub.vol_runoff
 
         if sub.h > self.h_sub[i][j]:
             self.h_sub[i][j] = sub.h
@@ -209,14 +209,14 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
 
         self.infiltration[i][j] += surface.infiltration * self.pixel_area
         self.precipitation[i][j] += surface.cur_rain * self.pixel_area
-        self.v_sur[i][j] += surface.v_runoff
-        self.v_sur_r[i][j] += surface.v_rest
-        self.v_sur_tot[i][j] += surface.v_rest + surface.v_runoff
+        self.v_sur[i][j] += surface.vol_runoff
+        self.v_sur_r[i][j] += surface.vol_rest
+        self.v_sur_tot[i][j] += surface.vol_rest + surface.vol_runoff
         self.inflow_sur[i][j] += surface.inflow_tm
         self.sur_ret[i][j] += surface.cur_sur_ret * self.pixel_area
 
-        q_sheet = surface.v_runoff / delta_t
-        q_rill = surface.v_runoff_rill / delta_t
+        q_sheet = surface.vol_runoff / delta_t
+        q_rill = surface.vol_runoff_rill / delta_t
         q_tot = q_sheet + q_rill
         if q_tot > self.q_sur_tot[i][j]:
             self.q_sur_tot[i][j] = q_tot
@@ -227,7 +227,7 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
                 self.q_sur[i][j] = q_sheet
 
         elif (surface.state == 1) or (surface.state == 2):
-            self.v_rill[i][j] += surface.v_runoff_rill
+            self.v_rill[i][j] += surface.vol_runoff_rill
             self.v_rill_r[i][j] += surface.v_rill_rest
             if surface.h_total_new > self.h_sur[i][j]:
                 self.h_sur[i][j] = surface.h_total_new
