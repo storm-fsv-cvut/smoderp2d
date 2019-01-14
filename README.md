@@ -1,6 +1,23 @@
 # Smoderp 2D
-Distributed event-based model for surface and subsurface runoff and erosion
 
+Distributed event-based model for surface and subsurface runoff and erosion
+```
+    @ @ @   @       @     @ @     @ @ @     @ @ @ @  @ @ @    @ @ @                                                   
+   @        @ @   @ @   @     @   @     @   @        @     @  @     @                                                 
+   @        @   @   @  @       @  @      @  @        @     @  @     @                                                 
+     @ @    @       @  @       @  @      @  @ @ @    @ @ @    @ @ @                                                   
+         @  @       @  @       @  @      @  @        @   @    @                                                       
+         @  @       @   @     @   @     @   @        @    @   @                                                       
+    @ @ @   @       @     @ @     @ @ @     @ @ @ @  @     @  @                                                       
+                                                                                                                      
+   \  \  /   / /    \   \  /   \  /    /     /        @ @ @   @ @ @                                                   
+    \ _\/   /_/      \   \/     \/    /_____/        @     @  @     @                                                 
+        \__/          \  /      _\___/                     @  @      @                                                
+            \____      \/      /                          @   @      @                                                
+                 \_____/______/                         @     @      @                                                
+                              \                       @       @     @
+                               \____________________ @ @ @ @  @ @ @
+```
 ## Quick test
 
     ./bin/start-smoderp2d.py --typecomp roff --indata tests/test.ini
