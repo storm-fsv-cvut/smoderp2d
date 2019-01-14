@@ -23,6 +23,8 @@ import smoderp2d.flow_algorithm.mfd as mfd
 import smoderp2d.flow_algorithm.D8 as D8_
 from smoderp2d.providers import Logger
 
+from smoderp2d.exceptions import InflowsError
+
 # Defines methods for executing the one direction flow algorithm D8.
 #
 #  Can be inherited by the Classes:
@@ -69,13 +71,12 @@ class D8(object):
             try:
                 insurfflow_from_cell = self.arr[iax][jbx].vol_runoff
             except:
-                insurfflow_from_cell = 0.0
+                raise InflowsError()
             try:
                 inrillflow_from_cell = self.arr[iax][jbx].vol_runoff_rill
             except:
-                inrillflow_from_cell = 0.0
-            inflow_from_cells = inflow_from_cells + \
-                insurfflow_from_cell + inrillflow_from_cell
+                raise InflowsError()
+            inflow_from_cells += insurfflow_from_cell + inrillflow_from_cell
 
         return inflow_from_cells
 

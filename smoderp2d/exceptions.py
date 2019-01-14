@@ -55,3 +55,17 @@ class IncorrectInfiltrationType(SmoderpError):
 
     def __str__(self):
         return repr(self.msg)
+
+
+
+class InflowsError(SmoderpError):
+
+    """Exception raised if the inflow to cell cannot be calculated.
+
+    """
+
+    def __init__(self):
+        self.msg = 'Error in inflows definition'
+
+    def __str__(self):
+        return repr(self.msg)
