@@ -27,6 +27,8 @@ import os
 from PyQt5 import QtGui, QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal
 
+from smoderp2d.connect_grass import findGRASS as fg
+
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'smoderp_2D_dockwidget_base.ui'))
 
@@ -45,6 +47,13 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
 
+        self.run_dataprep.clicked.connect(self.onRun_button)
+
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
+
+    def onRun_button(self):
+        self.lineEdit.setText("zmacknute tlacitko!")
+        vratka = fg()
+        self.lineEdit.setText(vratka)
