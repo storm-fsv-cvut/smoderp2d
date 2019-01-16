@@ -56,4 +56,3 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def onRun_button(self):
         self.lineEdit.setText("zmacknute tlacitko!")
         vratka = fg()
-        self.lineEdit.setText(vratka)

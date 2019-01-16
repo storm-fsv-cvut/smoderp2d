@@ -61,3 +61,13 @@ class Runner(object):
 class GrassRunner(Runner):
     def set_options(self, options):
         self._provider.set_options(options)
+
+class QGISRunner(GrassRunner):
+    def __init__(self):
+
+    def _import_data(self):
+
+    def _export_data(self):
+
+    def __del__(self):
+

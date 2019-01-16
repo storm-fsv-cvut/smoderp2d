@@ -50,9 +50,7 @@ def findGRASS():
 
 try:
     grass7bin = findGRASS()
-except (StandardError, ImportError) as e:
+except ImportError as e:
     raise ImportError('Unable to find GRASS installation. {}'.format(e))
 
 temp_dir = None
-
-class 
