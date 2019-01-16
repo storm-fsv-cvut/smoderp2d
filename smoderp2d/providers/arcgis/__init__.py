@@ -25,7 +25,7 @@ class ArcGisProvider(BaseProvider):
 
         # logger
         self._add_logging_handler(
-            handler=ArcPyLogHandler()
+            handler=ArcPyLogHandler(),
             formatter=logging.Formatter("%(levelname)-8s %(message)s")
         )
 
