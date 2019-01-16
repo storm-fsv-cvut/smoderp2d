@@ -7,8 +7,7 @@
 __author__ = "edlman"
 __date__ = "$29.12.2015 18:20:20$"
 
-from smoderp2d.providers.arcgis.dmtfce import dmtfce
-
+from smoderp2d.providers.arcgis.terrain import compute_products
 
 # importing system moduls
 import arcpy
@@ -58,7 +57,7 @@ class StreamPreparation(StreamPreparationBase):
 
         # WATER FLOWS ACCORDING DMT:
         dmt_fill, flow_direction, flow_accumulation, slope = \
-            dmtfce(self.dmt_clip, self.temp, None)
+            compute_products(self.dmt_clip, self.temp, None)
 
         try:
             setnull = arcpy.sa.SetNull(

@@ -11,7 +11,7 @@ from smoderp2d.flow_algorithm.py_dmtfce import removeCellsWithSameHeightNeighbor
     neighbors, dirSlope, boolToInt, FB, VE
 from smoderp2d.providers import Logger
 
-def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
+def new_mfda(mat_elev, mat_nan, mat_fd, vpix, spix, rows, cols):
     state = 0
     state2 = 0
 
@@ -23,22 +23,22 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
 
     # for i in range(rows):
       # for j in range(cols):
-        # print i,j,mat_dmt[i][j]
+        # print i,j,mat_elev[i][j]
 
     # function determines if cell neighborhood has miltiple cell with exactly
     # same values of height and than it saves that cell as NoData
-    mat_dmt, mat_nan = removeCellsWithSameHeightNeighborhood(
-        mat_dmt, mat_nan, rows, cols)
+    mat_elev, mat_nan = removeCellsWithSameHeightNeighborhood(
+        mat_elev, mat_nan, rows, cols)
 
     # for i in range(rows):
       # for j in range(cols):
-        # print i,j,mat_dmt[i][j]
+        # print i,j,mat_elev[i][j]
 
     # main multiple-flow direction algorithm calculation
     for i in range(rows):
         for j in range(cols):
 
-            point_m = mat_dmt[i][j]
+            point_m = mat_elev[i][j]
 
             if point_m < 0 or i == 0 or j == 0 or i == (rows - 1) or j == (cols - 1):
                 # jj nemely by ty byt nuly?
@@ -49,7 +49,7 @@ def new_mfda(mat_dmt, mat_nan, mat_fd, vpix, spix, rows, cols):
             else:
                 possible_circulation = 0
 
-                nbrs = neighbors(i, j, mat_dmt, rows, cols)
+                nbrs = neighbors(i, j, mat_elev, rows, cols)
                 fldir, flsp = dirSlope(point_m, nbrs, vpix, spix)
 
                 flprop = np.zeros(8, float)

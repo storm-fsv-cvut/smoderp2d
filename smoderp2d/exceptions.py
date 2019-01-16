@@ -2,7 +2,8 @@ class SmoderpError(Exception):
     pass
 
 class ProviderError(Exception):
-    pass
+    def __init__(self, msg):
+        Logger.critical(msg)
 
 class MaxIterationExceeded(SmoderpError):
     """Number of iteration exceed max iteration criterion.
@@ -14,7 +15,6 @@ class MaxIterationExceeded(SmoderpError):
 
     def __str__(self):
         return repr(self.msg)
-
 
 class NegativeWaterLevel(SmoderpError):
 
