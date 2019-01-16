@@ -57,3 +57,7 @@ class Runner(object):
         runoff.run()
 
         return 0
+
+class GrassRunner(Runner):
+    def set_options(self, options):
+        self._provider.set_options(options)

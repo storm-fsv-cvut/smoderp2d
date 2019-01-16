@@ -93,12 +93,8 @@ import sys
 import grass.script as gs
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from smoderp2d import Runner
+from smoderp2d import GrassRunner
 from smoderp2d.exceptions import ProviderError
-
-class GrassRunner(Runner):
-    def set_options(self, options):
-        self._provider.set_options(options)
 
 if __name__ == "__main__":
     options, flags = gs.parser()
