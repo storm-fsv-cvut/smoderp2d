@@ -13,16 +13,11 @@ class GrassGisLogHandler(logging.Handler):
 
         :param record: record to emit
         """
-        try:
-            msg = record.msg.format(record.args)
-        except:
-            msg = record.msg
-
         if record.levelno >= logging.ERROR:
-            fatal(msg)
+            fatal(record.msg)
         elif record.levelno >= logging.WARNING:
-            warning(msg)
+            warning(record.msg)
         elif record.levelno >= logging.INFO:
-            message(msg)
+            message(record.msg)
         elif record.levelno >= logging.INFO:
-            debug(msg)
+            debug(record.msg)

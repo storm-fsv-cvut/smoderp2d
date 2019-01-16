@@ -1,6 +1,7 @@
 import sys
 import argparse
-if sys.version_info > (3, 0):
+import logging
+if sys.version_info.major >= 3:
     from configparser import ConfigParser
 else:
     from ConfigParser import ConfigParser
@@ -44,6 +45,10 @@ class CmdProvider(BaseProvider):
 
         # set logging level
         Logger.setLevel(self._config.get('Other', 'logging'))
+        # sys.stderr logging
+        self._add_logging_handler(
+            logging.StreamHandler(stream=sys.stderr)
+        )
 
         # must be defined for _cleanup() method
         Globals.outdir = self._config.get('Other', 'outdir')

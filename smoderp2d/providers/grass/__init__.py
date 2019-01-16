@@ -23,11 +23,10 @@ class GrassGisProvider(BaseProvider):
         self._options = None
 
         # logger
-        handler = GrassGisLogHandler()
-        formatter = logging.Formatter("%(levelname)-8s %(message)s")
-        handler.setFormatter(formatter)
-        Logger.addHandler(handler)
-        Logger.setLevel(logging.DEBUG)
+        self._add_logging_handler(
+            handler=GrassGisLogHandler(),
+            formatter = logging.Formatter("%(message)s")
+        )
 
     def set_options(self, options):
         """Set input paramaters.

@@ -5,6 +5,7 @@ import sys
 import shutil
 import math
 import pickle
+import logging
 
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
 from smoderp2d.providers.base.logger import logger
@@ -25,6 +26,23 @@ class BaseProvider(object):
 
         self._print_fn = print
         self._print_logo_fn = print
+
+        # default logging level (can be modified by provider)
+        Logger.setLevel(logging.DEBUG)
+
+    @staticmethod
+    def _add_logging_handler(handler, formatter=None):
+        """Register new logging handler.
+        
+        :param handler: loggging handler to be registerered
+        :param formatter: logging handler formatting
+        """
+        if not formatter:
+            formatter = logging.Formatter(
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s - [%(module)s:%(lineno)s]"
+            )
+        handler.setFormatter(formatter)
+        Logger.addHandler(handler)
 
     def _load_dpre(self):
         """Run data preparation procedure.

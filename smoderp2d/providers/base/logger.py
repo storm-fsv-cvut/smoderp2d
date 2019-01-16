@@ -26,12 +26,12 @@ def logger():
     """
     Return a logger.
     """
-    logging.config.fileConfig(
-       os.path.join(os.path.dirname(__file__), 'logging.conf')
-    )
+    # logging.config.fileConfig(
+    #    os.path.join(os.path.dirname(__file__), 'logging.conf')
+    # )
 
     logging.setLoggerClass(BaseLogger)
-    logger_name = 'Smoderp2d'
+    logger_name = 'SMODERP2D'
     if os.getenv('ESRIACTIVEINSTALLATION'):
         # create unique logger for each run (see ArcGIS issue #22)
         logger_name += '_{}'.format(time.time())

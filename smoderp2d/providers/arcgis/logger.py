@@ -17,14 +17,9 @@ class ArcPyLogHandler(logging.Handler):
 
         :param record: record to emit
         """
-        try:
-            msg = record.msg.format(record.args)
-        except:
-            msg = record.msg
-
         if record.levelno >= logging.ERROR:
-            arcpy.AddError(msg)
+            arcpy.AddError(record.msg)
         elif record.levelno >= logging.WARNING:
-            arcpy.AddWarning(msg)
+            arcpy.AddWarning(record.msg)
         elif record.levelno >= logging.INFO:
-            arcpy.AddMessage(msg)
+            arcpy.AddMessage(record.msg)

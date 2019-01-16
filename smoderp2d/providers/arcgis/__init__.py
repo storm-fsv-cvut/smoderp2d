@@ -24,11 +24,10 @@ class ArcGisProvider(BaseProvider):
         Globals.outdir = self._get_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
 
         # logger
-        handler = ArcPyLogHandler()
-        formatter = logging.Formatter("%(levelname)-8s %(message)s")
-        handler.setFormatter(formatter)
-        Logger.addHandler(handler)
-        Logger.setLevel(logging.DEBUG)
+        self._add_logging_handler(
+            handler=ArcPyLogHandler()
+            formatter=logging.Formatter("%(levelname)-8s %(message)s")
+        )
 
     @staticmethod
     def _get_argv(idx):
