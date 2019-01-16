@@ -64,10 +64,13 @@ class GrassRunner(Runner):
 
 class QGISRunner(GrassRunner):
     def __init__(self):
+        pass
 
     def _import_data(self):
+        pass
 
     def _export_data(self):
+        pass
 
     def __del__(self):
-
+        pass
