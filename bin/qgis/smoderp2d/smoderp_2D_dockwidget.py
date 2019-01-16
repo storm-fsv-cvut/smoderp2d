@@ -27,6 +27,9 @@ import os
 from PyQt5 import QtGui, QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal
 
+from smoderp2d import QGISRunner
+from smoderp2d.exceptions import ProviderError
+
 from smoderp2d.connect_grass import findGRASS as fg
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -54,5 +57,37 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         event.accept()
 
     def onRun_button(self):
-        self.lineEdit.setText("zmacknute tlacitko!")
-        vratka = fg()
+
+         # Get grass
+         grass7bin = fg()
+
+         # Get input parameters
+         self._get_input_params()
+
+         try:
+             runner = QGISRunner()
+         except ProviderError as e:
+             pass
+
+    def _get_input_params(self):
+        """Get input parameters from QGIS plugin."""
+
+        self._input_params = {
+            'elevation': self.elevation_lineEdit.text(),
+            'soil': self.soil_lineEdit.text(),
+            'soil_type': self.soil_type_comboBox.currentText(),
+            'vegetation': self.vegetation_lineEdit.text(),
+            'vegetation_type': self.vegetation_type_comboBox.currentText(),
+            'points': self.points_lineEdit.text(),
+            'output': self.output_lineEdit.text(),
+            'stream': self.stream_lineEdit.text(),
+            'pickle': self.pickle_lineEdit.text(),
+            'rainfall_file': self.rainfall_file_lineEdit.text(),
+            'end_time': float(self.end_time_lineEdit.text()) * 60.0, # prevod na s
+            'maxdt': float(self.maxdt_lineEdit.text()),
+            'table_soil_vegetation': self.table_soil_vegetation_lineEdit.text(),
+            'table_soil_vegetation_code': self.table_soil_vegetation_code_comboBox.currentText(),
+            'table_stream_shape': self.table_stream_shape_lineEdit.text(),
+            'table_stream_shape_code': self.table_stream_shape_code_comboBox.currentText(),
+            'main_output': self.main_output_lineEdit.text()
+        }
