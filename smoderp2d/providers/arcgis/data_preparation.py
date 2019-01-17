@@ -116,6 +116,12 @@ class PrepareData(PrepareDataBase):
         return dem_copy, dem_mask
 
     def _terrain_products(self, dem):
+        """Computes terrains products.
+
+        :param str elev: DTM raster map name
+        
+        :return: (filled elevation, flow direction, flow accumulation, slope)
+        """
         return compute_products(dem, self.data['temp'])
     
     def _get_intersect(self, dem, mask,

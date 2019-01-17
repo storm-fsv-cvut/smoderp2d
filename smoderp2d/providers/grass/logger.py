@@ -1,6 +1,6 @@
 import logging
 
-from grass.script.core import fatal, warning, message
+from grass.script.core import fatal, warning, info, debug
 
 class GrassGisLogHandler(logging.Handler):
     """Custom logging class that bounces messages to the GRASS GIS.
@@ -18,6 +18,6 @@ class GrassGisLogHandler(logging.Handler):
         elif record.levelno >= logging.WARNING:
             warning(record.msg)
         elif record.levelno >= logging.INFO:
-            message(record.msg)
-        elif record.levelno >= logging.INFO:
+            info(record.msg)
+        elif record.levelno >= logging.DEBUG:
             debug(record.msg)

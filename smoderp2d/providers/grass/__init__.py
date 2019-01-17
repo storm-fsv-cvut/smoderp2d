@@ -1,3 +1,4 @@
+import os
 import logging
 
 from smoderp2d.providers.base import BaseProvider
@@ -27,6 +28,9 @@ class GrassGisProvider(BaseProvider):
             handler=GrassGisLogHandler(),
             formatter = logging.Formatter("%(message)s")
         )
+
+        # force overwrite
+        os.environ['GRASS_OVERWRITE'] = '1'
 
     def set_options(self, options):
         """Set input paramaters.
