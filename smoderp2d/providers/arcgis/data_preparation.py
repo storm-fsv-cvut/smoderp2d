@@ -42,7 +42,7 @@ class PrepareData(PrepareDataBase):
         """
         self._input_params = {
             'elevation': self.gp.GetParameterAsText(
-                constants.PARAMETER_ELEV),
+                constants.PARAMETER_DEM),
             'soil': self.gp.GetParameterAsText(
                 constants.PARAMETER_SOIL),
             'soil_type': self.gp.GetParameterAsText(
@@ -96,33 +96,33 @@ class PrepareData(PrepareDataBase):
     def _set_mask(self):
         """Set mask from elevation map.
 
-        :return: elev copy, mask
+        :return: dem copy, mask
         """
-        elev_copy = os.path.join(
-            self.data['temp'], "tempGDB.gdb", "elev_copy"
+        dem_copy = os.path.join(
+            self.data['temp'], "tempGDB.gdb", "dem_copy"
         )
         arcpy.CopyRaster_management(
-            self._input_params['elevation'], elev_copy
+            self._input_params['elevation'], dem_copy
         )
 
         # align computation region to DTM grid
         arcpy.env.snapRaster = self._input_params['elevation']
 
-        elev_mask = os.path.join(self.data['temp'], "elev_mask")
+        dem_mask = os.path.join(self.data['temp'], "dem_mask")
         self.gp.Reclassify_sa(
-            elev_copy, "VALUE", "-100000 100000 1", elev_mask, "DATA"
+            dem_copy, "VALUE", "-100000 100000 1", dem_mask, "DATA"
         )
         
-        return elev_copy, elev_mask
+        return dem_copy, dem_mask
 
-    def _terrain_products(self, elev):
-        return compute_products(elev, self.data['temp'])
+    def _terrain_products(self, dem):
+        return compute_products(dem, self.data['temp'])
     
-    def _get_intersect(self, elev, mask,
+    def _get_intersect(self, dem, mask,
                         vegetation, soil, vegetation_type, soil_type,
                         table_soil_vegetation, table_soil_vegetation_code):
         """
-        :param str elev: DTM raster name
+        :param str dem: DTM raster name
         :param str mask: raster mask name
         :param str vegetation: vegetation input vector name
         :param soil: soil input vector name
@@ -192,16 +192,16 @@ class PrepareData(PrepareDataBase):
 
         return intersect, mask_shp, sfield
 
-    def _clip_data(self, elev, intersect, slope, flow_direction):
+    def _clip_data(self, dem, intersect, slope, flow_direction):
         """
         Clip input data based on AOI.
 
-        :param str elev: raster DTM name
+        :param str dem: raster DTM name
         :param str intersect: vector intersect feature call name
         :param str slope: raster slope name
         :param str flow_direction: raster flow direction name
 
-        :return str elev_clip: output clipped DTM name
+        :return str dem_clip: output clipped DTM name
         :return str slope_clip: output clipped slope name
         :return str flow_direction_clip: ouput clipped flow direction name
 
@@ -216,26 +216,26 @@ class PrepareData(PrepareDataBase):
         arcpy.env.extent = intersect
 
         # raster description
-        elev_desc = arcpy.Describe(elev)
+        dem_desc = arcpy.Describe(dem)
 
         # output raster coordinate system
-        arcpy.env.outputCoordinateSystem = elev_desc.SpatialReference
+        arcpy.env.outputCoordinateSystem = dem_desc.SpatialReference
 
         # create raster mask based on interesect feature calll
         mask = os.path.join(self.data['temp'], "mask")
         arcpy.PolygonToRaster_conversion(
             intersect, "FID", mask, "MAXIMUM_AREA",
-            cellsize = elev_desc.MeanCellHeight)
+            cellsize = dem_desc.MeanCellHeight)
 
         # cropping rasters
-        elev_clip = ExtractByMask(elev, mask)
-        elev_clip.save(os.path.join(self.data['outdir'], "elev_clip"))
+        dem_clip = ExtractByMask(dem, mask)
+        dem_clip.save(os.path.join(self.data['outdir'], "dem_clip"))
         slope_clip = ExtractByMask(slope, mask)
         slope_clip.save(os.path.join(self.data['temp'], "slope_clip"))
         flow_direction_clip = ExtractByMask(flow_direction, mask)
         flow_direction_clip.save(os.path.join(self.data['outdir'], "flow_clip"))
 
-        return elev_clip, slope_clip, flow_direction_clip
+        return dem_clip, slope_clip, flow_direction_clip
 
     def _clip_points(self, intersect):
         """
@@ -319,25 +319,25 @@ class PrepareData(PrepareDataBase):
         """
         return arcpy.RasterToNumPyArray(raster)
 
-    def _get_raster_dim(self, elev_clip):
+    def _get_raster_dim(self, dem_clip):
         """
         Get raster spatial reference info.
 
-        :param elev_clip: clipped elev raster map
+        :param dem_clip: clipped dem raster map
         """
-        elev_desc = arcpy.Describe(elev_clip)
+        dem_desc = arcpy.Describe(dem_clip)
         
         # lower left corner coordinates
-        self.data['xllcorner'] = elev_desc.Extent.XMin
-        self.data['yllcorner'] = elev_desc.Extent.YMin
-        self.data['NoDataValue'] = elev_desc.noDataValue
-        self.data['vpix'] = elev_desc.MeanCellHeight
-        self.data['spix'] = elev_desc.MeanCellWidth
+        self.data['xllcorner'] = dem_desc.Extent.XMin
+        self.data['yllcorner'] = dem_desc.Extent.YMin
+        self.data['NoDataValue'] = dem_desc.noDataValue
+        self.data['vpix'] = dem_desc.MeanCellHeight
+        self.data['spix'] = dem_desc.MeanCellWidth
         self.data['pixel_area'] = self.data['spix'] * self.data['vpix']
 
         # size of the raster [0] = number of rows; [1] = number of columns
-        self.data['r'] = self.data['mat_elev'].shape[0]
-        self.data['c'] = self.data['mat_elev'].shape[1]
+        self.data['r'] = self.data['mat_dem'].shape[0]
+        self.data['c'] = self.data['mat_dem'].shape[1]
 
     def _get_array_points(self):
         """Get array of points. Points near AOI border are skipped.
@@ -375,11 +375,11 @@ class PrepareData(PrepareDataBase):
                 # array_points array
                 if r != 0 and r != self.data['r'] \
                    and c != 0 and c != self.data['c'] and \
-                   self.data['mat_elev'][r][c] != self.data['NoDataValue'] and \
-                   self.data['mat_elev'][r-1][c] != self.data['NoDataValue'] and \
-                   self.data['mat_elev'][r+1][c] != self.data['NoDataValue'] and \
-                   self.data['mat_elev'][r][c-1] != self.data['NoDataValue'] and \
-                   self.data['mat_elev'][r][c+1] != self.data['NoDataValue']:
+                   self.data['mat_dem'][r][c] != self.data['NoDataValue'] and \
+                   self.data['mat_dem'][r-1][c] != self.data['NoDataValue'] and \
+                   self.data['mat_dem'][r+1][c] != self.data['NoDataValue'] and \
+                   self.data['mat_dem'][r][c-1] != self.data['NoDataValue'] and \
+                   self.data['mat_dem'][r][c+1] != self.data['NoDataValue']:
 
                     self.data['array_points'][i][0] = fid
                     self.data['array_points'][i][1] = r
@@ -397,17 +397,17 @@ class PrepareData(PrepareDataBase):
         else:
             self.data['array_points'] = None
 
-    def _get_slope_dir(self, elev_clip):
+    def _get_slope_dir(self, dem_clip):
         """
         ?
 
-        :param elev_clip:
+        :param dem_clip:
         """
 
         # fiktivni vrstevnice a priprava "state cell, jestli to je tok
         # ci plocha
         pii = math.pi / 180.0
-        asp = arcpy.sa.Aspect(elev_clip)
+        asp = arcpy.sa.Aspect(dem_clip)
         asppii = arcpy.sa.Times(asp, pii)
         sinasp = arcpy.sa.Sin(asppii)
         cosasp = arcpy.sa.Cos(asppii)
@@ -420,11 +420,11 @@ class PrepareData(PrepareDataBase):
         efect_vrst.save(os.path.join(self.data['temp'], "efect_vrst"))
         self.data['mat_efect_vrst'] = self._rst2np(efect_vrst)
 
-    def _prepare_streams(self, mask_shp, elev_clip, intersect):
+    def _prepare_streams(self, mask_shp, dem_clip, intersect):
         """
 
         :param mask_shp:
-        :param elev_clip:
+        :param dem_clip:
         :param intersect:
         """
         self.data['type_of_computing'] = 1
@@ -456,7 +456,7 @@ class PrepareData(PrepareDataBase):
                      self.data['c'],
                      ll_corner,
                      self.data['outdir'],
-                     elev_clip,
+                     dem_clip,
                      intersect,
                      self._add_field,
                      self._join_table]

@@ -17,19 +17,19 @@ class PrepareDataBase(object):
 
         # create output folder, where temporary data are stored
         self._set_output() 
-        elev_copy, elev_mask = self._set_mask()
+        dem_copy, dem_mask = self._set_mask()
 
         # DTM computation
         Logger.info(
             "Computing fill, flow direction, flow accumulation, slope..."
         )
-        elev_fill, flow_direction, flow_accumulation, slope = \
-            self._terrain_products(elev_copy)
+        dem_fill, flow_direction, flow_accumulation, slope = \
+            self._terrain_products(dem_copy)
 
         # intersect
         Logger.info("Computing intersect of input data...")
         intersect, mask_shp, sfield = self._get_intersect(
-            elev_copy, elev_mask,
+            dem_copy, dem_mask,
             self._input_params['vegetation'], self._input_params['soil'],
             self._input_params['vegetation_type'], self._input_params['soil_type'],
             self._input_params['table_soil_vegetation'], self._input_params['table_soil_vegetation_code']
@@ -37,19 +37,19 @@ class PrepareDataBase(object):
 
         # clip
         Logger.info("Clip of the source data by intersect...")
-        elev_clip, slope_clip, flow_direction_clip = self._clip_data(
-            elev_copy, intersect, slope, flow_direction)
+        dem_clip, slope_clip, flow_direction_clip = self._clip_data(
+            dem_copy, intersect, slope, flow_direction)
 
         # raster to numpy array conversion
         Logger.info("Computing parameters of DTM...")
-        self.data['mat_elev'] = self._rst2np(elev_clip)
+        self.data['mat_dem'] = self._rst2np(dem_clip)
         self.data['mat_slope'] = self._rst2np(slope_clip)
         self.data['mat_fd'] = self._rst2np(flow_direction_clip)
 
         self._save_raster("fl_dir", self.data['mat_fd'], self.data['temp'])
 
         # update data dict for spatial ref info
-        self._get_raster_dim(elev_clip)
+        self._get_raster_dim(dem_clip)
 
         # build numpy array from selected attributes
         all_attrib = self._get_mat_par(sfield, intersect)
@@ -68,10 +68,10 @@ class PrepareDataBase(object):
             rainfall.load_precipitation(self._input_params['rainfall_file'])
 
         # compute aspect
-        self._get_slope_dir(elev_clip)
+        self._get_slope_dir(dem_clip)
 
         Logger.info("Computing stream preparation...")
-        self._prepare_streams(mask_shp, elev_clip, intersect
+        self._prepare_streams(mask_shp, dem_clip, intersect
         )
 
         # ?
@@ -123,7 +123,7 @@ class PrepareDataBase(object):
             'mat_b': None,
             'mat_reten': None,
             'mat_fd': None,
-            'mat_elev': None,
+            'mat_dem': None,
             'mat_efect_vrst': None,
             'mat_slope': None,
             'mat_nan': None,
@@ -177,10 +177,10 @@ class PrepareDataBase(object):
     def _set_mask(self):
         raise NotImplemented("Not implemented for base provider")
     
-    def _terrain_products(self, elev):
+    def _terrain_products(self, dem):
         raise NotImplemented("Not implemented for base provider")
 
-    def _get_intersect(self, elev_copy, mask, vegetation, soil,
+    def _get_intersect(self, dem_copy, mask, vegetation, soil,
                        vegetation_type, soil_type,
                        table_soil_vegetation, table_soil_vegetation_code):
         raise NotImplemented("Not implemented for base provider")
@@ -246,13 +246,13 @@ class PrepareDataBase(object):
         # data value vector intersection
         for i in range(self.data['r']):
             for j in range(self.data['c']):
-                x_mat_elev = self.data['mat_elev'][i][j]
+                x_mat_dem = self.data['mat_dem'][i][j]
                 slp = self.data['mat_slope'][i][j]
-                if x_mat_elev == self.data['NoDataValue'] or \
+                if x_mat_dem == self.data['NoDataValue'] or \
                    slp == self.data['NoDataValue']:
                     self.data['mat_nan'][i][j] = self.data['NoDataValue']
                     self.data['mat_slope'][i][j] = self.data['NoDataValue']
-                    self.data['mat_elev'][i][j] = self.data['NoDataValue']
+                    self.data['mat_dem'][i][j] = self.data['NoDataValue']
                 else:
                     self.data['mat_nan'][i][j] = 0
 
@@ -356,10 +356,10 @@ class PrepareDataBase(object):
         self._save_raster("hcrit_flux", mat_hcrit_flux)
         self._save_raster("hcrit_v", mat_hcrit_v)
 
-    def _get_slope_dir(self, elev_clip):
+    def _get_slope_dir(self, dem_clip):
         raise NotImplemented("Not implemented for base provider")
 
-    def _prepare_streams(self, mask_shp, elev_clip, intersect):
+    def _prepare_streams(self, mask_shp, dem_clip, intersect):
         raise NotImplemented("Not implemented for base provider")
 
     def _find_boundary_cells(self):

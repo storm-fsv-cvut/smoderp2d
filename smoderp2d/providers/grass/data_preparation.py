@@ -2,6 +2,7 @@ import os
 
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
+from smoderp2d.providers.grass.terrain import compute_products
 
 import grass.script as gs
 
@@ -34,4 +35,6 @@ class PrepareData(PrepareDataBase):
         )
 
         return elev, elev
-    
+
+    def _terrain_products(self, elev):
+        return compute_products(elev)

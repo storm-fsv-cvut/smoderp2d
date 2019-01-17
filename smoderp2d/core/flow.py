@@ -98,7 +98,7 @@ class Mfda(object):
 
         Logger.info("Multiflow direction algorithm")
         self.inflows, fd_rill = mfd.new_mfda(
-            mat_elev, mat_nan, mat_fd, vpix, spix, rows, cols
+            mat_dem, mat_nan, mat_fd, vpix, spix, rows, cols
         )
         self.inflowsRill = D8_.new_inflows(fd_rill)
 

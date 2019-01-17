@@ -2,12 +2,12 @@ import logging
 
 from smoderp2d.providers.base import BaseProvider
 
-import grass.script as gs
-
 from smoderp2d.core.general import Globals
 from smoderp2d.exceptions import ProviderError
 from smoderp2d.providers.grass.logger import GrassGisLogHandler
 from smoderp2d.providers.base import Logger
+
+import grass.script as gs
 
 class GrassGisProvider(BaseProvider):
     def __init__(self):

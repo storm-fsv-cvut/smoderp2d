@@ -122,7 +122,7 @@ class Globals:
     # raster contains flow direction datas
     mat_fd = None
     # raster contains digital elevation model
-    mat_elev = None
+    mat_dem = None
     # raster contains efective couterline data
     mat_efect_vrst = None
     # raster contains surface slopes data
@@ -231,8 +231,8 @@ class Globals:
         return cls.mat_fd
 
     @classmethod
-    def get_mat_elev(cls):
-        return cls.mat_elev
+    def get_mat_dem(cls):
+        return cls.mat_dem
 
     @classmethod
     def get_mat_efect_vrst(cls):
