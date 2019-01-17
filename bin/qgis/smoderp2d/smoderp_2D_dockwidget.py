@@ -27,10 +27,9 @@ import os
 from PyQt5 import QtGui, QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal
 
-from smoderp2d import QGISRunner
-from smoderp2d.exceptions import ProviderError
+from smoderp2d.smoderp2d.smoderp2d.exceptions import ProviderError
 
-from smoderp2d.connect_grass import findGRASS as fg
+from smoderp2d.connect_grass import findGrass as fg
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'smoderp_2D_dockwidget_base.ui'))
@@ -58,16 +57,16 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
     def onRun_button(self):
 
-         # Get grass
-         grass7bin = fg()
+        # Get grass
+        grass7bin = fg()
 
-         # Get input parameters
-         self._get_input_params()
+        # Get input parameters
+        self._get_input_params()
 
-         try:
-             runner = QGISRunner()
-         except ProviderError as e:
-             pass
+        try:
+            runner = smoderp2d.QGISRunner()
+        except ProviderError as e:
+            pass
 
     def _get_input_params(self):
         """Get input parameters from QGIS plugin."""

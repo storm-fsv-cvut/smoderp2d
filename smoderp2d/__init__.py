@@ -22,6 +22,8 @@ The computational options are as follows:
 """
 
 import os
+from smoderp2d.exceptions import SmoderpError
+
 
 class Runner(object):
     def __init__(self):
@@ -58,13 +60,39 @@ class Runner(object):
 
         return 0
 
+
 class GrassRunner(Runner):
-    def set_options(self, options):
+    def set_options(self):
         self._provider.set_options(options)
+
 
 class QGISRunner(GrassRunner):
     def __init__(self):
-        pass
+
+        # create temp GRASS location
+        import tempfile
+        import binascii
+        import grass.script as gs
+
+        # path to temp location
+        gisdb = os.path.join(tempfile.gettempdir(), 'grassdata')
+        if not os.path.isdir(gisdb):
+            os.mkdir(gisdb)
+
+        # location: use random names for batch jobs
+        string_length = 16
+        location = binascii.hexlify(os.urandom(string_length))
+
+        # initialize GRASS session
+        gs.setup.init(os.environ['GISBASE'], gisdb, location, 'PERMANENT')
+
+        # create location
+        try:
+            gs.create_location(gisdb, location, epsg='5514', overwrite=True)
+        except SmoderpError as e:
+            raise SmoderpError('{}'.format(e))
+
+        super().__init__()
 
     def _import_data(self):
         pass

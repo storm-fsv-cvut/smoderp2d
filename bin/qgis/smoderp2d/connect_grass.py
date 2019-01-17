@@ -4,7 +4,16 @@ import subprocess
 import shutil
 import tempfile
 
-def findGRASS():
+
+def findGrass():
+    try:
+        grass7bin = _grassLoc()
+    except ImportError as e:
+        raise ImportError('Unable to find GRASS installation. {}'.format(e))
+    return grass7bin
+
+
+def _grassLoc():
     """Find GRASS.
     Find location of GRASS.
     :todo: Avoid bat file calling.
@@ -47,10 +56,3 @@ def findGRASS():
     sys.path.append(os.path.join(gisbase, "etc", "python"))
 
     return grass7bin
-
-try:
-    grass7bin = findGRASS()
-except ImportError as e:
-    raise ImportError('Unable to find GRASS installation. {}'.format(e))
-
-temp_dir = None
