@@ -27,8 +27,8 @@ import os
 from PyQt5 import QtGui, QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal
 
-from smoderp2d.smoderp2d.smoderp2d.exceptions import ProviderError
-
+from .smoderp2d.smoderp2d.exceptions import ProviderError
+from .smoderp2d.smoderp2d import QGISRunner
 from smoderp2d.connect_grass import findGrass as fg
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -64,7 +64,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self._get_input_params()
 
         try:
-            runner = smoderp2d.QGISRunner()
+            runner = QGISRunner()
         except ProviderError as e:
             pass
 

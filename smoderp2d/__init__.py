@@ -22,7 +22,7 @@ The computational options are as follows:
 """
 
 import os
-from smoderp2d.exceptions import SmoderpError
+from .exceptions import SmoderpError
 
 
 class Runner(object):
@@ -73,6 +73,7 @@ class QGISRunner(GrassRunner):
         import tempfile
         import binascii
         import grass.script as gs
+        from grass.script import setup as gsetup
 
         # path to temp location
         gisdb = os.path.join(tempfile.gettempdir(), 'grassdata')
@@ -81,16 +82,20 @@ class QGISRunner(GrassRunner):
 
         # location: use random names for batch jobs
         string_length = 16
-        location = binascii.hexlify(os.urandom(string_length))
+        location = binascii.hexlify(os.urandom(string_length)).decode("utf-8")
 
         # initialize GRASS session
-        gs.setup.init(os.environ['GISBASE'], gisdb, location, 'PERMANENT')
+        gsetup.init(os.environ['GISBASE'], gisdb, location, 'PERMANENT')
 
         # create location
         try:
             gs.create_location(gisdb, location, epsg='5514', overwrite=True)
         except SmoderpError as e:
             raise SmoderpError('{}'.format(e))
+
+        # test GRASS env varible
+        if not os.getenv('GISRC'):
+            raise SmoderpError('GRASS not found.')
 
         super().__init__()
 
