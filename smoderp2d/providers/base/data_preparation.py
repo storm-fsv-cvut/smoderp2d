@@ -7,6 +7,19 @@ import smoderp2d.processes.rainfall as rainfall
 from smoderp2d.providers.base import Logger
 
 class PrepareDataBase(object):
+    def __init__(self):
+        self._data = {
+            'soil_boundary': 'soil_b',
+            'vegetation_boundary': 'vegetation_b',
+            'vector_mask': 'mask',
+            'vegetation_mask': 'vegetation_m',
+            'soil_mask': 'soil_m',
+            'intersect': 'inter_soil_lu',
+            'soil_veg_column': 'soil_veg',
+            'soil_veg_copy': 'soil_veg_tab_current',
+            'sfield': ["k", "s", "n", "pi", "ppl",
+                       "ret", "b", "x", "y", "tau", "v"],
+        }
 
     def run(self):
         Logger.info('-' * 80)
@@ -30,9 +43,12 @@ class PrepareDataBase(object):
         Logger.info("Computing intersect of input data...")
         intersect, mask_shp, sfield = self._get_intersect(
             dem_copy, dem_mask,
-            self._input_params['vegetation'], self._input_params['soil'],
-            self._input_params['vegetation_type'], self._input_params['soil_type'],
-            self._input_params['table_soil_vegetation'], self._input_params['table_soil_vegetation_code']
+            self._input_params['vegetation'],
+            self._input_params['soil'],
+            self._input_params['vegetation_type'],
+            self._input_params['soil_type'],
+            self._input_params['table_soil_vegetation'],
+            self._input_params['table_soil_vegetation_code']
         )
 
         # clip
@@ -427,3 +443,6 @@ class PrepareDataBase(object):
             inDomain = False
             inBoundary = False
             self.data['rc'].append(oneCol)
+
+    def _clip_data(self, dem, intersect, slope, flow_direction):
+        raise NotImplemented("Not implemented for base provider")

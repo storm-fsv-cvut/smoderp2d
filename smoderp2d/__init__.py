@@ -62,7 +62,7 @@ class Runner(object):
 
 
 class GrassRunner(Runner):
-    def set_options(self):
+    def set_options(self, options):
         self._provider.set_options(options)
 
 

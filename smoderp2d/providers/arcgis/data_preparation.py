@@ -21,6 +21,7 @@ import arcgisscripting
 
 class PrepareData(PrepareDataBase):
     def __init__(self):
+        super(PrepareData, self).__init__()
 
         # creating the geoprocessor object
         self.gp = arcgisscripting.create()
@@ -36,6 +37,9 @@ class PrepareData(PrepareDataBase):
 
         # get input parameters
         self._get_input_params()
+
+        # path to temporary GDB
+        self._tempGDB = os.path.join(self.data['temp'], "tempGDB.gdb")
 
     def _get_input_params(self):
         """Get input parameters from ArcGIS toolbox.
@@ -89,18 +93,14 @@ class PrepareData(PrepareDataBase):
         super(PrepareData, self)._set_output()
 
         # create temporary ArcGIS File Geodatabase
-        arcpy.CreateFileGDB_management(
-            self.data['temp'], "tempGDB.gdb"
-        )
+        arcpy.CreateFileGDB_management(self._tempGDB)
 
     def _set_mask(self):
         """Set mask from elevation map.
 
         :return: dem copy, mask
         """
-        dem_copy = os.path.join(
-            self.data['temp'], "tempGDB.gdb", "dem_copy"
-        )
+        dem_copy = os.path.join(self._tempGDB, "dem_copy")
         arcpy.CopyRaster_management(
             self._input_params['elevation'], dem_copy
         )
@@ -128,6 +128,9 @@ class PrepareData(PrepareDataBase):
                         vegetation, soil, vegetation_type, soil_type,
                         table_soil_vegetation, table_soil_vegetation_code):
         """
+        Intersect data by area of interest.
+
+
         :param str dem: DTM raster name
         :param str mask: raster mask name
         :param str vegetation: vegetation input vector name
@@ -142,53 +145,70 @@ class PrepareData(PrepareDataBase):
         :return sfield: list of selected attributes
         """
         # convert mask into polygon feature class
-        mask_shp = os.path.join(self.data['temp'], "mask.shp")
+        mask_shp = os.path.join(
+            self.data['temp'], "{}.shp".format(
+                self._data['vector_mask']
+        ))
         arcpy.RasterToPolygon_conversion(
             mask, mask_shp, "NO_SIMPLIFY")
 
-        # dissolve soil and vegetation polygons
+        # dissolve soil and vegmetation polygons
         soil_boundary = os.path.join(
-            self.data['temp'], "s_b.shp")
-        veg_boundary = os.path.join(
-            self.data['temp'], "v_b.shp")
-        arcpy.Dissolve_management(vegetation, veg_boundary, vegetation_type)
-        arcpy.Dissolve_management(soil, soil_boundary, soil_type)
+            self.data['temp'], "{}.shp".format(
+                self._data['soil_boundary']
+        ))
+        vegetation_boundary = os.path.join(
+            self.data['temp'], "{}.shp".format(
+                self._data['vegetation_boundary']
+        ))
+        arcpy.Dissolve_management(
+            vegetation, vegetation_boundary, vegetation_type
+        )
+        arcpy.Dissolve_management(
+            soil, soil_boundary, soil_type
+        )
 
         # do intersection
-        group = [soil_boundary, veg_boundary, mask_shp]
+        group = [soil_boundary, vegetation_boundary, mask_shp]
         intersect = os.path.join(
-            self.data['outdir'], "interSoilLU.shp")
-        arcpy.Intersect_analysis(group, intersect, "ALL", "", "INPUT")
+            self.data['outdir'], "{}.shp".format(
+                self._data['intersect']
+        ))
+        arcpy.Intersect_analysis(
+            group, intersect, "ALL", "", "INPUT")
 
-        # remove "puda_veg" if exists and create a new one
-        if self.gp.ListFields(intersect, "puda_veg").Next():
-            arcpy.DeleteField_management(intersect, "puda_veg")
+        # remove "soil_veg" if exists and create a new one
+        if self.gp.ListFields(intersect, self._data['soil_veg_column']).Next():
+            arcpy.DeleteField_management(intersect, self._data['soil_veg_column'])
         arcpy.AddField_management(
-            intersect, "puda_veg", "TEXT", "", "", "15", "",
+            intersect, self._data['soil_veg_column'], "TEXT", "", "", "15", "",
             "NULLABLE", "NON_REQUIRED","")
 
-        # compute "puda_veg" values (soil_type + vegetation_type)
+        # compute "soil_veg" values (soil_type + vegetation_type)
         vtype1 = vegetation_type + "_1" if soil_type == vegetation_type else vegetation_type
-        fields = [soil_type, vtype1, "puda_veg"]
+        fields = [soil_type, vtype1, self._data['soil_veg_column']]
         with arcpy.da.UpdateCursor(intersect, fields) as cursor:
             for row in cursor:
                 row[2] = row[0] + row[1]
                 cursor.updateRow(row)
 
         # copy attribute table to DBF file for modifications
-        puda_veg_dbf = os.path.join(
-            self.data['temp'], "puda_veg_tab_current.dbf")
-        arcpy.CopyRows_management(table_soil_vegetation, puda_veg_dbf)
+        soil_veg_dbf = os.path.join(
+            self.data['temp'], "{}.dbf".format(
+                self._data['soil_veg_copy']
+        ))
+        arcpy.CopyRows_management(table_soil_vegetation, soil_veg_dbf)
 
         # join table copy to intersect feature class
-        sfield = ["k", "s", "n", "pi", "ppl",
-                  "ret", "b", "x", "y", "tau", "v"]
         self._join_table(
-            intersect, "puda_veg", puda_veg_dbf, table_soil_vegetation_code,
-            ";".join(sfield)
+            intersect, self._data['soil_veg_column'],
+            self._data['soil_veg_copy'],
+            table_soil_vegetation_code,
+            ";".join(self._data['sfield'])
         )
 
-        with arcpy.da.SearchCursor(intersect, sfield) as cursor:
+        # check for empty values
+        with arcpy.da.SearchCursor(intersect, self._data['sfield']) as cursor:
             for row in cursor:
                 for i in range(len(row)):
                     if row[i] == " ": # TODO: empty string or NULL value?
@@ -196,7 +216,7 @@ class PrepareData(PrepareDataBase):
                             "Values in soilveg tab are not correct"
                         )
 
-        return intersect, mask_shp, sfield
+        return intersect, mask_shp, self._data['sfield']
 
     def _clip_data(self, dem, intersect, slope, flow_direction):
         """
@@ -493,15 +513,16 @@ class PrepareData(PrepareDataBase):
         arcpy.CalculateField_management(input, newfield, default_value, "PYTHON")
         return input
 
-    def _join_table(self, in_data, in_field, join_table, join_field, fields=None):
+    def _join_table(self, in_data, in_field,
+                    join_table, join_field, fields=None):
         """
+        Join attribute table.
 
-        :param in_data:
-        :param in_field:
-        :param join_table:
-        :param join_field:
-        :param fields:
-        :return:
+        :param in_data: input data layer
+        :param in_field: input column
+        :param join_table: table to join
+        :param join_field: column to join
+        :param fields: list of fields (None for all fields)
         """
         if fields == None:
             arcpy.JoinField_management(
