@@ -38,9 +38,6 @@ class PrepareData(PrepareDataBase):
         # get input parameters
         self._get_input_params()
 
-        # path to temporary GDB
-        self._tempGDB = os.path.join(self.data['temp'], "tempGDB.gdb")
-
     def _get_input_params(self):
         """Get input parameters from ArcGIS toolbox.
         """
@@ -93,7 +90,10 @@ class PrepareData(PrepareDataBase):
         super(PrepareData, self)._set_output()
 
         # create temporary ArcGIS File Geodatabase
-        arcpy.CreateFileGDB_management(self._tempGDB)
+        self._tempGDB = os.path.join(self.data['temp'], "tempGDB.gdb")
+        arcpy.CreateFileGDB_management(
+            self.data['temp'], "tempGDB.gdb"
+        )
 
     def _set_mask(self):
         """Set mask from elevation map.
@@ -193,16 +193,16 @@ class PrepareData(PrepareDataBase):
                 cursor.updateRow(row)
 
         # copy attribute table to DBF file for modifications
-        soil_veg_dbf = os.path.join(
+        soil_veg_copy = os.path.join(
             self.data['temp'], "{}.dbf".format(
                 self._data['soil_veg_copy']
         ))
-        arcpy.CopyRows_management(table_soil_vegetation, soil_veg_dbf)
+        arcpy.CopyRows_management(table_soil_vegetation, soil_veg_copy)
 
         # join table copy to intersect feature class
         self._join_table(
             intersect, self._data['soil_veg_column'],
-            self._data['soil_veg_copy'],
+            soil_veg_copy,
             table_soil_vegetation_code,
             ";".join(self._data['sfield'])
         )
