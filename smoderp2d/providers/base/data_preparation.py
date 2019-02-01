@@ -8,17 +8,23 @@ from smoderp2d.providers.base import Logger
 
 class PrepareDataBase(object):
     def __init__(self):
+        # internal output data
         self._data = {
             'soil_boundary': 'soil_b',
             'vegetation_boundary': 'vegetation_b',
-            'vector_mask': 'mask',
-            'vegetation_mask': 'vegetation_m',
-            'soil_mask': 'soil_m',
+            'vector_mask': 'dem_mask',
+            'vegetation_mask': 'vegetation_mask',
+            'soil_mask': 'soil_mask',
             'intersect': 'inter_soil_lu',
             'soil_veg_column': 'soil_veg',
             'soil_veg_copy': 'soil_veg_tab_current',
             'sfield': ["k", "s", "n", "pi", "ppl",
                        "ret", "b", "x", "y", "tau", "v"],
+            'points_mask' : 'points_inter',
+            'inter_mask' : 'inter_mask',
+            'dem_clip' : 'dem_inter',
+            'slope_clip' : 'slope_inter',
+            'flow_clip' : 'flowdir_inter',
         }
 
     def run(self):
@@ -114,7 +120,7 @@ class PrepareDataBase(object):
         """
         Creates dictionary to which model parameters are computed.
         """
-
+        # output data
         self.data = {
             'br': None,
             'bc': None,
@@ -446,3 +452,12 @@ class PrepareDataBase(object):
 
     def _clip_data(self, dem, intersect, slope, flow_direction):
         raise NotImplemented("Not implemented for base provider")
+
+    @staticmethod
+    def _diff_npoints(npoints1, npoints2):
+        diffpts = npoints1 - npoints2
+        if diffpts > 0:
+            Logger.warning(
+                "{} points outside of computation domain "
+                "will be ignored".format(diffpts)
+            )

@@ -178,3 +178,68 @@ class PrepareData(PrepareDataBase):
                        other_column=join_field,
                        **kwargs
         )
+
+    def _clip_data(self, dem, intersect, slope, flow_direction):
+        """
+        Clip input data based on AOI.
+
+        :param str dem: raster DTM name
+        :param str intersect: vector intersect feature call name
+        :param str slope: raster slope name
+        :param str flow_direction: raster flow direction name
+
+        :return str dem_clip: output clipped DTM name
+        :return str slope_clip: output clipped slope name
+        :return str flow_direction_clip: ouput clipped flow direction name
+
+        """
+        if self.data['points']:
+            self._clip_points(intersect)
+
+        # set computation region
+        gs.run_command('g.region',
+                       vector=intersect,
+                       align=dem
+        )
+
+        gs.run_command('v.to.rast',
+                       input=intersect,
+                       type='area',
+                       use='val',
+                       output=self._data['inter_mask']
+        )
+
+        # cropping rasters
+        # using r.mapcalc since r.clip is not available in core
+        for inmap, outmap in ((dem, self._data['dem_clip']),
+                              (slope, self._data['slope_clip']),
+                              (flow_direction, self._data['flow_clip'])):
+            if inmap is None:
+                # flow direction can be None
+                continue
+            gs.run_command(
+                'r.mapcalc',
+                expression='{o} = if(isnull({m}), null(), {i})'.format(
+                    o=outmap, m=self._data['inter_mask'], i=inmap
+                ))
+
+        return self._data['dem_clip'], self._data['slope_clip'], self._data['flow_clip']
+
+    def _clip_points(self, intersect):
+        """
+        Clip input points data.
+
+        :param intersect: vector intersect feature class
+        """
+        gs.run_command('v.clip',
+                       input=self.data['points'],
+                       clip=intersect,
+                       output=self._data['points_mask']
+        )
+        # count number of features
+        npoints = gs.vector_info_topo(self.data['points'])['points']
+        npoints_clipped = gs.vector_info_topo(self._data['points_mask'])['points']
+
+        self._diff_npoints(npoints, npoints_clipped)
+
+        self.data['points'] = self._data['points_mask']

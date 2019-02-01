@@ -232,10 +232,7 @@ class PrepareData(PrepareDataBase):
         :return str flow_direction_clip: ouput clipped flow direction name
 
         """
-        # TODO: check only None value
-        # clip input vectors based on AOI
-        if self.data['points'] and \
-           (self.data['points'] != "#") and (self.data['points'] != ""):
+        if self.data['points']:
             self.data['points'] = self._clip_points(intersect)
 
         # set extent from intersect vector map
@@ -247,29 +244,39 @@ class PrepareData(PrepareDataBase):
         # output raster coordinate system
         arcpy.env.outputCoordinateSystem = dem_desc.SpatialReference
 
-        # create raster mask based on interesect feature calll
-        mask = os.path.join(self.data['temp'], "mask")
+        # create raster mask based on intersect feature call
+        mask = os.path.join(self.data['temp'],
+                            self._data['inter_mask']
+        )
         arcpy.PolygonToRaster_conversion(
             intersect, "FID", mask, "MAXIMUM_AREA",
             cellsize = dem_desc.MeanCellHeight)
 
         # cropping rasters
         dem_clip = ExtractByMask(dem, mask)
-        dem_clip.save(os.path.join(self.data['outdir'], "dem_clip"))
+        dem_clip.save(
+            os.path.join(self.data['outdir'], self._data['dem_clip'])
+        )
         slope_clip = ExtractByMask(slope, mask)
-        slope_clip.save(os.path.join(self.data['temp'], "slope_clip"))
+        slope_clip.save(os.path.join(
+            self.data['temp'], self._data["slope_clip"])
+        )
         flow_direction_clip = ExtractByMask(flow_direction, mask)
-        flow_direction_clip.save(os.path.join(self.data['outdir'], "flow_clip"))
+        flow_direction_clip.save(
+            os.path.join(self.data['outdir'], self._data["flow_clip"])
+        )
 
         return dem_clip, slope_clip, flow_direction_clip
 
     def _clip_points(self, intersect):
         """
+        Clip input points data.
+
         :param intersect: vector intersect feature class
         """
-        # clip vector points based on intersect
         pointsClipCheck = os.path.join(
-            self.data['outdir'], "pointsCheck.shp")
+            self.data['outdir'], "{}.shp".format(self._data['points_mask']
+        ))
         arcpy.Clip_analysis(
             self.data['points'], intersect, pointsClipCheck
         )
@@ -278,11 +285,7 @@ class PrepareData(PrepareDataBase):
         npoints = arcpy.GetCount_management(self._input_params['points'])
         npoints_clipped = arcpy.GetCount_management(pointsClipCheck)
                 
-        diffpts = int(npoints[0]) - int(npoints_clipped[0])
-        if diffpts > 0:
-            Logger.warning(
-                "{} points outside of computation domain will be ignored".format(diffpts)
-            )
+        self._diff_npoints(int(npoints[0]), int(npoints_clipped[0]))
 
         self.data['points'] = pointsClipCheck
 
