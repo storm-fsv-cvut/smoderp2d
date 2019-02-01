@@ -298,34 +298,8 @@ class PrepareData(PrepareDataBase):
 
         :return all_atrib: list of numpy array
         """
-        dim = [self.data['r'], self.data['c']]
+        all_attrib = self.__get_attrib(self, sfield, intersect)
         
-        mat_k = np.zeros(dim, float)
-        mat_s = np.zeros(dim, float)
-        mat_n = np.zeros(dim, float)
-        mat_ppl = np.zeros(dim, float)
-        mat_pi = np.zeros(dim, float)
-        mat_ret = np.zeros(dim, float)
-        mat_b = np.zeros(dim, float)
-        mat_x = np.zeros(dim, float)
-        mat_y = np.zeros(dim, float)
-        mat_tau = np.zeros(dim, float)
-        mat_v = np.zeros(dim, float)
-
-        all_attrib = [
-            mat_k,
-            mat_s,
-            mat_n,
-            mat_ppl,
-            mat_pi,
-            mat_ret,
-            mat_b,
-            mat_x,
-            mat_y,
-            mat_tau,
-            mat_v
-        ] 
-
         idx = 0
         for field in sfield:
             output = os.path.join(self.data['temp'], "r{}".format(field))

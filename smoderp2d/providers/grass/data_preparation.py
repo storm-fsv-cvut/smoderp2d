@@ -4,6 +4,7 @@ from smoderp2d.providers.grass.terrain import compute_products
 from smoderp2d.providers.base.exception import DataPreparationInvalidInput
 
 import grass.script as gs
+from grass.script import array as garray
 
 class PrepareData(PrepareDataBase):
     def __init__(self, options):
@@ -223,7 +224,7 @@ class PrepareData(PrepareDataBase):
                     o=outmap, m=self._data['inter_mask'], i=inmap
                 ))
 
-        return self._data['dem_clip'], self._data['slope_clip'], self._data['flow_clip']
+        return self._data['dem_clip'], self._data['slope_clip'], self._data['flow_clip'] if flow_direction else None
 
     def _clip_points(self, intersect):
         """
@@ -243,3 +244,64 @@ class PrepareData(PrepareDataBase):
         self._diff_npoints(npoints, npoints_clipped)
 
         self.data['points'] = self._data['points_mask']
+
+    def _rst2np(self, raster):
+        """
+        Convert raster data into numpy array
+
+        :param raster: raster name
+
+        :return: numpy array
+        """
+        gs.run_command('g.region',
+                       raster=raster
+        )
+        map_array = garray.array()
+        map_array.read(raster)
+
+        return map_array
+
+    def _get_raster_dim(self, dem_clip):
+        """
+        Get raster spatial reference info.
+
+        :param dem_clip: clipped dem raster map
+        """
+        dem_desc = gs.raster_info(dem_clip)
+
+        # lower left corner coordinates
+        self.data['xllcorner'] = dem_desc['east']
+        self.data['yllcorner'] = dem_desc['south']
+        self.data['NoDataValue'] = None
+        self.data['vpix'] = dem_desc['nsres']
+        self.data['spix'] = dem_desc['ewres']
+        self.data['pixel_area'] = self.data['spix'] * self.data['vpix']
+
+        # size of the raster [0] = number of rows; [1] = number of columns
+        self.data['r'] = self.data['mat_dem'].shape[0]
+        self.data['c'] = self.data['mat_dem'].shape[1]
+
+    def _get_attrib(self, sfield, intersect):
+        """
+        Get numpy arrays of selected attributes.
+
+        :param sfield: list of attributes
+        :param intersect: vector intersect name
+
+        :return all_atrib: list of numpy array
+        """
+        all_attrib = self.__get_attrib(sfield, intersect)
+
+        for field in sfields:
+            output = "r{}".format(field)
+            gs.run_command('v.to.rast',
+                           input=intersect,
+                           type='area',
+                           use='attr',
+                           attribute_column=field,
+                           output=output
+            )
+            all_attrib[idx] = self._rst2np(output)
+            idx += 1
+
+        return all_attrib

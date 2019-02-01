@@ -8,8 +8,8 @@ cols:       133
 rows:       114
 e-w resol:  10
 n-s resol:  10
-top:        0.500000000000000
-bottom:     -0.500000000000000
+top:        1.000000000000000
+bottom:     0.000000000000000
 cols3:      133
 rows3:      114
 depths:     1
