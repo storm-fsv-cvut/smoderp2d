@@ -53,14 +53,18 @@
             <item row="1" column="0" colspan="2">
              <layout class="QGridLayout" name="gridLayout">
               <item row="0" column="1">
-               <widget class="QToolButton" name="toolButton">
+               <widget class="QToolButton" name="elevation_toolButton">
                 <property name="text">
                  <string>...</string>
                 </property>
                </widget>
               </item>
               <item row="0" column="0">
-               <widget class="QLineEdit" name="elevation_lineEdit"/>
+               <widget class="QLineEdit" name="elevation_lineEdit">
+                <property name="cursorPosition">
+                 <number>0</number>
+                </property>
+               </widget>
               </item>
              </layout>
             </item>
@@ -74,7 +78,7 @@
             <item row="3" column="0" colspan="2">
              <layout class="QGridLayout" name="gridLayout_2">
               <item row="0" column="1">
-               <widget class="QToolButton" name="toolButton_2">
+               <widget class="QToolButton" name="soil_toolButton">
                 <property name="text">
                  <string>...</string>
                 </property>
@@ -108,7 +112,7 @@
                <widget class="QLineEdit" name="vegetation_lineEdit"/>
               </item>
               <item row="0" column="1">
-               <widget class="QToolButton" name="toolButton_4">
+               <widget class="QToolButton" name="vegetation_toolButton">
                 <property name="text">
                  <string>...</string>
                 </property>
@@ -136,7 +140,7 @@
             <item row="11" column="0" colspan="2">
              <layout class="QGridLayout" name="gridLayout_6">
               <item row="0" column="1">
-               <widget class="QToolButton" name="toolButton_5">
+               <widget class="QToolButton" name="points_toolButton">
                 <property name="text">
                  <string>...</string>
                 </property>
@@ -160,7 +164,7 @@
                <widget class="QLineEdit" name="output_lineEdit"/>
               </item>
               <item row="0" column="1">
-               <widget class="QToolButton" name="toolButton_6">
+               <widget class="QToolButton" name="output_toolButton">
                 <property name="text">
                  <string>...</string>
                 </property>
@@ -181,7 +185,7 @@
                <widget class="QLineEdit" name="stream_lineEdit"/>
               </item>
               <item row="0" column="1">
-               <widget class="QToolButton" name="toolButton_8">
+               <widget class="QToolButton" name="stream_toolButton">
                 <property name="text">
                  <string>...</string>
                 </property>
@@ -233,7 +237,7 @@
            <widget class="QLineEdit" name="pickle_lineEdit"/>
           </item>
           <item row="0" column="1">
-           <widget class="QToolButton" name="toolButton_10">
+           <widget class="QToolButton" name="pickle_toolButton">
             <property name="text">
              <string>...</string>
             </property>
@@ -254,7 +258,7 @@
            <widget class="QLineEdit" name="rainfall_file_lineEdit"/>
           </item>
           <item row="0" column="1">
-           <widget class="QToolButton" name="toolButton_7">
+           <widget class="QToolButton" name="rainfall_toolButton">
             <property name="text">
              <string>...</string>
             </property>
@@ -270,7 +274,11 @@
          </widget>
         </item>
         <item row="5" column="0">
-         <widget class="QLineEdit" name="end_time_lineEdit"/>
+         <widget class="QLineEdit" name="end_time_lineEdit">
+          <property name="text">
+           <string>30</string>
+          </property>
+         </widget>
         </item>
         <item row="6" column="1">
          <spacer name="verticalSpacer">
@@ -300,7 +308,11 @@
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QLineEdit" name="maxdt_lineEdit"/>
+         <widget class="QLineEdit" name="maxdt_lineEdit">
+          <property name="text">
+           <string>5</string>
+          </property>
+         </widget>
         </item>
         <item row="2" column="0">
          <widget class="QLabel" name="label_17">
@@ -315,7 +327,7 @@
            <widget class="QLineEdit" name="table_soil_vegetation_lineEdit"/>
           </item>
           <item row="0" column="1">
-           <widget class="QToolButton" name="toolButton_11">
+           <widget class="QToolButton" name="table_soil_vegetation_toolButton">
             <property name="text">
              <string>...</string>
             </property>
@@ -343,7 +355,7 @@
         <item row="7" column="0">
          <layout class="QGridLayout" name="gridLayout_14">
           <item row="0" column="1">
-           <widget class="QToolButton" name="toolButton_12">
+           <widget class="QToolButton" name="table_stream_shape_toolButton">
             <property name="text">
              <string>...</string>
             </property>
@@ -377,7 +389,7 @@
            <widget class="QLineEdit" name="main_output_lineEdit"/>
           </item>
           <item row="0" column="1">
-           <widget class="QToolButton" name="toolButton_13">
+           <widget class="QToolButton" name="main_output_toolButton">
             <property name="text">
              <string>...</string>
             </property>

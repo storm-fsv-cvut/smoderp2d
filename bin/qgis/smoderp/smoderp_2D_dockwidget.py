@@ -23,13 +23,20 @@
 """
 
 import os
+import sys
 
-from PyQt5 import QtGui, QtWidgets, uic
-from PyQt5.QtCore import pyqtSignal
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..'))
 
-from .smoderp2d.smoderp2d.exceptions import ProviderError
-from .smoderp2d.smoderp2d import QGISRunner
-from smoderp2d.connect_grass import findGrass as fg
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings
+
+from PyQt5.QtWidgets import QFileDialog
+from qgis.core import QgsProviderRegistry
+from qgis.utils import iface
+
+from smoderp2d.exceptions import ProviderError
+from smoderp2d import QGISRunner
+from .connect_grass import findGrass as fg
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'smoderp_2D_dockwidget_base.ui'))
@@ -49,13 +56,24 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
 
-        self.run_dataprep.clicked.connect(self.onRun_button)
+        self.iface = iface
+
+        self.settings = QSettings("CTU", "smoderp")
+
+        self.setup_buttons()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
 
-    def onRun_button(self):
+    def setup_buttons(self):
+        """Setup buttons slots."""
+
+        self.run_dataprep.clicked.connect(self.on_run_button)
+        self.elevation_toolButton.clicked.connect(lambda: self._open_file_dialog('raster', 'elevation', self.elevation_lineEdit))
+        self.soil_toolButton.clicked.connect(lambda: self._open_file_dialog('vector', 'soil', self.soil_lineEdit))
+
+    def on_run_button(self):
 
         # Get grass
         grass7bin = fg()
@@ -65,8 +83,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         try:
             runner = QGISRunner()
+
         except ProviderError as e:
-            pass
+            raise ProviderError(e)
 
     def _get_input_params(self):
         """Get input parameters from QGIS plugin."""
@@ -90,3 +109,58 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             'table_stream_shape_code': self.table_stream_shape_code_comboBox.currentText(),
             'main_output': self.main_output_lineEdit.text()
         }
+
+    def _open_file_dialog(self, t, key, line_edit):
+        """Open file dialog, return file."""
+
+        # remember last folder where user was in
+        sender = u'{}-last_used_file_path'.format(self.sender().objectName())
+        last_used_file_path = self.settings.value(sender, '')
+
+        if t == 'vector':
+            file_name = QFileDialog.getOpenFileName(self, self.tr(u'Open file'),
+                                                    self.tr(u'{}').format(last_used_file_path),
+                                                    QgsProviderRegistry.instance().fileVectorFilters())[0]
+            if file_name:
+                name, file_extension = os.path.splitext(file_name)
+
+                if file_extension not in QgsProviderRegistry.instance().fileVectorFilters():
+                    self.send_message(u'Error', u'{} is not a valid vector layer.'.format(file_name), 'CRITICAL')
+                    return
+
+                self.iface.addVectorLayer(file_name, QFileInfo(file_name).baseName(), "ogr")
+
+                line_edit.setText(file_name)
+
+                # set up combo boxes
+                if key in ('soil', 'vegetation'):
+                    self._setup_combo(key)
+
+        elif t == 'raster':
+            file_name = QFileDialog.getOpenFileName(self, self.tr(u'Open file'),
+                                                    self.tr(u'{}').format(last_used_file_path),
+                                                    QgsProviderRegistry.instance().fileRasterFilters())[0]
+            if file_name:
+                name, file_extension = os.path.splitext(file_name)
+
+                if file_extension not in QgsProviderRegistry.instance().fileRasterFilters():
+                    self.send_message(u'Error', u'{} is not a valid raster layer.'.format(file_name), 'CRITICAL')
+                    return
+
+                self.iface.addRasterLayer(file_name, QFileInfo(file_name).baseName())
+
+                line_edit.setText(file_name)
+                self.settings.setValue(sender, os.path.dirname(file_name))
+
+        # TODO: do the same for tables
+
+    def _setup_combo(self, key):
+        pass
+
+    def send_message(self, caption, message, t):
+        if t == 'CRITICAL':
+            self.iface.messageBar().pushCritical(self.tr(u'{}').format(caption),
+                                                 self.tr(u'{}').format(message))
+        elif t == 'INFO':
+            self.iface.messageBar().pushInfo(self.tr(u'{}').format(caption),
+                                             self.tr(u'{}').format(message))
