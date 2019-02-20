@@ -187,13 +187,16 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # TODO: do the same for tables
 
     def set_fields(self, t):
+        pass
         """Set fields of soil and vegetation type."""
+        """ 
         if t == 'soil':
             self.soil_type_comboBox.setLayer(self.soil_comboBox.currentLayer())
             self.soil_type_comboBox.setField(self.soil_comboBox.currentLayer().fields()[0].name())
         elif t == 'vegetation':
             self.vegetation_type_comboBox.setLayer(self.vegetation_comboBox.currentLayer())
             self.vegetation_type_comboBox.setField(self.vegetation_comboBox.currentLayer().fields()[0].name())
+        """
 
     def send_message(self, caption, message, t):
         if t == 'CRITICAL':
