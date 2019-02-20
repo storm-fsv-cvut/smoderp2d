@@ -50,24 +50,6 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0" colspan="2">
-             <layout class="QGridLayout" name="gridLayout">
-              <item row="0" column="1">
-               <widget class="QToolButton" name="elevation_toolButton">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLineEdit" name="elevation_lineEdit">
-                <property name="cursorPosition">
-                 <number>0</number>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
             <item row="2" column="0" colspan="2">
              <widget class="QLabel" name="label_2">
               <property name="text">
@@ -85,7 +67,7 @@
                </widget>
               </item>
               <item row="0" column="0">
-               <widget class="QLineEdit" name="soil_lineEdit"/>
+               <widget class="QgsMapLayerComboBox" name="soil_comboBox"/>
               </item>
              </layout>
             </item>
@@ -96,9 +78,6 @@
               </property>
              </widget>
             </item>
-            <item row="5" column="0">
-             <widget class="QComboBox" name="soil_type_comboBox"/>
-            </item>
             <item row="6" column="0" colspan="2">
              <widget class="QLabel" name="label_4">
               <property name="text">
@@ -108,15 +87,15 @@
             </item>
             <item row="7" column="0" colspan="2">
              <layout class="QGridLayout" name="gridLayout_5">
-              <item row="0" column="0">
-               <widget class="QLineEdit" name="vegetation_lineEdit"/>
-              </item>
               <item row="0" column="1">
                <widget class="QToolButton" name="vegetation_toolButton">
                 <property name="text">
                  <string>...</string>
                 </property>
                </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QgsMapLayerComboBox" name="vegetation_comboBox"/>
               </item>
              </layout>
             </item>
@@ -126,9 +105,6 @@
                <string>Land use types</string>
               </property>
              </widget>
-            </item>
-            <item row="9" column="0">
-             <widget class="QComboBox" name="vegetation_type_comboBox"/>
             </item>
             <item row="10" column="0" colspan="2">
              <widget class="QLabel" name="label_9">
@@ -147,7 +123,7 @@
                </widget>
               </item>
               <item row="0" column="0">
-               <widget class="QLineEdit" name="points_lineEdit"/>
+               <widget class="QgsMapLayerComboBox" name="points_comboBox"/>
               </item>
              </layout>
             </item>
@@ -181,15 +157,15 @@
             </item>
             <item row="15" column="0" colspan="2">
              <layout class="QGridLayout" name="gridLayout_9">
-              <item row="0" column="0">
-               <widget class="QLineEdit" name="stream_lineEdit"/>
-              </item>
               <item row="0" column="1">
                <widget class="QToolButton" name="stream_toolButton">
                 <property name="text">
                  <string>...</string>
                 </property>
                </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QgsMapLayerComboBox" name="stream_comboBox"/>
               </item>
              </layout>
             </item>
@@ -212,6 +188,26 @@
                <string>Run</string>
               </property>
              </widget>
+            </item>
+            <item row="1" column="0" colspan="2">
+             <layout class="QGridLayout" name="gridLayout">
+              <item row="0" column="1">
+               <widget class="QToolButton" name="elevation_toolButton">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QgsMapLayerComboBox" name="elevation_comboBox"/>
+              </item>
+             </layout>
+            </item>
+            <item row="9" column="0">
+             <widget class="QgsFieldComboBox" name="vegetation_type_comboBox"/>
+            </item>
+            <item row="5" column="0">
+             <widget class="QgsFieldComboBox" name="soil_type_comboBox"/>
             </item>
            </layout>
           </widget>
@@ -417,6 +413,18 @@
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsFieldComboBox</class>
+   <extends>QComboBox</extends>
+   <header>qgsfieldcombobox.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QgsMapLayerComboBox</class>
+   <extends>QComboBox</extends>
+   <header>qgsmaplayercombobox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

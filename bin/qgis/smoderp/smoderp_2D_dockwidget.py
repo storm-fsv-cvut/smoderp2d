@@ -31,8 +31,9 @@ from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings
 
 from PyQt5.QtWidgets import QFileDialog
-from qgis.core import QgsProviderRegistry
+from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel
 from qgis.utils import iface
+from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
 
 from smoderp2d.exceptions import ProviderError
 from smoderp2d import QGISRunner
@@ -62,6 +63,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         self.setup_buttons()
 
+        self.setup_combos()
+
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
@@ -69,11 +72,33 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def setup_buttons(self):
         """Setup buttons slots."""
 
+        # TODO: set imported layer as first in combo boxes
+
         self.run_dataprep.clicked.connect(self.on_run_button)
-        self.elevation_toolButton.clicked.connect(lambda: self._open_file_dialog('raster', 'elevation', self.elevation_lineEdit))
-        self.soil_toolButton.clicked.connect(lambda: self._open_file_dialog('vector', 'soil', self.soil_lineEdit))
+
+        self.elevation_toolButton.clicked.connect(lambda: self.open_file_dialog('raster'))
+        self.soil_toolButton.clicked.connect(lambda: self.open_file_dialog('vector'))
+        self.vegetation_toolButton.clicked.connect(lambda: self.open_file_dialog('vector'))
+        self.points_toolButton.clicked.connect(lambda: self.open_file_dialog('vector'))
+        self.output_toolButton.clicked.connect(lambda: self.open_file_dialog('folder'))
+        self.stream_toolButton.clicked.connect(lambda: self.open_file_dialog('vector'))
+
+        self.soil_comboBox.layerChanged.connect(lambda: self.set_fields('soil'))
+        self.vegetation_comboBox.layerChanged.connect(lambda: self.set_fields('vegetation'))
+
+    def setup_combos(self):
+        self.elevation_comboBox.setFilters(QgsMapLayerProxyModel.RasterLayer)
+        self.soil_comboBox.setFilters(QgsMapLayerProxyModel.VectorLayer)
+        self.vegetation_comboBox.setFilters(QgsMapLayerProxyModel.VectorLayer)
+        self.points_comboBox.setFilters(QgsMapLayerProxyModel.VectorLayer)
+        self.stream_comboBox.setFilters(QgsMapLayerProxyModel.VectorLayer)
+
+        self.set_fields('soil')
+        self.set_fields('vegetation')
 
     def on_run_button(self):
+
+        # TODO: Test, if all mandatory fields are correctly filled
 
         # Get grass
         grass7bin = fg()
@@ -90,15 +115,17 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def _get_input_params(self):
         """Get input parameters from QGIS plugin."""
 
+        # TODO: get paths to layers
+
         self._input_params = {
-            'elevation': self.elevation_lineEdit.text(),
-            'soil': self.soil_lineEdit.text(),
+            'elevation': self.elevation_comboBox.currentText(),
+            'soil': self.soil_comboBox.currentText(),
             'soil_type': self.soil_type_comboBox.currentText(),
-            'vegetation': self.vegetation_lineEdit.text(),
+            'vegetation': self.vegetation_comboBox.currentText(),
             'vegetation_type': self.vegetation_type_comboBox.currentText(),
-            'points': self.points_lineEdit.text(),
+            'points': self.points_comboBox.currentText(),
             'output': self.output_lineEdit.text(),
-            'stream': self.stream_lineEdit.text(),
+            'stream': self.stream_comboBox.currentText(),
             'pickle': self.pickle_lineEdit.text(),
             'rainfall_file': self.rainfall_file_lineEdit.text(),
             'end_time': float(self.end_time_lineEdit.text()) * 60.0, # prevod na s
@@ -110,8 +137,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             'main_output': self.main_output_lineEdit.text()
         }
 
-    def _open_file_dialog(self, t, key, line_edit):
-        """Open file dialog, return file."""
+    def open_file_dialog(self, t):
+        """Open file dialog."""
 
         # remember last folder where user was in
         sender = u'{}-last_used_file_path'.format(self.sender().objectName())
@@ -130,12 +157,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
                 self.iface.addVectorLayer(file_name, QFileInfo(file_name).baseName(), "ogr")
 
-                line_edit.setText(file_name)
-
-                # set up combo boxes
-                if key in ('soil', 'vegetation'):
-                    self._setup_combo(key)
-
         elif t == 'raster':
             file_name = QFileDialog.getOpenFileName(self, self.tr(u'Open file'),
                                                     self.tr(u'{}').format(last_used_file_path),
@@ -149,13 +170,30 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
                 self.iface.addRasterLayer(file_name, QFileInfo(file_name).baseName())
 
-                line_edit.setText(file_name)
                 self.settings.setValue(sender, os.path.dirname(file_name))
+
+        elif t == 'folder':
+            folder_name = QFileDialog.getExistingDirectory(self, self.tr(u'Select directory'),
+                                                           self.tr(u'{}').format(last_used_file_path))
+
+            if os.access(folder_name, os.W_OK):
+                self.output_lineEdit.setText(folder_name)
+                self.settings.setValue(sender, os.path.dirname(folder_name))
+            elif folder_name == "":
+                pass
+            else:
+                self.send_message(u'Error', u'{} is not writable.'.format(folder_name), 'CRITICAL')
 
         # TODO: do the same for tables
 
-    def _setup_combo(self, key):
-        pass
+    def set_fields(self, t):
+        """Set fields of soil and vegetation type."""
+        if t == 'soil':
+            self.soil_type_comboBox.setLayer(self.soil_comboBox.currentLayer())
+            self.soil_type_comboBox.setField(self.soil_comboBox.currentLayer().fields()[0].name())
+        elif t == 'vegetation':
+            self.vegetation_type_comboBox.setLayer(self.vegetation_comboBox.currentLayer())
+            self.vegetation_type_comboBox.setField(self.vegetation_comboBox.currentLayer().fields()[0].name())
 
     def send_message(self, caption, message, t):
         if t == 'CRITICAL':
