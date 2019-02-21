@@ -1,9 +1,13 @@
+# TODO: cyclic import...
+# from smoderp2d.providers.base import Logger
+
 class SmoderpError(Exception):
     pass
 
 class ProviderError(Exception):
     def __init__(self, msg):
-        Logger.critical(msg)
+        pass
+        # Logger.critical(msg)
 
 class MaxIterationExceeded(SmoderpError):
     """Number of iteration exceed max iteration criterion.

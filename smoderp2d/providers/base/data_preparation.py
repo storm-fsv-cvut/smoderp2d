@@ -66,7 +66,7 @@ class PrepareDataBase(object):
         Logger.info("Computing parameters of DTM...")
         self.data['mat_dem'] = self._rst2np(dem_clip)
         self.data['mat_slope'] = self._rst2np(slope_clip)
-        if flow_direction_clip:
+        if flow_direction_clip is not None:
             self.data['mat_fd'] = self._rst2np(flow_direction_clip)
             self._save_raster("fl_dir",
                               self.data['mat_fd'],
@@ -213,10 +213,13 @@ class PrepareDataBase(object):
     def _get_input_params(self):
         raise NotImplemented("Not implemented for base provider")
 
-    def _rst2np(self,raster):
+    def _rst2np(self, raster):
         raise NotImplemented("Not implemented for base provider")
 
-    def __get_attrib_(self, sfield, intersect):
+    def _get_attrib(self, sfield, intersect):
+        raise NotImplemented("Not implemented for base provider")
+
+    def _get_attrib_(self, sfield, intersect):
         """Internal method. Called by _get_attrib().
         """
         dim = [self.data['r'], self.data['c']]
@@ -246,9 +249,6 @@ class PrepareDataBase(object):
             mat_tau,
             mat_v
         ]
-
-    def _get_attrib(self, sfield, intersect):
-        raise NotImplemented("Not implemented for base provider")
 
     def _get_mat_par(self, sfield, intersect):
         """
