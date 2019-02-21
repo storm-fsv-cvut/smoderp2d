@@ -290,7 +290,7 @@ class PrepareData(PrepareDataBase):
 
         :return all_atrib: list of numpy array
         """
-        all_attrib = self.__get_attrib(sfield, intersect)
+        all_attrib = self._get_attrib_(sfield, intersect)
 
         for field in sfields:
             output = "r{}".format(field)
