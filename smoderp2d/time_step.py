@@ -25,8 +25,6 @@ max_infilt_capa = 0.003  # [m]
 class TimeStep:
 
     def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
-        surface, subsurface, delta_t, flow_control, courant
-
         rr, rc = GridGlobals.get_region_dim()
         mat_efect_vrst = Globals.get_mat_efect_vrst()
         fc = flow_control
@@ -38,7 +36,7 @@ class TimeStep:
 
         for i in rr:
             for j in rc[i]:
-
+                # TODO: variable not used. Should we delete it?
                 h_total_pre = surface.arr[i][j].h_total_pre
 
                 surface_state = surface.arr[i][j].state
@@ -54,7 +52,7 @@ class TimeStep:
                         i, j, surface.arr[i][j], delta_t, mat_efect_vrst[i][j], fc.ratio)
                     subsurface.runoff(i, j, delta_t, mat_efect_vrst[i][j])
 
-
+                # TODO: variable not used. Should we delete it?
                 q_surface = q_sheet + q_rill
                 # print v_sheet,v_rill
                 v = max(v_sheet, v_rill)
@@ -68,6 +66,7 @@ class TimeStep:
                     mat_efect_vrst[i][j],
                     co,
                     rill_courant)
+                # TODO: variable not used. Should we delet it?
                 rill_courant = 0.
 
                 # w1 = surface.arr[i][j].vol_runoff_rill
@@ -99,6 +98,7 @@ class TimeStep:
         if (infilt_capa < max_infilt_capa):
             infilt_time += delta_t
             actRain = 0.0
+            # TODO: variable not used. Should we delete it?
             potRain = 0.0
             for i in rr:
                 for j in rc[i]:
@@ -114,6 +114,7 @@ class TimeStep:
             return actRain
 
         for iii in combinatIndex:
+            # TODO: variable not used. Should we delete it?
             index = iii[0]
             k = iii[1]
             s = iii[2]
