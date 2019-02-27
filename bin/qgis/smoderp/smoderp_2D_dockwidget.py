@@ -141,23 +141,22 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         """Get input parameters from QGIS plugin."""
 
         # TODO: get paths to layers
-
         self._input_params = {
-            'elevation': self.elevation_comboBox.currentText(),
-            'soil': self.soil_comboBox.currentText(),
+            'elevation': self.elevation_comboBox.currentLayer().dataProvider().dataSourceUri(),
+            'soil': self.soil_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
             'soil_type': self.soil_type_comboBox.currentText(),
-            'vegetation': self.vegetation_comboBox.currentText(),
+            'vegetation': self.vegetation_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
             'vegetation_type': self.vegetation_type_comboBox.currentText(),
-            'points': self.points_comboBox.currentText(),
+            'points': self.points_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
             'output': self.output_lineEdit.text(),
-            'stream': self.stream_comboBox.currentText(),
+            'stream': self.stream_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
             'pickle': self.pickle_lineEdit.text(),
             'rainfall_file': self.rainfall_lineEdit.text(),
             'end_time': float(self.end_time_lineEdit.text()) * 60.0, # prevod na s
             'maxdt': float(self.maxdt_lineEdit.text()),
-            'table_soil_vegetation': self.table_soil_vegetation_comboBox.currentText(),
+            'table_soil_vegetation': self.table_soil_vegetation_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
             'table_soil_vegetation_code': self.table_soil_vegetation_code_comboBox.currentText(),
-            'table_stream_shape': self.table_stream_shape_comboBox.currentText(),
+            'table_stream_shape': self.table_stream_shape_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
             'table_stream_shape_code': self.table_stream_shape_code_comboBox.currentText(),
             'main_output': self.main_output_lineEdit.text()
         }
