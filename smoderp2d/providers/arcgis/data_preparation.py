@@ -287,7 +287,7 @@ class PrepareData(PrepareDataBase):
                 
         self._diff_npoints(int(npoints[0]), int(npoints_clipped[0]))
 
-        self.data['points'] = pointsClipCheck
+        return pointsClipCheck
 
     def _get_attrib(self, sfield, intersect):
         """
@@ -368,7 +368,7 @@ class PrepareData(PrepareDataBase):
                 pnt = feat.getPart()
 
                 i = self._get_array_points_(
-                    pnt.Y, pnt.X, fid, i
+                    pnt.X, pnt.Y, fid, i
                 )
         else:
             self.data['array_points'] = None
