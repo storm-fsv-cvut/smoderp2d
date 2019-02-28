@@ -1,3 +1,5 @@
+import numpy as np
+
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.grass.terrain import compute_products
@@ -292,7 +294,8 @@ class PrepareData(PrepareDataBase):
         """
         all_attrib = self._get_attrib_(sfield, intersect)
 
-        for field in sfields:
+        idx = 0
+        for field in sfield:
             output = "r{}".format(field)
             gs.run_command('v.to.rast',
                            input=intersect,
@@ -305,3 +308,29 @@ class PrepareData(PrepareDataBase):
             idx += 1
 
         return all_attrib
+
+    def _get_array_points(self):
+        """Get array of points. Points near AOI border are skipped.
+        """
+        if self.data['points'] and \
+           (self.data['points'] != "#") and (self.data['points'] != ""):
+            # get number of points
+            count = gs.vector_info_topo(self.data['points'])['points']
+
+            # empty array
+            self.data['array_points'] = np.zeros([int(count), 5], float)
+
+            ret = gs.read_command(
+                'v.out.ascii',
+                input=self.data['points'],
+                separator=';'
+            )
+            i = 0
+            for row in ret.splitlines():
+                x, y, cat = row.split(';')
+
+                i = self._get_array_points_(
+                    float(x), float(y), int(cat), i
+                )
+        else:
+            self.data['array_points'] = None

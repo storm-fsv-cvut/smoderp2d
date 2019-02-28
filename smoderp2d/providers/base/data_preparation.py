@@ -312,13 +312,49 @@ class PrepareDataBase(object):
                 else:
                     self.data['mat_nan'][i][j] = 0
 
-        self._save_raster("mat_nan", self.data['mat_nan'], self.data['temp'])
+        ### TODO
+        ### self._save_raster("mat_nan", self.data['mat_nan'], self.data['temp'])
 
         return all_attrib
 
     def _get_array_points(self):
         raise NotImplemented("Not implemented for base provider")
-        
+
+    def _get_array_points_(self, x, y, fid, i):
+        """Internal method called by _get_array_points().
+        """
+        # position i,j in raster (starts at 0)
+        r = self.data['r'] - ((y - self.data['yllcorner']) // self.data['vpix']) - 1
+        c = (x - self.data['xllcorner']) // self.data['spix']
+
+        print (x, y)
+        print (r, c)
+        # if point is not on the edge of raster or its
+        # neighbours are not "NoDataValue", it will be saved
+        # into array_points array
+        if r != 0 and r != self.data['r'] \
+           and c != 0 and c != self.data['c'] and \
+           self.data['mat_dem'][r][c] != self.data['NoDataValue'] and \
+           self.data['mat_dem'][r-1][c] != self.data['NoDataValue'] and \
+           self.data['mat_dem'][r+1][c] != self.data['NoDataValue'] and \
+           self.data['mat_dem'][r][c-1] != self.data['NoDataValue'] and \
+           self.data['mat_dem'][r][c+1] != self.data['NoDataValue']:
+
+            self.data['array_points'][i][0] = fid
+            self.data['array_points'][i][1] = r
+            self.data['array_points'][i][2] = c
+            # x,y coordinates of current point stored in an array
+            self.data['array_points'][i][3] = x
+            self.data['array_points'][i][4] = y
+        else:
+            Logger.info(
+                "Point FID = {} is at the edge of the raster."
+                "This point will not be included in results.".format(
+                    fid
+            ))
+
+        return i
+
     def _get_a(self, all_attrib):
         """
         Build 'a' array.

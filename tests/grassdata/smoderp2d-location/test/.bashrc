@@ -11,5 +11,5 @@ grass_prompt() {
 	fi
 }
 PROMPT_COMMAND=grass_prompt
-export PATH="/usr/lib/grass76/bin:/usr/lib/grass76/scripts:/home/martin/.grass7/addons/bin:/home/martin/.grass7/addons/scripts:/home/martin/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
+export PATH="/usr/lib/grass76/bin:/usr/lib/grass76/scripts:/home/martin/.grass7/addons/bin:/home/martin/.grass7/addons/scripts:/home/martin/.local/bin:/home/martin/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
 export HOME="/home/martin"

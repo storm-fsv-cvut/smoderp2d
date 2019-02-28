@@ -344,9 +344,7 @@ class PrepareData(PrepareDataBase):
 
     def _get_array_points(self):
         """Get array of points. Points near AOI border are skipped.
-
         """
-        # getting points coordinates from optional input shapefile
         if self.data['points'] and \
            (self.data['points'] != "#") and (self.data['points'] != ""):
             # identify the geometry field
@@ -355,7 +353,7 @@ class PrepareData(PrepareDataBase):
             # create search cursor
             rows_p = arcpy.SearchCursor(self.data['points'])
             
-            # getting number of points in shapefile
+            # get number of points
             count = arcpy.GetCount_management(self.data['points'])  # result
             count = count.getOutput(0)
 
@@ -364,39 +362,14 @@ class PrepareData(PrepareDataBase):
 
             i = 0
             for row in rows_p:
-                # getting points ID
                 fid = row.getValue('FID')
-                # create the geometry object 'feat'
+                # geometry
                 feat = row.getValue(shapefieldname)
                 pnt = feat.getPart()
 
-                # position i,j in raster
-                r = self.data['r'] - ((pnt.Y - self.data['yllcorner']) // self.data['vpix']) - 1  # i from 0
-                c = (pnt.X - self.data['xllcorner']) // self.data['spix']  # j
-
-                # if point is not on the edge of raster or its neighbours are not "NoDataValue", it will be saved into
-                # array_points array
-                if r != 0 and r != self.data['r'] \
-                   and c != 0 and c != self.data['c'] and \
-                   self.data['mat_dem'][r][c] != self.data['NoDataValue'] and \
-                   self.data['mat_dem'][r-1][c] != self.data['NoDataValue'] and \
-                   self.data['mat_dem'][r+1][c] != self.data['NoDataValue'] and \
-                   self.data['mat_dem'][r][c-1] != self.data['NoDataValue'] and \
-                   self.data['mat_dem'][r][c+1] != self.data['NoDataValue']:
-
-                    self.data['array_points'][i][0] = fid
-                    self.data['array_points'][i][1] = r
-                    self.data['array_points'][i][2] = c
-                    # x,y coordinates of current point stored in an array
-                    self.data['array_points'][i][3] = pnt.X
-                    self.data['array_points'][i][4] = pnt.Y
-                    i += 1
-                else:
-                    Logger.info(
-                        "Point FID = {} is at the edge of the raster." 
-                        "This point will not be included in results.".format(
-                            fid
-                    ))
+                i = self._get_array_points_(
+                    pnt.Y, pnt.X, fid, i
+                )
         else:
             self.data['array_points'] = None
 
