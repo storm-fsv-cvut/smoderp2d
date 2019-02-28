@@ -442,9 +442,10 @@ class PrepareDataBase(object):
                     mat_hcrit_flux[i][j] = self.data['NoDataValue']
                     self.data['mat_hcrit'][i][j] = self.data['NoDataValue']
 
-        self._save_raster("hcrit_tau", mat_hcrit_tau)
-        self._save_raster("hcrit_flux", mat_hcrit_flux)
-        self._save_raster("hcrit_v", mat_hcrit_v)
+        # TODO
+        # self._save_raster("hcrit_tau", mat_hcrit_tau)
+        # self._save_raster("hcrit_flux", mat_hcrit_flux)
+        # self._save_raster("hcrit_v", mat_hcrit_v)
 
     def _get_slope_dir(self, dem_clip):
         raise NotImplemented("Not implemented for base provider")
