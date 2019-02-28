@@ -272,7 +272,7 @@ class PrepareData(PrepareDataBase):
         dem_desc = gs.raster_info(dem_clip)
 
         # lower left corner coordinates
-        self.data['xllcorner'] = dem_desc['east']
+        self.data['xllcorner'] = dem_desc['west']
         self.data['yllcorner'] = dem_desc['south']
         self.data['NoDataValue'] = None
         self.data['vpix'] = dem_desc['nsres']

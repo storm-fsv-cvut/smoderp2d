@@ -327,9 +327,6 @@ class PrepareDataBase(object):
         r = int(self.data['r'] - ((y - self.data['yllcorner']) // self.data['vpix']) - 1)
         c = int((x - self.data['xllcorner']) // self.data['spix'])
 
-        Logger.info('{} {}'.format(x, y))
-        Logger.info('r={} xll={},{}, pix={},{}'.format(self.data['r'], self.data['xllcorner'], self.data['yllcorner'], self.data['spix'], self.data['vpix']))
-        Logger.info('{} {}'.format(r, c))
         # if point is not on the edge of raster or its
         # neighbours are not "NoDataValue", it will be saved
         # into array_points array
