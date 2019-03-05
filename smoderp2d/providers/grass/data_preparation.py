@@ -3,7 +3,7 @@ import numpy as np
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.grass.terrain import compute_products
-from smoderp2d.providers.base.exception import DataPreparationInvalidInput
+from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
 
 import grass.script as gs
 from grass.script import array as garray

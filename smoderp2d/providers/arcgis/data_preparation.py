@@ -9,7 +9,7 @@ import smoderp2d.processes.rainfall as rainfall
 
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
-from smoderp2d.providers.base.exception import DataPreparationInvalidInput
+from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
 
 from smoderp2d.providers.arcgis.stream_preparation import StreamPreparation
 from smoderp2d.providers.arcgis.terrain import compute_products
