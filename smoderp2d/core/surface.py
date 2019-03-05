@@ -260,8 +260,8 @@ def compute_h_hrill(h_total_pre, h_crit, state, rill_width, h_rill_pre):
 
     else: # elif state == 2:
         if h_total_pre > h_rill_pre:
-            h_rill = h_hill_pre
-            h_sheet = h_total_pre - h_hill_pre
+            h_rill = h_rill_pre
+            h_sheet = h_total_pre - h_rill_pre
         else:
             h_rill = h_total_pre
             h_sheet = 0
