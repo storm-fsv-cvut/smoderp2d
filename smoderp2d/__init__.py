@@ -22,7 +22,8 @@ The computational options are as follows:
 """
 
 import os
-from .exceptions import SmoderpError
+from smoderp2d.exceptions import SmoderpError
+from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
 
 
 class Runner(object):
@@ -49,7 +50,10 @@ class Runner(object):
         self._provider.logo()
 
         # load configuration (set global variables)
-        self._provider.load()
+        try:
+            self._provider.load()
+        except DataPreparationInvalidInput:
+            return 1
 
         # must be called after initialization (!)
         from smoderp2d.runoff import Runoff

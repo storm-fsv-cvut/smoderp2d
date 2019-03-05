@@ -213,7 +213,7 @@ class PrepareData(PrepareDataBase):
                 for i in range(len(row)):
                     if row[i] == " ": # TODO: empty string or NULL value?
                         raise DataPreparationInvalidInput(
-                            "Values in soilveg tab are not correct"
+                            "Values in soilveg tab are not correct (empty value found)"
                         )
 
         return intersect, mask_shp, self._data['sfield']
