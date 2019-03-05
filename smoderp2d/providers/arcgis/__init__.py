@@ -7,7 +7,7 @@ from smoderp2d.core.general import Globals
 from smoderp2d.providers.base import BaseProvider
 from smoderp2d.providers.arcgis import constants
 from smoderp2d.providers.arcgis.logger import ArcPyLogHandler
-from smoderp2d.providers.base import Logger
+from smoderp2d.providers import Logger
 
 class ArcGisProvider(BaseProvider):
     

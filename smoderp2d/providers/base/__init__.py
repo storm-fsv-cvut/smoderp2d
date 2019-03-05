@@ -7,11 +7,9 @@ import math
 import pickle
 import logging
 
+from smoderp2d.providers import Logger
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
-from smoderp2d.providers.base.logger import logger
 from smoderp2d.exceptions import ProviderError
-
-Logger = logger()
 
 class Args:
     # type of computation ('dpre', 'roff', 'full')

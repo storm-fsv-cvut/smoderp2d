@@ -6,7 +6,7 @@ from smoderp2d.providers.base import BaseProvider
 from smoderp2d.core.general import Globals
 from smoderp2d.exceptions import ProviderError
 from smoderp2d.providers.grass.logger import GrassGisLogHandler
-from smoderp2d.providers.base import Logger
+from smoderp2d.providers import Logger
 
 import grass.script as gs
 
