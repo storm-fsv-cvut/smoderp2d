@@ -398,7 +398,7 @@ class PrepareData(PrepareDataBase):
 
         efect_cont = arcpy.sa.Times(times1, self.data['spix'])
         efect_cont.save(os.path.join(self.data['temp'], "efect_cont"))
-        self.data['mat_efect_cont'] = self._rst2np(efect_conf)
+        self.data['mat_efect_cont'] = self._rst2np(efect_cont)
 
     def _prepare_streams(self, mask_shp, dem_clip, intersect):
         """
