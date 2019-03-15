@@ -451,7 +451,48 @@ class PrepareDataBase(object):
         raise NotImplemented("Not implemented for base provider")
 
     def _prepare_streams(self, mask_shp, dem_clip, intersect):
-        raise NotImplemented("Not implemented for base provider")
+        """
+
+        :param mask_shp:
+        :param dem_clip:
+        :param intersect:
+        """
+        self.data['type_of_computing'] = 1
+
+        # pocitam vzdy s ryhama pokud jsou zadane vsechny vstupy pro
+        # vypocet toku, toky se pocitaji a type_of_computing je 3
+        listin = [self._input_params['stream'],
+                  self._input_params['table_stream_shape'],
+                  self._input_params['table_stream_shape_code']]
+        tflistin = [len(i) > 1 for i in listin]
+
+        if all(tflistin):
+            self.data['type_of_computing'] = 3
+
+        if self.data['type_of_computing'] in (3, 5):
+            args = [
+                self._input_params['stream'],
+                self._input_params['table_stream_shape'],
+                self._input_params['table_stream_shape_code'],
+                self._input_params['elevation'],
+                mask_shp,
+                self.data['spix'],
+                self.data['r'],
+                self.data['c'],
+                (self.data['xllcorner'], self.data['yllcorner']),
+                self.data['outdir'],
+                dem_clip,
+                intersect,
+                self._add_field,
+                self._join_table
+            ]
+
+            self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = \
+                StreamPreparation(args).prepare_streams()
+        else:
+            self.data['toky'] = None
+            self.data['mat_tok_reach'] = None
+            self.data['toky_loc'] = None
 
     def _find_boundary_cells(self):
         """

@@ -400,53 +400,6 @@ class PrepareData(PrepareDataBase):
         efect_cont.save(os.path.join(self.data['temp'], "efect_cont"))
         self.data['mat_efect_cont'] = self._rst2np(efect_conf)
 
-    def _prepare_streams(self, mask_shp, dem_clip, intersect):
-        """
-
-        :param mask_shp:
-        :param dem_clip:
-        :param intersect:
-        """
-        self.data['type_of_computing'] = 1
-
-        ll_corner = arcpy.Point(
-            self.data['xllcorner'], self.data['yllcorner']
-        )
-
-        # pocitam vzdy s ryhama pokud jsou zadane vsechny vstupy pro
-        # vypocet toku, toky se pocitaji a type_of_computing je 3
-        listin = [self._input_params['stream'],
-                  self._input_params['table_stream_shape'],
-                  self._input_params['table_stream_shape_code']]
-        tflistin = [len(i) > 1 for i in listin]
-
-        if all(tflistin):
-            self.data['type_of_computing'] = 3
-
-        if self.data['type_of_computing'] == 3 or \
-           self.data['type_of_computing'] == 5:
-
-            input = [self._input_params['stream'],
-                     self._input_params['table_stream_shape'],
-                     self._input_params['table_stream_shape_code'],
-                     self._input_params['elevation'],
-                     mask_shp,
-                     self.data['spix'],
-                     self.data['r'],
-                     self.data['c'],
-                     ll_corner,
-                     self.data['outdir'],
-                     dem_clip,
-                     intersect,
-                     self._add_field,
-                     self._join_table]
-
-            self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = StreamPreparation(input).prepare_streams()
-        else:
-            self.data['toky'] = None
-            self.data['mat_tok_reach'] = None
-            self.data['toky_loc'] = None
-
     def _add_field(self, input, newfield, datatype, default_value):  # EDL
         """
         Adds field into attribute field of feature class.

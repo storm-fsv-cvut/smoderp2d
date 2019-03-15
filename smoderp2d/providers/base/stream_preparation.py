@@ -2,44 +2,48 @@ from smoderp2d.providers.base import Logger
 
 # definice erroru  na urovni modulu
 #
-class Error(Exception):
-
-    """Base class for exceptions in this module."""
+class StreamPreparationError(Exception):
     pass
 
-
 class ZeroSlopeError(Error):
-
     """Exception raised for zero slope of a reach.
-
-    Attributes:
-        msg  -- explanation of the error
     """
-
     def __init__(self, fid):
-        self.msg = 'Reach FID:' + str(fid) + ' has zero slope.'
-
-    def __str__(self):
-        return repr(self.msg)
+        self.msg = 'Reach FID: {} has zero slope'.format(
+            fid
+        )
 
 class StreamPreparationBase(object):
-    def __init__(self, input):
-        # TODO: avoid list...
-        self.stream = input[0]
-        self.tab_stream_tvar = input[1]
-        self.tab_stream_tvar_code = input[2]
-        self.dmt = input[3]
-        self.null = input[4]
-        self.spix = input[5]
-        self.rows = input[6]
-        self.cols = input[7]
-        self.ll_corner = input[8]
-        self.output = input[9]
-        self.dmt_clip = input[10]
-        self.intersect = input[11]
-        self._add_field = input[12]
-        self._join_table = input[13]
+    def __init__(self, args):
+        self.stream = args[0]
+        self.tab_stream_tvar = args[1]
+        self.tab_stream_tvar_code = args[2]
+        self.dem = args[3]
+        self.null = args[4]
+        self.spix = args[5]
+        self.rows = args[6]
+        self.cols = args[7]
+        self.ll_corner = args[8]
+        self.output = args[9]
+        self.dem_clip = args[10]
+        self.intersect = args[11]
+        self._add_field = args[12]
+        self._join_table = args[13]
 
+        # internal data
+        self._data = {}
+        for item in [
+                'setnull',
+                'streams',
+                'streams_loc',
+                'aoi',
+                'aoi_buffer',
+                'start',
+                'end',
+                'start_elev',
+                'end_elev']:
+            self._data[item] = item
+        
     def prepare_streams(self):
         Logger.info("Creating output...")
         self._set_output()
