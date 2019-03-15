@@ -1,3 +1,4 @@
+import math
 import numpy as np
 
 from smoderp2d.providers.base import Logger
@@ -334,3 +335,55 @@ class PrepareData(PrepareDataBase):
                 )
         else:
             self.data['array_points'] = None
+
+    def _get_slope_dir(self, dem_clip):
+        """
+        ?
+
+        :param dem_clip:
+        """
+        pii = math.pi / 180.0
+        asp = 'aspect'
+        gs.run_command('r.slope.aspect',
+                       elevation=dem_clip,
+                       aspect=asp
+        )
+        asppii = 'asppii'
+        gs.run_command('r.mapcalc',
+                       expression='{} = {} * {}'.format(
+                           asppii, asp, pii
+        ))
+        sinasp = 'sinasp'
+        gs.run_command('r.mapcalc',
+                       expression='{} = sin({})'.format(
+                           sinasp, asppii
+        ))
+        cosasp = 'cosasp'
+        gs.run_command('r.mapcalc',
+                       expression='{} = cos({})'.format(
+                           cosasp, asppii
+        ))
+        sinslope = 'sinslope'
+        gs.run_command('r.mapcalc',
+                       expression='{} = abs({})'.format(
+                           sinslope, sinasp
+        ))
+        cosslope = 'cosasp'
+        gs.run_command('r.mapcalc',
+                       expression='{} = cos({})'.format(
+                           cosslope, cosasp
+        ))
+        times1 = 'times1'
+        gs.run_command('r.mapcalc',
+                       expression='{} = {} + {}'.format(
+                           times1, cosslope, sinslope
+        ))
+        # times1.save(os.path.join(self.data['temp'], "ratio_cell"))
+
+        efect_cont = 'efect_cont'
+        gs.run_command('r.mapcalc',
+                       expression='{} = {} * {}'.format(
+                           efect_cont, times1, self.data['spix']
+        ))
+        # efect_cont.save(os.path.join(self.data['temp'], "efect_cont"))
+        self.data['mat_efect_vrst'] = self._rst2np(efect_cont)
