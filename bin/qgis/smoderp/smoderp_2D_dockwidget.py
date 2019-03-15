@@ -142,6 +142,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             except ProviderError as e:
                 raise ProviderError(e)
 
+            runner.import_data(self._input_params)
+
         else:
             self.send_message("Input parameters error:",
                               "Some of mandatory fields are not filled correctly.",

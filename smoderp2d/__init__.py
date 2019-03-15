@@ -22,8 +22,8 @@ The computational options are as follows:
 """
 
 import os
-from smoderp2d.exceptions import SmoderpError
-from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
+from .providers.base.exceptions import DataPreparationInvalidInput
+from .exceptions import SmoderpError
 
 
 class Runner(object):
@@ -103,10 +103,30 @@ class QGISRunner(GrassRunner):
 
         super().__init__()
 
-    def _import_data(self):
-        pass
+    def import_data(self, options):
+        """
+        Import files to grass
 
-    def _export_data(self):
+        :param options: dictionary of input data
+        """
+
+        import grass.script as gs
+
+        for key in options:
+            try:
+                # import rasters
+                if key == "elevation":
+                    gs.run_command("r.import", input=options[key], output=key)
+                # import vectors
+                elif key in ["soil", "vegetation", "points", "stream"]:
+                    gs.run_command("v.import", input=options[key], output=key, flags = 'o')
+                # import tables
+                elif key in ["table_soil_vegetation", "table_stream_shape"]:
+                    gs.run_command("db.in.ogr", input=options[key], output=key)
+            except SmoderpError as e:
+                raise SmoderpError('{}'.format(e))
+
+    def export_data(self):
         pass
 
     def __del__(self):
