@@ -26,7 +26,7 @@ class TimeStep:
 
     def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
         rr, rc = GridGlobals.get_region_dim()
-        mat_efect_vrst = Globals.get_mat_efect_vrst()
+        mat_efect_cont = Globals.get_mat_efect_cont()
         fc = flow_control
         sr = Globals.get_sr()
         itera = Globals.get_itera()
@@ -49,8 +49,8 @@ class TimeStep:
                     rill_courant = 0.0
                 else:
                     q_sheet, v_sheet, q_rill, v_rill, fc.ratio, rill_courant = runoff(
-                        i, j, surface.arr[i][j], delta_t, mat_efect_vrst[i][j], fc.ratio)
-                    subsurface.runoff(i, j, delta_t, mat_efect_vrst[i][j])
+                        i, j, surface.arr[i][j], delta_t, mat_efect_cont[i][j], fc.ratio)
+                    subsurface.runoff(i, j, delta_t, mat_efect_cont[i][j])
 
                 # TODO: variable not used. Should we delete it?
                 q_surface = q_sheet + q_rill
@@ -63,7 +63,7 @@ class TimeStep:
                     surface.arr[i][j].h_total_pre,
                     v,
                     delta_t,
-                    mat_efect_vrst[i][j],
+                    mat_efect_cont[i][j],
                     co,
                     rill_courant)
                 # TODO: variable not used. Should we delet it?
@@ -80,7 +80,7 @@ class TimeStep:
 
 # self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
 # courant, total_time, delta_t, combinatIndex, NoDataValue,
-# sum_interception, mat_efect_vrst, ratio, iter_
+# sum_interception, mat_efect_cont, ratio, iter_
     def do_next_h(self, surface, subsurface, rain_arr, cumulative,
                   hydrographs, flow_control, courant, potRain, delta_t):
 

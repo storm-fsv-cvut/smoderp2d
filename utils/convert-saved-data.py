@@ -37,7 +37,7 @@ def main(filename):
         data['mat_reten'],                \
         data['mat_fd'],                   \
         data['mat_dmt'],                  \
-        data['mat_efect_vrst'],           \
+        data['mat_efect_cont'],           \
         data['mat_slope'],                \
         data['mat_nan'],                  \
         data['mat_a'],                    \

@@ -124,7 +124,7 @@ class Globals:
     # raster contains digital elevation model
     mat_dem = None
     # raster contains efective couterline data
-    mat_efect_vrst = None
+    mat_efect_cont = None
     # raster contains surface slopes data
     mat_slope = None
     # raster labels not a number cells
@@ -235,8 +235,8 @@ class Globals:
         return cls.mat_dem
 
     @classmethod
-    def get_mat_efect_vrst(cls):
-        return cls.mat_efect_vrst
+    def get_mat_efect_cont(cls):
+        return cls.mat_efect_cont
 
     @classmethod
     def get_mat_slope(cls, i, j):

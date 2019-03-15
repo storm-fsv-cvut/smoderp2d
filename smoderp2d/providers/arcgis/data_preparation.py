@@ -391,14 +391,14 @@ class PrepareData(PrepareDataBase):
         asppii = arcpy.sa.Times(asp, pii)
         sinasp = arcpy.sa.Sin(asppii)
         cosasp = arcpy.sa.Cos(asppii)
-        sinsklon = arcpy.sa.Abs(sinasp)
-        cossklon = arcpy.sa.Abs(cosasp)
-        times1 = arcpy.sa.Plus(cossklon, sinsklon)
+        sinslope = arcpy.sa.Abs(sinasp)
+        cosslope = arcpy.sa.Abs(cosasp)
+        times1 = arcpy.sa.Plus(cosslope, sinslope)
         times1.save(os.path.join(self.data['temp'], "ratio_cell"))
 
-        efect_vrst = arcpy.sa.Times(times1, self.data['spix'])
-        efect_vrst.save(os.path.join(self.data['temp'], "efect_vrst"))
-        self.data['mat_efect_vrst'] = self._rst2np(efect_vrst)
+        efect_cont = arcpy.sa.Times(times1, self.data['spix'])
+        efect_cont.save(os.path.join(self.data['temp'], "efect_cont"))
+        self.data['mat_efect_cont'] = self._rst2np(efect_conf)
 
     def _prepare_streams(self, mask_shp, dem_clip, intersect):
         """

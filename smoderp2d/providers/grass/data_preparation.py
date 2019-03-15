@@ -386,4 +386,4 @@ class PrepareData(PrepareDataBase):
                            efect_cont, times1, self.data['spix']
         ))
         # efect_cont.save(os.path.join(self.data['temp'], "efect_cont"))
-        self.data['mat_efect_vrst'] = self._rst2np(efect_cont)
+        self.data['mat_efect_cont'] = self._rst2np(efect_cont)
