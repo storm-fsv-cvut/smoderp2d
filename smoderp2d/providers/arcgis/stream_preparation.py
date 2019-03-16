@@ -1,27 +1,18 @@
-#!/usr/bin/python
-# -*- coding: latin-1 -*-
 # SMODERP 2D
 # Created by Tomas Edlman, CTU Prague, 2015-2016
 
-# posledni uprava
-__author__ = "edlman"
-__date__ = "$29.12.2015 18:20:20$"
-
-from smoderp2d.providers.arcgis.terrain import compute_products
-
-# importing system moduls
-import arcpy
 import os
 import sys
-import numpy as np
+import arcpy
 from arcpy.sa import *
 
 from smoderp2d.providers.base import Logger
-
 from smoderp2d.providers.base.stream_preparation import StreamPreparationBase
 from smoderp2d.providers.base.stream_preparation import StreamPreparationError, ZeroSlopeError
+from smoderp2d.providers.arcgis.terrain import compute_products
+from smoderp2d.providers.arcgis.manage_fields import ManageFields
 
-class StreamPreparation(StreamPreparationBase):
+class StreamPreparation(StreamPreparationBase, ManageFields):
     def __init__(self, args):
         super(StreamPreparation, self).__init__(args)
         
@@ -99,14 +90,6 @@ class StreamPreparation(StreamPreparationBase):
 
         return streams, streams_loc
 
-    def _delete_fields(self, table, fields):
-        """Delete attributes.
-
-        :param str table: attrubute table
-        :param list fields: attributes to delete
-        """
-        arcpy.DeleteField_management(table, fields)
-
     def _stream_direction(self, streams):
         """
         Compute elevation of start/end point of stream parts.
@@ -165,27 +148,25 @@ class StreamPreparation(StreamPreparationBase):
         self._join_table(streams, "FID", start, "ORIG_FID")
         self._join_table(streams, "FID", end, "ORIG_FID")
 
-        self._delete_fields(streams,
-                            ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"]
+        self._delete_fields(
+            streams,
+            ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"]
         )
 
         field = ["FID", "start_elev", "POINT_X", "end_elev", "POINT_X_1"]
-
         with arcpy.da.SearchCursor(streams, field) as cursor:
             for row in cursor:
                 if row[1] > row[3]:
                     continue
-                else:
-                    arcpy.FlipLine_edit(streams)
+                arcpy.FlipLine_edit(streams) ### ? all
         self._add_field(streams, "to_node", "DOUBLE", -9999)
 
-        field_start = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
-        field_end = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
-        with arcpy.da.SearchCursor(streams, field_start) as cursor_start:
+        fields = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
+        with arcpy.da.SearchCursor(streams, fields) as cursor_start:
             for row in cursor_start:
                 a = (row[1], row[2])
                 d = row[0]
-                with arcpy.da.UpdateCursor(streams, field_end) as cursor_end:
+                with arcpy.da.UpdateCursor(streams, fields) as cursor_end:
                     for row in cursor_end:
                         b = (row[3], row[4])
                         if a == b:
@@ -205,115 +186,93 @@ class StreamPreparation(StreamPreparationBase):
             streams, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"]
         )
 
-    def _get_mat_tok_usek(self, streams):
-        """
-        Get numpy array of integers detecting whether there is a stream on corresponding pixel of raster (number equal
-        or greater than 1000 in return numpy array) or not (number 0 in return numpy array).
+    def _get_mat_stream_seg(self, streams):
+        """Get numpy array of integers detecting whether there is a stream on
+        corresponding pixel of raster (number equal or greater than
+        1000 in return numpy array) or not (number 0 in return numpy
+        array).
 
         :param streams: Polyline with streams in the area.
-        :return mat_tok_usek: Numpy array
+        :return mat_stream_seg: Numpy array
         """
-
-        stream_rst1 = os.path.join(self.temp, "stream_rst")
+        stream_rst1 = os.path.join(self.temp, self._data["stream_rst"])
         stream_rst = arcpy.PolylineToRaster_conversion(
             streams, "FID", stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix
         )
-        tok_usek = os.path.join(self.temp, "tok_usek")
 
+        stream_seg = os.path.join(self.temp, self._data["stream_seg"])
         arcpy.gp.Reclassify_sa(
-            stream_rst, "VALUE", "NoDataValue 1000", tok_usek, "DATA"
+            stream_rst, "VALUE", "NoDataValue 1000", stream_seg, "DATA"
         )
-        mat_tok_usek = arcpy.RasterToNumPyArray(
-            tok_usek, self.ll_corner, self.cols, self.rows
-        )
-        mat_tok_usek = mat_tok_usek.astype('int16')
 
-        count = arcpy.GetCount_management(tok_usek)
+        ll_corner = arcpy.Point(
+            self.data['xllcorner'], self.data['yllcorner']
+        )
+        mat_stream_seg = arcpy.RasterToNumPyArray(
+            stream_seg, ll_corner, self.cols, self.rows
+        )
+        mat_stream_seg = mat_stream_seg.astype('int16')
+
+        count = arcpy.GetCount_management(stream_seg)
         no_of_streams = int(count.getOutput(0))
 
-        # each element of stream has a number assigned from 0 to no. of stream parts
-        for i in range(self.rows):
-            for j in range(self.cols):
-                if mat_tok_usek[i][j] > no_of_streams - 1:
-                    mat_tok_usek[i][j] = 0
-                else:
-                    mat_tok_usek[i][j] += 1000
+        self._get_mat_stream_seg_(mat_stream_seg)
         
-        return mat_tok_usek
-
+        return mat_stream_seg
 
     def _stream_slope(self, streams):
         """
         :param streams:
         """
-        # sklon
-        field = ["FID", "start_elev", "end_elev", "sklon", "SHAPE@LENGTH", "length"]
-        with arcpy.da.UpdateCursor(streams, field) as cursor:
+        fields = ["FID", "start_elev", "end_elev", "sklon", "SHAPE@LENGTH", "length"]
+        with arcpy.da.UpdateCursor(streams, fields) as cursor:
             for row in cursor:
-                sklon_koryta = (row[1] - row[2]) / row[4]
-                if sklon_koryta == 0:
+                slope = (row[1] - row[2]) / row[4]
+                if slope == 0:
                     raise ZeroSlopeError(row[0])
-                row[3] = sklon_koryta
-                cursor.updateRow(row)
+                row[3] = slope
+                cursor.updateRow(row) # needed?
                 row[5] = row[4]
                 cursor.updateRow(row)
 
     def _get_streamslist(self, streams):
-        """
-        Compute shape of streams.
+        """Compute shape of streams.
+
         :param streams:
         """
-
-        # tvar koryt
-        stream_tvar_dbf = os.path.join(self.temp, "stream_tvar.dbf")
-        arcpy.CopyRows_management(self.tab_stream_tvar, stream_tvar_dbf)
-        sfield = ["cislo", "smoderp", "tvar", "b", "m", "drsnost", "Q365"]
+        stream_shape_dbf = os.path.join(self.temp, "{}.dbf".format(
+            self._data['stream_shape']
+        ))
+        arcpy.CopyRows_management(self.tab_stream_shape, stream_shape_dbf)
 
         try:
             self._join_table(
-                streams, self.tab_stream_tvar_code, stream_tvar_dbf,
-                self.tab_stream_tvar_code,
-                "cislo;tvar;b;m;drsnost;Q365"
+                streams, self.tab_stream_shape_code, stream_shape_dbf,
+                self.tab_stream_shape_code,
+                "number;shape;b;m;roughness;Q365"
             )
         except:
             self._add_field(streams, "smoderp", "TEXT", "0")
-            self._join_table(streams, self.tab_stream_tvar_code,
-                             stream_tvar_dbf, self.tab_stream_tvar_code,
-                             "cislo;tvar;b;m;drsnost;Q365")
+            self._join_table(streams, self.tab_stream_shape_code,
+                             stream_shape_dbf, self.tab_stream_shape_code,
+                             "number;shape;b;m;roughness;Q365")
 
-        with arcpy.da.SearchCursor(streams, sfield) as cursor:
+        sfields = ["number", "smoderp", "shape", "b", "m", "roughness", "Q365"]
+        with arcpy.da.SearchCursor(streams, sfields) as cursor:
             for row in cursor:
                 for i in range(len(row)):
                     if row[i] == " ":
-                        Logger.info(
-                            "Value in tab_stream_tvar are no correct - STOP, check shp file streams in output")
-                        # sys.exit() -> raise
+                        raise StreamPreparationError(
+                            "Value in tab_stream_shape are no correct - STOP, "
+                            "check shp file streams in output"
+                        )
 
         fields = arcpy.ListFields(streams)
         self.field_names = [field.name for field in fields]
-        self.streams_tmp = [[] for field in fields]
+        self.streams_tmp = []
 
         for row in arcpy.SearchCursor(streams):
             field_vals = [row.getValue(field) for field in self.field_names]
-            # field_vals
-            for i in range(len(field_vals)):
-                self.streams_tmp[i].append(field_vals[i])
+            self.streams_tmp.append(field_vals)
 
-        self.streamslist = []
-        self._append_value('FID')
-        self._append_value('POINT_X')
-        self._append_value('POINT_Y')
-        self._append_value('POINT_X_1')
-        self._append_value('POINT_Y_1')
-        self._append_value('to_node')
-        self._append_value('length')
-        self._append_value('sklon')
-
-        self._append_value('smoderp', 'SMODERP')
-        self._append_value('cislo', 'CISLO')
-        self._append_value('tvar','TVAR')
-        self._append_value('b', 'B')
-        self._append_value('m', 'M')
-        self._append_value('drsnost', 'DRSNOST')
-        self._append_value('q365', 'Q365')
-
+        self._streamlist()

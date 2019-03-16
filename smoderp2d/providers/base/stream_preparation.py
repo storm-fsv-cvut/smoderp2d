@@ -27,8 +27,6 @@ class StreamPreparationBase(object):
         self.output = args[9]
         self.dem_clip = args[10]
         self.intersect = args[11]
-        self._add_field = args[12]
-        self._join_table = args[13]
 
         # internal data
         self._data = {}
@@ -41,7 +39,10 @@ class StreamPreparationBase(object):
                 'start',
                 'end',
                 'start_elev',
-                'end_elev']:
+                'end_elev',
+                'stream_rst',
+                'stream_seg',
+                'stream_shape']:
             self._data[item] = item
         
     def prepare_streams(self):
@@ -56,7 +57,7 @@ class StreamPreparationBase(object):
         Logger.info("Computing stream direction and elevation...")
         self._stream_direction(toky)
 
-        mat_tok_usek = self._get_mat_tok_usek(toky)
+        mat_stream_seg = self._get_mat_stream_seg(toky)
 
         Logger.info("Computing stream hydraulics...")
         self._stream_hydraulics(toky)
@@ -65,7 +66,7 @@ class StreamPreparationBase(object):
 
         self._get_tokylist(toky)
 
-        return self.tokylist, mat_tok_usek, toky_loc
+        return self.tokylist, mat_stream_seg, toky_loc
 
     def _set_output(self):
         raise NotImplemented("Not implemented for base provider")
@@ -82,12 +83,21 @@ class StreamPreparationBase(object):
     def _stream_direction(self, toky):
         raise NotImplemented("Not implemented for base provider")
 
-    def _get_mat_tok_usek(self, toky):
+    def _get_mat_stream_seg(self, toky):
         raise NotImplemented("Not implemented for base provider")
+
+    def _get_mat_stream_seg_(self, mat_stream_seg, no_of_streams):
+        # each element of stream has a number assigned from 0 to
+        # no. of stream parts
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if mat_stream_seg[i][j] > no_of_streams - 1:
+                    mat_stream_seg[i][j] = 0
+                else:
+                    mat_stream_seg[i][j] += 1000
 
     def _stream_hydraulics(self, toky):
         """TODO: is it used?"""
-        # HYDRAULIKA TOKU
         self._add_field(toky, "length", "DOUBLE", 0.0)  # (m)
         self._add_field(toky, "sklon", "DOUBLE", 0.0)  # (-)
         self._add_field(toky, "V_infl_ce", "DOUBLE", 0.0)  # (m3)
@@ -112,7 +122,7 @@ class StreamPreparationBase(object):
         self._add_field(toky, "total_NS", "DOUBLE", 0.0)  # (m3)
         self._add_field(toky, "total_Vz", "DOUBLE", 0.0)  # (m3)
 
-    def _get_tokylist(self, toky):
+    def _get_streamslist(self, toky):
         raise NotImplemented("Not implemented for base provider") 
 
     def _append_value(self, field_name_try, field_name_except = None):
@@ -129,3 +139,22 @@ class StreamPreparationBase(object):
                 self.tokylist.append(
                     self.toky_tmp[self.field_names.index(field_name_except)]
                 )
+
+    def _streamlist(self):
+        self.streamslist = []
+        self._append_value('FID')
+        self._append_value('POINT_X')
+        self._append_value('POINT_Y')
+        self._append_value('POINT_X_1')
+        self._append_value('POINT_Y_1')
+        self._append_value('to_node')
+        self._append_value('length')
+        self._append_value('slope')
+
+        self._append_value('smoderp', 'SMODERP')
+        self._append_value('number', 'NUMBER')
+        self._append_value('shape','SHAPE')
+        self._append_value('b', 'B')
+        self._append_value('m', 'M')
+        self._append_value('roughness', 'ROUGHNESS')
+        self._append_value('q365', 'Q365')

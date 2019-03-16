@@ -482,9 +482,7 @@ class PrepareDataBase(object):
                 (self.data['xllcorner'], self.data['yllcorner']),
                 self.data['outdir'],
                 dem_clip,
-                intersect,
-                self._add_field,
-                self._join_table
+                intersect
             ]
 
             self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = \

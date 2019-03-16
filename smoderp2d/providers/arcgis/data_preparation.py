@@ -13,13 +13,14 @@ from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
 
 from smoderp2d.providers.arcgis.stream_preparation import StreamPreparation
 from smoderp2d.providers.arcgis.terrain import compute_products
-import smoderp2d.providers.arcgis.constants as constants
+from smoderp2d.providers.arcgis import constants
+from smoderp2d.providers.arcgis.manage_fields import ManageFields
 
-from arcpy.sa import *
 import arcpy
 import arcgisscripting
+from arcpy.sa import *
 
-class PrepareData(PrepareDataBase):
+class PrepareData(PrepareDataBase, ManageFields):
     def __init__(self):
         super(PrepareData, self).__init__()
 
@@ -399,44 +400,6 @@ class PrepareData(PrepareDataBase):
         efect_cont = arcpy.sa.Times(times1, self.data['spix'])
         efect_cont.save(os.path.join(self.data['temp'], "efect_cont"))
         self.data['mat_efect_cont'] = self._rst2np(efect_conf)
-
-    def _add_field(self, input, newfield, datatype, default_value):  # EDL
-        """
-        Adds field into attribute field of feature class.
-
-        :param input: Feature class to which new field is to be added.
-        :param newfield:
-        :param datatype:
-        :param default_value:
-
-        :return input: Feature class with new field.
-        """
-
-        try:
-            arcpy.DeleteField_management(input, newfield)
-        except:
-            pass
-        arcpy.AddField_management(input, newfield, datatype)
-        arcpy.CalculateField_management(input, newfield, default_value, "PYTHON")
-        return input
-
-    def _join_table(self, in_data, in_field,
-                    join_table, join_field, fields=None):
-        """
-        Join attribute table.
-
-        :param in_data: input data layer
-        :param in_field: input column
-        :param join_table: table to join
-        :param join_field: column to join
-        :param fields: list of fields (None for all fields)
-        """
-        if fields == None:
-            arcpy.JoinField_management(
-                in_data, in_field, join_table, join_field)
-        else:
-            arcpy.JoinField_management(
-                in_data, in_field, join_table, join_field, fields)
 
     def _save_raster(self, name, array_export, folder=None):
         """

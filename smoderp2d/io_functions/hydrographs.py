@@ -45,8 +45,8 @@ class Hydrographs:
 
         counter = 0
 
-        # mat_tok_usek is alway presented if stream == True
-        # if (mat_tok_usek != None) and (stream == True):
+        # mat_stream_seg is alway presented if stream == True
+        # if (mat_stream_seg != None) and (stream == True):
         if Globals.isStream:
             for ip in range(ipi):
                 l = point_int[ip][1]
