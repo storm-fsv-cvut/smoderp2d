@@ -11,7 +11,6 @@ from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
 
-from smoderp2d.providers.arcgis.stream_preparation import StreamPreparation
 from smoderp2d.providers.arcgis.terrain import compute_products
 from smoderp2d.providers.arcgis import constants
 from smoderp2d.providers.arcgis.manage_fields import ManageFields
@@ -419,3 +418,8 @@ class PrepareData(PrepareDataBase, ManageFields):
             self.data['NoDataValue'])
         raster.save(os.path.join(folder, name))
 
+    @staticmethod
+    def _streamPreparation(args):
+        from smoderp2d.providers.arcgis.stream_preparation import StreamPreparation
+
+        return StreamPreparation(args).prepare_streams()

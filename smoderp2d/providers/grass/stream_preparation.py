@@ -1,3 +1,5 @@
+import os
+
 import grass.script as gs
 from grass.script import array as garray
 
@@ -12,14 +14,15 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         os.environ['GRASS_OVERWRITE'] = '1'
 
         # set computation region
-        gs.run_command('g.region'
+        gs.run_command('g.region',
                        raster=self.dem
         )
 
     def _set_output(self):
         """Define output temporary folder and geodatabase.
         """
-        gs.run_command('g.mapcalc',
+        gs.run_command('g.mapset',
+                       flags='c',
                        mapset='stream_prep'
         )
 
@@ -28,10 +31,10 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         """
         # water flows according dem
         dem_fill, flow_direction, flow_accumulation, slope = \
-            compute_products(self.dem_clip, self.temp, None)
+            compute_products(self.dem_clip, None)
 
         gs.run_command('r.mapcalc',
-                       expression='{o} = if({i} < 300, null(), {i}'.format(
+                       expression='{o} = if({i} < 300, null(), {i})'.format(
                            o=self._data['setnull'], i=flow_accumulation
         ))
 
@@ -72,7 +75,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
             ["EX_JH", "POZN", "PRPROP_Z", "IDVT", "UTOKJ_ID", "UTOKJN_ID", "UTOKJN_F"]
         )
 
-        return streams, streams_loc
+        return self._data['streams'], None # TODO: ?
 
     def _stream_direction(self, streams):
         """
@@ -133,7 +136,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         gs.run_command('v.db.update',
                        map=streams,
                        column=field_start[-1],
-                       value=field_start[0]
+                       value=field_start[0],
                        where="{} == {} and {} == {}".format(
                            row[1], row[3], row[2], row[4]
         ))
@@ -224,7 +227,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
 
         try:
             self._join_table(
-                streams, self.tab_stream_shape_code, self._data['stream_shape']
+                streams, self.tab_stream_shape_code, self._data['stream_shape'],
                 self.tab_stream_shape_code,
                 "number;shape;b;m;roughness;Q365"
             )

@@ -1,3 +1,5 @@
+import arcpy
+
 class ManageFields(object):
     def _add_field(self, vector, newfield, datatype, default_value):
         """

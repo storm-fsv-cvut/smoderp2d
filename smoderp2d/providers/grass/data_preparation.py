@@ -1,11 +1,12 @@
 import math
 import numpy as np
 
-from smoderp2d.providers.base import Logger
-from smoderp2d.providers.base.data_preparation import PrepareDataBase
-from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
 from smoderp2d.providers.grass.terrain import compute_products
 from smoderp2d.providers.grass.manage_fields import ManageFields
+
+from smoderp2d.providers.base import Logger
+from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
+from smoderp2d.providers.base.data_preparation import PrepareDataBase
 
 import grass.script as gs
 from grass.script import array as garray
@@ -366,3 +367,9 @@ class PrepareData(PrepareDataBase, ManageFields):
         ))
         # efect_cont.save(os.path.join(self.data['temp'], "efect_cont"))
         self.data['mat_efect_cont'] = self._rst2np(efect_cont)
+
+    @staticmethod
+    def _streamPreparation(args):
+        from smoderp2d.providers.grass.stream_preparation import StreamPreparation
+
+        return StreamPreparation(args).prepare_streams()

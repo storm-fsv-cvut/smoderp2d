@@ -5,7 +5,7 @@ from smoderp2d.providers.base import Logger
 class StreamPreparationError(Exception):
     pass
 
-class ZeroSlopeError(Error):
+class ZeroSlopeError(Exception):
     """Exception raised for zero slope of a reach.
     """
     def __init__(self, fid):
@@ -75,9 +75,6 @@ class StreamPreparationBase(object):
         raise NotImplemented("Not implemented for base provider")
 
     def _clip_streams(self):
-        raise NotImplemented("Not implemented for base provider")
-
-    def _delete_fields(self, table, fields):
         raise NotImplemented("Not implemented for base provider")
 
     def _stream_direction(self, toky):

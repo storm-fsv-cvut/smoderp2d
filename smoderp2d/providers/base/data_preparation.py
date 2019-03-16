@@ -464,7 +464,7 @@ class PrepareDataBase(object):
         listin = [self._input_params['stream'],
                   self._input_params['table_stream_shape'],
                   self._input_params['table_stream_shape_code']]
-        tflistin = [len(i) > 1 for i in listin]
+        tflistin = [len(i) > 1 for i in listin] ### TODO: ???
 
         if all(tflistin):
             self.data['type_of_computing'] = 3
@@ -486,7 +486,7 @@ class PrepareDataBase(object):
             ]
 
             self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = \
-                StreamPreparation(args).prepare_streams()
+                self._streamPreparation(args)
         else:
             self.data['toky'] = None
             self.data['mat_tok_reach'] = None
@@ -569,3 +569,7 @@ class PrepareDataBase(object):
                 "{} points outside of computation domain "
                 "will be ignored".format(diffpts)
             )
+
+    @staticmethod
+    def _streamPreparation(args):
+        raise NotImplemented("Not implemented for base provider")

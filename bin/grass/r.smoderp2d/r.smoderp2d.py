@@ -75,7 +75,7 @@
 #% description: Soil land use code
 #%end
 #%option G_OPT_V_INPUT
-#% key: streams
+#% key: stream
 #% description:  Reach feture
 #% required: no
 #%end

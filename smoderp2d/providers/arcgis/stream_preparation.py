@@ -88,7 +88,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
             ["EX_JH", "POZN", "PRPROP_Z", "IDVT", "UTOKJ_ID", "UTOKJN_ID", "UTOKJN_F"]
         )
 
-        return streams, streams_loc
+        return streams, streams_loc # TODO: where defined ?
 
     def _stream_direction(self, streams):
         """
