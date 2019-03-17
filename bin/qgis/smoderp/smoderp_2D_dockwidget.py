@@ -204,8 +204,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 self.maxdt_lineEdit.text().strip(),
                 self.rainfall_lineEdit.text().strip(),
                 self.end_time_lineEdit.text().strip(),
-                self.main_output_lineEdit.text().strip()
-        ):
+                self.main_output_lineEdit.text().strip()):
             # Check if maxdt and end_time are numbers
             try:
                 float(self.maxdt_lineEdit.text())
@@ -224,9 +223,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             return True
 
     def open_file_dialog(self, t, widget):
-        """Open file dialog."""
+        """Open file dialog, load layer and set path/name to widget."""
 
         # TODO: what format can tables have?
+        # TODO: set layers srs on loading
 
         # remember last folder where user was in
         sender = u'{}-last_used_file_path'.format(self.sender().objectName())
@@ -241,10 +241,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 if file_extension not in QgsProviderRegistry.instance().fileVectorFilters():
                     self.send_message(u'Error', u'{} is not a valid vector layer.'.format(file_name), 'CRITICAL')
                     return
-                else:
-                    self.iface.addVectorLayer(file_name, QFileInfo(file_name).baseName(), "ogr")
-                    widget.setLayer(self.iface.activeLayer())
-                    self.settings.setValue(sender, os.path.dirname(file_name))
+
+                self.iface.addVectorLayer(file_name, QFileInfo(file_name).baseName(), "ogr")
+                widget.setLayer(self.iface.activeLayer())
+                self.settings.setValue(sender, os.path.dirname(file_name))
 
         elif t == 'raster':
             file_name = QFileDialog.getOpenFileName(self, self.tr(u'Open file'),
