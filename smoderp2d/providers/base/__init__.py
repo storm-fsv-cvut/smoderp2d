@@ -229,7 +229,7 @@ class BaseProvider(object):
             os.makedirs(dirname)
 
         with open(filename, 'wb') as fd:
-            pickle.dump(data, fd)
+            pickle.dump(data, fd, protocol=2)
         Logger.debug('Size of saved data is {} bytes'.format(
             sys.getsizeof(data))
         )
