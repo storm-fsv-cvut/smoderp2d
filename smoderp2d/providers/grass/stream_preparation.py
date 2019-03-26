@@ -88,7 +88,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
             gs.run_command('v.to.points',
                            input=streams,
                            use=what,
-                           output=self._data[what]
+                           output=self._data[what],
             )
             gs.run_command('v.what.rast',
                            map=self._data[what],
@@ -96,8 +96,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                            column=self._data['{}_elev'.format(what)]
             )
 
-        self._join_table(streams, "FID", start, "ORIG_FID")
-        self._join_table(streams, "FID", end, "ORIG_FID")
+            self._join_table(streams, "cat", '{}_1'.format(self._data[what]), "cat")
 
         self._delete_fields(
             streams,
@@ -114,7 +113,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
             ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"]
         )
 
-        field = ["FID", "start_elev", "POINT_X", "end_elev", "POINT_X_1"]
+        field = ["cat", "start_elev", "POINT_X", "end_elev", "POINT_X_1"]
         ret = gs.read_command('v.db.select',
                               map=streams,
                               columns=field)
@@ -127,7 +126,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
             )
             self._add_field(streams, "to_node", "DOUBLE", -9999)
 
-        fields = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
+        fields = ["cat", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
         gs.run_command('v.db.update',
                        map=streams,
                        column=field_start[-1],

@@ -30,5 +30,5 @@ Distributed event-based model for surface and subsurface runoff and erosion
         elevation=w001001 soil=puda soil_type=Novak vegetation=puda \
         vegetation_type=vegetace rainfall_file=tests/data/srazka.txt \
         points=points2 table_soil_vegetation=tabulkytab \
-        table_soil_vegetation_code=soilveg streams=tok \
+        table_soil_vegetation_code=soilveg stream=tok \
         table_stream_shape=tab_stream_tvar table_stream_shape_code=smoderp
