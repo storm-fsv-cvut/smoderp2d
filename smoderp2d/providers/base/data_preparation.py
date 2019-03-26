@@ -149,7 +149,7 @@ class PrepareDataBase(object):
             'mat_reten': None,
             'mat_fd': None,
             'mat_dem': None,
-            'mat_efect_vrst': None,
+            'mat_efect_cont': None,
             'mat_slope': None,
             'mat_nan': None,
             'mat_a': None,
