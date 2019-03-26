@@ -30,7 +30,7 @@ class GrassGisProvider(BaseProvider):
         )
 
         # check version
-        if map(int, gs.version()['version'].split('.')[:-1]) < [7, 8]:
+        if list(map(int, gs.version()['version'].split('.')[:-1])) < [7, 7]:
             raise ProviderError("GRASS GIS version 7.8+ required")
 
         # force overwrite
