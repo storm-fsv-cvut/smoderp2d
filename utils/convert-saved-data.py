@@ -4,14 +4,17 @@ import sys
 import os
 import shutil
 import argparse
+import pickle
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from smoderp2d.tools.save_load_data import load_data, save_data
+from smoderp2d.providers.base import BaseProvider
+
 
 def main(filename):
     shutil.copyfile(filename, filename + '.orig')
+
     indata = load_data(filename)
-    
+
     data = {}
     data['br'],                       \
         data['bc'],                       \
@@ -61,8 +64,22 @@ def main(filename):
         data['STREAM_RATIO'],             \
         data['toky_loc'] = indata
 
-    save_data(data, filename)
-        
+    BaseProvider._save_data(data, filename)
+
+
+def load_data(filename):
+    """Load data from pickle.
+
+    :param str filename: file to be loaded
+    """
+    with open(filename, 'rb') as fd:
+        if sys.version_info > (3, 0):
+            data = pickle.load(fd, encoding='bytes')
+        else:
+            data = pickle.load(fd)
+
+    return data
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Convert saved data.')
 
@@ -72,5 +89,5 @@ if __name__ == "__main__":
                         required=True,
                         help='input saved data file')
     args = parser.parse_args()
-    
+
     sys.exit(main(args.data))
