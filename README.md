@@ -24,6 +24,8 @@ Distributed event-based model for surface and subsurface runoff and erosion
 
 ## GRASS GIS test
 
+    (GRASS GIS 7.8+ required)
+
     grass --text tests/grassdata/smoderp2d-location/test/
    
     ./bin/grass/r.smoderp2d/r.smoderp2d.py \
