@@ -52,18 +52,18 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                     sys.exc_info()[0]
                 ))
 
-    def _clip_streams(self):
+    def _clip_stream(self):
         """
-        Clip streams with intersect of input data (from data_preparation).
+        Clip stream with intersect of input data (from data_preparation).
 
-        :return toky:
-        :return toky_loc:
+        :return stream:
+        :return stream_loc:
         """
-        streams = os.path.join(
-            self.temp, "{}.shp".format(self._data['streams'])
+        stream = os.path.join(
+            self.temp, "{}.shp".format(self._data['stream'])
         )
-        streams_loc = os.path.join(
-            self.temp, "{}.shp".format(self._data['streams_loc'])
+        stream_loc = os.path.join(
+            self.temp, "{}.shp".format(self._data['stream_loc'])
         )
         aoi = os.path.join(
             self.temp, "{}.shp".format(self._data['aoi'])
@@ -78,36 +78,36 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
             os.path.join(self.temp, "{}.shp".format(self._data['aoi_buffer']),
             -self.spix / 3, "FULL", "ROUND", "NONE")
 
-        streams = arcpy.Clip_analysis(
-            self.stream, aoi_buffer, streams
+        stream = arcpy.Clip_analysis(
+            self.stream, aoi_buffer, stream
         )
 
         # TODO: MK - nevim proc se maze neco, co v atributove tabulce vubec neni
         self._delete_fields(
-            streams,
+            stream,
             ["EX_JH", "POZN", "PRPROP_Z", "IDVT", "UTOKJ_ID", "UTOKJN_ID", "UTOKJN_F"]
         )
 
-        return streams, streams_loc # TODO: where defined ?
+        return stream, stream_loc # TODO: where defined ?
 
-    def _stream_direction(self, streams):
+    def _stream_direction(self, stream):
         """
         Compute elevation of start/end point of stream parts.
         Add code of ascending stream part into attribute table.
         
-        :param streams:
+        :param stream:
         """
         # TODO: vyresit mazani atributu v atributove tabulce (jestli je to potreba)
         # TODO: vyresit nasledujici:
         #
-        # Nasledujici blok je redundantni, nicmene do "streams"
+        # Nasledujici blok je redundantni, nicmene do "stream"
         # pridava nekolik sloupecku, u kterych jsem nemohl dohledat,
         # jestli se s nimi neco dela. Proto to tu zatim nechavam.
         start = arcpy.FeatureVerticesToPoints_management(
-            streams, os.path.join(self.temp, self._data["start"]), "START"
+            stream, os.path.join(self.temp, self._data["start"]), "START"
         )
         end = arcpy.FeatureVerticesToPoints_management(
-            streams, os.path.join(self.temp, self._data["end"]), "END"
+            stream, os.path.join(self.temp, self._data["end"]), "END"
         )
         arcpy.sa.ExtractMultiValuesToPoints(
             start, [[self.dem_clip, self._data["start_elev"]]], "NONE"
@@ -117,23 +117,23 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         )
 
         # Join
-        self._join_table(streams, "FID", start, "ORIG_FID")
-        self._join_table(streams, "FID", end, "ORIG_FID")
+        self._join_table(stream, "FID", start, "ORIG_FID")
+        self._join_table(stream, "FID", end, "ORIG_FID")
 
         self._delete_fields(
-            streams,
+            stream,
             ["SHAPE_LEN", "SHAPE_LENG", "SHAPE_LE_1", "NAZ_TOK_1", "TOK_ID_1", "SHAPE_LE_2",
              "SHAPE_LE_3", "NAZ_TOK_12", "TOK_ID_12", "SHAPE_LE_4", "ORIG_FID_1"]
         )
         self._delete_fields(
-            streams,
+            stream,
             ["start_elev", "end_elev", "ORIG_FID", "ORIG_FID_1"]
         )
 
         start = arcpy.FeatureVerticesToPoints_management(
-            streams, self.temp + os.sep + "start", "START")
+            stream, self.temp + os.sep + "start", "START")
         end = arcpy.FeatureVerticesToPoints_management(
-            streams, self.temp + os.sep + "end", "END")
+            stream, self.temp + os.sep + "end", "END")
         arcpy.sa.ExtractMultiValuesToPoints(
             start,
             [[self.dem_clip, "start_elev"]], "NONE"
@@ -145,28 +145,28 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         arcpy.AddXY_management(end)
 
         # Join
-        self._join_table(streams, "FID", start, "ORIG_FID")
-        self._join_table(streams, "FID", end, "ORIG_FID")
+        self._join_table(stream, "FID", start, "ORIG_FID")
+        self._join_table(stream, "FID", end, "ORIG_FID")
 
         self._delete_fields(
-            streams,
+            stream,
             ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"]
         )
 
         field = ["FID", "start_elev", "POINT_X", "end_elev", "POINT_X_1"]
-        with arcpy.da.SearchCursor(streams, field) as cursor:
+        with arcpy.da.SearchCursor(stream, field) as cursor:
             for row in cursor:
                 if row[1] > row[3]:
                     continue
-                arcpy.FlipLine_edit(streams) ### ? all
-        self._add_field(streams, "to_node", "DOUBLE", -9999)
+                arcpy.FlipLine_edit(stream) ### ? all
+        self._add_field(stream, "to_node", "DOUBLE", -9999)
 
         fields = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
-        with arcpy.da.SearchCursor(streams, fields) as cursor_start:
+        with arcpy.da.SearchCursor(stream, fields) as cursor_start:
             for row in cursor_start:
                 a = (row[1], row[2])
                 d = row[0]
-                with arcpy.da.UpdateCursor(streams, fields) as cursor_end:
+                with arcpy.da.UpdateCursor(stream, fields) as cursor_end:
                     for row in cursor_end:
                         b = (row[3], row[4])
                         if a == b:
@@ -176,28 +176,28 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                             row[5] = "-9999"
 
         self._delete_fields(
-            streams,
+            stream,
             ["SHAPE_LEN", "SHAPE_LE_1", "SHAPE_LE_2", "SHAPE_LE_3", "SHAPE_LE_4", "SHAPE_LE_5",
              "SHAPE_LE_6", "SHAPE_LE_7", "SHAPE_LE_8", "SHAPE_LE_9", "SHAPE_L_10", "SHAPE_L_11",
              "SHAPE_L_12", "SHAPE_L_13", "SHAPE_L_14"]
         )
         
         self._delete_fields(
-            streams, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"]
+            stream, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"]
         )
 
-    def _get_mat_stream_seg(self, streams):
+    def _get_mat_stream_seg(self, stream):
         """Get numpy array of integers detecting whether there is a stream on
         corresponding pixel of raster (number equal or greater than
         1000 in return numpy array) or not (number 0 in return numpy
         array).
 
-        :param streams: Polyline with streams in the area.
+        :param stream: Polyline with stream in the area.
         :return mat_stream_seg: Numpy array
         """
         stream_rst1 = os.path.join(self.temp, self._data["stream_rst"])
         stream_rst = arcpy.PolylineToRaster_conversion(
-            streams, "FID", stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix
+            stream, "FID", stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix
         )
 
         stream_seg = os.path.join(self.temp, self._data["stream_seg"])
@@ -220,12 +220,12 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         
         return mat_stream_seg
 
-    def _stream_slope(self, streams):
+    def _stream_slope(self, stream):
         """
-        :param streams:
+        :param stream:
         """
         fields = ["FID", "start_elev", "end_elev", "sklon", "SHAPE@LENGTH", "length"]
-        with arcpy.da.UpdateCursor(streams, fields) as cursor:
+        with arcpy.da.UpdateCursor(stream, fields) as cursor:
             for row in cursor:
                 slope = (row[1] - row[2]) / row[4]
                 if slope == 0:
@@ -235,10 +235,10 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                 row[5] = row[4]
                 cursor.updateRow(row)
 
-    def _get_streamslist(self, streams):
-        """Compute shape of streams.
+    def _get_streamlist(self, stream):
+        """Compute shape of stream.
 
-        :param streams:
+        :param stream:
         """
         stream_shape_dbf = os.path.join(self.temp, "{}.dbf".format(
             self._data['stream_shape']
@@ -247,32 +247,32 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
 
         try:
             self._join_table(
-                streams, self.tab_stream_shape_code, stream_shape_dbf,
+                stream, self.tab_stream_shape_code, stream_shape_dbf,
                 self.tab_stream_shape_code,
                 "number;shape;b;m;roughness;Q365"
             )
         except:
-            self._add_field(streams, "smoderp", "TEXT", "0")
-            self._join_table(streams, self.tab_stream_shape_code,
+            self._add_field(stream, "smoderp", "TEXT", "0")
+            self._join_table(stream, self.tab_stream_shape_code,
                              stream_shape_dbf, self.tab_stream_shape_code,
                              "number;shape;b;m;roughness;Q365")
 
         sfields = ["number", "smoderp", "shape", "b", "m", "roughness", "Q365"]
-        with arcpy.da.SearchCursor(streams, sfields) as cursor:
+        with arcpy.da.SearchCursor(stream, sfields) as cursor:
             for row in cursor:
                 for i in range(len(row)):
                     if row[i] == " ":
                         raise StreamPreparationError(
                             "Value in tab_stream_shape are no correct - STOP, "
-                            "check shp file streams in output"
+                            "check shp file stream in output"
                         )
 
-        fields = arcpy.ListFields(streams)
+        fields = arcpy.ListFields(stream)
         self.field_names = [field.name for field in fields]
-        self.streams_tmp = []
+        self.stream_tmp = []
 
-        for row in arcpy.SearchCursor(streams):
+        for row in arcpy.SearchCursor(stream):
             field_vals = [row.getValue(field) for field in self.field_names]
-            self.streams_tmp.append(field_vals)
+            self.stream_tmp.append(field_vals)
 
         self._streamlist()

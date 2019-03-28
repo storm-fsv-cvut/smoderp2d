@@ -422,4 +422,4 @@ class PrepareData(PrepareDataBase, ManageFields):
     def _streamPreparation(args):
         from smoderp2d.providers.arcgis.stream_preparation import StreamPreparation
 
-        return StreamPreparation(args).prepare_streams()
+        return StreamPreparation(args).prepare()
