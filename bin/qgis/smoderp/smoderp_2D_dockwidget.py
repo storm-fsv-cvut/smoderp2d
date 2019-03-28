@@ -86,7 +86,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.soil_toolButton.clicked.connect(lambda: self.open_file_dialog('vector', self.soil_comboBox))
         self.vegetation_toolButton.clicked.connect(lambda: self.open_file_dialog('vector', self.vegetation_comboBox))
         self.points_toolButton.clicked.connect(lambda: self.open_file_dialog('vector', self.points_comboBox))
-        self.output_toolButton.clicked.connect(lambda: self.open_file_dialog('folder', self.output_lineEdit))
+#        self.output_toolButton.clicked.connect(lambda: self.open_file_dialog('folder', self.output_lineEdit))
         self.stream_toolButton.clicked.connect(lambda: self.open_file_dialog('vector', self.stream_comboBox))
 
         self.soil_comboBox.layerChanged.connect(lambda: self.set_fields('soil'))
@@ -159,7 +159,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             'vegetation': self.vegetation_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
             'vegetation_type': self.vegetation_type_comboBox.currentText(),
             'points': "",
-            'output': self.output_lineEdit.text().strip(),
+#            'output': self.output_lineEdit.text().strip(),
             'stream': "",
             'pickle': self.pickle_lineEdit.text().strip(),
             'rainfall_file': self.rainfall_lineEdit.text(),
@@ -170,7 +170,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             'table_soil_vegetation_code': self.table_soil_vegetation_code_comboBox.currentText(),
             'table_stream_shape': "",
             'table_stream_shape_code': "",
-            'main_output': self.main_output_lineEdit.text().strip()
+            'output': self.main_output_lineEdit.text().strip()
         }
 
         # optional inputs
@@ -200,7 +200,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 self.table_soil_vegetation_comboBox.currentLayer(),
                 self.table_soil_vegetation_code_comboBox.currentText(),
                 ) and "" not in (
-                self.output_lineEdit.text().strip(),
+#                self.output_lineEdit.text().strip(),
                 self.maxdt_lineEdit.text().strip(),
                 self.rainfall_lineEdit.text().strip(),
                 self.end_time_lineEdit.text().strip(),

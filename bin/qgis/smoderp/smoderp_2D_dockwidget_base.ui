@@ -131,35 +131,14 @@
               </item>
              </layout>
             </item>
-            <item row="12" column="0">
-             <widget class="QLabel" name="label_10">
-              <property name="text">
-               <string>Output folder</string>
-              </property>
-             </widget>
-            </item>
-            <item row="13" column="0" colspan="2">
-             <layout class="QGridLayout" name="gridLayout_7">
-              <item row="0" column="0">
-               <widget class="QLineEdit" name="output_lineEdit"/>
-              </item>
-              <item row="0" column="1">
-               <widget class="QToolButton" name="output_toolButton">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="14" column="0" colspan="2">
+            <item row="12" column="0" colspan="2">
              <widget class="QLabel" name="label_13">
               <property name="text">
                <string>Reach feature (optional)</string>
               </property>
              </widget>
             </item>
-            <item row="15" column="0" colspan="2">
+            <item row="13" column="0" colspan="2">
              <layout class="QGridLayout" name="gridLayout_9">
               <item row="0" column="1">
                <widget class="QToolButton" name="stream_toolButton">
@@ -177,7 +156,7 @@
               </item>
              </layout>
             </item>
-            <item row="16" column="0">
+            <item row="14" column="0">
              <spacer name="horizontalSpacer">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -190,7 +169,7 @@
               </property>
              </spacer>
             </item>
-            <item row="16" column="1">
+            <item row="14" column="1">
              <widget class="QPushButton" name="run_dataprep">
               <property name="text">
                <string>Run</string>
