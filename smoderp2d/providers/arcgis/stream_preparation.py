@@ -75,8 +75,9 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
 
         aoi_buffer = arcpy.Buffer_analysis(
             aoi,
-            os.path.join(self.temp, "{}.shp".format(self._data['aoi_buffer']),
-            -self.spix / 3, "FULL", "ROUND", "NONE")
+            os.path.join(self.temp, "{}.shp".format(self._data['aoi_buffer'])),
+            -self.spix / 3, "FULL", "ROUND", "NONE"
+        )
 
         stream = arcpy.Clip_analysis(
             self.stream, aoi_buffer, stream
@@ -206,7 +207,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         )
 
         ll_corner = arcpy.Point(
-            self.data['xllcorner'], self.data['yllcorner']
+            self.ll_corner[0], self.ll_corner[1]
         )
         mat_stream_seg = arcpy.RasterToNumPyArray(
             stream_seg, ll_corner, self.cols, self.rows
@@ -215,8 +216,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
 
         count = arcpy.GetCount_management(stream_seg)
         no_of_streams = int(count.getOutput(0))
-
-        self._get_mat_stream_seg_(mat_stream_seg)
+        self._get_mat_stream_seg_(mat_stream_seg, no_of_streams)
         
         return mat_stream_seg
 
@@ -224,7 +224,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         """
         :param stream:
         """
-        fields = ["FID", "start_elev", "end_elev", "sklon", "SHAPE@LENGTH", "length"]
+        fields = ["FID", "start_elev", "end_elev", "slope", "SHAPE@LENGTH", "length"]
         with arcpy.da.UpdateCursor(stream, fields) as cursor:
             for row in cursor:
                 slope = (row[1] - row[2]) / row[4]
@@ -246,18 +246,19 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         arcpy.CopyRows_management(self.tab_stream_shape, stream_shape_dbf)
 
         try:
+            # TODO: hardcoded columns
             self._join_table(
                 stream, self.tab_stream_shape_code, stream_shape_dbf,
                 self.tab_stream_shape_code,
-                "number;shape;b;m;roughness;Q365"
+                "number;shapetype;b;m;roughness;Q365"
             )
         except:
             self._add_field(stream, "smoderp", "TEXT", "0")
             self._join_table(stream, self.tab_stream_shape_code,
                              stream_shape_dbf, self.tab_stream_shape_code,
-                             "number;shape;b;m;roughness;Q365")
+                             "number;shapetype;b;m;roughness;Q365")
 
-        sfields = ["number", "smoderp", "shape", "b", "m", "roughness", "Q365"]
+        sfields = ["number", "smoderp", "shapetype", "b", "m", "roughness", "Q365"]
         with arcpy.da.SearchCursor(stream, sfields) as cursor:
             for row in cursor:
                 for i in range(len(row)):
@@ -269,10 +270,11 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
 
         fields = arcpy.ListFields(stream)
         self.field_names = [field.name for field in fields]
-        self.stream_tmp = []
+        self.stream_tmp = [[] for field in fields]
 
         for row in arcpy.SearchCursor(stream):
             field_vals = [row.getValue(field) for field in self.field_names]
-            self.stream_tmp.append(field_vals)
+            for i in range(len(field_vals)):
+                self.stream_tmp[i].append(field_vals[i])
 
         self._streamlist()

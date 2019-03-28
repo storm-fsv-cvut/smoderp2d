@@ -17,7 +17,7 @@ class StreamPreparationBase(object):
     def __init__(self, args):
         self.stream = args[0]
         self.tab_stream_shape = args[1]
-        self.tab_stream_code = args[2]
+        self.tab_stream_shape_code = args[2]
         self.dem = args[3]
         self.null = args[4]
         self.spix = args[5]
@@ -96,7 +96,7 @@ class StreamPreparationBase(object):
     def _stream_hydraulics(self, stream):
         """TODO: is it used?"""
         self._add_field(stream, "length", "DOUBLE", 0.0)  # (m)
-        self._add_field(stream, "sklon", "DOUBLE", 0.0)  # (-)
+        self._add_field(stream, "slope", "DOUBLE", 0.0)  # (-)
         self._add_field(stream, "V_infl_ce", "DOUBLE", 0.0)  # (m3)
         self._add_field(stream, "V_infl_us", "DOUBLE", 0.0)  # (m3)
         self._add_field(stream, "V_infl", "DOUBLE", 0.0)  # (m3)
@@ -122,36 +122,28 @@ class StreamPreparationBase(object):
     def _get_streamlist(self, stream):
         raise NotImplemented("Not implemented for base provider") 
 
-    def _append_value(self, field_name_try, field_name_except = None):
-        if field_name_except == None:
-            self.streamlist.append(
-                self.stream_tmp[self.field_names.index(field_name_try)]
-            )
-        else:
-            try:
-                self.streamlist.append(
-                    self.stream_tmp[self.field_names.index(field_name_try)]
-                )
-            except ValueError:
-                self.streamlist.append(
-                    self.stream_tmp[self.field_names.index(field_name_except)]
-                )
-
     def _streamlist(self):
         self.streamlist = []
-        self._append_value('FID')
-        self._append_value('POINT_X')
-        self._append_value('POINT_Y')
-        self._append_value('POINT_X_1')
-        self._append_value('POINT_Y_1')
-        self._append_value('to_node')
-        self._append_value('length')
-        self._append_value('slope')
+        for field_name in ['FID',
+                           'POINT_X',
+                           'POINT_Y',
+                           'POINT_X_1',
+                           'POINT_Y_1',
+                           'to_node',
+                           'length',
+                           'slope',
+                           'smoderp',
+                           'number',
+                           'shapetype',
+                           'b',
+                           'm',
+                           'roughness',
+                           'q365']:
+            try:
+                idx = self.field_names.index(field_name)
+            except ValueError:
+                idx = self.field_names.index(field_name.upper())
 
-        self._append_value('smoderp', 'SMODERP')
-        self._append_value('number', 'NUMBER')
-        self._append_value('shape','SHAPE')
-        self._append_value('b', 'B')
-        self._append_value('m', 'M')
-        self._append_value('roughness', 'ROUGHNESS')
-        self._append_value('q365', 'Q365')
+            self.streamlist.append(
+                self.stream_tmp[idx]
+            )

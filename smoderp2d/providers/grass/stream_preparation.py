@@ -233,14 +233,14 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         # todo
         # try:
         #     self._join_table(
-        #         stream, self.tab_stream_code, self._data['stream_shape'],
-        #         self.tab_stream_code,
+        #         stream, self.tab_stream_shape_code, self._data['stream_shape'],
+        #         self.tab_stream_shape_code,
         #         "number;shape;b;m;roughness;Q365"
         #     )
         # except:
         #     self._add_field(stream, "smoderp", "TEXT", "0")
-        #     self._join_table(stream, self.tab_stream_code,
-        #                      self._data['stream_shape'], self.tab_stream_code,
+        #     self._join_table(stream, self.tab_stream_shape_code,
+        #                      self._data['stream_shape'], self.tab_stream_shape_code,
         #                      "number;shape;b;m;roughness;Q365")
 
         # sfields = ["number", "smoderp", "shape", "b", "m", "roughness", "Q365"]
@@ -255,12 +255,14 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         #             )
 
         self.field_names = gs.vector_db_select(map=stream)['columns']
-        self.stream_tmp = []
+        self.stream_tmp = [[] for field in fields]
 
         # for row in gs.vector_db_select(
         #         map=stream,
         #         columns=self.field_names)['values']:
-        #     self.stream_tmp.append(row)
+        #   for i in range(len(row)):
+        # self.stream_tmp[i].append(row[i])
+
 
         self.streamlist = []
         ### self._streamlist()

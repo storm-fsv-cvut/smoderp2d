@@ -398,7 +398,7 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         efect_cont = arcpy.sa.Times(times1, self.data['spix'])
         efect_cont.save(os.path.join(self.data['temp'], "efect_cont"))
-        self.data['mat_efect_cont'] = self._rst2np(efect_conf)
+        self.data['mat_efect_cont'] = self._rst2np(efect_cont)
 
     def _save_raster(self, name, array_export, folder=None):
         """
