@@ -148,7 +148,7 @@ def do(cumulative, mat_slope, G, surArr):
         # for ii in rrows:
             # for jj in rcols[ii]:
                 # if (totalBil[ii][jj]>=2000):
-                # tmparr[ii][jj] = G.mat_tok_usek
+                # tmparr[ii][jj] = G.mat_stream_seg
                 # if (totalBil[ii][jj]>=1):
                 # tmparr[ii][jj] = 1
                 # else:

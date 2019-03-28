@@ -29,6 +29,10 @@ class GrassGisProvider(BaseProvider):
             formatter = logging.Formatter("%(message)s")
         )
 
+        # check version
+        if list(map(int, gs.version()['version'].split('.')[:-1])) < [7, 7]:
+            raise ProviderError("GRASS GIS version 7.8+ required")
+
         # force overwrite
         os.environ['GRASS_OVERWRITE'] = '1'
 

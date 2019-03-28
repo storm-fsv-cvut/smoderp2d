@@ -1,15 +1,17 @@
 import math
 import numpy as np
 
-from smoderp2d.providers.base import Logger
-from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.grass.terrain import compute_products
+from smoderp2d.providers.grass.manage_fields import ManageFields
+
+from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
+from smoderp2d.providers.base.data_preparation import PrepareDataBase
 
 import grass.script as gs
 from grass.script import array as garray
 
-class PrepareData(PrepareDataBase):
+class PrepareData(PrepareDataBase, ManageFields):
     def __init__(self, options):
         super(PrepareData, self).__init__()
 
@@ -160,28 +162,6 @@ class PrepareData(PrepareDataBase):
             )
 
         return self._data['intersect'], self._data['vector_mask'], self._data['sfield']
-
-    def _join_table(self, in_data, in_field,
-                    join_table, join_field, fields=None):
-        """
-        Join attribute table.
-
-        :param in_data: input data layer
-        :param in_field: input column
-        :param join_table: table to join
-        :param join_field: column to join
-        :param fields: list of fields (None for all fields)
-        """
-        kwargs = {}
-        if fields:
-            kwargs['subset_columns'] = fields
-        gs.run_command('v.db.join',
-                       map=in_data,
-                       column=in_field,
-                       other_table=join_table,
-                       other_column=join_field,
-                       **kwargs
-        )
 
     def _clip_data(self, dem, intersect, slope, flow_direction):
         """
@@ -387,3 +367,9 @@ class PrepareData(PrepareDataBase):
         ))
         # efect_cont.save(os.path.join(self.data['temp'], "efect_cont"))
         self.data['mat_efect_cont'] = self._rst2np(efect_cont)
+
+    @staticmethod
+    def _streamPreparation(args):
+        from smoderp2d.providers.grass.stream_preparation import StreamPreparation
+
+        return StreamPreparation(args).prepare()
