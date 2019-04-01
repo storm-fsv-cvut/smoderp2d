@@ -3,8 +3,8 @@
 ############################################################################
 #
 # MODULE:      r.smoderp2d
-# AUTHOR(S):   Martin Landa and Smoderp2d development team
-# PURPOSE:     Performs Smoderp 2D soil erosion model.
+# AUTHOR(S):   Martin Landa and SMODERP2D development team
+# PURPOSE:     Performs SMODERP2D soil erosion model.
 # COPYRIGHT:   (C) 2018-2019 by Martin Landa and Smoderp2d development team
 #
 #              This program is free software under the GNU General Public
@@ -16,7 +16,7 @@
 #############################################################################
 
 #%module
-#% description: Performs Smoderp2d soil erosion model.
+#% description: Performs SMODERP2D soil erosion model.
 #% keyword: raster
 #% keyword: hydrology
 #% keyword: soil
@@ -24,28 +24,34 @@
 #%end
 #%option G_OPT_R_ELEV
 #% description: Input surface raster
+#% guisection: Data preparation
 #%end
 #%option G_OPT_V_INPUT
 #% key: soil
 #% description: Input soil polygon features
+#% guisection: Data preparation
 #%end
 #%option G_OPT_DB_COLUMN
 #% key: soil_type
 #% description: Soil types
 #% required: yes
+#% guisection: Data preparation
 #%end
 #%option G_OPT_V_INPUT
 #% key: vegetation
 #% description: Input land use polygon features
+#% guisection: Data preparation
 #%end
 #%option
 #% key: vegetation_type
 #% description: Land use types
 #% required: yes
+#% guisection: Data preparation
 #%end
 #%option G_OPT_F_INPUT
 #% key: rainfall_file
 #% description: Rainfall file
+#% guisection: Computation
 #%end
 #%option
 #% key: maxdt
@@ -53,6 +59,7 @@
 #% description: Max time step [sec]
 #% answer: 30
 #% required: yes
+#% guisection: Settings
 #%end
 #%option
 #% key: end_time
@@ -60,32 +67,39 @@
 #% description: Total running time [min]
 #% answer: 5
 #% required: yes
+#% guisection: Computation
 #%end
 #%option G_OPT_V_INPUT
 #% key: points
 #% description:  Input points features
 #% required: no
+#% guisection: Data preparation
 #%end
 #%option G_OPT_DB_TABLE
 #% key: table_soil_vegetation
 #% description: Table of soil and land use information
+#% guisection: Settings
 #%end
 #%option G_OPT_DB_COLUMN
 #% key: table_soil_vegetation_code
 #% description: Soil land use code
+#% guisection: Settings
 #%end
 #%option G_OPT_V_INPUT
 #% key: stream
-#% description:  Reach feture
+#% description: Reach feature
 #% required: no
+#% guisection: Data preparation
 #%end
 #%option G_OPT_DB_TABLE
 #% key: table_stream_shape
 #% description: Reach shapes table
+#% guisection: Settings
 #%end
 #%option G_OPT_DB_COLUMN
 #% key: table_stream_shape_code
 #% description: Reach shape table code
+#% guisection: Settings
 #%end
 
 import os
