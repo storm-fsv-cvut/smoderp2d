@@ -28,7 +28,7 @@
 #%end
 #%option G_OPT_V_INPUT
 #% key: soil
-#% description: Input soil polygon features
+#% label: Input soil polygon features
 #% guisection: Data preparation
 #%end
 #%option G_OPT_DB_COLUMN
@@ -39,10 +39,10 @@
 #%end
 #%option G_OPT_V_INPUT
 #% key: vegetation
-#% description: Input land use polygon features
+#% label: Input land use polygon features
 #% guisection: Data preparation
 #%end
-#%option
+#%option G_OPT_DB_COLUMN
 #% key: vegetation_type
 #% description: Land use types
 #% required: yes
@@ -71,7 +71,7 @@
 #%end
 #%option G_OPT_V_INPUT
 #% key: points
-#% description:  Input points features
+#% label: Input points features
 #% required: no
 #% guisection: Data preparation
 #%end
@@ -87,7 +87,7 @@
 #%end
 #%option G_OPT_V_INPUT
 #% key: stream
-#% description: Reach feature
+#% label: Reach feature
 #% required: no
 #% guisection: Data preparation
 #%end
