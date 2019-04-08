@@ -207,18 +207,26 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
 #        fields = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
         fields = [constants.PRIMARY_KEY_FIELD_NAME, "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
 
+        # if stream is saved in gdb, it's id field begins with 1
+        # in further computation (stream.py) it would exceed array length
+        # MK 4.4.19
+        fid_offset_flag = True
+        fid_offset = 0
         with arcpy.da.SearchCursor(stream, fields) as cursor_start:
             for row in cursor_start:
+
+                if fid_offset_flag:
+                    fid_offset = row[0]
+                    fid_offset_flag = False
+
                 a = (row[1], row[2])
-                d = row[0]
+                d = row[0] - fid_offset
+
                 with arcpy.da.UpdateCursor(stream, fields) as cursor_end:
                     for row in cursor_end:
                         b = (row[3], row[4])
                         if a == b:
-                            # if stream is saved in gdb, it's id field begins with 1
-                            # in further computation (stream.py) it would exceed array length
-                            # MK 4.4.19
-                            row[5] = d - stream[0][0]
+                            row[5] = d
                             cursor_end.updateRow(row)
                         else:
                             row[5] = "-9999"
