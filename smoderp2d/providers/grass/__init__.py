@@ -1,7 +1,7 @@
 import os
 import logging
 
-from smoderp2d.providers.base import BaseProvider
+from smoderp2d.providers.base import BaseProvider, CompType
 
 from smoderp2d.core.general import Globals
 from smoderp2d.exceptions import ProviderError
@@ -16,9 +16,8 @@ class GrassGisProvider(BaseProvider):
 
         self._print_fn = gs.message
 
-        # GRASS GIS provider is designed to support only 'full' type of
-        # computation
-        self._args.typecomp = 'full'
+        # type of computation (default)
+        self.args.typecomp = CompType.full
 
         # options must be defined by set_options()
         self._options = None

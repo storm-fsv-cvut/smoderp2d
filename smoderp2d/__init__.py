@@ -22,9 +22,10 @@ The computational options are as follows:
 """
 
 import os
+
+from smoderp2d.providers.base import CompType
 from .providers.base.exceptions import DataPreparationInvalidInput
 from .exceptions import SmoderpError
-
 
 class Runner(object):
     def __init__(self):
@@ -45,6 +46,17 @@ class Runner(object):
 
         return provider
 
+    def set_comptype(self, comp_type, data_file=None):
+        """Set computation type.
+
+        :param CompType comp_type: computation type
+        :param str data_file: data file (input/output)
+        """
+        if comp_type in (CompType.dpre, CompType.roff) and not data_file:
+            raise SmoderpError("Data file not defined")
+        self._provider.args.typecomp = comp_type
+        self._provider.args.data_file = data_file
+
     def run(self):
         # print logo
         self._provider.logo()
@@ -55,9 +67,12 @@ class Runner(object):
         except DataPreparationInvalidInput:
             return 1
 
+        if self._provider.args.typecomp == CompType.dpre:
+            # data prepararation only requested
+            return
+
         # must be called after initialization (!)
         from smoderp2d.runoff import Runoff
-
         # the computation
         runoff = Runoff(self._provider)
         runoff.run()

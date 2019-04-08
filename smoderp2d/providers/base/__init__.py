@@ -6,21 +6,28 @@ import shutil
 import math
 import pickle
 import logging
+from enum import Enum
 
 from smoderp2d.providers import Logger
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
 from smoderp2d.exceptions import ProviderError
 
 class Args:
-    # type of computation ('dpre', 'roff', 'full')
+    # type of computation (CompType)
     typecomp = None
     # path to data file (used by 'dpre' for output and 'roff' for
     # input)
     data_file = None
 
+class CompType(Enum):
+    # type of computation
+    dpre = 0
+    roff = 1
+    full = 2
+
 class BaseProvider(object):
     def __init__(self):
-        self._args = Args()
+        self.args = Args()
 
         self._print_fn = print
         self._print_logo_fn = print
@@ -112,26 +119,24 @@ class BaseProvider(object):
 
     def load(self):
         """Load configuration data."""
-        if not self._args.typecomp:
-            raise ProviderError('Computing type not defined')
-        if self._args.typecomp not in ('dpre', 'roff', 'full'):
+        if self.args.typecomp not in CompType:
             raise ProviderError('Unsupported partial computing: {}'.format(
-                self._args.typecomp
+                self.args.typecomp
             ))
 
         # cleanup output directory first
         self._cleanup()
 
         data = None
-        if self._args.typecomp in ('dpre', 'full'):
+        if self.args.typecomp in (CompType.dpre, CompType.full):
             data = self._load_dpre()
-            if self._args.typecomp == 'dpre':
+            if self.args.typecomp == CompType.dpre:
                 # data preparation requested only
-                self._save_data(data, self._args.data_file)
+                self._save_data(data, self.args.data_file)
                 return
 
-        if self._args.typecomp == 'roff':
-            data = self._load_roff(self._args.data_file)
+        if self.args.typecomp == CompType.roff:
+            data = self._load_roff(self.args.data_file)
 
         # roff || full
         self._set_globals(data)
@@ -230,9 +235,9 @@ class BaseProvider(object):
 
         with open(filename, 'wb') as fd:
             pickle.dump(data, fd, protocol=2)
-        Logger.debug('Size of saved data is {} bytes'.format(
-            sys.getsizeof(data))
-        )
+        Logger.info('Pickle file created in <{}> ({} bytes)'.format(
+            filename, sys.getsizeof(data)
+        ))
 
     @staticmethod
     def _load_data(filename):

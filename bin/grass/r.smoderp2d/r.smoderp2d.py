@@ -22,6 +22,10 @@
 #% keyword: soil
 #% keyword: erosion
 #%end
+#%flag
+#% key: d
+#% description: Perform data preparation only and exit
+#%end
 #%option G_OPT_R_ELEV
 #% description: Input surface raster
 #% guisection: Data preparation
@@ -101,6 +105,11 @@
 #% description: Reach shape table code
 #% guisection: Settings
 #%end
+#%option G_OPT_F_OUTPUT
+#% key: pickle_file
+#% description: Output picke file (related to -d flag only)
+#% required: no
+#%end
 
 import os
 import sys
@@ -108,13 +117,29 @@ import grass.script as gs
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from smoderp2d import GrassRunner
+from smoderp2d.providers.base import CompType
 from smoderp2d.exceptions import ProviderError
 
 if __name__ == "__main__":
     options, flags = gs.parser()
+
+    if flags['d'] and not options['pickle_file']:
+        gs.fatal("Required parameter <{}> not set".format('pickle_file'))
+    if options['pickle_file'] and not flags['d']:
+        gs.warning("No pickle file will be generated. Flag -{} not given".format('d'))
+
     try:
         runner = GrassRunner()
-        runner.set_options(options) # flags skipped (empty)
-        sys.exit(runner.run())
+
+        runner.set_options(options)
+        if flags['d']:
+            runner.set_comptype(
+                comp_type=CompType.dpre,
+                data_file=options['pickle_file']
+            )
+
+        sys.exit(
+            runner.run()
+        )
     except ProviderError as e:
         gs.fatal(e)
