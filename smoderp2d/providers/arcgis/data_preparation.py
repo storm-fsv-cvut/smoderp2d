@@ -223,9 +223,6 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         return intersect, mask_shp, self._data['sfield']
 
-    def _get_mat_par(self, sfield, intersect):
-        return super(PrepareData, self)._get_mat_par(sfield, intersect)
-
     def _clip_data(self, dem, intersect, slope, flow_direction):
         """
         Clip input data based on AOI.
