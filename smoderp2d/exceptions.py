@@ -26,3 +26,6 @@ class NegativeWaterLevel(SmoderpError):
         Logger.fatal(
             'Water level reached negative value'
         )
+
+class ConfigError(Exception):
+    pass
