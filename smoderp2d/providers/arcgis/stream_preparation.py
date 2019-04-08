@@ -6,6 +6,7 @@ import sys
 import arcpy
 from arcpy.sa import *
 
+from smoderp2d.providers.arcgis import constants
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.stream_preparation import StreamPreparationBase
 from smoderp2d.providers.base.stream_preparation import StreamPreparationError, ZeroSlopeError
@@ -59,23 +60,40 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         :return stream:
         :return stream_loc:
         """
+
+#        stream = os.path.join(
+#            self.temp, "{}.shp".format(self._data['stream'])
+#        )
+#        stream_loc = os.path.join(
+#            self.temp, "{}.shp".format(self._data['stream_loc'])
+#        )
+#        aoi = os.path.join(
+#            self.temp, "{}.shp".format(self._data['aoi'])
+#        )
+
+#        aoi_buffer = arcpy.Buffer_analysis(
+#            aoi,
+#            os.path.join(self.temp, "{}.shp".format(self._data['aoi_buffer'])),
+#            -self.spix / 3, "FULL", "ROUND", "NONE"
+#        )
+
         stream = os.path.join(
-            self.temp, "{}.shp".format(self._data['stream'])
+            str(self.tempgdb), self._data['stream']
         )
         stream_loc = os.path.join(
-            self.temp, "{}.shp".format(self._data['stream_loc'])
+            str(self.tempgdb), self._data['stream_loc']
         )
-        aoi = os.path.join(
-            self.temp, "{}.shp".format(self._data['aoi'])
+
+        aoi = os.path.join(str(self.tempgdb), self._data['aoi']
         )
-        
+
         aoi = arcpy.Clip_analysis(
             self.null, self.intersect, aoi
         )
 
         aoi_buffer = arcpy.Buffer_analysis(
             aoi,
-            os.path.join(self.temp, "{}.shp".format(self._data['aoi_buffer'])),
+            os.path.join(str(self.tempgdb), self._data['aoi_buffer']),
             -self.spix / 3, "FULL", "ROUND", "NONE"
         )
 
@@ -104,11 +122,21 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         # Nasledujici blok je redundantni, nicmene do "stream"
         # pridava nekolik sloupecku, u kterych jsem nemohl dohledat,
         # jestli se s nimi neco dela. Proto to tu zatim nechavam.
+
+#        start = arcpy.FeatureVerticesToPoints_management(
+#            stream, os.path.join(self.temp, self._data["start"]), "START"
+#        )
+
+#        end = arcpy.FeatureVerticesToPoints_management(
+#            stream, os.path.join(self.temp, self._data["end"]), "END"
+#        )
+
         start = arcpy.FeatureVerticesToPoints_management(
-            stream, os.path.join(self.temp, self._data["start"]), "START"
+            stream, os.path.join(str(self.tempgdb), self._data["start"]), "START"
         )
+
         end = arcpy.FeatureVerticesToPoints_management(
-            stream, os.path.join(self.temp, self._data["end"]), "END"
+            stream, os.path.join(str(self.tempgdb), self._data["end"]), "END"
         )
         arcpy.sa.ExtractMultiValuesToPoints(
             start, [[self.dem_clip, self._data["start_elev"]]], "NONE"
@@ -118,8 +146,10 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         )
 
         # Join
-        self._join_table(stream, "FID", start, "ORIG_FID")
-        self._join_table(stream, "FID", end, "ORIG_FID")
+#        self._join_table(stream, "FID", start, "ORIG_FID")
+#        self._join_table(stream, "FID", end, "ORIG_FID")
+        self._join_table(stream, constants.PRIMARY_KEY_FIELD_NAME, start, "ORIG_FID")
+        self._join_table(stream, constants.PRIMARY_KEY_FIELD_NAME, end, "ORIG_FID")
 
         self._delete_fields(
             stream,
@@ -131,10 +161,18 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
             ["start_elev", "end_elev", "ORIG_FID", "ORIG_FID_1"]
         )
 
+#        start = arcpy.FeatureVerticesToPoints_management(
+#            stream, self.temp + os.sep + "start", "START")
+
+#        end = arcpy.FeatureVerticesToPoints_management(
+#            stream, self.temp + os.sep + "end", "END")
+
         start = arcpy.FeatureVerticesToPoints_management(
-            stream, self.temp + os.sep + "start", "START")
+            stream, os.path.join(str(self.tempgdb), self._data["start"]), "START")
+
         end = arcpy.FeatureVerticesToPoints_management(
-            stream, self.temp + os.sep + "end", "END")
+            stream, os.path.join(str(self.tempgdb), self._data["end"]), "END")
+
         arcpy.sa.ExtractMultiValuesToPoints(
             start,
             [[self.dem_clip, "start_elev"]], "NONE"
@@ -146,15 +184,19 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         arcpy.AddXY_management(end)
 
         # Join
-        self._join_table(stream, "FID", start, "ORIG_FID")
-        self._join_table(stream, "FID", end, "ORIG_FID")
+        #        self._join_table(stream, "FID", start, "ORIG_FID")
+        #        self._join_table(stream, "FID", end, "ORIG_FID")
+        self._join_table(stream, constants.PRIMARY_KEY_FIELD_NAME, start, "ORIG_FID")
+        self._join_table(stream, constants.PRIMARY_KEY_FIELD_NAME, end, "ORIG_FID")
 
         self._delete_fields(
             stream,
             ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"]
         )
 
-        field = ["FID", "start_elev", "POINT_X", "end_elev", "POINT_X_1"]
+#        field = ["FID", "start_elev", "POINT_X", "end_elev", "POINT_X_1"]
+
+        field = [constants.PRIMARY_KEY_FIELD_NAME, "start_elev", "POINT_X", "end_elev", "POINT_X_1"]
         with arcpy.da.SearchCursor(stream, field) as cursor:
             for row in cursor:
                 if row[1] > row[3]:
@@ -162,11 +204,24 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                 arcpy.FlipLine_edit(stream) ### ? all
         self._add_field(stream, "to_node", "DOUBLE", -9999)
 
-        fields = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
+#        fields = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
+        fields = [constants.PRIMARY_KEY_FIELD_NAME, "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
+
+        # if stream is saved in gdb, it's id field begins with 1
+        # in further computation (stream.py) it would exceed array length
+        # MK 4.4.19
+        fid_offset_flag = True
+        fid_offset = 0
         with arcpy.da.SearchCursor(stream, fields) as cursor_start:
             for row in cursor_start:
+
+                if fid_offset_flag:
+                    fid_offset = row[0]
+                    fid_offset_flag = False
+
                 a = (row[1], row[2])
-                d = row[0]
+                d = row[0] - fid_offset
+
                 with arcpy.da.UpdateCursor(stream, fields) as cursor_end:
                     for row in cursor_end:
                         b = (row[3], row[4])
@@ -197,8 +252,11 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         :return mat_stream_seg: Numpy array
         """
         stream_rst1 = os.path.join(self.temp, self._data["stream_rst"])
+#        stream_rst = arcpy.PolylineToRaster_conversion(
+#            stream, "FID", stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix
+#        )
         stream_rst = arcpy.PolylineToRaster_conversion(
-            stream, "FID", stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix
+            stream, constants.PRIMARY_KEY_FIELD_NAME, stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix
         )
 
         stream_seg = os.path.join(self.temp, self._data["stream_seg"])
@@ -224,7 +282,9 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         """
         :param stream:
         """
-        fields = ["FID", "start_elev", "end_elev", "slope", "SHAPE@LENGTH", "length"]
+#        fields = ["FID", "start_elev", "end_elev", "slope", "SHAPE@LENGTH", "length"]
+        fields = [constants.PRIMARY_KEY_FIELD_NAME, "start_elev", "end_elev", "slope", "SHAPE@LENGTH", "length"]
+
         with arcpy.da.UpdateCursor(stream, fields) as cursor:
             for row in cursor:
                 slope = (row[1] - row[2]) / row[4]
@@ -276,5 +336,12 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
             field_vals = [row.getValue(field) for field in self.field_names]
             for i in range(len(field_vals)):
                 self.stream_tmp[i].append(field_vals[i])
+
+        # check if ID field starts from 1, if so, make it start from 0
+        # it could not be done in stream feature class, bcs it's id field is locked
+        # MK 4.4.19
+        if self.stream_tmp[0][0] == 1:
+            for i in range(len(self.stream_tmp[0])):
+                self.stream_tmp[0][i] -= 1
 
         self._streamlist()
