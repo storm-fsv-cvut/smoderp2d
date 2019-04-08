@@ -255,7 +255,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         #             )
 
         self.field_names = gs.vector_db_select(map=stream)['columns']
-        self.stream_tmp = [[] for field in fields]
+        self.stream_tmp = [[] for field in self.field_names]
 
         # for row in gs.vector_db_select(
         #         map=stream,
