@@ -7,7 +7,7 @@ else:
     from ConfigParser import ConfigParser
 
 from smoderp2d.core.general import Globals
-from smoderp2d.providers.base import BaseProvider, Logger
+from smoderp2d.providers.base import BaseProvider, Logger, CompType
 
 class CmdProvider(BaseProvider):
     def __init__(self):
@@ -38,7 +38,7 @@ class CmdProvider(BaseProvider):
 
         # load configuration
         self._config = ConfigParser()
-        if self.args.typecomp == 'roff':
+        if self.args.typecomp == CompType.roff:
             if not self.args.indata:
                 parser.error('--indata required')
             self._config.read(self.args.indata)
@@ -58,7 +58,7 @@ class CmdProvider(BaseProvider):
 
         Only roff procedure supported.
         """
-        if self.args.typecomp == 'roff':
+        if self.args.typecomp == CompType.roff:
             # cleanup output directory first
             self._cleanup()
 
