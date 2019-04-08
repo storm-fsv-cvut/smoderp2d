@@ -7,6 +7,7 @@ import csv
 
 import smoderp2d.processes.rainfall as rainfall
 
+from smoderp2d.providers.arcgis import constants
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
@@ -100,7 +101,7 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         :return: dem copy, mask
         """
-        dem_copy = os.path.join(self._tempGDB, "dem_copy")
+        dem_copy = os.path.join(str(self._tempGDB), "dem_copy")
         arcpy.CopyRaster_management(
             self._input_params['elevation'], dem_copy
         )
@@ -146,21 +147,21 @@ class PrepareData(PrepareDataBase, ManageFields):
         """
         # convert mask into polygon feature class
         mask_shp = os.path.join(
-            self.data['temp'], "{}.shp".format(
-                self._data['vector_mask']
-        ))
+            #self.data['temp'], "{}.shp".format(self._data['vector_mask'])
+            str(self._tempGDB), self._data['vector_mask']
+        )
         arcpy.RasterToPolygon_conversion(
             mask, mask_shp, "NO_SIMPLIFY")
 
         # dissolve soil and vegmetation polygons
         soil_boundary = os.path.join(
-            self.data['temp'], "{}.shp".format(
-                self._data['soil_boundary']
-        ))
+            #self.data['temp'], "{}.shp".format(self._data['soil_boundary'])
+            str(self._tempGDB), self._data['soil_boundary']
+        )
         vegetation_boundary = os.path.join(
-            self.data['temp'], "{}.shp".format(
-                self._data['vegetation_boundary']
-        ))
+            #self.data['temp'], "{}.shp".format(self._data['vegetation_boundary'])
+            str(self._tempGDB), self._data['vegetation_boundary']
+        )
         arcpy.Dissolve_management(
             vegetation, vegetation_boundary, vegetation_type
         )
@@ -171,9 +172,9 @@ class PrepareData(PrepareDataBase, ManageFields):
         # do intersection
         group = [soil_boundary, vegetation_boundary, mask_shp]
         intersect = os.path.join(
-            self.data['outdir'], "{}.shp".format(
-                self._data['intersect']
-        ))
+            #self.data['outdir'], "{}.shp".format(self._data['intersect'])
+            str(self._tempGDB), self._data['intersect']
+        )
         arcpy.Intersect_analysis(
             group, intersect, "ALL", "", "INPUT")
 
@@ -222,6 +223,9 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         return intersect, mask_shp, self._data['sfield']
 
+    def _get_mat_par(self, sfield, intersect):
+        return super(PrepareData, self)._get_mat_par(sfield, intersect)
+
     def _clip_data(self, dem, intersect, slope, flow_direction):
         """
         Clip input data based on AOI.
@@ -253,7 +257,7 @@ class PrepareData(PrepareDataBase, ManageFields):
                             self._data['inter_mask']
         )
         arcpy.PolygonToRaster_conversion(
-            intersect, "FID", mask, "MAXIMUM_AREA",
+            intersect, constants.PRIMARY_KEY_FIELD_NAME, mask, "MAXIMUM_AREA",
             cellsize = dem_desc.MeanCellHeight)
 
         # cropping rasters
@@ -279,8 +283,9 @@ class PrepareData(PrepareDataBase, ManageFields):
         :param intersect: vector intersect feature class
         """
         pointsClipCheck = os.path.join(
-            self.data['outdir'], "{}.shp".format(self._data['points_mask']
-        ))
+            #self.data['outdir'], "{}.shp".format(self._data['points_mask'])
+            str(self._tempGDB), self._data['points_mask']
+        )
         arcpy.Clip_analysis(
             self.data['points'], intersect, pointsClipCheck
         )
@@ -366,7 +371,7 @@ class PrepareData(PrepareDataBase, ManageFields):
 
             i = 0
             for row in rows_p:
-                fid = row.getValue('FID')
+                fid = row.getValue(constants.PRIMARY_KEY_FIELD_NAME)
                 # geometry
                 feat = row.getValue(shapefieldname)
                 pnt = feat.getPart()
