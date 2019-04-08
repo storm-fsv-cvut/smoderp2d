@@ -34,14 +34,14 @@ class CmdProvider(BaseProvider):
             help='file with prepared data',
             type=str
         )
-        self._args = parser.parse_args()
+        self.args = parser.parse_args()
 
         # load configuration
         self._config = ConfigParser()
-        if self._args.typecomp == 'roff':
-            if not self._args.indata:
+        if self.args.typecomp == 'roff':
+            if not self.args.indata:
                 parser.error('--indata required')
-            self._config.read(self._args.indata)
+            self._config.read(self.args.indata)
 
         # set logging level
         Logger.setLevel(self._config.get('Other', 'logging'))
@@ -58,7 +58,7 @@ class CmdProvider(BaseProvider):
 
         Only roff procedure supported.
         """
-        if self._args.typecomp == 'roff':
+        if self.args.typecomp == 'roff':
             # cleanup output directory first
             self._cleanup()
 
@@ -69,5 +69,5 @@ class CmdProvider(BaseProvider):
             self._set_globals(data)
         else:
             raise ProviderError('Unsupported partial computing: {}'.format(
-                self._args.typecomp
+                self.args.typecomp
             ))

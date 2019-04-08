@@ -18,7 +18,7 @@ class ArcGisProvider(BaseProvider):
 
         # ArcGIS provider is designed to support only 'full' type of
         # computation
-        self._args.typecomp = 'full'
+        self.args.typecomp = 'full'
 
         # must be defined for _cleanup() method
         Globals.outdir = self._get_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
