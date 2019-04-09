@@ -37,7 +37,7 @@ class CmdProvider(BaseProvider):
             type=str
         )
         self.args = parser.parse_args()
-        self.args.typecomp = CompType[self.args.typecomp]
+        self.args.typecomp = CompType()[self.args.typecomp]
 
         # load configuration
         self._config = ConfigParser()

@@ -6,7 +6,6 @@ import shutil
 import math
 import pickle
 import logging
-from enum import Enum
 
 from smoderp2d.providers import Logger
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
@@ -19,11 +18,21 @@ class Args:
     # input)
     data_file = None
 
-class CompType(Enum):
+# unfortunately Python version shipped by ArcGIS 10 lacks Enum
+class CompType:
     # type of computation
     dpre = 0
     roff = 1
     full = 2
+
+    @classmethod
+    def __getitem__(cls, key):
+        if key == 'dpre':
+            return cls.dpre
+        elif key == 'roff':
+            return cls.roff
+        else:
+            return cls.full
 
 class BaseProvider(object):
     def __init__(self):
