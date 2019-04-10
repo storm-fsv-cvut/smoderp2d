@@ -380,4 +380,4 @@ class PrepareData(PrepareDataBase, ManageFields):
     def _streamPreparation(args):
         from smoderp2d.providers.grass.stream_preparation import StreamPreparation
 
-        # return StreamPreparation(args).prepare()
+        return StreamPreparation(args).prepare()
