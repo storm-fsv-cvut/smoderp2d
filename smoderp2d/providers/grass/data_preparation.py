@@ -40,6 +40,10 @@ class PrepareData(PrepareDataBase, ManageFields):
         gs.run_command('r.mask',
                        raster=dem
         )
+        # not needed to creare raster (just for comparision with ArcGIS)
+        gs.run_command('r.mapcalc',
+                       expression='{} = {}'.format(self._data['dem_mask'], dem)
+        )
 
         return dem, dem
 
