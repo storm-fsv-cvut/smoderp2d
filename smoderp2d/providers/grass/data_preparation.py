@@ -18,6 +18,12 @@ class PrepareData(PrepareDataBase, ManageFields):
         # get input parameters
         self._get_input_params(options)
 
+    def __del__(self):
+        # remove mask
+        gs.run_command('r.mask',
+                       flags='r'
+        )
+
     def _get_input_params(self, options):
         """Get input parameters from ArcGIS toolbox.
         """
@@ -374,4 +380,4 @@ class PrepareData(PrepareDataBase, ManageFields):
     def _streamPreparation(args):
         from smoderp2d.providers.grass.stream_preparation import StreamPreparation
 
-        return StreamPreparation(args).prepare()
+        # return StreamPreparation(args).prepare()

@@ -21,22 +21,32 @@ def compute_products(elev, fldir=None):
     slope = 'slope'
     # filling the sink areas in raster
     # flow direction calculation
-    gs.run_command('r.fill.dir',
-                   input=elev,
-                   output=elev_fill,
-                   direction=flow_direction
+    gs.run_command('g.region',
+                   raster=elev
+    )
+    # gs.run_command('r.fill.dir',
+    #                input=elev,
+    #                output=elev_fill,
+    #                direction=flow_direction
+    # )
+
+    # gs.run_command('r.flow',
+    #                elevation=elev_fill,
+    #                flowaccumulation=flow_accumulation
+    # )
+    gs.run_command('r.watershed',
+                   elevation=elev,
+                   drainage=flow_direction,
+                   accumulation=flow_accumulation,
+                   depression=elev_fill
     )
 
-    gs.run_command('r.flow',
-                   elevation=elev_fill,
-                   flowaccumulation=flow_accumulation
-    )
-
+    # computing slope from original DEM seems to be closer to ArcGIS
+    # results
     gs.run_command('r.slope.aspect',
-                   elevation=elev_fill,
+                   elevation=elev,
                    format='percent',
                    slope=slope
     )
     
     return elev_fill, flow_direction if fldir else None, flow_accumulation, slope
-            
