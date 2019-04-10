@@ -10,6 +10,7 @@ class PrepareDataBase(object):
     def __init__(self):
         # internal output data
         self._data = {
+            'dem_mask' : 'dem_mask',
             'soil_boundary': 'soil_b',
             'vegetation_boundary': 'vegetation_b',
             'vector_mask': 'dem_mask',

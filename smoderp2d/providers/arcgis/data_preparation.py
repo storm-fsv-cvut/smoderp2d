@@ -114,7 +114,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         # align computation region to DTM grid
         arcpy.env.snapRaster = self._input_params['elevation']
 
-        dem_mask = os.path.join(self.data['temp'], "dem_mask")
+        dem_mask = os.path.join(self.data['temp'], self._data['dem_mask'])
         self.gp.Reclassify_sa(
             dem_copy, "VALUE", "-100000 100000 1", dem_mask, "DATA"
         )
@@ -152,7 +152,6 @@ class PrepareData(PrepareDataBase, ManageFields):
         """
         # convert mask into polygon feature class
         mask_shp = os.path.join(
-            #self.data['temp'], "{}.shp".format(self._data['vector_mask'])
             str(self._tempGDB), self._data['vector_mask']
         )
         arcpy.RasterToPolygon_conversion(
@@ -160,11 +159,9 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         # dissolve soil and vegmetation polygons
         soil_boundary = os.path.join(
-            #self.data['temp'], "{}.shp".format(self._data['soil_boundary'])
             str(self._tempGDB), self._data['soil_boundary']
         )
         vegetation_boundary = os.path.join(
-            #self.data['temp'], "{}.shp".format(self._data['vegetation_boundary'])
             str(self._tempGDB), self._data['vegetation_boundary']
         )
         arcpy.Dissolve_management(
