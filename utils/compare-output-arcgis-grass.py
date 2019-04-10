@@ -6,7 +6,7 @@ from osgeo import gdal, ogr
 
 import grass.script as gs
 
-def check_rasters(directory, cleanup=False):
+def check_rasters(directory, cleanup=False, png=False):
     for item in os.listdir(directory):
         path = os.path.join(directory, item)
         if not os.path.isdir(path) or path.endswith('gdb'):
@@ -38,15 +38,16 @@ def check_rasters(directory, cleanup=False):
         gs.run_command('r.colors',
                        map=diff, color='diff'
         )
-        gs.run_command('d.mon',
-                       start='cairo', output=os.path.join(OUTPUT, '{}.png'.format(item))
-        )
-        gs.run_command('d.rast.leg',
-                       map=diff
-        )
-        gs.run_command('d.mon',
-                       stop='cairo'
-        )
+        if png:
+            gs.run_command('d.mon',
+                           start='cairo', output=os.path.join(OUTPUT, '{}.png'.format(item))
+            )
+            gs.run_command('d.rast.leg',
+                           map=diff
+            )
+            gs.run_command('d.mon',
+                           stop='cairo'
+            )
         print('{sep}{nl}{map}{nl}{sep}{nl}'.format(sep='-' * 80, nl=os.linesep, map=item))
         stats = gs.parse_command('r.univar',
                                  flags='g',
