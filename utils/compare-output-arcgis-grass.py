@@ -24,6 +24,9 @@ def check_rasters(directory, cleanup=False):
         gs.run_command('r.external',
                        input=path, output=arcgis, flags='o'
         )
+        gs.run_command('r.colors',
+                       map=arcgis, raster=item
+        )
 
         gs.run_command('g.region',
                        raster=item
@@ -45,9 +48,12 @@ def check_rasters(directory, cleanup=False):
                        stop='cairo'
         )
         print('{sep}{nl}{map}{nl}{sep}{nl}'.format(sep='-' * 80, nl=os.linesep, map=item))
-        gs.run_command('r.univar',
-                       map=diff
+        stats = gs.parse_command('r.univar',
+                                 flags='g',
+                                 map=diff
         )
+        for key in ('min', 'max', 'range'):
+            print ('{}={}'.format(key, stats[key]))
         if cleanup:
             gs.run_command('g.remove',
                            type='raster', name=','.join(arcgis, diff), flags='f'
