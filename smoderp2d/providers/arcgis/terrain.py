@@ -24,6 +24,7 @@ def compute_products(elev, save_dir, fldir=None):
     # filling the sink areas in raster
     try:
         elev_fill = arcpy.sa.Fill(elev)
+        elev_fill.save(os.path.join(save_dir, "fill"))
     except:
         raise ProviderError(
             "Unexpected error during raster fill calculation: {}".format(
