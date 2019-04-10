@@ -11,6 +11,8 @@ class PrepareDataBase(object):
         # internal output data
         self._data = {
             'dem_mask' : 'dem_mask',
+            'ratio_cell' : 'ratio_cell',
+            'efect_cont' : 'efect_cont',
             'soil_boundary': 'soil_b',
             'vegetation_boundary': 'vegetation_b',
             'vector_mask': 'dem_mask',

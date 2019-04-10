@@ -357,19 +357,17 @@ class PrepareData(PrepareDataBase, ManageFields):
                        expression='{} = cos({})'.format(
                            cosslope, cosasp
         ))
-        times1 = 'times1'
+        times1 = self._data['ratio_cell']
         gs.run_command('r.mapcalc',
                        expression='{} = {} + {}'.format(
                            times1, cosslope, sinslope
         ))
-        # times1.save(os.path.join(self.data['temp'], "ratio_cell"))
 
-        efect_cont = 'efect_cont'
+        efect_cont = self._data['efect_cont']
         gs.run_command('r.mapcalc',
                        expression='{} = {} * {}'.format(
                            efect_cont, times1, self.data['spix']
         ))
-        # efect_cont.save(os.path.join(self.data['temp'], "efect_cont"))
         self.data['mat_efect_cont'] = self._rst2np(efect_cont)
 
     @staticmethod
