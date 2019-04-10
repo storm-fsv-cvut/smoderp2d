@@ -34,6 +34,7 @@ def compute_products(elev, fldir=None):
 
     gs.run_command('r.slope.aspect',
                    elevation=elev_fill,
+                   format='percent',
                    slope=slope
     )
     
