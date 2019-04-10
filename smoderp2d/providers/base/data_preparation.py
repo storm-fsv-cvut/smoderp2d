@@ -27,6 +27,9 @@ class PrepareDataBase(object):
             'flow_clip' : 'flowdir_inter',
         }
 
+        # primary key (is defined by provider)
+        self._primary_key = None
+
     def run(self):
         Logger.info('-' * 80)
         Logger.info("DATA PREPARATION")
@@ -482,7 +485,8 @@ class PrepareDataBase(object):
                 (self.data['xllcorner'], self.data['yllcorner']),
                 self.data['outdir'],
                 dem_clip,
-                intersect
+                intersect,
+                self._primary_key
             ]
 
             self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = \

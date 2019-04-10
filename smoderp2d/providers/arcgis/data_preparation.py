@@ -39,6 +39,11 @@ class PrepareData(PrepareDataBase, ManageFields):
         # get input parameters
         self._get_input_params()
 
+        # primary key depends of storage format
+        # * Shapefile -> FID
+        # * FileGDB -> OBJECTID
+        self._primary_key = "OBJECTID"
+
     def _get_input_params(self):
         """Get input parameters from ArcGIS toolbox.
         """
@@ -254,7 +259,7 @@ class PrepareData(PrepareDataBase, ManageFields):
                             self._data['inter_mask']
         )
         arcpy.PolygonToRaster_conversion(
-            intersect, constants.PRIMARY_KEY_FIELD_NAME, mask, "MAXIMUM_AREA",
+            intersect, self._primary_key, mask, "MAXIMUM_AREA",
             cellsize = dem_desc.MeanCellHeight)
 
         # cropping rasters
@@ -368,7 +373,7 @@ class PrepareData(PrepareDataBase, ManageFields):
 
             i = 0
             for row in rows_p:
-                fid = row.getValue(constants.PRIMARY_KEY_FIELD_NAME)
+                fid = row.getValue(self._primary_key)
                 # geometry
                 feat = row.getValue(shapefieldname)
                 pnt = feat.getPart()

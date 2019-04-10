@@ -6,7 +6,6 @@ import sys
 import arcpy
 from arcpy.sa import *
 
-from smoderp2d.providers.arcgis import constants
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.stream_preparation import StreamPreparationBase
 from smoderp2d.providers.base.stream_preparation import StreamPreparationError, ZeroSlopeError
@@ -146,10 +145,8 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         )
 
         # Join
-#        self._join_table(stream, "FID", start, "ORIG_FID")
-#        self._join_table(stream, "FID", end, "ORIG_FID")
-        self._join_table(stream, constants.PRIMARY_KEY_FIELD_NAME, start, "ORIG_FID")
-        self._join_table(stream, constants.PRIMARY_KEY_FIELD_NAME, end, "ORIG_FID")
+        self._join_table(stream, self._primary_key, start, "ORIG_FID")
+        self._join_table(stream, self._primary_key, end, "ORIG_FID")
 
         self._delete_fields(
             stream,
@@ -160,12 +157,6 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
             stream,
             ["start_elev", "end_elev", "ORIG_FID", "ORIG_FID_1"]
         )
-
-#        start = arcpy.FeatureVerticesToPoints_management(
-#            stream, self.temp + os.sep + "start", "START")
-
-#        end = arcpy.FeatureVerticesToPoints_management(
-#            stream, self.temp + os.sep + "end", "END")
 
         start = arcpy.FeatureVerticesToPoints_management(
             stream, os.path.join(str(self.tempgdb), self._data["start"]), "START")
@@ -184,19 +175,15 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         arcpy.AddXY_management(end)
 
         # Join
-        #        self._join_table(stream, "FID", start, "ORIG_FID")
-        #        self._join_table(stream, "FID", end, "ORIG_FID")
-        self._join_table(stream, constants.PRIMARY_KEY_FIELD_NAME, start, "ORIG_FID")
-        self._join_table(stream, constants.PRIMARY_KEY_FIELD_NAME, end, "ORIG_FID")
+        self._join_table(stream, self._primary_key, start, "ORIG_FID")
+        self._join_table(stream, self._primary_key, end, "ORIG_FID")
 
         self._delete_fields(
             stream,
             ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"]
         )
 
-#        field = ["FID", "start_elev", "POINT_X", "end_elev", "POINT_X_1"]
-
-        field = [constants.PRIMARY_KEY_FIELD_NAME, "start_elev", "POINT_X", "end_elev", "POINT_X_1"]
+        field = [self._primary_key, "start_elev", "POINT_X", "end_elev", "POINT_X_1"]
         with arcpy.da.SearchCursor(stream, field) as cursor:
             for row in cursor:
                 if row[1] > row[3]:
@@ -204,8 +191,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                 arcpy.FlipLine_edit(stream) ### ? all
         self._add_field(stream, "to_node", "DOUBLE", -9999)
 
-#        fields = ["FID", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
-        fields = [constants.PRIMARY_KEY_FIELD_NAME, "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
+        fields = [self._primary_key, "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
 
         # if stream is saved in gdb, it's id field begins with 1
         # in further computation (stream.py) it would exceed array length
@@ -252,11 +238,8 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         :return mat_stream_seg: Numpy array
         """
         stream_rst1 = os.path.join(self.temp, self._data["stream_rst"])
-#        stream_rst = arcpy.PolylineToRaster_conversion(
-#            stream, "FID", stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix
-#        )
         stream_rst = arcpy.PolylineToRaster_conversion(
-            stream, constants.PRIMARY_KEY_FIELD_NAME, stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix
+            stream, self._primary_key, stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix
         )
 
         stream_seg = os.path.join(self.temp, self._data["stream_seg"])
@@ -282,8 +265,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         """
         :param stream:
         """
-#        fields = ["FID", "start_elev", "end_elev", "slope", "SHAPE@LENGTH", "length"]
-        fields = [constants.PRIMARY_KEY_FIELD_NAME, "start_elev", "end_elev", "slope", "SHAPE@LENGTH", "length"]
+        fields = [self._primary_key, "start_elev", "end_elev", "slope", "SHAPE@LENGTH", "length"]
 
         with arcpy.da.UpdateCursor(stream, fields) as cursor:
             for row in cursor:

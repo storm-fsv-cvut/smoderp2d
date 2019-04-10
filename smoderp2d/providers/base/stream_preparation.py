@@ -1,5 +1,4 @@
 from smoderp2d.providers.base import Logger
-from smoderp2d.providers.arcgis import constants
 
 # definice erroru  na urovni modulu
 #
@@ -28,6 +27,7 @@ class StreamPreparationBase(object):
         self.output = args[9]
         self.dem_clip = args[10]
         self.intersect = args[11]
+        self._primary_key = args[12]
 
         # internal data
         self._data = {}
@@ -125,8 +125,7 @@ class StreamPreparationBase(object):
 
     def _streamlist(self):
         self.streamlist = []
-        for field_name in [#'FID',
-                           constants.PRIMARY_KEY_FIELD_NAME,
+        for field_name in [self.primary_key,
                            'POINT_X',
                            'POINT_Y',
                            'POINT_X_1',

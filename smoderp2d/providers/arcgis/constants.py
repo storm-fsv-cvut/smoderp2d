@@ -1,5 +1,3 @@
-PRIMARY_KEY_FIELD_NAME = "OBJECTID"
-
 # input parameters constants
 PARAMETER_DEM = 0
 PARAMETER_SOIL = 1
