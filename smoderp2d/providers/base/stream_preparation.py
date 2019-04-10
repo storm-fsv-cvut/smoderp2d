@@ -125,7 +125,7 @@ class StreamPreparationBase(object):
 
     def _streamlist(self):
         self.streamlist = []
-        for field_name in [self.primary_key,
+        for field_name in [self._primary_key,
                            'POINT_X',
                            'POINT_Y',
                            'POINT_X_1',
