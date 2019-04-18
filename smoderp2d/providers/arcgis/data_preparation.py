@@ -174,7 +174,6 @@ class PrepareData(PrepareDataBase, ManageFields):
         # do intersection
         group = [soil_boundary, vegetation_boundary, mask_shp]
         intersect = os.path.join(
-            #self.data['outdir'], "{}.shp".format(self._data['intersect'])
             str(self._tempGDB), self._data['intersect']
         )
         arcpy.Intersect_analysis(
