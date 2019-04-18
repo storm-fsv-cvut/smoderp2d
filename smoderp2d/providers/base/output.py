@@ -17,7 +17,7 @@ class RasterAsciiBase(object):
         if np.issubdtype(array.dtype, int):
             self.no_data = Globals.NoDataInt
         else:
-            self.no_data =e Globals.NoDataValue
+            self.no_data = Globals.NoDataValue
         if self._fd:
             self._fd.write("nodata_value {0}{nl}".format(
                 self.no_data, nl=os.linesep

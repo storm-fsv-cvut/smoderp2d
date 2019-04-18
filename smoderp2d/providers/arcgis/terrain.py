@@ -37,7 +37,7 @@ def compute_products(elev, save_dir, fldir=None):
             flow_direction = arcpy.sa.FlowDirection(elev_fill)
             flow_direction.save(os.path.join(save_dir, "fldir"))
         else:
-            flow_direction = fl_dir
+            flow_direction = fldir
     except:
         raise ProviderError(
             "Unexpected error during flow direction calculation: {}".format(
