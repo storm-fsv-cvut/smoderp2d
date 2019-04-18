@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
+# http://geo102.fsv.cvut.cz/~landa/tmp/smoderp_arcgis_output.zip
+
 import os
+import sys
 
 from osgeo import gdal, ogr
 
@@ -62,6 +65,12 @@ def check_rasters(directory, cleanup=False, png=False):
 
 if __name__ == "__main__":
     ARCGIS_OUTPUT = os.path.join(os.environ['HOME'], 'Downloads', 'output')
+    if not os.path.exists(ARCGIS_OUTPUT):
+        if len(sys.argv) > 1:
+            ARCGIS_OUTPUT = sys.argv[1]
+        else:
+            sys.exit("Provide path to ArcGIS data dir")
+
     OUTPUT=os.path.join(ARCGIS_OUTPUT, 'diff')
     if not os.path.exists(OUTPUT):
         os.makedirs(OUTPUT)
