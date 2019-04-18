@@ -22,7 +22,7 @@ class ArcGisProvider(BaseProvider):
         )
 
         # computation type
-        if self._get_argv(constants.PARAMETER_DPRE_ONLY):
+        if self._get_argv(constants.PARAMETER_DPRE_ONLY).lower() == 'true':
             self.args.typecomp = CompType.dpre
             self.args.data_file = os.path.join(
                 Globals.outdir, 'save.pickle'
