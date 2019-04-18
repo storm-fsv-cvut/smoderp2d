@@ -229,32 +229,7 @@ class PrepareDataBase(object):
         """Internal method. Called by _get_attrib().
         """
         dim = [self.data['r'], self.data['c']]
-
-        mat_k = np.zeros(dim, float)
-        mat_s = np.zeros(dim, float)
-        mat_n = np.zeros(dim, float)
-        mat_ppl = np.zeros(dim, float)
-        mat_pi = np.zeros(dim, float)
-        mat_ret = np.zeros(dim, float)
-        mat_b = np.zeros(dim, float)
-        mat_x = np.zeros(dim, float)
-        mat_y = np.zeros(dim, float)
-        mat_tau = np.zeros(dim, float)
-        mat_v = np.zeros(dim, float)
-
-        return [
-            mat_k,
-            mat_s,
-            mat_n,
-            mat_ppl,
-            mat_pi,
-            mat_ret,
-            mat_b,
-            mat_x,
-            mat_y,
-            mat_tau,
-            mat_v
-        ]
+        return [np.zeros(dim, float)] * len(sfield)
 
     def _get_mat_par(self, sfield, intersect):
         """
