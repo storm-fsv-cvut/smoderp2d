@@ -1,4 +1,4 @@
-import grass.script as gs
+from grass.pygrass.modules import Module
 
 def compute_products(elev, fldir=None):
     """
@@ -21,32 +21,34 @@ def compute_products(elev, fldir=None):
     slope = 'slope'
     # filling the sink areas in raster
     # flow direction calculation
-    gs.run_command('g.region',
-                   raster=elev
+    Module('g.region',
+           raster=elev
     )
-    # gs.run_command('r.fill.dir',
+    # Module('r.fill.dir',
     #                input=elev,
     #                output=elev_fill,
     #                direction=flow_direction
     # )
 
-    # gs.run_command('r.flow',
+    # Module('r.flow',
     #                elevation=elev_fill,
     #                flowaccumulation=flow_accumulation
     # )
-    gs.run_command('r.watershed',
-                   elevation=elev,
-                   drainage=flow_direction,
-                   accumulation=flow_accumulation,
-                   depression=elev_fill
+    Module('r.watershed',
+           elevation=elev,
+           drainage=flow_direction + '_grass',
+           accumulation=flow_accumulation,
+           depression=elev_fill
     )
+    # recalculate flow dir to ArcGIS notation
+    # https://idea.isnew.info/how-to-import-arcgis-flow-direction-into-grass-gis.html
 
     # computing slope from original DEM seems to be closer to ArcGIS
     # results
-    gs.run_command('r.slope.aspect',
-                   elevation=elev,
-                   format='percent',
-                   slope=slope
+    Module('r.slope.aspect',
+           elevation=elev,
+           format='percent',
+           slope=slope
     )
     
     return elev_fill, flow_direction if fldir else None, flow_accumulation, slope

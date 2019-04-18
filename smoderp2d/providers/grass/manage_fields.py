@@ -1,5 +1,7 @@
-import grass.script as gs
+from grass.pygrass.modules import Module
+from grass.pygrass.vector import Vector
 
+# TODO: rewrite to pygrass syntax
 class ManageFields(object):
     def _add_field(self, vector, newfield, datatype, default_value):
         """
@@ -10,21 +12,23 @@ class ManageFields(object):
         :param datatype:
         :param default_value:
         """
-        if newfield in gs.vector_columns(vector):
-            gs.run_command('v.db.dropcolumn',
-                           map=vector,
-                           columns=newfield
+        with Vector(vector) as data:
+            found = newfield in data.table.columns.names()
+        if found:
+            Module('v.db.dropcolumn',
+                   map=vector,
+                   columns=newfield
             )
 
-        gs.run_command('v.db.addcolumn',
-                       map=vector,
-                       columns='{} {}'.format(newfield, datatype)
+        Module('v.db.addcolumn',
+               map=vector,
+               columns='{} {}'.format(newfield, datatype)
         )
 
-        gs.run_command('v.db.update',
-                       map=vector,
-                       column=newfield,
-                       value=default_value
+        Module('v.db.update',
+               map=vector,
+               column=newfield,
+               value=default_value
         )
 
     def _join_table(self, in_vector, in_field,
@@ -41,12 +45,12 @@ class ManageFields(object):
         kwargs = {}
         if fields:
             kwargs['subset_columns'] = fields
-        gs.run_command('v.db.join',
-                       map=in_vector,
-                       column=in_field,
-                       other_table=join_table,
-                       other_column=join_field,
-                       **kwargs
+        Module('v.db.join',
+               map=in_vector,
+               column=in_field,
+               other_table=join_table,
+               other_column=join_field,
+               **kwargs
         )
 
     def _delete_fields(self, table, fields):
@@ -55,8 +59,7 @@ class ManageFields(object):
         :param str table: attrubute table
         :param list fields: attributes to delete
         """
-        gs.run_command('v.db.dropcolumn',
-                       map=table,
-                       columns=','.join(fields)
+        Module('v.db.dropcolumn',
+               map=table,
+               columns=','.join(fields)
         )
-

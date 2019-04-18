@@ -1,7 +1,10 @@
 import os
+import tempfile
+from subprocess import PIPE
 
-import grass.script as gs
-from grass.script import array as garray
+from grass.pygrass.modules import Module
+from grass.pygrass.raster import raster2numpy
+from grass.pygrass.vector import Vector
 
 from smoderp2d.providers.base.stream_preparation import StreamPreparationBase
 from smoderp2d.providers.grass.terrain import compute_products
@@ -14,15 +17,15 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         os.environ['GRASS_OVERWRITE'] = '1'
 
         # set computation region
-        gs.run_command('g.region',
-                       raster=self.dem
+        Module('g.region',
+               raster=self.dem
         )
 
     def _set_output(self):
         """Define output temporary folder and geodatabase.
         """
         pass
-        # gs.run_command('g.mapset',
+        # Module('g.mapset',
         #                flags='c',
         #                mapset='stream_prep'
         # )
@@ -34,7 +37,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         dem_fill, flow_direction, flow_accumulation, slope = \
             compute_products(self.dem_clip, None)
 
-        gs.run_command('r.mapcalc',
+        Module('r.mapcalc',
                        expression='{o} = if({i} < 300, null(), {i})'.format(
                            o=self._data['setnull'], i=flow_accumulation
         ))
@@ -52,19 +55,19 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         :return toky:
         :return toky_loc:
         """
-        gs.run_command('v.clip',
-                       input=self.null,
-                       clip=self.intersect,
-                       output=self._data['aoi']
+        Module('v.clip',
+               input=self.null,
+               clip=self.intersect,
+               output=self._data['aoi']
         )
 
-        gs.run_command('v.buffer',
+        Module('v.buffer',
                        input=self._data['aoi'],
                        output=self._data['aoi_buffer'],
                        distance=-self.spix / 3
         )
 
-        gs.run_command('v.clip',
+        Module('v.clip',
                        input=self.stream,
                        clip=self._data['aoi_buffer'],
                        output=self._data['stream']
@@ -86,15 +89,15 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         :param stream:
         """
         for what in ('start', 'end'):
-            gs.run_command('v.to.points',
-                           input=stream,
-                           use=what,
-                           output=self._data[what],
+            Module('v.to.points',
+                   input=stream,
+                   use=what,
+                   output=self._data[what],
             )
-            gs.run_command('v.what.rast',
-                           map=self._data[what],
-                           raster=self.dem_clip,
-                           column=self._data['{}_elev'.format(what)]
+            Module('v.what.rast',
+                   map=self._data[what],
+                   raster=self.dem_clip,
+                   column=self._data['{}_elev'.format(what)]
             )
 
             self._join_table(stream, "cat", '{}_1'.format(self._data[what]), "cat")
@@ -122,19 +125,19 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         # for row in ret.splitlines():
         #     if row[1] > row[3]:
         #         continue
-        #     gs.run_command('v.edit',
+        #     Module('v.edit',
         #                    map=stream,
         #                    tool='flip'
         #     )
         #     self._add_field(stream, "to_node", "DOUBLE", -9999)
 
         # fields = ["cat", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
-        # gs.run_command('v.db.update',
+        # Module('v.db.update',
         #                map=stream,
         #                column=field_start[-1],
         #                value='-9999'
         # )
-        # gs.run_command('v.db.update',
+        # Module('v.db.update',
         #                map=stream,
         #                column=field_start[-1],
         #                value=field_start[0],
@@ -162,28 +165,27 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         :param stream: Polyline with stream in the area.
         :return mat_stream_seg: Numpy array
         """
-        gs.run_command('g.region',
-                       vector=stream,
-                       res=self.spix
+        Module('g.region',
+               vector=stream,
+               res=self.spix
         )
-        gs.run_command('v.to.rast',
-                       input=stream,
-                       type='line',
-                       output=self._data['stream_rst'],
-                       use='cat'
+        Module('v.to.rast',
+               input=stream,
+               type='line',
+               output=self._data['stream_rst'],
+               use='cat'
         )
-        gs.run_command('r.mapcalc',
-                       expression='{o} = if(isnull({i}), 1000, {i})'.format(
-                           o=self._data['stream_seg'], i=self._data['stream_rst']
+        Module('r.mapcalc',
+               expression='{o} = if(isnull({i}), 1000, {i})'.format(
+                   o=self._data['stream_seg'], i=self._data['stream_rst']
         ))
-        gs.run_command('g.region',
-                       w=self.ll_corner[0],
-                       s=self.ll_corner[1],
-                       cols=self.cols,
-                       rows=self.rows
+        Module('g.region',
+               w=self.ll_corner[0],
+               s=self.ll_corner[1],
+               cols=self.cols,
+               rows=self.rows
         )
-        mat_stream_seg = garray.array()
-        mat_stream_seg.read(self._data['stream_seg'])
+        mat_stream_seg = raster2numpy(self._data['stream_seg'])
         mat_stream_seg = mat_stream_seg.astype('int16')
 
         # TODO: ?
@@ -200,11 +202,15 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         # TODO !
         return
         fields = ["FID", "start_elev", "end_elev", "sklon", "SHAPE@LENGTH", "length"]
-        ret = gs.read_command('v.db.select',
-                              map=stream,
-                              columns=fields)
+
+        # TODO: rewrite into pygrass syntax
+        ret = Module('v.db.select',
+                     map=stream,
+                     columns=fields,
+                     stdout_=PIPE
+        )
         sql = []
-        for row in ret.splitlines():
+        for row in ret.outputs.stdout.splitlines():
             slope = (float(row[1]) - float(row[2])) / float(row[4])
             if slope == 0:
                 raise ZeroSlopeError(int(row[0]))
@@ -212,11 +218,11 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                 'update {} set {} = {}, {} = {} where {} = {}'.format(
                     stream, fileds[4], slope, fields[5], row[4], fields[0], row[0]
             ))
-        tmpfile = gs.tempfile()
+        tmpfile = next(tempfile._get_candidate_names())
         with open(tmpfile, 'w') as fd:
             fd.write(';\n'.join(sql))
-        gs.run_command('db.execute',
-                       input=tmpfile
+        Module('db.execute',
+               input=tmpfile
         )
 
     def _get_streamlist(self, stream):
@@ -224,10 +230,10 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
 
         :param stream:
         """
-        gs.run_command('db.copy',
-                       from_table=self.tab_stream_shape,
-                       from_database='$GISDBASE/$LOCATION_NAME/PERMANENT/sqlite/sqlite.db',
-                       to_table=self._data['stream_shape']
+        Module('db.copy',
+               from_table=self.tab_stream_shape,
+               from_database='$GISDBASE/$LOCATION_NAME/PERMANENT/sqlite/sqlite.db',
+               to_table=self._data['stream_shape']
         )
 
         # todo
@@ -254,7 +260,8 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         #                 "check shp file stream in output"
         #             )
 
-        self.field_names = gs.vector_db_select(map=stream)['columns']
+        with Vector(stream) as data:
+            self.field_names = data.table.columns.names()
         self.stream_tmp = [[] for field in self.field_names]
 
         # for row in gs.vector_db_select(

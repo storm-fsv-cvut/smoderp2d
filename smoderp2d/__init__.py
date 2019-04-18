@@ -124,20 +124,19 @@ class QGISRunner(GrassRunner):
 
         :param options: dictionary of input data
         """
-
-        import grass.script as gs
+        from grass.pygrass.modules import Module
 
         for key in options:
             try:
                 # import rasters
                 if key == "elevation":
-                    gs.run_command("r.import", input=options[key], output=key)
+                    Module("r.import", input=options[key], output=key)
                 # import vectors
                 elif key in ["soil", "vegetation", "points", "stream"]:
-                    gs.run_command("v.import", input=options[key], output=key, flags = 'o')
+                    Module("v.import", input=options[key], output=key, flags = 'o')
                 # import tables
                 elif key in ["table_soil_vegetation", "table_stream_shape"]:
-                    gs.run_command("db.in.ogr", input=options[key], output=key)
+                    Module("db.in.ogr", input=options[key], output=key)
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
 
