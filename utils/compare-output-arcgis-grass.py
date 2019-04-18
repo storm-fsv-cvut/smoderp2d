@@ -9,7 +9,7 @@ from osgeo import gdal, ogr
 
 import grass.script as gs
 
-def check_rasters(directory, cleanup=False, png=False):
+def comp_rasters(directory, cleanup=False, png=False):
     for item in os.listdir(directory):
         path = os.path.join(directory, item)
         if not os.path.isdir(path) or path.endswith('gdb'):
@@ -63,6 +63,14 @@ def check_rasters(directory, cleanup=False, png=False):
                            type='raster', name=','.join(arcgis, diff), flags='f'
             )
 
+def comp_vectors(directory):
+    ds = ogr.Open(directory)
+    for i in range(ds.GetLayerCount()):
+        lyr = ds.GetLayer(i)
+        name = lyr.GetName()
+
+        # TODO: what to compare ?
+
 if __name__ == "__main__":
     ARCGIS_OUTPUT = os.path.join(os.environ['HOME'], 'Downloads', 'output')
     if not os.path.exists(ARCGIS_OUTPUT):
@@ -78,4 +86,7 @@ if __name__ == "__main__":
     os.environ['GRASS_OVERWRITE'] = '1'
 
     # data preparation
-    check_rasters(os.path.join(ARCGIS_OUTPUT, 'temp'))
+    comp_rasters(os.path.join(ARCGIS_OUTPUT, 'temp'))
+    # comp_rasters(os.path.join(ARCGIS_OUTPUT, 'stream_prep'))
+    # comp_vectors(os.path.join(ARCGIS_OUTPUT, 'temp', 'tempGDB.gdb'))
+    # comp_vectors(os.path.join(ARCGIS_OUTPUT, 'stream_prep', 'stream_prep.gdb'))
