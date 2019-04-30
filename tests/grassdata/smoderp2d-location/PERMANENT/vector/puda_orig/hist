@@ -7,6 +7,3 @@ Total area: 733989 (8 areas)
 Overlapping area: 3282.08 (1 areas)
 Area without category: 0 (0 areas)
 ---------------------------------------------------------------------------------
-COMMAND: v.edit map="puda" layer="1" type="point,line,boundary,centroid" tool="catdel" threshold=-1.0,0.0,0.0 ids="25" cats="1" snap="no"
-GISDBASE: /home/martin/git/storm-fsv-cvut/smoderp2d/tests/grassdata
-LOCATION: smoderp2d-location MAPSET: PERMANENT USER: martin DATE: Tue Apr 30 15:51:47 2019
