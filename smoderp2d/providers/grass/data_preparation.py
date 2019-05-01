@@ -13,6 +13,7 @@ from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from grass.pygrass.modules import Module
 from grass.pygrass.vector import VectorTopo
 from grass.pygrass.raster import RasterRow, raster2numpy
+from grass.exceptions import CalledModuleError
 
 class PrepareData(PrepareDataBase, ManageFields):
     def __init__(self, options):
@@ -23,9 +24,12 @@ class PrepareData(PrepareDataBase, ManageFields):
 
     def __del__(self):
         # remove mask
-        Module('r.mask',
-               flags='r'
-        )
+        try:
+            Module('r.mask',
+                   flags='r'
+            )
+        except CalledModuleError:
+            pass # mask not exists
 
     def _get_input_params(self, options):
         """Get input parameters from ArcGIS toolbox.
@@ -382,3 +386,17 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         # return StreamPreparation(args).prepare()
         return (None, None, None)
+
+    @staticmethod
+    def _check_input_data(soil):
+        """Check input data.
+
+        :param str soil: soil vector (check for overlaping polygons)
+        """
+        with VectorTopo(soil, mode='r') as fd:
+            for area in fd.viter('areas'):
+                cats = list(area.cats().get_list())
+                if len(cats) > 1:
+                    raise DataPreparationInvalidInput(
+                        "overlapping soil polygons detected"
+                    )

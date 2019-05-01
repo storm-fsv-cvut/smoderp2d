@@ -430,3 +430,12 @@ class PrepareData(PrepareDataBase, ManageFields):
         from smoderp2d.providers.arcgis.stream_preparation import StreamPreparation
 
         return StreamPreparation(args).prepare()
+
+    @staticmethod
+    def _check_input_data(soil):
+        """Check input data.
+
+        :param str soil: soil vector (check for overlaping polygons)
+        """
+        # TODO: not imlemented yet
+        pass
