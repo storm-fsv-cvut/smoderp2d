@@ -108,26 +108,21 @@ class PrepareData(PrepareDataBase, ManageFields):
                column=soil_type
         )
 
-        # do intersection
-        Module('v.overlay',
-               ainput=self._data['vegetation_boundary'],
-               binput=self._data['vector_mask'],
-               operator='and',
-               olayer='1,1,0',
+        # do intersections
+        Module('v.clip',
+               input=self._data['vegetation_boundary'],
+               clip=self._data['vector_mask'],
                output=self._data['vegetation_mask']
         )
-        Module('v.overlay',
-               ainput=self._data['soil_boundary'],
-               binput=self._data['vector_mask'],
-               operator='and',
-               olayer='1,1,0',
+        Module('v.clip',
+               input=self._data['soil_boundary'],
+               clip=self._data['vector_mask'],
                output=self._data['soil_mask']
         )
         Module('v.overlay',
-               ainput=self._data['vegetation_mask'],
-               binput=self._data['soil_mask'],
+               ainput=self._data['soil_mask'],
+               binput=self._data['vegetation_mask'],
                operator='and',
-               olayer='1,1,1',
                output=self._data['intersect']
         )
 
@@ -147,7 +142,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         Module('v.db.update',
                map=self._data['intersect'],
                column=self._data['soil_veg_column'],
-               query_column='b_a_{} || a_a_{}'.format(
+               query_column='a_{} || b_{}'.format(
                    soil_type, vtype1)
         )
 
