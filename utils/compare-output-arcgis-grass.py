@@ -56,9 +56,9 @@ def comp_rasters(directory, cleanup=False, png=False):
                                  flags='g',
                                  map=diff
         )
-        for key in ('min', 'max', 'range'):
+        for key in ('min', 'max', 'range', 'mean'):
             print ('{}={}'.format(key, stats[key]))
-        if float(stats['range']) < 1e-7:
+        if abs(float(stats['mean'])) < 1e-4:
             print ("-> OK")
         else:
             print ("-> KO")
