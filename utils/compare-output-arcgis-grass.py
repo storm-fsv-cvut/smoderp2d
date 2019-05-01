@@ -58,6 +58,10 @@ def comp_rasters(directory, cleanup=False, png=False):
         )
         for key in ('min', 'max', 'range'):
             print ('{}={}'.format(key, stats[key]))
+        if float(stats['range']) < 1e-8:
+            print ("-> OK")
+        else:
+            print ("-> KO")
         if cleanup:
             gs.run_command('g.remove',
                            type='raster', name=','.join(arcgis, diff), flags='f'
