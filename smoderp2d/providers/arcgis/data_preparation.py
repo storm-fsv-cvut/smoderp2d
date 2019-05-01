@@ -281,7 +281,6 @@ class PrepareData(PrepareDataBase, ManageFields):
         :param intersect: vector intersect feature class
         """
         pointsClipCheck = os.path.join(
-            #self.data['outdir'], "{}.shp".format(self._data['points_mask'])
             str(self._tempGDB), self._data['points_mask']
         )
         arcpy.Clip_analysis(
