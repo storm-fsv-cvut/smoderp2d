@@ -10,3 +10,12 @@ Area without category: 0 (0 areas)
 COMMAND: v.edit map="puda" layer="1" type="point,line,boundary,centroid" tool="catdel" threshold=-1.0,0.0,0.0 ids="25" cats="1" snap="no"
 GISDBASE: /home/martin/git/storm-fsv-cvut/smoderp2d/tests/grassdata
 LOCATION: smoderp2d-location MAPSET: PERMANENT USER: martin DATE: Tue Apr 30 15:51:47 2019
+---------------------------------------------------------------------------------
+COMMAND: v.extract -d input="puda" layer="1" type="area" output="puda1" new=-1
+GISDBASE: /home/martin/git/storm-fsv-cvut/smoderp2d/tests/grassdata
+LOCATION: smoderp2d-location MAPSET: PERMANENT USER: martin DATE: Wed May  1 13:04:48 2019
+---------------------------------------------------------------------------------
+COMMAND: v.dissolve in=puda out=puda1
+GISDBASE: /home/martin/git/storm-fsv-cvut/smoderp2d/tests/grassdata
+LOCATION: smoderp2d-location MAPSET: PERMANENT USER: martin DATE: Wed May  1 13:04:48 2019
+---------------------------------------------------------------------------------
