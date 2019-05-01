@@ -202,7 +202,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         Module('v.to.rast',
                input=intersect,
                type='area',
-               use='val',
+               use='cat',
                output=self._data['inter_mask']
         )
 
@@ -334,44 +334,31 @@ class PrepareData(PrepareDataBase, ManageFields):
         pii = math.pi / 180.0
         asp = 'aspect'
         Module('r.slope.aspect',
+               flags='n',
                elevation=dem_clip,
-               aspect=asp
+               aspect=asp + '_grass'
         )
-        asppii = 'asppii'
         Module('r.mapcalc',
-               expression='{} = {} * {}'.format(
-                   asppii, asp, pii
+               expression="{o}=if({i} == 0, -1, {i})".format(
+                   o=asp, i=asp + '_grass'
         ))
-        sinasp = 'sinasp'
+
+        # not needed, GRASS's sin() assumes degrees
+        # asppii = 'asppii'
+        # Module('r.mapcalc',
+        #        expression='{} = {} * {}'.format(
+        #            asppii, asp, pii
+        # ))
+        ratio = self._data['ratio_cell']
         Module('r.mapcalc',
-               expression='{} = sin({})'.format(
-                   sinasp, asppii
-        ))
-        cosasp = 'cosasp'
-        Module('r.mapcalc',
-               expression='{} = cos({})'.format(
-                   cosasp, asppii
-        ))
-        sinslope = 'sinslope'
-        Module('r.mapcalc',
-               expression='{} = abs({})'.format(
-                   sinslope, sinasp
-        ))
-        cosslope = 'cosasp'
-        Module('r.mapcalc',
-               expression='{} = cos({})'.format(
-                   cosslope, cosasp
-        ))
-        times1 = self._data['ratio_cell']
-        Module('r.mapcalc',
-               expression='{} = {} + {}'.format(
-                   times1, cosslope, sinslope
+               expression='{o} = abs(sin({a})) + abs(cos({a}))'.format(
+                   o=ratio, a=asp
         ))
 
         efect_cont = self._data['efect_cont']
         Module('r.mapcalc',
                expression='{} = {} * {}'.format(
-                   efect_cont, times1, self.data['spix']
+                   efect_cont, ratio, self.data['spix']
         ))
         self.data['mat_efect_cont'] = self._rst2np(efect_cont)
 
