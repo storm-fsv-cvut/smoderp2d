@@ -366,8 +366,7 @@ class PrepareData(PrepareDataBase, ManageFields):
     def _streamPreparation(args):
         from smoderp2d.providers.grass.stream_preparation import StreamPreparation
 
-        # return StreamPreparation(args).prepare()
-        return (None, None, None)
+        return StreamPreparation(args).prepare()
 
     @staticmethod
     def _check_input_data(soil):
