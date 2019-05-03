@@ -1,4 +1,5 @@
 import math
+import tensorflow as tf
 
 from smoderp2d.exceptions import SmoderpError
 from smoderp2d.providers import Logger
@@ -6,22 +7,27 @@ from smoderp2d.providers import Logger
 courantMax = 1.0
 courantMin = 0.2
 
-def update_hb(loc_V_to_rill, rillRatio, l, b, ratio, ppp=False):
-    V = loc_V_to_rill
-    if V < 0:
-        raise SmoderpError()
-    newb = math.sqrt(V / (rillRatio * l))
-    # if ppp :  print 'zvetsuje', newb, b, V
-    if (V > 0):
-        if newb > b:
-            b = newb
-            h = V / (b * l)
-        else:
-            h = V / (b * l)
-    else:
-        h = V / (b * l)
+def update_hb(v_to_rill, rillRatio, mat_efect_cont, rillWidth_orig):
+    V = v_to_rill
 
-    return h, b
+    # TODO TF:
+    # if V < 0:
+    #     raise SmoderpError
+
+    newb = tf.math.sqrt(V / (rillRatio * mat_efect_cont))
+
+    cond = V > 0
+    in_cond = newb > rillWidth_orig
+
+    in_where = tf.where(in_cond, newb, rillWidth_orig)
+    rillWidth = tf.where(cond, in_where, rillWidth_orig)  # B #19?
+
+    in_where = tf.where(in_cond, V / (rillWidth * mat_efect_cont),
+                        V / (rillWidth_orig * mat_efect_cont))
+    h = tf.where(cond, in_where,
+                 V / (rillWidth_orig * mat_efect_cont))
+
+    return h, rillWidth
 
 
 def rill(V_to_rill, rillRatio, l, b, delta_t,

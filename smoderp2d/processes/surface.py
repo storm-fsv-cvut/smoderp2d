@@ -1,10 +1,6 @@
-import math
+import tensorflow as tf
 
 
-def shallowSurfaceKinematic(sur):
+def shallowSurfaceKinematic(a, b, h_sheet):
 
-    a = sur.a
-    b = sur.b
-    h = sur.h_sheet
-    
-    return math.pow(h, b) * a
+    return tf.math.pow(h_sheet, b) * a

@@ -162,7 +162,7 @@ class Hydrographs:
                     # prozatim
                     if Globals.extraOut:
                         line += '{sep}{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}'.format(
-                            surface.arr[l][m].v_to_rill,
+                            surface.arr[l][m][20],
                             ratio, courantMost, courantRill, iter_,
                             sep=sep)
                     line += os.linesep

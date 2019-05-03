@@ -167,9 +167,9 @@ def timestepRainfall(iterace, total_time, delta_t, tz, sr):
 
 def current_rain(rain, rainfallm, sum_interception):
     # jj
-    rain_veg = rain.veg
-    rain_ppl = rain.ppl
-    rain_pi = rain.pi
+    rain_veg = rain[24]
+    rain_ppl = rain[25]
+    rain_pi = rain[26]
     if rain_veg != int(5):
         interc = rain_ppl * rainfallm  # interception is konstant
         # jj nemelo by to byt interc = (1-rain_ppl) * rainfallm

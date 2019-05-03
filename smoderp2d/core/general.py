@@ -1,6 +1,7 @@
 import numpy as np
 
 from smoderp2d.exceptions import SmoderpError
+import tensorflow as tf
 
 class Size(object):
     @staticmethod
@@ -23,9 +24,11 @@ class GridGlobals(object):
     pixel_area = None
     # id of rows in computational domain (list)
     rr = None
+    rr_tf = None
     # id of columns in computational domain (list of lists)
     # row out of computational domain is empty list
     rc = None
+    rc_tf = None
     # id of rows in at the boundary of computational domain
     br = None
     # id of columns in at the boundary of computational domain
@@ -47,7 +50,8 @@ class GridGlobals(object):
         if self.r is None or self.c is None:
             raise SmoderpError("Global variables are not assigned")
 
-        self.arr = np.empty((self.r, self.c), dtype=object)
+        self.arr = tf.Variable([[[0] * self.dims] * self.c] * self.r,
+                               dtype=tf.float32)
 
     @classmethod        
     def get_dim(cls):
@@ -60,6 +64,10 @@ class GridGlobals(object):
     @classmethod
     def get_region_dim(cls):
         return (cls.rr, cls.rc)
+
+    @classmethod
+    def get_region_dim_tf(cls):
+        return (cls.rr_tf, cls.rc_tf)
 
     @classmethod
     def get_border_dim(cls):
@@ -125,14 +133,17 @@ class Globals:
     mat_dem = None
     # raster contains efective couterline data
     mat_efect_cont = None
+    mat_efect_cont_tf = None
     # raster contains surface slopes data
     mat_slope = None
+    mat_slope_tf = None
     # raster labels not a number cells
     mat_nan = None
     # raster contains parameters ...
     mat_a = None
     # raster contains parameters ...
     mat_n = None
+    mat_n_tf = None
     # ???
     points = None
     # ???
@@ -239,8 +250,16 @@ class Globals:
         return cls.mat_efect_cont
 
     @classmethod
+    def get_mat_efect_cont_tf(cls):
+        return cls.mat_efect_cont_tf
+
+    @classmethod
     def get_mat_slope(cls, i, j):
         return cls.mat_slope[i][j]
+
+    @classmethod
+    def get_mat_slope_tf(cls):
+        return cls.mat_slope_tf
 
     @classmethod
     def get_mat_nan(cls):
@@ -253,6 +272,10 @@ class Globals:
     @classmethod
     def get_mat_n(cls, i, j):
         return cls.mat_n[i][j]
+
+    @classmethod
+    def get_mat_n_tf(cls):
+        return cls.mat_n_tf
 
     @classmethod
     def get_points(cls):

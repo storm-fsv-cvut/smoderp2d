@@ -9,6 +9,8 @@ Vypocet probiha v zadanem casovem kroku, pripade je cas kracen podle
 
 import time
 import os
+import tensorflow as tf
+import numpy as np
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
@@ -95,7 +97,7 @@ class FlowControl(object):
     def compare_ratio(self):
         """Check for changing ratio after rill courant criterion check.
         """
-        return self.ratio_tmp == self.ratio
+        return tf.equal(self.ratio_tmp, self.ratio)
 
     def update_total_time(self, dt):
         """Rises time after successfully calculated previous time step.
@@ -198,6 +200,71 @@ class Runoff(object):
 
         Logger.info('-' * 80)
 
+    # @tf.function
+    def run_as_matrices(self):
+        while self.flow_control.max_iter_reached():
+
+            self.flow_control.upload_iter()
+            self.flow_control.restore_vars()
+
+            # reset of the courant condition
+            self.courant.reset()
+            self.flow_control.save_ratio()
+
+            potRain, h_sheet, vol_runoff, vol_rest, h_rill, h_rill_pre, vol_runoff_rill, v_rill_rest, rillWidth, v_to_rill \
+                = self.time_step.do_flow(
+                self.surface,
+                self.subsurface,
+                self.delta_t,
+                self.flow_control,
+                self.courant
+            )
+
+            # TODO: Move out of the loop?
+            self.surface.arr.assign(tf.stack([self.surface.arr[:, :, 0],
+                                         self.surface.arr[:, :, 1],
+                                         self.surface.arr[:, :, 2],
+                                         self.surface.arr[:, :, 3],
+                                         h_sheet,
+                                         self.surface.arr[:, :, 5],
+                                         self.surface.arr[:, :, 6],
+                                         vol_runoff,
+                                         vol_rest,
+                                         self.surface.arr[:, :, 9],
+                                         self.surface.arr[:, :, 10],
+                                         self.surface.arr[:, :, 11],
+                                         self.surface.arr[:, :, 12],
+                                         self.surface.arr[:, :, 13],
+                                         self.surface.arr[:, :, 14],
+                                         h_rill,
+                                         h_rill_pre,
+                                         vol_runoff_rill,
+                                         v_rill_rest,
+                                         rillWidth,
+                                         v_to_rill,
+                                         self.surface.arr[:, :, 21],
+                                         self.surface.arr[:, :, 22],
+                                         self.surface.arr[:, :, 23],
+                                         self.surface.arr[:, :, 24],
+                                         self.surface.arr[:, :, 25],
+                                         self.surface.arr[:, :, 26]], 2))
+
+            # stores current time step
+            delta_t_tmp = self.delta_t
+
+            # update time step size if necessary (based on the courant
+            # condition)
+            self.delta_t, self.flow_control.ratio = self.courant.courant(
+                potRain, self.delta_t, self.flow_control.ratio
+            )
+
+            # courant conditions is satisfied (time step did
+            # change) the iteration loop breaks
+            if tf.equal(delta_t_tmp, self.delta_t) and self.flow_control.compare_ratio():
+                break
+
+        return potRain
+
     def run(self):
         # saves time before the main loop
         start = time.time()
@@ -211,37 +278,14 @@ class Runoff(object):
             self.flow_control.refresh_iter()
 
             # iteration loop
-            while self.flow_control.max_iter_reached():
 
-                self.flow_control.upload_iter()
-                self.flow_control.restore_vars()
+            self.surface.arr = tf.Variable(self.surface.arr)
+            self.rain_arr.arr = tf.Variable(self.rain_arr.arr)
 
-                # reset of the courant condition
-                self.courant.reset()
-                self.flow_control.save_ratio()
+            potRain = self.run_as_matrices()
 
-                # time step size
-                potRain = self.time_step.do_flow(
-                    self.surface,
-                    self.subsurface,
-                    self.delta_t,
-                    self.flow_control,
-                    self.courant
-                )
-
-                # stores current time step
-                delta_t_tmp = self.delta_t
-
-                # update time step size if necessary (based on the courant
-                # condition)
-                self.delta_t, self.flow_control.ratio = self.courant.courant(
-                    potRain, self.delta_t, self.flow_control.ratio
-                )
-
-                # courant conditions is satisfied (time step did
-                # change) the iteration loop breaks
-                if delta_t_tmp == self.delta_t and self.flow_control.compare_ratio():
-                    break
+            self.surface.arr = np.array(self.surface.arr.numpy())
+            self.rain_arr.arr = np.array(self.rain_arr.arr.numpy())
 
             # Calculate actual rainfall and adds up interception todo:
             # AP - actual is not storred in hydrographs
@@ -327,20 +371,20 @@ class Runoff(object):
             # check if rill flow occur
             for i in self.surface.rr:
                 for j in self.surface.rc[i]:
-                    if self.surface.arr[i][j].state == 0:
-                        if self.surface.arr[i][j].h_total_new > self.surface.arr[i][j].h_crit:
-                            self.surface.arr[i][j].state = 1
+                    if self.surface.arr[i][j][0] == 0:
+                        if self.surface.arr[i][j][5] > self.surface.arr[i][j][12]:
+                            self.surface.arr[i][j][0] = 1
 
-                    if self.surface.arr[i][j].state == 1:
-                        if self.surface.arr[i][j].h_total_new < self.surface.arr[i][j].h_total_pre:
-                            self.surface.arr[i][j].h_last_state1 = self.surface.arr[i][j].h_total_pre
-                            self.surface.arr[i][j].state = 2
+                    if self.surface.arr[i][j][0] == 1:
+                        if self.surface.arr[i][j][5] < self.surface.arr[i][j][6]:
+                            self.surface.arr[i][j][21] = self.surface.arr[i][j][6]
+                            self.surface.arr[i][j][0] = 2
 
-                    if self.surface.arr[i][j].state == 2:
-                        if self.surface.arr[i][j].h_total_new > self.surface.arr[i][j].h_last_state1:
-                            self.surface.arr[i][j].state = 1
+                    if self.surface.arr[i][j][0] == 2:
+                        if self.surface.arr[i][j][5] > self.surface.arr[i][j][21]:
+                            self.surface.arr[i][j][0] = 1
 
-                    self.surface.arr[i][j].h_total_pre = self.surface.arr[i][j].h_total_new
+                    self.surface.arr[i][j][6] = self.surface.arr[i][j][5]
 
         Logger.info('Saving data...')
 

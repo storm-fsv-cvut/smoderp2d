@@ -24,17 +24,17 @@ class SubArrs:
         self.h = 0.
         self.H = ele
         self.z = z
-        self.slope = 0.
+        self.slope = 0.             # #4
         self.exfiltration = 0.
         self.vol_runoff = 0.
         self.vol_runoff_pre = 0.
         self.vol_rest = 0.
-        self.Ks = Ks
+        self.Ks = Ks                # #9
         self.cum_percolation = 0.
         self.percolation = 0.
         self.vg_n = vg_n
         self.vg_m = 1.0 - 1.0 / vg_n
-        self.vg_l = vg_l
+        self.vg_l = vg_l            # #14
 
 
 class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
@@ -47,20 +47,24 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
         :param vg_l: TODO
         """
         GridGlobals.__init__()
-        
+
+        arr_np = np.array(self.arr.numpy(), dtype=np.float64)
+
         for i in range(self.r):
             for j in range(self.c):
-                self.arr[i][j] = SubArrs(
-                    L_sub,
-                    Ks,
-                    vg_n,
-                    vg_l,
-                    mat_dem[i][j] - L_sub,
-                    mat_dem[i][j])
+                arr_np[i][j][0] = L_sub
+                arr_np[i][j][2] = mat_dem[i][j]
+                arr_np[i][j][3] = mat_dem[i][j] - L_sub
+                arr_np[i][j][9] = Ks
+                arr_np[i][j][12] = vg_n
+                arr_np[i][j][13] = 1.0 - 1.0 / vg_n
+                arr_np[i][j][14] = vg_l
 
         for i in self.rr:
             for j in self.rc[i]:
-                self.arr[i][j].slope = mat_slope[i][j]
+                self.arr[i][j][4] = mat_slope[i][j]
+
+        self.arr.assign(arr_np)
 
         self.Kr = darcy.relative_unsat_conductivity
         self.darcy = darcy.darcy
@@ -134,14 +138,14 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
 
         return bil, exfilt
 
-    def runoff(self, i, j, delta_t, efect_vrst):
+    def runoff(self, subarr, delta_t, mat_efect_cont):
 
-        arr = self.arr[i][j]
-        # print arr .Ks
-        self.q_subsurface = self.darcy(arr, efect_vrst)
-        # print arr.h
-        arr.vol_runoff = delta_t * self.q_subsurface
-        arr.vol_rest = arr.h * self.pixel_area - delta_t * self.q_subsurface
+        self.q_subsurface = self.darcy(subarr, mat_efect_cont)
+        sub_vol_runoff = delta_t * self.q_subsurface  # SUBARR6
+        sub_vol_rest = subarr[:, :, 1] * self.pixel_area - \
+                       delta_t * self.q_subsurface  # SUBARR8
+
+        return sub_vol_runoff, sub_vol_rest
 
     def runoff_stream_cell(self, i, j):
         self.arr[i][j].vol_runoff = 0.0
@@ -194,8 +198,8 @@ class SubsurfacePass(GridGlobals, Size):
     def bilance(self, i, j, infilt, inflow, dt):
         pass
 
-    def runoff(self, i, j, delta_t, efect_vrst):
-        pass
+    def runoff(self, subarr, delta_t, efect_vrst):
+        return subarr[:, :, 6], subarr[:, :, 8]
 
     def runoff_stream_cell(self, i, j):
         return 0.0
@@ -210,6 +214,7 @@ class SubsurfacePass(GridGlobals, Size):
 class Subsurface(SubsurfaceC if Globals.subflow else SubsurfacePass):
 
     def __init__(self, L_sub=0.010, Ks=0.001, vg_n=1.5, vg_l=0.5):
+        self.dims = 14
         Logger.info("Subsurface:")
         super(Subsurface, self).__init__(
             L_sub=L_sub,

@@ -2,6 +2,7 @@
 
 
 import math
+import tensorflow as tf
 from smoderp2d.providers import Logger
 
 from smoderp2d.core.general import Globals as Gl
@@ -79,20 +80,20 @@ class Courant():
 
     # Checks and store in each computational cell the maximum velocity and maximum Courant coefficient
     #
-    def CFL(self, i, j, h0, v, delta_t, efect_cont, co, rill_courant):
-        cour = v / self.cour_coef * delta_t / efect_cont
-        cour = max(cour, rill_courant)
-        # print cour
+    def CFL(self, h_total_pre, v, delta_t, mat_efect_cont, co, rill_courant):
+        cour = v / self.cour_coef * delta_t / mat_efect_cont
+        cour = tf.math.maximum(cour, rill_courant)
 
-        if cour > self.cour_most:
-            self.i = i
-            self.j = j
-            self.co = co
-            self.cour_most = cour
-            self.maxh = h0
-            self.cour_speed = v
-        # if rill_courant > self.cour_most_rill:
-            # self.cour_most_rill = rill_courant
+        max_i = tf.argmax(tf.reduce_max(cour, axis=1))
+        max_j = tf.argmax(cour, axis=1)[tf.argmax(tf.reduce_max(cour, axis=1))]
+        cond = cour[max_i, max_j] > self.cour_most
+
+        self.i = tf.where(cond, max_i, self.i)
+        self.j = tf.where(cond, max_j, self.j)
+        self.co = tf.where(cond, co, self.co)
+        self.cour_most = tf.where(cond, cour[max_i, max_j], self.cour_most)
+        self.maxh = tf.where(cond, h_total_pre[max_i, max_j], self.maxh)
+        self.cour_speed = tf.where(cond, v[max_i, max_j], self.cour_speed)
 
     # Returns the adjusted/unchanged time step after a time step computation is completed.
     #
@@ -129,20 +130,25 @@ class Courant():
         # mensi nez cour_least a vetsi nez cour_crit
         # explicitne se dopocita dt na nejvetsi mozne
         #                                      xor
-        if ((self.cour_most < self.cour_least) != (self.cour_crit <= self.cour_most)):
+        # if ((self.cour_most < self.cour_least) != (self.cour_crit <= self.cour_most)):
+        if not tf.equal(self.cour_most < self.cour_least,
+                        self.cour_crit <= self.cour_most):
 
         # pokud se na povrchu nic nedeje
         # nema se zmena dt cim ridit
         # a zmeni se podle maxima nasobeneho max_delta_t_mult
         # max_delta_t_mult se meni podle ryh, vyse v teto funkci
         #
-            if (self.cour_speed == 0.0):
+            if (tf.equal(self.cour_speed, 0.0)):
                 return self.max_delta_t * self.max_delta_t_mult, ratio
 
-            dt = round(
-                (Gl.mat_efect_cont[self.i, self.j] * self.cour_crit * self.cour_coef) /
-                 self.cour_speed,
-                4)
+            # dt = tf.round(
+            #     (Gl.mat_efect_cont[self.i, self.j] * self.cour_crit * self.cour_coef) /
+            #      self.cour_speed,
+            #     4)
+
+            dt = (Gl.mat_efect_cont[self.i, self.j] * self.cour_crit *
+                  self.cour_coef) / self.cour_speed
 
             # nove dt nesmi byt vetsi nez je maxdt * max_delta_t_mult
             # max_delta_t_mult se meni podle ryh, vyse v teto funkci

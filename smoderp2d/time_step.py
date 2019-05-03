@@ -8,6 +8,8 @@ import smoderp2d.processes.infiltration as infilt
 
 import copy
 import numpy as np
+import time
+import tensorflow as tf
 
 
 from smoderp2d.core.surface import runoff
@@ -24,9 +26,10 @@ max_infilt_capa = 0.003  # [m]
 #
 class TimeStep:
 
+    # @tf.function
     def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
-        rr, rc = GridGlobals.get_region_dim()
-        mat_efect_cont = Globals.get_mat_efect_cont()
+        rr, rc = GridGlobals.get_region_dim_tf()
+        mat_efect_cont = Globals.get_mat_efect_cont_tf()
         fc = flow_control
         sr = Globals.get_sr()
         itera = Globals.get_itera()
@@ -34,48 +37,67 @@ class TimeStep:
         potRain, fc.tz = rain_f.timestepRainfall(
             itera, fc.total_time, delta_t, fc.tz, sr)
 
-        for i in rr:
-            for j in rc[i]:
-                # TODO: variable not used. Should we delete it?
-                h_total_pre = surface.arr[i][j].h_total_pre
+        t = time.time()
 
-                surface_state = surface.arr[i][j].state
+        state = surface.arr[:, :, 0]
+        zeros = tf.zeros(state.shape, dtype=tf.float32)
 
-                if surface_state >= 1000:
-                    q_sheet = 0.0
-                    v_sheet = 0.0
-                    q_rill = 0.0
-                    v_rill = 0.0
-                    rill_courant = 0.0
-                else:
-                    q_sheet, v_sheet, q_rill, v_rill, fc.ratio, rill_courant = runoff(
-                        i, j, surface.arr[i][j], delta_t, mat_efect_cont[i][j], fc.ratio)
-                    subsurface.runoff(i, j, delta_t, mat_efect_cont[i][j])
+        runoff_return = runoff(surface, delta_t, mat_efect_cont, zeros)
+        subrunoff_return = subsurface.runoff(
+            subsurface.arr, delta_t, mat_efect_cont)
 
-                # TODO: variable not used. Should we delete it?
-                q_surface = q_sheet + q_rill
-                # print v_sheet,v_rill
-                v = max(v_sheet, v_rill)
-                co = 'sheet'
-                courant.CFL(
-                    i,
-                    j,
-                    surface.arr[i][j].h_total_pre,
-                    v,
-                    delta_t,
-                    mat_efect_cont[i][j],
-                    co,
+        # TODO TF: Move conditions to runoff?
+        h_sheet = tf.where(state >= 1000, zeros, runoff_return[0])
+        h_rill = tf.where(state >= 1000, zeros, runoff_return[1])
+        h_rill_pre = tf.where(state >= 1000, zeros, runoff_return[2])
+        v_sheet = tf.where(state >= 1000, zeros, runoff_return[3])
+        v_rill = tf.where(state >= 1000, zeros, runoff_return[4])
+        rill_courant = tf.where(state >= 1000, zeros, runoff_return[5])
+        v_rill_rest = tf.where(state >= 1000, zeros, runoff_return[6])
+        vol_runoff_rill = tf.where(state >= 1000, zeros, runoff_return[7])
+        vol_runoff = tf.where(state >= 1000, zeros, runoff_return[8])
+        vol_rest = tf.where(state >= 1000, zeros, runoff_return[9])
+        rillWidth = tf.where(state >= 1000, zeros, runoff_return[10])
+        v_to_rill = tf.where(state >= 1000, zeros, runoff_return[11])
+
+        sub_vol_runoff = tf.where(state >= 1000,
+                                  subsurface.arr[:, :, 4], subrunoff_return[0])
+        sub_vol_rest = tf.where(state >= 1000,
+                                subsurface.arr[:, :, 8], subrunoff_return[1])
+
+        v = tf.math.maximum(v_sheet, v_rill)
+        co = 'sheet'
+
+        courant.CFL(surface.arr[:, :, 6], v, delta_t, mat_efect_cont, co,
                     rill_courant)
-                # TODO: variable not used. Should we delet it?
-                rill_courant = 0.
 
-                # w1 = surface.arr[i][j].vol_runoff_rill
-                # w2 = surface.arr[i][j].v_rill_rest
-                # print surface.arr[i][j].h_total_pre
-                # if (w1 > 0 and w2 == 0) :
-                    # print 'asdf', w1, w2
+        tf.print('rill_courant[859, 990], v_rill[859, 990], delta_t, mat_efect_cont[859, 990], rillWidth[859, 990], surface.arr[:, :, 19][859, 990], v_to_rill[859, 990], GridGlobals.get_pixel_area(), h_rill[859, 990], surface.arr[:, :, 6][859, 990], surface.arr[:, :, 12][859, 990], state[859, 990], zeros[859, 990], v[859, 990]')
+        tf.print(rill_courant[859, 990], v_rill[859, 990], delta_t, mat_efect_cont[859, 990], rillWidth[859, 990], surface.arr[:, :, 19][859, 990], v_to_rill[859, 990], GridGlobals.get_pixel_area(), h_rill[859, 990], surface.arr[:, :, 6][859, 990], surface.arr[:, :, 12][859, 990], state[859, 990], zeros[859, 990], v[859, 990])
+        tf.print('potrain')
+        tf.print(potRain)
 
-        return potRain
+        tf.print('*' * 30)
+        tf.print('LOOP V time_step.doFlow:')
+        tf.print(time.time() - t)
+
+        if subsurface.n != 0:
+            subsurface.arr.assign(tf.stack([subsurface.arr[:, :, 0],
+                                    subsurface.arr[:, :, 1],
+                                    subsurface.arr[:, :, 2],
+                                    subsurface.arr[:, :, 3],
+                                    subsurface.arr[:, :, 4],
+                                    subsurface.arr[:, :, 5],
+                                    sub_vol_runoff,
+                                    subsurface.arr[:, :, 7], #####
+                                    sub_vol_rest,
+                                    subsurface.arr[:, :, 9],
+                                    subsurface.arr[:, :, 10],
+                                    subsurface.arr[:, :, 11],
+                                    subsurface.arr[:, :, 12],
+                                    subsurface.arr[:, :, 13]], 2))
+
+        return potRain, h_sheet, vol_runoff, vol_rest, h_rill, h_rill_pre, \
+               vol_runoff_rill, v_rill_rest, rillWidth, v_to_rill
 
 
 # self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
@@ -94,7 +116,10 @@ class TimeStep:
         combinatIndex = Globals.get_combinatIndex()
         NoDataValue = GridGlobals.get_no_data()
 
+        print('infilt_capa 2x')
+        print(infilt_capa)
         infilt_capa += potRain
+        print(infilt_capa)
         if (infilt_capa < max_infilt_capa):
             infilt_time += delta_t
             actRain = 0.0
@@ -139,6 +164,7 @@ class TimeStep:
         subsurface.new_inflows()
 
         # print 'bbilll'
+        print('before loop in h_next')
         for i in rr:
             for j in rc[i]:
 
@@ -146,20 +172,20 @@ class TimeStep:
                 #
                 # current cell precipitation
                 #
-                actRain, fc.sum_interception, rain_arr.arr[i][j].veg_true = rain_f.current_rain(
+                actRain, fc.sum_interception, rain_arr.arr[i][j][23] = rain_f.current_rain(
                     rain_arr.arr[i][j], potRain, fc.sum_interception)
-                surface.arr[i][j].cur_rain = actRain
+                surface.arr[i][j][3] = actRain
 
                 #
                 # Inflows from surroundings cells
                 #
-                surface.arr[i][j].inflow_tm = surface.cell_runoff(i, j)
+                surface.arr[i][j][9] = surface.cell_runoff(i, j)
 
                 #
                 # Surface BILANCE
                 #
-                surBIL = surface.arr[i][j].h_total_pre + actRain + surface.arr[i][j].inflow_tm / pixel_area - (
-                    surface.arr[i][j].vol_runoff / pixel_area + surface.arr[i][j].vol_runoff_rill / pixel_area)
+                surBIL = surface.arr[i][j][6] + actRain + surface.arr[i][j][9] / pixel_area - (
+                    surface.arr[i][j][22] / pixel_area + surface.arr[i][j][17] / pixel_area)
 
                 #
                 # surface retention
@@ -170,23 +196,23 @@ class TimeStep:
                 # infiltration
                 #
                 if subsurface.get_exfiltration(i, j) > 0:
-                    surface.arr[i][j].infiltration = 0.0
+                    surface.arr[i][j][11] = 0.0
                     infiltration = 0.0
                 else:
                     surBIL, infiltration = infilt.philip_infiltration(
-                        surface.arr[i][j].soil_type, surBIL)
-                    surface.arr[i][j].infiltration = infiltration
+                        surface.arr[i][j][10], surBIL)
+                    surface.arr[i][j][11] = infiltration
 
                 # surface retention
                 surBIL += subsurface.get_exfiltration(i, j)
-                    
-                    
-                surface_state = surface.arr[i][j].state
+
+
+                surface_state = surface.arr[i][j][0]
 
                 if surface_state >= 1000:
                     # toto je pripraveno pro odtok v ryhach
 
-                    surface.arr[i][j].h_total_new = 0.0
+                    surface.arr[i][j][5] = 0.0
 
                     h_sub = subsurface.runoff_stream_cell(i, j)
 
@@ -197,15 +223,16 @@ class TimeStep:
                         inflows=inflowToReach)
 
                 else:
-                    surface.arr[i][j].h_total_new = surBIL
+                    surface.arr[i][j][5] = surBIL
 
-                surface_state = surface.arr[i][j].state
+                surface_state = surface.arr[i][j][0]
                 # subsurface inflow
                 """
         inflow_sub = subsurface.cell_runoff(i,j,False)
         subsurface.bilance(i,j,infiltration,inflow_sub/pixel_area,delta_t)
         subsurface.fill_slope()
         """
+                # if rewritten to TF, must be == changed to tf.equal()
                 cumulative.update_cumulative(
                     i,
                     j,
@@ -221,5 +248,6 @@ class TimeStep:
                     surface,
                     subsurface,
                     actRain)
+        print('after loop in h_next')
 
         return actRain

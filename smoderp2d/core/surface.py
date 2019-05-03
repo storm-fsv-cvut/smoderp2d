@@ -3,6 +3,7 @@
 
 import numpy as np
 import math
+import tensorflow as tf
 
 from smoderp2d.core.general import Globals, GridGlobals, Size
 if Globals.isStream:
@@ -36,27 +37,32 @@ class SurArrs(object):
         self.cur_sur_ret = 0.
         self.cur_rain = 0.
         self.h_sheet = 0.
-        self.h_total_new = 0.
+        self.h_total_new = 0.               # #5
         self.h_total_pre = 0.
         self.vol_runoff = 0.
         # self.vol_runoff_pre = float(0)
         self.vol_rest = 0.
         # self.vol_rest_pre =   float(0)
-        self.inflow_tm = 0.
+        self.inflow_tm = 0.                 # #9
         self.soil_type = inf_index
         self.infiltration = 0.
-        self.h_crit = hcrit
+        self.h_crit = hcrit                 # #12
         self.a = a
         self.b = b
         self.h_rill = 0.
         self.h_rillPre = 0.
-        self.vol_runoff_rill = 0.
+        self.vol_runoff_rill = 0.           # #17
         # self.vol_runoff_rill_pre= float(0)
         self.v_rill_rest = 0.
         # self.v_rill_rest_pre =  float(0)
         self.rillWidth = 0.
-        self.v_to_rill = 0.
+        self.v_to_rill = 0.                 # #20
         self.h_last_state1 = 0.
+        # vol_runoff_pre #22
+        # veg_true                          # #23
+        # veg
+        # ppl
+        # pi #26
 
 
 class Surface(GridGlobals, Size, Stream, Kinematic):
@@ -68,22 +74,25 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
         Make all numpy arrays and establish the inflow procedure based
         on D8 or Multi Flow Direction Algorithm method.
         """
+        self.dims = 27
         GridGlobals.__init__(self)
         
         Logger.info("Surface: ON")
 
         self.n = 15
-         
+
+        arr_np = np.array(self.arr.numpy(), dtype=np.float64)
+
         # assign array objects
         for i in range(self.r):
             for j in range(self.c):
-                self.arr[i][j] = SurArrs(
-                    Globals.get_mat_reten(i, j),
-                    Globals.get_mat_inf_index(i, j),
-                    Globals.get_mat_hcrit(i, j),
-                    Globals.get_mat_aa(i, j),
-                    Globals.get_mat_b(i, j)
-                )
+                arr_np[i][j][1] = Globals.get_mat_reten(i, j)
+                arr_np[i][j][10] = Globals.get_mat_inf_index(i, j)
+                arr_np[i][j][12] = Globals.get_mat_hcrit(i, j)
+                arr_np[i][j][13] = Globals.get_mat_aa(i, j)
+                arr_np[i][j][14] = Globals.get_mat_b(i, j)
+
+        self.arr.assign(arr_np)
 
         Stream.__init__(self)
         
@@ -105,84 +114,75 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
         # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
         if not extra_out:
             line = '{0}{sep}{1}{sep}{2}'.format(
-                arr.h_total_new,
-                arr.vol_runoff / dt + arr.vol_runoff_rill / dt,
-                arr.vol_runoff + arr.vol_runoff_rill,
+                arr[5],
+                arr[7] / dt + arr[17] / dt,
+                arr[7] + arr[17],
                 sep=sep
             )
             bil_ = ''
         else:
             line = '{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}{sep}{7}{sep}{8}'.format(
-                arr.h_sheet,
-                arr.vol_runoff / dt,
-                arr.vol_runoff,
-                arr.vol_rest,
-                arr.infiltration,
-                arr.cur_sur_ret,
-                arr.state,
-                arr.inflow_tm,
-                arr.h_total_new,
+                arr[4],
+                arr[7] / dt,
+                arr[7],
+                arr[8],
+                arr[11],
+                arr[2],
+                arr[0],
+                arr[9],
+                arr[5],
                 sep=sep
             )
 
             if Globals.isRill:
                 line += '{sep}{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}'.format(
-                    arr.h_rill,
-                    arr.rillWidth,
-                    arr.vol_runoff_rill / dt,
-                    arr.vol_runoff_rill,
-                    arr.v_rill_rest,
-                    arr.vol_runoff / dt + arr.vol_runoff_rill / dt,
-                    arr.vol_runoff + arr.vol_runoff_rill,
+                    arr[15],
+                    arr[19],
+                    arr[17] / dt,
+                    arr[17],
+                    arr[18],
+                    arr[7] / dt + arr[17] / dt,
+                    arr[7] + arr[17],
                     sep=sep
                 )
 
-            bil_ = arr.h_total_pre * self.pixel_area + \
-                   arr.cur_rain * self.pixel_area + \
-                   arr.inflow_tm - \
-                   (arr.vol_runoff + arr.vol_runoff_rill + \
-                    arr.infiltration * self.pixel_area) - \
-                    (arr.cur_sur_ret * self.pixel_area) - \
-                    arr.h_total_new * self.pixel_area
+            bil_ = arr[6] * self.pixel_area + \
+                   arr[3] * self.pixel_area + \
+                   arr[9] - \
+                   (arr[7] + arr[17] + \
+                    arr[11] * self.pixel_area) - \
+                    (arr[2] * self.pixel_area) - \
+                    arr[5] * self.pixel_area
             # << + arr.vol_rest + arr.v_rill_rest) + (arr.vol_rest_pre + arr.v_rill_rest_pre)
 
         return line, bil_
 
 
-def __runoff(i, j, sur, dt, efect_vrst, ratio):
+def __runoff(sur, dt, mat_efect_cont, zeros):
     """Calculates the sheet and rill flow.
 
     :param i: row index
     :param j: col index
     :param dt: TODO
     :param efect_vrst: TODO
-    :param ratio: TODO
 
     :return: TODO
     """
-    h_total_pre = sur.h_total_pre
-    h_crit = sur.h_crit
-    state = sur.state  # da se tady podivat v jakym jsem casovym kroku a jak se a
 
-    # sur.state               = update_state1(h_total_pre,h_crit,state)
-    sur.h_sheet, sur.h_rill, sur.h_rillPre = compute_h_hrill(
-        h_total_pre, h_crit, state, sur.rillWidth, sur.h_rillPre)
+    h_sheet, h_rill, h_rillPre = compute_h_hrill(
+        sur.arr[:, :, 6], sur.arr[:, :, 12], sur.arr[:, :, 0],
+        sur.arr[:, :, 16], zeros)
 
-    q_sheet = sheet_runoff(sur, dt)
+    q_sheet, vol_runoff, vol_rest = sheet_runoff(sur, dt, h_sheet)
 
-    if sur.h_sheet > 0.0:
-        v_sheet = q_sheet / sur.h_sheet
-    else:
-        v_sheet = 0.0
+    v_sheet = tf.where(h_sheet > 0.0, q_sheet / h_sheet, zeros)
 
-    if sur.state > 0:
-        q_rill, v_rill, ratio, rill_courant = rill_runoff(
-            i, j, sur, dt, efect_vrst, ratio
-        )
-    else:
-        q_rill, v_rill, ratio, rill_courant = 0, 0, ratio, 0.0
+    v_rill, rill_courant, v_rill_rest, vol_runoff_rill, rillWidth, v_to_rill \
+        = rill_runoff(sur, dt, mat_efect_cont, h_rill, zeros)
     
-    return q_sheet, v_sheet, q_rill, v_rill, ratio, rill_courant
+    return h_sheet, h_rill, h_rillPre, v_sheet, v_rill, rill_courant, \
+           v_rill_rest, vol_runoff_rill, vol_runoff, vol_rest, rillWidth, \
+           v_to_rill
 
 
 def __runoff_zero_comp_type(i, j, sur, dt, efect_vrst, ratio):
@@ -234,7 +234,7 @@ def update_state1(ht_1, hcrit, state, rill_width):
     return state
 
 
-def compute_h_hrill(h_total_pre, h_crit, state, rill_width, h_rill_pre):
+def compute_h_hrill(h_total_pre, h_crit, state, h_rill_pre, zeros):
     """TODO.
     
     :param h_total_pre: TODO
@@ -245,30 +245,39 @@ def compute_h_hrill(h_total_pre, h_crit, state, rill_width, h_rill_pre):
 
     :return: TODO
     """
-    if state == 0:
-        h_sheet = h_total_pre
-        h_rill = 0
+    cond1 = h_total_pre > h_rill_pre
+    cond2 = tf.equal(state, 1)
+    cond3 = tf.equal(state, 0)
 
-        return h_sheet, h_rill, 0
+    a = tf.where(cond1,
+                 h_total_pre - h_rill_pre,
+                 zeros, name='a')
+    cond_in_compute_h_hrill = tf.where(
+        cond2,
+        tf.minimum(h_crit, h_total_pre),
+        a, name='cond_in')
+    h_sheet = tf.where(cond3, h_total_pre,
+                       cond_in_compute_h_hrill)  # SUR4
 
-    elif state == 1:
-        h_sheet = min(h_crit, h_total_pre)
-        h_rill = max(h_total_pre - h_crit, 0)
-        hRillPre = h_rill
-        
-        return h_sheet, h_rill, h_rill_pre
+    a = tf.where(cond1, h_rill_pre, h_total_pre,
+                 name='a')
+    cond_in_compute_h_hrill = tf.where(
+        cond2,
+        tf.maximum(h_total_pre - h_crit, zeros),
+        a, name='cond_in')
+    h_rill = tf.where(cond3, zeros, cond_in_compute_h_hrill)  # SUR15
 
-    else: # elif state == 2:
-        if h_total_pre > h_rill_pre:
-            h_rill = h_rill_pre
-            h_sheet = h_total_pre - h_rill_pre
-        else:
-            h_rill = h_total_pre
-            h_sheet = 0
+    a = tf.where(cond1, h_rill_pre, h_rill_pre,
+                 name='a')
+    cond_in_compute_h_hrill = tf.where(
+        cond2,
+        h_rill_pre,
+        a, name='cond_in')
+    h_rill_pre = tf.where(cond3, zeros, cond_in_compute_h_hrill)  # SUR16
 
-        return h_sheet, h_rill, h_rill_pre
+    return h_sheet, h_rill, h_rill_pre
     
-def sheet_runoff(sur, dt):
+def sheet_runoff(sur, dt, h_sheet):
     """TODO.
 
     :param sur: TODO
@@ -276,13 +285,16 @@ def sheet_runoff(sur, dt):
     
     :return: TODO
     """
-    q_sheet = surfacefce.shallowSurfaceKinematic(sur)
-    sur.vol_runoff = dt * q_sheet * GridGlobals.get_size()[0]
-    sur.vol_rest = sur.h_sheet * GridGlobals.get_pixel_area() - sur.vol_runoff
+    q_sheet = surfacefce.shallowSurfaceKinematic(
+        sur.arr[:, :, 13], sur.arr[:, :, 14], h_sheet)
+    # TODO: Do I really need to recast?
+    q_sheet = tf.dtypes.cast(q_sheet, tf.float32)
+    vol_runoff = dt * q_sheet * GridGlobals.get_size()[0]
+    vol_rest = h_sheet * GridGlobals.get_pixel_area() - vol_runoff  # SUR7
 
-    return q_sheet
+    return q_sheet, vol_runoff, vol_rest
 
-def rill_runoff(i, j, sur, dt, efect_vrst, ratio):
+def rill_runoff(sur, dt, mat_efect_cont, h_rill, zeros):
     """TODO.
 
     :param i: row index
@@ -294,45 +306,40 @@ def rill_runoff(i, j, sur, dt, efect_vrst, ratio):
     
     :return: TODO
     """
+    n = Globals.get_mat_n_tf()
+    slope = Globals.get_mat_slope_tf()
 
-    ppp = False
+    v_to_rill = h_rill * GridGlobals.get_pixel_area()
 
-    n = Globals.get_mat_n(i, j)
-    slope = Globals.get_mat_slope(i, j)
+    h, rillWidth = rill.update_hb(v_to_rill, RILL_RATIO, mat_efect_cont,
+                                  sur.arr[:, :, 19])
 
-    v_to_rill = sur.h_rill * GridGlobals.get_pixel_area()
-    h, b = rill.update_hb(
-        v_to_rill, RILL_RATIO, efect_vrst, sur.rillWidth, ratio, ppp
-    )
-    r_rill = (h * b) / (b + 2 * h)
+    r_rill = (h * rillWidth) / (rillWidth + 2 * h)
 
-    v_rill = math.pow(r_rill, (2.0 / 3.0)) * \
-        1. / n * math.pow(slope / 100, 0.5)
+    v_rill = tf.math.pow(r_rill, (2.0 / 3.0)) * 1. / n * \
+             tf.math.pow(slope / 100, 0.5)
 
-    q_rill = v_rill * h * b
+    q_rill = v_rill * h * rillWidth
 
     v = q_rill * dt
 
     # original based on speed
-    courant = (v_rill * dt) / efect_vrst
+    courant_comp = (v_rill * dt) / mat_efect_cont
 
-    # celerita
-    # courant = (1 + s*b/(3*(b+2*h))) * q_rill/(b*h)
+    out_cond = courant_comp <= courantMax
+    in_cond = v > v_to_rill
 
-    sur.v_to_rill = v_to_rill
-    sur.rillWidth = b
-    if courant <= courantMax:
-        if v > v_to_rill:
-            sur.v_rill_rest = 0
-            sur.vol_runoff_rill = v_to_rill
-        else:
-            sur.v_rill_rest = v_to_rill - v
-            sur.vol_runoff_rill = v
+    in_where = tf.where(in_cond, zeros, v_to_rill - v)
+    v_rill_rest = tf.where(out_cond, in_where, sur.arr[:, :, 18])  # SUR18
 
-    else:
-        return q_rill, v_rill, ratio, courant
+    in_where = tf.where(in_cond, v_to_rill, v)
+    vol_runoff_rill = tf.where(out_cond, in_where, sur.arr[:, :, 17])  # SUR17
 
-    return q_rill, v_rill, ratio, courant
+    # q_rill = tf.where(sur.arr[:, :, 0] > 0, q_rill, zeros)
+    v_rill = tf.where(sur.arr[:, :, 0] > 0, v_rill, zeros)
+    courant = tf.where(sur.arr[:, :, 0] > 0, courant_comp, zeros)
+
+    return v_rill, courant, v_rill_rest, vol_runoff_rill, rillWidth, v_to_rill
 
 
 def surface_retention(bil, sur):
@@ -341,7 +348,7 @@ def surface_retention(bil, sur):
     :param bil: TODO
     param sur: TODO
     """
-    reten = sur.sur_ret
+    reten = sur[1]
     pre_reten = reten
     if reten < 0:
         tempBIL = bil + reten
@@ -353,9 +360,9 @@ def surface_retention(bil, sur):
             reten = tempBIL
             bil = 0
 
-    sur.sur_ret = reten
-    sur.cur_sur_ret = reten - pre_reten
-    
+    sur[1] = reten
+    sur[2] = reten - pre_reten
+
     return bil
 
 if Globals.isRill:

@@ -6,6 +6,7 @@ import shutil
 import math
 import pickle
 import logging
+import tensorflow as tf
 
 from smoderp2d.providers import Logger
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
@@ -267,5 +268,18 @@ class BaseProvider(object):
         Logger.debug('Size of loaded data is {} bytes'.format(
             sys.getsizeof(data))
         )
+
+        # for TF implementation
+        # TODO: Change all data to TF Variables
+        nodata = tf.equal(data['mat_efect_cont'], -3.40282347e+38)
+        nodata_pos = tf.constant(
+            [[3.40282347e+38, ] * nodata.shape[1], ] * nodata.shape[0],
+            dtype=tf.float32)
+        data['mat_efect_cont_tf'] = tf.where(nodata, nodata_pos,
+                                             data['mat_efect_cont'])
+        data['rr_tf'] = tf.constant(data['rr'], dtype=tf.int32)
+        data['rc_tf'] = tf.constant(data['rc'], dtype=tf.int32)
+        data['mat_n_tf'] = tf.constant(data['mat_n'], dtype=tf.float32)
+        data['mat_slope_tf'] = tf.constant(data['mat_slope'], dtype=tf.float32)
 
         return data
