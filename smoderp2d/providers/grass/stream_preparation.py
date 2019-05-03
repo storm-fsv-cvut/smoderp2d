@@ -38,8 +38,8 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
             compute_products(self.dem_clip, None)
 
         Module('r.mapcalc',
-                       expression='{o} = if({i} < 300, null(), {i})'.format(
-                           o=self._data['setnull'], i=flow_accumulation
+               expression='{o} = if({i} < 300, null(), {i})'.format(
+                   o=self._data['setnull'], i=flow_accumulation
         ))
 
         # TODO

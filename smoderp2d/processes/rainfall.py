@@ -120,10 +120,11 @@ def load_precipitation(fh):
         raise
 
 
-# Function returns a rainfall amount for current time step
-#  if two or more rainfall records belongs to one time step
-#  the function integrates the rainfall amount.
 def timestepRainfall(iterace, total_time, delta_t, tz, sr):
+    """Function returns a rainfall amount for current time step if two or
+       more rainfall records belongs to one time step the function
+       integrates the rainfall amount.
+    """
     z = tz
     # skontroluje jestli neni mimo srazkovy zaznam
     if z > (iterace - 1):

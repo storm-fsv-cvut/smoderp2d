@@ -39,9 +39,11 @@ class Courant():
     def set_time_step(self, dt):
         self.orig_dt = dt
 
-    # Resets the self.cour_most and self.cour_speed after each time stop computation is successfully completed
     #
     def reset(self):
+        """Resets the cour_most and cour_speed after each time stop
+        computation is successfully completed.
+        """
         self.cour_most = 0
         self.cour_speed = 0
         self.cour_most_rill = 0
@@ -77,9 +79,11 @@ class Courant():
         # return self.initGuess
         return Gl.maxdt
 
-    # Checks and store in each computational cell the maximum velocity and maximum Courant coefficient
     #
     def CFL(self, i, j, h0, v, delta_t, efect_cont, co, rill_courant):
+        """Checks and store in each computational cell the maximum velocity
+        and maximum Courant coefficient.
+        """
         cour = v / self.cour_coef * delta_t / efect_cont
         cour = max(cour, rill_courant)
         # print cour

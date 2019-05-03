@@ -40,7 +40,7 @@ class FlowControl(object):
         # actual time in calculation
         self.total_time = 0.0
 
-        # keep order of a curent rainfall interval
+        # keep order of a current rainfall interval
         self.tz = 0
 
         # stores cumulative interception
@@ -50,12 +50,17 @@ class FlowControl(object):
         # currently inactive
         self.ratio = 1
 
-        # naximum amount of iterations
+        # maximum amount of iterations
         self.max_iter = 40
 
-        # current number of wihtin time step iterations
+        # current number of within time step iterations
         self.iter_ = 0
 
+        # defined by save_vars()
+        self.tz_tmp = self.sum_interception_tmp = None
+        # defined by save_ratio()
+        self.ratio_tmp = None
+        
     def save_vars(self):
         """Store tz and sum of interception
         in case of repeating time time stem iteration.
@@ -76,7 +81,7 @@ class FlowControl(object):
         """
         self.iter_ = 0
 
-    def upload_iter(self):
+    def update_iter(self):
         """Rises iteration count by one
         in case of iteration within a timestep calculation.
         """
@@ -88,7 +93,7 @@ class FlowControl(object):
         return self.iter_ < self.max_iter
 
     def save_ratio(self):
-        """Saves ration in case of interation within time step.
+        """Saves ratio in case of iteration within time step.
         """
         self.ratio_tmp = self.ratio
 
@@ -204,7 +209,7 @@ class Runoff(object):
         Logger.info('Start of computing...')
 
         # main loop: until the end time
-        i = j = 0
+        i = j = 0 # TODO: rename vars (variable overlap)
         while self.flow_control.compare_time(Globals.end_time):
 
             self.flow_control.save_vars()
@@ -213,7 +218,7 @@ class Runoff(object):
             # iteration loop
             while self.flow_control.max_iter_reached():
 
-                self.flow_control.upload_iter()
+                self.flow_control.update_iter()
                 self.flow_control.restore_vars()
 
                 # reset of the courant condition

@@ -32,7 +32,8 @@ class TimeStep:
         itera = Globals.get_itera()
 
         potRain, fc.tz = rain_f.timestepRainfall(
-            itera, fc.total_time, delta_t, fc.tz, sr)
+            itera, fc.total_time, delta_t, fc.tz, sr
+        )
 
         for i in rr:
             for j in rc[i]:
@@ -49,7 +50,8 @@ class TimeStep:
                     rill_courant = 0.0
                 else:
                     q_sheet, v_sheet, q_rill, v_rill, fc.ratio, rill_courant = runoff(
-                        i, j, surface.arr[i][j], delta_t, mat_efect_cont[i][j], fc.ratio)
+                        i, j, surface.arr[i][j], delta_t, mat_efect_cont[i][j], fc.ratio
+                    )
                     subsurface.runoff(i, j, delta_t, mat_efect_cont[i][j])
 
                 # TODO: variable not used. Should we delete it?

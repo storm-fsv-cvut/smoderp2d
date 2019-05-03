@@ -110,7 +110,7 @@ class PrepareDataBase(object):
         self._prepare_streams(mask_shp, dem_clip, intersect
         )
 
-        # ?
+        # define mask (rc/rc variables)
         self._find_boundary_cells()
 
         self.data['mat_n'] = all_attrib[2]

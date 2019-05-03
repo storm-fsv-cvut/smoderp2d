@@ -50,7 +50,7 @@ class StreamPreparationBase(object):
         Logger.info("Creating output...")
         self._set_output()
 
-        self._setnull() #not used for anything, just saves setnull
+        self._setnull() # not used for anything, just saves setnull
 
         Logger.info("Clip stream...")
         stream, stream_loc = self._clip_stream()
