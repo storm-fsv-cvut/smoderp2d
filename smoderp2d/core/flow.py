@@ -67,11 +67,11 @@ class D8(object):
             iax = i + ax
             jbx = j + bx
             try:
-                insurfflow_from_cell = self.arr[iax][jbx].vol_runoff
+                insurfflow_from_cell = self.arr[iax][jbx][7]
             except:
                 insurfflow_from_cell = 0.0
             try:
-                inrillflow_from_cell = self.arr[iax][jbx].vol_runoff_rill
+                inrillflow_from_cell = self.arr[iax][jbx][17]
             except:
                 inrillflow_from_cell = 0.0
             inflow_from_cells = inflow_from_cells + \
@@ -129,6 +129,7 @@ class Mfda(object):
                 iax = i + ax
                 jbx = j + bx
                 # if self.arr[i][j].state == 1 or self.arr[i][j].state == 2: # rill
+                # TODO TF: Change == to tf.equal
                 if self.arr[i][j][0] == 1 or self.arr[i][j][0] == 2: # rill
                     try:
                         inflow_from_cells += \
