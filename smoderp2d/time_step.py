@@ -185,7 +185,7 @@ class TimeStep:
                 # Surface BILANCE
                 #
                 surBIL = surface.arr[i][j][6] + actRain + surface.arr[i][j][9] / pixel_area - (
-                    surface.arr[i][j][22] / pixel_area + surface.arr[i][j][17] / pixel_area)
+                    surface.arr[i][j][7] / pixel_area + surface.arr[i][j][17] / pixel_area)
 
                 #
                 # surface retention
