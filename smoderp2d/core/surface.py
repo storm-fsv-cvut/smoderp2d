@@ -348,22 +348,22 @@ def surface_retention(bil, sur):
     :param bil: TODO
     param sur: TODO
     """
-    reten = sur[1]
+    reten = sur[:, :, 1]
     pre_reten = reten
-    if reten < 0:
-        tempBIL = bil + reten
+    zeros = tf.Variable([[0] * GridGlobals.c] * GridGlobals.r,
+                        dtype=tf.float32)
 
-        if tempBIL > 0:
-            bil = tempBIL
-            reten = 0
-        else:
-            reten = tempBIL
-            bil = 0
+    cond = reten < 0
+    tempBIL = tf.where(cond,
+                       bil + reten, zeros)
 
-    sur[1] = reten
-    sur[2] = reten - pre_reten
+    cond_in = tempBIL > 0
+    bil_in = tf.where(cond_in, tempBIL, zeros)
+    reten_in = tf.where(cond_in, zeros, tempBIL)
+    bil = tf.where(cond, bil_in, bil)
+    reten = tf.where(cond, reten_in, reten)
 
-    return bil
+    return bil, reten, reten - pre_reten
 
 if Globals.isRill:
     runoff = __runoff

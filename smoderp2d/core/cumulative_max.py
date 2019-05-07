@@ -205,39 +205,73 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
     #
     #  Method is called in smoderp2d.runoff
     #
-    def update_cumulative(self, i, j, surface, subsurface, delta_t):
+    def update_cumulative(self, surface, subsurface, delta_t):
 
-        self.infiltration[i][j] += surface[11] * self.pixel_area
-        self.precipitation[i][j] += surface[3] * self.pixel_area
-        self.v_sur[i][j] += surface[7]
-        self.v_sur_r[i][j] += surface[8]
-        self.v_sur_tot[i][j] += surface[8] + surface[7]
-        self.inflow_sur[i][j] += surface[9]
-        self.sur_ret[i][j] += surface[2] * self.pixel_area
+        self.infiltration = surface[:, :, 11] * self.pixel_area
+        self.precipitation += surface[:, :, 3] * self.pixel_area
+        self.v_sur += surface[:, :, 7]
+        self.v_sur_r += surface[:, :, 8]
+        self.v_sur_tot += surface[:, :, 8] + surface[:, :, 7]
+        self.inflow_sur += surface[:, :, 9]
+        self.sur_ret += surface[:, :, 2] * self.pixel_area
 
-        q_sheet = surface[7] / delta_t
-        q_rill = surface[17] / delta_t
+        q_sheet = surface[:, :, 7] / delta_t
+        q_rill = surface[:, :, 17] / delta_t
         q_tot = q_sheet + q_rill
-        if q_tot > self.q_sur_tot[i][j]:
-            self.q_sur_tot[i][j] = q_tot
+        self.q_sur_tot = tf.where(q_tot > self.q_sur_tot,
+                                  q_tot, self.q_sur_tot)
 
-        if surface[0] == 0:
-            if surface[5] > self.h_sur[i][j]:
-                self.h_sur[i][j] = surface[5]
-                self.q_sur[i][j] = q_sheet
+        cond = tf.equal(surface[:, :, 0], 0)
+        cond_in_true = surface[:, :, 5] > self.h_sur
+        cond_in_false_1 = tf.equal(surface[:, :, 0], 1)
+        cond_in_false_2 = tf.equal(surface[:, :, 0], 2)
+        cond_in_false = tf.cast(tf.cast(cond_in_false_1, tf.int8) +
+                                tf.cast(cond_in_false_2, tf.int8),
+                                tf.bool)
+        cond_in_false_true = surface[:, :, 5] > self.h_sur
+        cond_in_false_false = surface[:, :, 15] > self.h_rill
 
-        elif (surface[0] == 1) or (surface[0] == 2):
-            self.v_rill[i][j] += surface[17]
-            self.v_rill_r[i][j] += surface[18]
-            if surface[5] > self.h_sur[i][j]:
-                self.h_sur[i][j] = surface[5]
-                self.q_sur[i][j] = q_sheet
+        h_sur_in_true = tf.where(cond_in_true, surface[:, :, 5], self.h_sur)
+        h_sur_in_false = tf.where(cond_in_false_true,
+                                  surface[:, :, 5], self.h_sur)
+        h_sur_in_false = tf.where(cond_in_false, h_sur_in_false, self.h_sur)
+        self.h_sur = tf.where(cond, h_sur_in_true, h_sur_in_false)
 
-            elif surface[15] > self.h_rill[i][j]:
-                self.h_rill[i][j] = surface[15]
-                self.b_rill[i][j] = surface[19]
-                self.q_rill[i][j] = q_rill
+        q_sur_in_true = tf.where(cond_in_true, q_sheet, self.q_sur)
+        q_sur_in_false = tf.where(cond_in_false_true, q_sheet, self.q_sur)
+        q_sur_in_false = tf.where(cond_in_false, q_sur_in_false, self.q_sur)
+        self.q_sur = tf.where(cond, q_sur_in_true, q_sur_in_false)
 
+        self.v_rill = tf.where(cond_in_false, surface[:, :, 17], self.v_rill)
+        self.v_rill_r = tf.where(cond_in_false,
+                                 surface[:, :, 18], self.v_rill_r)
+
+        q_rill_in_false_false = tf.where(cond_in_false_false,
+                                         q_rill, self.q_rill)
+        q_rill_in_false_true = tf.where(cond_in_false_true,
+                                        self.q_rill, q_rill_in_false_false)
+        q_rill_in_false = tf.where(cond_in_false,
+                                   q_rill_in_false_true, self.q_rill)
+        self.q_rill = tf.where(cond, self.q_rill, q_rill_in_false)
+
+        h_rill_in_false_false = tf.where(cond_in_false_false,
+                                         surface[:, :, 15], self.h_rill)
+        h_rill_in_false_true = tf.where(cond_in_false_true,
+                                        self.h_rill, h_rill_in_false_false)
+        h_rill_in_false = tf.where(cond_in_false,
+                                   h_rill_in_false_true, self.h_rill)
+        self.h_rill = tf.where(cond, self.h_rill, h_rill_in_false)
+
+        b_rill_in_false_false = tf.where(cond_in_false_false,
+                                         surface[:, :, 19], self.b_rill)
+        b_rill_in_false_true = tf.where(cond_in_false_true,
+                                        self.b_rill, b_rill_in_false_false)
+        b_rill_in_false = tf.where(cond_in_false,
+                                   b_rill_in_false_true, self.b_rill)
+        self.b_rill = tf.where(cond, self.b_rill, b_rill_in_false)
+
+        # TODO TF: Really?
+        i = j = 0
         self.update_cumulative_sur(
             i,
             j,

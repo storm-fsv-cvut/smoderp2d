@@ -46,7 +46,8 @@ class FlowControl(object):
         self.tz = 0
 
         # stores cumulative interception
-        self.sum_interception = 0
+        self.sum_interception = tf.Variable(
+            [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
 
         # factor deviding the time step for rill calculation
         # currently inactive

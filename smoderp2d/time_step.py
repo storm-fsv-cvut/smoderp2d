@@ -37,8 +37,6 @@ class TimeStep:
         potRain, fc.tz = rain_f.timestepRainfall(
             itera, fc.total_time, delta_t, fc.tz, sr)
 
-        t = time.time()
-
         state = surface.arr[:, :, 0]
         zeros = tf.zeros(state.shape, dtype=tf.float32)
 
@@ -70,15 +68,6 @@ class TimeStep:
 
         courant.CFL(surface.arr[:, :, 6], v, delta_t, mat_efect_cont, co,
                     rill_courant)
-
-        tf.print('rill_courant[859, 990], v_rill[859, 990], delta_t, mat_efect_cont[859, 990], rillWidth[859, 990], surface.arr[:, :, 19][859, 990], v_to_rill[859, 990], GridGlobals.get_pixel_area(), h_rill[859, 990], surface.arr[:, :, 6][859, 990], surface.arr[:, :, 12][859, 990], state[859, 990], zeros[859, 990], v[859, 990]')
-        tf.print(rill_courant[859, 990], v_rill[859, 990], delta_t, mat_efect_cont[859, 990], rillWidth[859, 990], surface.arr[:, :, 19][859, 990], v_to_rill[859, 990], GridGlobals.get_pixel_area(), h_rill[859, 990], surface.arr[:, :, 6][859, 990], surface.arr[:, :, 12][859, 990], state[859, 990], zeros[859, 990], v[859, 990])
-        tf.print('potrain')
-        tf.print(potRain)
-
-        tf.print('*' * 30)
-        tf.print('LOOP V time_step.doFlow:')
-        tf.print(time.time() - t)
 
         if subsurface.n != 0:
             subsurface.arr.assign(tf.stack([subsurface.arr[:, :, 0],
@@ -164,7 +153,12 @@ class TimeStep:
         subsurface.new_inflows()
 
         # print 'bbilll'
-        print('before loop in h_next')
+        potRain = tf.Variable(
+            [[potRain] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+        actRain, fc.sum_interception, rain_arr.arr[:, :, 23] = \
+            rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
+        surface.arr[:, :, 3] = actRain
+
         for i in rr:
             for j in rc[i]:
 
@@ -172,73 +166,65 @@ class TimeStep:
                 #
                 # current cell precipitation
                 #
-                actRain, fc.sum_interception, rain_arr.arr[i][j][23] = rain_f.current_rain(
-                    rain_arr.arr[i][j], potRain, fc.sum_interception)
-                surface.arr[i][j][3] = actRain
 
                 #
                 # Inflows from surroundings cells
                 #
+                # TODO TF: Rewrite to matrices
                 surface.arr[i][j][9] = surface.cell_runoff(i, j)
 
-                #
-                # Surface BILANCE
-                #
-                surBIL = surface.arr[i][j][6] + actRain + surface.arr[i][j][9] / pixel_area - (
-                    surface.arr[i][j][7] / pixel_area + surface.arr[i][j][17] / pixel_area)
+        #
+        # Surface BILANCE
+        #
+        surBIL = surface.arr[:, :, 6] + actRain + surface.arr[:, :, 9] \
+                 / pixel_area - (surface.arr[:, :, 7] / pixel_area +
+                                 surface.arr[:, :, 17] / pixel_area)
 
-                #
-                # surface retention
-                #
-                surBIL = surface_retention(surBIL, surface.arr[i][j])
-            
-                #
-                # infiltration
-                #
-                if subsurface.get_exfiltration(i, j) > 0:
-                    surface.arr[i][j][11] = 0.0
-                    infiltration = 0.0
-                else:
-                    surBIL, infiltration = infilt.philip_infiltration(
-                        surface.arr[i][j][10], surBIL)
-                    surface.arr[i][j][11] = infiltration
+        #
+        # surface retention
+        #
+        surBIL, surface.arr[:, :, 1], surface.arr[:, :, 2] = \
+            surface_retention(surBIL, surface.arr)
 
-                # surface retention
-                surBIL += subsurface.get_exfiltration(i, j)
+        zeros = tf.constant([[0] * GridGlobals.c] * GridGlobals.r,
+                            dtype=tf.float32)
 
+        exfiltration = subsurface.get_exfiltration()
+        cond = exfiltration > 0
+        philip_inf = infilt.philip_infiltration(surface.arr[:, :, 10],
+                                                surBIL)
+        surBIL = tf.where(cond, surBIL, philip_inf[0])
+        infiltration = tf.where(cond, zeros, philip_inf[1])
+        surface.arr[:, :, 11] = tf.where(cond, zeros, infiltration)
 
-                surface_state = surface.arr[i][j][0]
+        # surface retention
+        surBIL += exfiltration
 
-                if surface_state >= 1000:
+        surface_state = surface.arr[:, :, 0]
+        surface.arr[:, :, 5] = zeros
+
+        # toto je pripraveno pro odtok v ryhach
+        cond = surface_state >= 1000
+        h_sub = tf.where(cond, subsurface.runoff_stream_cell(zeros), zeros)
+        inflowToReach = h_sub * pixel_area + surBIL * pixel_area
+        surface.arr[:, :, 5] = tf.where(cond, surface.arr[:, :, 5], surBIL)
+
+        for i in rr:
+            for j in rc[i]:
+                if surface_state[i, j] >= 1000:
                     # toto je pripraveno pro odtok v ryhach
-
-                    surface.arr[i][j][5] = 0.0
-
-                    h_sub = subsurface.runoff_stream_cell(i, j)
-
-                    inflowToReach = h_sub * pixel_area + surBIL * pixel_area
-                    
+                    # TODO TF: Rewrite to TF (need to change the structure of Stream)
                     surface.reach_inflows(
-                        id_=int(surface_state - 1000),
+                        id_=int(surface_state[i, j] - 1000),
                         inflows=inflowToReach)
 
-                else:
-                    surface.arr[i][j][5] = surBIL
+        cumulative.update_cumulative(
+            surface.arr,
+            subsurface,
+            delta_t)
 
-                surface_state = surface.arr[i][j][0]
-                # subsurface inflow
-                """
-        inflow_sub = subsurface.cell_runoff(i,j,False)
-        subsurface.bilance(i,j,infiltration,inflow_sub/pixel_area,delta_t)
-        subsurface.fill_slope()
-        """
-                # if rewritten to TF, must be == changed to tf.equal()
-                cumulative.update_cumulative(
-                    i,
-                    j,
-                    surface.arr[i][j],
-                    subsurface,
-                    delta_t)
+        for i in rr:
+            for j in rc[i]:
                 hydrographs.write_hydrographs_record(
                     i,
                     j,
@@ -247,7 +233,7 @@ class TimeStep:
                     delta_t,
                     surface,
                     subsurface,
-                    actRain)
+                    actRain[i, j])
         print('after loop in h_next')
 
-        return actRain
+        return actRain[i, j]

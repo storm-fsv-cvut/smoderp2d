@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import tensorflow as tf
 
 
 from smoderp2d.core.general import GridGlobals, Globals, Size
@@ -90,9 +91,9 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
     def fill_slope(self):
         self.update_H()
 
-    def get_exfiltration(self, i, j):
+    def get_exfiltration(self):
 
-        return self.arr[i][j].exfiltration
+        return self.arr[:, :, 5]
 
     def bilance(self, i, j, infilt, inflow, dt):
 
@@ -147,10 +148,10 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
 
         return sub_vol_runoff, sub_vol_rest
 
-    def runoff_stream_cell(self, i, j):
-        self.arr[i][j].vol_runoff = 0.0
-        self.arr[i][j].vol_rest = 0.0
-        return self.arr[i][j].h
+    def runoff_stream_cell(self, zeros):
+        self.arr[:, :, 6] = zeros
+        self.arr[:, :, 8] = zeros
+        return self.arr[:, :, 1]
 
     def curr_to_pre(self):
         for i in self.rr:
@@ -192,8 +193,9 @@ class SubsurfacePass(GridGlobals, Size):
     def fill_slope(self):
         pass
 
-    def get_exfiltration(self, i, j):
-        return 0.0
+    def get_exfiltration(self):
+        return tf.Variable([[0] * GridGlobals.c] * GridGlobals.r,
+                           dtype=tf.float32)
 
     def bilance(self, i, j, infilt, inflow, dt):
         pass
@@ -201,8 +203,8 @@ class SubsurfacePass(GridGlobals, Size):
     def runoff(self, subarr, delta_t, efect_vrst):
         return subarr[:, :, 6], subarr[:, :, 8]
 
-    def runoff_stream_cell(self, i, j):
-        return 0.0
+    def runoff_stream_cell(self, zeros):
+        return zeros
 
     def return_str_vals(self, i, j, sep, dt):
         return ''

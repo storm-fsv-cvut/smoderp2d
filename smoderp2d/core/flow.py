@@ -16,6 +16,7 @@
 #  package smoderp2d.core.kinematic_diffuse
 #
 
+import tensorflow as tf
 
 from smoderp2d.core.general import Globals
 
@@ -60,6 +61,9 @@ class D8(object):
     #  @return inflow_from_cells inflow volume from the adjacent cells
     #
     def cell_runoff(self, i, j):
+        inflow_from_cells = tf.Variable(
+            [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+
         inflow_from_cells = 0.0
         for z in range(len(self.inflows[i][j])):
             ax = self.inflows[i][j][z][0]
