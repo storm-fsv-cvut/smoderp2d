@@ -14,6 +14,7 @@ import tensorflow as tf
 
 from smoderp2d.core.surface import runoff
 from smoderp2d.core.surface import surface_retention
+from smoderp2d.io_functions import hydrographs as wf
 
 infilt_capa = 0
 infilt_time = 0
@@ -161,8 +162,6 @@ class TimeStep:
 
         for i in rr:
             for j in rc[i]:
-
-                # print i,j, surface.arr[i][j].h_total_pre, surface.arr[i][j].vol_runoff
                 #
                 # current cell precipitation
                 #
@@ -223,17 +222,18 @@ class TimeStep:
             subsurface,
             delta_t)
 
-        for i in rr:
-            for j in rc[i]:
-                hydrographs.write_hydrographs_record(
-                    i,
-                    j,
-                    flow_control,
-                    courant,
-                    delta_t,
-                    surface,
-                    subsurface,
-                    actRain[i, j])
+        if not isinstance(hydrographs, wf.HydrographsPass):
+            for i in rr:
+                for j in rc[i]:
+                    hydrographs.write_hydrographs_record(
+                        i,
+                        j,
+                        flow_control,
+                        courant,
+                        delta_t,
+                        surface,
+                        subsurface,
+                        actRain[i, j])
         print('after loop in h_next')
 
         return actRain[i, j]
