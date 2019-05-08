@@ -4,5 +4,5 @@ def relative_unsat_conductivity(S, l, m):
 
 
 def darcy(sub, mat_efect_cont):
-    return sub.arr[:, :, 9] * sub.arr[:, :, 1] * mat_efect_cont * \
-           sub.arr[:, :, 4]
+    return sub.Ks * sub.h * mat_efect_cont * \
+           sub.slope

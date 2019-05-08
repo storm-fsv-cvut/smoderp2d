@@ -60,9 +60,9 @@ class TimeStep:
         v_to_rill = tf.where(state >= 1000, zeros, runoff_return[11])
 
         sub_vol_runoff = tf.where(state >= 1000,
-                                  subsurface.arr[:, :, 4], subrunoff_return[0])
+                                  subsurface.slope, subrunoff_return[0])
         sub_vol_rest = tf.where(state >= 1000,
-                                subsurface.arr[:, :, 8], subrunoff_return[1])
+                                subsurface.vol_rest, subrunoff_return[1])
 
         v = tf.math.maximum(v_sheet, v_rill)
         co = 'sheet'

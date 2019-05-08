@@ -73,12 +73,12 @@ class CumulativeSubsurface(object):
     #
     def update_cumulative_subsur(self, i, j, sub, q_subsur):
 
-        self.exfiltration[i][j] += sub.exfiltration * self.pixel_area
-        self.percolation[i][j] += sub.percolation * self.pixel_area
-        self.v_sub[i][j] += sub.vol_runoff
+        self.exfiltration[i][j] += sub.exfiltration[i, j] * self.pixel_area
+        self.percolation[i][j] += sub.percolation[i, j] * self.pixel_area
+        self.v_sub[i][j] += sub.vol_runoff[i, j]
 
-        if sub.h > self.h_sub[i][j]:
-            self.h_sub[i][j] = sub.h
+        if sub.h[i, j] > self.h_sub[i][j]:
+            self.h_sub[i][j] = sub.h[i, j]
         if q_subsur > self.q_sub[i][j]:
             self.q_sub[i][j] = q_subsur
 

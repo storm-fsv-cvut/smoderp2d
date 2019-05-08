@@ -11,34 +11,41 @@ from smoderp2d.providers import Logger
 import smoderp2d.processes.subsurface as darcy
 
 class SubArrs:
-    def __init__(self, L_sub, Ks, vg_n, vg_l, z, ele):
-        """Subsurface attributes.
 
-        :param L_sub: TODO
-        :param Ks: TODO
-        :param vg_n: TODO
-        :param vg_l: TODO
-        :param z: TODO
-        :param ele: TODO
-        """
-        self.L_sub = L_sub
-        self.h = 0.
-        self.H = ele
-        self.z = z
-        self.slope = 0.             # #4
-        self.exfiltration = 0.
-        self.vol_runoff = 0.
-        self.vol_runoff_pre = 0.
-        self.vol_rest = 0.
-        self.Ks = Ks                # #9
-        self.cum_percolation = 0.
-        self.percolation = 0.
-        self.vg_n = vg_n
-        self.vg_m = 1.0 - 1.0 / vg_n
-        self.vg_l = vg_l            # #14
+    L_sub = tf.Variable(
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+    h = tf.Variable(
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+    H = tf.Variable(
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+    z = tf.Variable(
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+    slope = tf.Variable(
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+    exfiltration = tf.Variable(
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+    vol_runoff = tf.Variable(
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+    vol_runoff_pre = tf.Variable(
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+    vol_rest = tf.Variable(
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+    Ks = tf.Variable(
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+    cum_percolation = tf.Variable(
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+    percolation = tf.Variable(
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+    vg_n = tf.Variable(
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+    vg_m = tf.Variable(
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+    vg_l = tf.Variable(
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
 
 
-class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
+class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic,
+                  Size, SubArrs):
     def __init__(self, L_sub, Ks, vg_n, vg_l):
         """TODO.
 
@@ -49,36 +56,39 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
         """
         GridGlobals.__init__()
 
-        arr_np = np.array(self.arr.numpy(), dtype=np.float64)
-
-        for i in range(self.r):
-            for j in range(self.c):
-                arr_np[i][j][0] = L_sub
-                arr_np[i][j][2] = mat_dem[i][j]
-                arr_np[i][j][3] = mat_dem[i][j] - L_sub
-                arr_np[i][j][9] = Ks
-                arr_np[i][j][12] = vg_n
-                arr_np[i][j][13] = 1.0 - 1.0 / vg_n
-                arr_np[i][j][14] = vg_l
-
-        for i in self.rr:
-            for j in self.rc[i]:
-                self.arr[i][j][4] = mat_slope[i][j]
-
-        self.arr.assign(arr_np)
+        self.initialize_variables(L_sub, Ks, vg_n, vg_l)
 
         self.Kr = darcy.relative_unsat_conductivity
         self.darcy = darcy.darcy
 
+    def initialize_variables(self, L_sub, Ks, vg_n, vg_l):
+        self.L_sub = tf.Variable([[L_sub] * GridGlobals.c] * GridGlobals.r,
+                                 dtype=tf.float32)
+        self.H = mat_dem
+        self.z = mat_dem - self.L_sub
+        self.slope = mat_slope
+        self.Ks = tf.Variable(
+            [[Ks] * GridGlobals.c] * GridGlobals.r,
+            dtype=tf.float32)
+        self.vg_n = tf.Variable(
+            [[vg_n] * GridGlobals.c] * GridGlobals.r,
+            dtype=tf.float32)
+        self.vg_m = tf.Variable(
+            [[1.0 - 1.0 / vg_n] * GridGlobals.c] * GridGlobals.r,
+            dtype=tf.float32)
+        self.vg_l = tf.Variable(
+            [[vg_l] * GridGlobals.c] * GridGlobals.r,
+            dtype=tf.float32)
+
     def slope_(self, i, j):
-        a = self.arr[i - 1][j - 1].H
-        b = self.arr[i - 1][j].H
-        c = self.arr[i - 1][j + 1].H
-        d = self.arr[i][j - 1].H
-        f = self.arr[i][j + 1].H
-        g = self.arr[i + 1][j - 1].H
-        h = self.arr[i + 1][j].H
-        k = self.arr[i + 1][j + 1].H
+        a = self.H[i - 1][j - 1]
+        b = self.H[i - 1][j]
+        c = self.H[i - 1][j + 1]
+        d = self.H[i][j - 1]
+        f = self.H[i][j + 1]
+        g = self.H[i + 1][j - 1]
+        h = self.H[i + 1][j]
+        k = self.H[i + 1][j + 1]
         dzdx = ((c + 2.0 * f + k) - (a + 2.0 * d + g)) / \
             (8.0 * self.pixel_area)
         dzdy = ((g + 2.0 * h + k) - (a + 2.0 * b + c)) / \
@@ -93,20 +103,20 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
 
     def get_exfiltration(self):
 
-        return self.arr[:, :, 5]
+        return self.exfiltration
 
     def bilance(self, i, j, infilt, inflow, dt):
 
         arr = self.arr[i][j]
-        bil = infilt + arr.vol_rest / self.pixel_area + inflow
+        bil = infilt + self.vol_rest[i, j] / self.pixel_area + inflow
 
         # print bil, infilt , arr.vol_rest/self.pixel_area , inflow
         percolation = self.calc_percolation(i, j, bil, dt)
-        arr.cum_percolation += percolation
+        self.cum_percolation[i, j] += percolation
         bil -= percolation
         # print bil,
-        arr.percolation = percolation
-        arr.h, arr.exfiltration = self.calc_exfiltration(i, j, bil)
+        self.percolation[i, j] = percolation
+        self.h[i, j], self.exfiltration[i, j] = self.calc_exfiltration(i, j, bil)
         # print arr.h
         # print arr.h, infilt, arr.vol_rest/self.pixel_area, inflow
 
@@ -114,12 +124,12 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
 
         arr = self.arr[i][j]
 
-        if (bil > arr.L_sub):
+        if (bil > self.L_sub[i, j]):
             S = 1.0
         else:
-            S = bil / arr.L_sub
+            S = bil / self.L_sub[i, j]
 
-        perc = arr.Ks * self.Kr(S, arr.vg_l, arr.vg_m) * dt
+        perc = self.Ks[i, j] * self.Kr(S, self.vg_l[i, j], self.vg_m[i, j]) * dt
         # jj bacha
         # perc = 0
         if (perc > bil):
@@ -129,10 +139,10 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
     def calc_exfiltration(self, i, j, bil):
 
         arr = self.arr[i][j]
-        if (bil > arr.L_sub):
+        if (bil > self.L_sub[i, j]):
             # print bil
-            exfilt = bil - arr.L_sub
-            bil = arr.L_sub
+            exfilt = bil - self.L_sub[i, j]
+            bil = self.L_sub[i, j]
             # print exfilt
         else:
             exfilt = 0
@@ -143,37 +153,37 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
 
         self.q_subsurface = self.darcy(subarr, mat_efect_cont)
         sub_vol_runoff = delta_t * self.q_subsurface  # SUBARR6
-        sub_vol_rest = subarr[:, :, 1] * self.pixel_area - \
+        sub_vol_rest = self.h * self.pixel_area - \
                        delta_t * self.q_subsurface  # SUBARR8
 
         return sub_vol_runoff, sub_vol_rest
 
     def runoff_stream_cell(self, zeros):
-        self.arr[:, :, 6] = zeros
-        self.arr[:, :, 8] = zeros
-        return self.arr[:, :, 1]
+        self.vol_runoff = zeros
+        self.vol_rest = zeros
+        return self.h
 
     def curr_to_pre(self):
         for i in self.rr:
             for j in self.rc[i]:
-                self.arr[i][j].vol_runoff_pre = self.arr[i][j].vol_runoff
+                self.vol_runoff_pre[i, j] = self.vol_runoff[i, j]
 
     def return_str_vals(self, i, j, sep, dt):
         arr = self.arr[i][j]
          #';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[],exfiltration[];'
         line = str(
-            arr.h) + sep + str(
-                arr.vol_runoff / dt) + sep + str(
-            arr.vol_runoff) + sep + str(
-                arr.vol_rest) + sep + str(
-                    arr.percolation) + sep + str(
-                        arr.exfiltration)
+            self.h[i, j]) + sep + str(
+                self.vol_runoff[i, j] / dt) + sep + str(
+            self.vol_runoff[i, j]) + sep + str(
+                self.vol_rest[i, j]) + sep + str(
+                    self.percolation[i, j]) + sep + str(
+                        self.exfiltration[i, j])
         return line
 
 
 # Class
 #  empty class if no subsurface flow is considered
-class SubsurfacePass(GridGlobals, Size):
+class SubsurfacePass(GridGlobals, Size, SubArrs):
 
     def __init__(self, L_sub, Ks, vg_n, vg_l):
         super(SubsurfacePass, self).__init__()
@@ -182,7 +192,13 @@ class SubsurfacePass(GridGlobals, Size):
 
         self.q_subsurface = None
         # self.arr = np.zeros([0],float)
+
+        self.initialize_variables(L_sub, Ks, vg_n, vg_l)
+
         Logger.info("Subsurface: OFF")
+
+    def initialize_variables(self, L_sub, Ks, vg_n, vg_l):
+        pass
 
     def new_inflows(self):
         pass
@@ -201,7 +217,7 @@ class SubsurfacePass(GridGlobals, Size):
         pass
 
     def runoff(self, subarr, delta_t, efect_vrst):
-        return subarr[:, :, 6], subarr[:, :, 8]
+        return self.vol_runoff, self.vol_rest
 
     def runoff_stream_cell(self, zeros):
         return zeros
@@ -216,7 +232,7 @@ class SubsurfacePass(GridGlobals, Size):
 class Subsurface(SubsurfaceC if Globals.subflow else SubsurfacePass):
 
     def __init__(self, L_sub=0.010, Ks=0.001, vg_n=1.5, vg_l=0.5):
-        self.dims = 14
+        self.dims = 0
         Logger.info("Subsurface:")
         super(Subsurface, self).__init__(
             L_sub=L_sub,
