@@ -243,12 +243,7 @@ class Runoff(object):
                                          v_rill_rest,
                                          rillWidth,
                                          v_to_rill,
-                                         self.surface.arr[:, :, 21],
-                                         self.surface.arr[:, :, 22],
-                                         self.surface.arr[:, :, 23],
-                                         self.surface.arr[:, :, 24],
-                                         self.surface.arr[:, :, 25],
-                                         self.surface.arr[:, :, 26]], 2))
+                                         self.surface.arr[:, :, 21]], 2))
 
             # stores current time step
             delta_t_tmp = self.delta_t

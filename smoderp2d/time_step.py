@@ -156,8 +156,8 @@ class TimeStep:
         # print 'bbilll'
         potRain = tf.Variable(
             [[potRain] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
-        actRain, fc.sum_interception, rain_arr.arr[:, :, 23] = \
-            rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
+        actRain, fc.sum_interception, rain_arr.veg_true = \
+            rain_f.current_rain(rain_arr, potRain, fc.sum_interception)
         surface.arr[:, :, 3] = actRain
 
         for i in rr:

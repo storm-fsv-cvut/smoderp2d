@@ -93,6 +93,11 @@ class DataGlobals:
     @classmethod
     def get_mat_ppl(cls, i, j):
         return cls.mat_ppl[i][j]
+
+    # TODO TF: Make mat_ppl TF-based
+    @classmethod
+    def get_mat_ppl_tf(cls):
+        return cls.mat_ppl
     
 class Globals:
     """Globals contains global variables from data_preparation, in

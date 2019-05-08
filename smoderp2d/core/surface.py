@@ -21,6 +21,7 @@ RILL_RATIO = 0.7
 
 class SurArrs(object):
     """Surface attributes."""
+
     def __init__(self, sur_ret, inf_index, hcrit, a, b):
         """Constructor of Surface array
         
@@ -74,7 +75,7 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
         Make all numpy arrays and establish the inflow procedure based
         on D8 or Multi Flow Direction Algorithm method.
         """
-        self.dims = 27
+        self.dims = 22
         GridGlobals.__init__(self)
         
         Logger.info("Surface: ON")
