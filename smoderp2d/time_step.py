@@ -90,7 +90,7 @@ class TimeStep:
         global infilt_time
 
         rr, rc = GridGlobals.get_region_dim()
-        pixel_area = GridGlobals.get_pixel_area()
+        pixel_area = GridGlobals.get_pixel_area_tf()
         fc = flow_control
         combinatIndex = Globals.get_combinatIndex()
         NoDataValue = GridGlobals.get_no_data()

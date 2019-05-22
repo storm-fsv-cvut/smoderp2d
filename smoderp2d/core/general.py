@@ -22,6 +22,7 @@ class GridGlobals(object):
     c = None
     # area of a raster cell in meters (float)
     pixel_area = None
+    pixel_area_tf = None
     # id of rows in computational domain (list)
     rr = None
     rr_tf = None
@@ -60,6 +61,10 @@ class GridGlobals(object):
     @classmethod
     def get_pixel_area(cls):
         return cls.pixel_area
+
+    @classmethod
+    def get_pixel_area_tf(cls):
+        return cls.pixel_area_tf
 
     @classmethod
     def get_region_dim(cls):

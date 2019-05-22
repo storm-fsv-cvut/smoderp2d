@@ -281,5 +281,6 @@ class BaseProvider(object):
         data['rc_tf'] = tf.constant(data['rc'], dtype=tf.int32)
         data['mat_n_tf'] = tf.constant(data['mat_n'], dtype=tf.float64)
         data['mat_slope_tf'] = tf.constant(data['mat_slope'], dtype=tf.float64)
+        data['pixel_area_tf'] = tf.constant(data['pixel_area'], dtype=tf.float64)
 
         return data
