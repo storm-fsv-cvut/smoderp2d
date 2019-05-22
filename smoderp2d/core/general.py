@@ -51,7 +51,7 @@ class GridGlobals(object):
             raise SmoderpError("Global variables are not assigned")
 
         self.arr = tf.Variable([[[0] * self.dims] * self.c] * self.r,
-                               dtype=tf.float32)
+                               dtype=tf.float64)
 
     @classmethod        
     def get_dim(cls):
@@ -227,20 +227,40 @@ class Globals:
         return cls.mat_inf_index[i][j]
 
     @classmethod
+    def get_mat_inf_index_tf(cls):
+        return cls.mat_inf_index
+
+    @classmethod
     def get_mat_hcrit(cls, i, j):
         return cls.mat_hcrit[i][j]
+
+    @classmethod
+    def get_mat_hcrit_tf(cls):
+        return cls.mat_hcrit
 
     @classmethod
     def get_mat_aa(cls, i, j):
         return cls.mat_aa[i][j]
 
     @classmethod
+    def get_mat_aa_tf(cls):
+        return cls.mat_aa
+
+    @classmethod
     def get_mat_b(cls, i, j):
         return cls.mat_b[i][j]
 
     @classmethod
+    def get_mat_b_tf(cls):
+        return cls.mat_b
+
+    @classmethod
     def get_mat_reten(cls, i, j):
         return cls.mat_reten[i][j]
+
+    @classmethod
+    def get_mat_reten_tf(cls):
+        return cls.mat_reten
 
     @classmethod
     def get_mat_fd(cls):

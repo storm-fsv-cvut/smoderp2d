@@ -131,6 +131,7 @@ class Courant():
         # explicitne se dopocita dt na nejvetsi mozne
         #                                      xor
         # if ((self.cour_most < self.cour_least) != (self.cour_crit <= self.cour_most)):
+
         if not tf.equal(self.cour_most < self.cour_least,
                         self.cour_crit <= self.cour_most):
 
@@ -139,7 +140,7 @@ class Courant():
         # a zmeni se podle maxima nasobeneho max_delta_t_mult
         # max_delta_t_mult se meni podle ryh, vyse v teto funkci
         #
-            if (tf.equal(self.cour_speed, 0.0)):
+            if tf.equal(self.cour_speed, 0.0):
                 return self.max_delta_t * self.max_delta_t_mult, ratio
 
             # dt = tf.round(

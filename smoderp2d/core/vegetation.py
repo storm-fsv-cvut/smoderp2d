@@ -10,7 +10,7 @@ class VegArrs(object):
 
     veg = tf.Variable([[False] * GridGlobals.c] * GridGlobals.r, dtype=tf.int32)
     ppl = DataGlobals.get_mat_ppl_tf()
-    pi = tf.Variable(Globals.get_mat_pi() / 1000.0)
+    pi = tf.Variable(Globals.get_mat_pi() / 1000.0, dtype=tf.float64)
     veg_true = tf.Variable([[0] * GridGlobals.c] * GridGlobals.r)
 
 

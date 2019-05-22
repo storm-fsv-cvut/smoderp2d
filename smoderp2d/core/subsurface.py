@@ -13,35 +13,35 @@ import smoderp2d.processes.subsurface as darcy
 class SubArrs:
 
     L_sub = tf.Variable(
-        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float64)
     h = tf.Variable(
-        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float64)
     H = tf.Variable(
-        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float64)
     z = tf.Variable(
-        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float64)
     slope = tf.Variable(
-        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float64)
     exfiltration = tf.Variable(
-        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float64)
     vol_runoff = tf.Variable(
-        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float64)
     vol_runoff_pre = tf.Variable(
-        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float64)
     vol_rest = tf.Variable(
-        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float64)
     Ks = tf.Variable(
-        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float64)
     cum_percolation = tf.Variable(
-        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float64)
     percolation = tf.Variable(
-        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float64)
     vg_n = tf.Variable(
-        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float64)
     vg_m = tf.Variable(
-        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float64)
     vg_l = tf.Variable(
-        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+        [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float64)
 
 
 class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic,
@@ -63,22 +63,22 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic,
 
     def initialize_variables(self, L_sub, Ks, vg_n, vg_l):
         self.L_sub = tf.Variable([[L_sub] * GridGlobals.c] * GridGlobals.r,
-                                 dtype=tf.float32)
+                                 dtype=tf.float64)
         self.H = mat_dem
         self.z = mat_dem - self.L_sub
         self.slope = mat_slope
         self.Ks = tf.Variable(
             [[Ks] * GridGlobals.c] * GridGlobals.r,
-            dtype=tf.float32)
+            dtype=tf.float64)
         self.vg_n = tf.Variable(
             [[vg_n] * GridGlobals.c] * GridGlobals.r,
-            dtype=tf.float32)
+            dtype=tf.float64)
         self.vg_m = tf.Variable(
             [[1.0 - 1.0 / vg_n] * GridGlobals.c] * GridGlobals.r,
-            dtype=tf.float32)
+            dtype=tf.float64)
         self.vg_l = tf.Variable(
             [[vg_l] * GridGlobals.c] * GridGlobals.r,
-            dtype=tf.float32)
+            dtype=tf.float64)
 
     def slope_(self, i, j):
         a = self.H[i - 1][j - 1]
@@ -211,7 +211,7 @@ class SubsurfacePass(GridGlobals, Size, SubArrs):
 
     def get_exfiltration(self):
         return tf.Variable([[0] * GridGlobals.c] * GridGlobals.r,
-                           dtype=tf.float32)
+                           dtype=tf.float64)
 
     def bilance(self, i, j, infilt, inflow, dt):
         pass

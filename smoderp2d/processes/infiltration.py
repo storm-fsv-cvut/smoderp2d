@@ -18,15 +18,15 @@ def set_combinatIndex(newCombinatIndex):
 def philip_infiltration(soil, bil):
     # print 'bil v infiltraci', bil
     infiltration = zeros = tf.Variable(
-        [[0] * soil.shape[1]] * soil.shape[0], dtype=tf.float32)
+        [[0] * soil.shape[1]] * soil.shape[0], dtype=tf.float64)
 
     for z in combinatIndex:
         cond = tf.equal(soil,
                     tf.Variable([[z[0]] * soil.shape[1]] * soil.shape[0],
-                        dtype=tf.float32))
+                        dtype=tf.float64))
 
         infiltration_a = infiltration = tf.Variable(
-            [[z[3]] * soil.shape[1]] * soil.shape[0], dtype=tf.float32)
+            [[z[3]] * soil.shape[1]] * soil.shape[0], dtype=tf.float64)
         # TODO: if bil < 0: raise NegativeWaterLevel()
         cond_in = infiltration_a > bil
         infiltration_in = tf.where(cond_in, bil, infiltration)

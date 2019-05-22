@@ -50,7 +50,7 @@ class TimesPrt(object):
 
             for i in Globalsobals.rr:
                 for j in Globals.rc[i]:
-                    tmp[i][j] = sur.arr[i][j].h_total_new
+                    tmp[i][j] = sur.h_total_new[i][j]
 
             make_ASC_raster(filen, tmp, Globals)
 

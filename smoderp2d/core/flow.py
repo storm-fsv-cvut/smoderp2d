@@ -60,10 +60,9 @@ class D8(object):
     #
     #  @return inflow_from_cells inflow volume from the adjacent cells
     #
-    def cell_runoff(self, i, j):
-        inflow_from_cells = tf.Variable(
-            [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
-
+    def cell_runoff(self, i, j, vol_runoff_np, vol_runoff_rill_np):
+        # inflow_from_cells = tf.Variable(
+        #     [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
         inflow_from_cells = 0.0
         for z in range(len(self.inflows[i][j])):
             ax = self.inflows[i][j][z][0]
@@ -71,11 +70,11 @@ class D8(object):
             iax = i + ax
             jbx = j + bx
             try:
-                insurfflow_from_cell = self.arr[iax][jbx][7]
+                insurfflow_from_cell = vol_runoff_np[iax][jbx]
             except:
                 insurfflow_from_cell = 0.0
             try:
-                inrillflow_from_cell = self.arr[iax][jbx][17]
+                inrillflow_from_cell = vol_runoff_rill_np[iax][jbx]
             except:
                 inrillflow_from_cell = 0.0
             inflow_from_cells = inflow_from_cells + \
@@ -134,7 +133,7 @@ class Mfda(object):
                 jbx = j + bx
                 # if self.arr[i][j].state == 1 or self.arr[i][j].state == 2: # rill
                 # TODO TF: Change == to tf.equal
-                if self.arr[i][j][0] == 1 or self.arr[i][j][0] == 2: # rill
+                if tf.equal(self.state[i, j], 1) or tf.equal(self.state[i, j], 1): # rill
                     try:
                         inflow_from_cells += \
                             self.vol_runoff_rill_pre[iax][jbx]  # toto jeste predelat u ryh

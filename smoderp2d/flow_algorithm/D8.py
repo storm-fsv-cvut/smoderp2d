@@ -1,4 +1,5 @@
 import numpy as np
+import tensorflow as tf
 
 
 # defines inflows to the cell of raster based on the flow direction raster

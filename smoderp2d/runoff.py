@@ -47,7 +47,7 @@ class FlowControl(object):
 
         # stores cumulative interception
         self.sum_interception = tf.Variable(
-            [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float32)
+            [[0] * GridGlobals.c] * GridGlobals.r, dtype=tf.float64)
 
         # factor deviding the time step for rill calculation
         # currently inactive
@@ -120,7 +120,7 @@ class Runoff(object):
         stream and subsurface processes handling.
         """
         self.provider = provider
-        
+
         # handling print of the solution in given times
         self.times_prt = TimesPrt()
 
@@ -222,28 +222,15 @@ class Runoff(object):
             )
 
             # TODO: Move out of the loop?
-            self.surface.arr.assign(tf.stack([self.surface.arr[:, :, 0],
-                                         self.surface.arr[:, :, 1],
-                                         self.surface.arr[:, :, 2],
-                                         self.surface.arr[:, :, 3],
-                                         h_sheet,
-                                         self.surface.arr[:, :, 5],
-                                         self.surface.arr[:, :, 6],
-                                         vol_runoff,
-                                         vol_rest,
-                                         self.surface.arr[:, :, 9],
-                                         self.surface.arr[:, :, 10],
-                                         self.surface.arr[:, :, 11],
-                                         self.surface.arr[:, :, 12],
-                                         self.surface.arr[:, :, 13],
-                                         self.surface.arr[:, :, 14],
-                                         h_rill,
-                                         h_rill_pre,
-                                         vol_runoff_rill,
-                                         v_rill_rest,
-                                         rillWidth,
-                                         v_to_rill,
-                                         self.surface.arr[:, :, 21]], 2))
+            self.surface.h_sheet = h_sheet
+            self.surface.vol_runoff = vol_runoff
+            self.surface.vol_rest = vol_rest
+            self.surface.h_rill = h_rill
+            self.surface.h_rillPre = h_rill_pre
+            self.surface.vol_runoff_rill = vol_runoff_rill
+            self.surface.v_rill_rest = v_rill_rest
+            self.surface.rillWidth = rillWidth
+            self.surface.v_to_rill = v_to_rill
 
             # stores current time step
             delta_t_tmp = self.delta_t
@@ -257,6 +244,11 @@ class Runoff(object):
             # courant conditions is satisfied (time step did
             # change) the iteration loop breaks
             if tf.equal(delta_t_tmp, self.delta_t) and self.flow_control.compare_ratio():
+                tf.print('************ BREAK ***************')
+                tf.print('delta_t_tmp, self.delta_t, '
+                         'self.flow_control.compare_ratio()')
+                tf.print(delta_t_tmp, self.delta_t,
+                         self.flow_control.compare_ratio())
                 break
 
         return potRain
@@ -365,22 +357,30 @@ class Runoff(object):
 
             # set current time results to previous time step
             # check if rill flow occur
+            surface_state_np = self.surface.state.numpy()
+            surface_h_last_state1_np = self.surface.h_last_state1.numpy()
+            h_total_new_np = self.surface.h_total_new.numpy()
+            h_total_pre_np = self.surface.h_total_pre.numpy()
             for i in self.surface.rr:
                 for j in self.surface.rc[i]:
-                    if self.surface.arr[i][j][0] == 0:
-                        if self.surface.arr[i][j][5] > self.surface.arr[i][j][12]:
-                            self.surface.arr[i][j][0] = 1
+                    if surface_state_np[i][j] == 0:
+                        if h_total_new_np[i][j] > self.surface.h_crit[i][j]:
+                            surface_state_np[i][j] = 1
 
-                    if self.surface.arr[i][j][0] == 1:
-                        if self.surface.arr[i][j][5] < self.surface.arr[i][j][6]:
-                            self.surface.arr[i][j][21] = self.surface.arr[i][j][6]
-                            self.surface.arr[i][j][0] = 2
+                    if surface_state_np[i][j] == 1:
+                        if h_total_new_np[i][j] < h_total_pre_np[i][j]:
+                            surface_h_last_state1_np[i][j] = self.surface.h_total_pre[i][j]
+                            surface_state_np[i][j] = 2
 
-                    if self.surface.arr[i][j][0] == 2:
-                        if self.surface.arr[i][j][5] > self.surface.arr[i][j][21]:
-                            self.surface.arr[i][j][0] = 1
+                    if surface_state_np[i][j] == 2:
+                        if h_total_new_np[i][j] > surface_h_last_state1_np[i][j]:
+                            surface_state_np[i][j] = 1
 
-                    self.surface.arr[i][j][6] = self.surface.arr[i][j][5]
+                    # self.surface.h_total_pre[i][j] = self.surface.h_total_new[i][j]
+
+            self.surface.state.assign(surface_state_np)
+            self.surface.h_last_state1.assign(surface_h_last_state1_np)
+            self.surface.h_total_pre = self.surface.h_total_new
 
         Logger.info('Saving data...')
 
