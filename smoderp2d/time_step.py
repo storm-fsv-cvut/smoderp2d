@@ -29,7 +29,6 @@ class TimeStep:
 
     # @tf.function
     def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
-        rr, rc = GridGlobals.get_region_dim_tf()
         mat_efect_cont = Globals.get_mat_efect_cont_tf()
         fc = flow_control
         sr = Globals.get_sr()
