@@ -7,3 +7,14 @@ db.select table=tabulkytab_dbf
 db.in.ogr input=/home/martin/geodata/smoderp/original/tab_stream_tvar.dbf
 g.gisenv
 g.gisenv
+db.in.ogr input=/home/martin/geodata/smoderp/original/tab_stream_tvar.dbf
+v.import input=tests/data/ layer=tok output=tok -o
+v.import input=tests/data/ layer=tok output=tok -o --o
+db.select tab_stream_tvar
+db.select tab=tab_stream_tvar
+db.in.ogr input=/home/martin/geodata/smoderp/original/tab_stream_tvar.dbf table=tab_stream_tvar
+db.in.ogr input=/home/martin/geodata/smoderp/original/tab_stream_tvar.dbf output=tab_stream_tvar  --o
+db.select tab=tab_stream_tvar
+db.in.ogr input=tests/data/tab_stream_tvar.dbf output=tab_stream_tvar  --o
+db.select tab=tab_stream_tvar
+db.select tab=tok
