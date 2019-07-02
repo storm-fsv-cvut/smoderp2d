@@ -52,8 +52,8 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         """
         Clip stream with intersect of input data (from data_preparation).
 
-        :return toky:
-        :return toky_loc:
+        :return streams:
+        :return streams_loc:
         """
         # TODO: unfortunately dissolving clip layer does not work in
         # GRASS as expected, ugly workaround below

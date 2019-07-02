@@ -178,11 +178,11 @@ class PrepareDataBase(object):
             'mfda': None,
             'sr': None,
             'itera': None,
-            'toky': None,
+            'streams': None,
             'cell_stream': None,
-            'mat_tok_reach': None,
+            'mat_stream_reach': None,
             'STREAM_RATIO': None,
-            'toky_loc': None
+            'streams_loc': None
             }
 
     def _set_output(self):
@@ -446,7 +446,7 @@ class PrepareDataBase(object):
         self.data['type_of_computing'] = 1
 
         # pocitam vzdy s ryhama pokud jsou zadane vsechny vstupy pro
-        # vypocet toku, toky se pocitaji a type_of_computing je 3
+        # vypocet toku, streams se pocitaji a type_of_computing je 3
         listin = [self._input_params['stream'],
                   self._input_params['table_stream_shape'],
                   self._input_params['table_stream_shape_code']]
@@ -472,12 +472,13 @@ class PrepareDataBase(object):
                 self._primary_key
             ]
 
-            self.data['toky'], self.data['mat_tok_reach'], self.data['toky_loc'] = \
+            self.data['streams'], self.data['mat_stream_reach'], \
+                self.data['streams_loc'] = \
                 self._streamPreparation(args)
         else:
-            self.data['toky'] = None
-            self.data['mat_tok_reach'] = None
-            self.data['toky_loc'] = None
+            self.data['streams'] = None
+            self.data['mat_stream_reach'] = None
+            self.data['streams_loc'] = None
 
     def _find_boundary_cells(self):
         """

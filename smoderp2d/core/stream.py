@@ -63,9 +63,9 @@ class Stream(object):
     def __init__(self):
         super(Stream, self).__init__()
         Logger.info('Stream: ON')
-        self.toky = Gl.toky  # tu jsou nactena data z data preparation cca lajna 970
+        self.streams = Gl.streams
 
-        self.nReaches = len(self.toky[0])
+        self.nReaches = len(self.streams[0])
 
         self.cell_stream = Gl.cell_stream
 
@@ -73,29 +73,29 @@ class Stream(object):
 
         for i in range(self.nReaches):
             self.reach.append(
-                Reach(self.toky[0][i],
-                      self.toky[1][i],
-                      self.toky[2][i],
-                      self.toky[3][i],
-                      self.toky[4][i],
-                      self.toky[5][i],
-                      self.toky[6][i],
-                      self.toky[7][i],
-                      self.toky[8][i],
-                      self.toky[9][i],
-                      self.toky[10][i],
-                      self.toky[11][i],
-                      self.toky[12][i],
-                      self.toky[13][i],
-                      self.toky[14][i]))
+                Reach(self.streams[0][i],
+                      self.streams[1][i],
+                      self.streams[2][i],
+                      self.streams[3][i],
+                      self.streams[4][i],
+                      self.streams[5][i],
+                      self.streams[6][i],
+                      self.streams[7][i],
+                      self.streams[8][i],
+                      self.streams[9][i],
+                      self.streams[10][i],
+                      self.streams[11][i],
+                      self.streams[12][i],
+                      self.streams[13][i],
+                      self.streams[14][i]))
         
         
-        self.toky_loc = Gl.toky_loc
-        self.mat_tok_reach = Gl.mat_tok_reach
+        self.streams_loc = Gl.streams_loc
+        self.mat_stream_reach = Gl.mat_stream_reach
 
         for i in self.rr:
             for j in self.rc[i]:
-                self.arr[i][j].state += self.mat_tok_reach[i][j]
+                self.arr[i][j].state += self.mat_stream_reach[i][j]
 
         self.STREAM_RATIO = Gl.STREAM_RATIO
 

@@ -282,7 +282,7 @@ def do(cumulative, mat_slope, G, surArr):
 # if Gl.isStream and Gl.arcgis:
 #     import arcpy
 
-#     def write_stream_table(outDir, surface, toky):
+#     def write_stream_table(outDir, surface, streams):
 #         sep = ';'
 #         nReaches = surface.nReaches
 #         outFile = outDir + 'hydReach.txt'
@@ -307,7 +307,7 @@ def do(cumulative, mat_slope, G, surArr):
 
 #                 f.write(line)
 
-#         arcpy.MakeFeatureLayer_management(toky, outTemp + "Gl.streamtmp.shp")
+#         arcpy.MakeFeatureLayer_management(streams, outTemp + "Gl.streamtmp.shp")
 #         arcpy.AddJoin_management(
 #             outTemp +
 #             "Gl.streamtmp.shp",
@@ -320,7 +320,7 @@ def do(cumulative, mat_slope, G, surArr):
 
 
 # elif Gl.isStream and not(Gl.arcgis):
-#     def write_stream_table(outDir, surface, toky):
+#     def write_stream_table(outDir, surface, streams):
 #         sep = ';'
 #         nReaches = surface.nReaches
 #         outFile = outDir + 'hydReach.txt'
@@ -347,7 +347,7 @@ def do(cumulative, mat_slope, G, surArr):
 
 # else:
 
-def pass_stream_table(outDir, surface, toky):
+def pass_stream_table(outDir, surface, streams):
     pass
 
 stream_table = pass_stream_table

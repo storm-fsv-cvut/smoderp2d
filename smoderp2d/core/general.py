@@ -155,15 +155,15 @@ class Globals:
     # counter of precipitation intervals
     itera = None
     # ???
-    toky = None
+    streams = None
     # ???
     cell_stream = None
     # raster contains the reach id data
-    mat_tok_reach = None
+    mat_stream_reach = None
     # ???
     STREAM_RATIO = None
     # ???
-    toky_loc = None
+    streams_loc = None
     # ???
     maxdt = None
     # ???
@@ -295,21 +295,21 @@ class Globals:
         return cls.itera
 
     @classmethod
-    def get_toky(cls):
-        return cls.toky
+    def get_streams(cls):
+        return cls.streams
 
     @classmethod
     def get_cell_stream(cls):
         return cls.cell_stream
 
     @classmethod
-    def get_mat_tok_reach(cls, i, j):
-        return cls.mat_tok_reach[i][j]
+    def get_mat_stream_reach(cls, i, j):
+        return cls.mat_stream_reach[i][j]
 
     @classmethod
     def get_STREAM_RATIO(cls):
         return cls.STREAM_RATIO
 
     @classmethod
-    def get_toky_loc(cls):
-        return cls.toky_loc
+    def get_streams_loc(cls):
+        return cls.streams_loc
