@@ -242,6 +242,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
             stream, self._primary_key, stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix
         )
 
+        # TODO: what is real meaning?
         stream_seg = os.path.join(self.temp, self._data["stream_seg"])
         arcpy.gp.Reclassify_sa(
             stream_rst, "VALUE", "NoDataValue 1000", stream_seg, "DATA"

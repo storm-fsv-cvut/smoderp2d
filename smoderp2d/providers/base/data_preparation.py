@@ -79,10 +79,10 @@ class PrepareDataBase(object):
         self.data['mat_slope'] = self._rst2np(slope_clip)
         if flow_direction_clip is not None:
             self.data['mat_fd'] = self._rst2np(flow_direction_clip)
-            self._save_raster("fl_dir",
-                              self.data['mat_fd'],
-                              self.data['temp']
-            )
+            # self._save_raster("fl_dir",
+            #                   self.data['mat_fd'],
+            #                   self.data['temp']
+            # )
 
         # update data dict for spatial ref info
         self._get_raster_dim(dem_clip)

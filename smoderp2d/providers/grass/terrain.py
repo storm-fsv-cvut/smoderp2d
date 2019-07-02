@@ -41,24 +41,27 @@ def compute_products(elev, fldir=None):
            accumulation=flow_accumulation,
            depression=elev_fill
     )
-    # recalculate flow dir to ArcGIS notation
-    # https://idea.isnew.info/how-to-import-arcgis-flow-direction-into-grass-gis.html
-    reclass = """
--1 1 = 128
--2 2 = 64
--3 3 = 32
--4 4 = 16
--5 5 = 8
--6 6 = 4
--7 7 = 2
--8 8 = 1
-"""
-    Module('r.reclass',
-           input=flow_direction + '_grass',
-           output=flow_direction,
-           rules='-',
-           stdin_=reclass
-    )
+    if not fldir:
+        # recalculate flow dir to ArcGIS notation
+        # https://idea.isnew.info/how-to-import-arcgis-flow-direction-into-grass-gis.html
+        reclass = """
+    -1 1 = 128
+    -2 2 = 64
+    -3 3 = 32
+    -4 4 = 16
+    -5 5 = 8
+    -6 6 = 4
+    -7 7 = 2
+    -8 8 = 1
+    """
+        Module('r.reclass',
+               input=flow_direction + '_grass',
+               output=flow_direction,
+               rules='-',
+               stdin_=reclass
+        )
+    else:
+        flow_direction = fldir
 
     # computing slope from original DEM seems to be closer to ArcGIS
     # results
@@ -68,4 +71,4 @@ def compute_products(elev, fldir=None):
            slope=slope
     )
     
-    return elev_fill, flow_direction if fldir else None, flow_accumulation, slope
+    return elev_fill, flow_direction, flow_accumulation, slope

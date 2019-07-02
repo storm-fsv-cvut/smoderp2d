@@ -55,22 +55,39 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         :return toky:
         :return toky_loc:
         """
+        # TODO: unfortunately dissolving clip layer does not work in
+        # GRASS as expected, ugly workaround below
+        Module('v.db.addcolumn',
+               map=self.intersect,
+               columns="clip int"
+        )
+        Module('v.db.update',
+               map=self.intersect,
+               column="clip",
+               value=1
+        )
+        clip_map = "{}_clip".format(self.intersect)
+        Module('v.dissolve',
+               input=self.intersect,
+               output=clip_map,
+               column="clip",
+        )
         Module('v.clip',
                input=self.null,
-               clip=self.intersect,
+               clip=clip_map,
                output=self._data['aoi']
         )
 
         Module('v.buffer',
-                       input=self._data['aoi'],
-                       output=self._data['aoi_buffer'],
-                       distance=-self.spix / 3
+               input=self._data['aoi'],
+               output=self._data['aoi_buffer'],
+               distance=-self.spix / 3
         )
 
         Module('v.clip',
-                       input=self.stream,
-                       clip=self._data['aoi_buffer'],
-                       output=self._data['stream']
+               input=self.stream,
+               clip=self._data['aoi_buffer'],
+               output=self._data['stream']
         )
 
         # TODO: MK - nevim proc se maze neco, co v atributove tabulce vubec neni
@@ -94,67 +111,72 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                    use=what,
                    output=self._data[what],
             )
+            column = '{}_elev'.format(what)
             Module('v.what.rast',
                    map=self._data[what],
                    raster=self.dem_clip,
-                   column=self._data['{}_elev'.format(what)]
+                   column=self._data[column]
+            )
+            self._join_table(
+                stream, "cat",
+                '{}_1'.format(self._data[what]), "cat",
+                [column]
             )
 
-            self._join_table(stream, "cat", '{}_1'.format(self._data[what]), "cat")
-
-        self._delete_fields(
-            stream,
-            ["SHAPE_LEN", "SHAPE_LENG", "SHAPE_LE_1", "NAZ_TOK_1", "TOK_ID_1", "SHAPE_LE_2",
-             "SHAPE_LE_3", "NAZ_TOK_12", "TOK_ID_12", "SHAPE_LE_4", "ORIG_FID_1"]
-        )
-        self._delete_fields(
-            stream,
-            ["start_elev", "end_elev", "ORIG_FID", "ORIG_FID_1"]
-        )
-
-        self._delete_fields(
-            stream,
-            ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"]
-        )
-
-        # TODO
-        # field = ["cat", "start_elev", "POINT_X", "end_elev", "POINT_X_1"]
-        # ret = gs.read_command('v.db.select',
-        #                       map=stream,
-        #                       columns=field)
-        # for row in ret.splitlines():
-        #     if row[1] > row[3]:
-        #         continue
-        #     Module('v.edit',
-        #                    map=stream,
-        #                    tool='flip'
-        #     )
-        #     self._add_field(stream, "to_node", "DOUBLE", -9999)
-
-        # fields = ["cat", "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
-        # Module('v.db.update',
-        #                map=stream,
-        #                column=field_start[-1],
-        #                value='-9999'
+        # TODO: not needed?
+        # self._delete_fields(
+        #     stream,
+        #     ["SHAPE_LEN", "SHAPE_LENG", "SHAPE_LE_1", "NAZ_TOK_1", "TOK_ID_1", "SHAPE_LE_2",
+        #      "SHAPE_LE_3", "NAZ_TOK_12", "TOK_ID_12", "SHAPE_LE_4", "ORIG_FID_1"]
         # )
-        # Module('v.db.update',
-        #                map=stream,
-        #                column=field_start[-1],
-        #                value=field_start[0],
-        #                where="{} == {} and {} == {}".format(
-        #                    row[1], row[3], row[2], row[4]
-        # ))
 
-        self._delete_fields(
-            stream,
-            ["SHAPE_LEN", "SHAPE_LE_1", "SHAPE_LE_2", "SHAPE_LE_3", "SHAPE_LE_4", "SHAPE_LE_5",
-             "SHAPE_LE_6", "SHAPE_LE_7", "SHAPE_LE_8", "SHAPE_LE_9", "SHAPE_L_10", "SHAPE_L_11",
-             "SHAPE_L_12", "SHAPE_L_13", "SHAPE_L_14"]
-        )
+        # self._delete_fields(
+        #     stream,
+        #     ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"]
+        # )
 
-        self._delete_fields(
-            stream, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"]
-        )
+        # flip segments if end_elev > start_elev
+        field = ["cat", "start_elev", "end_elev"]
+        # TODO: rewrite using pygrass
+        ret = Module('v.db.select',
+                     flags='c',
+                     map=stream,
+                     columns=field,
+                     stdout_=PIPE)
+        cats = []
+        for line in ret.outputs.stdout.splitlines():
+            row = line.split('|')
+            if float(row[1]) < float(row[2]):
+                cats.append(int(row[0]))
+        if cats:
+            # TODO: attributes must be recalculated
+            Module('v.edit',
+                   map=stream,
+                   tool='flip',
+                   cats=','.join(cats)
+            )
+        self._add_field(stream, "to_node", "DOUBLE", -9999)
+
+        fields = ["cat", "start_elev", "end_elev", "to_node"]
+        # TODO: could be used start/end_2 tables instead
+        Module('v.db.update',
+               map=stream,
+               column=fields[-1],
+               value=fields[0],
+               where="{} == {}".format(
+                   fields[2], fields[1]
+        ))
+
+        # TODO: not needed probably
+        # self._delete_fields(
+        #     stream,
+        #     ["SHAPE_LEN", "SHAPE_LE_1", "SHAPE_LE_2", "SHAPE_LE_3", "SHAPE_LE_4", "SHAPE_LE_5",
+        #      "SHAPE_LE_6", "SHAPE_LE_7", "SHAPE_LE_8", "SHAPE_LE_9", "SHAPE_L_10", "SHAPE_L_11",
+        #      "SHAPE_L_12", "SHAPE_L_13", "SHAPE_L_14"]
+        # )
+        # self._delete_fields(
+        #     stream, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"]
+        # )
 
     def _get_mat_stream_seg(self, stream):
         """Get numpy array of integers detecting whether there is a stream on
@@ -175,16 +197,18 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                output=self._data['stream_rst'],
                use='cat'
         )
-        Module('r.mapcalc',
-               expression='{o} = if(isnull({i}), 1000, {i})'.format(
-                   o=self._data['stream_seg'], i=self._data['stream_rst']
-        ))
-        Module('g.region',
-               w=self.ll_corner[0],
-               s=self.ll_corner[1],
-               cols=self.cols,
-               rows=self.rows
-        )
+        # probably not needed, see relevant code in arcgis provider
+        # Module('r.mapcalc',
+        #        expression='{o} = if(isnull({i}), 1000, {i})'.format(
+        #            o=self._data['stream_seg'], i=self._data['stream_rst']
+        # ))
+        # TODO: probably not needed
+        # Module('g.region',
+        #        w=self.ll_corner[0],
+        #        s=self.ll_corner[1],
+        #        cols=self.cols,
+        #        rows=self.rows
+        # )
         mat_stream_seg = raster2numpy(self._data['stream_seg'])
         mat_stream_seg = mat_stream_seg.astype('int16')
 
