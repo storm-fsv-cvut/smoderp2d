@@ -8,6 +8,7 @@ import pickle
 import logging
 
 from smoderp2d.providers import Logger
+from smoderp2d.providers.exceptions import DataPreparationError
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
 from smoderp2d.exceptions import ProviderError
 
@@ -138,7 +139,10 @@ class BaseProvider(object):
 
         data = None
         if self.args.typecomp in (CompType.dpre, CompType.full):
-            data = self._load_dpre()
+            try:
+                data = self._load_dpre()
+            except DataPreparationError as e:
+                raise ProviderError('{}'.format(e))
             if self.args.typecomp == CompType.dpre:
                 # data preparation requested only
                 self._save_data(data, self.args.data_file)

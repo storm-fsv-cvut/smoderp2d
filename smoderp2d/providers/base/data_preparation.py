@@ -286,15 +286,15 @@ class PrepareDataBase(object):
         i = j = 0
 
         # data value vector intersection
+        nv = self.data['NoDataValue']
         for i in range(self.data['r']):
             for j in range(self.data['c']):
                 x_mat_dem = self.data['mat_dem'][i][j]
                 slp = self.data['mat_slope'][i][j]
-                if x_mat_dem == self.data['NoDataValue'] or \
-                   slp == self.data['NoDataValue']:
-                    self.data['mat_nan'][i][j] = self.data['NoDataValue']
-                    self.data['mat_slope'][i][j] = self.data['NoDataValue']
-                    self.data['mat_dem'][i][j] = self.data['NoDataValue']
+                if x_mat_dem == nv or slp == nv:
+                    self.data['mat_nan'][i][j] = nv
+                    self.data['mat_slope'][i][j] = nv
+                    self.data['mat_dem'][i][j] = nv
                 else:
                     self.data['mat_nan'][i][j] = 0
 
@@ -316,13 +316,14 @@ class PrepareDataBase(object):
         # if point is not on the edge of raster or its
         # neighbours are not "NoDataValue", it will be saved
         # into array_points array
+        nv = self.data['NoDataValue']
         if r != 0 and r != self.data['r'] \
            and c != 0 and c != self.data['c'] and \
-           self.data['mat_dem'][r][c] != self.data['NoDataValue'] and \
-           self.data['mat_dem'][r-1][c] != self.data['NoDataValue'] and \
-           self.data['mat_dem'][r+1][c] != self.data['NoDataValue'] and \
-           self.data['mat_dem'][r][c-1] != self.data['NoDataValue'] and \
-           self.data['mat_dem'][r][c+1] != self.data['NoDataValue']:
+           self.data['mat_dem'][r][c]   != nv and \
+           self.data['mat_dem'][r-1][c] != nv and \
+           self.data['mat_dem'][r+1][c] != nv and \
+           self.data['mat_dem'][r][c-1] != nv and \
+           self.data['mat_dem'][r][c+1] != nv:
 
             self.data['array_points'][i][0] = fid
             self.data['array_points'][i][1] = r
@@ -332,7 +333,7 @@ class PrepareDataBase(object):
             self.data['array_points'][i][4] = y
         else:
             Logger.info(
-                "Point FID = {} is at the edge of the raster."
+                "Point FID = {} is at the edge of the raster. "
                 "This point will not be included in results.".format(
                     fid
             ))
@@ -356,6 +357,7 @@ class PrepareDataBase(object):
             [self.data['r'], self.data['c']], float
         )
 
+        nv = self.data['NoDataValue']
         # calculating the "a" parameter
         for i in range(self.data['r']):
             for j in range(self.data['c']):
@@ -363,14 +365,10 @@ class PrepareDataBase(object):
                 par_x = mat_x[i][j]
                 par_y = mat_y[i][j]
 
-                if par_x == self.data['NoDataValue'] or \
-                   par_y == self.data['NoDataValue'] or \
-                   slope == self.data['NoDataValue']:
-                    par_a = self.data['NoDataValue']
-                    par_aa = self.data['NoDataValue']
-                elif par_x == self.data['NoDataValue'] or \
-                     par_y == self.data['NoDataValue'] or \
-                     slope == 0.0:
+                if par_x == nv or par_y == nv or slope == nv:
+                    par_a = nv
+                    par_aa = nv
+                elif par_x == nv or par_y == nv or slope == 0.0:
                     par_a = 0.0001
                     par_aa = par_a / 100 / mat_n[i][j]
                 else:
@@ -496,26 +494,25 @@ class PrepareDataBase(object):
         self.data['rc'] = []
         self.data['rr'] = []
 
+        nv = self.data['NoDataValue']
         for i in nr:
             for j in nc:
                 val = self.data['mat_nan'][i][j]
                 if i == 0 or j == 0 or \
                    i == (self.data['r'] - 1) or j == (self.data['c'] - 1):
-                    if val != self.data['NoDataValue']:
+                    if val != nv:
                         val = -99
                 else:
-                    if val != self.data['NoDataValue']:
-                        if  self.data['mat_nan'][i - 1][j] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i + 1][j] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i][j - 1] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i][j - 1] == self.data['NoDataValue']:
-
+                    if val != nv:
+                        if  self.data['mat_nan'][i - 1][j] == nv or \
+                            self.data['mat_nan'][i + 1][j] == nv or \
+                            self.data['mat_nan'][i][j - 1] == nv or \
+                            self.data['mat_nan'][i][j - 1] == nv:
                             val = -99
-
-                        if  self.data['mat_nan'][i - 1][j + 1] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i + 1][j + 1] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i - 1][j - 1] == self.data['NoDataValue'] or \
-                            self.data['mat_nan'][i + 1][j - 1] == self.data['NoDataValue']:
+                        if  self.data['mat_nan'][i - 1][j + 1] == nv or \
+                            self.data['mat_nan'][i + 1][j + 1] == nv or \
+                            self.data['mat_nan'][i - 1][j - 1] == nv or \
+                            self.data['mat_nan'][i + 1][j - 1] == nv:
 
                             val = -99.
 
