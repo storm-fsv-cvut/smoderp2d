@@ -356,8 +356,9 @@ class Runoff(object):
         # TODO
         # post_proc.do(self.cumulative, Globals.mat_slope, Gl, self.surface.arr)
 
-        post_proc.stream_table(Globals.outdir + os.sep, self.surface,
-                               Globals.streams_loc)
+        # TODO
+        # post_proc.stream_table(Globals.outdir + os.sep, self.surface,
+        #                        Globals.streams_loc)
 
         # TODO: print stats in better way
         # import platform

@@ -1,3 +1,4 @@
+# import os
 import math
 from subprocess import PIPE
 
@@ -13,6 +14,7 @@ from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from grass.pygrass.modules import Module
 from grass.pygrass.vector import VectorTopo
 from grass.pygrass.raster import RasterRow, raster2numpy
+# from grass.pygrass.gis import Location
 from grass.exceptions import CalledModuleError
 
 class PrepareData(PrepareDataBase, ManageFields):
@@ -21,6 +23,9 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         # get input parameters
         self._get_input_params(options)
+
+        # primary key
+        self._primary_key = "cat"
 
     def __del__(self):
         # remove mask
@@ -35,9 +40,12 @@ class PrepareData(PrepareDataBase, ManageFields):
         """Get input parameters from ArcGIS toolbox.
         """
         self._input_params = options
-        # output directory not defined by GRASS (data are written into
+        # cast some options to float
+        for opt in ('maxdt', 'end_time'):
+            self._input_params[opt] = float(self._input_params[opt])
+        # TODO: output directory not defined by GRASS (data are written into
         # current mapset by default)
-        self._input_params['output'] = None
+        self._input_params['output'] = None # os.path.join(Location().path(), "output")
 
     def _set_mask(self):
         """Set mask from elevation map.
@@ -157,7 +165,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         self._join_table(
             self._data['intersect'], self._data['soil_veg_column'],
             self._data['soil_veg_copy'], table_soil_vegetation_code,
-            ",".join(self._data['sfield'])
+            self._data['sfield']
         )
 
         # TODO: rewrite into pygrass syntax

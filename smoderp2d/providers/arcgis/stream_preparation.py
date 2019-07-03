@@ -188,7 +188,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
             for row in cursor:
                 if row[1] > row[3]:
                     continue
-                arcpy.FlipLine_edit(stream) ### ? all
+                arcpy.FlipLine_edit(stream) ### TODO: ? all
         self._add_field(stream, "to_node", "DOUBLE", -9999)
 
         fields = [self._primary_key, "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
@@ -307,8 +307,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                 for i in range(len(row)):
                     if row[i] == " ":
                         raise StreamPreparationError(
-                            "Value in tab_stream_shape are no correct - STOP, "
-                            "check shp file stream in output"
+                            "Empty value in tab_stream_shape found."
                         )
 
         fields = arcpy.ListFields(stream)

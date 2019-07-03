@@ -126,10 +126,10 @@ class StreamPreparationBase(object):
     def _streamlist(self):
         self.streamlist = []
         for field_name in [self._primary_key,
-                           'POINT_X',
-                           'POINT_Y',
-                           'POINT_X_1',
-                           'POINT_Y_1',
+                           'point_x',
+                           'point_y',
+                           'point_x_1',
+                           'point_y_1',
                            'to_node',
                            'length',
                            'slope',

@@ -7,6 +7,7 @@ from grass.pygrass.raster import raster2numpy
 from grass.pygrass.vector import Vector
 
 from smoderp2d.providers.base.stream_preparation import StreamPreparationBase
+from smoderp2d.providers.base.stream_preparation import StreamPreparationError, ZeroSlopeError
 from smoderp2d.providers.grass.terrain import compute_products
 from smoderp2d.providers.grass.manage_fields import ManageFields
 
@@ -105,7 +106,9 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         
         :param stream:
         """
+        columns = ['point_x', 'point_y']
         for what in ('start', 'end'):
+            # compute start/end elevation
             Module('v.to.points',
                    input=stream,
                    use=what,
@@ -121,6 +124,15 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                 stream, "cat",
                 '{}_1'.format(self._data[what]), "cat",
                 [column]
+            )
+
+            # start/end coordinates needs to be stored also in attribute table
+            if what == 'end':
+                columns = list(map(lambda x: x + '_1', columns))
+            Module('v.to.db',
+                   map=stream,
+                   option=what,
+                   columns=columns
             )
 
         # TODO: not needed?
@@ -197,11 +209,11 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                output=self._data['stream_rst'],
                use='cat'
         )
-        # probably not needed, see relevant code in arcgis provider
-        # Module('r.mapcalc',
-        #        expression='{o} = if(isnull({i}), 1000, {i})'.format(
-        #            o=self._data['stream_seg'], i=self._data['stream_rst']
-        # ))
+        # TODO: probably not needed, see relevant code in arcgis provider
+        Module('r.mapcalc',
+               expression='{o} = if(isnull({i}), 1000, {i})'.format(
+                   o=self._data['stream_seg'], i=self._data['stream_rst']
+        ))
         # TODO: probably not needed
         # Module('g.region',
         #        w=self.ll_corner[0],
@@ -225,7 +237,8 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         """
         # TODO !
         return
-        fields = ["FID", "start_elev", "end_elev", "sklon", "SHAPE@LENGTH", "length"]
+        fields = [self._primary_key, "start_elev", "end_elev", "sklon",
+                  "SHAPE@LENGTH", "length"]
 
         # TODO: rewrite into pygrass syntax
         ret = Module('v.db.select',
@@ -260,40 +273,55 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                to_table=self._data['stream_shape']
         )
 
-        # todo
-        # try:
-        #     self._join_table(
-        #         stream, self.tab_stream_shape_code, self._data['stream_shape'],
-        #         self.tab_stream_shape_code,
-        #         "number;shape;b;m;roughness;Q365"
-        #     )
-        # except:
-        #     self._add_field(stream, "smoderp", "TEXT", "0")
-        #     self._join_table(stream, self.tab_stream_shape_code,
-        #                      self._data['stream_shape'], self.tab_stream_shape_code,
-        #                      "number;shape;b;m;roughness;Q365")
+        # TODO: (check if smoderp column exists)
+        sfields = ["number", "shapetype", "b", "m", "roughness", "q365"]
+        try:
+            self._join_table(
+                stream, self.tab_stream_shape_code, self._data['stream_shape'],
+                self.tab_stream_shape_code,
+                sfields
+            )
+        except:
+            self._add_field(
+                stream, "smoderp", "TEXT", "0"
+            )
+            self._join_table(
+                stream, self.tab_stream_shape_code,
+                self._data['stream_shape'], self.tab_stream_shape_code,
+                sfields
+            )
 
-        # sfields = ["number", "smoderp", "shape", "b", "m", "roughness", "Q365"]
-        # for row in gs.vector_db_select(
-        #         map=stream,
-        #         columns=sfields)['values']:
-        #     for i in range(len(row)):
-        #         if row[i] == " ":
-        #             raise StreamPreparationError(
-        #                 "Value in tab_stream_shape are no correct - STOP, "
-        #                 "check shp file stream in output"
-        #             )
+        sfields.insert(1, "smoderp")
+        # TODO: rewrite into pygrass syntax
+        ret = Module('v.db.select',
+                     flags='c',
+                     map=stream,
+                     columns=sfields,
+                     stdout_=PIPE
+        )
+        for row in ret.outputs.stdout.splitlines():
+            for value in row.split('|'):
+                if value == '':
+                    raise StreamPreparationError(
+                        "Empty value in {} found.".format(stream)
+                    )
 
         with Vector(stream) as data:
             self.field_names = data.table.columns.names()
         self.stream_tmp = [[] for field in self.field_names]
 
-        # for row in gs.vector_db_select(
-        #         map=stream,
-        #         columns=self.field_names)['values']:
-        #   for i in range(len(row)):
-        # self.stream_tmp[i].append(row[i])
-
+        # TODO: rewrite into pygrass syntax
+        ret = Module('v.db.select',
+                     flags='c',
+                     map=stream,
+                     columns=self.field_names,
+                     stdout_=PIPE
+        )
+        for row in ret.outputs.stdout.splitlines():
+            i = 0
+            for val in row.split('|'):
+                self.stream_tmp[i].append(float(val))
+                i += 1
 
         self.streamlist = []
-        ### self._streamlist()
+        self._streamlist()

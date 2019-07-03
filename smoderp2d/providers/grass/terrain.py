@@ -39,7 +39,7 @@ def compute_products(elev, fldir=None):
            elevation=elev,
            drainage=flow_direction + '_grass',
            accumulation=flow_accumulation,
-           depression=elev_fill
+           depression=elev
     )
     if not fldir:
         # recalculate flow dir to ArcGIS notation
