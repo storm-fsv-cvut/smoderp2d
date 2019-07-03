@@ -265,6 +265,8 @@ class PrepareData(PrepareDataBase, ManageFields):
         :return: numpy array
         """
         # raster is read from current computation region
+        # g.region cannot be called here,
+        # see https://github.com/storm-fsv-cvut/smoderp2d/issues/42
         Region().from_rast(raster)
         return raster2numpy(raster)
 
