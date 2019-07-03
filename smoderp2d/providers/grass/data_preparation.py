@@ -8,13 +8,15 @@ from smoderp2d.providers.grass.terrain import compute_products
 from smoderp2d.providers.grass.manage_fields import ManageFields
 
 from smoderp2d.providers.base import Logger
-from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
+from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput, \
+    DataPreparationError
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 
 from grass.pygrass.modules import Module
 from grass.pygrass.vector import VectorTopo
 from grass.pygrass.raster import RasterRow, raster2numpy
 # from grass.pygrass.gis import Location
+from grass.pygrass.gis import Region
 from grass.exceptions import CalledModuleError
 
 class PrepareData(PrepareDataBase, ManageFields):
@@ -262,9 +264,8 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         :return: numpy array
         """
-        Module('g.region',
-               raster=raster
-        )
+        # raster is read from current computation region
+        Region().from_rast(raster)
         return raster2numpy(raster)
 
     def _get_raster_dim(self, dem_clip):
@@ -273,19 +274,28 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         :param dem_clip: clipped dem raster map
         """
+        # size of the raster [0] = number of rows; [1] = number of columns
+        self.data['r'] = self.data['mat_dem'].shape[0]
+        self.data['c'] = self.data['mat_dem'].shape[1]
+
         with RasterRow(dem_clip) as data:
             # lower left corner coordinates
             self.data['xllcorner'] = data.info.west
             self.data['yllcorner'] = data.info.south
+            # x/y resolution
             self.data['vpix'] = data.info.nsres
             self.data['spix'] = data.info.ewres
+            # check data consistency
+            # see https://github.com/storm-fsv-cvut/smoderp2d/issues/42
+            if data.info.rows != self.data['r'] or \
+               data.info.cols != self.data['c']:
+                raise DataPreparationError(
+                    "Data inconsistency ({},{}) vs ({},{})".format(
+                        data.info.rows, data.info.cols, self.data['r'], self.data['c']
+                ))
 
         self.data['NoDataValue'] = None
         self.data['pixel_area'] = self.data['spix'] * self.data['vpix']
-
-        # size of the raster [0] = number of rows; [1] = number of columns
-        self.data['r'] = self.data['mat_dem'].shape[0]
-        self.data['c'] = self.data['mat_dem'].shape[1]
 
     def _get_attrib(self, sfield, intersect):
         """
