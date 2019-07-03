@@ -8,7 +8,7 @@ import pickle
 import logging
 
 from smoderp2d.providers import Logger
-from smoderp2d.providers.exceptions import DataPreparationError
+from smoderp2d.providers.base.exceptions import DataPreparationError
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
 from smoderp2d.exceptions import ProviderError
 
