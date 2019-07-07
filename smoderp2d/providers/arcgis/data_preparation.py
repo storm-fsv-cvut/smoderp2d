@@ -114,7 +114,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         # align computation region to DTM grid
         arcpy.env.snapRaster = self._input_params['elevation']
 
-        dem_mask = os.path.join(self.data['temp'], self._data['dem_mask'])
+        dem_mask = os.path.join(self.data['outdir'], self._data['dem_mask'], 'dem_mask')
         self.gp.Reclassify_sa(
             dem_copy, "VALUE", "-100000 100000 1", dem_mask, "DATA"
         )
@@ -251,9 +251,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         arcpy.env.outputCoordinateSystem = dem_desc.SpatialReference
 
         # create raster mask based on intersect feature call
-        mask = os.path.join(self.data['temp'],
-                            self._data['inter_mask']
-        )
+        mask = os.path.join(self.data['outdir'], self._data['inter_mask'], 'inter_mask')
         arcpy.PolygonToRaster_conversion(
             intersect, self._primary_key, mask, "MAXIMUM_AREA",
             cellsize = dem_desc.MeanCellHeight)
@@ -397,12 +395,12 @@ class PrepareData(PrepareDataBase, ManageFields):
         cosslope = arcpy.sa.Abs(cosasp)
         times1 = arcpy.sa.Plus(cosslope, sinslope)
         times1.save(
-            os.path.join(self.data['temp'], self._data["ratio_cell"])
+            os.path.join(self.data['outdir'], self._data['ratio_cell'], 'ratio_cell')
         )
 
         efect_cont = arcpy.sa.Times(times1, self.data['spix'])
         efect_cont.save(
-            os.path.join(self.data['temp'], self._data["efect_cont"])
+            os.path.join(self.data['outdir'], self._data['efect_cont'],  'efect_cont')
         )
         self.data['mat_efect_cont'] = self._rst2np(efect_cont)
 

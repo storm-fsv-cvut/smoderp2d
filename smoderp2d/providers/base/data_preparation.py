@@ -10,9 +10,9 @@ class PrepareDataBase(object):
     def __init__(self):
         # internal output data
         self._data = {
-            'dem_mask' : 'dem_mask',
-            'ratio_cell' : 'ratio_cell',
-            'efect_cont' : 'efect_cont',
+            'dem_mask' : 'control',
+            'ratio_cell' : 'control',
+            'efect_cont' : 'control',
             'soil_boundary': 'soil_b',
             'vegetation_boundary': 'vegetation_b',
             'vector_mask': 'dem_mask',
@@ -24,7 +24,7 @@ class PrepareDataBase(object):
             'sfield': ["k", "s", "n", "pi", "ppl",
                        "ret", "b", "x", "y", "tau", "v"],
             'points_mask' : 'points_inter',
-            'inter_mask' : 'inter_mask',
+            'inter_mask' : 'control',
             'dem_clip' : 'dem_inter',
             'slope_clip' : 'slope_inter',
             'flow_clip' : 'flowdir_inter',
@@ -202,13 +202,32 @@ class PrepareDataBase(object):
         os.makedirs(self.data['outdir'])
 
         # create temporary dir
-        Logger.debug(
+        Logger.info(
             "Creating temp directory {}".format(self.data['temp'])
         )
         self.data['temp'] = os.path.join(
             self.data['outdir'], "temp"
         )
         os.makedirs(self.data['temp'])
+
+        # create core dir
+        Logger.info(
+            "Creating core directory"
+        )
+        core = os.path.join(
+            self.data['outdir'], "core"
+        )
+        os.makedirs(core)
+
+        # create control dir
+        Logger.info(
+            "Creating control directory"
+        )
+        control = os.path.join(
+            self.data['outdir'], "control"
+        )
+        os.makedirs(control)
+
         
     def _set_mask(self):
         raise NotImplemented("Not implemented for base provider")
