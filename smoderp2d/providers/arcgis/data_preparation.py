@@ -98,8 +98,13 @@ class PrepareData(PrepareDataBase, ManageFields):
         # create temporary ArcGIS File Geodatabase
         self._tempGDB = os.path.join(self.data['temp'], "tempGDB.gdb")
         arcpy.CreateFileGDB_management(
-            self.data['temp'], "tempGDB.gdb"
-        )
+            self.data['temp'], "tempGDB.gdb")
+
+        # create control ArcGIS File Geodata
+        self._controlGDB = os.path.join(self.data['outdir'], 'control', "controlGDB.gdb")
+        pom = os.path.join(self.data['outdir'], 'control')
+        arcpy.CreateFileGDB_management(
+            pom, "controlGDB.gdb")
 
     def _set_mask(self):
         """Set mask from elevation map.
@@ -152,17 +157,17 @@ class PrepareData(PrepareDataBase, ManageFields):
         """
         # convert mask into polygon feature class
         mask_shp = os.path.join(
-            str(self._tempGDB), self._data['vector_mask']
+            str(self._controlGDB), 'dem_mask'
         )
         arcpy.RasterToPolygon_conversion(
             mask, mask_shp, "NO_SIMPLIFY")
 
         # dissolve soil and vegmetation polygons
         soil_boundary = os.path.join(
-            str(self._tempGDB), self._data['soil_boundary']
+            str(self._controlGDB), 'soil_boundary'
         )
         vegetation_boundary = os.path.join(
-            str(self._tempGDB), self._data['vegetation_boundary']
+            str(self._controlGDB), 'vegetation_boundary'
         )
         arcpy.Dissolve_management(
             vegetation, vegetation_boundary, vegetation_type
@@ -174,7 +179,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         # do intersection
         group = [soil_boundary, vegetation_boundary, mask_shp]
         intersect = os.path.join(
-            str(self._tempGDB), self._data['intersect']
+            str(self._controlGDB), 'inter_soil_lu'
         )
         arcpy.Intersect_analysis(
             group, intersect, "ALL", "", "INPUT")
@@ -196,9 +201,8 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         # copy attribute table to DBF file for modifications
         soil_veg_copy = os.path.join(
-            self.data['temp'], "{}.dbf".format(
-                self._data['soil_veg_copy']
-        ))
+            self.data['outdir'], self._data['soil_veg_copy'], "soil_veg_tab_current.dbf"
+        )
         arcpy.CopyRows_management(table_soil_vegetation, soil_veg_copy)
 
         # join table copy to intersect feature class
