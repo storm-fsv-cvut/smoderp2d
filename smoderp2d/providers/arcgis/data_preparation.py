@@ -101,17 +101,23 @@ class PrepareData(PrepareDataBase, ManageFields):
             self.data['temp'], "tempGDB.gdb")
 
         # create control ArcGIS File Geodata
-        self._controlGDB = os.path.join(self.data['outdir'], 'control', "controlGDB.gdb")
-        pom = os.path.join(self.data['outdir'], 'control')
+        pom1 = os.path.join(self.data['outdir'], 'control')
+        self._controlGDB = os.path.join(pom1, "controlGDB.gdb")
         arcpy.CreateFileGDB_management(
-            pom, "controlGDB.gdb")
+            pom1, "controlGDB.gdb")
+
+        # create core ArcGIS File Geodata
+        pom2 = os.path.join(self.data['outdir'], 'core')
+        self._coreGDB = os.path.join(pom2, "coreGDB.gdb")
+        arcpy.CreateFileGDB_management(
+            pom2, "coreGDB.gdb")
 
     def _set_mask(self):
         """Set mask from elevation map.
 
         :return: dem copy, mask
         """
-        dem_copy = os.path.join(str(self._tempGDB), "dem_copy")
+        dem_copy = os.path.join(self.data['temp'], 'dem_copy')
         arcpy.CopyRaster_management(
             self._input_params['elevation'], dem_copy
         )
@@ -263,7 +269,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         # cropping rasters
         dem_clip = ExtractByMask(dem, mask)
         dem_clip.save(
-            os.path.join(self.data['outdir'], self._data['dem_clip'])
+            os.path.join(self.data['outdir'], self._data['dem_clip'], 'dem_inter')
         )
         slope_clip = ExtractByMask(slope, mask)
         slope_clip.save(os.path.join(
@@ -271,7 +277,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         )
         flow_direction_clip = ExtractByMask(flow_direction, mask)
         flow_direction_clip.save(
-            os.path.join(self.data['outdir'], self._data["flow_clip"])
+            os.path.join(self.data['outdir'], self._data['flow_clip'], 'flowdir_inter')
         )
 
         return dem_clip, slope_clip, flow_direction_clip
@@ -283,7 +289,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         :param intersect: vector intersect feature class
         """
         pointsClipCheck = os.path.join(
-            str(self._tempGDB), self._data['points_mask']
+            str(self._coreGDB), 'points_inter'
         )
         arcpy.Clip_analysis(
             self.data['points'], intersect, pointsClipCheck
@@ -310,7 +316,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         
         idx = 0
         for field in sfield:
-            output = os.path.join(self.data['temp'], "r{}".format(field))
+            output = os.path.join(self.data['outdir'], self._data['sfield_dir'], "r{}".format(field))
             arcpy.PolygonToRaster_conversion(
                 intersect, field, output,
                 "MAXIMUM_AREA", "", self.data['vpix']
