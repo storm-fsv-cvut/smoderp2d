@@ -36,17 +36,11 @@ class CumulativeSubsurface(object):
         Logger.info('Subsurface')
         super(CumulativeSubsurface, self).__init__()
 
-        self.arrs[17] = 'exfiltration'
-        self.arrs[18] = 'percolation'
-        self.arrs[19] = 'h_sub'
-        self.arrs[20] = 'q_sub'
-        self.arrs[21] = 'v_sub'
-
-        self.names[17] = 'CumExfiltrL3'
-        self.names[18] = 'CumPercolL3'
-        self.names[19] = 'MaxWaterSubL'
-        self.names[20] = 'MaxQSubL3t_1'
-        self.names[21] = 'CumVOutSubL3'
+        self.arrs['exfiltration'] = ('core', 'CumExfiltrL3')
+        self.arrs['percolation']  = ('core', 'CumPercolL3')
+        self.arrs['h_sub']        = ('core', 'MaxWaterSubL')
+        self.arrs['q_sub']        = ('core', 'MaxQSubL3t_1')
+        self.arrs['v_sub']        = ('core', 'CumVOutSubL3')
 
         r = self.r
         c = self.c
@@ -119,48 +113,23 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
         #
         #  self.arr is used in the smoderp2d.io_functions.post_proc
         #
-        self.arrs = {1: 'infiltration',
-                     2: 'precipitation',
-                     3: 'h_sur',
-                     4: 'q_sur',
-                     5: 'v_sur',
-                     6: 'v_sur',
-                     7: 'shear_sur',
-                     8: 'h_rill',
-                     9: 'q_rill',
-                     10: 'v_rill',
-                     11: 'b_rill',
-                     12: 'inflow_sur',
-                     13: 'sur_ret',
-                     14: 'v_sur_r',
-                     15: 'q_sur_tot',
-                     16: 'v_sur_tot'
-                     }
 
-                # 12 : 'v_rill',
-
-        # Dictionary stores the the arrays name used in the output rasters.
-        #
-        #  self.names is used in the smoderp2d.io_functions.post_proc
-        #
-        self.names = {1: 'cinfil_m',
-                      2: 'crainf_m',
-                      3: 'cVInM3',
-                      4: 'MaxQL3t_1',
-                      5: 'cSheetVOutM3',
-                      6: 'mvel_m_s',
-                      7: 'mshearstr_pa',
-                      8: 'MaxWaterRillL',
-                      9: 'MaxQRillL3t_1',
-                      10: 'cRillVOutL3',
-                      11: 'AreaRill',
-                      12: 'CumVInL3',
-                      13: 'SurRet',
-                      14: 'CumVRestL3',
-                      15: 'msurfl_m3_s',
-                      16: 'csurvout_m3_s'
-                      }
-                # 12 : 'MaxVeloRill',
+        self.arrs = {'infiltration' : ('core', 'cinfil_m'),
+                     'precipitation': ('core', 'crainf_m'),
+                     'h_sur'        : ('core', 'cVInM3'),
+                     'q_sur'        : ('core', 'MaxQL3t_1'),
+                     'v_sur'        : ('core', 'cSheetVOutM3'),
+                     'v_sur2'       : ('core', 'mvel_m_s'),
+                     'shear_sur'    : ('core', 'mshearstr_pa'),
+                     'h_rill'       : ('core', 'MaxWaterRillL'),
+                     'q_rill'       : ('core', 'MaxQRillL3t_1'),
+                     'v_rill'       : ('core', 'cRillVOutL3'),
+                     'b_rill'       : ('core', 'AreaRill'),
+                     'inflow_sur'   : ('core', 'CumVInL3'),
+                     'sur_ret'      : ('core', 'SurRet'),
+                     'v_sur_r'      : ('core', 'CumVRestL3'),
+                     'q_sur_tot'    : ('core', 'msurfl_m3_s'),
+                     'v_sur_tot'    : ('core', 'csurvout_m3_s')}
 
         # array count stored in the class
         self.n = 13
