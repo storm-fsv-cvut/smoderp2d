@@ -205,8 +205,8 @@ class Runoff(object):
 
     def run(self):
         # saves time before the main loop
-        start = time.time()
         Logger.info('Start of computing...')
+        Logger.start_time = time.time()
 
         # main loop: until the end time
         i = j = 0 # TODO: rename vars (variable overlap)
@@ -351,7 +351,9 @@ class Runoff(object):
 
         Logger.info('')
         Logger.info('-' * 80)
-        Logger.info('Total computing time: {}'.format(time.time() - start))
+        Logger.info('Total computing time: {}'.format(
+            time.time() - Logger.start_time)
+        )
 
         # TODO
         # post_proc.do(self.cumulative, Globals.mat_slope, Gl, self.surface.arr)
