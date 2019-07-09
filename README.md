@@ -36,4 +36,5 @@ Distributed event-based model for surface and subsurface runoff and erosion
         points=points2 table_soil_vegetation=tabulkytab \
         table_soil_vegetation_code=soilveg stream=tok \
         table_stream_shape=tab_stream_tvar table_stream_shape_code=smoderp \
+        maxdt=10 end_time=120 \
         -d pickle_file=/tmp/save.pickle
