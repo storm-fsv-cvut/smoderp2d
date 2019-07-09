@@ -224,7 +224,7 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         return intersect, mask_shp, self._data['sfield']
 
-    def _clip_data(self, dem, intersect, slope, flow_direction):
+    def _clip_data(self, dem, intersect):
         """
         Clip input data based on AOI.
 
@@ -263,16 +263,8 @@ class PrepareData(PrepareDataBase, ManageFields):
         dem_clip.save(
             os.path.join(self.data['outdir'], self._data['dem_clip'])
         )
-        slope_clip = ExtractByMask(slope, mask)
-        slope_clip.save(os.path.join(
-            self.data['temp'], self._data["slope_clip"])
-        )
-        flow_direction_clip = ExtractByMask(flow_direction, mask)
-        flow_direction_clip.save(
-            os.path.join(self.data['outdir'], self._data["flow_clip"])
-        )
 
-        return dem_clip, slope_clip, flow_direction_clip
+        return dem_clip
 
     def _clip_points(self, intersect):
         """
