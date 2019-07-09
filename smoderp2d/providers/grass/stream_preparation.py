@@ -4,7 +4,7 @@ from subprocess import PIPE
 
 from grass.pygrass.modules import Module
 from grass.pygrass.raster import raster2numpy
-from grass.pygrass.vector import Vector
+from grass.pygrass.vector import Vector, VectorTopo
 
 from smoderp2d.providers.base.stream_preparation import StreamPreparationBase
 from smoderp2d.providers.base.stream_preparation import StreamPreparationError, ZeroSlopeError
@@ -104,8 +104,9 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         Compute elevation of start/end point of stream parts.
         Add code of ascending stream part into attribute table.
         
-        :param stream:
+        :param stream: vector stream features
         """
+        # calculate start_elev (point_x, point_y) + end_elev (point_x_1, point_y_1)
         columns = ['point_x', 'point_y']
         for what in ('start', 'end'):
             # compute start/end elevation
@@ -121,8 +122,8 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                    column=self._data[column]
             )
             self._join_table(
-                stream, "cat",
-                '{}_1'.format(self._data[what]), "cat",
+                stream, self._primary_key,
+                '{}_1'.format(self._data[what]), self._primary_key,
                 [column]
             )
 
@@ -135,60 +136,79 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                    columns=columns
             )
 
-        # TODO: not needed?
-        # self._delete_fields(
-        #     stream,
-        #     ["SHAPE_LEN", "SHAPE_LENG", "SHAPE_LE_1", "NAZ_TOK_1", "TOK_ID_1", "SHAPE_LE_2",
-        #      "SHAPE_LE_3", "NAZ_TOK_12", "TOK_ID_12", "SHAPE_LE_4", "ORIG_FID_1"]
-        # )
-
-        # self._delete_fields(
-        #     stream,
-        #     ["NAZ_TOK_1", "NAZ_TOK_12", "TOK_ID_1", "TOK_ID_12"]
-        # )
-
         # flip segments if end_elev > start_elev
-        field = ["cat", "start_elev", "end_elev"]
+        fields = [self._primary_key, "start_elev", "end_elev",
+                  "point_x", "point_y", "point_x_1", "point_y_1"]
         # TODO: rewrite using pygrass
         ret = Module('v.db.select',
                      flags='c',
                      map=stream,
-                     columns=field,
+                     columns=fields,
                      stdout_=PIPE)
-        cats = []
+        cats = {}
         for line in ret.outputs.stdout.splitlines():
             row = line.split('|')
             if float(row[1]) < float(row[2]):
-                cats.append(int(row[0]))
+                cats[row[0]] = (row[1], row[2], row[3], row[4], row[5], row[6])
         if cats:
-            # TODO: attributes must be recalculated
+            # flip stream direction (end_elev > start_elev)
             Module('v.edit',
                    map=stream,
                    tool='flip',
                    cats=','.join(cats)
             )
+            # update also attributes
+            tmpfile = next(tempfile._get_candidate_names())
+            with open(tmpfile, 'w') as fd:
+                for k, v in cats.items():
+                    # v (0:start_elev, 1:end_elev,
+                    #    2:point_x, 3:point_y,
+                    #    4:point_x_1, 5:point_y_1)
+                    # start_elev -> end_elev
+                    fd.write('UPDATE {} SET {} = {} WHERE {} = {};\n'.format(
+                        stream, fields[1], v[1], fields[0], k))
+                    # end_elev -> start_elev
+                    fd.write('UPDATE {} SET {} = {} WHERE {} = {};\n'.format(
+                        stream, fields[2], v[0], fields[0], k))
+                    # point_x -> point_x_1
+                    fd.write('UPDATE {} SET {} = {} WHERE {} = {};\n'.format(
+                        stream, fields[3], v[4], fields[0], k))
+                    # point_y -> point_y_1
+                    fd.write('UPDATE {} SET {} = {} WHERE {} = {};\n'.format(
+                        stream, fields[4], v[5], fields[0], k))
+                    # point_x_1 -> point_x
+                    fd.write('UPDATE {} SET {} = {} WHERE {} = {};\n'.format(
+                        stream, fields[5], v[2], fields[0], k))
+                    # point_y_1 -> point_y
+                    fd.write('UPDATE {} SET {} = {} WHERE {} = {};\n'.format(
+                        stream, fields[6], v[3], fields[0], k))
+
+            Module('db.execute',
+                   input=tmpfile
+            )
+
+        # calculates to_node (fid of preceding segment)
         self._add_field(stream, "to_node", "DOUBLE", -9999)
+        to_node = {}
+        with VectorTopo(stream) as stream_vect:
+            for line in stream_vect:
+                start, end = line.nodes()
+                cat = line.cat
+                for start_line in start.lines():
+                    if start_line.cat != cat:
+                        to_node[cat] = start_line.cat
 
-        fields = ["cat", "start_elev", "end_elev", "to_node"]
-        # TODO: could be used start/end_2 tables instead
-        Module('v.db.update',
-               map=stream,
-               column=fields[-1],
-               value=fields[0],
-               where="{} == {}".format(
-                   fields[2], fields[1]
-        ))
-
-        # TODO: not needed probably
-        # self._delete_fields(
-        #     stream,
-        #     ["SHAPE_LEN", "SHAPE_LE_1", "SHAPE_LE_2", "SHAPE_LE_3", "SHAPE_LE_4", "SHAPE_LE_5",
-        #      "SHAPE_LE_6", "SHAPE_LE_7", "SHAPE_LE_8", "SHAPE_LE_9", "SHAPE_L_10", "SHAPE_L_11",
-        #      "SHAPE_L_12", "SHAPE_L_13", "SHAPE_L_14"]
-        # )
-        # self._delete_fields(
-        #     stream, ["ORIG_FID", "ORIG_FID_1", "SHAPE_L_14"]
-        # )
+        if to_node:
+            # TODO: rewrite using pygrass
+            tmpfile = next(tempfile._get_candidate_names())
+            with open(tmpfile, 'w') as fd:
+                for c, n in to_node.items():
+                    fd.write('UPDATE {} SET to_node = {} WHERE {} = {};\n'.format(
+                        stream, n, self._primary_key, c
+                    ))
+            Module('db.execute',
+                  input=tmpfile
+            )
 
     def _get_mat_stream_seg(self, stream):
         """Get numpy array of integers detecting whether there is a stream on

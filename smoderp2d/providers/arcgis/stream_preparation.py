@@ -110,7 +110,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         Compute elevation of start/end point of stream parts.
         Add code of ascending stream part into attribute table.
         
-        :param stream:
+        :param stream: vector stream features
         """
         # TODO: vyresit mazani atributu v atributove tabulce (jestli je to potreba)
         # TODO: vyresit nasledujici:
