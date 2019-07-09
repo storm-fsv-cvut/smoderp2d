@@ -101,16 +101,16 @@ class PrepareData(PrepareDataBase, ManageFields):
             self.data['temp'], "tempGDB.gdb")
 
         # create control ArcGIS File Geodata
-        pom1 = os.path.join(self.data['outdir'], 'control')
-        self._controlGDB = os.path.join(pom1, "controlGDB.gdb")
+        control = os.path.join(self.data['outdir'], 'control')
+        self._controlGDB = os.path.join(control, "controlGDB.gdb")
         arcpy.CreateFileGDB_management(
-            pom1, "controlGDB.gdb")
+            control, "controlGDB.gdb")
 
         # create core ArcGIS File Geodata
-        pom2 = os.path.join(self.data['outdir'], 'core')
-        self._coreGDB = os.path.join(pom2, "coreGDB.gdb")
+        core = os.path.join(self.data['outdir'], 'core')
+        self._coreGDB = os.path.join(core, "coreGDB.gdb")
         arcpy.CreateFileGDB_management(
-            pom2, "coreGDB.gdb")
+            core, "coreGDB.gdb")
 
     def _set_mask(self):
         """Set mask from elevation map.
