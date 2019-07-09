@@ -38,13 +38,10 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
     def _setnull(self):
         """Define mask.
         """
-        # water flows according dem
-        dem_fill, flow_direction, flow_accumulation, slope = \
-            compute_products(self.dem_clip, self.temp, None)
 
         try:
             setnull = arcpy.sa.SetNull(
-                flow_accumulation, 1, "VALUE < 300")
+                self.flow_accumulation_clip, 1, "VALUE < 300")
             setnull.save(os.path.join(self.temp, self._data["setnull"]))
         except:
             raise StreamPreparationError(

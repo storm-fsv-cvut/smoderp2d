@@ -60,7 +60,7 @@ def compute_h(A, m, b, err=0.0001, max_iter=20):
 #
 #
 def rectangle(reach, dt):
-    Vp = reach.Q365 * dt                # objem           : baseflow
+    Vp = reach.q365 * dt                # objem           : baseflow
     hp = Vp / (reach.b * reach.length)    # vyska hladiny   : baseflow
     dV = reach.V_in_from_field + reach.vol_rest + \
         reach.V_in_from_reach    # z okoli, predtim, odtok  : epizoda
@@ -89,14 +89,16 @@ def rectangle(reach, dt):
     reach.h = H
 
 
-# Function calculates the discharge in trapezoidal shaped reach of a stream.
-#
-#
 def trapezoid(reach, dt):
+    """Calculates the discharge in trapezoidal shaped reach of a
+    stream.
 
-    Vp = reach.Q365 * dt
+    :param reach: ?
+    :param dt: ?
+    """
+    Vp = reach.q365 * dt
     hp = compute_h(A=Vp / reach.length, m=reach.m, b=reach.b)
-    B = reach.b + 2.0 * hp * reach.m  # b pro pocatecni stav (Q365)
+    B = reach.b + 2.0 * hp * reach.m  # b pro pocatecni stav (q365)
     Bb = B + hp * reach.m
     h = compute_h(
         A=(reach.V_in_from_field + reach.vol_rest +
@@ -109,12 +111,7 @@ def trapezoid(reach, dt):
     dS = S - reach.b * hp + reach.m * hp * hp
     dV = dS * reach.length
     R = S / O
-    reach.vs = math.pow(
-        R,
-        0.6666) * math.pow(
-        reach.slope,
-         0.5) / (
-            reach.roughness)  # v
+    reach.vs = math.pow(R, 0.6666) * math.pow(reach.slope, 0.5) / (reach.roughness)  # v
     reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
     if reach.V_out > dV:
@@ -140,7 +137,7 @@ def trapezoid(reach, dt):
 #
 def triangle(reach, dt):
     pass
-    Vp = reach.Q365 * \
+    Vp = reach.q365 * \
         dt                             # objem           : baseflow
     hp = math.pow(
         Vp / (reach.length * reach.m),
@@ -197,7 +194,7 @@ def parabola(reach, dt):
     pass
     # a = reach.b   #vzd ohniska od vrcholu
     # u = 3.0 #(h=B/u  B=f(a))
-    # Vp = reach.Q365*dt
+    # Vp = reach.q365*dt
     # hp = math.pow(Vp*3/(2*reach.length*u),0.5)
     # B = u*hp #sirka hladiny #b = 3*a/(2*h)
     # reach.h = math.pow((reach.V_in_from_field + reach.vol_rest)/(2*reach.length*math.pow(hp,0.5))+math.pow(hp,1.5),0.6666)  # h = (dV/2.L.hp^0,5+hp^1,5)^0,666

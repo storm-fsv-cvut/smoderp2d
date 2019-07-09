@@ -235,32 +235,31 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         """
         :param stream:
         """
-        # TODO !
-        return
-        fields = [self._primary_key, "start_elev", "end_elev", "sklon",
-                  "SHAPE@LENGTH", "length"]
+        # calculate stream length
+        Module('v.to.db',
+               map=stream,
+               option='length',
+               columns='length'
+        )
+
+        # calculate slope
+        Module('v.db.update',
+               map=stream,
+               column='slope',
+               query_column='(start_elev - end_elev) / length'
+        )
 
         # TODO: rewrite into pygrass syntax
         ret = Module('v.db.select',
+                     flags='c',
                      map=stream,
-                     columns=fields,
+                     columns='cat,slope',
                      stdout_=PIPE
         )
-        sql = []
         for row in ret.outputs.stdout.splitlines():
-            slope = (float(row[1]) - float(row[2])) / float(row[4])
-            if slope == 0:
-                raise ZeroSlopeError(int(row[0]))
-            sql.append(
-                'update {} set {} = {}, {} = {} where {} = {}'.format(
-                    stream, fileds[4], slope, fields[5], row[4], fields[0], row[0]
-            ))
-        tmpfile = next(tempfile._get_candidate_names())
-        with open(tmpfile, 'w') as fd:
-            fd.write(';\n'.join(sql))
-        Module('db.execute',
-               input=tmpfile
-        )
+            cat, slope = row.split('|')
+            if float(slope) == 0:
+                raise ZeroSlopeError(int(cat))
 
     def _get_streamlist(self, stream):
         """Compute shape of stream.

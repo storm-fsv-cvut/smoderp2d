@@ -3,31 +3,33 @@ from smoderp2d.core.general import GridGlobals, Globals as Gl
 from smoderp2d.providers import Logger
 
 class Reach(object):
-    def __init__(self, id_, POINT_X, POINT_Y, POINT_X_1, POINT_Y_1,
-                 to_node, length, sklon, smoderp, CISLO, TVAR, B, M, DRSNOST, Q365):
+    def __init__(self, id_, point_x, point_y, point_x_1, point_y_1,
+                 to_node, length, sklon, smoderp, number, shape, b, m, roughness, q365):
 
         self.id_ = id_
-        self.pointsFrom = [POINT_X, POINT_Y]
-        self.pointsTo = [POINT_X_1, POINT_Y_1]
+        self.pointsFrom = [point_x, point_y]
+        self.pointsTo = [point_x_1, point_y_1]
         self.to_node = to_node
         self.length = length
         if sklon < 0:
-            Logger.info("Slope in reach part {} indicated minus slope in stream".format(id_))
+            Logger.info(
+                "Slope in reach part {} indicated minus slope in stream".format(id_
+                ))
         self.slope = abs(sklon)
         self.smoderp = smoderp
-        self.no = CISLO
-        self.shape = TVAR
+        self.no = number
+        self.shape = shape
 
-        self.b = B
-        self.m = M
-        self.roughness = DRSNOST
-        self.Q365 = Q365
+        self.b = b
+        self.m = m
+        self.roughness = roughness
+        self.q365 = q365
         self.V_in_from_field = 0.0
         self.V_in_from_field_cum = 0.0
         self.V_in_from_reach = 0.0
         self.V_out_cum = 0.0   # L^3
         self.vol_rest = 0.0
-        self.h = 0.0  # jj mozna pocatecni podminka? ikdyz to je asi Q365 co...
+        self.h = 0.0  # jj mozna pocatecni podminka? ikdyz to je asi q365 co...
         self.h_max = 0.0
         self.timeh_max = 0.0
         self.V_out = 0.0
@@ -38,13 +40,13 @@ class Reach(object):
         self.V_out_domain = 0.0
 
 
-        if TVAR == 0:  # obdelnik
+        if shape == 0:  # obdelnik
             self.outflow_method = stream_f.rectangle
-        elif TVAR == 1:  # trapezoid
+        elif shape == 1:  # trapezoid
             self.outflow_method = stream_f.trapezoid
-        elif TVAR == 2:  # triangle
+        elif shape == 2:  # triangle
             self.outflow_method = stream_f.triangle
-        elif TVAR == 3:  # parabola
+        elif shape == 3:  # parabola
             self.outflow_method = stream_f.parabola
         else:
             self.outflow_method = stream_f.rectangle
@@ -57,8 +59,6 @@ class Reach(object):
 # Bacha na id, je id v shp toku v sestupnem poradi. To musi jinak bude
 # chyba ve tvorbe reach
 class Stream(object):
-
-    # The constructor.
 
     def __init__(self):
         super(Stream, self).__init__()

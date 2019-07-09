@@ -64,4 +64,4 @@ def compute_products(elev, save_dir, fldir=None):
                 sys.exc_info()[0]
             ))
 
-    return elev_fill, flow_direction, flow_accumulation, slope
+    return flow_direction, flow_accumulation, slope

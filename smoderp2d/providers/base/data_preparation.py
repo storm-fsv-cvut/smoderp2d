@@ -50,13 +50,6 @@ class PrepareDataBase(object):
         self._set_output() 
         dem_copy, dem_mask = self._set_mask()
 
-        # DTM computation
-        Logger.info(
-            "Computing fill, flow direction, flow accumulation, slope..."
-        )
-        dem_fill, flow_direction, flow_accumulation, slope = \
-            self._terrain_products(dem_copy)
-
         # intersect
         Logger.info("Computing intersect of input data...")
         intersect, mask_shp, sfield = self._get_intersect(
@@ -71,8 +64,13 @@ class PrepareDataBase(object):
 
         # clip
         Logger.info("Clip of the source data by intersect...")
-        dem_clip, slope_clip, flow_direction_clip = self._clip_data(
-            dem_copy, intersect, slope, flow_direction)
+        dem_clip = self._clip_data(dem_copy, intersect)
+
+        # DTM computation
+        Logger.info(
+            "Computing fill, flow direction, flow accumulation, slope..."
+        )
+        flow_direction_clip, flow_accumulation_clip, slope_clip = self._terrain_products(dem_clip)
 
         # raster to numpy array conversion
         Logger.info("Computing parameters of DTM...")
@@ -108,8 +106,7 @@ class PrepareDataBase(object):
         self._get_slope_dir(dem_clip)
 
         Logger.info("Computing stream preparation...")
-        self._prepare_streams(mask_shp, dem_clip, intersect
-        )
+        self._prepare_streams(mask_shp, dem_clip, intersect, flow_accumulation_clip)
 
         # define mask (rc/rc variables)
         self._find_boundary_cells()
@@ -454,7 +451,7 @@ class PrepareDataBase(object):
     def _get_slope_dir(self, dem_clip):
         raise NotImplemented("Not implemented for base provider")
 
-    def _prepare_streams(self, mask_shp, dem_clip, intersect):
+    def _prepare_streams(self, mask_shp, dem_clip, intersect, flow_accumulation_clip):
         """
 
         :param mask_shp:
@@ -487,7 +484,8 @@ class PrepareDataBase(object):
                 self.data['outdir'],
                 dem_clip,
                 intersect,
-                self._primary_key
+                self._primary_key,
+                flow_accumulation_clip
             ]
 
             self.data['streams'], self.data['mat_stream_reach'], \

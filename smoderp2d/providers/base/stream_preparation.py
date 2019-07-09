@@ -28,6 +28,7 @@ class StreamPreparationBase(object):
         self.dem_clip = args[10]
         self.intersect = args[11]
         self._primary_key = args[12]
+        self.flow_accumulation_clip = args[13]
 
         # internal data
         self._data = {}
