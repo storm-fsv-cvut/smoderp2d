@@ -115,7 +115,7 @@ class PrepareData(PrepareDataBase, ManageFields):
     def _set_mask(self):
         """Set mask from elevation map.
 
-        :return: dem copy, mask
+        :return: dem copy, binary mask
         """
         dem_copy = os.path.join(self.data['temp'], 'dem_copy')
         arcpy.CopyRaster_management(
@@ -139,7 +139,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         
         :return: (filled elevation, flow direction, flow accumulation, slope)
         """
-        return compute_products(dem, self.data['temp'])
+        return compute_products(dem, self.data['outdir'])
     
     def _get_intersect(self, dem, mask,
                         vegetation, soil, vegetation_type, soil_type,
@@ -271,18 +271,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         dem_clip.save(
             os.path.join(self.data['outdir'], self._data['dem_clip'], 'dem_inter')
         )
-<<<<<<< HEAD
-        slope_clip = ExtractByMask(slope, mask)
-        slope_clip.save(os.path.join(
-            self.data['temp'], self._data["slope_clip"])
-        )
-        flow_direction_clip = ExtractByMask(flow_direction, mask)
-        flow_direction_clip.save(
-            os.path.join(self.data['outdir'], self._data['flow_clip'], 'flowdir_inter')
-        )
-=======
->>>>>>> master
-
+        
         return dem_clip
 
     def _clip_points(self, intersect):
