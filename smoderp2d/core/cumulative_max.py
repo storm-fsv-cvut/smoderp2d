@@ -121,8 +121,8 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
         #
         self.arrs = {1: 'infiltration',
                      2: 'precipitation',
-                     3: 'h_sur',
-                     4: 'q_sur',
+                     3: 'h_sur', # maximal }total)water level
+                     4: 'q_sur', # maximal sheet dischrge
                      5: 'v_sur',
                      6: 'v_sur',
                      7: 'shear_sur',
@@ -170,15 +170,15 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
         self.precipitation = np.zeros([self.r, self.c], float)
         # maximum surface water level [m]
         self.h_sur = np.zeros([self.r, self.c], float)
-        # maximum surface discharge [m3s-1]
+        # maximum sheet discharge [m3s-1]
         self.q_sur = np.zeros([self.r, self.c], float)
+        # cumulative sheet runoff volume [m3]
+        self.vol_sheet = np.zeros([self.r, self.c], float)
         # cumulative surface runoff volume [m3]
+        #self.v_sur_r = np.zeros([self.r, self.c], float) - asi se nepouziva
+        # maximum sheet velocity [ms-1]
         self.v_sur = np.zeros([self.r, self.c], float)
-        # cumulative surface runoff volume [m3]
-        self.v_sur_r = np.zeros([self.r, self.c], float)
-        # maximum surface velocity [ms-1]
-        self.v_sur = np.zeros([self.r, self.c], float)
-        # maximum surface shear stress [Pa]
+        # maximum sheet shear stress [Pa]
         self.shear_sur = np.zeros([self.r, self.c], float)
         # cumulative surface inflow volume [m3]
         self.inflow_sur = np.zeros([self.r, self.c], float)
@@ -187,9 +187,9 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
         # maximum discharge in rills [m3s-1]
         self.q_rill = np.zeros([self.r, self.c], float)
         # cumulative runoff volume in rills [m3]
-        self.v_rill = np.zeros([self.r, self.c], float)
+        self.vol_rill = np.zeros([self.r, self.c], float)
         # cumulative runoff volume in rills [m3]
-        self.v_rill_r = np.zeros([self.r, self.c], float)
+        #self.v_rill_r = np.zeros([self.r, self.c], float)
         # maximum rill width [m]
         self.b_rill = np.zeros([self.r, self.c], float)
         # maximum velocity in rills [ms-1]
@@ -199,7 +199,7 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
         # maximal total surface flow [m3/s]
         self.q_sur_tot = np.zeros([self.r, self.c], float)
         # cumulative total surface flow [m3/s]
-        self.v_sur_tot = np.zeros([self.r, self.c], float)
+        self.vol_sur_tot = np.zeros([self.r, self.c], float)
 
     # Method is used after each time step to save the desired variables.
     #
@@ -209,9 +209,9 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
 
         self.infiltration[i][j] += surface.infiltration * self.pixel_area
         self.precipitation[i][j] += surface.cur_rain * self.pixel_area
-        self.v_sur[i][j] += surface.vol_runoff
-        self.v_sur_r[i][j] += surface.vol_rest
-        self.v_sur_tot[i][j] += surface.vol_rest + surface.vol_runoff
+        self.vol_sheet[i][j] += surface.vol_runoff
+        #self.v_sur_r[i][j] += surface.vol_rest
+        self.vol_sur_tot[i][j] += surface.vol_rill + surface.vol_runoff
         self.inflow_sur[i][j] += surface.inflow_tm
         self.sur_ret[i][j] += surface.cur_sur_ret * self.pixel_area
 
@@ -227,8 +227,8 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
                 self.q_sur[i][j] = q_sheet
 
         elif (surface.state == 1) or (surface.state == 2):
-            self.v_rill[i][j] += surface.vol_runoff_rill
-            self.v_rill_r[i][j] += surface.v_rill_rest
+            self.vol_rill[i][j] += surface.vol_runoff_rill
+            #self.v_rill_r[i][j] += surface.v_rill_rest
             if surface.h_total_new > self.h_sur[i][j]:
                 self.h_sur[i][j] = surface.h_total_new
                 self.q_sur[i][j] = q_sheet
