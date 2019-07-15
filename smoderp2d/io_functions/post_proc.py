@@ -18,11 +18,11 @@ def do(cumulative, mat_slope, G, surArr):
     for i in rrows:
         for j in rcols[i]:
             if cumulative.h_sur[i][j] == 0.:
-                cumulative.v_sur[i][j] = 0.
+                cumulative.v_sheet[i][j] = 0.
             else:
-                cumulative.v_sur[i][j] = cumulative.q_sur[
+                cumulative.v_sheet[i][j] = cumulative.q_sheet[
                     i][j] / cumulative.h_sur[i][j]
-            cumulative.shear_sur[i][j] = cumulative.h_sur[
+            cumulative.shear_sheet[i][j] = cumulative.h_sur[
                 i][j] * 98.07 * mat_slope[i][j]
 
     # 1, 2, 15, 16
