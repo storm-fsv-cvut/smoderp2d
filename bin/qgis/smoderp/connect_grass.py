@@ -5,35 +5,30 @@ import shutil
 import tempfile
 
 
-def findGrass():
+def find_grass():
     try:
-        grass7bin = _grassLoc()
+        grass7bin = _grass_loc()
     except ImportError as e:
         raise ImportError('Unable to find GRASS installation. {}'.format(e))
     return grass7bin
 
 
-def _grassLoc():
-    """Find GRASS.
-    Find location of GRASS.
+def _grass_loc():
+    """Find GRASS instalation.
     :todo: Avoid bat file calling.
     """
-    ########### SOFTWARE
     if sys.platform == 'win32':
         qgis_prefix_path = os.environ['QGIS_PREFIX_PATH']
-        bin_path = os.path.join(os.path.split(
-            os.path.split(qgis_prefix_path)[0])[0],
-            'bin'
-        )
+        bin_path = os.path.join(qgis_prefix_path, '..', '..',  'bin')
         grass7bin = None
-        for grass_version in ['70', '72', '74']:
+        for grass_version in ['77', '78']:
             gpath = os.path.join(bin_path, 'grass{}.bat'.format(grass_version))
             if os.path.exists(gpath):
                 grass7bin = gpath
                 break
 
         if grass7bin is None:
-            raise ImportError("No grass70.bat or grass72.bat or grass74.bat found.")
+            raise ImportError("No grass executable found.")
     else:
         grass7bin = '/usr/bin/grass'
     startcmd = [grass7bin, '--config', 'path']

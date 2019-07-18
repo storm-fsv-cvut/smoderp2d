@@ -37,7 +37,7 @@ from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
 
 from smoderp2d.exceptions import ProviderError
 from smoderp2d import QGISRunner
-from .connect_grass import findGrass as fg
+from .connect_grass import find_grass as fg
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'smoderp_2D_dockwidget_base.ui'))
@@ -144,6 +144,12 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
             runner.import_data(self._input_params)
 
+            # TODO: implement data preparation only
+            
+            # runner.run()
+
+            # TODO: to be implemented
+            # runner.show_results()
         else:
             self.send_message("Input parameters error:",
                               "Some of mandatory fields are not filled correctly.",
