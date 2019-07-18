@@ -10,24 +10,25 @@ class PrepareDataBase(object):
     def __init__(self):
         # internal output data
         self._data = {
-            'dem_mask' : 'dem_mask',
-            'ratio_cell' : 'ratio_cell',
-            'efect_cont' : 'efect_cont',
-            'soil_boundary': 'soil_b',
-            'vegetation_boundary': 'vegetation_b',
-            'vector_mask': 'dem_mask',
-            'vegetation_mask': 'vegetation_mask',
-            'soil_mask': 'soil_mask',
-            'intersect': 'inter_soil_lu',
+            'dem_mask' : 'control',
+            'ratio_cell' : 'control',
+            'efect_cont' : 'control',
+            'soil_boundary': 'control',
+            'vegetation_boundary': 'control',
+            'vector_mask': 'control',
+#            'vegetation_mask': 'vegetation_mask',
+#            'soil_mask': 'soil_mask',
+            'intersect': 'control',
             'soil_veg_column': 'soil_veg',
-            'soil_veg_copy': 'soil_veg_tab_current',
+            'soil_veg_copy': 'control',
             'sfield': ["k", "s", "n", "pi", "ppl",
                        "ret", "b", "x", "y", "tau", "v"],
-            'points_mask' : 'points_inter',
-            'inter_mask' : 'inter_mask',
-            'dem_clip' : 'dem_inter',
+            'points_mask' : 'core',
+            'inter_mask' : 'control',
+            'dem_clip' : 'control',
             'slope_clip' : 'slope_inter',
-            'flow_clip' : 'flowdir_inter',
+            'flow_clip' : 'control',
+            'sfield_dir' : 'control',
         }
 
         # primary key (is defined by provider)
@@ -199,13 +200,32 @@ class PrepareDataBase(object):
         os.makedirs(self.data['outdir'])
 
         # create temporary dir
-        Logger.debug(
+        Logger.info(
             "Creating temp directory {}".format(self.data['temp'])
         )
         self.data['temp'] = os.path.join(
             self.data['outdir'], "temp"
         )
         os.makedirs(self.data['temp'])
+
+        # create core dir
+        Logger.info(
+            "Creating core directory"
+        )
+        core = os.path.join(
+            self.data['outdir'], "core"
+        )
+        os.makedirs(core)
+
+        # create control dir
+        Logger.info(
+            "Creating control directory"
+        )
+        control = os.path.join(
+            self.data['outdir'], "control"
+        )
+        os.makedirs(control)
+
         
     def _set_mask(self):
         raise NotImplemented("Not implemented for base provider")

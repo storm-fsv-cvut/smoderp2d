@@ -98,15 +98,26 @@ class PrepareData(PrepareDataBase, ManageFields):
         # create temporary ArcGIS File Geodatabase
         self._tempGDB = os.path.join(self.data['temp'], "tempGDB.gdb")
         arcpy.CreateFileGDB_management(
-            self.data['temp'], "tempGDB.gdb"
-        )
+            self.data['temp'], "tempGDB.gdb")
+
+        # create control ArcGIS File Geodata
+        control = os.path.join(self.data['outdir'], 'control')
+        self._controlGDB = os.path.join(control, "controlGDB.gdb")
+        arcpy.CreateFileGDB_management(
+            control, "controlGDB.gdb")
+
+        # create core ArcGIS File Geodata
+        core = os.path.join(self.data['outdir'], 'core')
+        self._coreGDB = os.path.join(core, "coreGDB.gdb")
+        arcpy.CreateFileGDB_management(
+            core, "coreGDB.gdb")
 
     def _set_mask(self):
         """Set mask from elevation map.
 
-        :return: dem copy, mask
+        :return: dem copy, binary mask
         """
-        dem_copy = os.path.join(str(self._tempGDB), "dem_copy")
+        dem_copy = os.path.join(self.data['temp'], 'dem_copy')
         arcpy.CopyRaster_management(
             self._input_params['elevation'], dem_copy
         )
@@ -114,7 +125,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         # align computation region to DTM grid
         arcpy.env.snapRaster = self._input_params['elevation']
 
-        dem_mask = os.path.join(self.data['temp'], self._data['dem_mask'])
+        dem_mask = os.path.join(self.data['outdir'], self._data['dem_mask'], 'dem_mask')
         self.gp.Reclassify_sa(
             dem_copy, "VALUE", "-100000 100000 1", dem_mask, "DATA"
         )
@@ -128,7 +139,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         
         :return: (filled elevation, flow direction, flow accumulation, slope)
         """
-        return compute_products(dem, self.data['temp'])
+        return compute_products(dem, self.data['outdir'])
     
     def _get_intersect(self, dem, mask,
                         vegetation, soil, vegetation_type, soil_type,
@@ -152,17 +163,17 @@ class PrepareData(PrepareDataBase, ManageFields):
         """
         # convert mask into polygon feature class
         mask_shp = os.path.join(
-            str(self._tempGDB), self._data['vector_mask']
+            str(self._controlGDB), 'dem_mask'
         )
         arcpy.RasterToPolygon_conversion(
             mask, mask_shp, "NO_SIMPLIFY")
 
         # dissolve soil and vegmetation polygons
         soil_boundary = os.path.join(
-            str(self._tempGDB), self._data['soil_boundary']
+            str(self._controlGDB), 'soil_boundary'
         )
         vegetation_boundary = os.path.join(
-            str(self._tempGDB), self._data['vegetation_boundary']
+            str(self._controlGDB), 'vegetation_boundary'
         )
         arcpy.Dissolve_management(
             vegetation, vegetation_boundary, vegetation_type
@@ -174,7 +185,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         # do intersection
         group = [soil_boundary, vegetation_boundary, mask_shp]
         intersect = os.path.join(
-            str(self._tempGDB), self._data['intersect']
+            str(self._controlGDB), 'inter_soil_lu'
         )
         arcpy.Intersect_analysis(
             group, intersect, "ALL", "", "INPUT")
@@ -196,9 +207,8 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         # copy attribute table to DBF file for modifications
         soil_veg_copy = os.path.join(
-            self.data['temp'], "{}.dbf".format(
-                self._data['soil_veg_copy']
-        ))
+            self.data['outdir'], self._data['soil_veg_copy'], "soil_veg_tab_current.dbf"
+        )
         arcpy.CopyRows_management(table_soil_vegetation, soil_veg_copy)
 
         # join table copy to intersect feature class
@@ -251,9 +261,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         arcpy.env.outputCoordinateSystem = dem_desc.SpatialReference
 
         # create raster mask based on intersect feature call
-        mask = os.path.join(self.data['temp'],
-                            self._data['inter_mask']
-        )
+        mask = os.path.join(self.data['outdir'], self._data['inter_mask'], 'inter_mask')
         arcpy.PolygonToRaster_conversion(
             intersect, self._primary_key, mask, "MAXIMUM_AREA",
             cellsize = dem_desc.MeanCellHeight)
@@ -261,9 +269,9 @@ class PrepareData(PrepareDataBase, ManageFields):
         # cropping rasters
         dem_clip = ExtractByMask(dem, mask)
         dem_clip.save(
-            os.path.join(self.data['outdir'], self._data['dem_clip'])
+            os.path.join(self.data['outdir'], self._data['dem_clip'], 'dem_inter')
         )
-
+        
         return dem_clip
 
     def _clip_points(self, intersect):
@@ -273,7 +281,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         :param intersect: vector intersect feature class
         """
         pointsClipCheck = os.path.join(
-            str(self._tempGDB), self._data['points_mask']
+            str(self._coreGDB), 'points_inter'
         )
         arcpy.Clip_analysis(
             self.data['points'], intersect, pointsClipCheck
@@ -300,7 +308,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         
         idx = 0
         for field in sfield:
-            output = os.path.join(self.data['temp'], "r{}".format(field))
+            output = os.path.join(self.data['outdir'], self._data['sfield_dir'], "r{}".format(field))
             arcpy.PolygonToRaster_conversion(
                 intersect, field, output,
                 "MAXIMUM_AREA", "", self.data['vpix']
@@ -389,12 +397,12 @@ class PrepareData(PrepareDataBase, ManageFields):
         cosslope = arcpy.sa.Abs(cosasp)
         times1 = arcpy.sa.Plus(cosslope, sinslope)
         times1.save(
-            os.path.join(self.data['temp'], self._data["ratio_cell"])
+            os.path.join(self.data['outdir'], self._data['ratio_cell'], 'ratio_cell')
         )
 
         efect_cont = arcpy.sa.Times(times1, self.data['spix'])
         efect_cont.save(
-            os.path.join(self.data['temp'], self._data["efect_cont"])
+            os.path.join(self.data['outdir'], self._data['efect_cont'],  'efect_cont')
         )
         self.data['mat_efect_cont'] = self._rst2np(efect_cont)
 

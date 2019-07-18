@@ -31,22 +31,20 @@ class StreamPreparationBase(object):
         self.flow_accumulation_clip = args[13]
 
         # internal data
-        self._data = {}
-        for item in [
-                'setnull',
-                'stream',
-                'stream_loc',
-                'aoi',
-                'aoi_buffer',
-                'start',
-                'end',
-                'start_elev',
-                'end_elev',
-                'stream_rst',
-                'stream_seg',
-                'stream_shape']:
-            self._data[item] = item
-        
+        self._data = {
+                'setnull': 'temp',
+                'stream': 'control',
+                'stream_loc': 'control',
+                'aoi': 'control',
+                'aoi_buffer': 'control',
+                'start': 'temp',
+                'end': 'temp',
+                'start_elev': 'start_elev',
+                'end_elev': 'end_elev',
+                'stream_rst': 'control',
+                'stream_seg': 'control',
+                'stream_shape': 'control'
+        }
     def prepare(self):
         Logger.info("Creating output...")
         self._set_output()

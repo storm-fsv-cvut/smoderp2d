@@ -24,7 +24,7 @@ def compute_products(elev, save_dir, fldir=None):
     # filling the sink areas in raster
     try:
         elev_fill = arcpy.sa.Fill(elev)
-        elev_fill.save(os.path.join(save_dir, "fill"))
+        elev_fill.save(os.path.join(save_dir, 'temp', "fill"))
     except:
         raise ProviderError(
             "Unexpected error during raster fill calculation: {}".format(
@@ -35,7 +35,7 @@ def compute_products(elev, save_dir, fldir=None):
     try:
         if not fldir:
             flow_direction = arcpy.sa.FlowDirection(elev_fill)
-            flow_direction.save(os.path.join(save_dir, "fldir"))
+            flow_direction.save(os.path.join(save_dir, 'control', "flowdir_inter"))
         else:
             flow_direction = fldir
     except:
@@ -47,7 +47,7 @@ def compute_products(elev, save_dir, fldir=None):
     # flow accumulation calculation
     try:
         flow_accumulation = arcpy.sa.FlowAccumulation(flow_direction)
-        flow_accumulation.save(os.path.join(save_dir, "facc"))
+        flow_accumulation.save(os.path.join(save_dir, 'temp', "facc"))
     except:
         raise ProviderError(
             "Unexpected error during flow accumulation calculation: {}".format(
@@ -57,7 +57,7 @@ def compute_products(elev, save_dir, fldir=None):
     # slope calculation
     try:
         slope = arcpy.sa.Slope(elev, "PERCENT_RISE", 1)
-        slope.save(os.path.join(save_dir, "slope"))
+        slope.save(os.path.join(save_dir, 'temp', "slope_inter"))
     except:
         raise ProviderError(
             "Unexpected error during slope calculation: {}".format(
