@@ -211,7 +211,7 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
         self.precipitation[i][j] += surface.cur_rain * self.pixel_area
         self.vol_sheet[i][j] += surface.vol_runoff
         #self.v_sur_r[i][j] += surface.vol_rest
-        self.vol_sur_tot[i][j] += surface.vol_rill + surface.vol_runoff
+        self.vol_sur_tot[i][j] += surface.vol_to_rill + surface.vol_runoff
         self.inflow_sur[i][j] += surface.inflow_tm
         self.sur_ret[i][j] += surface.cur_sur_ret * self.pixel_area
 
