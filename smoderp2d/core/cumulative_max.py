@@ -134,7 +134,7 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
                      13: 'sur_ret', # control
                      14: 'v_sur_r',# zda se ze se nepouziva a je k nicemu
                      15: 'q_sur_tot', # core
-                     16: 'v_sur_tot' # core
+                     16: 'vol_sur_tot' # core
                      }
 
                 # 12 : 'v_rill',
@@ -175,7 +175,7 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
         # cumulative sheet runoff volume [m3]
         self.vol_sheet = np.zeros([self.r, self.c], float)
         # cumulative surface runoff volume [m3]
-        #self.v_sur_r = np.zeros([self.r, self.c], float) - asi se nepouziva
+        self.v_sur_r = np.zeros([self.r, self.c], float) # asi se nepouziva
         # maximum sheet velocity [ms-1]
         self.v_sheet = np.zeros([self.r, self.c], float)
         # maximum sheet shear stress [Pa]

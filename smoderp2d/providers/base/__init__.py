@@ -6,6 +6,7 @@ import shutil
 import math
 import pickle
 import logging
+import numpy as np
 
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError
@@ -273,3 +274,71 @@ class BaseProvider(object):
         )
 
         return data
+
+    def postprocessing(self, cumulative, surface_array):
+        output = Globals.outdir
+        rrows = GridGlobals.rr
+        rcols = GridGlobals.rc
+
+        for i in rrows:
+            for j in rcols[i]:
+                if cumulative.h_sur_tot[i][j] == 0.:
+                    cumulative.v_sheet[i][j] = 0.
+                else:
+                    cumulative.v_sheet[i][j] = \
+                        cumulative.q_sheet[i][j] / cumulative.h_sur_tot[i][j]
+                cumulative.shear_sheet[i][j] = \
+                    cumulative.h_sur_tot[i][j] * 98.07 * Globals.mat_slope[i][j]
+
+        # 1, 2, 15, 16
+        main_output = [1, 2, 6, 7, 15, 16]
+            # jj vyznam najdes v class Cumulative mezi class Cumulative a
+            # def__init__
+
+        if Globals.subflow:
+            main_output += [14, 15, 16, 17, 18]
+        if Globals.extraOut:
+            # jj tady jen pokud chceme se i ten zbytek Gl.extraOut je zatim definovan  na zacatku class_main_arrays
+            main_output += [4, 8, 9, 11, 12, 13, 14]
+
+        finState = np.zeros(np.shape(surface_array), int)
+        finState.fill(GridGlobals.NoDataValue)
+        vRest = np.zeros(np.shape(surface_array), float)
+        vRest.fill(GridGlobals.NoDataValue)
+        totalBil = cumulative.infiltration.copy()
+        totalBil.fill(0.0)
+
+        for i in rrows:
+            for j in rcols[i]:
+                finState[i][j] = int(surface_array[i][j].state)
+
+        # make rasters from cumulative class
+        for i in main_output:
+            arrin = np.copy(getattr(cumulative, cumulative.arrs[i]))
+            outname = cumulative.names[i]
+            ### TODO: raster_output(arrin, G, finState, outname)
+
+        for i in rrows:
+            for j in rcols[i]:
+                if finState[i][j] >= 1000:
+                    vRest[i][j] = GridGlobals.NoDataValue
+                else:
+                    vRest[i][j] = surface_array[i][j].h_total_new * GridGlobals.pixel_area
+
+        totalBil = (cumulative.precipitation + cumulative.inflow_sur) - \
+            (cumulative.infiltration + cumulative.v_sur_r + cumulative.v_rill) - \
+            cumulative.sur_ret  # + (cumulative.v_sur_r + cumulative.v_rill_r)
+        totalBil -= vRest
+
+        # TODO
+        # raster_output(totalBil, G, finState, 'massBalance')
+        # raster_output(finState, G, finState, 'reachfid', False)
+        # raster_output(vRest, G, finState, 'volrest_m3')
+
+        # TODO
+        # if not Globals.extraOut:
+        #     if os.path.exists(output + os.sep + 'temp'):
+        #         shutil.rmtree(output + os.sep + 'temp')
+        #     if os.path.exists(output + os.sep + 'temp_dp'):
+        #         shutil.rmtree(output + os.sep + 'temp_dp')
+        #     return 1

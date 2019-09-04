@@ -355,8 +355,8 @@ class Runoff(object):
             time.time() - Logger.start_time)
         )
 
-        # TODO
-        # post_proc.do(self.cumulative, Globals.mat_slope, Gl, self.surface.arr)
+        # perform postprocessing - store results
+        self.provider.postprocessing(self.cumulative, self.surface.arr)
 
         # TODO
         # post_proc.stream_table(Globals.outdir + os.sep, self.surface,
