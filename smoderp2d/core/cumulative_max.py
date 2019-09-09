@@ -16,7 +16,6 @@ from smoderp2d.providers import Logger
 
 from smoderp2d.core.general import GridGlobals, Globals
 
-
 # Max and cumulative values of the subsurface flow
 #
 #  Stores arrays of max or cumulative values of important variables of
@@ -36,17 +35,16 @@ class CumulativeSubsurface(object):
         Logger.info('Subsurface')
         super(CumulativeSubsurface, self).__init__()
 
-        self.arrs['exfiltration'] = ('core', 'CumExfiltrL3')
-        self.arrs['percolation']  = ('core', 'CumPercolL3')
-        self.arrs['h_sub']        = ('core', 'MaxWaterSubL')
-        self.arrs['q_sub']        = ('core', 'MaxQSubL3t_1')
-        self.arrs['v_sub']        = ('core', 'CumVOutSubL3')
+        self.arrs['exfiltration'] = ('core', 'cExfiltr_m3')
+        self.arrs['percolation']  = ('core', 'cPercol_m3')
+        self.arrs['h_sub']        = ('core', 'mWLevelSub_M')
+        self.arrs['q_sub']        = ('core', 'mQSub_m3_s')
+        self.arrs['vol_sub']        = ('core', 'cVOutSub_m3')
 
         r = self.r
         c = self.c
 
-        self.n += 5
-
+        # TODO: create arrays with self.arrs.keys() for cycle 
         # cumulative exfiltration volume [m3]
         self.exfiltration = np.zeros([r, c], float)
         # cumulative percolation volume [m3]
@@ -59,7 +57,7 @@ class CumulativeSubsurface(object):
         # maximum discharge from rills [m3s-1]
         self.q_sub = np.zeros([r, c], float)
         # cumulative outflow volume in rills [m3]
-        self.v_sub = np.zeros([r, c], float)
+        self.vol_sub = np.zeros([r, c], float)
 
     # Method is used after each time step to save the desired variables.
     #
@@ -146,7 +144,8 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
         :param int i:
         :param int j:
         :param float sur_arr_el: single element in surface.arr
-        :param float subsur_arr_el: single element in subsurface.arr
+        :param float subsur_arr_el: single element in subsurface.arr (to be
+        implemented)
         :param floet delta_t: length of time step
         """
 
@@ -157,10 +156,6 @@ class Cumulative(GridGlobals, CumulativeSubsurface if Globals.subflow else Cumul
         self.vol_sur_tot[i][j] += sur_arr_el.vol_runoff_rill + sur_arr_el.vol_runoff
         self.inflow_sur[i][j] += sur_arr_el.inflow_tm
         self.sur_ret[i][j] += sur_arr_el.cur_sur_ret * self.pixel_area
-
-        print (sur_arr_el.vol_runoff)
-        print (self.vol_sheet[3][3])
-
 
         q_sheet = sur_arr_el.vol_runoff / delta_t
         q_rill = sur_arr_el.vol_runoff_rill / delta_t
