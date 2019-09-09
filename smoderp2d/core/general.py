@@ -122,9 +122,9 @@ class Globals:
     # raster contains flow direction datas
     mat_fd = None
     # raster contains digital elevation model
-    mat_dmt = None
+    mat_dem = None
     # raster contains efective couterline data
-    mat_efect_vrst = None
+    mat_efect_cont = None
     # raster contains surface slopes data
     mat_slope = None
     # raster labels not a number cells
@@ -155,15 +155,15 @@ class Globals:
     # counter of precipitation intervals
     itera = None
     # ???
-    toky = None
+    streams = None
     # ???
     cell_stream = None
     # raster contains the reach id data
-    mat_tok_reach = None
+    mat_stream_reach = None
     # ???
     STREAM_RATIO = None
     # ???
-    toky_loc = None
+    streams_loc = None
     # ???
     maxdt = None
     # ???
@@ -234,12 +234,12 @@ class Globals:
         return cls.mat_fd
 
     @classmethod
-    def get_mat_dmt(cls):
-        return cls.mat_dmt
+    def get_mat_dem(cls):
+        return cls.mat_dem
 
     @classmethod
-    def get_mat_efect_vrst(cls):
-        return cls.mat_efect_vrst
+    def get_mat_efect_cont(cls):
+        return cls.mat_efect_cont
 
     @classmethod
     def get_mat_slope(cls, i, j):
@@ -298,25 +298,24 @@ class Globals:
         return cls.itera
 
     @classmethod
-    def get_toky(cls):
-        return cls.toky
+    def get_streams(cls):
+        return cls.streams
 
     @classmethod
     def get_cell_stream(cls):
         return cls.cell_stream
 
     @classmethod
-    def get_mat_tok_reach(cls, i, j):
-        return cls.mat_tok_reach[i][j]
+    def get_mat_stream_reach(cls, i, j):
+        return cls.mat_stream_reach[i][j]
 
     @classmethod
     def get_STREAM_RATIO(cls):
         return cls.STREAM_RATIO
 
-    @classmethod
-    def get_toky_loc(cls):
-        return cls.toky_loc
-    
+    def get_streams_loc(cls):
+        return cls.streams_loc
+
     @classmethod
     def get_infiltration_type(cls):
         #TODO 1 stands for philips infiltration

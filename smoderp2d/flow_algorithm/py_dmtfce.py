@@ -107,7 +107,7 @@ def neighbors(i, j, array, x, y):  # function to determine all neighbor cell to 
     return nb1, nb2, nb3, nb4, nb5, nb6, nb7, nb8
 
 
-def removeCellsWithSameHeightNeighborhood(mat_dmt, mat_nan, rows, cols):  # function determines if cell neighborhood has exactly same values of height a and than it save that cell as NoData
+def removeCellsWithSameHeightNeighborhood(mat_dem, mat_nan, rows, cols):  # function determines if cell neighborhood has exactly same values of height a and than it save that cell as NoData
     "Returns an array with the values of heights, adjusted for the value of NoData cells"
 
     bad_cells = []
@@ -117,18 +117,18 @@ def removeCellsWithSameHeightNeighborhood(mat_dmt, mat_nan, rows, cols):  # func
         for j in range(cols):
             c = [i, j]
             count_nbrs = 0
-            point_m = mat_dmt[i][j]
+            point_m = mat_dem[i][j]
 
             if i > 0 and i < (rows - 1) and j > 0 and j < (cols - 1):  # non edge cells - edge cells are excluded thanks to slope trimming
 
-                nbrs = [mat_dmt[i - 1][j - 1],
-                        mat_dmt[i - 1][j],
-                        mat_dmt[i - 1][j + 1],
-                        mat_dmt[i][j - 1],
-                        mat_dmt[i][j + 1],
-                        mat_dmt[i + 1][j - 1],
-                        mat_dmt[i + 1][j],
-                        mat_dmt[i + 1][j + 1]]
+                nbrs = [mat_dem[i - 1][j - 1],
+                        mat_dem[i - 1][j],
+                        mat_dem[i - 1][j + 1],
+                        mat_dem[i][j - 1],
+                        mat_dem[i][j + 1],
+                        mat_dem[i + 1][j - 1],
+                        mat_dem[i + 1][j],
+                        mat_dem[i + 1][j + 1]]
 
                 for k in range(8):
                     if point_m > 0 and point_m == nbrs[k]:
@@ -149,7 +149,7 @@ def removeCellsWithSameHeightNeighborhood(mat_dmt, mat_nan, rows, cols):  # func
                     bc_j = bad_cells[0][1]
 
                     if bc_i == i and bc_j == j:
-                        mat_dmt[i][j] = -3.40282346639e+038
+                        mat_dem[i][j] = -3.40282346639e+038
                         mat_nan[i][j] = -3.40282346639e+038
                         bad_cells.pop(0)
                         if len(bad_cells) == 0:
@@ -157,7 +157,7 @@ def removeCellsWithSameHeightNeighborhood(mat_dmt, mat_nan, rows, cols):  # func
                 else:
                     break
 
-    return mat_dmt, mat_nan
+    return mat_dem, mat_nan
 
 
 def dirSlope(point_m, nbrs, vpix, spix):  

@@ -47,7 +47,6 @@ class BaseInfiltration(object):
 
     def __init__(self, soils_data):
         """ make instances of SingleSoilBI for each soil type 
-
         :param soils_data: combinat_index in the smoderp2d code
         """
 
@@ -67,7 +66,6 @@ class BaseInfiltration(object):
 
     def current_infiltration(self, soil_id, bil):
         """ Returns the actual infiltrated water height 
-
         :param soil_id: soil type in current cell
         :param bil: current water level
         """

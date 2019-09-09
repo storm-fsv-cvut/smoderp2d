@@ -24,20 +24,19 @@ max_infilt_capa = 0.00        # [m]
 class TimeStep:
 
     def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
-        surface, subsurface, delta_t, flow_control, courant
-
         rr, rc = GridGlobals.get_region_dim()
-        mat_efect_vrst = Globals.get_mat_efect_vrst()
+        mat_efect_cont = Globals.get_mat_efect_cont()
         fc = flow_control
         sr = Globals.get_sr()
         itera = Globals.get_itera()
 
         potRain, fc.tz = rain_f.timestepRainfall(
-            itera, fc.total_time, delta_t, fc.tz, sr)
+            itera, fc.total_time, delta_t, fc.tz, sr
+        )
 
         for i in rr:
             for j in rc[i]:
-
+                # TODO: variable not used. Should we delete it?
                 h_total_pre = surface.arr[i][j].h_total_pre
 
                 surface_state = surface.arr[i][j].state
@@ -50,9 +49,11 @@ class TimeStep:
                     rill_courant = 0.0
                 else:
                     q_sheet, v_sheet, q_rill, v_rill, fc.ratio, rill_courant = runoff(
-                        i, j, surface.arr[i][j], delta_t, mat_efect_vrst[i][j], fc.ratio)
-                    subsurface.runoff(i, j, delta_t, mat_efect_vrst[i][j])
+                        i, j, surface.arr[i][j], delta_t, mat_efect_cont[i][j], fc.ratio
+                    )
+                    subsurface.runoff(i, j, delta_t, mat_efect_cont[i][j])
 
+                # TODO: variable not used. Should we delete it?
                 q_surface = q_sheet + q_rill
                 # print v_sheet,v_rill
                 v = max(v_sheet, v_rill)
@@ -63,9 +64,10 @@ class TimeStep:
                     surface.arr[i][j].h_total_pre,
                     v,
                     delta_t,
-                    mat_efect_vrst[i][j],
+                    mat_efect_cont[i][j],
                     co,
                     rill_courant)
+                # TODO: variable not used. Should we delet it?
                 rill_courant = 0.
 
         return potRain
@@ -90,6 +92,7 @@ class TimeStep:
         if (infilt_capa < max_infilt_capa):
             infilt_time += delta_t
             actRain = 0.0
+            # TODO: variable not used. Should we delete it?
             potRain = 0.0
             for i in rr:
                 for j in rc[i]:
@@ -121,7 +124,6 @@ class TimeStep:
         # MAIN COMPUTAION LOOP
         for i in rr:
             for j in rc[i]:
-
 
                 actRain, fc.sum_interception, rain_arr.arr[i][j].veg_true = rain_f.current_rain(
                     rain_arr.arr[i][j], potRain, fc.sum_interception)

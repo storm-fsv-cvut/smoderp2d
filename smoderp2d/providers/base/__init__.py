@@ -5,28 +5,64 @@ import sys
 import shutil
 import math
 import pickle
+import logging
 
+from smoderp2d.providers import Logger
+from smoderp2d.providers.base.exceptions import DataPreparationError
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
-from smoderp2d.providers.base.logger import logger
 from smoderp2d.exceptions import ProviderError
 
-Logger = logger()
-
 class Args:
-    # type of computation ('dpre', 'roff', 'full')
+    # type of computation (CompType)
     typecomp = None
     # path to data file (used by 'dpre' for output and 'roff' for
     # input)
     data_file = None
 
+# unfortunately Python version shipped by ArcGIS 10 lacks Enum
+class CompType:
+    # type of computation
+    dpre = 0
+    roff = 1
+    full = 2
+
+    @classmethod
+    def __getitem__(cls, key):
+        if key == 'dpre':
+            return cls.dpre
+        elif key == 'roff':
+            return cls.roff
+        else:
+            return cls.full
+
 class BaseProvider(object):
     def __init__(self):
-        self._args = Args()
+        self.args = Args()
 
         self._print_fn = print
+        self._print_logo_fn = print
+
+        # default logging level (can be modified by provider)
+        Logger.setLevel(logging.DEBUG)
+
+    @staticmethod
+    def _add_logging_handler(handler, formatter=None):
+        """Register new logging handler.
+        
+        :param handler: loggging handler to be registerered
+        :param formatter: logging handler formatting
+        """
+        if not formatter:
+            formatter = logging.Formatter(
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s - [%(module)s:%(lineno)s]"
+            )
+        handler.setFormatter(formatter)
+        Logger.addHandler(handler)
 
     def _load_dpre(self):
-        """ Load configuration data from data preparation procedure.
+        """Run data preparation procedure.
+
+        See ArcGisProvider and GrassGisProvider for implementation issues.
 
         :return dict: loaded data
         """
@@ -45,7 +81,10 @@ class BaseProvider(object):
         try:
             data = self._load_data(indata)
             if isinstance(data, list):
-                raise ProviderError('Saved data out-dated. Please use utils/convert-saved-data.py for update.')
+                raise ProviderError(
+                    'Saved data out-dated. Please use '
+                    'utils/convert-saved-data.py for update.'
+                )
         except IOError as e:
             raise ProviderError('{}'.format(e))
 
@@ -95,24 +134,27 @@ class BaseProvider(object):
 
     def load(self):
         """Load configuration data."""
-        if self._args.typecomp not in ('dpre', 'roff', 'full'):
+        if self.args.typecomp not in (CompType.dpre, CompType.roff, CompType.full):
             raise ProviderError('Unsupported partial computing: {}'.format(
-                self._args.typecomp
+                self.args.typecomp
             ))
 
         # cleanup output directory first
         self._cleanup()
 
         data = None
-        if self._args.typecomp in ('dpre', 'full'):
-            data = self._load_dpre()
-            if self._args.typecomp == 'dpre':
+        if self.args.typecomp in (CompType.dpre, CompType.full):
+            try:
+                data = self._load_dpre()
+            except DataPreparationError as e:
+                raise ProviderError('{}'.format(e))
+            if self.args.typecomp == CompType.dpre:
                 # data preparation requested only
-                self._save_data(data, self._args.data_file)
+                self._save_data(data, self.args.data_file)
                 return
 
-        if self._args.typecomp == 'roff':
-            data = self._load_roff(self._args.data_file)
+        if self.args.typecomp == CompType.roff:
+            data = self._load_roff(self.args.data_file)
 
         # roff || full
         self._set_globals(data)
@@ -143,11 +185,17 @@ class BaseProvider(object):
         
     @staticmethod
     def _cleanup():
-        """Clean-up output directory."""
-        output = Globals.outdir
-        if os.path.exists(output):
-            shutil.rmtree(output)
-        os.makedirs(output)
+        """Clean-up output directory.
+
+        :param output_dir: output directory to clean up
+        """
+        output_dir = Globals.outdir
+        if not output_dir:
+            # no output directory defined
+            return
+        if os.path.exists(output_dir):
+            shutil.rmtree(output_dir)
+        os.makedirs(output_dir)
         
     @staticmethod
     def _comp_type(tc):
@@ -188,9 +236,10 @@ class BaseProvider(object):
 
     def logo(self):
         """Print Smoderp2d ascii-style logo."""
-        with open(os.path.join(os.path.dirname(__file__), 'txtlogo.txt'), 'r') as fd:
-            self._print_fn(fd.read())
-        #self._print_fn() # extra line
+        logo_file = os.path.join(os.path.dirname(__file__), 'txtlogo.txt')
+        with open(logo_file, 'r') as fd:
+            self._print_logo_fn(fd.read())
+        self._print_logo_fn('') # extra line
 
     @staticmethod
     def _save_data(data, filename):
@@ -203,10 +252,10 @@ class BaseProvider(object):
             os.makedirs(dirname)
 
         with open(filename, 'wb') as fd:
-            pickle.dump(data, fd)
-        Logger.debug('Size of saved data is {} bytes'.format(
-            sys.getsizeof(data))
-        )
+            pickle.dump(data, fd, protocol=2)
+        Logger.info('Pickle file created in <{}> ({} bytes)'.format(
+            filename, sys.getsizeof(data)
+        ))
 
     @staticmethod
     def _load_data(filename):

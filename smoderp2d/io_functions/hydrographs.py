@@ -45,14 +45,14 @@ class Hydrographs:
 
         counter = 0
 
-        # mat_tok_usek is alway presented if stream == True
-        # if (mat_tok_usek != None) and (stream == True):
+        # mat_stream_seg is alway presented if stream == True
+        # if (mat_stream_seg != None) and (stream == True):
         if Globals.isStream:
             for ip in range(ipi):
                 l = point_int[ip][1]
                 m = point_int[ip][2]
 
-                if Globals.get_mat_tok_reach(l, m) >= 1000:
+                if Globals.get_mat_stream_reach(l, m) >= 1000:
                     self.inStream.append(counter)
                     counter += 1
                 else:
@@ -162,7 +162,7 @@ class Hydrographs:
                     # prozatim
                     if Globals.extraOut:
                         line += '{sep}{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}'.format(
-                            surface.arr[l][m].v_to_rill,
+                            surface.arr[l][m].vol_to_rill,
                             ratio, courantMost, courantRill, iter_,
                             sep=sep)
                     line += os.linesep

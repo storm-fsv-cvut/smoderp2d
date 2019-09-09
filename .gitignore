@@ -1,10 +1,8 @@
 *.pyc
-*.save
-*.tbx
-prt_times.in
-indata/
 *~
-out*/
 tests/grassdata/smoderp2d-location/test/
 tests/data/output/
-
+tests/grassdata/smoderp2d-location/PERMANENT/cell_misc/w001001/reclassed_to
+tests/grassdata/smoderp2d-location/stream_prep/
+tests/grassdata/smoderp2d-location/test
+tests/grassdata/smoderp2d-location/water

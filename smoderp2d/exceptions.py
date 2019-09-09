@@ -1,15 +1,30 @@
+# TODO: cyclic import...
+from smoderp2d.providers import Logger
+
 class SmoderpError(Exception):
-    pass
+    def __init__(self, msg):
+        Logger.fatal(msg)
 
 class ProviderError(Exception):
-    pass
+    def __init__(self, msg):
+        Logger.fatal(msg)
 
 class MaxIterationExceeded(SmoderpError):
     """Number of iteration exceed max iteration criterion.
     """
     def __init__(self, mi, t):
-        self.msg = 'Maximum of iterations (max_iter = {}) was exceeded of at time [s]: {}'.format(
-            mi, t
+        Logger.fatal(
+            'Maximum of iterations (max_iter = {}) was exceeded of at time [s]: {}'.format(
+                mi, t
+        ))
+
+class NegativeWaterLevel(SmoderpError):
+    """Exception raised if the water level goes to negative values.
+
+    """
+    def __init__(self):
+        Logger.fatal(
+            'Water level reached negative value'
         )
 
     def __str__(self):
@@ -57,7 +72,6 @@ class IncorrectInfiltrationType(SmoderpError):
         return repr(self.msg)
 
 
-
 class InflowsError(SmoderpError):
 
     """Exception raised if the inflow to cell cannot be calculated.
@@ -69,3 +83,7 @@ class InflowsError(SmoderpError):
 
     def __str__(self):
         return repr(self.msg)
+
+
+class ConfigError(Exception):
+    pass

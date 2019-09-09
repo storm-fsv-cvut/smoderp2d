@@ -55,8 +55,8 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
                     Ks,
                     vg_n,
                     vg_l,
-                    mat_dmt[i][j] - L_sub,
-                    mat_dmt[i][j])
+                    mat_dem[i][j] - L_sub,
+                    mat_dem[i][j])
 
         for i in self.rr:
             for j in self.rc[i]:

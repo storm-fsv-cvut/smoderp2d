@@ -6,3 +6,21 @@ LOCATION: smoderp MAPSET: PERMANENT USER: martin DATE: Wed Dec  5 13:59:33 2018
 Total area: 733989 (8 areas)
 Overlapping area: 3282.08 (1 areas)
 Area without category: 0 (0 areas)
+---------------------------------------------------------------------------------
+COMMAND: v.edit map="puda" layer="1" type="point,line,boundary,centroid" tool="catdel" threshold=-1.0,0.0,0.0 ids="25" cats="1" snap="no"
+GISDBASE: /home/martin/git/storm-fsv-cvut/smoderp2d/tests/grassdata
+LOCATION: smoderp2d-location MAPSET: PERMANENT USER: martin DATE: Tue Apr 30 15:51:47 2019
+---------------------------------------------------------------------------------
+COMMAND: v.extract -d input="puda" layer="1" type="area" output="puda1" new=-1
+GISDBASE: /home/martin/git/storm-fsv-cvut/smoderp2d/tests/grassdata
+LOCATION: smoderp2d-location MAPSET: PERMANENT USER: martin DATE: Wed May  1 13:04:48 2019
+---------------------------------------------------------------------------------
+COMMAND: v.dissolve in=puda out=puda1
+GISDBASE: /home/martin/git/storm-fsv-cvut/smoderp2d/tests/grassdata
+LOCATION: smoderp2d-location MAPSET: PERMANENT USER: martin DATE: Wed May  1 13:04:48 2019
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+COMMAND: v.clean --overwrite -c input="puda" layer="-1" type="point,line,boundary,centroid,area,face,kernel" output="puda2" tool="break,snap" threshold=0.1,0.1
+GISDBASE: /home/martin/git/storm-fsv-cvut/smoderp2d/tests/grassdata
+LOCATION: smoderp2d-location MAPSET: PERMANENT USER: martin DATE: Tue May  7 15:19:57 2019
+---------------------------------------------------------------------------------
