@@ -67,7 +67,7 @@ class BaseProvider(object):
 
         :return dict: loaded data
         """
-        raise NotImplemenetedError()
+        raise NotImplementedError()
 
     def _load_roff(self, indata):
         """Load configuration data from roff computation procedure.
@@ -276,7 +276,6 @@ class BaseProvider(object):
         return data
 
     def postprocessing(self, cumulative, surface_array):
-        output = Globals.outdir
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
 
@@ -290,19 +289,37 @@ class BaseProvider(object):
                 cumulative.shear_sheet[i][j] = \
                     cumulative.h_sur_tot[i][j] * 98.07 * Globals.mat_slope[i][j]
 
-        # 1, 2, 15, 16
-        main_output = [1, 2, 6, 7, 15, 16]
-            # jj vyznam najdes v class Cumulative mezi class Cumulative a
-            # def__init__
-
+        # define output data to be produced
+        data_output = [
+            'infiltration',
+            'precipitation',
+            'v_sheet',
+            'shear_sheet',
+            'q_sur_tot',
+            'vol_sur_tot'
+        ]
         if Globals.subflow:
-            main_output += [14, 15, 16, 17, 18]
+            data_output += [
+                'vol_sur_r',
+                'q_sur_tot',  # TODO: twice ?
+                'vol_sur_tot' # TODO: twice ?
+            ]
+            # 17, 18]
         if Globals.extraOut:
-            # jj tady jen pokud chceme se i ten zbytek Gl.extraOut je zatim definovan  na zacatku class_main_arrays
-            main_output += [4, 8, 9, 11, 12, 13, 14]
+            data_output += [
+                'q_sheet',
+                'h_rill',
+                'q_rill',
+                'b_rill',
+                'inflow_sur',
+                'sur_ret',
+                'vol_sur_r'  # TODO: twice ?
+            ]
+        # avoid duplicates
+        data_output = list(set(data_output))
 
         finState = np.zeros(np.shape(surface_array), int)
-        finState.fill(GridGlobals.NoDataValue)
+        finState.fill(GridGlobals.NoDataValue) # TODO: int ?
         vRest = np.zeros(np.shape(surface_array), float)
         vRest.fill(GridGlobals.NoDataValue)
         totalBil = cumulative.infiltration.copy()
@@ -313,10 +330,11 @@ class BaseProvider(object):
                 finState[i][j] = int(surface_array[i][j].state)
 
         # make rasters from cumulative class
-        for i in main_output:
-            arrin = np.copy(getattr(cumulative, cumulative.arrs[i]))
-            outname = cumulative.names[i]
-            ### TODO: raster_output(arrin, G, finState, outname)
+        for item in data_output:
+            self._raster_output(
+                getattr(cumulative, item),
+                cumulative.data[item].file_name
+            )
 
         for i in rrows:
             for j in rcols[i]:
@@ -326,14 +344,13 @@ class BaseProvider(object):
                     vRest[i][j] = surface_array[i][j].h_total_new * GridGlobals.pixel_area
 
         totalBil = (cumulative.precipitation + cumulative.inflow_sur) - \
-            (cumulative.infiltration + cumulative.v_sur_r + cumulative.v_rill) - \
+            (cumulative.infiltration + cumulative.vol_sur_r + cumulative.vol_rill) - \
             cumulative.sur_ret  # + (cumulative.v_sur_r + cumulative.v_rill_r)
         totalBil -= vRest
 
-        # TODO
-        # raster_output(totalBil, G, finState, 'massBalance')
-        # raster_output(finState, G, finState, 'reachfid', False)
-        # raster_output(vRest, G, finState, 'volrest_m3')
+        self._raster_output(totalBil, 'massBalance')
+        self._raster_output(finState, 'reachFid')
+        self._raster_output(vRest, 'volRest_m3')
 
         # TODO
         # if not Globals.extraOut:
@@ -342,3 +359,19 @@ class BaseProvider(object):
         #     if os.path.exists(output + os.sep + 'temp_dp'):
         #         shutil.rmtree(output + os.sep + 'temp_dp')
         #     return 1
+
+
+    @staticmethod
+    def _raster_output_path(output):
+        return os.path.join(
+            Globals.outdir,
+            output + '.asc'
+        )
+ 
+    def _raster_output(self, arr, output):
+        """Write raster to ASCII file.
+
+        :param arr: numpy array
+        :param output: output filename
+        """
+        raise NotImplementedError()
