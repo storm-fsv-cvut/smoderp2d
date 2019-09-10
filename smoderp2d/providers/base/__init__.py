@@ -300,9 +300,7 @@ class BaseProvider(object):
         ]
         if Globals.subflow:
             data_output += [
-                'vol_sur_r',
-                'q_sur_tot',  # TODO: twice ?
-                'vol_sur_tot' # TODO: twice ?
+                'vol_sur_r'
             ]
             # 17, 18]
         if Globals.extraOut:
@@ -315,8 +313,6 @@ class BaseProvider(object):
                 'sur_ret',
                 'vol_sur_r'  # TODO: twice ?
             ]
-        # avoid duplicates
-        data_output = list(set(data_output))
 
         finState = np.zeros(np.shape(surface_array), int)
         finState.fill(GridGlobals.NoDataValue) # TODO: int ?
