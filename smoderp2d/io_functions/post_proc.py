@@ -9,6 +9,7 @@ import shutil
 
 import smoderp2d.tools.tools as tools
 from smoderp2d.core.general import Globals as Gl
+from smoderp2d.core.general import GridGlobals as GG
 
 
 def raster_output_arcgis(arrin, G, fs, outname, reachNA=True):
@@ -61,9 +62,9 @@ raster_output = raster_output_ascii
 
 def do(cumulative, mat_slope, G, surArr):
 
-    output = G.outdir
-    rrows = G.rr
-    rcols = G.rc
+    output = Gl.outdir
+    rrows = GG.rr
+    rcols = GG.rc
 
     for i in rrows:
         for j in rcols[i]:
@@ -75,20 +76,32 @@ def do(cumulative, mat_slope, G, surArr):
             cumulative.shear_sheet[i][j] = cumulative.h_sur[
                 i][j] * 98.07 * mat_slope[i][j]
 
-    # 1, 2, 15, 16
-    main_output = [1, 2, 6, 7, 15, 16]
-        # jj vyznam najdes v class Cumulative mezi class Cumulative a
-        # def__init__
+    main_output = ['infiltration',
+                   'precipitation',
+                   'v_sur2',
+                   'shear_sur',
+                   'q_sur_tot',
+                   'v_sur_tot']
 
     if Gl.subflow:
-        main_output += [14, 15, 16, 17, 18]
+        main_output += ['v_sur_r',
+                        'q_sur_tot',
+                        'v_sur_tot',
+                        'exfiltration',
+                        'percolation']
     if Gl.extraOut:  # jj tady jen pokud chceme se i ten zbytek Gl.extraOut je zatim definovan  na zacatku class_main_arrays
-        main_output += [4, 8, 9, 11, 12, 13, 14]
+        main_output += ['q_sur',
+                        'h_rill',
+                        'q_rill',
+                        'b_rill',
+                        'inflow_sur',
+                        'sur_ret',
+                        'v_sur_r']
 
     finState = np.zeros(np.shape(surArr), int)
-    finState.fill(G.NoDataValue)
+    finState.fill(GG.NoDataValue)
     vRest = np.zeros(np.shape(surArr), float)
-    vRest.fill(G.NoDataValue)
+    vRest.fill(GG.NoDataValue)
     totalBil = cumulative.infiltration.copy()
     totalBil.fill(0.0)
 
@@ -98,24 +111,25 @@ def do(cumulative, mat_slope, G, surArr):
 
     # make rasters from cumulative class
     for i in main_output:
-        arrin = np.copy(getattr(cumulative, cumulative.arrs[i]))
-        outname = cumulative.names[i]
-        raster_output(arrin, G, finState, outname)
+        a = 1
+        #arrin = np.copy(getattr(cumulative, cumulative.arrs[i]))
+        #outname = cumulative.arrs[i]
+        raster_output(i, G, finState, cumulative.arrs[i][1])
 
     for i in rrows:
         for j in rcols[i]:
             if (finState[i][j] >= 1000):
-                vRest[i][j] = G.NoDataValue
+                vRest[i][j] = GG.NoDataValue
             else:
-                vRest[i][j] = surArr[i][j].h_total_new * G.pixel_area
+                vRest[i][j] = surArr[i][j].h_total_new * GG.pixel_area
 
     totalBil = (cumulative.precipitation + cumulative.inflow_sur) - (cumulative.infiltration +
                                                                      cumulative.v_sur + cumulative.v_rill) - cumulative.sur_ret  # + (cumulative.v_sur_r + cumulative.v_rill_r)
     totalBil -= vRest
 
-    raster_output(totalBil, G, finState, 'massBalance')
-    raster_output(finState, G, finState, 'reachfid', False)
-    raster_output(vRest, G, finState, 'volrest_m3')
+  #  raster_output(totalBil, G, finState, 'massBalance')
+  #  raster_output(finState, G, finState, 'reachfid', False)
+  #  raster_output(vRest, G, finState, 'volrest_m3')
 
     if not(Gl.extraOut):
         if os.path.exists(output + os.sep + 'temp'):
@@ -123,16 +137,16 @@ def do(cumulative, mat_slope, G, surArr):
         if os.path.exists(output + os.sep + 'temp_dp'):
             shutil.rmtree(output + os.sep + 'temp_dp')
         return 1
-
+################################
     # creates the raster in argis format in the output directory
-    # def Gl.arcgis_raster(cumulative, mat_slope, G, surArr):
+    #def Gl.arcgis_raster(cumulative, mat_slope, G, surArr):
 
-        # output = G.outdir
+        # output = Gl.outdir
         # arcpy.env.workspace = output
-        # rrows = G.rr
-        # rcols = G.rc
-        # rows = G.r
-        # cols = G.c
+        # rrows = GG.rr
+        # rcols = GG.rc
+        # rows = GG.r
+        # cols = GG.c
 
         # for i in rrows:
             # for j in rcols[i]:
@@ -148,7 +162,7 @@ def do(cumulative, mat_slope, G, surArr):
         # if Gl.extraOut == True :    #jj tady jen pokud chceme se i ten zbytek Gl.extraOut je zatim definovan  na zacatku class_main_arrays
             # main_output += [4,8,9,11,12,13,14]
 
-        # ll_corner = arcpy.Point(G.xllcorner, G.yllcorner)
+        # ll_corner = arcpy.Point(GG.xllcorner, GG.yllcorner)
 
         # for i in main_output:
             # arrin = np.copy(getattr(cumulative, cumulative.arrs[i]))
@@ -157,16 +171,16 @@ def do(cumulative, mat_slope, G, surArr):
         # vRest     = np.zeros(np.shape(surArr),float)
         # finState  = np.zeros(np.shape(surArr),int)
         # hCrit     = np.zeros(np.shape(surArr),float)
-        # finState.fill(G.NoDataValue)
+        # finState.fill(GG.NoDataValue)
 
         # vRest     = np.zeros(np.shape(surArr),float)
         # if Gl.isRill :
             # for i in rrows:
                 # for j in rcols[i]:
                 # if (finState[i][j] >= 1000) :
-                    # vRest[i][j] =    G.NoDataValue
+                    # vRest[i][j] =    GG.NoDataValue
                 # else :
-                    # vRest[i][j] =  surArr[i][j].h_total_new*G.pixel_area
+                    # vRest[i][j] =  surArr[i][j].h_total_new*GG.pixel_area
 
         # (   IN                                           ) - (  OUT                                                         )  - ( What rests in the end)
         # totalBil = (cumulative.precipitation + cumulative.inflow_sur) - (cumulative.infiltration + cumulative.v_sur + cumulative.v_rill) - cumulative.sur_ret #+ (cumulative.v_sur_r + cumulative.v_rill_r)
@@ -179,26 +193,26 @@ def do(cumulative, mat_slope, G, surArr):
 
         # outName = 'reachFID'
         # tmparr = np.copy(finState)
-        # saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, G.dx, G.dy, G.NoDataValue)
+        # saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, GG.dx, GG.dy, GG.NoDataValue)
         # saveAG.save(outName)
 
         # outName = 'massBalance'
         # tmparr = np.copy(totalBil)
-        # tmparr.fill(G.NoDataValue)
+        # tmparr.fill(GG.NoDataValue)
         # for ii in rrows:
             # for jj in rcols[ii]:
                 # if (finState[ii][jj]>=1000):
-                # tmparr[ii][jj] = G.NoDataValue
+                # tmparr[ii][jj] = GG.NoDataValue
                 # else:
                 # tmparr[ii][jj] = totalBil[ii][jj]
-        # saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, G.dx, G.dy, G.NoDataValue)
+        # saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, GG.dx, GG.dy, GG.NoDataValue)
         # saveAG.save(outName)
 
-        # tmparr.fill(G.NoDataValue)
+        # tmparr.fill(GG.NoDataValue)
         # for ii in rrows:
             # for jj in rcols[ii]:
                 # if (totalBil[ii][jj]>=2000):
-                # tmparr[ii][jj] = G.mat_stream_seg
+                # tmparr[ii][jj] = GG.mat_stream_seg
                 # if (totalBil[ii][jj]>=1):
                 # tmparr[ii][jj] = 1
                 # else:
@@ -210,29 +224,29 @@ def do(cumulative, mat_slope, G, surArr):
 
         # outName = 'VRestEndL'
         # tmparr = np.copy(vRest)
-        # tmparr.fill(G.NoDataValue)
+        # tmparr.fill(GG.NoDataValue)
         # for ii in rrows:
             # for jj in rcols[ii]:
                 # tmparr[ii][jj] = vRest[ii][jj]
-        # saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, G.dx, G.dy, G.NoDataValue)
+        # saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, GG.dx, GG.dy, GG.NoDataValue)
         # saveAG.save(outName)
 
         # outName = 'FinalState'
         # tmparr = np.copy(finState)
-        # tmparr.fill(G.NoDataValue)
+        # tmparr.fill(GG.NoDataValue)
         # for ii in rrows:
             # for jj in rcols[ii]:
                 # tmparr[ii][jj] = finState[ii][jj]
-        # saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, G.dx, G.dy, G.NoDataValue)
+        # saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, GG.dx, GG.dy, GG.NoDataValue)
         # saveAG.save(outName)
 
         # outName = 'HCrit'
         # tmparr = np.copy(hCrit)
-        # tmparr.fill(G.NoDataValue)
+        # tmparr.fill(GG.NoDataValue)
         # for ii in rrows:
             # for jj in rcols[ii]:
                 # tmparr[ii][jj] = hCrit[ii][jj]
-        # saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, G.dx, G.dy, G.NoDataValue)
+        # saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, GG.dx, GG.dy, GG.NoDataValue)
         # saveAG.save(outName)
 
     # assign the ourput raster function based on the Gl.arcgis selector
@@ -243,9 +257,9 @@ def do(cumulative, mat_slope, G, surArr):
 
     # creates the raster in ascii format in the output directory
     # def ascii_raster(cumulative, mat_slope, G, surArr):
-        # rrows = G.rr
-        # rcols = G.rc
-        # output = G.outdir
+        # rrows = GG.rr
+        # rcols = GG.rc
+        # output = GG.outdir
 
         # for i in rrows:
             # for j in rcols[i]:
@@ -264,7 +278,7 @@ def do(cumulative, mat_slope, G, surArr):
         # finState  = np.zeros(np.shape(surArr),int)
         # hCrit     = np.zeros(np.shape(surArr),float)
         # Stream    = np.zeros(np.shape(surArr),float)
-        # Stream.fill(G.NoDataValue)
+        # Stream.fill(GG.NoDataValue)
 
         # for i in rrows:
             # for j in rcols[i]:
@@ -290,9 +304,9 @@ def do(cumulative, mat_slope, G, surArr):
             # for i in rrows:
                 # for j in rcols[i]:
                 # if (finState[i][j] >= 1000) :
-                    # vRest[i][j] =    G.NoDataValue
+                    # vRest[i][j] =    GG.NoDataValue
                 # else :
-                    # vRest[i][j] =  surArr[i][j].h_total_new*G.pixel_area
+                    # vRest[i][j] =  surArr[i][j].h_total_new*GG.pixel_area
 
             # outName = output+os.sep+'VRestEndRillL3'+".asc"
             # tools.make_ASC_raster(outName,vRest,G)
@@ -301,9 +315,9 @@ def do(cumulative, mat_slope, G, surArr):
         # for i in rrows:
             # for j in rcols[i]:
                 # if (finState[i][j] >= 1000) :
-                # totalBil[i][j] = G.NoDataValue
+                # totalBil[i][j] = GG.NoDataValue
                 # Stream[i][j]   = finState[i][j]
-                # hCrit[i][j]    = G.NoDataValue
+                # hCrit[i][j]    = GG.NoDataValue
 
         # outName = output+os.sep+'massBalance'+".asc"
         # tools.make_ASC_raster(outName,totalBil,G)

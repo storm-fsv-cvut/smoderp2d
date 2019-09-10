@@ -185,7 +185,7 @@ class TimeStep:
                     i,
                     j,
                     surface.arr[i][j],
-                    subsurface,
+                    subsurface.arr[i][j],
                     delta_t)
                 hydrographs.write_hydrographs_record(
                     i,
