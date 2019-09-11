@@ -65,7 +65,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         )
         # not needed to creare raster (just for comparision with ArcGIS)
         Module('r.mapcalc',
-               expression='{} = 1'.format(self._data['dem_mask'])
+               expression='{} = 1'.format('dem_mask')
         )
 
         return dem, dem
@@ -102,78 +102,81 @@ class PrepareData(PrepareDataBase, ManageFields):
         # convert mask info polygon vector map
         Module('r.to.vect',
                input='MASK',
-               output=self._data['vector_mask'],
+               output='vector_mask',
                type='area'
         )
 
         # dissolve soil and vegetation polygons
         Module('v.dissolve',
                input=vegetation,
-               output=self._data['vegetation_boundary'],
+               output='vegetation_boundary',
                column=vegetation_type
         )
         Module('v.dissolve',
                input=soil,
-               output=self._data['soil_boundary'],
+               output='soil_boundary',
                column=soil_type
         )
 
         # do intersections
         Module('v.clip',
-               input=self._data['vegetation_boundary'],
-               clip=self._data['vector_mask'],
-               output=self._data['vegetation_mask']
+               input='vegetation_boundary',
+               clip='vector_mask',
+               output='vegetation_mask'
         )
         Module('v.clip',
-               input=self._data['soil_boundary'],
-               clip=self._data['vector_mask'],
-               output=self._data['soil_mask']
+               input='soil_boundary',
+               clip='vector_mask',
+               output='soil_mask'
         )
         Module('v.overlay',
-               ainput=self._data['soil_mask'],
-               binput=self._data['vegetation_mask'],
+               ainput='soil_mask',
+               binput='vegetation_mask',
                operator='and',
-               output=self._data['intersect']
+               output='vs_intersect'
         )
 
         # remove "soil_veg" if exists and create a new one
         Module('v.db.dropcolumn',
-               map=self._data['intersect'],
-               columns=self._data['soil_veg_column']
+               map='vs_intersect',
+               columns='soil_veg_column'
         )
         Module('v.db.addcolumn',
-               map=self._data['intersect'],
+               map='vs_intersect',
                columns='{} varchar(255)'.format(
                    self._data['soil_veg_column'])
         )
 
         # compute "soil_veg" values (soil_type + vegetation_type)
         vtype1 = vegetation_type + "_1" if soil_type == vegetation_type else vegetation_type
-        Module('v.db.update',
-               map=self._data['intersect'],
-               column=self._data['soil_veg_column'],
-               query_column='a_{} || b_{}'.format(
+        try:
+            Module('v.db.update',
+                   map='vs_intersect',
+                   column=self._data['soil_veg_column'],
+                   query_column='a_{} || b_{}'.format(
                    soil_type, vtype1)
-        )
+            )
+        except CalledModuleError as e:
+            raise DataPreparationError('{}'.format(e))
 
         # copy attribute table for modifications
         Module('db.copy',
                from_table=table_soil_vegetation,
-               to_table=self._data['soil_veg_copy'],
+               to_table='soil_veg_copy',
                from_database='$GISDBASE/$LOCATION_NAME/PERMANENT/sqlite/sqlite.db'
         )
 
         # join table copy to intersect vector map
         self._join_table(
-            self._data['intersect'], self._data['soil_veg_column'],
-            self._data['soil_veg_copy'], table_soil_vegetation_code,
+            'vs_intersect', self._data['soil_veg_column'],
+            'soil_veg_copy', table_soil_vegetation_code,
             self._data['sfield']
         )
 
         # TODO: rewrite into pygrass syntax
         ret = Module('v.db.select',
                      flags='c',
-                     map=self._data['intersect'],
+                     map='vs_intersect',
                      columns=self._data['sfield'],
                      where=' or '.join(
                          list(map(lambda x: '{} is NULL'.format(x), self._data['sfield']))),
@@ -184,20 +187,16 @@ class PrepareData(PrepareDataBase, ManageFields):
                 "Values in soilveg tab are not correct"
             )
 
-        return self._data['intersect'], self._data['vector_mask'], self._data['sfield']
+        return 'vs_intersect', 'vector_mask', self._data['sfield']
 
-    def _clip_data(self, dem, intersect, slope, flow_direction):
+    def _clip_data(self, dem, intersect):
         """
         Clip input data based on AOI.
 
         :param str dem: raster DTM name
         :param str intersect: vector intersect feature call name
-        :param str slope: raster slope name
-        :param str flow_direction: raster flow direction name
 
         :return str dem_clip: output clipped DTM name
-        :return str slope_clip: output clipped slope name
-        :return str flow_direction_clip: ouput clipped flow direction name
 
         """
         if self.data['points']:
@@ -209,27 +208,21 @@ class PrepareData(PrepareDataBase, ManageFields):
                align=dem
         )
 
+        # create raster mask for clipping
         Module('v.to.rast',
                input=intersect,
                type='area',
                use='cat',
-               output=self._data['inter_mask']
+               output='inter_mask'
         )
 
         # cropping rasters
-        # using r.mapcalc since r.clip is not available in core
-        for inmap, outmap in ((dem, self._data['dem_clip']),
-                              (slope, self._data['slope_clip']),
-                              (flow_direction, self._data['flow_clip'])):
-            if inmap is None:
-                # flow direction can be None
-                continue
-            Module('r.mapcalc',
-                   expression='{o} = if(isnull({m}), null(), {i})'.format(
-                       o=outmap, m=self._data['inter_mask'], i=inmap
-            ))
+        Module('r.mapcalc',
+               expression='{o} = if(isnull({m}), null(), {i})'.format(
+                   o='dem_clip', m='inter_mask', i=dem
+        ))
 
-        return self._data['dem_clip'], self._data['slope_clip'], self._data['flow_clip'] if flow_direction else None
+        return 'dem_clip'
 
     @staticmethod
     def get_num_points(vector):
@@ -246,15 +239,15 @@ class PrepareData(PrepareDataBase, ManageFields):
         Module('v.clip',
                input=self.data['points'],
                clip=intersect,
-               output=self._data['points_mask']
+               output='points_mask'
         )
         # count number of features
         npoints = self.get_num_points(self.data['points'])
-        npoints_clipped = self.get_num_points(self._data['points_mask'])
+        npoints_clipped = self.get_num_points('points_mask')
 
         self._diff_npoints(npoints, npoints_clipped)
 
-        self.data['points'] = self._data['points_mask']
+        self.data['points'] = 'points_mask'
 
     def _rst2np(self, raster):
         """
@@ -369,13 +362,13 @@ class PrepareData(PrepareDataBase, ManageFields):
         #        expression='{} = {} * {}'.format(
         #            asppii, asp, pii
         # ))
-        ratio = self._data['ratio_cell']
+        ratio = 'ratio_cell'
         Module('r.mapcalc',
                expression='{o} = abs(sin({a})) + abs(cos({a}))'.format(
                    o=ratio, a=asp
         ))
 
-        efect_cont = self._data['efect_cont']
+        efect_cont = 'efect_cont'
         Module('r.mapcalc',
                expression='{} = {} * {}'.format(
                    efect_cont, ratio, self.data['spix']

@@ -16,9 +16,11 @@ class PrepareDataBase(object):
             'soil_boundary': 'control',
             'vegetation_boundary': 'control',
             'vector_mask': 'control',
-#            'vegetation_mask': 'vegetation_mask',
-#            'soil_mask': 'soil_mask',
-            'intersect': 'control',
+            # TODO: needed?
+            'vegetation_mask': 'control',
+            # TODO: needed?
+            'soil_mask': 'control',
+            'vs_intersect': 'control',
             'soil_veg_column': 'soil_veg',
             'soil_veg_copy': 'control',
             'sfield': ["k", "s", "n", "pi", "ppl",
@@ -561,7 +563,7 @@ class PrepareDataBase(object):
             inBoundary = False
             self.data['rc'].append(oneCol)
 
-    def _clip_data(self, dem, intersect, slope, flow_direction):
+    def _clip_data(self, dem, intersect):
         raise NotImplemented("Not implemented for base provider")
 
     @staticmethod

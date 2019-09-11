@@ -18,7 +18,7 @@ def compute_products(elev, save_dir, fldir=None):
     :param str save_dir: directory where to save output
     :param str fldir: flow direction raster name or None
 
-    :return: elev_fill, flow_direction, flow_accumulation, slope
+    :return: flow_direction, flow_accumulation, slope
     """
     # loading file soil_type_values
     # filling the sink areas in raster

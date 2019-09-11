@@ -55,3 +55,11 @@ class GrassGisProvider(BaseProvider):
 
         prep = PrepareData(self._options)
         return prep.run()
+
+    def _raster_output(self, arr, output):
+        """Write raster to ASCII file.
+
+        :param arr: numpy array
+        :param output: output filename
+        """
+        pass
