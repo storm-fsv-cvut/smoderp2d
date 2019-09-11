@@ -29,17 +29,17 @@ class CumulativeSubsurface(object):
 
         Logger.info('Subsurface')
 
-        self.arrs = {
+        self.arrs = { #TODO this array should have the same structure 
+                      # as Cumulative::self.data
             # cumulative exfiltration volume [m3]
             'exfiltration': CumulativeData('core', 'cExfiltr_m3'),
             # cumulative percolation volume [m3]
             'percolation' : CumulativeData('core', 'cPercol_m3'),
-            # maximum water level in rills [m]
-            # the height is related to the total cell area not the rill ares
+            # maximum water level in the subsurface soil layer [m]
             'h_sub'       : CumulativeData('core', 'mWLevelSub_M'),
-            # maximum discharge from rills [m3s-1]
+            # maximum subsurface flux [m3s-1]
             'q_sub'       : CumulativeData('core', 'mQSub_m3_s'),
-            # cumulative outflow volume in rills [m3]
+            # cumulative outflow volume in subsurface soil layer [m3]
             'vol_sub'     : CumulativeData('core', 'cVOutSub_m3')
         }
         for item in self.data.keys():
