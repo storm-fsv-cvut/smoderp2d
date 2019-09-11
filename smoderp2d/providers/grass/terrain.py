@@ -13,7 +13,7 @@ def compute_products(elev, fldir=None):
     :param str elev: DTM raster name
     :param str fldir: flow direction raster name or None
 
-    :return: elev_fill, flow_direction, flow_accumulation, slope
+    :return: flow_direction, flow_accumulation, slope
     """
     elev_fill = 'fill'
     flow_direction = 'fldir'
@@ -71,4 +71,4 @@ def compute_products(elev, fldir=None):
            slope=slope
     )
     
-    return elev_fill, flow_direction, flow_accumulation, slope
+    return flow_direction, flow_accumulation, slope

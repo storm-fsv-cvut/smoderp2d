@@ -8,7 +8,6 @@ from grass.pygrass.vector import Vector, VectorTopo
 
 from smoderp2d.providers.base.stream_preparation import StreamPreparationBase
 from smoderp2d.providers.base.stream_preparation import StreamPreparationError, ZeroSlopeError
-from smoderp2d.providers.grass.terrain import compute_products
 from smoderp2d.providers.grass.manage_fields import ManageFields
 
 class StreamPreparation(StreamPreparationBase, ManageFields):
@@ -34,13 +33,9 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
     def _setnull(self):
         """Define mask.
         """
-        # water flows according dem
-        dem_fill, flow_direction, flow_accumulation, slope = \
-            compute_products(self.dem_clip, None)
-
         Module('r.mapcalc',
                expression='{o} = if({i} < 300, null(), {i})'.format(
-                   o=self._data['setnull'], i=flow_accumulation
+                   o='setnull', i=self.flow_accumulation_clip
         ))
 
         # TODO
@@ -76,28 +71,28 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         Module('v.clip',
                input=self.null,
                clip=clip_map,
-               output=self._data['aoi']
+               output='aoi'
         )
 
         Module('v.buffer',
-               input=self._data['aoi'],
-               output=self._data['aoi_buffer'],
+               input='aoi',
+               output='aoi_buffer',
                distance=-self.spix / 3
         )
 
         Module('v.clip',
                input=self.stream,
-               clip=self._data['aoi_buffer'],
-               output=self._data['stream']
+               clip='aoi_buffer',
+               output='stream'
         )
 
         # TODO: MK - nevim proc se maze neco, co v atributove tabulce vubec neni
         self._delete_fields(
-            self._data['stream'],
+            'stream',
             ["EX_JH", "POZN", "PRPROP_Z", "IDVT", "UTOKJ_ID", "UTOKJN_ID", "UTOKJN_F"]
         )
 
-        return self._data['stream'], None # TODO: ?
+        return 'stream', None # TODO: ?
 
     def _stream_direction(self, stream):
         """
@@ -113,17 +108,17 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
             Module('v.to.points',
                    input=stream,
                    use=what,
-                   output=self._data[what],
+                   output=what,
             )
             column = '{}_elev'.format(what)
             Module('v.what.rast',
-                   map=self._data[what],
+                   map=what,
                    raster=self.dem_clip,
                    column=self._data[column]
             )
             self._join_table(
                 stream, self._primary_key,
-                '{}_1'.format(self._data[what]), self._primary_key,
+                '{}_1'.format(what), self._primary_key,
                 [column]
             )
 
@@ -226,13 +221,13 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         Module('v.to.rast',
                input=stream,
                type='line',
-               output=self._data['stream_rst'],
+               output='stream_rst',
                use='cat'
         )
         # TODO: probably not needed, see relevant code in arcgis provider
         Module('r.mapcalc',
                expression='{o} = if(isnull({i}), 1000, {i})'.format(
-                   o=self._data['stream_seg'], i=self._data['stream_rst']
+                   o='stream_seg', i='stream_rst'
         ))
         # TODO: probably not needed
         # Module('g.region',
@@ -241,7 +236,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         #        cols=self.cols,
         #        rows=self.rows
         # )
-        mat_stream_seg = raster2numpy(self._data['stream_seg'])
+        mat_stream_seg = raster2numpy('stream_seg')
         mat_stream_seg = mat_stream_seg.astype('int16')
 
         # TODO: ?
@@ -289,14 +284,14 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         Module('db.copy',
                from_table=self.tab_stream_shape,
                from_database='$GISDBASE/$LOCATION_NAME/PERMANENT/sqlite/sqlite.db',
-               to_table=self._data['stream_shape']
+               to_table='stream_shape'
         )
 
         # TODO: (check if smoderp column exists)
         sfields = ["number", "shapetype", "b", "m", "roughness", "q365"]
         try:
             self._join_table(
-                stream, self.tab_stream_shape_code, self._data['stream_shape'],
+                stream, self.tab_stream_shape_code, 'stream_shape',
                 self.tab_stream_shape_code,
                 sfields
             )
@@ -306,7 +301,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
             )
             self._join_table(
                 stream, self.tab_stream_shape_code,
-                self._data['stream_shape'], self.tab_stream_shape_code,
+                'stream_shape', self.tab_stream_shape_code,
                 sfields
             )
 
