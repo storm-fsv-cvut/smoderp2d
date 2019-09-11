@@ -9,7 +9,6 @@ from arcpy.sa import *
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.stream_preparation import StreamPreparationBase
 from smoderp2d.providers.base.stream_preparation import StreamPreparationError, ZeroSlopeError
-from smoderp2d.providers.arcgis.terrain import compute_products
 from smoderp2d.providers.arcgis.manage_fields import ManageFields
 
 class StreamPreparation(StreamPreparationBase, ManageFields):

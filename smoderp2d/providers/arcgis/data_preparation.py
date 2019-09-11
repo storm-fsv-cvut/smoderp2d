@@ -240,12 +240,8 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         :param str dem: raster DTM name
         :param str intersect: vector intersect feature call name
-        :param str slope: raster slope name
-        :param str flow_direction: raster flow direction name
 
         :return str dem_clip: output clipped DTM name
-        :return str slope_clip: output clipped slope name
-        :return str flow_direction_clip: ouput clipped flow direction name
 
         """
         if self.data['points']:
