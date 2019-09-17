@@ -299,10 +299,10 @@ class BaseProvider(object):
             'vol_sur_tot'
         ]
         if Globals.subflow:
-            data_output += [
-                'vol_sur_r'
-            ]
-            # 17, 18]
+            # Not implemented yet
+            pass
+            # data_output += [
+            # ]
         if Globals.extraOut:
             data_output += [
                 'q_sheet',
