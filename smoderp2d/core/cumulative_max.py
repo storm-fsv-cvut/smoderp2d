@@ -15,7 +15,19 @@ class CumulativeData:
         self.data_type = data_type
         self.file_name = file_name
 
-class CumulativeSubsurface(object):
+class CumulativeSubsurfacePass(object):
+    """
+    Empty (pass) Class
+
+    Class is inherited by the class Cumulative if the subsurface flow is not desired.
+    """
+    def __init__(self):
+        self.data = {}
+
+    def update_cumulative_sur(self, i, j, sub, q_subsur):
+        pass
+
+class CumulativeSubsurface(CumulativeSubsurfacePass):
     """
     Max and cumulative values of the subsurface flow
 
@@ -26,27 +38,22 @@ class CumulativeSubsurface(object):
     if the subsurface computation is desired
     """
     def __init__(self):
+        super(CumulativeSubsurface, self).__init__()
 
         Logger.info('Subsurface')
 
-        self.arrs = { #TODO this array should have the same structure 
-                      # as Cumulative::self.data
+        self.data.update({
             # cumulative exfiltration volume [m3]
-            'exfiltration': CumulativeData('core', 'cExfiltr_m3'),
+            'exfiltration': CumulativeData('core', 'cExfiltr_m3'),     # 1
             # cumulative percolation volume [m3]
-            'percolation' : CumulativeData('core', 'cPercol_m3'),
+            'percolation' : CumulativeData('core', 'cPercol_m3'),      # 2
             # maximum water level in the subsurface soil layer [m]
-            'h_sub'       : CumulativeData('core', 'mWLevelSub_M'),
+            'h_sub'       : CumulativeData('core', 'mWLevelSub_M'),    # 3
             # maximum subsurface flux [m3s-1]
-            'q_sub'       : CumulativeData('core', 'mQSub_m3_s'),
+            'q_sub'       : CumulativeData('core', 'mQSub_m3_s'),      # 4
             # cumulative outflow volume in subsurface soil layer [m3]
-            'vol_sub'     : CumulativeData('core', 'cVOutSub_m3')
-        }
-        for item in self.data.keys():
-            setattr(self,
-                    item,
-                    np.zeros([GridGlobals.r, GridGlobals.c], float)
-            )
+            'vol_sub'     : CumulativeData('core', 'cVOutSub_m3')      # 5
+        })
 
     def update_cumulative_subsur(self, i, j, sub, q_subsur):
         """
@@ -61,15 +68,6 @@ class CumulativeSubsurface(object):
         if q_subsur > self.q_sub[i][j]:
             self.q_sub[i][j] = q_subsur
 
-class CumulativeSubsurfacePass(object):
-    """
-    Empty (pass) Class
-
-    Class is inherited by the class Cumulative if the subsurface flow is not desired.
-    """
-    def update_cumulative_sur(self, i, j, sub, q_subsur):
-        pass
-
 class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfacePass):
     """
     Max and Cumulative values
@@ -78,10 +76,12 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
     the surface and rill flow.
     """
     def __init__(self):
+        super(Cumulative, self).__init__()
+
         Logger.info('Save cumulative and maximum values from: Surface')
 
         # Dictionary stores the python arrays identification.
-        self.data = {
+        self.data.update({
             # cumulative infiltrated volume [m3]
             'infiltration' : CumulativeData('core',    'cInfil_m3'),     # 1
             # cumulative precipitation volume [m3]
@@ -114,7 +114,8 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             'q_sur_tot'    : CumulativeData('core',    'mQsur_m3_s'),    # 15
             # cumulative total surface flow [m3/s]
             'vol_sur_tot'  : CumulativeData('core',    'cVsur_m3')       # 16
-        }
+        })
+        # define arrays class attributes
         for item in self.data.keys():
             setattr(self,
                     item,
