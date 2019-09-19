@@ -311,7 +311,7 @@ class BaseProvider(object):
                 'b_rill',
                 'inflow_sur',
                 'sur_ret',
-                'vol_sur_r'  # TODO: twice ?
+                'vol_sur_r' 
             ]
 
         finState = np.zeros(np.shape(surface_array), int)
