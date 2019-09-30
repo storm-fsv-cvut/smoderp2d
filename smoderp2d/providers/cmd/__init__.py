@@ -92,5 +92,6 @@ class CmdProvider(BaseProvider):
         :param output: output filename
         """
         file_output = self._raster_output_path(output)
-        Logger.debug("Raster ASCII output file {} saved".format(file_output))
+
         np.savetxt(file_output, arr)
+        Logger.debug("Raster ASCII output file {} saved".format(file_output))
