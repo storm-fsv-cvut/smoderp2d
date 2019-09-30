@@ -67,7 +67,7 @@ class ArcGisProvider(BaseProvider):
             GridGlobals.yllcorner,
         )
         raster_output = arcpy.NumPyArrayToRaster(
-            arr, lower_left, GridGlobals.dx, GridGlobals.dy
+            arr, lower_left, GridGlobals.dx, GridGlobals.dy,
             value_to_nodata=GridGlobals.NoDataValue)
         raster_output.save(
             file_output
