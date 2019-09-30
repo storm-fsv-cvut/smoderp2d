@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 import logging
+import numpy as np
 if sys.version_info.major >= 3:
     from configparser import ConfigParser, NoSectionError
 else:
@@ -83,3 +84,14 @@ class CmdProvider(BaseProvider):
             raise ProviderError('Unsupported partial computing: {}'.format(
                 self.args.typecomp
             ))
+
+    def _raster_output(self, arr, output):
+        """Write raster (numpy array) to ASCII file.
+
+        :param arr: numpy array
+        :param output: output filename
+        """
+        file_output = self._raster_output_path(output)
+
+        np.savetxt(file_output, arr)
+        Logger.debug("Raster ASCII output file {} saved".format(file_output))

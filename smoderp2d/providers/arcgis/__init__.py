@@ -4,7 +4,7 @@ import logging
 
 import arcpy
 
-from smoderp2d.core.general import Globals
+from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.providers.base import BaseProvider, CompType
 from smoderp2d.providers.arcgis import constants
 from smoderp2d.providers.arcgis.logger import ArcPyLogHandler
@@ -53,3 +53,24 @@ class ArcGisProvider(BaseProvider):
        
         prep = PrepareData()
         return prep.run()
+
+    def _raster_output(self, arr, output):
+        """Write raster (numpy array) to ASCII file.
+
+        :param arr: numpy array
+        :param output: output filename
+        """
+        file_output = self._raster_output_path(output)
+
+        lower_left = arcpy.Point(
+            GridGlobals.xllcorner,
+            GridGlobals.yllcorner,
+        )
+        raster_output = arcpy.NumPyArrayToRaster(
+            arr, lower_left, GridGlobals.dx, GridGlobals.dy
+            value_to_nodata=GridGlobals.NoDataValue)
+        raster_output.save(
+            file_output
+        )
+
+        Logger.debug("Raster ASCII output file {} saved".format(file_output))
