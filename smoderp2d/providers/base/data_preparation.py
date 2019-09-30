@@ -195,36 +195,36 @@ class PrepareDataBase(object):
 
         # delete output directory if exists and create new one
         Logger.info(
-            "Creating output directory <{}>".format(self.data['outdir'])
+            "Creating output directories <{}>".format(self.data['outdir'])
         )
         if os.path.exists(self.data['outdir']):
             shutil.rmtree(self.data['outdir'])
         os.makedirs(self.data['outdir'])
 
         # create temporary dir
-        Logger.info(
-            "Creating temp directory {}".format(self.data['temp'])
-        )
         self.data['temp'] = os.path.join(
             self.data['outdir'], "temp"
+        )
+        Logger.debug(
+            "Creating temp directory <{}>".format(self.data['temp'])
         )
         os.makedirs(self.data['temp'])
 
         # create core dir
-        Logger.info(
-            "Creating core directory"
-        )
         core = os.path.join(
             self.data['outdir'], "core"
+        )
+        Logger.debug(
+            "Creating core directory <{}>".format(core)
         )
         os.makedirs(core)
 
         # create control dir
-        Logger.info(
-            "Creating control directory"
-        )
         control = os.path.join(
             self.data['outdir'], "control"
+        )
+        Logger.debug(
+            "Creating control directory <{}>".format(control)
         )
         os.makedirs(control)
 
