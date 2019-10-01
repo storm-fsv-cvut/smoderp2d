@@ -66,11 +66,52 @@ class ArcGisProvider(BaseProvider):
             GridGlobals.xllcorner,
             GridGlobals.yllcorner,
         )
-        raster_output = arcpy.NumPyArrayToRaster(
+        raster = arcpy.NumPyArrayToRaster(
             arr, lower_left, GridGlobals.dx, GridGlobals.dy,
             value_to_nodata=GridGlobals.NoDataValue)
-        raster_output.save(
+        arcpy.RasterToASCII_conversion(
+            raster,
             file_output
         )
 
         Logger.debug("Raster ASCII output file {} saved".format(file_output))
+
+class ArcGisStorage(object):
+    def __init__(self):
+        # primary key depends of storage format
+        # * Shapefile -> FID
+        # * FileGDB -> OBJECTID
+        self._primary_key = "OBJECTID"
+
+        # Overwriting output
+        arcpy.env.overwriteOutput = 1
+        
+    def create_storage(self):
+        # create temporary ArcGIS File Geodatabase
+        arcpy.CreateFileGDB_management(
+            self.data['temp'],
+            "data.gdb")
+
+        # create control ArcGIS File Geodatabase
+        arcpy.CreateFileGDB_management(
+            os.path.join(self.data['outdir'], 'control'),
+            "data.gdb")
+
+        # create core ArcGIS File Geodatabase
+        arcpy.CreateFileGDB_management(
+            os.path.join(self.data['outdir'], 'core'),
+            "data.gdb")
+
+    def _output_filepath(self, name):
+        try:
+            item = self._data[name]
+        except KeyError:
+            item = 'temp'
+
+        path = os.path.join(
+            Globals.get_outdir(), item, 'data.gdb', name
+        )
+        Logger.debug('File path: {}'.format(path))
+
+        return path
+        

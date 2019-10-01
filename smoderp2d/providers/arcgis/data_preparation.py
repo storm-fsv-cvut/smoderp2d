@@ -13,16 +13,17 @@ from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
 
 from smoderp2d.providers.arcgis.terrain import compute_products
-from smoderp2d.providers.arcgis import constants
+from smoderp2d.providers.arcgis import constants, ArcGisStorage
 from smoderp2d.providers.arcgis.manage_fields import ManageFields
 
 import arcpy
 import arcgisscripting
 from arcpy.sa import *
 
-class PrepareData(PrepareDataBase, ManageFields):
+class PrepareData(PrepareDataBase, ArcGisStorage, ManageFields):
     def __init__(self):
         super(PrepareData, self).__init__()
+        ArcGisStorage.__init__(self)
 
         # creating the geoprocessor object
         self.gp = arcgisscripting.create()
@@ -34,15 +35,9 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         # checking arcgis if ArcGIS Spatial extension is available
         arcpy.CheckOutExtension("Spatial")
-        self.gp.overwriteoutput = 1
 
         # get input parameters
         self._get_input_params()
-
-        # primary key depends of storage format
-        # * Shapefile -> FID
-        # * FileGDB -> OBJECTID
-        self._primary_key = "OBJECTID"
 
     def _get_input_params(self):
         """Get input parameters from ArcGIS toolbox.
@@ -94,30 +89,17 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         """
         super(PrepareData, self)._set_output()
-
-        # create temporary ArcGIS File Geodatabase
-        self._tempGDB = os.path.join(self.data['temp'], "tempGDB.gdb")
-        arcpy.CreateFileGDB_management(
-            self.data['temp'], "tempGDB.gdb")
-
-        # create control ArcGIS File Geodata
-        control = os.path.join(self.data['outdir'], 'control')
-        self._controlGDB = os.path.join(control, "controlGDB.gdb")
-        arcpy.CreateFileGDB_management(
-            control, "controlGDB.gdb")
-
-        # create core ArcGIS File Geodata
-        core = os.path.join(self.data['outdir'], 'core')
-        self._coreGDB = os.path.join(core, "coreGDB.gdb")
-        arcpy.CreateFileGDB_management(
-            core, "coreGDB.gdb")
+        self.create_storage()
 
     def _set_mask(self):
         """Set mask from elevation map.
 
         :return: dem copy, binary mask
         """
-        dem_copy = os.path.join(self.data['temp'], 'dem_copy')
+        # Do not work for CopyRaster, https://github.com/storm-fsv-cvut/smoderp2d/issues/46
+        # dem_copy = os.path.join(self.data['temp'], 'dem_copy')
+        dem_copy = self._output_filepath('dem_copy')
+        
         arcpy.CopyRaster_management(
             self._input_params['elevation'], dem_copy
         )
@@ -125,7 +107,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         # align computation region to DTM grid
         arcpy.env.snapRaster = self._input_params['elevation']
 
-        dem_mask = os.path.join(self.data['outdir'], self._data['dem_mask'], 'dem_mask')
+        dem_mask = self._output_filepath('dem_mask')
         self.gp.Reclassify_sa(
             dem_copy, "VALUE", "-100000 100000 1", dem_mask, "DATA"
         )
@@ -162,19 +144,13 @@ class PrepareData(PrepareDataBase, ManageFields):
         :return sfield: list of selected attributes
         """
         # convert mask into polygon feature class
-        mask_shp = os.path.join(
-            str(self._controlGDB), 'dem_mask'
-        )
+        mask_shp = self._output_filepath('vector_mask')
         arcpy.RasterToPolygon_conversion(
             mask, mask_shp, "NO_SIMPLIFY")
 
         # dissolve soil and vegmetation polygons
-        soil_boundary = os.path.join(
-            str(self._controlGDB), 'soil_boundary'
-        )
-        vegetation_boundary = os.path.join(
-            str(self._controlGDB), 'vegetation_boundary'
-        )
+        soil_boundary = self._output_filepath('soil_boundary')
+        vegetation_boundary = self._output_filepath('vegetation_boundary')
         arcpy.Dissolve_management(
             vegetation, vegetation_boundary, vegetation_type
         )
@@ -184,9 +160,7 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         # do intersection
         group = [soil_boundary, vegetation_boundary, mask_shp]
-        intersect = os.path.join(
-            str(self._controlGDB), 'inter_soil_lu'
-        )
+        intersect = self._output_filepath('inter_soil_lu')
         arcpy.Intersect_analysis(
             group, intersect, "ALL", "", "INPUT")
 
@@ -257,16 +231,15 @@ class PrepareData(PrepareDataBase, ManageFields):
         arcpy.env.outputCoordinateSystem = dem_desc.SpatialReference
 
         # create raster mask based on intersect feature call
-        mask = os.path.join(self.data['outdir'], self._data['inter_mask'], 'inter_mask')
+        mask = self._output_filepath('inter_mask')
+        Logger.info('{}'.format(self._primary_key))
         arcpy.PolygonToRaster_conversion(
             intersect, self._primary_key, mask, "MAXIMUM_AREA",
             cellsize = dem_desc.MeanCellHeight)
 
         # cropping rasters
         dem_clip = ExtractByMask(dem, mask)
-        dem_clip.save(
-            os.path.join(self.data['outdir'], self._data['dem_clip'], 'dem_inter')
-        )
+        dem_clip.save(self._output_filepath('dem_inter'))
         
         return dem_clip
 
@@ -276,9 +249,7 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         :param intersect: vector intersect feature class
         """
-        pointsClipCheck = os.path.join(
-            str(self._coreGDB), 'points_inter'
-        )
+        pointsClipCheck = self._output_filepath('points_inter')
         arcpy.Clip_analysis(
             self.data['points'], intersect, pointsClipCheck
         )
@@ -392,14 +363,10 @@ class PrepareData(PrepareDataBase, ManageFields):
         sinslope = arcpy.sa.Abs(sinasp)
         cosslope = arcpy.sa.Abs(cosasp)
         times1 = arcpy.sa.Plus(cosslope, sinslope)
-        times1.save(
-            os.path.join(self.data['outdir'], self._data['ratio_cell'], 'ratio_cell')
-        )
+        times1.save(self._output_filepath('ratio_cell'))
 
         efect_cont = arcpy.sa.Times(times1, self.data['spix'])
-        efect_cont.save(
-            os.path.join(self.data['outdir'], self._data['efect_cont'],  'efect_cont')
-        )
+        efect_cont.save(self._output_filepath('efect_cont'))
         self.data['mat_efect_cont'] = self._rst2np(efect_cont)
 
     def _save_raster(self, name, array_export, folder=None):

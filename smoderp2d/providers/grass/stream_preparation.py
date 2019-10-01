@@ -21,15 +21,6 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                raster=self.dem
         )
 
-    def _set_output(self):
-        """Define output temporary folder and geodatabase.
-        """
-        pass
-        # Module('g.mapset',
-        #                flags='c',
-        #                mapset='stream_prep'
-        # )
-
     def _setnull(self):
         """Define mask.
         """

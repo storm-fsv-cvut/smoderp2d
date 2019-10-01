@@ -46,9 +46,6 @@ class StreamPreparationBase(object):
                 'stream_shape': 'control'
         }
     def prepare(self):
-        Logger.info("Creating output...")
-        self._set_output()
-
         self._setnull() # not used for anything, just saves setnull
 
         Logger.info("Clip stream...")
@@ -67,9 +64,6 @@ class StreamPreparationBase(object):
         self._get_streamlist(stream)
 
         return self.streamlist, mat_stream_seg, stream_loc
-
-    def _set_output(self):
-        raise NotImplemented("Not implemented for base provider")
 
     def _setnull(self):
         raise NotImplemented("Not implemented for base provider")
