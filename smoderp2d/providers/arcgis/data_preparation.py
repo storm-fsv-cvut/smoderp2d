@@ -232,7 +232,6 @@ class PrepareData(PrepareDataBase, ArcGisStorage, ManageFields):
 
         # create raster mask based on intersect feature call
         mask = self._output_filepath('inter_mask')
-        Logger.info('{}'.format(self._primary_key))
         arcpy.PolygonToRaster_conversion(
             intersect, self._primary_key, mask, "MAXIMUM_AREA",
             cellsize = dem_desc.MeanCellHeight)
