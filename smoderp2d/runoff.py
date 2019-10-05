@@ -347,20 +347,20 @@ class Runoff(object):
 
                     self.surface.arr[i][j].h_total_pre = self.surface.arr[i][j].h_total_new
 
-        Logger.info('Saving data...')
+
+        # perform postprocessing - store results
+        Logger.info('Saving output data...')
+        self.provider.postprocessing(self.cumulative, self.surface.arr)
+
+        # TODO
+        # post_proc.stream_table(Globals.outdir + os.sep, self.surface,
+        #                        Globals.streams_loc)
 
         Logger.info('')
         Logger.info('-' * 80)
         Logger.info('Total computing time: {}'.format(
             time.time() - Logger.start_time)
         )
-
-        # perform postprocessing - store results
-        self.provider.postprocessing(self.cumulative, self.surface.arr)
-
-        # TODO
-        # post_proc.stream_table(Globals.outdir + os.sep, self.surface,
-        #                        Globals.streams_loc)
 
         # TODO: print stats in better way
         # import platform
