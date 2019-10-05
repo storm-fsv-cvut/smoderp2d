@@ -74,7 +74,8 @@ class ArcGisProvider(BaseProvider):
             file_output
         )
 
-        Logger.debug("Raster ASCII output file {} saved".format(file_output))
+        self._print_arr_stats(arr)
+        Logger.info("Raster ASCII output file {} saved".format(file_output))
 
 class ArcGisStorage(object):
     def __init__(self):

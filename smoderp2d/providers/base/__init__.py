@@ -315,7 +315,7 @@ class BaseProvider(object):
             ]
 
         finState = np.zeros(np.shape(surface_array), int)
-        finState.fill(GridGlobals.NoDataValue) # TODO: int ?
+        finState.fill(GridGlobals.NoDataInt)
         vRest = np.zeros(np.shape(surface_array), float)
         vRest.fill(GridGlobals.NoDataValue)
         totalBil = cumulative.infiltration.copy()
@@ -371,3 +371,10 @@ class BaseProvider(object):
         :param output: output filename
         """
         raise NotImplementedError()
+
+    def _print_arr_stats(self, arr):
+        """Print array stats.
+        """
+        Logger.info("Array stats: min={} max={} mean={}".format(
+            np.min(arr), np.max(arr), np.mean(arr)
+        ))
