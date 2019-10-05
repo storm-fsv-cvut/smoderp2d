@@ -96,4 +96,4 @@ class CmdProvider(BaseProvider):
         np.savetxt(file_output, arr)
 
         self._print_arr_stats(arr)
-        Logger.debug("Raster ASCII output file {} saved".format(file_output))
+        Logger.info("Raster ASCII output file {} saved".format(file_output))
