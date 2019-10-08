@@ -342,6 +342,7 @@ class PrepareData(PrepareDataBase, ArcGisStorage, ManageFields):
                 i = self._get_array_points_(
                     pnt.X, pnt.Y, fid, i
                 )
+                i += 1
         else:
             self.data['array_points'] = None
 
