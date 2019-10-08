@@ -121,7 +121,6 @@ class PrepareDataBase(object):
 
         self.data['mfda'] = False
         self.data['mat_boundary'] = None
-        self.data['points'] = None
         self.data['spix'] = None
         self.data['vpix'] = None
 
