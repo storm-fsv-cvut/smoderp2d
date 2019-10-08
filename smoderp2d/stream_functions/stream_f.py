@@ -41,7 +41,7 @@ def compute_h(A, m, b, err=0.0001, max_iter=20):
         h_pre = h
         if iter_ >= max_iter:
             Logger.error(
-                "if file",
+                "if file %s %s %s %s %s %s %s %s",
                 frameinfo.filename,
                 "near line ",
                 frameinfo.lineno,
