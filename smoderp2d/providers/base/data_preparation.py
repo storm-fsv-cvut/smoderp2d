@@ -92,6 +92,7 @@ class PrepareDataBase(object):
         all_attrib = self._get_mat_par(sfield, intersect)
 
         # build points array
+        Logger.info("Prepare points for hydrographs...") 
         self._get_array_points()
 
         # build a/aa arrays
@@ -121,7 +122,6 @@ class PrepareDataBase(object):
 
         self.data['mfda'] = False
         self.data['mat_boundary'] = None
-        self.data['points'] = None
         self.data['spix'] = None
         self.data['vpix'] = None
 
