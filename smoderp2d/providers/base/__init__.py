@@ -361,6 +361,7 @@ class BaseProvider(object):
     def _raster_output_path(output):
         return os.path.join(
             Globals.outdir,
+            'core',
             output + '.asc'
         )
  
