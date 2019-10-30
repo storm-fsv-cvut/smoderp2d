@@ -62,4 +62,22 @@ class GrassGisProvider(BaseProvider):
         :param arr: numpy array
         :param output: output filename
         """
-        pass
+        from grass.pygrass.raster import numpy2raster
+
+        # TBD: extend pygrass to export array directly to specified
+        # external format
+        numpy2raster(
+            arr, "FCELL",
+            output, overwrite=True
+        )
+
+        file_output = self._raster_output_path(output)
+        Module('r.out.gdal',
+               input=output,
+               output=fille_output,
+               format='AAIGrid',
+               overwrite=True
+        )
+
+        self._print_arr_stats(arr)
+        Logger.info("Raster ASCII output file {} saved".format(file_output))
