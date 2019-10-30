@@ -182,7 +182,8 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                 cat = line.cat
                 for start_line in start.lines():
                     if start_line.cat != cat:
-                        to_node[cat] = start_line.cat
+                        # category starts with 1, convert to indices
+                        to_node[cat-1] = start_line.cat-1
 
         if to_node:
             # TODO: rewrite using pygrass
