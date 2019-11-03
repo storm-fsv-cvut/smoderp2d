@@ -108,7 +108,8 @@ class BaseProvider(object):
             data['type_of_computing'] = self._config.get('Other', 'typecomp')
 
         #  output directory is always set
-        data['outdir'] = self._config.get('Other', 'outdir')
+        if data['outdir'] is None:
+            data['outdir'] = self._config.get('Other', 'outdir')
 
         #  rainfall data can be saved
         if self._config.get('srazka', 'file') != '-':
@@ -162,7 +163,8 @@ class BaseProvider(object):
         """
         for item in data.keys():
             if hasattr(Globals, item):
-                setattr(Globals, item, data[item])
+                if getattr(Globals, item) is None:
+                    setattr(Globals, item, data[item])
             elif hasattr(GridGlobals, item):
                 setattr(GridGlobals, item, data[item])
             elif hasattr(DataGlobals, item):

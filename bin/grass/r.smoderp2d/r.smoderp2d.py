@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 ############################################################################
 #
@@ -109,6 +109,11 @@
 #% key: pickle_file
 #% description: Output picke file (related to -d flag only)
 #% required: no
+#%end
+#%option G_OPT_M_DIR
+#% key: output_dir
+#% description: Name for output directory where to store results
+#% required: yes
 #%end
 
 import os

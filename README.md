@@ -45,7 +45,7 @@ Run `r.smoderp2d` module:
         points=points2 table_soil_vegetation=tabulkytab \
         table_soil_vegetation_code=soilveg stream=tok \
         table_stream_shape=tab_stream_tvar table_stream_shape_code=smoderp \
-        maxdt=10 end_time=120
+        maxdt=10 end_time=120 output_dir=/tmp/smoderp2d
 
 ### From ArcGIS 10.x or Pro
 

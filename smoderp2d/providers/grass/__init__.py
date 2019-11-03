@@ -44,6 +44,9 @@ class GrassGisProvider(BaseProvider):
         """
         self._options = options
 
+        # set output directory
+        Globals.outdir = options['output_dir']
+
     def _load_dpre(self):
         """Load configuration data from data preparation procedure.
 
