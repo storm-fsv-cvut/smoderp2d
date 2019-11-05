@@ -101,10 +101,10 @@ class PrepareData(PrepareDataBase, ArcGisStorage, ManageFields):
         dem_copy = self._output_filepath('dem_copy')
 
         # this is a work around related to issue #46 [https://github.com/storm-fsv-cvut/smoderp2d/issues/46]
-        # copyraster_management does not copy nodatavalue to a new raster
-        # here it is extracted here from the original data and storred in class local variable _nodatavalue
         dem_desc = arcpy.Describe(self._input_params['elevation'])
-        self._nodatavalue = dem_desc.nodatavalue
+        # copyraster_management does not copy nodatavalue to a new
+        # raster here it is extracted here from the original data
+        self.data['NoDataValue'] = dem_desc.nodatavalue
         
         arcpy.CopyRaster_management(
             self._input_params['elevation'], dem_copy
@@ -311,7 +311,6 @@ class PrepareData(PrepareDataBase, ArcGisStorage, ManageFields):
         # lower left corner coordinates
         self.data['xllcorner'] = dem_desc.Extent.XMin
         self.data['yllcorner'] = dem_desc.Extent.YMin
-        self.data['NoDataValue'] = self._nodatavalue
         self.data['vpix'] = dem_desc.MeanCellHeight
         self.data['spix'] = dem_desc.MeanCellWidth
         self.data['pixel_area'] = self.data['spix'] * self.data['vpix']
