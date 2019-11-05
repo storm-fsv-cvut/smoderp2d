@@ -361,12 +361,20 @@ class BaseProvider(object):
 
     @staticmethod
     def _raster_output_path(output):
+        dir_name = os.path.join(
+            Globals.outdir,
+            'core'
+            )
+
+        if not os.path.exists(dir_name):
+           os.makedirs(dir_name)
+
         return os.path.join(
             Globals.outdir,
             'core',
             output + '.asc'
         )
- 
+
     def _raster_output(self, arr, output):
         """Write raster to ASCII file.
 
