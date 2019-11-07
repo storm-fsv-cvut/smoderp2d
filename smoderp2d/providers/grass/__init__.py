@@ -12,7 +12,7 @@ import grass.script as gs
 from grass.pygrass.gis import Region
 from grass.pygrass.modules import Module
 from grass.pygrass.raster import numpy2raster
-from grass.messages import Messenger
+from grass.pygrass.messages import Messenger
 
 class GrassGisProvider(BaseProvider):
     def __init__(self):
