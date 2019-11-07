@@ -309,8 +309,9 @@ class PrepareData(PrepareDataBase, ArcGisStorage, ManageFields):
         dem_desc = arcpy.Describe(dem_clip)
         
         # lower left corner coordinates
-        self.data['xllcorner'] = dem_desc.Extent.XMin
-        self.data['yllcorner'] = dem_desc.Extent.YMin
+        GridGlobals.set_llcorner((dem_desc.Extent.XMin,
+                                  dem_desc.Extent.YMin))
+        # TODO: move to GridGlobals
         self.data['vpix'] = dem_desc.MeanCellHeight
         self.data['spix'] = dem_desc.MeanCellWidth
         self.data['pixel_area'] = self.data['spix'] * self.data['vpix']

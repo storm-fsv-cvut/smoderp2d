@@ -70,6 +70,11 @@ class GridGlobals(object):
         return (cls.xllcorner, cls.yllcorner)
 
     @classmethod
+    def set_llcorner(cls, xy):
+        cls.xllcorner = xy[0]
+        cls.yllcorner = xy[1]
+
+    @classmethod
     def get_size(cls):
         return (cls.dx, cls.dy)
 

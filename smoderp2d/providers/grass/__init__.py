@@ -3,18 +3,23 @@ import logging
 
 from smoderp2d.providers.base import BaseProvider, CompType
 
-from smoderp2d.core.general import Globals
+from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.exceptions import ProviderError
 from smoderp2d.providers.grass.logger import GrassGisLogHandler
 from smoderp2d.providers import Logger
 
 import grass.script as gs
+from grass.pygrass.gis import Region
+from grass.pygrass.modules import Module
+from grass.pygrass.raster import numpy2raster
+from grass.messages import Messenger
 
 class GrassGisProvider(BaseProvider):
     def __init__(self):
         super(GrassGisProvider, self).__init__()
 
-        self._print_fn = gs.message
+        msgr = Messenger()
+        self._print_fn = msgr.message
 
         # type of computation (default)
         self.args.typecomp = CompType.full
@@ -29,6 +34,7 @@ class GrassGisProvider(BaseProvider):
         )
 
         # check version
+        # TBD: change to pygrass API
         if list(map(int, gs.version()['version'].split('.')[:-1])) < [7, 7]:
             raise ProviderError("GRASS GIS version 7.8+ required")
 
@@ -65,7 +71,16 @@ class GrassGisProvider(BaseProvider):
         :param arr: numpy array
         :param output: output filename
         """
-        from grass.pygrass.raster import numpy2raster
+        # set output region
+        region = Region()
+        region.west = GridGlobals.xllcorner
+        region.south = GridGlobals.xllcorner
+        # TODO: use pygrass API instead
+        region.east = region.west + (GridGlobals.c * GridGlobals.dx)
+        region.north = region.south + (GridGlobals.r * GridGlobals.dy)
+        region.cols = GridGlobals.c
+        region.rows = GridGlobals.r
+        region.write()
 
         # TBD: extend pygrass to export array directly to specified
         # external format
@@ -75,10 +90,12 @@ class GrassGisProvider(BaseProvider):
         )
 
         file_output = self._raster_output_path(output)
+
         Module('r.out.gdal',
                input=output,
-               output=fille_output,
+               output=file_output,
                format='AAIGrid',
+               nodata=GridGlobals.NoDataValue,
                overwrite=True
         )
 

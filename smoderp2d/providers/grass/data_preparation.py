@@ -4,6 +4,8 @@ from subprocess import PIPE
 
 import numpy as np
 
+from smoderp2d.core.general import GridGlobals
+
 from smoderp2d.providers.grass.terrain import compute_products
 from smoderp2d.providers.grass.manage_fields import ManageFields
 
@@ -206,6 +208,11 @@ class PrepareData(PrepareDataBase, ManageFields):
         Module('g.region',
                vector=intersect,
                align=dem
+        )
+        region = Region()
+        # set lower left corner coordinates
+        GridGlobals.set_llcorner(
+            (region.west, region.south)
         )
 
         # create raster mask for clipping
