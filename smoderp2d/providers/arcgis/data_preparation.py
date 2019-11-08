@@ -7,6 +7,8 @@ import csv
 
 import smoderp2d.processes.rainfall as rainfall
 
+from smoderp2d.core.general import GridGlobals
+
 from smoderp2d.providers.arcgis import constants
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
