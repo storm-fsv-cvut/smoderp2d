@@ -1,7 +1,7 @@
 import os
-import tempfile
 from subprocess import PIPE
 
+from grass.script.core import tempfile
 from grass.pygrass.modules import Module
 from grass.pygrass.raster import raster2numpy
 from grass.pygrass.vector import Vector, VectorTopo
@@ -144,7 +144,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                    cats=','.join(cats)
             )
             # update also attributes
-            tmpfile = next(tempfile._get_candidate_names())
+            tmpfile = tempfile(create=False)
             with open(tmpfile, 'w') as fd:
                 for k, v in cats.items():
                     # v (0:start_elev, 1:end_elev,
@@ -187,7 +187,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
 
         if to_node:
             # TODO: rewrite using pygrass
-            tmpfile = next(tempfile._get_candidate_names())
+            tmpfile = tempfile(create=False)
             with open(tmpfile, 'w') as fd:
                 for c, n in to_node.items():
                     fd.write('UPDATE {} SET to_node = {} WHERE {} = {};\n'.format(
