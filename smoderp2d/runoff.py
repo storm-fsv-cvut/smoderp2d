@@ -384,7 +384,6 @@ class Runoff(object):
         # post_proc.stream_table(Globals.outdir + os.sep, self.surface,
         #                        Globals.streams_loc)
 
-        Logger.info('')
         Logger.info('-' * 80)
         Logger.info('Total computing time: {}'.format(
             time.time() - Logger.start_time)

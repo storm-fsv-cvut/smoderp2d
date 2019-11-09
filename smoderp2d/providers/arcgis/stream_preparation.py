@@ -9,13 +9,11 @@ from arcpy.sa import *
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.stream_preparation import StreamPreparationBase
 from smoderp2d.providers.base.stream_preparation import StreamPreparationError, ZeroSlopeError
-from smoderp2d.providers.arcgis import ArcGisStorage
 from smoderp2d.providers.arcgis.manage_fields import ManageFields
 
-class StreamPreparation(StreamPreparationBase, ArcGisStorage, ManageFields):
-    def __init__(self, args):
-        super(StreamPreparation, self).__init__(args)
-        ArcGisStorage.__init__(self)
+class StreamPreparation(StreamPreparationBase, ManageFields):
+    def __init__(self, args, writter):
+        super(StreamPreparation, self).__init__(args, writter)
 
         # Check extensions
         arcpy.CheckOutExtension("3D")
@@ -31,7 +29,7 @@ class StreamPreparation(StreamPreparationBase, ArcGisStorage, ManageFields):
             setnull = arcpy.sa.SetNull(
                 self.flow_accumulation_clip, 1, "VALUE < 300"
             )
-            setnull.save(self._output_filepath('setnull'))
+            setnull.save(self.storage.output_filepath('setnull'))
         except:
             raise StreamPreparationError(
                 "Unexpected error during setnull calculation: {}".format(
@@ -62,9 +60,9 @@ class StreamPreparation(StreamPreparationBase, ArcGisStorage, ManageFields):
 #            -self.spix / 3, "FULL", "ROUND", "NONE"
 #        )
 
-        stream = self._output_filepath('stream')
-        stream_loc = self._output_filepath('stream_loc')
-        aoi = self._output_filepath('aoi')
+        stream = self.storage.output_filepath('stream')
+        stream_loc = self.storage.output_filepath('stream_loc')
+        aoi = self.storage.output_filepath('aoi')
 
         aoi = arcpy.Clip_analysis(
             self.null, self.intersect, aoi
@@ -72,7 +70,7 @@ class StreamPreparation(StreamPreparationBase, ArcGisStorage, ManageFields):
 
         aoi_buffer = arcpy.Buffer_analysis(
             aoi,
-            self._output_filepath('aoi_buffer'),
+            self.storage.output_filepath('aoi_buffer'),
             -self.spix / 3, "FULL", "ROUND", "NONE"
         )
 
@@ -111,11 +109,11 @@ class StreamPreparation(StreamPreparationBase, ArcGisStorage, ManageFields):
 #        )
 
         start = arcpy.FeatureVerticesToPoints_management(
-            stream, self._output_filepath("start"), "START"
+            stream, self.storage.output_filepath("start"), "START"
         )
 
         end = arcpy.FeatureVerticesToPoints_management(
-            stream, self._output_filepath("end"), "END"
+            stream, self.storage.output_filepath("end"), "END"
         )
         arcpy.sa.ExtractMultiValuesToPoints(
             start, [[self.dem_clip, self._data["start_elev"]]], "NONE"
@@ -139,10 +137,10 @@ class StreamPreparation(StreamPreparationBase, ArcGisStorage, ManageFields):
         )
 
         start = arcpy.FeatureVerticesToPoints_management(
-            stream, self._output_filepath("start"), "START")
+            stream, self.storage.output_filepath("start"), "START")
 
         end = arcpy.FeatureVerticesToPoints_management(
-            stream, self._output_filepath("end"), "END")
+            stream, self.storage.output_filepath("end"), "END")
 
         arcpy.sa.ExtractMultiValuesToPoints(
             start,
@@ -217,13 +215,13 @@ class StreamPreparation(StreamPreparationBase, ArcGisStorage, ManageFields):
         :param stream: Polyline with stream in the area.
         :return mat_stream_seg: Numpy array
         """
-        stream_rst1 = self._output_filepath('stream_rst')
+        stream_rst1 = self.storage.output_filepath('stream_rst')
         stream_rst = arcpy.PolylineToRaster_conversion(
             stream, self._primary_key, stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix
         )
 
         # TODO: what is real meaning?
-        stream_seg = self._output_filepath('stream_seg')
+        stream_seg = self.storage.output_filepath('stream_seg')
         arcpy.gp.Reclassify_sa(
             stream_rst, "VALUE", "NoDataValue 1000", stream_seg, "DATA"
         )
@@ -263,7 +261,7 @@ class StreamPreparation(StreamPreparationBase, ArcGisStorage, ManageFields):
 
         :param stream:
         """
-        stream_shape_dbf = self._output_filepath('stream_shape')
+        stream_shape_dbf = self.storage.output_filepath('stream_shape')
         arcpy.CopyRows_management(self.tab_stream_shape, stream_shape_dbf)
 
         try:

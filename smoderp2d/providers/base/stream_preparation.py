@@ -14,7 +14,7 @@ class ZeroSlopeError(Exception):
         )
 
 class StreamPreparationBase(object):
-    def __init__(self, args):
+    def __init__(self, args, writter):
         self.stream = args[0]
         self.tab_stream_shape = args[1]
         self.tab_stream_shape_code = args[2]
@@ -45,6 +45,9 @@ class StreamPreparationBase(object):
                 'stream_seg': 'control',
                 'stream_shape': 'control'
         }
+
+        self.storage = writter
+
     def prepare(self):
         self._setnull() # not used for anything, just saves setnull
 

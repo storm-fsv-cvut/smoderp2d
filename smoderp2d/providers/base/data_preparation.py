@@ -7,7 +7,9 @@ import smoderp2d.processes.rainfall as rainfall
 from smoderp2d.providers.base import Logger
 
 class PrepareDataBase(object):
-    def __init__(self):
+    def __init__(self, writter):
+        self.storage = writter
+
         # internal output data
         self._data = {
             'dem_mask' : 'control',
@@ -32,9 +34,6 @@ class PrepareDataBase(object):
             'flow_clip' : 'control',
             'sfield_dir' : 'control',
         }
-
-        # primary key (is defined by provider)
-        self._primary_key = None
 
     def run(self):
         Logger.info('-' * 80)
@@ -80,10 +79,11 @@ class PrepareDataBase(object):
         self.data['mat_slope'] = self._rst2np(slope_clip)
         if flow_direction_clip is not None:
             self.data['mat_fd'] = self._rst2np(flow_direction_clip)
-            # self._save_raster("fl_dir",
-            #                   self.data['mat_fd'],
-            #                   self.data['temp']
-            # )
+            self.storage.write_raster(
+                self.data['mat_fd'],
+                'fl_dir'
+                'temp'
+            )
 
         # update data dict for spatial ref info
         self._get_raster_dim(dem_clip)
@@ -317,8 +317,11 @@ class PrepareDataBase(object):
                 else:
                     self.data['mat_nan'][i][j] = 0
 
-        ### TODO
-        ### self._save_raster("mat_nan", self.data['mat_nan'], self.data['temp'])
+        self.storage.write_raster(
+            self.data['mat_nan'],
+            'mat_nan',
+            'temp'
+        )
 
         return all_attrib
 
@@ -445,10 +448,12 @@ class PrepareDataBase(object):
                     mat_hcrit_flux[i][j] = self.data['NoDataValue']
                     self.data['mat_hcrit'][i][j] = self.data['NoDataValue']
 
-        # TODO
-        # self._save_raster("hcrit_tau", mat_hcrit_tau)
-        # self._save_raster("hcrit_flux", mat_hcrit_flux)
-        # self._save_raster("hcrit_v", mat_hcrit_v)
+        for out, arr in (("hcrit_tau", mat_hcrit_tau),
+                         ("hcrit_flux", mat_hcrit_flux),
+                         ("hcrit_v", mat_hcrit_v)):
+            self.storage.write_raster(
+                arr, out, 'temp'
+            )
 
     def _get_slope_dir(self, dem_clip):
         raise NotImplemented("Not implemented for base provider")
@@ -486,7 +491,7 @@ class PrepareDataBase(object):
                 self.data['outdir'],
                 dem_clip,
                 intersect,
-                self._primary_key,
+                self.storage.primary_key,
                 flow_accumulation_clip
             ]
 

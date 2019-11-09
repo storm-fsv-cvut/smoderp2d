@@ -22,7 +22,7 @@ class BaseLogger(logging.Logger):
         else:
             remaining = '??'
         self.info("Time to end     [s]: {0:.2f}".format(remaining))
-        self.info("-" * 40)
+        self.info('-' * 80)
 
 def logger():
     """

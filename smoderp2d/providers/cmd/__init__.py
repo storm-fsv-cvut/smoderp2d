@@ -9,8 +9,27 @@ else:
     from ConfigParser import ConfigParser, NoSectionError
 
 from smoderp2d.core.general import Globals
-from smoderp2d.providers.base import BaseProvider, Logger, CompType
+from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter
 from smoderp2d.exceptions import ConfigError
+
+class CmdWritter(BaseWritter):
+    def __init__(self):
+        super(CmdWritter, self).__init__()
+
+    def write_raster(self, array, output_name, directory='core'):
+        """Write raster (numpy array) to ASCII file.
+
+        :param array: numpy array
+        :param output_name: output filename
+        :param directory: directory where to write output file
+        """
+        file_output = self._raster_output_path(output_name, directory)
+
+        np.savetxt(file_output, array)
+
+        self._print_array_stats(
+            array, file_output
+        )
 
 class CmdProvider(BaseProvider):
     def __init__(self):
@@ -66,6 +85,9 @@ class CmdProvider(BaseProvider):
                 self.args.indata, e
             ))
 
+        # define storage writter
+        self.storage = CmdWritter()
+
     def load(self):
         """Load configuration data.
 
@@ -84,16 +106,3 @@ class CmdProvider(BaseProvider):
             raise ProviderError('Unsupported partial computing: {}'.format(
                 self.args.typecomp
             ))
-
-    def _raster_output(self, arr, output):
-        """Write raster (numpy array) to ASCII file.
-
-        :param arr: numpy array
-        :param output: output filename
-        """
-        file_output = self._raster_output_path(output)
-
-        np.savetxt(file_output, arr)
-
-        self._print_arr_stats(arr)
-        Logger.info("Raster ASCII output file {} saved".format(file_output))

@@ -17,19 +17,15 @@ from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from grass.pygrass.modules import Module
 from grass.pygrass.vector import VectorTopo
 from grass.pygrass.raster import RasterRow, raster2numpy
-# from grass.pygrass.gis import Location
 from grass.pygrass.gis import Region
 from grass.exceptions import CalledModuleError
 
 class PrepareData(PrepareDataBase, ManageFields):
-    def __init__(self, options):
-        super(PrepareData, self).__init__()
+    def __init__(self, options, writter):
+        super(PrepareData, self).__init__(writter)
 
         # get input parameters
         self._get_input_params(options)
-
-        # primary key
-        self._primary_key = "cat"
 
     def __del__(self):
         # remove mask
@@ -382,11 +378,10 @@ class PrepareData(PrepareDataBase, ManageFields):
         ))
         self.data['mat_efect_cont'] = self._rst2np(efect_cont)
 
-    @staticmethod
-    def _streamPreparation(args):
+    def _streamPreparation(self, args):
         from smoderp2d.providers.grass.stream_preparation import StreamPreparation
 
-        return StreamPreparation(args).prepare()
+        return StreamPreparation(args, writter=self.storage).prepare()
 
     @staticmethod
     def _check_input_data(soil):

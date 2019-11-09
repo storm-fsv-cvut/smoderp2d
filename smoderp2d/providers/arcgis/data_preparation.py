@@ -15,17 +15,16 @@ from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
 
 from smoderp2d.providers.arcgis.terrain import compute_products
-from smoderp2d.providers.arcgis import constants, ArcGisStorage
+from smoderp2d.providers.arcgis import constants
 from smoderp2d.providers.arcgis.manage_fields import ManageFields
 
 import arcpy
 import arcgisscripting
 from arcpy.sa import *
 
-class PrepareData(PrepareDataBase, ArcGisStorage, ManageFields):
-    def __init__(self):
-        super(PrepareData, self).__init__()
-        ArcGisStorage.__init__(self)
+class PrepareData(PrepareDataBase, ManageFields):
+    def __init__(self, writter):
+        super(PrepareData, self).__init__(writter)
 
         # creating the geoprocessor object
         self.gp = arcgisscripting.create()
@@ -100,7 +99,7 @@ class PrepareData(PrepareDataBase, ArcGisStorage, ManageFields):
         """
         # Do not work for CopyRaster, https://github.com/storm-fsv-cvut/smoderp2d/issues/46
         # dem_copy = os.path.join(self.data['temp'], 'dem_copy')
-        dem_copy = self._output_filepath('dem_copy')
+        dem_copy = self.storage.output_filepath('dem_copy')
 
         # this is a work around related to issue #46 [https://github.com/storm-fsv-cvut/smoderp2d/issues/46]
         dem_desc = arcpy.Describe(self._input_params['elevation'])
@@ -115,7 +114,7 @@ class PrepareData(PrepareDataBase, ArcGisStorage, ManageFields):
         # align computation region to DTM grid
         arcpy.env.snapRaster = self._input_params['elevation']
 
-        dem_mask = self._output_filepath('dem_mask')
+        dem_mask = self.storage.output_filepath('dem_mask')
         self.gp.Reclassify_sa(
             dem_copy, "VALUE", "-100000 100000 1", dem_mask, "DATA"
         )
@@ -152,13 +151,13 @@ class PrepareData(PrepareDataBase, ArcGisStorage, ManageFields):
         :return sfield: list of selected attributes
         """
         # convert mask into polygon feature class
-        mask_shp = self._output_filepath('vector_mask')
+        mask_shp = self.storage.output_filepath('vector_mask')
         arcpy.RasterToPolygon_conversion(
             mask, mask_shp, "NO_SIMPLIFY")
 
         # dissolve soil and vegmetation polygons
-        soil_boundary = self._output_filepath('soil_boundary')
-        vegetation_boundary = self._output_filepath('vegetation_boundary')
+        soil_boundary = self.storage.output_filepath('soil_boundary')
+        vegetation_boundary = self.storage.output_filepath('vegetation_boundary')
         arcpy.Dissolve_management(
             vegetation, vegetation_boundary, vegetation_type
         )
@@ -168,7 +167,7 @@ class PrepareData(PrepareDataBase, ArcGisStorage, ManageFields):
 
         # do intersection
         group = [soil_boundary, vegetation_boundary, mask_shp]
-        intersect = self._output_filepath('inter_soil_lu')
+        intersect = self.storage.output_filepath('inter_soil_lu')
         arcpy.Intersect_analysis(
             group, intersect, "ALL", "", "INPUT")
 
@@ -239,14 +238,14 @@ class PrepareData(PrepareDataBase, ArcGisStorage, ManageFields):
         arcpy.env.outputCoordinateSystem = dem_desc.SpatialReference
 
         # create raster mask based on intersect feature call
-        mask = self._output_filepath('inter_mask')
+        mask = self.storage.output_filepath('inter_mask')
         arcpy.PolygonToRaster_conversion(
-            intersect, self._primary_key, mask, "MAXIMUM_AREA",
+            intersect, self.storage.primary_key, mask, "MAXIMUM_AREA",
             cellsize = dem_desc.MeanCellHeight)
 
         # cropping rasters
         dem_clip = ExtractByMask(dem, mask)
-        dem_clip.save(self._output_filepath('dem_inter'))
+        dem_clip.save(self.storage.output_filepath('dem_inter'))
         
         return dem_clip
 
@@ -256,7 +255,7 @@ class PrepareData(PrepareDataBase, ArcGisStorage, ManageFields):
 
         :param intersect: vector intersect feature class
         """
-        pointsClipCheck = self._output_filepath('points_inter')
+        pointsClipCheck = self.storage.output_filepath('points_inter')
         arcpy.Clip_analysis(
             self.data['points'], intersect, pointsClipCheck
         )
@@ -342,7 +341,7 @@ class PrepareData(PrepareDataBase, ArcGisStorage, ManageFields):
 
             i = 0
             for row in rows_p:
-                fid = row.getValue(self._primary_key)
+                fid = row.getValue(self.storage.primary_key)
                 # geometry
                 feat = row.getValue(shapefieldname)
                 pnt = feat.getPart()
@@ -371,35 +370,16 @@ class PrepareData(PrepareDataBase, ArcGisStorage, ManageFields):
         sinslope = arcpy.sa.Abs(sinasp)
         cosslope = arcpy.sa.Abs(cosasp)
         times1 = arcpy.sa.Plus(cosslope, sinslope)
-        times1.save(self._output_filepath('ratio_cell'))
+        times1.save(self.storage.output_filepath('ratio_cell'))
 
         efect_cont = arcpy.sa.Times(times1, self.data['spix'])
-        efect_cont.save(self._output_filepath('efect_cont'))
+        efect_cont.save(self.storage.output_filepath('efect_cont'))
         self.data['mat_efect_cont'] = self._rst2np(efect_cont)
 
-    def _save_raster(self, name, array_export, folder=None):
-        """
-        Convert numpy array into raster file.
-
-        :param name: raster file
-        :param array_export: data array
-        :param folder: target folder (if not specified use temporary directory)
-        """
-        if not folder:
-            folder = self.data['temp']
-        raster = arcpy.NumPyArrayToRaster(
-            array_export,
-            arcpy.Point(self.data['xllcorner'], self.data['yllcorner']),
-            self.data['spix'],
-            self.data['vpix'],
-            self.data['NoDataValue'])
-        raster.save(os.path.join(folder, name))
-
-    @staticmethod
-    def _streamPreparation(args):
+    def _streamPreparation(self, args):
         from smoderp2d.providers.arcgis.stream_preparation import StreamPreparation
 
-        return StreamPreparation(args).prepare()
+        return StreamPreparation(args, writter=self.storage).prepare()
 
     @staticmethod
     def _check_input_data(soil):

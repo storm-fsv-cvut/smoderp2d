@@ -36,6 +36,40 @@ class CompType:
         else:
             return cls.full
 
+class BaseWritter(object):
+    def __init__(self):
+        self.primary_key = None
+
+    @staticmethod
+    def _raster_output_path(output, directory='core'):
+        dir_name = os.path.join(
+            Globals.outdir,
+            directory
+            )
+
+        if not os.path.exists(dir_name):
+           os.makedirs(dir_name)
+
+        return os.path.join(
+            dir_name,
+            output + '.asc'
+        )
+
+    @staticmethod
+    def _print_array_stats(arr, file_output):
+        """Print array stats.
+        """
+        Logger.info("Array stats: min={} max={} mean={}".format(
+            np.min(arr), np.max(arr), np.mean(arr)
+        ))
+        Logger.info("Raster ASCII output file {} saved".format(
+            file_output
+        ))
+
+    # todo: abstractmethod
+    def write_raster(self, arr, output):
+        pass
+
 class BaseProvider(object):
     def __init__(self):
         self.args = Args()
@@ -45,6 +79,9 @@ class BaseProvider(object):
 
         # default logging level (can be modified by provider)
         Logger.setLevel(logging.DEBUG)
+
+        # storage writter must be defined
+        self.storage = None
 
     @staticmethod
     def _add_logging_handler(handler, formatter=None):
@@ -329,7 +366,7 @@ class BaseProvider(object):
 
         # make rasters from cumulative class
         for item in data_output:
-            self._raster_output(
+            self.storage.write_raster(
                 getattr(cumulative, item),
                 cumulative.data[item].file_name
             )
@@ -346,9 +383,9 @@ class BaseProvider(object):
             cumulative.sur_ret  # + (cumulative.v_sur_r + cumulative.v_rill_r)
         totalBil -= vRest
 
-        self._raster_output(totalBil, 'massBalance')
-        self._raster_output(finState, 'reachFid')
-        self._raster_output(vRest, 'volRest_m3')
+        self.storage.write_raster(totalBil, 'massBalance')
+        self.storage.write_raster(finState, 'reachFid')
+        self.storage.write_raster(vRest, 'volRest_m3')
 
         # TODO
         # if not Globals.extraOut:
@@ -357,35 +394,3 @@ class BaseProvider(object):
         #     if os.path.exists(output + os.sep + 'temp_dp'):
         #         shutil.rmtree(output + os.sep + 'temp_dp')
         #     return 1
-
-
-    @staticmethod
-    def _raster_output_path(output):
-        dir_name = os.path.join(
-            Globals.outdir,
-            'core'
-            )
-
-        if not os.path.exists(dir_name):
-           os.makedirs(dir_name)
-
-        return os.path.join(
-            Globals.outdir,
-            'core',
-            output + '.asc'
-        )
-
-    def _raster_output(self, arr, output):
-        """Write raster to ASCII file.
-
-        :param arr: numpy array
-        :param output: output filename
-        """
-        raise NotImplementedError()
-
-    def _print_arr_stats(self, arr):
-        """Print array stats.
-        """
-        Logger.info("Array stats: min={} max={} mean={}".format(
-            np.min(arr), np.max(arr), np.mean(arr)
-        ))
