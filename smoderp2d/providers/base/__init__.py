@@ -355,6 +355,13 @@ class BaseProvider(object):
                 'vol_sur_r' 
             ]
 
+        # make rasters from cumulative class
+        for item in data_output:
+            self.storage.write_raster(
+                self._make_mask(getattr(cumulative, item)),
+                cumulative.data[item].file_name
+            )
+
         finState = np.zeros(np.shape(surface_array), int)
         finState.fill(GridGlobals.NoDataInt)
         vRest = np.zeros(np.shape(surface_array), float)
@@ -365,29 +372,20 @@ class BaseProvider(object):
         for i in rrows:
             for j in rcols[i]:
                 finState[i][j] = int(surface_array[i][j].state)
-
-        # make rasters from cumulative class
-        for item in data_output:
-            self.storage.write_raster(
-                self._make_mask(getattr(cumulative, item)),
-                cumulative.data[item].file_name
-            )
-
-        for i in rrows:
-            for j in rcols[i]:
                 if finState[i][j] >= 1000:
                     vRest[i][j] = GridGlobals.NoDataValue
                 else:
                     vRest[i][j] = surface_array[i][j].h_total_new * GridGlobals.pixel_area
 
         totalBil = (cumulative.precipitation + cumulative.inflow_sur) - \
-            (cumulative.infiltration + cumulative.vol_sur_r + cumulative.vol_rill) - \
-            cumulative.sur_ret  # + (cumulative.v_sur_r + cumulative.v_rill_r)
+            (cumulative.infiltration + cumulative.vol_sheet + cumulative.vol_rill)
+            # - \
+            # cumulative.sur_ret  # + (cumulative.v_sur_r + cumulative.v_rill_r)
         totalBil -= vRest
 
-        self.storage.write_raster(totalBil, 'massBalance')
+        self.storage.write_raster(self._make_mask(totalBil), 'massBalance')
+        self.storage.write_raster(self._make_mask(vRest), 'volRest_m3')
         self.storage.write_raster(finState, 'reachFid')
-        self.storage.write_raster(vRest, 'volRest_m3')
 
         # store stream reaches results to a table
         n = len(stream)
