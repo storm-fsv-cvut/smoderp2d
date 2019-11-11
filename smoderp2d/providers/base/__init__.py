@@ -315,9 +315,11 @@ class BaseProvider(object):
         return data
 
     def postprocessing(self, cumulative, surface_array):
+
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
 
+        # compute maximum shear stress
         for i in rrows:
             for j in rcols[i]:
                 if cumulative.h_sur_tot[i][j] == 0.:
@@ -367,7 +369,7 @@ class BaseProvider(object):
         # make rasters from cumulative class
         for item in data_output:
             self.storage.write_raster(
-                getattr(cumulative, item),
+                self._make_mask(getattr(cumulative, item)),
                 cumulative.data[item].file_name
             )
 
@@ -386,6 +388,27 @@ class BaseProvider(object):
         self.storage.write_raster(totalBil, 'massBalance')
         self.storage.write_raster(finState, 'reachFid')
         self.storage.write_raster(vRest, 'volRest_m3')
+
+    def _make_mask(self, arr):
+        """ Assure that the no data value is outside the 
+        computation region.
+        Works only for type float.
+        
+        :param arrr: numpy array
+        """
+
+        rrows = GridGlobals.rr
+        rcols = GridGlobals.rc
+
+        copy_arr = arr.copy()
+        arr.fill(GridGlobals.NoDataValue)
+
+        for i in rrows:
+            for j in rcols[i]:
+                arr[i][j] = copy_arr[i][j]
+
+        return arr
+
 
         # TODO
         # if not Globals.extraOut:
