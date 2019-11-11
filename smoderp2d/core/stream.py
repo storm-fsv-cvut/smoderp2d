@@ -107,7 +107,6 @@ class Stream(object):
     #  @param id_ starts in 0 not 1000
     def reach_inflows(self, id_, inflows):
         self.reach[id_].V_in_from_field += inflows
-        #print inflows, self.reach[id_].V_in_from_field
 
     def stream_reach_outflow(self, dt):
         for id_ in range(self.nReaches):
