@@ -38,17 +38,20 @@ class ArcGisWritter(BaseWritter):
             os.path.join(outdir, 'core'),
             "data.gdb")
 
-    def output_filepath(self, name):
+    def output_filepath(self, name, item='temp'):
         """Get ArcGIS data path.
+
+        TODO: item needs to be set for each raster 
+        reparatelly. Now all is in temp dir.
 
         :param name: layer name
 
         :return: full path
         """
-        try:
-            item = self._data[name]
-        except KeyError:
-            item = 'temp'
+        #try:
+        #    item = self._data[name]
+        #except:
+        #    item = 'temp'
 
         path = os.path.join(
             Globals.get_outdir(), item, 'data.gdb', name
@@ -71,7 +74,7 @@ class ArcGisWritter(BaseWritter):
             GridGlobals.yllcorner,
         )
         raster = arcpy.NumPyArrayToRaster(
-            arr, lower_left, GridGlobals.dx, GridGlobals.dy,
+            array, lower_left, GridGlobals.dx, GridGlobals.dy,
             value_to_nodata=GridGlobals.NoDataValue)
         arcpy.RasterToASCII_conversion(
             raster,
