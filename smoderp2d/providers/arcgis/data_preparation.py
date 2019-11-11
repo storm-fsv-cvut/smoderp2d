@@ -310,8 +310,6 @@ class PrepareData(PrepareDataBase, ManageFields):
         dem_desc = arcpy.Describe(dem_clip)
         
         # lower left corner coordinates
-        Logger.info(dem_desc.Extent.XMin)
-        Logger.info(dem_desc.Extent.YMin)
         GridGlobals.set_llcorner((dem_desc.Extent.XMin,
                                   dem_desc.Extent.YMin))
         self.data['xllcorner'] = dem_desc.Extent.XMin
