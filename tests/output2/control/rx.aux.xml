@@ -1,0 +1,13 @@
+<PAMDataset>
+  <SRS>PROJCS["S-JTSK_Krovak_East_North",GEOGCS["GCS_S_JTSK",DATUM["Jednotne_Trigonometricke_Site_Katastralni",SPHEROID["Bessel_1841",6377397.155,299.1528128,AUTHORITY["EPSG","7004"]],AUTHORITY["EPSG","6156"]],PRIMEM["Greenwich",0.0,AUTHORITY["EPSG","8901"]],UNIT["Degree",0.0174532925199433,AUTHORITY["EPSG","9102"]],AUTHORITY["EPSG","4156"]],PROJECTION["Krovak",AUTHORITY["Esri","43039"]],PARAMETER["False_Easting",0.0,AUTHORITY["Esri","100001"]],PARAMETER["False_Northing",0.0,AUTHORITY["Esri","100002"]],PARAMETER["Pseudo_Standard_Parallel_1",78.5,AUTHORITY["Esri","100027"]],PARAMETER["Scale_Factor",0.9999,AUTHORITY["Esri","100003"]],PARAMETER["Azimuth",30.28813975277778,AUTHORITY["Esri","100004"]],PARAMETER["Longitude_Of_Center",24.83333333333333,AUTHORITY["Esri","100012"]],PARAMETER["Latitude_Of_Center",49.5,AUTHORITY["Esri","100022"]],PARAMETER["X_Scale",-1.0,AUTHORITY["Esri","100037"]],PARAMETER["Y_Scale",1.0,AUTHORITY["Esri","100038"]],PARAMETER["XY_Plane_Rotation",90.0,AUTHORITY["Esri","100039"]],UNIT["Meter",1.0,AUTHORITY["EPSG","9001"]],AUTHORITY["EPSG","5514"]]</SRS>
+  <Metadata domain="Esri">
+    <MDI key="PyramidResamplingType">NEAREST</MDI>
+  </Metadata>
+  <PAMRasterBand band="1">
+    <Description>rx</Description>
+    <Metadata>
+      <MDI key="STATISTICS_SKIPFACTORX">1</MDI>
+      <MDI key="STATISTICS_SKIPFACTORY">1</MDI>
+    </Metadata>
+  </PAMRasterBand>
+</PAMDataset>
