@@ -22,20 +22,20 @@ class ArcGisWritter(BaseWritter):
         # Overwriting output
         arcpy.env.overwriteOutput = 1
 
-    def create_storage(self):
+    def create_storage(self,outdir):
         # create temporary ArcGIS File Geodatabase
         arcpy.CreateFileGDB_management(
-            self.data['temp'],
+            os.path.join(outdir, 'temp'),
             "data.gdb")
 
         # create control ArcGIS File Geodatabase
         arcpy.CreateFileGDB_management(
-            os.path.join(self.data['outdir'], 'control'),
+            os.path.join(outdir, 'control'),
             "data.gdb")
 
         # create core ArcGIS File Geodatabase
         arcpy.CreateFileGDB_management(
-            os.path.join(self.data['outdir'], 'core'),
+            os.path.join(outdir, 'core'),
             "data.gdb")
 
     def output_filepath(self, name):
@@ -107,7 +107,7 @@ class ArcGisProvider(BaseProvider):
             handler=ArcPyLogHandler(),
             formatter=logging.Formatter("%(levelname)-8s %(message)s")
         )
-
+        
         # define storage writter
         self.storage = ArcGisWritter()
 

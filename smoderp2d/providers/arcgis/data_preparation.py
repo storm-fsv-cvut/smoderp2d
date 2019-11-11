@@ -90,7 +90,7 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         """
         super(PrepareData, self)._set_output()
-        self.create_storage()
+        self.storage.create_storage(self._input_params['output'])
 
     def _set_mask(self):
         """Set mask from elevation map.
