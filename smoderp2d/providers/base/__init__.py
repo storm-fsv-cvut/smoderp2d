@@ -378,9 +378,8 @@ class BaseProvider(object):
                     vRest[i][j] = surface_array[i][j].h_total_new * GridGlobals.pixel_area
 
         totalBil = (cumulative.precipitation + cumulative.inflow_sur) - \
-            (cumulative.infiltration + cumulative.vol_sheet + cumulative.vol_rill)
-            # - \
-            # cumulative.sur_ret  # + (cumulative.v_sur_r + cumulative.v_rill_r)
+            (cumulative.infiltration + cumulative.vol_sheet + cumulative.vol_rill) - \
+            cumulative.sur_ret  # + (cumulative.v_sur_r + cumulative.v_rill_r)
         totalBil -= vRest
 
         self.storage.write_raster(self._make_mask(totalBil), 'massBalance')
