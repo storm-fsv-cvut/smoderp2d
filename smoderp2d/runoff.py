@@ -378,7 +378,8 @@ class Runoff(object):
 
         # perform postprocessing - store results
         Logger.info('Saving output data...')
-        self.provider.postprocessing(self.cumulative, self.surface.arr)
+        self.provider.postprocessing(self.cumulative, self.surface.arr,
+                self.surface.reach)
 
         # TODO
         # post_proc.stream_table(Globals.outdir + os.sep, self.surface,
