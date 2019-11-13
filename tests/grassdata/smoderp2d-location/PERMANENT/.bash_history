@@ -18,3 +18,10 @@ db.select tab=tab_stream_tvar
 db.in.ogr input=tests/data/tab_stream_tvar.dbf output=tab_stream_tvar  --o
 db.select tab=tab_stream_tvar
 db.select tab=tok
+g.list raster 
+g.list raster 
+g.remove 
+g.remove type=raster name=w001001 -f
+ls
+rm -rf tests/grassdata/smoderp2d-location/stream_prep/
+g.remove type=raster name=w001001 -f

@@ -1,0 +1,3 @@
+COMMAND: v.in.ogr -o input="tests/data/points.shp" output="points" min_area=0.0001 type="" snap=-1
+GISDBASE: /home/martin/git/storm-fsv-cvut/smoderp2d/tests/grassdata
+LOCATION: smoderp2d-location MAPSET: PERMANENT USER: martin DATE: Wed Nov 13 17:17:04 2019

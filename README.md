@@ -40,11 +40,14 @@ Create testing mapset:
 Run `r.smoderp2d` module:
 
     ./bin/grass/r.smoderp2d/r.smoderp2d.py \
-        elevation=w001001 soil=puda soil_type=Novak vegetation=puda \
-        vegetation_type=vegetace rainfall_file=tests/data/srazka.txt \
-        points=points2 table_soil_vegetation=tabulkytab \
-        table_soil_vegetation_code=soilveg stream=tok \
-        table_stream_shape=tab_stream_tvar table_stream_shape_code=smoderp \
+        elevation=dem10m \
+        soil=soil_LU soil_type=soil_id \
+        vegetation=soil_LU vegetation_type=lu_id \
+        rainfall_file=tests/data/rainfall.txt \
+        points=points \
+        table_soil_vegetation=soil_LU_property table_soil_vegetation_code=soilveg \
+        stream=stream \
+        table_stream_shape=stream_shape table_stream_shape_code=smoderp \
         maxdt=10 end_time=120 output_dir=/tmp/smoderp2d
 
 ### From ArcGIS 10.x or Pro

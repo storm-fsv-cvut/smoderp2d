@@ -71,19 +71,20 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                distance=-self.spix / 3
         )
 
+        stream_clip = 'stream_clip'
         Module('v.clip',
                input=self.stream,
                clip='aoi_buffer',
-               output='stream'
+               output=stream_clip
         )
 
         # TODO: MK - nevim proc se maze neco, co v atributove tabulce vubec neni
         self._delete_fields(
-            'stream',
+            stream_clip,
             ["EX_JH", "POZN", "PRPROP_Z", "IDVT", "UTOKJ_ID", "UTOKJN_ID", "UTOKJN_F"]
         )
 
-        return 'stream', None # TODO: ?
+        return stream_clip, None # TODO: ?
 
     def _stream_direction(self, stream):
         """
