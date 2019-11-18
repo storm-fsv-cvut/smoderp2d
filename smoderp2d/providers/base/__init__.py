@@ -398,12 +398,11 @@ class BaseProvider(object):
                 if finState[i][j] >= 1000:
                     vRest[i][j] = GridGlobals.NoDataValue
                 else:
-                    vRest[i][j] = (surface_array[i][j].h_total_pre -
-                            surface_array[i][j].h_total_new) * GridGlobals.pixel_area
+                    vRest[i][j] = surface_array[i][j].h_total_new * GridGlobals.pixel_area 
 
         totalBil = (cumulative.precipitation + cumulative.inflow_sur) - \
-            (cumulative.infiltration + cumulative.vol_sur_tot) - cumulative.sur_ret  
-        totalBil += vRest
+            (cumulative.infiltration + cumulative.vol_sur_tot) - \
+            cumulative.sur_ret - vRest
 
         for i in rrows:
             for j in rcols[i]:
