@@ -355,13 +355,16 @@ class BaseProvider(object):
         # default to temp dir
         # if Globals.extraOut:
         data_output_extras = [
-            'q_sheet',
-            'h_rill',
-            'q_rill',
-            'b_rill',
-            'inflow_sur',
-            'sur_ret',
-            'vol_sur_r' 
+                'h_sur_tot',
+                'q_sheet',
+                'vol_sheet',
+                'h_rill',
+                'q_rill',
+                'vol_rill',
+                'b_rill',
+                'inflow_sur',
+                'sur_ret',
+                'vol_sur_r' 
         ]
 
         if Globals.subflow:
@@ -382,7 +385,7 @@ class BaseProvider(object):
             self.storage.write_raster(
                 self._make_mask(getattr(cumulative, item)),
                 cumulative.data[item].file_name,
-                directory='temp'
+                directory=cumulative.data[item].data_type
             )
 
         finState = np.zeros(np.shape(surface_array), int)
