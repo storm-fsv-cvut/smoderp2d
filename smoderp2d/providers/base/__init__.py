@@ -59,11 +59,22 @@ class BaseWritter(object):
     def _print_array_stats(arr, file_output):
         """Print array stats.
         """
-        Logger.info("Array stats: min={} max={} mean={}".format(
-            np.min(arr), np.max(arr), np.mean(arr)
-        ))
+
+        rrows = GridGlobals.rr
+        rcols = GridGlobals.rc
+
+        copy_arr = arr.copy()
+        arr.fill(np.nan)
+
+        for i in rrows:
+            for j in rcols[i]:
+                arr[i][j] = copy_arr[i][j]
+
         Logger.info("Raster ASCII output file {} saved".format(
             file_output
+        ))
+        Logger.info("\tArray stats: min={} max={} mean={}".format(
+            np.nanmin(arr), np.nanmax(arr), np.nanmean(arr)
         ))
 
     # todo: abstractmethod
@@ -391,13 +402,18 @@ class BaseProvider(object):
                             surface_array[i][j].h_total_new) * GridGlobals.pixel_area
 
         totalBil = (cumulative.precipitation + cumulative.inflow_sur) - \
-            (cumulative.infiltration + cumulative.vol_sheet + cumulative.vol_rill) - \
-            cumulative.sur_ret  # + (cumulative.v_sur_r + cumulative.v_rill_r)
+            (cumulative.infiltration + cumulative.vol_sur_tot) - cumulative.sur_ret  
         totalBil += vRest
+
+        for i in rrows:
+            for j in rcols[i]:
+                if  int(surface_array[i][j].state) >= 1000 :
+                    totalBil[i][j] = GridGlobals.NoDataValue
 
         self.storage.write_raster(self._make_mask(totalBil), 'massBalance')
         self.storage.write_raster(self._make_mask(vRest), 'volRest_m3')
-        self.storage.write_raster(finState, 'reachFid')
+        self.storage.write_raster(self._make_mask(finState, int_=True),
+                'reachFid')
 
         # store stream reaches results to a table
         n = len(stream)
@@ -420,7 +436,7 @@ class BaseProvider(object):
                 header='FID{sep}b{sep}m{sep}rough{sep}q365{sep}V_out_cum{sep}Q_max'.format(sep=';'))
 
 
-    def _make_mask(self, arr):
+    def _make_mask(self, arr, int_=False):
         """ Assure that the no data value is outside the 
         computation region.
         Works only for type float.
@@ -432,7 +448,10 @@ class BaseProvider(object):
         rcols = GridGlobals.rc
 
         copy_arr = arr.copy()
-        arr.fill(GridGlobals.NoDataValue)
+        if (int_) :
+            arr.fill(GridGlobals.NoDataInt)
+        else:
+            arr.fill(GridGlobals.NoDataValue)
 
         for i in rrows:
             for j in rcols[i]:
