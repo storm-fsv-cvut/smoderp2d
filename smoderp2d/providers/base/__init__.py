@@ -339,27 +339,39 @@ class BaseProvider(object):
             'q_sur_tot',
             'vol_sur_tot'
         ]
+
+        # extra outputs from cumulative class are printed by
+        # default to temp dir
+        # if Globals.extraOut:
+        data_output_extras = [
+            'q_sheet',
+            'h_rill',
+            'q_rill',
+            'b_rill',
+            'inflow_sur',
+            'sur_ret',
+            'vol_sur_r' 
+        ]
+
         if Globals.subflow:
             # Not implemented yet
             pass
             # data_output += [
             # ]
-        if Globals.extraOut:
-            data_output += [
-                'q_sheet',
-                'h_rill',
-                'q_rill',
-                'b_rill',
-                'inflow_sur',
-                'sur_ret',
-                'vol_sur_r' 
-            ]
 
         # make rasters from cumulative class
         for item in data_output:
             self.storage.write_raster(
                 self._make_mask(getattr(cumulative, item)),
                 cumulative.data[item].file_name
+            )
+
+        # make extra rasters from cumulative clasess into temp dir 
+        for item in data_output_extras:
+            self.storage.write_raster(
+                self._make_mask(getattr(cumulative, item)),
+                cumulative.data[item].file_name,
+                directory='temp'
             )
 
         finState = np.zeros(np.shape(surface_array), int)
