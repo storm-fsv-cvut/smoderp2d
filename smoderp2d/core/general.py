@@ -169,9 +169,9 @@ class Globals:
     STREAM_RATIO = None
     # ???
     streams_loc = None
-    # ???
+    # maximum allowed time step during compuation
     maxdt = None
-    # ???
+    # if true extra data are stores in the point*.dat files
     extraOut = None
 
     @classmethod
