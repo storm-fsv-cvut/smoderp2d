@@ -103,9 +103,14 @@ class Stream(object):
         for id_ in range(self.nReaches):
             self.reach[id_].V_in_from_field = 0
 
-    # Documentation for a reach inflows.
-    #  @param id_ starts in 0 not 1000
     def reach_inflows(self, id_, inflows):
+        """
+        ?
+
+        :param id_: starts in 0 not 1000
+        """
+        print (id_, inflows)
+        print (len(self.reach))
         self.reach[id_].V_in_from_field += inflows
 
     def stream_reach_outflow(self, dt):

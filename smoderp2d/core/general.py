@@ -35,7 +35,7 @@ class GridGlobals(object):
     # left bottom corner y coordinate of raster
     yllcorner = None
     # no data value for raster
-    NoDataValue = None
+    NoDataValue = np.nan
     # no data integer value for raster
     NoDataInt = None
     # size of raster cell
@@ -82,6 +82,11 @@ class GridGlobals(object):
     def get_no_data(cls):
         # TODO: int?
         return cls.NoDataValue
+
+    @classmethod
+    def is_nv(cls, value):
+        return np.isnan(value) or value == cls.NoDataValue
+        
 
 class DataGlobals:
     # raster contains leaf area data

@@ -2,6 +2,7 @@ import os
 import shutil
 import numpy as np
 
+from smoderp2d.core.general import GridGlobals as GG
 import smoderp2d.processes.rainfall as rainfall
 
 from smoderp2d.providers.base import Logger
@@ -144,7 +145,6 @@ class PrepareDataBase(object):
             'outletCells': None,
             'xllcorner': None,
             'yllcorner': None,
-            'NoDataValue': None,
             'array_points': None,
             'c': None,
             'r': None,
@@ -304,18 +304,20 @@ class PrepareDataBase(object):
         # sklonu a acc
         i = j = 0
 
-        # data value vector intersection
+        # set no-data value array based on vector intersection
         nv = self.data['NoDataValue']
+        mat_nan = self.data['mat_nan']
+        mat_dem = self.data['mat_dem']
+        mat_slp = self.data['mat_slope']
         for i in range(self.data['r']):
             for j in range(self.data['c']):
-                x_mat_dem = self.data['mat_dem'][i][j]
-                slp = self.data['mat_slope'][i][j]
-                if x_mat_dem == nv or slp == nv:
+                if GG.is_nv(mat_dem[i][j]) or GG.is_nv(mat_slp[i][j]):
                     self.data['mat_nan'][i][j] = nv
-                    self.data['mat_slope'][i][j] = nv
-                    self.data['mat_dem'][i][j] = nv
+                    # TODO: ?
+                    mat_slp[i][j] = nv
+                    mat_dem[i][j] = nv
                 else:
-                    self.data['mat_nan'][i][j] = 0
+                    self.data['mat_nan'][i][j] = 1
 
         self.storage.write_raster(
             self.data['mat_nan'],
@@ -339,20 +341,22 @@ class PrepareDataBase(object):
         # neighbours are not "NoDataValue", it will be saved
         # into array_points array
         nv = self.data['NoDataValue']
+        mat_dem = self.data['mat_dem']
+        array_points = self.data['array_points']
         if r != 0 and r != self.data['r'] \
            and c != 0 and c != self.data['c'] and \
-           self.data['mat_dem'][r][c]   != nv and \
-           self.data['mat_dem'][r-1][c] != nv and \
-           self.data['mat_dem'][r+1][c] != nv and \
-           self.data['mat_dem'][r][c-1] != nv and \
-           self.data['mat_dem'][r][c+1] != nv:
+               GG.is_nv(mat_dem[r][c]) and \
+               GG.is_nv(mat_dem[r-1][c]) and \
+               GG.is_nv(mat_dem[r+1][c]) and \
+               GG.is_nv(mat_dem[r][c-1]) and \
+               GG.is_nv(mat_dem[r][c+1]):
 
-            self.data['array_points'][i][0] = fid
-            self.data['array_points'][i][1] = r
-            self.data['array_points'][i][2] = c
+            array_points[i][0] = fid
+            array_points[i][1] = r
+            array_points[i][2] = c
             # x,y coordinates of current point stored in an array
-            self.data['array_points'][i][3] = x
-            self.data['array_points'][i][4] = y
+            array_points[i][3] = x
+            array_points[i][4] = y
         else:
             Logger.info(
                 "Point FID = {} is at the edge of the raster. "
@@ -379,18 +383,18 @@ class PrepareDataBase(object):
             [self.data['r'], self.data['c']], float
         )
 
-        nv = self.data['NoDataValue']
         # calculating the "a" parameter
+        nv = self.data['NoDataValue']
         for i in range(self.data['r']):
             for j in range(self.data['c']):
                 slope = self.data['mat_slope'][i][j]
                 par_x = mat_x[i][j]
                 par_y = mat_y[i][j]
 
-                if par_x == nv or par_y == nv or slope == nv:
+                if GG.is_nv(par_x) or GG.is_nv(par_y) or GG.is_nv(slope):
                     par_a = nv
                     par_aa = nv
-                elif par_x == nv or par_y == nv or slope == 0.0:
+                elif GG.is_nv(par_x) or GG.is_nv(par_y) or slope == 0.0:
                     par_a = 0.0001
                     par_aa = par_a / 100 / mat_n[i][j]
                 else:
@@ -417,11 +421,12 @@ class PrepareDataBase(object):
         mat_hcrit_flux = np.zeros([self.data['r'], self.data['c']], float)
         self.data['mat_hcrit'] = np.zeros([self.data['r'], self.data['c']], float)
 
+        mat_slp = self.data['mat_slope']
+        nv = self.data['NoDataValue']
         for i in range(self.data['r']):
             for j in range(self.data['c']):
-                if self.data['mat_slope'][i][j] != self.data['NoDataValue'] \
-                   and mat_tau[i][j] != self.data['NoDataValue']:
-                    slope = self.data['mat_slope'][i][j]
+                if not GG.is_nv(mat_slp[i][j]) and not GG.is_nv(mat_tau[i][j]):
+                    slope = mat_slp[i][j]
                     tau_crit = mat_tau[i][j]
                     v_crit = mat_v[i][j]
                     b = mat_b[i][j]
@@ -431,7 +436,6 @@ class PrepareDataBase(object):
 
                     if slope == 0.0:
                         hcrit_tau = hcrit_v = hcrit_flux = 1000
-
                     else:
                         hcrit_v = np.power((v_crit / aa), exp)  # h critical from v
                         hcrit_tau = tau_crit / 98.07 / slope  # h critical from tau
@@ -443,10 +447,10 @@ class PrepareDataBase(object):
                     hcrit = min(hcrit_tau, hcrit_v, hcrit_flux)
                     self.data['mat_hcrit'][i][j] = hcrit
                 else:
-                    mat_hcrit_tau[i][j] = self.data['NoDataValue']
-                    mat_hcrit_v[i][j] = self.data['NoDataValue']
-                    mat_hcrit_flux[i][j] = self.data['NoDataValue']
-                    self.data['mat_hcrit'][i][j] = self.data['NoDataValue']
+                    mat_hcrit_tau[i][j] = nv
+                    mat_hcrit_v[i][j] = nv
+                    mat_hcrit_flux[i][j] = nv
+                    self.data['mat_hcrit'][i][j] = nv
 
         for out, arr in (("hcrit_tau", mat_hcrit_tau),
                          ("hcrit_flux", mat_hcrit_flux),
@@ -510,7 +514,7 @@ class PrepareDataBase(object):
         # Identification of cells at the domain boundary
 
         self.data['mat_boundary'] = np.zeros(
-            [self.data['r'], self.data['c']], float
+            [self.data['r'], self.data['c']], int
         )
 
         nr = range(self.data['r'])
@@ -519,55 +523,55 @@ class PrepareDataBase(object):
         self.data['rc'] = []
         self.data['rr'] = []
 
-        nv = self.data['NoDataValue']
+        mat_nan = self.data['mat_nan']
+        mat_bdr = self.data['mat_boundary']
         for i in nr:
             for j in nc:
-                val = self.data['mat_nan'][i][j]
+                val = mat_nan[i][j]
+                bdr_val = 0
                 if i == 0 or j == 0 or \
                    i == (self.data['r'] - 1) or j == (self.data['c'] - 1):
-                    if val != nv:
-                        val = -99
+                    if not GG.is_nv(val):
+                        # TODO float vs. int
+                        bdr_val = -99
                 else:
-                    if val != nv:
-                        if  self.data['mat_nan'][i - 1][j] == nv or \
-                            self.data['mat_nan'][i + 1][j] == nv or \
-                            self.data['mat_nan'][i][j - 1] == nv or \
-                            self.data['mat_nan'][i][j - 1] == nv:
-                            val = -99
-                        if  self.data['mat_nan'][i - 1][j + 1] == nv or \
-                            self.data['mat_nan'][i + 1][j + 1] == nv or \
-                            self.data['mat_nan'][i - 1][j - 1] == nv or \
-                            self.data['mat_nan'][i + 1][j - 1] == nv:
+                    if not GG.is_nv(val):
+                        if  GG.is_nv(mat_nan[i - 1][j]) or \
+                            GG.is_nv(mat_nan[i + 1][j]) or \
+                            GG.is_nv(mat_nan[i][j - 1]) or \
+                            GG.is_nv(mat_nan[i][j - 1]):
+                            bdr_val = -99
+                        if  GG.is_nv(mat_nan[i - 1][j + 1]) or \
+                            GG.is_nv(mat_nan[i + 1][j + 1]) or \
+                            GG.is_nv(mat_nan[i - 1][j - 1]) or \
+                            GG.is_nv(mat_nan[i + 1][j - 1]):
+                            bdr_val = -99
 
-                            val = -99.
-
-                self.data['mat_boundary'][i][j] = val
+                mat_bdr[i][j] = bdr_val
 
         inDomain = False
         inBoundary = False
-
         for i in nr:
             oneCol = []
             oneColBoundary = []
             for j in nc:
-
-                if self.data['mat_boundary'][i][j] == -99 and inBoundary == False:
-                    inBoundary = True
-
-                if self.data['mat_boundary'][i][j] == -99 and inBoundary:
-                    oneColBoundary.append(j)
-
-                if (self.data['mat_boundary'][i][j] == 0.0) and inDomain == False:
-                    self.data['rr'].append(i)
-                    inDomain = True
-
-                if (self.data['mat_boundary'][i][j] == 0.0) and inDomain:
-                    oneCol.append(j)
-
+                print (mat_bdr[i][j])
+                if mat_bdr[i][j] == -99:
+                    if not inBoundary:
+                        inBoundary = True
+                    else:
+                        oneColBoundary.append(j)
+                elif mat_bdr[i][j] == 0:
+                    if not inDomain:
+                        self.data['rr'].append(i)
+                        inDomain = True
+                    else:
+                        oneCol.append(j)
             inDomain = False
             inBoundary = False
-            self.data['rc'].append(oneCol)
 
+            self.data['rc'].append(oneCol)
+    
     def _clip_data(self, dem, intersect):
         raise NotImplemented("Not implemented for base provider")
 

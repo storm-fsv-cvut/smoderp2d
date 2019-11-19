@@ -184,8 +184,11 @@ class Runoff(object):
 
         # record values into hydrographs at time zero
         rr, rc = GridGlobals.get_region_dim()
+        print (rr, rc)
         for i in rr:
+            print (i)
             for j in rc[i]:
+                print (j)
                 self.hydrographs.write_hydrographs_record(
                     i,
                     j,

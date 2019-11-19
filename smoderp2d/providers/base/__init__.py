@@ -60,15 +60,15 @@ class BaseWritter(object):
         """Print array stats.
         """
 
-        rrows = GridGlobals.rr
-        rcols = GridGlobals.rc
+        # rrows = GridGlobals.rr
+        # rcols = GridGlobals.rc
 
-        copy_arr = arr.copy()
-        arr.fill(np.nan)
+        # copy_arr = arr.copy()
+        # arr.fill(np.nan)
 
-        for i in rrows:
-            for j in rcols[i]:
-                arr[i][j] = copy_arr[i][j]
+        # for i in rrows:
+        #     for j in rcols[i]:
+        #         arr[i][j] = copy_arr[i][j]
 
         Logger.info("Raster ASCII output file {} saved".format(
             file_output

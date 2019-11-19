@@ -1,5 +1,7 @@
 import numpy as np
 import math
+
+from smoderp2d.core.general import GridGlobals as GG
 from smoderp2d.exceptions import NegativeWaterLevel
 
 # combinatIndex muze byt tady jako globalni
@@ -31,7 +33,7 @@ def philip_infiltration(soil, bil):
 
 
 def phlilip(k, s, deltaT, totalT, NoDataValue):
-    if k and s == NoDataValue:
+    if k and GG.is_nv(s):
         infiltration = NoDataValue
     # elif totalT == 0:
         # infiltration = k*deltaT  ## toto je chyba, infiltrace se rovna k az po ustaleni. Na zacatku je teoreticky nekonecno

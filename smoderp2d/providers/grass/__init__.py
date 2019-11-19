@@ -40,6 +40,10 @@ class GrassGisWritter(BaseWritter):
             region.rows = GridGlobals.r
             region.write()
 
+        # propagate no-data values (if possible)
+        if Globals.get_mat_nan():
+            output_array = array * Globals.get_mat_nan()
+
         # TBD: extend pygrass to export array directly to specified
         # external format
         numpy2raster(
