@@ -93,6 +93,9 @@ class GrassGisProvider(BaseProvider):
         # define storage writter
         self.storage = GrassGisWritter()
 
+    def get_options(self):
+        return self._options
+
     def set_options(self, options):
         """Set input paramaters.
 
@@ -101,7 +104,7 @@ class GrassGisProvider(BaseProvider):
         self._options = options
 
         # set output directory
-        Globals.outdir = options['output_dir']
+        Globals.outdir = options['output'] # TODO (output_dir)
 
     def _load_dpre(self):
         """Load configuration data from data preparation procedure.

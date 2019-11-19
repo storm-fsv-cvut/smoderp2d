@@ -70,6 +70,17 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         self.setup_combos()
 
+        # tests
+        # self.elevation_comboBox.setCurrentText('w001001')
+        # self.soil_comboBox.setCurrentText('puda')
+        # self.soil_type_comboBox.setCurrentText('Novak')
+        # self.vegetation_comboBox.setCurrentText('puda')
+        # self.vegetation_type_comboBox.setCurrentText('vegetace')
+        # self.points_comboBox.setCurrentText('points2')
+        # self.stream_comboBox.setCurrentText('tok')
+        self.rainfall_lineEdit.setText('/home/martin/git/storm-fsv-cvut/smoderp2d/tests/data/srazka.txt')
+        self.main_output_lineEdit.setText('/home/martin/git/storm-fsv-cvut/smoderp2d/tests/data/output')
+
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
@@ -134,7 +145,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             grass7bin = fg()
 
             # Get input parameters
-            self._get_input_params()
+            input_params = self._get_input_params()
 
             try:
                 runner = QGISRunner()
@@ -142,11 +153,11 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             except ProviderError as e:
                 raise ProviderError(e)
 
-            runner.import_data(self._input_params)
+            runner.set_options(input_params)
+            runner.import_data()
 
             # TODO: implement data preparation only
-            
-            # runner.run()
+            runner.run()
 
             # TODO: to be implemented
             # runner.show_results()
@@ -158,7 +169,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def _get_input_params(self):
         """Get input parameters from QGIS plugin."""
 
-        self._input_params = {
+        input_params = {
             'elevation': self.elevation_comboBox.currentLayer().dataProvider().dataSourceUri(),
             'soil': self.soil_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
             'soil_type': self.soil_type_comboBox.currentText(),
@@ -181,17 +192,19 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         # optional inputs
         if self.points_comboBox.currentLayer() is not None:
-            self._input_params["points"] = \
+            input_params["points"] = \
                 self.points_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
 
         if self.stream_comboBox.currentLayer() is not None:
-            self._input_params["stream"] = \
+            input_params["stream"] = \
                 self.stream_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
 
         if self.table_stream_shape_comboBox.currentLayer() is not None:
-            self._input_params["table_stream_shape"] = \
+            input_params["table_stream_shape"] = \
                 self.table_stream_shape_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
-            self._input_params["table_stream_shape_code"] = self.table_stream_shape_code_comboBox.currentText()
+            input_params["table_stream_shape_code"] = self.table_stream_shape_code_comboBox.currentText()
+
+        return input_params
 
     def _check_input_data_prep(self):
         """Check if all mandatory fields are filled correctly for data preparation (without pickle)."""

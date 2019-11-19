@@ -118,25 +118,32 @@ class QGISRunner(GrassRunner):
 
         super().__init__()
 
-    def import_data(self, options):
+    def import_data(self):
         """
         Import files to grass
-
-        :param options: dictionary of input data
         """
         from grass.pygrass.modules import Module
 
+        options = self._provider.get_options()
         for key in options:
+            is_map = False
             try:
                 # import rasters
                 if key == "elevation":
-                    Module("r.import", input=options[key], output=key)
+                    Module("r.import", input=options[key], output=key, flags='o')
+                    is_map = True
                 # import vectors
                 elif key in ["soil", "vegetation", "points", "stream"]:
-                    Module("v.import", input=options[key], output=key, flags = 'o')
+                    Module("v.import", input=options[key], output=key, flags='o')
+                    is_map = True
                 # import tables
                 elif key in ["table_soil_vegetation", "table_stream_shape"]:
                     Module("db.in.ogr", input=options[key], output=key)
+                    is_map = True
+
+                if is_map:
+                    # modify options in order to access GRASS map
+                    options[key] = key
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
 

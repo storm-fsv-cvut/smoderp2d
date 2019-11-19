@@ -43,9 +43,6 @@ class PrepareData(PrepareDataBase, ManageFields):
         # cast some options to float
         for opt in ('maxdt', 'end_time'):
             self._input_params[opt] = float(self._input_params[opt])
-        # TODO: output directory not defined by GRASS (data are written into
-        # current mapset by default)
-        self._input_params['output'] = None # os.path.join(Location().path(), "output")
 
     def _set_mask(self):
         """Set mask from elevation map.
@@ -389,10 +386,12 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         :param str soil: soil vector (check for overlaping polygons)
         """
-        with VectorTopo(soil, mode='r') as fd:
-            for area in fd.viter('areas'):
-                cats = list(area.cats().get_list())
-                if len(cats) > 1:
-                    raise DataPreparationInvalidInput(
-                        "overlapping soil polygons detected"
-                    )
+        # TODO: VectorTopo is causing tack smashing detected
+        # with VectorTopo(soil, mode='r') as fd:
+        #     for area in fd.viter('areas'):
+        #         cats = list(area.cats().get_list())
+        #         if len(cats) > 1:
+        #             raise DataPreparationInvalidInput(
+        #                 "overlapping soil polygons detected"
+        #             )
+        pass
