@@ -36,6 +36,51 @@ class CompType:
         else:
             return cls.full
 
+class BaseWritter(object):
+    def __init__(self):
+        self.primary_key = None
+
+    @staticmethod
+    def _raster_output_path(output, directory='core'):
+        dir_name = os.path.join(
+            Globals.outdir,
+            directory
+            )
+
+        if not os.path.exists(dir_name):
+           os.makedirs(dir_name)
+
+        return os.path.join(
+            dir_name,
+            output + '.asc'
+        )
+
+    @staticmethod
+    def _print_array_stats(arr, file_output):
+        """Print array stats.
+        """
+
+        rrows = GridGlobals.rr
+        rcols = GridGlobals.rc
+
+        copy_arr = arr.copy()
+        arr.fill(np.nan)
+
+        for i in rrows:
+            for j in rcols[i]:
+                arr[i][j] = copy_arr[i][j]
+
+        Logger.info("Raster ASCII output file {} saved".format(
+            file_output
+        ))
+        Logger.info("\tArray stats: min={} max={} mean={}".format(
+            np.nanmin(arr), np.nanmax(arr), np.nanmean(arr)
+        ))
+
+    # todo: abstractmethod
+    def write_raster(self, arr, output):
+        pass
+
 class BaseProvider(object):
     def __init__(self):
         self.args = Args()
@@ -45,6 +90,9 @@ class BaseProvider(object):
 
         # default logging level (can be modified by provider)
         Logger.setLevel(logging.DEBUG)
+
+        # storage writter must be defined
+        self.storage = None
 
     @staticmethod
     def _add_logging_handler(handler, formatter=None):
@@ -108,7 +156,8 @@ class BaseProvider(object):
             data['type_of_computing'] = self._config.get('Other', 'typecomp')
 
         #  output directory is always set
-        data['outdir'] = self._config.get('Other', 'outdir')
+        if data['outdir'] is None:
+            data['outdir'] = self._config.get('Other', 'outdir')
 
         #  rainfall data can be saved
         if self._config.get('srazka', 'file') != '-':
@@ -167,7 +216,8 @@ class BaseProvider(object):
         """
         for item in data.keys():
             if hasattr(Globals, item):
-                setattr(Globals, item, data[item])
+                if getattr(Globals, item) is None:
+                    setattr(Globals, item, data[item])
             elif hasattr(GridGlobals, item):
                 setattr(GridGlobals, item, data[item])
             elif hasattr(DataGlobals, item):
@@ -280,10 +330,12 @@ class BaseProvider(object):
 
         return data
 
-    def postprocessing(self, cumulative, surface_array):
+    def postprocessing(self, cumulative, surface_array, stream):
+
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
 
+        # compute maximum shear stress
         for i in rrows:
             for j in rcols[i]:
                 if cumulative.h_sur_tot[i][j] == 0.:
@@ -303,24 +355,46 @@ class BaseProvider(object):
             'q_sur_tot',
             'vol_sur_tot'
         ]
-        if Globals.subflow:
-            data_output += [
-                'vol_sur_r'
-            ]
-            # 17, 18]
-        if Globals.extraOut:
-            data_output += [
+
+        # extra outputs from cumulative class are printed by
+        # default to temp dir
+        # if Globals.extraOut:
+        data_output_extras = [
+                'h_sur_tot',
                 'q_sheet',
+                'vol_sheet',
                 'h_rill',
                 'q_rill',
+                'vol_rill',
                 'b_rill',
                 'inflow_sur',
                 'sur_ret',
-                'vol_sur_r'  # TODO: twice ?
-            ]
+                'vol_sur_r' 
+        ]
+
+        if Globals.subflow:
+            # Not implemented yet
+            pass
+            # data_output += [
+            # ]
+
+        # make rasters from cumulative class
+        for item in data_output:
+            self.storage.write_raster(
+                self._make_mask(getattr(cumulative, item)),
+                cumulative.data[item].file_name
+            )
+
+        # make extra rasters from cumulative clasess into temp dir 
+        for item in data_output_extras:
+            self.storage.write_raster(
+                self._make_mask(getattr(cumulative, item)),
+                cumulative.data[item].file_name,
+                directory=cumulative.data[item].data_type
+            )
 
         finState = np.zeros(np.shape(surface_array), int)
-        finState.fill(GridGlobals.NoDataValue) # TODO: int ?
+        finState.fill(GridGlobals.NoDataInt)
         vRest = np.zeros(np.shape(surface_array), float)
         vRest.fill(GridGlobals.NoDataValue)
         totalBil = cumulative.infiltration.copy()
@@ -329,29 +403,69 @@ class BaseProvider(object):
         for i in rrows:
             for j in rcols[i]:
                 finState[i][j] = int(surface_array[i][j].state)
-
-        # make rasters from cumulative class
-        for item in data_output:
-            self._raster_output(
-                getattr(cumulative, item),
-                cumulative.data[item].file_name
-            )
-
-        for i in rrows:
-            for j in rcols[i]:
                 if finState[i][j] >= 1000:
                     vRest[i][j] = GridGlobals.NoDataValue
                 else:
-                    vRest[i][j] = surface_array[i][j].h_total_new * GridGlobals.pixel_area
+                    vRest[i][j] = surface_array[i][j].h_total_new * GridGlobals.pixel_area 
 
         totalBil = (cumulative.precipitation + cumulative.inflow_sur) - \
-            (cumulative.infiltration + cumulative.vol_sur_r + cumulative.vol_rill) - \
-            cumulative.sur_ret  # + (cumulative.v_sur_r + cumulative.v_rill_r)
-        totalBil -= vRest
+            (cumulative.infiltration + cumulative.vol_sur_tot) - \
+            cumulative.sur_ret - vRest
 
-        self._raster_output(totalBil, 'massBalance')
-        self._raster_output(finState, 'reachFid')
-        self._raster_output(vRest, 'volRest_m3')
+        for i in rrows:
+            for j in rcols[i]:
+                if  int(surface_array[i][j].state) >= 1000 :
+                    totalBil[i][j] = GridGlobals.NoDataValue
+
+        self.storage.write_raster(self._make_mask(totalBil), 'massBalance')
+        self.storage.write_raster(self._make_mask(vRest), 'volRest_m3')
+        self.storage.write_raster(self._make_mask(finState, int_=True),
+                'reachFid')
+
+        # store stream reaches results to a table
+        n = len(stream)
+        m = 7
+        outputtable = np.zeros([n,m])
+        for i in range(n):
+            outputtable[i][0] = stream[i].id_
+            outputtable[i][1] = stream[i].b
+            outputtable[i][2] = stream[i].m
+            outputtable[i][3] = stream[i].roughness
+            outputtable[i][4] = stream[i].q365
+            outputtable[i][5] = stream[i].V_out_cum
+            outputtable[i][6] = stream[i].Q_max
+        
+        path_ = os.path.join(
+                Globals.outdir,
+                'stream.csv'
+                )
+        np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
+                header='FID{sep}b{sep}m{sep}rough{sep}q365{sep}V_out_cum{sep}Q_max'.format(sep=';'))
+
+
+    def _make_mask(self, arr, int_=False):
+        """ Assure that the no data value is outside the 
+        computation region.
+        Works only for type float.
+        
+        :param arrr: numpy array
+        """
+
+        rrows = GridGlobals.rr
+        rcols = GridGlobals.rc
+
+        copy_arr = arr.copy()
+        if (int_) :
+            arr.fill(GridGlobals.NoDataInt)
+        else:
+            arr.fill(GridGlobals.NoDataValue)
+
+        for i in rrows:
+            for j in rcols[i]:
+                arr[i][j] = copy_arr[i][j]
+
+        return arr
+
 
         # TODO
         # if not Globals.extraOut:
@@ -360,19 +474,3 @@ class BaseProvider(object):
         #     if os.path.exists(output + os.sep + 'temp_dp'):
         #         shutil.rmtree(output + os.sep + 'temp_dp')
         #     return 1
-
-
-    @staticmethod
-    def _raster_output_path(output):
-        return os.path.join(
-            Globals.outdir,
-            output + '.asc'
-        )
- 
-    def _raster_output(self, arr, output):
-        """Write raster to ASCII file.
-
-        :param arr: numpy array
-        :param output: output filename
-        """
-        raise NotImplementedError()

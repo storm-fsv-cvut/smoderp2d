@@ -14,7 +14,7 @@ class ZeroSlopeError(Exception):
         )
 
 class StreamPreparationBase(object):
-    def __init__(self, args):
+    def __init__(self, args, writter):
         self.stream = args[0]
         self.tab_stream_shape = args[1]
         self.tab_stream_shape_code = args[2]
@@ -45,10 +45,10 @@ class StreamPreparationBase(object):
                 'stream_seg': 'control',
                 'stream_shape': 'control'
         }
-    def prepare(self):
-        Logger.info("Creating output...")
-        self._set_output()
 
+        self.storage = writter
+
+    def prepare(self):
         self._setnull() # not used for anything, just saves setnull
 
         Logger.info("Clip stream...")
@@ -68,9 +68,6 @@ class StreamPreparationBase(object):
 
         return self.streamlist, mat_stream_seg, stream_loc
 
-    def _set_output(self):
-        raise NotImplemented("Not implemented for base provider")
-
     def _setnull(self):
         raise NotImplemented("Not implemented for base provider")
 
@@ -88,10 +85,8 @@ class StreamPreparationBase(object):
         # no. of stream parts
         for i in range(self.rows):
             for j in range(self.cols):
-                if mat_stream_seg[i][j] > no_of_streams - 1:
-                    mat_stream_seg[i][j] = 0
-                else:
-                    mat_stream_seg[i][j] += 1000
+                if mat_stream_seg[i][j] > 0:
+                    mat_stream_seg[i][j] += 999
 
     def _stream_hydraulics(self, stream):
         """TODO: is it used?"""

@@ -10,7 +10,6 @@ class Hydrographs:
         jpj = 5
         point_int = [[0] * jpj for i in range(ipi)]
 
-        outdir = Globals.get_outdir()
         rr, rc = GridGlobals.get_region_dim()
         pixel_area = GridGlobals.get_pixel_area()
 
@@ -117,7 +116,8 @@ class Hydrographs:
         self.files = []
         for i in range(self.n):
             fd = open(
-                os.path.join(outdir, 'point{}.dat'.format(str(self.point_int[i][0]).zfill(3))),
+                os.path.join(Globals.get_outdir(), 'point{}.dat'.format(
+                    self.point_int[i][0]).zfill(3)),
                 'w'
             )
             fd.writelines(self.header[i])

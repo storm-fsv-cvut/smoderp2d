@@ -18,23 +18,40 @@ Distributed event-based model for surface and subsurface runoff and erosion
                                \                      @       @     @
                                 \___________________ @ @ @ @  @ @ @
 ```
-## Quick test
+
+## How to test
+
+Download SMODERP2D source code to your computer.
+
+    git clone https://github.com/storm-fsv-cvut/smoderp2d.git
+
+### From command line
 
     ./bin/start-smoderp2d.py --typecomp roff --indata tests/test.ini
 
-## GRASS GIS test
+### From GRASS GIS
 
-    (GRASS GIS 7.8+ required)
+Note: GRASS GIS 7.8+ required
+
+Create testing mapset:
 
     grass --text -c tests/grassdata/smoderp2d-location/test/
 
-    (data preparation only)
+Run `r.smoderp2d` module:
 
     ./bin/grass/r.smoderp2d/r.smoderp2d.py \
-        elevation=w001001 soil=puda soil_type=Novak vegetation=puda \
-        vegetation_type=vegetace rainfall_file=tests/data/srazka.txt \
-        points=points2 table_soil_vegetation=tabulkytab \
-        table_soil_vegetation_code=soilveg stream=tok \
-        table_stream_shape=tab_stream_tvar table_stream_shape_code=smoderp \
-        maxdt=10 end_time=120 \
-        -d pickle_file=/tmp/save.pickle
+        elevation=dem10m \
+        soil=soil_LU soil_type=soil_id \
+        vegetation=soil_LU vegetation_type=lu_id \
+        rainfall_file=tests/data/rainfall.txt \
+        points=points \
+        table_soil_vegetation=soil_LU_property table_soil_vegetation_code=soilveg \
+        stream=stream \
+        table_stream_shape=stream_shape table_stream_shape_code=smoderp \
+        maxdt=10 end_time=120 output_dir=/tmp/smoderp2d
+
+### From ArcGIS 10.x or Pro
+
+Launch SMODERP2D ArcToolbox from `bin\arcgis` directory.
+
+![SMODERP2D ArcToolbox in action](img/arctoolbox.png?raw=true "SMODERP2D ArcToolbox in action")

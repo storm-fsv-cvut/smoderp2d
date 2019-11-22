@@ -70,6 +70,11 @@ class GridGlobals(object):
         return (cls.xllcorner, cls.yllcorner)
 
     @classmethod
+    def set_llcorner(cls, xy):
+        cls.xllcorner = xy[0]
+        cls.yllcorner = xy[1]
+
+    @classmethod
     def get_size(cls):
         return (cls.dx, cls.dy)
 
@@ -164,9 +169,9 @@ class Globals:
     STREAM_RATIO = None
     # ???
     streams_loc = None
-    # ???
+    # maximum allowed time step during compuation
     maxdt = None
-    # ???
+    # if true extra data are stores in the point*.dat files
     extraOut = None
     # infiltration_type
     infiltration_type = None

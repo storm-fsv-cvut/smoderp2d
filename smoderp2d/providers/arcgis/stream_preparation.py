@@ -12,36 +12,14 @@ from smoderp2d.providers.base.stream_preparation import StreamPreparationError, 
 from smoderp2d.providers.arcgis.manage_fields import ManageFields
 
 class StreamPreparation(StreamPreparationBase, ManageFields):
-    def __init__(self, args):
-        super(StreamPreparation, self).__init__(args)
-        
-        # Overwriting output
-        arcpy.env.overwriteOutput = 1
-        
+    def __init__(self, args, writter):
+        super(StreamPreparation, self).__init__(args, writter)
+
         # Check extensions
         arcpy.CheckOutExtension("3D")
         arcpy.CheckOutExtension("Spatial")
 
         arcpy.env.snapRaster = self.dem
-
-    def _set_output(self):
-        """Define output folders and geodatabases.
-        """
-        self.temp = os.path.join(self.output, "temp")
-        if not os.path.exists(self.temp):
-            os.makedirs(self.temp)
-        self._tempGDB = os.path.join(self.temp, "tempGDB.gdb")
-
-        control = os.path.join(self.output, "control")
-        if not os.path.exists(control):
-            os.makedirs(control)
-        self._controlGDB = os.path.join(control, "controlGDB.gdb")
-
-        core = os.path.join(self.output, "core")
-        if not os.path.exists(core):
-            os.makedirs(core)
-        self._coreGDB = os.path.join(core, "coreGDB.gdb")
-
 
     def _setnull(self):
         """Define mask.
@@ -49,8 +27,9 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
 
         try:
             setnull = arcpy.sa.SetNull(
-                self.flow_accumulation_clip, 1, "VALUE < 300")
-            setnull.save(os.path.join(self.output, self._data["setnull"], 'setnull'))
+                self.flow_accumulation_clip, 1, "VALUE < 300"
+            )
+            setnull.save(self.storage.output_filepath('setnull'))
         except:
             raise StreamPreparationError(
                 "Unexpected error during setnull calculation: {}".format(
@@ -81,15 +60,9 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
 #            -self.spix / 3, "FULL", "ROUND", "NONE"
 #        )
 
-        stream = os.path.join(
-            str(self._controlGDB), 'stream'
-        )
-        stream_loc = os.path.join(
-            str(self._controlGDB), 'stream_loc'
-        )
-
-        aoi = os.path.join(str(self._controlGDB), 'aoi'
-        )
+        stream = self.storage.output_filepath('stream')
+        stream_loc = self.storage.output_filepath('stream_loc')
+        aoi = self.storage.output_filepath('aoi')
 
         aoi = arcpy.Clip_analysis(
             self.null, self.intersect, aoi
@@ -97,7 +70,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
 
         aoi_buffer = arcpy.Buffer_analysis(
             aoi,
-            os.path.join(str(self._controlGDB), 'aoi_buffer'),
+            self.storage.output_filepath('aoi_buffer'),
             -self.spix / 3, "FULL", "ROUND", "NONE"
         )
 
@@ -136,11 +109,11 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
 #        )
 
         start = arcpy.FeatureVerticesToPoints_management(
-            stream, os.path.join(str(self._tempGDB), "start"), "START"
+            stream, self.storage.output_filepath("start"), "START"
         )
 
         end = arcpy.FeatureVerticesToPoints_management(
-            stream, os.path.join(str(self._tempGDB), "end"), "END"
+            stream, self.storage.output_filepath("end"), "END"
         )
         arcpy.sa.ExtractMultiValuesToPoints(
             start, [[self.dem_clip, self._data["start_elev"]]], "NONE"
@@ -164,10 +137,10 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         )
 
         start = arcpy.FeatureVerticesToPoints_management(
-            stream, os.path.join(str(self._tempGDB), "start"), "START")
+            stream, self.storage.output_filepath("start"), "START")
 
         end = arcpy.FeatureVerticesToPoints_management(
-            stream, os.path.join(str(self._tempGDB), "end"), "END")
+            stream, self.storage.output_filepath("end"), "END")
 
         arcpy.sa.ExtractMultiValuesToPoints(
             start,
@@ -242,13 +215,13 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         :param stream: Polyline with stream in the area.
         :return mat_stream_seg: Numpy array
         """
-        stream_rst1 = os.path.join(self.output, self._data["stream_rst"], 'stream_rst')
+        stream_rst1 = self.storage.output_filepath('stream_rst')
         stream_rst = arcpy.PolylineToRaster_conversion(
             stream, self._primary_key, stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix
         )
 
         # TODO: what is real meaning?
-        stream_seg = os.path.join(self.output, self._data["stream_seg"], 'stream_seg')
+        stream_seg = self.storage.output_filepath('stream_seg')
         arcpy.gp.Reclassify_sa(
             stream_rst, "VALUE", "NoDataValue 1000", stream_seg, "DATA"
         )
@@ -288,9 +261,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
 
         :param stream:
         """
-        stream_shape_dbf = os.path.join(self.output, self._data['stream_shape'], "{}.dbf".format(
-            'stream_shape'
-        ))
+        stream_shape_dbf = self.storage.output_filepath('stream_shape')
         arcpy.CopyRows_management(self.tab_stream_shape, stream_shape_dbf)
 
         try:

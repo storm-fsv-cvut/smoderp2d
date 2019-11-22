@@ -1,10 +1,14 @@
-"""The computing area is determined  as well as the boundary cells.
+""" A computation part of the model SMODERP2D is performer in runoff.py
 
-Vypocet probiha v zadanem casovem kroku, pripade je cas kracen podle
-"Couranotva kriteria":
- - vystupy jsou rozdelieny do \b zakladnich a \b doplnkovych, podle zvoleneh typu vypoctu
- - zakladni
- - maximalni vyska haladiny plosneho odtoku
+All date which used by this module was prepared by the provider 
+before this module is loaded. The data are stored in classes Globals 
+GridGlobals.
+
+Classes:
+    FlowControl - class controls the computation flow, e.g. controls the
+    iterations 
+    Runoff - class contains methods which perform the computation
+
 """
 
 import time
@@ -30,9 +34,11 @@ from smoderp2d.exceptions import SmoderpError
 from smoderp2d.exceptions import IncorrectInfiltrationType
 
 class FlowControl(object):
-    """FlowControl manage variables contains variables related to main
-    computational loop."""
+    """ Manage variables related to main computational loop. """
+
     def __init__(self):
+        """ Set iteration criteria variables. """
+
         # type of infiltration
         #  - 0 for philip infiltration is the only
         #    one in current version
@@ -116,6 +122,8 @@ class FlowControl(object):
 
 class Runoff(object):
     """Performs the calculation.
+
+    run() - this function performs the water level computation
     """
     def __init__(self, provider):
         """Initialize main classes.
@@ -223,6 +231,26 @@ class Runoff(object):
         Logger.info('-' * 80)
 
     def run(self):
+        """ The computation of the water level development 
+        is performed here. 
+        
+        The *main loop* which goes through time steps
+        has *nested loop* for iterations (in case the 
+        computation does not converge).
+
+        The computation has been divided in two parts
+        First, in iteration (*nested*) loop is calculated 
+        the surface runoff (to which is the time step 
+        sensitive) in a function time_step.do_flow()
+
+        Next water balance is performed at each cell of the 
+        raster. Water level in next time step is calculated by 
+        a function time_step.do_next_h().
+
+        Selected values are stored in at the end of each loop.
+        """
+
+
         # saves time before the main loop
         Logger.info('Start of computing...')
         Logger.start_time = time.time()
@@ -367,20 +395,20 @@ class Runoff(object):
 
                     self.surface.arr[i][j].h_total_pre = self.surface.arr[i][j].h_total_new
 
-        Logger.info('Saving data...')
-
-        Logger.info('')
-        Logger.info('-' * 80)
-        Logger.info('Total computing time: {}'.format(
-            time.time() - Logger.start_time)
-        )
 
         # perform postprocessing - store results
-        self.provider.postprocessing(self.cumulative, self.surface.arr)
+        Logger.info('Saving output data...')
+        self.provider.postprocessing(self.cumulative, self.surface.arr,
+                self.surface.reach)
 
         # TODO
         # post_proc.stream_table(Globals.outdir + os.sep, self.surface,
         #                        Globals.streams_loc)
+
+        Logger.info('-' * 80)
+        Logger.info('Total computing time: {}'.format(
+            time.time() - Logger.start_time)
+        )
 
         # TODO: print stats in better way
         # import platform

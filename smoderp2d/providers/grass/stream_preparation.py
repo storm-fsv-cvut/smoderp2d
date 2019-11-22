@@ -1,7 +1,7 @@
 import os
-import tempfile
 from subprocess import PIPE
 
+from grass.script.core import tempfile
 from grass.pygrass.modules import Module
 from grass.pygrass.raster import raster2numpy
 from grass.pygrass.vector import Vector, VectorTopo
@@ -11,8 +11,8 @@ from smoderp2d.providers.base.stream_preparation import StreamPreparationError, 
 from smoderp2d.providers.grass.manage_fields import ManageFields
 
 class StreamPreparation(StreamPreparationBase, ManageFields):
-    def __init__(self, args):
-        super(StreamPreparation, self).__init__(args)
+    def __init__(self, args, writter):
+        super(StreamPreparation, self).__init__(args, writter)
 
         os.environ['GRASS_OVERWRITE'] = '1'
 
@@ -20,15 +20,6 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         Module('g.region',
                raster=self.dem
         )
-
-    def _set_output(self):
-        """Define output temporary folder and geodatabase.
-        """
-        pass
-        # Module('g.mapset',
-        #                flags='c',
-        #                mapset='stream_prep'
-        # )
 
     def _setnull(self):
         """Define mask.
@@ -80,19 +71,20 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                distance=-self.spix / 3
         )
 
+        stream_clip = 'stream_clip'
         Module('v.clip',
                input=self.stream,
                clip='aoi_buffer',
-               output='stream'
+               output=stream_clip
         )
 
         # TODO: MK - nevim proc se maze neco, co v atributove tabulce vubec neni
         self._delete_fields(
-            'stream',
+            stream_clip,
             ["EX_JH", "POZN", "PRPROP_Z", "IDVT", "UTOKJ_ID", "UTOKJN_ID", "UTOKJN_F"]
         )
 
-        return 'stream', None # TODO: ?
+        return stream_clip, None # TODO: ?
 
     def _stream_direction(self, stream):
         """
@@ -153,7 +145,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                    cats=','.join(cats)
             )
             # update also attributes
-            tmpfile = next(tempfile._get_candidate_names())
+            tmpfile = tempfile(create=False)
             with open(tmpfile, 'w') as fd:
                 for k, v in cats.items():
                     # v (0:start_elev, 1:end_elev,
@@ -191,11 +183,12 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
                 cat = line.cat
                 for start_line in start.lines():
                     if start_line.cat != cat:
-                        to_node[cat] = start_line.cat
+                        # category starts with 1, convert to indices
+                        to_node[cat-1] = start_line.cat-1
 
         if to_node:
             # TODO: rewrite using pygrass
-            tmpfile = next(tempfile._get_candidate_names())
+            tmpfile = tempfile(create=False)
             with open(tmpfile, 'w') as fd:
                 for c, n in to_node.items():
                     fd.write('UPDATE {} SET to_node = {} WHERE {} = {};\n'.format(
