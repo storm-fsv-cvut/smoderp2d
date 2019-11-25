@@ -219,7 +219,8 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         )
         # TODO: probably not needed, see relevant code in arcgis provider
         Module('r.mapcalc',
-               expression='{o} = if(isnull({i}), 1000, {i})'.format(
+               # expression='{o} = if(isnull({i}), 1000, {i})'.format(
+               expression='{o} = {i}'.format(
                    o='stream_seg', i='stream_rst'
         ))
         # TODO: probably not needed
@@ -233,7 +234,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         mat_stream_seg = mat_stream_seg.astype('int16')
 
         # TODO: ?
-        no_of_streams = 0
+        no_of_streams = mat_stream_seg.max()
 
         self._get_mat_stream_seg_(mat_stream_seg, no_of_streams)
 
