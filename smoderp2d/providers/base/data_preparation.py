@@ -555,23 +555,30 @@ class PrepareDataBase(object):
             oneCol = []
             oneColBoundary = []
             for j in nc:
-                print (mat_bdr[i][j])
                 if mat_bdr[i][j] == -99:
                     if not inBoundary:
                         inBoundary = True
-                    else:
+                    if inBoundary:
                         oneColBoundary.append(j)
                 elif mat_bdr[i][j] == 0:
                     if not inDomain:
                         self.data['rr'].append(i)
                         inDomain = True
-                    else:
+                    if inDomain:
                         oneCol.append(j)
             inDomain = False
             inBoundary = False
 
             self.data['rc'].append(oneCol)
-    
+
+        # Logger.info(self.data['rr'])
+        # Logger.info(self.data['rc'][0])        
+        # self.storage.write_raster(
+        #     self.data['mat_boundary'],
+        #     'mat_boundary',
+        #     'temp'
+        # )
+            
     def _clip_data(self, dem, intersect):
         raise NotImplemented("Not implemented for base provider")
 
