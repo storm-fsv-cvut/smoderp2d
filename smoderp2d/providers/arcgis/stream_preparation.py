@@ -215,15 +215,18 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         :param stream: Polyline with stream in the area.
         :return mat_stream_seg: Numpy array
         """
-        stream_rst1 = self.storage.output_filepath('stream_rst')
         stream_rst = arcpy.PolylineToRaster_conversion(
-            stream, self._primary_key, stream_rst1, "MAXIMUM_LENGTH", "NONE", self.spix
+            stream, self._primary_key,
+            self.storage.output_filepath('stream_rst'),
+            "MAXIMUM_LENGTH", "NONE", self.spix
         )
 
         # TODO: what is real meaning?
+        # NoDataValue ?
         stream_seg = self.storage.output_filepath('stream_seg')
         arcpy.gp.Reclassify_sa(
-            stream_rst, "VALUE", "NoDataValue 1000", stream_seg, "DATA"
+            stream_rst, "VALUE",
+            "NoDataValue 1000", stream_seg, "DATA"
         )
 
         ll_corner = arcpy.Point(
@@ -234,6 +237,8 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         )
         mat_stream_seg = mat_stream_seg.astype('int16')
 
+        # TODO: is no_of_streams needed (-> mat_stream_seg.max())
+        # TODO: fid == 0 ?
         count = arcpy.GetCount_management(stream_seg)
         no_of_streams = int(count.getOutput(0))
         self._get_mat_stream_seg_(mat_stream_seg, no_of_streams)
