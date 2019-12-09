@@ -156,6 +156,7 @@ class StreamPass(object):
 
     def __init__(self):
         super(StreamPass, self).__init__()
+        self.reach = None
         Logger.info('Stream: OFF')
 
     def reset_inflows(self):

@@ -408,24 +408,26 @@ class BaseProvider(object):
                 'reachFid')
 
         # store stream reaches results to a table
-        n = len(stream)
-        m = 7
-        outputtable = np.zeros([n,m])
-        for i in range(n):
-            outputtable[i][0] = stream[i].id_
-            outputtable[i][1] = stream[i].b
-            outputtable[i][2] = stream[i].m
-            outputtable[i][3] = stream[i].roughness
-            outputtable[i][4] = stream[i].q365
-            outputtable[i][5] = stream[i].V_out_cum
-            outputtable[i][6] = stream[i].Q_max
-        
-        path_ = os.path.join(
-                Globals.outdir,
-                'stream.csv'
-                )
-        np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
-                header='FID{sep}b{sep}m{sep}rough{sep}q365{sep}V_out_cum{sep}Q_max'.format(sep=';'))
+        # if stream is calculated
+        if (stream) :
+            n = len(stream)
+            m = 7
+            outputtable = np.zeros([n,m])
+            for i in range(n):
+                outputtable[i][0] = stream[i].id_
+                outputtable[i][1] = stream[i].b
+                outputtable[i][2] = stream[i].m
+                outputtable[i][3] = stream[i].roughness
+                outputtable[i][4] = stream[i].q365
+                outputtable[i][5] = stream[i].V_out_cum
+                outputtable[i][6] = stream[i].Q_max
+            
+            path_ = os.path.join(
+                    Globals.outdir,
+                    'stream.csv'
+                    )
+            np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
+                    header='FID{sep}b{sep}m{sep}rough{sep}q365{sep}V_out_cum{sep}Q_max'.format(sep=';'))
 
 
     def _make_mask(self, arr, int_=False):
