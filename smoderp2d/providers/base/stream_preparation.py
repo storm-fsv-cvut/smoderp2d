@@ -41,7 +41,8 @@ class StreamPreparationBase(object):
                 'end': 'temp',
                 'start_elev': 'start_elev',
                 'end_elev': 'end_elev',
-                'stream_rst': 'control',
+            # TODO: not used            
+            #   'stream_rst': 'control',
                 'stream_seg': 'control',
                 'stream_shape': 'control'
         }
