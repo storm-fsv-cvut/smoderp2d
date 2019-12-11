@@ -428,7 +428,7 @@ class BaseProvider(object):
                     'stream.csv'
                     )
             np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
-                    header='FID{sep}b{sep}m{sep}rough{sep}q365{sep}V_out_cum{sep}Q_max'.format(sep=';'))
+                    header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}q365_m3_s{sep}V_out_cum_m3{sep}Q_max_m3_s'.format(sep=';'))
 
 
     def _make_mask(self, arr, int_=False):
