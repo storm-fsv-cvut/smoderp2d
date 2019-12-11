@@ -4,7 +4,7 @@ from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers import Logger
 
 class Hydrographs:
-    def __init__(self):
+    def __init__(self, item='core'):
         points = Globals.get_array_points()
         ipi = points.shape[0]
         jpj = 5
@@ -115,11 +115,8 @@ class Hydrographs:
 
         self.files = []
         for i in range(self.n):
-            fd = open(
-                os.path.join(Globals.get_outdir(), 'point{}.dat'.format(
-                    self.point_int[i][0]).zfill(3)),
-                'w'
-            )
+            fd = open(self._output_path('point{}.dat'.format(
+                self.point_int[i][0]).zfill(3)), 'w')
             fd.writelines(self.header[i])
             self.files.append(fd)
 
@@ -168,6 +165,20 @@ class Hydrographs:
                     line += os.linesep
                     self.files[ip].writelines(line)
 
+    def _output_path(self, output, directory='core'):
+        dir_name = os.path.join(
+            Globals.outdir,
+            directory
+            )
+
+        if not os.path.exists(dir_name):
+           os.makedirs(dir_name)
+
+        return os.path.join(
+            dir_name,
+            output
+        )
+
     def __del__(self):
         for fd in self.files:
             Logger.debug('Hydrographs file "{}" closed'.format(fd.name))
@@ -176,4 +187,7 @@ class Hydrographs:
 class HydrographsPass:
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface, subsurface,
                                  currRain, inStream=False, sep=';'):
+        pass
+
+    def _output_path(self, output, directory='core'):
         pass
