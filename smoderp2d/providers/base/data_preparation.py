@@ -81,7 +81,7 @@ class PrepareDataBase(object):
             self.data['mat_fd'] = self._rst2np(flow_direction_clip)
             self.storage.write_raster(
                 self.data['mat_fd'],
-                'fl_dir'
+                'fl_dir',
                 'temp'
             )
 
