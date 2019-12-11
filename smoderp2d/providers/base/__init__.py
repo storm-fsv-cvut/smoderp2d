@@ -424,6 +424,7 @@ class BaseProvider(object):
             
             path_ = os.path.join(
                     Globals.outdir,
+                    'core',
                     'stream.csv'
                     )
             np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
