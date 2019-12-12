@@ -150,13 +150,13 @@ class BaseProvider(object):
             data['outdir'] = self._config.get('Other', 'outdir')
 
         #  rainfall data can be saved
-        if self._config.get('srazka', 'file') != '-':
+        if self._config.get('rainfall', 'file') != '-':
             try:
                 data['sr'], data['itera'] = rainfall.load_precipitation(
-                    self._config.get('srazka', 'file')
+                    self._config.get('rainfall', 'file')
                 )
             except TypeError:
-                raise ProviderError('Invalid file in [srazka] section')
+                raise ProviderError('Invalid file in [rainfall] section')
 
         # some self._configs are not in pickle.dump
         data['extraOut'] = self._config.getboolean('Other', 'extraout')
