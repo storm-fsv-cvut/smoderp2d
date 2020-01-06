@@ -15,7 +15,6 @@ class SingleSoilGA(object):
         """
 
         self._ks = ks
-        self._ks = 1e-5
         
         # experimenal
         # depth of plough_pan
