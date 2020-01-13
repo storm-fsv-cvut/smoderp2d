@@ -191,6 +191,8 @@ def triangle(reach, dt):
 #
 #
 def parabola(reach, dt):
+    raise NotImplementedError('Parabola shaped stream reach is not implemented
+            yet')
     pass
     # a = reach.b   #vzd ohniska od vrcholu
     # u = 3.0 #(h=B/u  B=f(a))
