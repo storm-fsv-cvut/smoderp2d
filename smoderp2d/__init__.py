@@ -39,6 +39,9 @@ class Runner(object):
         elif os.getenv('GISRC'):
             from smoderp2d.providers.grass import GrassGisProvider
             provider_class = GrassGisProvider
+        elif isinstance(self, WpsRunner):
+            from smoderp2d.providers.wps import WpsProvider
+            provider_class = WpsProvider
         else:
             from smoderp2d.providers.cmd import CmdProvider
             provider_class = CmdProvider
@@ -145,3 +148,7 @@ class QGISRunner(GrassRunner):
 
     def __del__(self):
         pass
+
+class WpsRunner(Runner):
+    def set_options(self, options):
+        self._provider.set_options(options)

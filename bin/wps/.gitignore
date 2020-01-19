@@ -1,2 +1,3 @@
 logs/*.log
 logs/*.sqlite3
+static/data/test.zip
