@@ -1,10 +1,16 @@
-# Experiment SMODERP2D WPS demo server
+# SMODERP2D Web Processing Service
 
-## Requirements
+## Experimental Rain WPS Process
+
+TBD
+
+## Development SMODERP2D WPS demo server
+
+### Requirements
 
     pip3 install pywps flask
 
-## How to test
+### How to test
 
 Run demo WPS server
 
@@ -12,7 +18,7 @@ Run demo WPS server
 
 Open http://127.0.0.1:5000
 
-### Execute
+#### Execute
 
 Copy test input data to demo server
 
