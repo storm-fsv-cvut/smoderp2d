@@ -8,14 +8,6 @@ https://rain1.fsv.cvut.cz/services/wps?service=wps&version=1.0.0&request=describ
 
 #### Execute
 
-Copy testing input data to demo server
-
-    (cd ../..;
-    zip test.zip tests/quicktest.ini tests/data/rainfall.txt tests/data/destak.save
-    mv test.zip bin/wps/static/data)
-
-Run execute request
-
 https://rain1.fsv.cvut.cz/services/wps?service=wps&version=1.0.0&request=execute&identifier=smoderp2d&datainputs=input=http://rain.fsv.cvut.cz/geodata/smoderp2d.zip
 
 ## Development SMODERP2D WPS demo server
