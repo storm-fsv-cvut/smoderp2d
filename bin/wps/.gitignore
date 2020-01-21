@@ -3,3 +3,5 @@ logs/*.sqlite3
 static/data/test.zip
 log
 tests/
+output.zip
+outputs/

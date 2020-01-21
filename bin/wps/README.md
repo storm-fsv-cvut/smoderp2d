@@ -27,7 +27,7 @@ Open http://127.0.0.1:5000
 Copy testing input data to demo server
 
     (cd ../..;
-    zip test.zip tests/test.ini tests/data/rainfall.txt tests/data/nucice.save
+    zip test.zip tests/quicktest.ini tests/data/rainfall.txt tests/data/destak.save
     mv test.zip bin/wps/static/data)
 
 Run execute request

@@ -7,6 +7,8 @@ else:
 
 from smoderp2d.core.general import Globals
 from smoderp2d.providers.base import BaseProvider, Logger
+from smoderp2d.providers.cmd import CmdWritter
+from smoderp2d.exceptions import ConfigError
 
 class WpsProvider(BaseProvider):
     def __init__(self):
@@ -34,8 +36,11 @@ class WpsProvider(BaseProvider):
             Globals.outdir = self._config.get('Other', 'outdir')
         except NoSectionError as e:
             raise ConfigError('Config file {}: {}'.format(
-                self.args.indata, e
+                options['indata'], e
             ))
+
+        # define storage writter
+        self.storage = CmdWritter()
 
     def load(self):
         """Load configuration data.
