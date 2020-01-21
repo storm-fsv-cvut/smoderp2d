@@ -18,9 +18,13 @@ Run demo WPS server
 
 Open http://127.0.0.1:5000
 
+#### DescribeProcess
+
+     http://127.0.0.1:5000/wps?service=wps&version=1.0.0&request=describeprocess&identifier=smoderp2d
+
 #### Execute
 
-Copy test input data to demo server
+Copy testing input data to demo server
 
     (cd ../..;
     zip test.zip tests/test.ini tests/data/rainfall.txt tests/data/nucice.save
