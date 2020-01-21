@@ -2,7 +2,21 @@
 
 ## Experimental Rain WPS Process
 
-TBD
+#### DescribeProcess
+
+https://rain1.fsv.cvut.cz/services/wps?service=wps&version=1.0.0&request=describeprocess&identifier=smoderp2d
+
+#### Execute
+
+Copy testing input data to demo server
+
+    (cd ../..;
+    zip test.zip tests/quicktest.ini tests/data/rainfall.txt tests/data/destak.save
+    mv test.zip bin/wps/static/data)
+
+Run execute request
+
+https://rain1.fsv.cvut.cz/services/wps?service=wps&version=1.0.0&request=execute&identifier=smoderp2d&datainputs=input=http://rain.fsv.cvut.cz/geodata/smoderp2d.zip
 
 ## Development SMODERP2D WPS demo server
 
@@ -20,7 +34,7 @@ Open http://127.0.0.1:5000
 
 #### DescribeProcess
 
-     http://127.0.0.1:5000/wps?service=wps&version=1.0.0&request=describeprocess&identifier=smoderp2d
+http://127.0.0.1:5000/wps?service=wps&version=1.0.0&request=describeprocess&identifier=smoderp2d
 
 #### Execute
 
@@ -32,4 +46,4 @@ Copy testing input data to demo server
 
 Run execute request
 
-    http://127.0.0.1:5000/wps?service=wps&version=1.0.0&request=execute&identifier=smoderp2d&datainputs=input=http://127.0.0.1:5000/static/data/test.zip
+http://127.0.0.1:5000/wps?service=wps&version=1.0.0&request=execute&identifier=smoderp2d&datainputs=input=http://127.0.0.1:5000/static/data/test.zip
