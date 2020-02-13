@@ -282,12 +282,17 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
 
         sfields = ["number", "smoderp", "shapetype", "b", "m", "roughness", "Q365"]
         with arcpy.da.SearchCursor(stream, sfields) as cursor:
-            for row in cursor:
-                for i in range(len(row)):
-                    if row[i] == " ":
-                        raise StreamPreparationError(
-                            "Empty value in tab_stream_shape found."
-                        )
+            try:
+                for row in cursor:
+                    for i in range(len(row)):
+                        if row[i] == " ":
+                            raise StreamPreparationError(
+                                "Empty value in tab_stream_shape found."
+                            )
+            except RuntimeError: 
+                raise StreamPreparationError(
+                        "Check if fields code in tab_stream_shape are correct. Columns are hardcoded. Proper columns codes are: {}".format(sfields)
+                )
 
         fields = arcpy.ListFields(stream)
         self.field_names = [field.name for field in fields]
