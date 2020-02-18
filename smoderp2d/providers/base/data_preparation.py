@@ -454,6 +454,9 @@ class PrepareDataBase(object):
             self.storage.write_raster(
                 arr, out, 'temp'
             )
+        self.storage.write_raster(
+            self.data['mat_hcrit'], 'mat_hcrit', 'core'
+        )
 
     def _get_slope_dir(self, dem_clip):
         raise NotImplemented("Not implemented for base provider")
