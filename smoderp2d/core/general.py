@@ -58,6 +58,10 @@ class GridGlobals(object):
         return cls.pixel_area
 
     @classmethod
+    def set_pixel_area(cls, pa):
+        cls.pixel_area = pa
+
+    @classmethod
     def get_region_dim(cls):
         return (cls.rr, cls.rc)
 
@@ -77,6 +81,11 @@ class GridGlobals(object):
     @classmethod
     def get_size(cls):
         return (cls.dx, cls.dy)
+
+    @classmethod
+    def set_size(cls, dxdy):
+        cls.dx = dxdy[0]
+        cls.dy = dxdy[1]
 
     @classmethod
     def get_no_data(cls):

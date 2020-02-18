@@ -314,9 +314,11 @@ class PrepareData(PrepareDataBase, ManageFields):
                                   dem_desc.Extent.YMin))
         self.data['xllcorner'] = dem_desc.Extent.XMin
         self.data['yllcorner'] = dem_desc.Extent.YMin
-        # TODO: move to GridGlobals
+        GridGlobals.set_size((dem_desc.MeanCellHeight,
+                              dem_desc.MeanCellWidth))
         self.data['vpix'] = dem_desc.MeanCellHeight
         self.data['spix'] = dem_desc.MeanCellWidth
+        GridGlobals.set_pixel_area(self.data['spix'] * self.data['vpix'])
         self.data['pixel_area'] = self.data['spix'] * self.data['vpix']
 
         # size of the raster [0] = number of rows; [1] = number of columns

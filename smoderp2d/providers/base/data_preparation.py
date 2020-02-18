@@ -77,6 +77,9 @@ class PrepareDataBase(object):
         Logger.info("Computing parameters of DTM...")
         self.data['mat_dem'] = self._rst2np(dem_clip)
         self.data['mat_slope'] = self._rst2np(slope_clip)
+
+        # update data dict for spatial ref info
+        self._get_raster_dim(dem_clip)
         if flow_direction_clip is not None:
             self.data['mat_fd'] = self._rst2np(flow_direction_clip)
             self.storage.write_raster(
@@ -84,9 +87,6 @@ class PrepareDataBase(object):
                 'fl_dir'
                 'temp'
             )
-
-        # update data dict for spatial ref info
-        self._get_raster_dim(dem_clip)
 
         # build numpy array from selected attributes
         all_attrib = self._get_mat_par(sfield, intersect)
