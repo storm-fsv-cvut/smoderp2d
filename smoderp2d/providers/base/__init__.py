@@ -212,6 +212,12 @@ class BaseProvider(object):
         Globals.mat_reten = -1.0 * data['mat_reten'] / 1000
         Globals.diffuse = self._comp_type(data['type_of_computing'])['diffuse']
         Globals.subflow = self._comp_type(data['type_of_computing'])['subflow']
+        # TODO: 2 lines bellow are duplicated for arcgis provider. fist
+        # definition of dx dy is in
+        # (provider.arcgis.data_prepraration._get_raster_dim) where is is
+        # defined for write_raster which is used before _set_globals
+        GridGlobals.dx = math.sqrt(data['pixel_area'])
+        GridGlobals.dy = GridGlobals.dx
         # TODO: lines below are part only of linux method
         Globals.isRill = self._comp_type(data['type_of_computing'])['rill']
         Globals.isStream = self._comp_type(data['type_of_computing'])['stream']
