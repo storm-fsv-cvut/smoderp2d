@@ -115,8 +115,8 @@ class PrepareDataBase(object):
         self._find_boundary_cells()
 
         self.data['mat_n'] = all_attrib[2]
-        self.data['mat_ppl'] = all_attrib[3]
-        self.data['mat_pi'] = all_attrib[4]
+        self.data['mat_pi'] = all_attrib[3]
+        self.data['mat_ppl'] = all_attrib[4]
         self.data['mat_reten'] = all_attrib[5]
         self.data['mat_b'] = all_attrib[6]
 
