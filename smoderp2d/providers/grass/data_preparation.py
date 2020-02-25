@@ -304,7 +304,7 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         :return all_atrib: list of numpy array
         """
-        all_attrib = self._get_attrib_(sfield, intersect)
+        all_attrib = self._init_attrib(sfield, intersect)
 
         idx = 0
         for field in sfield:

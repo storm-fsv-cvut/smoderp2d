@@ -249,8 +249,9 @@ class PrepareDataBase(object):
     def _get_attrib(self, sfield, intersect):
         raise NotImplemented("Not implemented for base provider")
 
-    def _get_attrib_(self, sfield, intersect):
-        """Internal method. Called by _get_attrib().
+    def _init_attrib(self, sfield, intersect):
+        """Internal method. initialize attributes array.
+        Called by _get_attrib().
         """
         dim = [self.data['r'], self.data['c']]
         return [np.zeros(dim, float)] * len(sfield)
