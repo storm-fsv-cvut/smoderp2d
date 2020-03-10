@@ -4,7 +4,7 @@ from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers import Logger
 
 class Hydrographs:
-    def __init__(self):
+    def __init__(self, item='core'):
         points = Globals.get_array_points()
         ipi = points.shape[0]
         jpj = 5
@@ -76,11 +76,11 @@ class Hydrographs:
         self.header = []
 
         for i in range(self.n):
+            header = '# Hydrograph at the point with coordinates: {} {}{}'.format(
+                self.point_int[i][3], self.point_int[i][4], os.linesep)
+            header += '# A pixel size is [m2]: {}{}'.format(
+                    GridGlobals.pixel_area,os.linesep)
             if i == self.inStream[iStream]:
-                header = '# Hydrograph at the point with coordinates: {} {}{}'.format(
-                    self.point_int[i][3], self.point_int[i][4], os.linesep)
-                header += '# A pixel size is [m2]:{}'.format(os.linesep)
-                header += '# {}{}'.format(self.pixel_area, os.linesep)
 
                 if not Globals.extraOut:
                     header += '# time[s];deltaTime[s];rainfall[m];reachWaterLevel[m];reachFlow[m3/s];reachVolRunoff[m3]'
@@ -91,13 +91,9 @@ class Hydrographs:
                 self.header.append(header)
 
             elif i == self.inSurface[iSurface]:
-                header = '# Hydrograph at the point with coordinates: {} {}{}'.format(
-                    self.point_int[i][3], self.point_int[i][4], os.linesep)
-                header += '# A pixel size is [m2]:{}'.format(os.linesep)
-                header += '# {}{}'.format(self.pixel_area, os.linesep)
 
                 if not Globals.extraOut:
-                    header += '# time[s];deltaTime[s];rainfall[m];totalWaterLevel[m];surfaceFlow[m3/s];surfaceVolRunoff[m3]'
+                    header += '# time[s];deltaTime[s];rainfall[m];totalWaterLevel[m];surfaceFlow[m3/s];surfaceVolRunoff[m3]{}'.format(os.linesep)
                 else:
                     header += '# time[s];deltaTime[s];Rainfall[m];Water_level_[m];Sheet_Flow[m3/s];Sheet_V_runoff[m3];Sheet_V_rest[m3];Infiltration[m];Surface_retetion[m];State;V_inflow[m3];WlevelTotal[m]{}'
 
@@ -108,17 +104,15 @@ class Hydrographs:
                         header += ';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[];exfiltration[]'
                     if Globals.extraOut:
                         header += ';V_to_rill.m3.;ratio;courant;courantrill;iter'
+                    header += os.linesep
 
-                header += os.linesep
                 iSurface += 1
                 self.header.append(header)
 
         self.files = []
         for i in range(self.n):
-            filename = 'point{}.dat'.format(
-                str(self.point_int[i][0]).zfill(3)
-            )
-            fd = open(os.path.join(Globals.get_outdir(), filename), 'w')
+            fd = open(self._output_path('point{}.csv'.format(
+                self.point_int[i][0]).zfill(3)), 'w')
             fd.writelines(self.header[i])
             self.files.append(fd)
 
@@ -167,6 +161,20 @@ class Hydrographs:
                     line += os.linesep
                     self.files[ip].writelines(line)
 
+    def _output_path(self, output, directory='core'):
+        dir_name = os.path.join(
+            Globals.outdir,
+            directory
+            )
+
+        if not os.path.exists(dir_name):
+           os.makedirs(dir_name)
+
+        return os.path.join(
+            dir_name,
+            output
+        )
+
     def __del__(self):
         for fd in self.files:
             Logger.debug('Hydrographs file "{}" closed'.format(fd.name))
@@ -175,4 +183,7 @@ class Hydrographs:
 class HydrographsPass:
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface, subsurface,
                                  currRain, inStream=False, sep=';'):
+        pass
+
+    def _output_path(self, output, directory='core'):
         pass

@@ -60,7 +60,9 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
 #            -self.spix / 3, "FULL", "ROUND", "NONE"
 #        )
 
-        stream = self.storage.output_filepath('stream')
+        stream = self.storage.output_filepath(
+                name='stream', item='core'
+        )
         stream_loc = self.storage.output_filepath('stream_loc')
         aoi = self.storage.output_filepath('aoi')
 
