@@ -256,7 +256,7 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         :param intersect: vector intersect feature class
         """
-        pointsClipCheck = self.storage.output_filepath('points_inter')
+        pointsClipCheck = self.storage.output_filepath('points_inter', item='')
         arcpy.Clip_analysis(
             self.data['points'], intersect, pointsClipCheck
         )
