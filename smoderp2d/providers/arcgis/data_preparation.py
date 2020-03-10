@@ -101,12 +101,6 @@ class PrepareData(PrepareDataBase, ManageFields):
         # dem_copy = os.path.join(self.data['temp'], 'dem_copy')
         dem_copy = self.storage.output_filepath('dem_copy')
 
-        # this is a work around related to issue #46 [https://github.com/storm-fsv-cvut/smoderp2d/issues/46]
-        dem_desc = arcpy.Describe(self._input_params['elevation'])
-        # copyraster_management does not copy nodatavalue to a new
-        # raster here it is extracted here from the original data
-        self.data['NoDataValue'] = dem_desc.nodatavalue
-        
         arcpy.CopyRaster_management(
             self._input_params['elevation'], dem_copy
         )
@@ -128,8 +122,15 @@ class PrepareData(PrepareDataBase, ManageFields):
         
         :return: (filled elevation, flow direction, flow accumulation, slope)
         """
-        return compute_products(dem, self.data['outdir'])
-    
+        flow_direction_clip, \
+        flow_accumulation_clip, \
+        slope_clip = compute_products(dem, self.data['outdir'])
+        # this is a workaround if the input dem does not have nodatavalue assigned 
+        # or has different nodatavalue compared to env nodatavalue. 
+        slope_clip_desc = arcpy.Describe(slope_clip)
+        self.data['NoDataValue'] = slope_clip_desc.nodatavalue
+        return flow_direction_clip, flow_accumulation_clip, slope_clip 
+
     def _get_intersect(self, dem, mask,
                         vegetation, soil, vegetation_type, soil_type,
                         table_soil_vegetation, table_soil_vegetation_code):
@@ -279,7 +280,7 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         :return all_atrib: list of numpy array
         """
-        all_attrib = self._get_attrib_(sfield, intersect)
+        all_attrib = self._init_attrib(sfield, intersect)
         
         idx = 0
         for field in sfield:
@@ -316,9 +317,11 @@ class PrepareData(PrepareDataBase, ManageFields):
                                   dem_desc.Extent.YMin))
         self.data['xllcorner'] = dem_desc.Extent.XMin
         self.data['yllcorner'] = dem_desc.Extent.YMin
-        # TODO: move to GridGlobals
+        GridGlobals.set_size((dem_desc.MeanCellHeight,
+                              dem_desc.MeanCellWidth))
         self.data['vpix'] = dem_desc.MeanCellHeight
         self.data['spix'] = dem_desc.MeanCellWidth
+        GridGlobals.set_pixel_area(self.data['spix'] * self.data['vpix'])
         self.data['pixel_area'] = self.data['spix'] * self.data['vpix']
 
         # size of the raster [0] = number of rows; [1] = number of columns

@@ -150,13 +150,13 @@ class BaseProvider(object):
             data['outdir'] = self._config.get('Other', 'outdir')
 
         #  rainfall data can be saved
-        if self._config.get('srazka', 'file') != '-':
+        if self._config.get('rainfall', 'file') != '-':
             try:
                 data['sr'], data['itera'] = rainfall.load_precipitation(
-                    self._config.get('srazka', 'file')
+                    self._config.get('rainfall', 'file')
                 )
             except TypeError:
-                raise ProviderError('Invalid file in [srazka] section')
+                raise ProviderError('Invalid file in [rainfall] section')
 
         # some self._configs are not in pickle.dump
         data['extraOut'] = self._config.getboolean('Other', 'extraout')
@@ -209,11 +209,15 @@ class BaseProvider(object):
                 setattr(DataGlobals, item, data[item])
 
         GridGlobals.NoDataInt = int(-9999)
-        GridGlobals.dx = math.sqrt(data['pixel_area'])
-        GridGlobals.dy = GridGlobals.dx
         Globals.mat_reten = -1.0 * data['mat_reten'] / 1000
         Globals.diffuse = self._comp_type(data['type_of_computing'])['diffuse']
         Globals.subflow = self._comp_type(data['type_of_computing'])['subflow']
+        # TODO: 2 lines bellow are duplicated for arcgis provider. fist
+        # definition of dx dy is in
+        # (provider.arcgis.data_prepraration._get_raster_dim) where is is
+        # defined for write_raster which is used before _set_globals
+        GridGlobals.dx = math.sqrt(data['pixel_area'])
+        GridGlobals.dy = GridGlobals.dx
         # TODO: lines below are part only of linux method
         Globals.isRill = self._comp_type(data['type_of_computing'])['rill']
         Globals.isStream = self._comp_type(data['type_of_computing'])['stream']

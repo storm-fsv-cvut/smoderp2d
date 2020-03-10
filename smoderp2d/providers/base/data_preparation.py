@@ -77,6 +77,9 @@ class PrepareDataBase(object):
         Logger.info("Computing parameters of DTM...")
         self.data['mat_dem'] = self._rst2np(dem_clip)
         self.data['mat_slope'] = self._rst2np(slope_clip)
+
+        # update data dict for spatial ref info
+        self._get_raster_dim(dem_clip)
         if flow_direction_clip is not None:
             self.data['mat_fd'] = self._rst2np(flow_direction_clip)
             self.storage.write_raster(
@@ -84,9 +87,6 @@ class PrepareDataBase(object):
                 'fl_dir',
                 'temp'
             )
-
-        # update data dict for spatial ref info
-        self._get_raster_dim(dem_clip)
 
         # build numpy array from selected attributes
         all_attrib = self._get_mat_par(sfield, intersect)
@@ -115,8 +115,8 @@ class PrepareDataBase(object):
         self._find_boundary_cells()
 
         self.data['mat_n'] = all_attrib[2]
-        self.data['mat_ppl'] = all_attrib[3]
-        self.data['mat_pi'] = all_attrib[4]
+        self.data['mat_pi'] = all_attrib[3]
+        self.data['mat_ppl'] = all_attrib[4]
         self.data['mat_reten'] = all_attrib[5]
         self.data['mat_b'] = all_attrib[6]
 
@@ -249,8 +249,9 @@ class PrepareDataBase(object):
     def _get_attrib(self, sfield, intersect):
         raise NotImplemented("Not implemented for base provider")
 
-    def _get_attrib_(self, sfield, intersect):
-        """Internal method. Called by _get_attrib().
+    def _init_attrib(self, sfield, intersect):
+        """Internal method. initialize attributes array.
+        Called by _get_attrib().
         """
         dim = [self.data['r'], self.data['c']]
         return [np.zeros(dim, float)] * len(sfield)
@@ -454,6 +455,9 @@ class PrepareDataBase(object):
             self.storage.write_raster(
                 arr, out, 'temp'
             )
+        self.storage.write_raster(
+            self.data['mat_hcrit'], 'mat_hcrit', 'core'
+        )
 
     def _get_slope_dir(self, dem_clip):
         raise NotImplemented("Not implemented for base provider")

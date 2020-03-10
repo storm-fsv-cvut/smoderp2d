@@ -9,6 +9,7 @@ from smoderp2d.providers.base import BaseProvider, CompType, BaseWritter
 from smoderp2d.providers.arcgis import constants
 from smoderp2d.providers.arcgis.logger import ArcPyLogHandler
 from smoderp2d.providers import Logger
+from smoderp2d.exceptions import GlobalsNotSet
 
 class ArcGisWritter(BaseWritter):
     def __init__(self):
@@ -68,6 +69,16 @@ class ArcGisWritter(BaseWritter):
         :param directory: directory where to write output file
         """
         file_output = self._raster_output_path(output_name, directory)
+        
+        # prevent call globals before values assigned
+        if (GridGlobals.xllcorner == None):
+            raise GlobalsNotSet()
+        if (GridGlobals.yllcorner == None):
+            raise GlobalsNotSet()
+        if (GridGlobals.dx == None):
+            raise GlobalsNotSet()
+        if (GridGlobals.dy == None):
+            raise GlobalsNotSet()
 
         lower_left = arcpy.Point(
             GridGlobals.xllcorner,

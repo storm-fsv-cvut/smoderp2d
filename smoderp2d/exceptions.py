@@ -18,6 +18,15 @@ class MaxIterationExceeded(SmoderpError):
                 mi, t
         ))
 
+class GlobalsNotSet(SmoderpError):
+    """Exception raised if globals called variable is None.
+
+    """
+    def __init__(self):
+        Logger.fatal(
+            'Global variable is still None'
+        )
+
 class NegativeWaterLevel(SmoderpError):
     """Exception raised if the water level goes to negative values.
 

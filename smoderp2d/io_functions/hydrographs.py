@@ -83,12 +83,12 @@ class Hydrographs:
             if i == self.inStream[iStream]:
 
                 if not Globals.extraOut:
-                    header += '# time[s];deltaTime[s];rainfall[m];reachWaterLevel[m];reachFlow[m3/s];reachVolRunoff[m3]{}'.format(os.linesep)
+                    header += '# time[s];deltaTime[s];rainfall[m];reachWaterLevel[m];reachFlow[m3/s];reachVolRunoff[m3]'
                 else:
-                    header += '# time[s];deltaTime[s];Rainfall[m];Waterlevel[m];V_runoff[m3];Q[m3/s];V_from_field[m3];V_rests_in_stream[m3]{}'.format(
-                        os.linesep)
-                self.header.append(header)
+                    header += '# time[s];deltaTime[s];Rainfall[m];Waterlevel[m];V_runoff[m3];Q[m3/s];V_from_field[m3];V_rests_in_stream[m3]'
+                header += os.linesep
                 iStream += 1
+                self.header.append(header)
 
             elif i == self.inSurface[iSurface]:
 
@@ -154,8 +154,8 @@ class Hydrographs:
                     # line += subsurface.return_str_vals(l,m,sep,dt) + sep   #
                     # prozatim
                     if Globals.extraOut:
-                        line += '{sep}{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}'.format(
-                            surface.arr[l][m].vol_to_rill,
+                        line += '{sep}{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}'.format(
+                            linebil[1], surface.arr[l][m].vol_to_rill,
                             ratio, courantMost, courantRill, iter_,
                             sep=sep)
                     line += os.linesep
