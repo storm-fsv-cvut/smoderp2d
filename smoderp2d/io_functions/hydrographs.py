@@ -115,7 +115,7 @@ class Hydrographs:
 
         self.files = []
         for i in range(self.n):
-            filename = 'point{}.dat'.format(
+            filename = 'point{}.csv'.format(
                 str(self.point_int[i][0]).zfill(3)
             )
             fd = open(os.path.join(Globals.get_outdir(), filename), 'w')
