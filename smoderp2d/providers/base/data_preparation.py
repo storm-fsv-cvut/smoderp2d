@@ -371,8 +371,7 @@ class PrepareDataBase(object):
 
         :param all_attrib: list of attributes (numpy arrays)
         """
-        mat_n = all_attrib[2]
-        mat_x = all_attrib[7]
+        mat_n_sheet = all_attrib[7]
         mat_y = all_attrib[8]
         
         self.data['mat_a']  = np.zeros(
@@ -387,7 +386,7 @@ class PrepareDataBase(object):
         for i in range(self.data['r']):
             for j in range(self.data['c']):
                 slope = self.data['mat_slope'][i][j]
-                par_x = mat_x[i][j]
+                par_n_sheet = mat_n_sheet[i][j]
                 par_y = mat_y[i][j]
 
                 if par_x == nv or par_y == nv or slope == nv:
@@ -395,11 +394,11 @@ class PrepareDataBase(object):
                     par_aa = nv
                 elif par_x == nv or par_y == nv or slope == 0.0:
                     par_a = 0.0001
-                    par_aa = par_a / 100 / mat_n[i][j]
+                    par_aa = par_a / par_n_sheet
                 else:
                     exp = np.power(slope, par_y)
-                    par_a = par_x * exp
-                    par_aa = par_a / 100 / mat_n[i][j]
+                    par_a = exp 
+                    par_aa = exp /  par_n_sheet
 
                 self.data['mat_a'][i][j] = par_a
                 self.data['mat_aa'][i][j] = par_aa
