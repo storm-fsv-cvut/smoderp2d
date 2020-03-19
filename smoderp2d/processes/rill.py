@@ -45,7 +45,7 @@ def rill(V_to_rill, rillRatio, l, b, delta_t,
         R_rill = (h * b) / (b + 2 * h)
         v[k] = math.pow(
             R_rill,
-            (2.0 / 3.0)) * 1 / n * math.pow(slope / 100,
+            (2.0 / 3.0)) * 1 / n * math.pow(slope,
                                             0.5)  # m/s
 
         q[k] = v[k] * rillRatio * b * b  # [m3/s]

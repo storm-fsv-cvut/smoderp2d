@@ -307,7 +307,7 @@ def rill_runoff(i, j, sur, dt, efect_vrst, ratio):
     r_rill = (h * b) / (b + 2 * h)
 
     v_rill = math.pow(r_rill, (2.0 / 3.0)) * \
-        1. / n * math.pow(slope / 100, 0.5)
+        1. / n * math.pow(slope, 0.5)
 
     q_rill = v_rill * h * b
 

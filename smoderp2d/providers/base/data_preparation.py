@@ -77,6 +77,8 @@ class PrepareDataBase(object):
         Logger.info("Computing parameters of DTM...")
         self.data['mat_dem'] = self._rst2np(dem_clip)
         self.data['mat_slope'] = self._rst2np(slope_clip)
+        Logger.info("Converting slope...")
+        self.data['mat_slope'] = self.data['mat_slope'] / 100.
 
         # update data dict for spatial ref info
         self._get_raster_dim(dem_clip)
