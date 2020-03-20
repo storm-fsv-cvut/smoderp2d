@@ -389,10 +389,10 @@ class PrepareDataBase(object):
                 par_n_sheet = mat_n_sheet[i][j]
                 par_y = mat_y[i][j]
 
-                if mat_n_sheet == nv or par_y == nv or slope == nv:
+                if par_n_sheet == nv or par_y == nv or slope == nv:
                     par_a = nv
                     par_aa = nv
-                elif mat_n_sheet == nv or par_y == nv or slope == 0.0:
+                elif par_n_sheet == nv or par_y == nv or slope == 0.0:
                     par_a = 0.0001
                     par_aa = par_a / par_n_sheet
                 else:
