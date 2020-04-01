@@ -41,7 +41,7 @@ class BaseWritter(object):
         self.primary_key = None
 
     @staticmethod
-    def _raster_output_path(output, directory='core'):
+    def _raster_output_path(output, directory=''):
         dir_name = os.path.join(
             Globals.outdir,
             directory

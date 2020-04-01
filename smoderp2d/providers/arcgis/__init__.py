@@ -24,6 +24,11 @@ class ArcGisWritter(BaseWritter):
         arcpy.env.overwriteOutput = 1
 
     def create_storage(self,outdir):
+        # create core ArcGIS File Geodatabase
+        arcpy.CreateFileGDB_management(
+            outdir,
+            "data.gdb")
+
         # create temporary ArcGIS File Geodatabase
         arcpy.CreateFileGDB_management(
             os.path.join(outdir, 'temp'),
@@ -32,11 +37,6 @@ class ArcGisWritter(BaseWritter):
         # create control ArcGIS File Geodatabase
         arcpy.CreateFileGDB_management(
             os.path.join(outdir, 'control'),
-            "data.gdb")
-
-        # create core ArcGIS File Geodatabase
-        arcpy.CreateFileGDB_management(
-            os.path.join(outdir, 'core'),
             "data.gdb")
 
     def output_filepath(self, name, item='temp'):
@@ -61,7 +61,7 @@ class ArcGisWritter(BaseWritter):
 
         return path
 
-    def write_raster(self, array, output_name, directory='core'):
+    def write_raster(self, array, output_name, directory=''):
         """Write raster (numpy array) to ASCII file.
 
         :param array: numpy array

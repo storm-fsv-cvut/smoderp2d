@@ -210,15 +210,6 @@ class PrepareDataBase(object):
         )
         os.makedirs(self.data['temp'])
 
-        # create core dir
-        core = os.path.join(
-            self.data['outdir'], "core"
-        )
-        Logger.debug(
-            "Creating core directory <{}>".format(core)
-        )
-        os.makedirs(core)
-
         # create control dir
         control = os.path.join(
             self.data['outdir'], "control"
@@ -456,7 +447,7 @@ class PrepareDataBase(object):
                 arr, out, 'temp'
             )
         self.storage.write_raster(
-            self.data['mat_hcrit'], 'mat_hcrit', 'core'
+            self.data['mat_hcrit'], 'mat_hcrit', ''
         )
 
     def _get_slope_dir(self, dem_clip):

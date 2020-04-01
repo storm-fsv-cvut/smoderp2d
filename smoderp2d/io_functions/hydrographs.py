@@ -111,8 +111,10 @@ class Hydrographs:
 
         self.files = []
         for i in range(self.n):
-            fd = open(self._output_path('point{}.csv'.format(
-                self.point_int[i][0]).zfill(3)), 'w')
+            filename = 'point{}.csv'.format(
+                str(self.point_int[i][0]).zfill(3)
+            )
+            fd = open(os.path.join(Globals.get_outdir(), filename), 'w')
             fd.writelines(self.header[i])
             self.files.append(fd)
 
