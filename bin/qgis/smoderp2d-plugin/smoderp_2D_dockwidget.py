@@ -8,7 +8,7 @@
                              -------------------
         begin                : 2018-10-10
         git sha              : $Format:%H$
-        copyright            : (C) 2018 by CTU
+        copyright            : (C) 2018-2020 by CTU
         email                : petr.kavka@fsv.cvut.cz
  ***************************************************************************/
 
@@ -25,8 +25,6 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..'))
-
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings
 
@@ -35,8 +33,14 @@ from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, QgsVectorLayer
 from qgis.utils import iface
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
 
-from smoderp2d.exceptions import ProviderError
+### ONLY FOR TESTING PURPOSES (!!!)
+sys.path.insert(0,
+                os.path.join(os.path.dirname(__file__), '..', '..', '..')
+)
+print (sys.path)
 from smoderp2d import QGISRunner
+from smoderp2d.exceptions import ProviderError
+
 from .connect_grass import find_grass as fg
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
