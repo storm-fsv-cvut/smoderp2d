@@ -15,7 +15,7 @@ from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput, \
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 
 from grass.pygrass.modules import Module
-from grass.pygrass.vector import VectorTopo
+from grass.pygrass.vector import VectorTopo, Vector
 from grass.pygrass.raster import RasterRow, raster2numpy
 from grass.pygrass.gis import Region
 from grass.exceptions import CalledModuleError, OpenError
@@ -383,14 +383,27 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         return StreamPreparation(args, writter=self.storage).prepare()
 
-    @staticmethod
-    def _check_input_data(soil):
+    def _check_input_data(self):
         """Check input data.
 
-        :param str soil: soil vector (check for overlaping polygons)
         """
+        # check if input data exists
+        for map_name in ('soil',
+                         'vegetation'):
+            try:
+                with Vector(self._input_params[map_name]) as fd:
+                    # check if type column exists
+                    column_name = self._input_params['{}_type'.format(map_name)]
+                    if column_name not in fd.table.columns.names():
+                        raise DataPreparationInvalidInput(
+                            'Column <{}> does not exist'.format(column_name)
+                        )
+            except OpenError as e:
+                raise DataPreparationInvalidInput(e)
+
+        # soil vector (check for overlaping polygons)
         try:
-            with VectorTopo(soil, mode='r') as fd:
+            with VectorTopo(self._input_params['soil']) as fd:
                 for area in fd.viter('areas'):
                     cats = list(area.cats().get_list())
                     if len(cats) > 1:

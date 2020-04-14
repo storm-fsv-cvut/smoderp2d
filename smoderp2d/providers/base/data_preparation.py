@@ -40,9 +40,7 @@ class PrepareDataBase(object):
         Logger.info("DATA PREPARATION")
 
         # check input data (overlaps)
-        self._check_input_data(
-            self._input_params['soil']
-        )
+        self._check_input_data()
 
         # set output data directory
         self._set_output_data()
@@ -579,10 +577,7 @@ class PrepareDataBase(object):
     def _streamPreparation(args):
         raise NotImplemented("Not implemented for base provider")
 
-    @staticmethod
-    def _check_input_data(soil):
+    def _check_input_data(self):
         """Check input data.
-
-        :param str soil: soil vector (check for overlaping polygons)
         """
         raise NotImplemented("Not implemented for base provider")
