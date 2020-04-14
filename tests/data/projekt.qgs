@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis projectname="" version="3.4.13-Madeira">
+<qgis projectname="" version="3.10.3-A Coruña">
   <homePath path=""/>
   <title></title>
   <autotransaction active="0"/>
@@ -7,36 +7,35 @@
   <trust active="0"/>
   <projectCrs>
     <spatialrefsys>
-      <proj4>+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=542.5,89.2,456.9,5.517,2.275,5.516,6.96 +pm=greenwich +units=m +no_defs</proj4>
+      <wkt>PROJCRS["S-JTSK / Krovak East North",BASEGEOGCRS["S-JTSK",DATUM["System of the Unified Trigonometrical Cadastral Network",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4156]],CONVERSION["Krovak East North (Greenwich)",METHOD["Krovak (North Orientated)",ID["EPSG",1041]],PARAMETER["Latitude of projection centre",49.5,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of origin",24.8333333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8833]],PARAMETER["Co-latitude of cone axis",30.2881397527778,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",1036]],PARAMETER["Latitude of pseudo standard parallel",78.5,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8818]],PARAMETER["Scale factor on pseudo standard parallel",0.9999,SCALEUNIT["unity",1],ID["EPSG",8819]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Czechoslovakia"],BBOX[47.73,12.09,51.06,22.56]],ID["EPSG",5514]]</wkt>
+      <proj4>+proj=krovak +lat_0=49.5 +lon_0=24.8333333333333 +alpha=30.2881397527778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs</proj4>
       <srsid>26812</srsid>
       <srid>5514</srid>
       <authid>EPSG:5514</authid>
-      <description>S-JTSK (Greenwich) / Krovak East North</description>
+      <description>S-JTSK / Krovak East North</description>
       <projectionacronym>krovak</projectionacronym>
-      <ellipsoidacronym>bessel</ellipsoidacronym>
+      <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
       <geographicflag>false</geographicflag>
     </spatialrefsys>
   </projectCrs>
   <layer-tree-group>
     <customproperties/>
-    <layer-tree-layer checked="Qt::Checked" providerKey="ogr" source="./stream.shp" name="stream" id="tok20181017142312501" expanded="1">
+    <layer-tree-layer name="stream_shape" providerKey="ogr" expanded="1" id="tab_stream_tvar20181017141918132" source="./stream_shape.dbf" checked="Qt::Checked">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer checked="Qt::Checked" providerKey="ogr" source="./soil_LU_property.dbf" name="soil_LU_property" id="tabulkytab20181017142027812" expanded="1">
-      <customproperties>
-        <property key="showFeatureCount" value="0"/>
-      </customproperties>
-    </layer-tree-layer>
-    <layer-tree-layer checked="Qt::Checked" providerKey="ogr" source="./stream_shape.dbf" name="stream_shape" id="tab_stream_tvar20181017141918132" expanded="1">
+    <layer-tree-layer name="soil_veg_tab_mean" providerKey="ogr" expanded="1" id="soil_veg_tab_mean_c8657a96_2d19_43b4_aadb_34730d28b320" source="./soil_veg_tab_mean.dbf|layername=soil_veg_tab_mean" checked="Qt::Checked">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer checked="Qt::Checked" providerKey="ogr" source="./points.shp" name="points" id="points220181017141320216" expanded="1">
+    <layer-tree-layer name="soils" providerKey="ogr" expanded="1" id="puda20181017141415385" source="./soils.shp" checked="Qt::Checked">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer checked="Qt::Checked" providerKey="ogr" source="./soil_LU.shp" name="soil_LU" id="puda20181017141415385" expanded="1">
+    <layer-tree-layer name="stream" providerKey="ogr" expanded="1" id="tok20181017142312501" source="./stream.shp" checked="Qt::Checked">
       <customproperties/>
     </layer-tree-layer>
-    <layer-tree-layer checked="Qt::Checked" providerKey="gdal" source="./dem10m/w001001x.adf" name="dem10m" id="w001001x20181017141632413" expanded="1">
+    <layer-tree-layer name="points" providerKey="ogr" expanded="1" id="points220181017141320216" source="./points.shp" checked="Qt::Checked">
+      <customproperties/>
+    </layer-tree-layer>
+    <layer-tree-layer name="dem10m" providerKey="gdal" expanded="1" id="w001001x20181017141632413" source="./dem10m/w001001x.adf" checked="Qt::Checked">
       <customproperties/>
     </layer-tree-layer>
     <custom-order enabled="0">
@@ -46,11 +45,11 @@
       <item>tok20181017142312501</item>
     </custom-order>
   </layer-tree-group>
-  <snapping-settings enabled="0" mode="1" tolerance="0" intersection-snapping="0" unit="2" type="1">
+  <snapping-settings enabled="0" mode="1" unit="2" tolerance="0" intersection-snapping="0" type="1">
     <individual-layer-settings>
-      <layer-setting units="2" enabled="0" tolerance="0" type="2" id="puda20181017141415385"/>
-      <layer-setting units="1" enabled="0" tolerance="12" type="1" id="tok20181017142312501"/>
-      <layer-setting units="2" enabled="0" tolerance="0" type="2" id="points220181017141320216"/>
+      <layer-setting enabled="0" tolerance="0" units="2" id="puda20181017141415385" type="2"/>
+      <layer-setting enabled="0" tolerance="0" units="2" id="points220181017141320216" type="2"/>
+      <layer-setting enabled="0" tolerance="12" units="1" id="tok20181017142312501" type="1"/>
     </individual-layer-settings>
   </snapping-settings>
   <relations/>
@@ -65,60 +64,62 @@
     <rotation>0</rotation>
     <destinationsrs>
       <spatialrefsys>
-        <proj4>+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=542.5,89.2,456.9,5.517,2.275,5.516,6.96 +pm=greenwich +units=m +no_defs</proj4>
+        <wkt>PROJCRS["S-JTSK / Krovak East North",BASEGEOGCRS["S-JTSK",DATUM["System of the Unified Trigonometrical Cadastral Network",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4156]],CONVERSION["Krovak East North (Greenwich)",METHOD["Krovak (North Orientated)",ID["EPSG",1041]],PARAMETER["Latitude of projection centre",49.5,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of origin",24.8333333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8833]],PARAMETER["Co-latitude of cone axis",30.2881397527778,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",1036]],PARAMETER["Latitude of pseudo standard parallel",78.5,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8818]],PARAMETER["Scale factor on pseudo standard parallel",0.9999,SCALEUNIT["unity",1],ID["EPSG",8819]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Czechoslovakia"],BBOX[47.73,12.09,51.06,22.56]],ID["EPSG",5514]]</wkt>
+        <proj4>+proj=krovak +lat_0=49.5 +lon_0=24.8333333333333 +alpha=30.2881397527778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs</proj4>
         <srsid>26812</srsid>
         <srid>5514</srid>
         <authid>EPSG:5514</authid>
-        <description>S-JTSK (Greenwich) / Krovak East North</description>
+        <description>S-JTSK / Krovak East North</description>
         <projectionacronym>krovak</projectionacronym>
-        <ellipsoidacronym>bessel</ellipsoidacronym>
+        <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
         <geographicflag>false</geographicflag>
       </spatialrefsys>
     </destinationsrs>
     <rendermaptile>0</rendermaptile>
+    <expressionContextScope/>
   </mapcanvas>
   <projectModels/>
   <legend updateDrawingOrder="true">
-    <legendlayer checked="Qt::Checked" drawingOrder="-1" name="stream" showFeatureCount="0" open="true">
+    <legendlayer drawingOrder="-1" name="stream_shape" showFeatureCount="0" open="true" checked="Qt::Checked">
       <filegroup hidden="false" open="true">
-        <legendlayerfile isInOverview="0" visible="1" layerid="tok20181017142312501"/>
+        <legendlayerfile layerid="tab_stream_tvar20181017141918132" isInOverview="0" visible="1"/>
       </filegroup>
     </legendlayer>
-    <legendlayer checked="Qt::Checked" drawingOrder="-1" name="soil_LU_property" showFeatureCount="0" open="true">
+    <legendlayer drawingOrder="-1" name="soil_veg_tab_mean" showFeatureCount="0" open="true" checked="Qt::Checked">
       <filegroup hidden="false" open="true">
-        <legendlayerfile isInOverview="0" visible="1" layerid="tabulkytab20181017142027812"/>
+        <legendlayerfile layerid="soil_veg_tab_mean_c8657a96_2d19_43b4_aadb_34730d28b320" isInOverview="0" visible="1"/>
       </filegroup>
     </legendlayer>
-    <legendlayer checked="Qt::Checked" drawingOrder="-1" name="stream_shape" showFeatureCount="0" open="true">
+    <legendlayer drawingOrder="-1" name="soils" showFeatureCount="0" open="true" checked="Qt::Checked">
       <filegroup hidden="false" open="true">
-        <legendlayerfile isInOverview="0" visible="1" layerid="tab_stream_tvar20181017141918132"/>
+        <legendlayerfile layerid="puda20181017141415385" isInOverview="0" visible="1"/>
       </filegroup>
     </legendlayer>
-    <legendlayer checked="Qt::Checked" drawingOrder="-1" name="points" showFeatureCount="0" open="true">
+    <legendlayer drawingOrder="-1" name="stream" showFeatureCount="0" open="true" checked="Qt::Checked">
       <filegroup hidden="false" open="true">
-        <legendlayerfile isInOverview="0" visible="1" layerid="points220181017141320216"/>
+        <legendlayerfile layerid="tok20181017142312501" isInOverview="0" visible="1"/>
       </filegroup>
     </legendlayer>
-    <legendlayer checked="Qt::Checked" drawingOrder="-1" name="soil_LU" showFeatureCount="0" open="true">
+    <legendlayer drawingOrder="-1" name="points" showFeatureCount="0" open="true" checked="Qt::Checked">
       <filegroup hidden="false" open="true">
-        <legendlayerfile isInOverview="0" visible="1" layerid="puda20181017141415385"/>
+        <legendlayerfile layerid="points220181017141320216" isInOverview="0" visible="1"/>
       </filegroup>
     </legendlayer>
-    <legendlayer checked="Qt::Checked" drawingOrder="-1" name="dem10m" showFeatureCount="0" open="true">
+    <legendlayer drawingOrder="-1" name="dem10m" showFeatureCount="0" open="true" checked="Qt::Checked">
       <filegroup hidden="false" open="true">
-        <legendlayerfile isInOverview="0" visible="1" layerid="w001001x20181017141632413"/>
+        <legendlayerfile layerid="w001001x20181017141632413" isInOverview="0" visible="1"/>
       </filegroup>
     </legendlayer>
   </legend>
   <mapViewDocks/>
   <mapViewDocks3D/>
   <projectlayers>
-    <maplayer refreshOnNotifyEnabled="0" simplifyAlgorithm="0" autoRefreshTime="0" simplifyDrawingTol="1" simplifyLocal="1" simplifyMaxScale="1" maxScale="0" hasScaleBasedVisibilityFlag="0" geometry="Point" labelsEnabled="0" simplifyDrawingHints="0" refreshOnNotifyMessage="" autoRefreshEnabled="0" type="vector" minScale="1e+08" styleCategories="AllStyleCategories" readOnly="0">
+    <maplayer simplifyDrawingHints="0" styleCategories="AllStyleCategories" labelsEnabled="0" simplifyAlgorithm="0" type="vector" autoRefreshTime="0" simplifyLocal="1" maxScale="0" wkbType="Point" autoRefreshEnabled="0" simplifyDrawingTol="1" hasScaleBasedVisibilityFlag="0" minScale="1e+08" refreshOnNotifyMessage="" refreshOnNotifyEnabled="0" readOnly="0" simplifyMaxScale="1" geometry="Point">
       <extent>
         <xmin>-713255.79088325519114733</xmin>
-        <ymin>-1061346.12076013162732124</ymin>
-        <xmax>-712396.69260952074546367</xmax>
-        <ymax>-1060345.62877010554075241</ymax>
+        <ymin>-1060887.34029855276457965</ymin>
+        <xmax>-712649.89143613004125655</xmax>
+        <ymax>-1060411.77473573083989322</ymax>
       </extent>
       <id>points220181017141320216</id>
       <datasource>./points.shp</datasource>
@@ -128,13 +129,14 @@
       <layername>points</layername>
       <srs>
         <spatialrefsys>
-          <proj4>+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=542.5,89.2,456.9,5.517,2.275,5.516,6.96 +pm=greenwich +units=m +no_defs</proj4>
+          <wkt>PROJCRS["S-JTSK / Krovak East North",BASEGEOGCRS["S-JTSK",DATUM["System of the Unified Trigonometrical Cadastral Network",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4156]],CONVERSION["Krovak East North (Greenwich)",METHOD["Krovak (North Orientated)",ID["EPSG",1041]],PARAMETER["Latitude of projection centre",49.5,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of origin",24.8333333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8833]],PARAMETER["Co-latitude of cone axis",30.2881397527778,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",1036]],PARAMETER["Latitude of pseudo standard parallel",78.5,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8818]],PARAMETER["Scale factor on pseudo standard parallel",0.9999,SCALEUNIT["unity",1],ID["EPSG",8819]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Czechoslovakia"],BBOX[47.73,12.09,51.06,22.56]],ID["EPSG",5514]]</wkt>
+          <proj4>+proj=krovak +lat_0=49.5 +lon_0=24.8333333333333 +alpha=30.2881397527778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs</proj4>
           <srsid>26812</srsid>
           <srid>5514</srid>
           <authid>EPSG:5514</authid>
-          <description>S-JTSK (Greenwich) / Krovak East North</description>
+          <description>S-JTSK / Krovak East North</description>
           <projectionacronym>krovak</projectionacronym>
-          <ellipsoidacronym>bessel</ellipsoidacronym>
+          <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
           <geographicflag>false</geographicflag>
         </spatialrefsys>
       </srs>
@@ -159,6 +161,7 @@
         <encoding></encoding>
         <crs>
           <spatialrefsys>
+            <wkt></wkt>
             <proj4></proj4>
             <srsid>0</srsid>
             <srid>0</srid>
@@ -170,7 +173,7 @@
           </spatialrefsys>
         </crs>
         <extent>
-          <spatial miny="0" minz="0" maxx="0" crs="" maxy="0" maxz="0" dimensions="2" minx="0"/>
+          <spatial crs="" maxx="0" minx="0" minz="0" maxz="0" dimensions="2" miny="0" maxy="0"/>
           <temporal>
             <period>
               <start></start>
@@ -194,28 +197,28 @@
         <Removable>1</Removable>
         <Searchable>1</Searchable>
       </flags>
-      <renderer-v2 enableorderby="0" type="singleSymbol" forceraster="0" symbollevels="0">
+      <renderer-v2 enableorderby="0" forceraster="0" symbollevels="0" type="singleSymbol">
         <symbols>
-          <symbol force_rhr="0" alpha="1" name="0" type="marker" clip_to_extent="1">
-            <layer pass="0" enabled="1" class="SimpleMarker" locked="0">
-              <prop k="angle" v="0"/>
-              <prop k="color" v="78,210,210,255"/>
-              <prop k="horizontal_anchor_point" v="1"/>
-              <prop k="joinstyle" v="bevel"/>
-              <prop k="name" v="circle"/>
-              <prop k="offset" v="0,0"/>
-              <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
-              <prop k="offset_unit" v="MM"/>
-              <prop k="outline_color" v="0,0,0,255"/>
-              <prop k="outline_style" v="solid"/>
-              <prop k="outline_width" v="0"/>
-              <prop k="outline_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
-              <prop k="outline_width_unit" v="MM"/>
-              <prop k="scale_method" v="diameter"/>
-              <prop k="size" v="2"/>
-              <prop k="size_map_unit_scale" v="3x:0,0,0,0,0,0"/>
-              <prop k="size_unit" v="MM"/>
-              <prop k="vertical_anchor_point" v="1"/>
+          <symbol name="0" force_rhr="0" clip_to_extent="1" type="marker" alpha="1">
+            <layer enabled="1" locked="0" class="SimpleMarker" pass="0">
+              <prop v="0" k="angle"/>
+              <prop v="78,210,210,255" k="color"/>
+              <prop v="1" k="horizontal_anchor_point"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="circle" k="name"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="0,0,0,255" k="outline_color"/>
+              <prop v="solid" k="outline_style"/>
+              <prop v="0" k="outline_width"/>
+              <prop v="3x:0,0,0,0,0,0" k="outline_width_map_unit_scale"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="diameter" k="scale_method"/>
+              <prop v="2" k="size"/>
+              <prop v="3x:0,0,0,0,0,0" k="size_map_unit_scale"/>
+              <prop v="MM" k="size_unit"/>
+              <prop v="1" k="vertical_anchor_point"/>
               <data_defined_properties>
                 <Option type="Map">
                   <Option name="name" value="" type="QString"/>
@@ -237,12 +240,13 @@
       <blendMode>0</blendMode>
       <featureBlendMode>0</featureBlendMode>
       <layerOpacity>1</layerOpacity>
-      <SingleCategoryDiagramRenderer attributeLegend="1" diagramType="Histogram">
-        <DiagramCategory lineSizeType="MM" diagramOrientation="Up" minScaleDenominator="0" maxScaleDenominator="1e+08" height="15" sizeScale="3x:0,0,0,0,0,0" barWidth="5" minimumSize="0" sizeType="MM" enabled="0" penWidth="0" lineSizeScale="3x:0,0,0,0,0,0" labelPlacementMethod="XHeight" rotationOffset="270" backgroundColor="#ffffff" width="15" opacity="1" backgroundAlpha="255" penAlpha="255" penColor="#000000" scaleDependency="Area" scaleBasedVisibility="0">
+      <SingleCategoryDiagramRenderer diagramType="Histogram" attributeLegend="1">
+        <DiagramCategory sizeScale="3x:0,0,0,0,0,0" scaleDependency="Area" height="15" penColor="#000000" penAlpha="255" opacity="1" diagramOrientation="Up" barWidth="5" maxScaleDenominator="1e+08" backgroundAlpha="255" width="15" penWidth="0" scaleBasedVisibility="0" sizeType="MM" enabled="0" labelPlacementMethod="XHeight" backgroundColor="#ffffff" minScaleDenominator="0" rotationOffset="270" lineSizeScale="3x:0,0,0,0,0,0" minimumSize="0" lineSizeType="MM">
           <fontProperties description="Cantarell,11,-1,5,50,0,0,0,0,0" style=""/>
+          <attribute field="" color="#000000" label=""/>
         </DiagramCategory>
       </SingleCategoryDiagramRenderer>
-      <DiagramLayerSettings priority="0" showAll="1" dist="0" linePlacementFlags="18" zIndex="0" obstacle="0" placement="0">
+      <DiagramLayerSettings zIndex="0" priority="0" obstacle="0" showAll="1" placement="0" dist="0" linePlacementFlags="18">
         <properties>
           <Option type="Map">
             <Option name="name" value="" type="QString"/>
@@ -251,7 +255,7 @@
           </Option>
         </properties>
       </DiagramLayerSettings>
-      <geometryOptions removeDuplicateNodes="0" geometryPrecision="0">
+      <geometryOptions geometryPrecision="0" removeDuplicateNodes="0">
         <activeChecks/>
         <checkConfiguration/>
       </geometryOptions>
@@ -268,26 +272,26 @@
         </field>
       </fieldConfiguration>
       <aliases>
-        <alias field="Name" name="" index="0"/>
+        <alias name="" field="Name" index="0"/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <defaults>
-        <default field="Name" applyOnUpdate="0" expression=""/>
+        <default field="Name" expression="" applyOnUpdate="0"/>
       </defaults>
       <constraints>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="Name"/>
+        <constraint notnull_strength="0" unique_strength="0" field="Name" constraints="0" exp_strength="0"/>
       </constraints>
       <constraintExpressions>
-        <constraint desc="" field="Name" exp=""/>
+        <constraint field="Name" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
       <attributeactions>
         <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
       </attributeactions>
-      <attributetableconfig sortOrder="0" sortExpression="" actionWidgetStyle="dropDown">
+      <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="">
         <columns>
-          <column hidden="0" name="Name" type="field" width="-1"/>
+          <column name="Name" hidden="0" type="field" width="-1"/>
           <column hidden="1" type="actions" width="-1"/>
         </columns>
       </attributetableconfig>
@@ -295,6 +299,7 @@
         <rowstyles/>
         <fieldstyles/>
       </conditionalstyles>
+      <storedexpressions/>
       <editform tolerant="1">.</editform>
       <editforminit/>
       <editforminitcodesource>0</editforminitcodesource>
@@ -319,7 +324,7 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field editable="1" name="Name"/>
+        <field name="Name" editable="1"/>
       </editable>
       <labelOnTop>
         <field name="Name" labelOnTop="0"/>
@@ -328,28 +333,29 @@ def my_form_open(dialog, layer, feature):
       <previewExpression>Name</previewExpression>
       <mapTip></mapTip>
     </maplayer>
-    <maplayer refreshOnNotifyEnabled="0" simplifyAlgorithm="0" autoRefreshTime="0" simplifyDrawingTol="1" simplifyLocal="1" simplifyMaxScale="1" maxScale="0" hasScaleBasedVisibilityFlag="0" geometry="Polygon" labelsEnabled="0" simplifyDrawingHints="1" refreshOnNotifyMessage="" autoRefreshEnabled="0" type="vector" minScale="1e+08" styleCategories="AllStyleCategories" readOnly="0">
+    <maplayer simplifyDrawingHints="1" styleCategories="AllStyleCategories" labelsEnabled="0" simplifyAlgorithm="0" type="vector" autoRefreshTime="0" simplifyLocal="1" maxScale="0" wkbType="MultiPolygon" autoRefreshEnabled="0" simplifyDrawingTol="1" hasScaleBasedVisibilityFlag="0" minScale="1e+08" refreshOnNotifyMessage="" refreshOnNotifyEnabled="0" readOnly="0" simplifyMaxScale="1" geometry="Polygon">
       <extent>
-        <xmin>-713676.79931640625</xmin>
-        <ymin>-1061372.36962890625</ymin>
-        <xmax>-712361.2874755859375</xmax>
-        <ymax>-1060244.518310546875</ymax>
+        <xmin>-713768.17733217030763626</xmin>
+        <ymin>-1061117.74234850332140923</ymin>
+        <xmax>-712397.1516999863088131</xmax>
+        <ymax>-1060156.98019999265670776</ymax>
       </extent>
       <id>puda20181017141415385</id>
-      <datasource>./soil_LU.shp</datasource>
+      <datasource>./soils.shp</datasource>
       <keywordList>
         <value></value>
       </keywordList>
-      <layername>soil_LU</layername>
+      <layername>soils</layername>
       <srs>
         <spatialrefsys>
-          <proj4>+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813975277778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs</proj4>
-          <srsid>100027</srsid>
-          <srid>0</srid>
-          <authid>USER:100027</authid>
-          <description> * Generated CRS (+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813975277778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs)</description>
+          <wkt>PROJCRS["S-JTSK / Krovak East North",BASEGEOGCRS["S-JTSK",DATUM["System of the Unified Trigonometrical Cadastral Network",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4156]],CONVERSION["Krovak East North (Greenwich)",METHOD["Krovak (North Orientated)",ID["EPSG",1041]],PARAMETER["Latitude of projection centre",49.5,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of origin",24.8333333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8833]],PARAMETER["Co-latitude of cone axis",30.2881397527778,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",1036]],PARAMETER["Latitude of pseudo standard parallel",78.5,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8818]],PARAMETER["Scale factor on pseudo standard parallel",0.9999,SCALEUNIT["unity",1],ID["EPSG",8819]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Czechoslovakia"],BBOX[47.73,12.09,51.06,22.56]],ID["EPSG",5514]]</wkt>
+          <proj4>+proj=krovak +lat_0=49.5 +lon_0=24.8333333333333 +alpha=30.2881397527778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs</proj4>
+          <srsid>26812</srsid>
+          <srid>5514</srid>
+          <authid>EPSG:5514</authid>
+          <description>S-JTSK / Krovak East North</description>
           <projectionacronym>krovak</projectionacronym>
-          <ellipsoidacronym>bessel</ellipsoidacronym>
+          <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
           <geographicflag>false</geographicflag>
         </spatialrefsys>
       </srs>
@@ -357,7 +363,7 @@ def my_form_open(dialog, layer, feature):
         <identifier></identifier>
         <parentidentifier></parentidentifier>
         <language></language>
-        <type></type>
+        <type>dataset</type>
         <title></title>
         <abstract></abstract>
         <contact>
@@ -374,6 +380,7 @@ def my_form_open(dialog, layer, feature):
         <encoding></encoding>
         <crs>
           <spatialrefsys>
+            <wkt></wkt>
             <proj4></proj4>
             <srsid>0</srsid>
             <srid>0</srid>
@@ -381,11 +388,11 @@ def my_form_open(dialog, layer, feature):
             <description></description>
             <projectionacronym></projectionacronym>
             <ellipsoidacronym></ellipsoidacronym>
-            <geographicflag>false</geographicflag>
+            <geographicflag>true</geographicflag>
           </spatialrefsys>
         </crs>
         <extent>
-          <spatial miny="0" minz="0" maxx="0" crs="" maxy="0" maxz="0" dimensions="2" minx="0"/>
+          <spatial crs="" maxx="0" minx="0" minz="0" maxz="0" dimensions="2" miny="0" maxy="0"/>
           <temporal>
             <period>
               <start></start>
@@ -409,26 +416,26 @@ def my_form_open(dialog, layer, feature):
         <Removable>1</Removable>
         <Searchable>1</Searchable>
       </flags>
-      <renderer-v2 enableorderby="0" type="categorizedSymbol" forceraster="0" symbollevels="0" attr="Novak">
+      <renderer-v2 enableorderby="0" forceraster="0" symbollevels="0" attr="SID" type="categorizedSymbol">
         <categories>
-          <category render="true" label="HH" value="HH" symbol="0"/>
-          <category render="true" label="JH" value="JH" symbol="1"/>
-          <category render="true" label="" value="" symbol="2"/>
+          <category render="true" value="HH" symbol="0" label="HH"/>
+          <category render="true" value="HP" symbol="1" label="HP"/>
+          <category render="true" value="" symbol="2" label=""/>
         </categories>
         <symbols>
-          <symbol force_rhr="0" alpha="1" name="0" type="fill" clip_to_extent="1">
-            <layer pass="0" enabled="1" class="SimpleFill" locked="0">
-              <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
-              <prop k="color" v="69,100,225,255"/>
-              <prop k="joinstyle" v="bevel"/>
-              <prop k="offset" v="0,0"/>
-              <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
-              <prop k="offset_unit" v="MM"/>
-              <prop k="outline_color" v="0,0,0,255"/>
-              <prop k="outline_style" v="solid"/>
-              <prop k="outline_width" v="0.26"/>
-              <prop k="outline_width_unit" v="MM"/>
-              <prop k="style" v="solid"/>
+          <symbol name="0" force_rhr="0" clip_to_extent="1" type="fill" alpha="1">
+            <layer enabled="1" locked="0" class="SimpleFill" pass="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="223,109,201,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="0,0,0,255" k="outline_color"/>
+              <prop v="solid" k="outline_style"/>
+              <prop v="0.26" k="outline_width"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="solid" k="style"/>
               <data_defined_properties>
                 <Option type="Map">
                   <Option name="name" value="" type="QString"/>
@@ -438,19 +445,19 @@ def my_form_open(dialog, layer, feature):
               </data_defined_properties>
             </layer>
           </symbol>
-          <symbol force_rhr="0" alpha="1" name="1" type="fill" clip_to_extent="1">
-            <layer pass="0" enabled="1" class="SimpleFill" locked="0">
-              <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
-              <prop k="color" v="237,96,126,255"/>
-              <prop k="joinstyle" v="bevel"/>
-              <prop k="offset" v="0,0"/>
-              <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
-              <prop k="offset_unit" v="MM"/>
-              <prop k="outline_color" v="0,0,0,255"/>
-              <prop k="outline_style" v="solid"/>
-              <prop k="outline_width" v="0.26"/>
-              <prop k="outline_width_unit" v="MM"/>
-              <prop k="style" v="solid"/>
+          <symbol name="1" force_rhr="0" clip_to_extent="1" type="fill" alpha="1">
+            <layer enabled="1" locked="0" class="SimpleFill" pass="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="196,217,111,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="0,0,0,255" k="outline_color"/>
+              <prop v="solid" k="outline_style"/>
+              <prop v="0.26" k="outline_width"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="solid" k="style"/>
               <data_defined_properties>
                 <Option type="Map">
                   <Option name="name" value="" type="QString"/>
@@ -460,19 +467,19 @@ def my_form_open(dialog, layer, feature):
               </data_defined_properties>
             </layer>
           </symbol>
-          <symbol force_rhr="0" alpha="1" name="2" type="fill" clip_to_extent="1">
-            <layer pass="0" enabled="1" class="SimpleFill" locked="0">
-              <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
-              <prop k="color" v="120,223,91,255"/>
-              <prop k="joinstyle" v="bevel"/>
-              <prop k="offset" v="0,0"/>
-              <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
-              <prop k="offset_unit" v="MM"/>
-              <prop k="outline_color" v="0,0,0,255"/>
-              <prop k="outline_style" v="solid"/>
-              <prop k="outline_width" v="0.26"/>
-              <prop k="outline_width_unit" v="MM"/>
-              <prop k="style" v="solid"/>
+          <symbol name="2" force_rhr="0" clip_to_extent="1" type="fill" alpha="1">
+            <layer enabled="1" locked="0" class="SimpleFill" pass="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="113,192,211,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="0,0,0,255" k="outline_color"/>
+              <prop v="solid" k="outline_style"/>
+              <prop v="0.26" k="outline_width"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="solid" k="style"/>
               <data_defined_properties>
                 <Option type="Map">
                   <Option name="name" value="" type="QString"/>
@@ -484,19 +491,19 @@ def my_form_open(dialog, layer, feature):
           </symbol>
         </symbols>
         <source-symbol>
-          <symbol force_rhr="0" alpha="1" name="0" type="fill" clip_to_extent="1">
-            <layer pass="0" enabled="1" class="SimpleFill" locked="0">
-              <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
-              <prop k="color" v="39,129,225,255"/>
-              <prop k="joinstyle" v="bevel"/>
-              <prop k="offset" v="0,0"/>
-              <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
-              <prop k="offset_unit" v="MM"/>
-              <prop k="outline_color" v="0,0,0,255"/>
-              <prop k="outline_style" v="solid"/>
-              <prop k="outline_width" v="0.26"/>
-              <prop k="outline_width_unit" v="MM"/>
-              <prop k="style" v="solid"/>
+          <symbol name="0" force_rhr="0" clip_to_extent="1" type="fill" alpha="1">
+            <layer enabled="1" locked="0" class="SimpleFill" pass="0">
+              <prop v="3x:0,0,0,0,0,0" k="border_width_map_unit_scale"/>
+              <prop v="39,129,225,255" k="color"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="0,0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="0,0,0,255" k="outline_color"/>
+              <prop v="solid" k="outline_style"/>
+              <prop v="0.26" k="outline_width"/>
+              <prop v="MM" k="outline_width_unit"/>
+              <prop v="solid" k="style"/>
               <data_defined_properties>
                 <Option type="Map">
                   <Option name="name" value="" type="QString"/>
@@ -511,9 +518,7 @@ def my_form_open(dialog, layer, feature):
         <sizescale/>
       </renderer-v2>
       <customproperties>
-        <property key="dualview/previewExpressions">
-          <value>area</value>
-        </property>
+        <property key="dualview/previewExpressions" value="area"/>
         <property key="embeddedWidgets/count" value="0"/>
         <property key="variableNames"/>
         <property key="variableValues"/>
@@ -521,13 +526,13 @@ def my_form_open(dialog, layer, feature):
       <blendMode>0</blendMode>
       <featureBlendMode>0</featureBlendMode>
       <layerOpacity>0.5</layerOpacity>
-      <SingleCategoryDiagramRenderer attributeLegend="1" diagramType="Histogram">
-        <DiagramCategory lineSizeType="MM" diagramOrientation="Up" minScaleDenominator="-2.14748e+09" maxScaleDenominator="1e+08" height="15" sizeScale="3x:0,0,0,0,0,0" barWidth="5" minimumSize="0" sizeType="MM" enabled="0" penWidth="0" lineSizeScale="3x:0,0,0,0,0,0" labelPlacementMethod="XHeight" rotationOffset="270" backgroundColor="#ffffff" width="15" opacity="1" backgroundAlpha="255" penAlpha="255" penColor="#000000" scaleDependency="Area" scaleBasedVisibility="0">
+      <SingleCategoryDiagramRenderer diagramType="Histogram" attributeLegend="1">
+        <DiagramCategory sizeScale="3x:0,0,0,0,0,0" scaleDependency="Area" height="15" penColor="#000000" penAlpha="255" opacity="1" diagramOrientation="Up" barWidth="5" maxScaleDenominator="1e+08" backgroundAlpha="255" width="15" penWidth="0" scaleBasedVisibility="0" sizeType="MM" enabled="0" labelPlacementMethod="XHeight" backgroundColor="#ffffff" minScaleDenominator="0" rotationOffset="270" lineSizeScale="3x:0,0,0,0,0,0" minimumSize="0" lineSizeType="MM">
           <fontProperties description="Ubuntu,11,-1,5,50,0,0,0,0,0" style=""/>
-          <attribute field="" label="" color="#000000"/>
+          <attribute field="" color="#000000" label=""/>
         </DiagramCategory>
       </SingleCategoryDiagramRenderer>
-      <DiagramLayerSettings priority="0" showAll="1" dist="0" linePlacementFlags="2" zIndex="0" obstacle="0" placement="0">
+      <DiagramLayerSettings zIndex="0" priority="0" obstacle="0" showAll="1" placement="0" dist="0" linePlacementFlags="2">
         <properties>
           <Option type="Map">
             <Option name="name" value="" type="QString"/>
@@ -536,39 +541,25 @@ def my_form_open(dialog, layer, feature):
           </Option>
         </properties>
       </DiagramLayerSettings>
-      <geometryOptions removeDuplicateNodes="0" geometryPrecision="0">
+      <geometryOptions geometryPrecision="0" removeDuplicateNodes="0">
         <activeChecks/>
-        <checkConfiguration/>
+        <checkConfiguration type="Map">
+          <Option name="QgsGeometryGapCheck" type="Map">
+            <Option name="allowedGapsBuffer" value="0" type="double"/>
+            <Option name="allowedGapsEnabled" value="false" type="bool"/>
+            <Option name="allowedGapsLayer" value="" type="QString"/>
+          </Option>
+        </checkConfiguration>
       </geometryOptions>
       <fieldConfiguration>
-        <field name="area">
-          <editWidget type="TextEdit">
-            <config>
-              <Option type="Map">
-                <Option name="IsMultiline" value="0" type="QString"/>
-                <Option name="UseHtml" value="0" type="QString"/>
-              </Option>
-            </config>
-          </editWidget>
-        </field>
-        <field name="one">
-          <editWidget type="TextEdit">
-            <config>
-              <Option type="Map">
-                <Option name="IsMultiline" value="0" type="QString"/>
-                <Option name="UseHtml" value="0" type="QString"/>
-              </Option>
-            </config>
-          </editWidget>
-        </field>
-        <field name="soil_id">
+        <field name="SID">
           <editWidget type="TextEdit">
             <config>
               <Option/>
             </config>
           </editWidget>
         </field>
-        <field name="lu_id">
+        <field name="note">
           <editWidget type="TextEdit">
             <config>
               <Option/>
@@ -577,48 +568,39 @@ def my_form_open(dialog, layer, feature):
         </field>
       </fieldConfiguration>
       <aliases>
-        <alias field="area" name="" index="0"/>
-        <alias field="one" name="" index="1"/>
-        <alias field="soil_id" name="" index="2"/>
-        <alias field="lu_id" name="" index="3"/>
+        <alias name="" field="SID" index="0"/>
+        <alias name="" field="note" index="1"/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <defaults>
-        <default field="area" applyOnUpdate="0" expression=""/>
-        <default field="one" applyOnUpdate="0" expression=""/>
-        <default field="soil_id" applyOnUpdate="0" expression=""/>
-        <default field="lu_id" applyOnUpdate="0" expression=""/>
+        <default field="SID" expression="" applyOnUpdate="0"/>
+        <default field="note" expression="" applyOnUpdate="0"/>
       </defaults>
       <constraints>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="area"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="one"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="soil_id"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="lu_id"/>
+        <constraint notnull_strength="0" unique_strength="0" field="SID" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="note" constraints="0" exp_strength="0"/>
       </constraints>
       <constraintExpressions>
-        <constraint desc="" field="area" exp=""/>
-        <constraint desc="" field="one" exp=""/>
-        <constraint desc="" field="soil_id" exp=""/>
-        <constraint desc="" field="lu_id" exp=""/>
+        <constraint field="SID" exp="" desc=""/>
+        <constraint field="note" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
       <attributeactions>
         <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
       </attributeactions>
-      <attributetableconfig sortOrder="0" sortExpression="" actionWidgetStyle="dropDown">
+      <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="">
         <columns>
-          <column hidden="0" name="area" type="field" width="-1"/>
-          <column hidden="0" name="one" type="field" width="-1"/>
           <column hidden="1" type="actions" width="-1"/>
-          <column hidden="0" name="soil_id" type="field" width="-1"/>
-          <column hidden="0" name="lu_id" type="field" width="-1"/>
+          <column name="SID" hidden="0" type="field" width="-1"/>
+          <column name="note" hidden="0" type="field" width="-1"/>
         </columns>
       </attributetableconfig>
       <conditionalstyles>
         <rowstyles/>
         <fieldstyles/>
       </conditionalstyles>
+      <storedexpressions/>
       <editform tolerant="1">.</editform>
       <editforminit/>
       <editforminitcodesource>0</editforminitcodesource>
@@ -643,14 +625,18 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field editable="1" name="area"/>
-        <field editable="1" name="lu_id"/>
-        <field editable="1" name="one"/>
-        <field editable="1" name="soil_id"/>
+        <field name="SID" editable="1"/>
+        <field name="area" editable="1"/>
+        <field name="lu_id" editable="1"/>
+        <field name="note" editable="1"/>
+        <field name="one" editable="1"/>
+        <field name="soil_id" editable="1"/>
       </editable>
       <labelOnTop>
+        <field name="SID" labelOnTop="0"/>
         <field name="area" labelOnTop="0"/>
         <field name="lu_id" labelOnTop="0"/>
+        <field name="note" labelOnTop="0"/>
         <field name="one" labelOnTop="0"/>
         <field name="soil_id" labelOnTop="0"/>
       </labelOnTop>
@@ -658,7 +644,257 @@ def my_form_open(dialog, layer, feature):
       <previewExpression>area</previewExpression>
       <mapTip></mapTip>
     </maplayer>
-    <maplayer refreshOnNotifyEnabled="0" autoRefreshTime="0" maxScale="0" hasScaleBasedVisibilityFlag="0" geometry="No geometry" refreshOnNotifyMessage="" autoRefreshEnabled="0" type="vector" minScale="1e+08" styleCategories="AllStyleCategories" readOnly="0">
+    <maplayer refreshOnNotifyMessage="" refreshOnNotifyEnabled="0" autoRefreshTime="0" styleCategories="AllStyleCategories" geometry="No geometry" readOnly="0" minScale="1e+08" type="vector" hasScaleBasedVisibilityFlag="0" maxScale="0" autoRefreshEnabled="0" wkbType="NoGeometry">
+      <id>soil_veg_tab_mean_c8657a96_2d19_43b4_aadb_34730d28b320</id>
+      <datasource>./soil_veg_tab_mean.dbf|layername=soil_veg_tab_mean</datasource>
+      <keywordList>
+        <value></value>
+      </keywordList>
+      <layername>soil_veg_tab_mean</layername>
+      <srs>
+        <spatialrefsys>
+          <wkt></wkt>
+          <proj4></proj4>
+          <srsid>0</srsid>
+          <srid>0</srid>
+          <authid></authid>
+          <description></description>
+          <projectionacronym></projectionacronym>
+          <ellipsoidacronym></ellipsoidacronym>
+          <geographicflag>true</geographicflag>
+        </spatialrefsys>
+      </srs>
+      <resourceMetadata>
+        <identifier></identifier>
+        <parentidentifier></parentidentifier>
+        <language></language>
+        <type>dataset</type>
+        <title></title>
+        <abstract></abstract>
+        <links/>
+        <fees></fees>
+        <encoding></encoding>
+        <crs>
+          <spatialrefsys>
+            <wkt></wkt>
+            <proj4></proj4>
+            <srsid>0</srsid>
+            <srid>0</srid>
+            <authid></authid>
+            <description></description>
+            <projectionacronym></projectionacronym>
+            <ellipsoidacronym></ellipsoidacronym>
+            <geographicflag>true</geographicflag>
+          </spatialrefsys>
+        </crs>
+        <extent/>
+      </resourceMetadata>
+      <provider encoding="UTF-8">ogr</provider>
+      <vectorjoins/>
+      <layerDependencies/>
+      <dataDependencies/>
+      <legend type="default-vector"/>
+      <expressionfields/>
+      <map-layer-style-manager current="default">
+        <map-layer-style name="default"/>
+      </map-layer-style-manager>
+      <auxiliaryLayer/>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+      </flags>
+      <customproperties/>
+      <geometryOptions geometryPrecision="0" removeDuplicateNodes="0">
+        <activeChecks type="StringList">
+          <Option value="" type="QString"/>
+        </activeChecks>
+        <checkConfiguration/>
+      </geometryOptions>
+      <fieldConfiguration>
+        <field name="soilveg">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="k">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="s">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="n">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="pi">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="ppl">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="ret">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="b">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="x">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="y">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="tau">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="v">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+      </fieldConfiguration>
+      <aliases>
+        <alias name="" field="soilveg" index="0"/>
+        <alias name="" field="k" index="1"/>
+        <alias name="" field="s" index="2"/>
+        <alias name="" field="n" index="3"/>
+        <alias name="" field="pi" index="4"/>
+        <alias name="" field="ppl" index="5"/>
+        <alias name="" field="ret" index="6"/>
+        <alias name="" field="b" index="7"/>
+        <alias name="" field="x" index="8"/>
+        <alias name="" field="y" index="9"/>
+        <alias name="" field="tau" index="10"/>
+        <alias name="" field="v" index="11"/>
+      </aliases>
+      <excludeAttributesWMS/>
+      <excludeAttributesWFS/>
+      <defaults>
+        <default field="soilveg" expression="" applyOnUpdate="0"/>
+        <default field="k" expression="" applyOnUpdate="0"/>
+        <default field="s" expression="" applyOnUpdate="0"/>
+        <default field="n" expression="" applyOnUpdate="0"/>
+        <default field="pi" expression="" applyOnUpdate="0"/>
+        <default field="ppl" expression="" applyOnUpdate="0"/>
+        <default field="ret" expression="" applyOnUpdate="0"/>
+        <default field="b" expression="" applyOnUpdate="0"/>
+        <default field="x" expression="" applyOnUpdate="0"/>
+        <default field="y" expression="" applyOnUpdate="0"/>
+        <default field="tau" expression="" applyOnUpdate="0"/>
+        <default field="v" expression="" applyOnUpdate="0"/>
+      </defaults>
+      <constraints>
+        <constraint notnull_strength="0" unique_strength="0" field="soilveg" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="k" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="s" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="n" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="pi" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="ppl" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="ret" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="b" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="x" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="y" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="tau" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="v" constraints="0" exp_strength="0"/>
+      </constraints>
+      <constraintExpressions>
+        <constraint field="soilveg" exp="" desc=""/>
+        <constraint field="k" exp="" desc=""/>
+        <constraint field="s" exp="" desc=""/>
+        <constraint field="n" exp="" desc=""/>
+        <constraint field="pi" exp="" desc=""/>
+        <constraint field="ppl" exp="" desc=""/>
+        <constraint field="ret" exp="" desc=""/>
+        <constraint field="b" exp="" desc=""/>
+        <constraint field="x" exp="" desc=""/>
+        <constraint field="y" exp="" desc=""/>
+        <constraint field="tau" exp="" desc=""/>
+        <constraint field="v" exp="" desc=""/>
+      </constraintExpressions>
+      <expressionfields/>
+      <attributeactions>
+        <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
+      </attributeactions>
+      <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="">
+        <columns>
+          <column name="soilveg" hidden="0" type="field" width="-1"/>
+          <column name="k" hidden="0" type="field" width="-1"/>
+          <column name="s" hidden="0" type="field" width="-1"/>
+          <column name="n" hidden="0" type="field" width="-1"/>
+          <column name="pi" hidden="0" type="field" width="-1"/>
+          <column name="ppl" hidden="0" type="field" width="-1"/>
+          <column name="ret" hidden="0" type="field" width="-1"/>
+          <column name="b" hidden="0" type="field" width="-1"/>
+          <column name="x" hidden="0" type="field" width="-1"/>
+          <column name="y" hidden="0" type="field" width="-1"/>
+          <column name="tau" hidden="0" type="field" width="-1"/>
+          <column name="v" hidden="0" type="field" width="-1"/>
+          <column hidden="1" type="actions" width="-1"/>
+        </columns>
+      </attributetableconfig>
+      <conditionalstyles>
+        <rowstyles/>
+        <fieldstyles/>
+      </conditionalstyles>
+      <storedexpressions/>
+      <editform tolerant="1"></editform>
+      <editforminit/>
+      <editforminitcodesource>0</editforminitcodesource>
+      <editforminitfilepath></editforminitfilepath>
+      <editforminitcode><![CDATA[]]></editforminitcode>
+      <featformsuppress>0</featformsuppress>
+      <editorlayout>generatedlayout</editorlayout>
+      <editable/>
+      <labelOnTop/>
+      <widgets/>
+      <previewExpression>"soilveg"</previewExpression>
+      <mapTip></mapTip>
+    </maplayer>
+    <maplayer refreshOnNotifyMessage="" refreshOnNotifyEnabled="0" autoRefreshTime="0" styleCategories="AllStyleCategories" geometry="No geometry" readOnly="0" minScale="1e+08" type="vector" hasScaleBasedVisibilityFlag="0" maxScale="0" autoRefreshEnabled="0" wkbType="NoGeometry">
       <id>tab_stream_tvar20181017141918132</id>
       <datasource>./stream_shape.dbf</datasource>
       <keywordList>
@@ -667,13 +903,14 @@ def my_form_open(dialog, layer, feature):
       <layername>stream_shape</layername>
       <srs>
         <spatialrefsys>
+          <wkt>GEOGCRS["WGS 84",DATUM["World Geodetic System 1984",ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["unknown"],AREA["World"],BBOX[-90,-180,90,180]],ID["EPSG",4326]]</wkt>
           <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
           <srsid>3452</srsid>
           <srid>4326</srid>
           <authid>EPSG:4326</authid>
           <description>WGS 84</description>
           <projectionacronym>longlat</projectionacronym>
-          <ellipsoidacronym>WGS84</ellipsoidacronym>
+          <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
           <geographicflag>true</geographicflag>
         </spatialrefsys>
       </srs>
@@ -698,6 +935,7 @@ def my_form_open(dialog, layer, feature):
         <encoding></encoding>
         <crs>
           <spatialrefsys>
+            <wkt></wkt>
             <proj4></proj4>
             <srsid>0</srsid>
             <srid>0</srid>
@@ -709,7 +947,7 @@ def my_form_open(dialog, layer, feature):
           </spatialrefsys>
         </crs>
         <extent>
-          <spatial miny="0" minz="0" maxx="0" crs="" maxy="0" maxz="0" dimensions="2" minx="0"/>
+          <spatial crs="" maxx="0" minx="0" minz="0" maxz="0" dimensions="2" miny="0" maxy="0"/>
           <temporal>
             <period>
               <start></start>
@@ -734,14 +972,12 @@ def my_form_open(dialog, layer, feature):
         <Searchable>1</Searchable>
       </flags>
       <customproperties>
-        <property key="dualview/previewExpressions">
-          <value>COALESCE("CISLO", '&lt;NULL>')||', '||COALESCE("SMODERP", '&lt;NULL>')||', '||COALESCE("TVAR", '&lt;NULL>')||', '||COALESCE("B", '&lt;NULL>')||', '||COALESCE("M", '&lt;NULL>')||', '||COALESCE("DRSNOST", '&lt;NULL>')||', '||COALESCE("Q365", '&lt;NULL>')||', '||COALESCE("POZN", '&lt;NULL>')</value>
-        </property>
+        <property key="dualview/previewExpressions" value="COALESCE(&quot;CISLO&quot;, '&lt;NULL>')||', '||COALESCE(&quot;SMODERP&quot;, '&lt;NULL>')||', '||COALESCE(&quot;TVAR&quot;, '&lt;NULL>')||', '||COALESCE(&quot;B&quot;, '&lt;NULL>')||', '||COALESCE(&quot;M&quot;, '&lt;NULL>')||', '||COALESCE(&quot;DRSNOST&quot;, '&lt;NULL>')||', '||COALESCE(&quot;Q365&quot;, '&lt;NULL>')||', '||COALESCE(&quot;POZN&quot;, '&lt;NULL>')"/>
         <property key="embeddedWidgets/count" value="0"/>
         <property key="variableNames"/>
         <property key="variableValues"/>
       </customproperties>
-      <geometryOptions removeDuplicateNodes="0" geometryPrecision="0">
+      <geometryOptions geometryPrecision="0" removeDuplicateNodes="0">
         <activeChecks/>
         <checkConfiguration/>
       </geometryOptions>
@@ -804,68 +1040,69 @@ def my_form_open(dialog, layer, feature):
         </field>
       </fieldConfiguration>
       <aliases>
-        <alias field="number" name="" index="0"/>
-        <alias field="smoderp" name="" index="1"/>
-        <alias field="shapetype" name="" index="2"/>
-        <alias field="b" name="" index="3"/>
-        <alias field="m" name="" index="4"/>
-        <alias field="roughness" name="" index="5"/>
-        <alias field="q365" name="" index="6"/>
-        <alias field="note" name="" index="7"/>
+        <alias name="" field="number" index="0"/>
+        <alias name="" field="smoderp" index="1"/>
+        <alias name="" field="shapetype" index="2"/>
+        <alias name="" field="b" index="3"/>
+        <alias name="" field="m" index="4"/>
+        <alias name="" field="roughness" index="5"/>
+        <alias name="" field="q365" index="6"/>
+        <alias name="" field="note" index="7"/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <defaults>
-        <default field="number" applyOnUpdate="0" expression=""/>
-        <default field="smoderp" applyOnUpdate="0" expression=""/>
-        <default field="shapetype" applyOnUpdate="0" expression=""/>
-        <default field="b" applyOnUpdate="0" expression=""/>
-        <default field="m" applyOnUpdate="0" expression=""/>
-        <default field="roughness" applyOnUpdate="0" expression=""/>
-        <default field="q365" applyOnUpdate="0" expression=""/>
-        <default field="note" applyOnUpdate="0" expression=""/>
+        <default field="number" expression="" applyOnUpdate="0"/>
+        <default field="smoderp" expression="" applyOnUpdate="0"/>
+        <default field="shapetype" expression="" applyOnUpdate="0"/>
+        <default field="b" expression="" applyOnUpdate="0"/>
+        <default field="m" expression="" applyOnUpdate="0"/>
+        <default field="roughness" expression="" applyOnUpdate="0"/>
+        <default field="q365" expression="" applyOnUpdate="0"/>
+        <default field="note" expression="" applyOnUpdate="0"/>
       </defaults>
       <constraints>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="number"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="smoderp"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="shapetype"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="b"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="m"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="roughness"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="q365"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="note"/>
+        <constraint notnull_strength="0" unique_strength="0" field="number" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="smoderp" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="shapetype" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="b" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="m" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="roughness" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="q365" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="note" constraints="0" exp_strength="0"/>
       </constraints>
       <constraintExpressions>
-        <constraint desc="" field="number" exp=""/>
-        <constraint desc="" field="smoderp" exp=""/>
-        <constraint desc="" field="shapetype" exp=""/>
-        <constraint desc="" field="b" exp=""/>
-        <constraint desc="" field="m" exp=""/>
-        <constraint desc="" field="roughness" exp=""/>
-        <constraint desc="" field="q365" exp=""/>
-        <constraint desc="" field="note" exp=""/>
+        <constraint field="number" exp="" desc=""/>
+        <constraint field="smoderp" exp="" desc=""/>
+        <constraint field="shapetype" exp="" desc=""/>
+        <constraint field="b" exp="" desc=""/>
+        <constraint field="m" exp="" desc=""/>
+        <constraint field="roughness" exp="" desc=""/>
+        <constraint field="q365" exp="" desc=""/>
+        <constraint field="note" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
       <attributeactions>
         <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
       </attributeactions>
-      <attributetableconfig sortOrder="0" sortExpression="" actionWidgetStyle="dropDown">
+      <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="">
         <columns>
           <column hidden="1" type="actions" width="-1"/>
-          <column hidden="0" name="number" type="field" width="-1"/>
-          <column hidden="0" name="smoderp" type="field" width="-1"/>
-          <column hidden="0" name="shapetype" type="field" width="-1"/>
-          <column hidden="0" name="b" type="field" width="-1"/>
-          <column hidden="0" name="m" type="field" width="-1"/>
-          <column hidden="0" name="roughness" type="field" width="-1"/>
-          <column hidden="0" name="q365" type="field" width="-1"/>
-          <column hidden="0" name="note" type="field" width="-1"/>
+          <column name="number" hidden="0" type="field" width="-1"/>
+          <column name="smoderp" hidden="0" type="field" width="-1"/>
+          <column name="shapetype" hidden="0" type="field" width="-1"/>
+          <column name="b" hidden="0" type="field" width="-1"/>
+          <column name="m" hidden="0" type="field" width="-1"/>
+          <column name="roughness" hidden="0" type="field" width="-1"/>
+          <column name="q365" hidden="0" type="field" width="-1"/>
+          <column name="note" hidden="0" type="field" width="-1"/>
         </columns>
       </attributetableconfig>
       <conditionalstyles>
         <rowstyles/>
         <fieldstyles/>
       </conditionalstyles>
+      <storedexpressions/>
       <editform tolerant="1">.</editform>
       <editforminit/>
       <editforminitcodesource>0</editforminitcodesource>
@@ -890,14 +1127,14 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field editable="1" name="b"/>
-        <field editable="1" name="m"/>
-        <field editable="1" name="note"/>
-        <field editable="1" name="number"/>
-        <field editable="1" name="q365"/>
-        <field editable="1" name="roughness"/>
-        <field editable="1" name="shapetype"/>
-        <field editable="1" name="smoderp"/>
+        <field name="b" editable="1"/>
+        <field name="m" editable="1"/>
+        <field name="note" editable="1"/>
+        <field name="number" editable="1"/>
+        <field name="q365" editable="1"/>
+        <field name="roughness" editable="1"/>
+        <field name="shapetype" editable="1"/>
+        <field name="smoderp" editable="1"/>
       </editable>
       <labelOnTop>
         <field name="b" labelOnTop="0"/>
@@ -913,321 +1150,7 @@ def my_form_open(dialog, layer, feature):
       <previewExpression>COALESCE("CISLO", '&lt;NULL>')||', '||COALESCE("SMODERP", '&lt;NULL>')||', '||COALESCE("TVAR", '&lt;NULL>')||', '||COALESCE("B", '&lt;NULL>')||', '||COALESCE("M", '&lt;NULL>')||', '||COALESCE("DRSNOST", '&lt;NULL>')||', '||COALESCE("Q365", '&lt;NULL>')||', '||COALESCE("POZN", '&lt;NULL>')</previewExpression>
       <mapTip></mapTip>
     </maplayer>
-    <maplayer refreshOnNotifyEnabled="0" autoRefreshTime="0" maxScale="0" hasScaleBasedVisibilityFlag="0" geometry="No geometry" refreshOnNotifyMessage="" autoRefreshEnabled="0" type="vector" minScale="1e+08" styleCategories="AllStyleCategories" readOnly="0">
-      <id>tabulkytab20181017142027812</id>
-      <datasource>./soil_LU_property.dbf</datasource>
-      <keywordList>
-        <value></value>
-      </keywordList>
-      <layername>soil_LU_property</layername>
-      <srs>
-        <spatialrefsys>
-          <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
-          <srsid>3452</srsid>
-          <srid>4326</srid>
-          <authid>EPSG:4326</authid>
-          <description>WGS 84</description>
-          <projectionacronym>longlat</projectionacronym>
-          <ellipsoidacronym>WGS84</ellipsoidacronym>
-          <geographicflag>true</geographicflag>
-        </spatialrefsys>
-      </srs>
-      <resourceMetadata>
-        <identifier></identifier>
-        <parentidentifier></parentidentifier>
-        <language></language>
-        <type></type>
-        <title></title>
-        <abstract></abstract>
-        <contact>
-          <name></name>
-          <organization></organization>
-          <position></position>
-          <voice></voice>
-          <fax></fax>
-          <email></email>
-          <role></role>
-        </contact>
-        <links/>
-        <fees></fees>
-        <encoding></encoding>
-        <crs>
-          <spatialrefsys>
-            <proj4></proj4>
-            <srsid>0</srsid>
-            <srid>0</srid>
-            <authid></authid>
-            <description></description>
-            <projectionacronym></projectionacronym>
-            <ellipsoidacronym></ellipsoidacronym>
-            <geographicflag>false</geographicflag>
-          </spatialrefsys>
-        </crs>
-        <extent>
-          <spatial miny="0" minz="0" maxx="0" crs="" maxy="0" maxz="0" dimensions="2" minx="0"/>
-          <temporal>
-            <period>
-              <start></start>
-              <end></end>
-            </period>
-          </temporal>
-        </extent>
-      </resourceMetadata>
-      <provider encoding="UTF-8">ogr</provider>
-      <vectorjoins/>
-      <layerDependencies/>
-      <dataDependencies/>
-      <legend type="default-vector"/>
-      <expressionfields/>
-      <map-layer-style-manager current="default">
-        <map-layer-style name="default"/>
-      </map-layer-style-manager>
-      <auxiliaryLayer/>
-      <flags>
-        <Identifiable>1</Identifiable>
-        <Removable>1</Removable>
-        <Searchable>1</Searchable>
-      </flags>
-      <customproperties>
-        <property key="dualview/previewExpressions">
-          <value>COALESCE("SOILVEG", '&lt;NULL>')||', '||COALESCE("K", '&lt;NULL>')||', '||COALESCE("S", '&lt;NULL>')||', '||COALESCE("N", '&lt;NULL>')||', '||COALESCE("PI", '&lt;NULL>')||', '||COALESCE("PPL", '&lt;NULL>')||', '||COALESCE("B", '&lt;NULL>')||', '||COALESCE("X", '&lt;NULL>')||', '||COALESCE("Y", '&lt;NULL>')||', '||COALESCE("TAU", '&lt;NULL>')||', '||COALESCE("V", '&lt;NULL>')||', '||COALESCE("ret", '&lt;NULL>')</value>
-        </property>
-        <property key="embeddedWidgets/count" value="0"/>
-        <property key="variableNames"/>
-        <property key="variableValues"/>
-      </customproperties>
-      <geometryOptions removeDuplicateNodes="0" geometryPrecision="0">
-        <activeChecks/>
-        <checkConfiguration/>
-      </geometryOptions>
-      <fieldConfiguration>
-        <field name="soilveg">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="k">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="s">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="n">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="pi">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="ppl">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="b">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="x">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="y">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="tau">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="v">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="ret">
-          <editWidget type="TextEdit">
-            <config>
-              <Option type="Map">
-                <Option name="IsMultiline" value="0" type="QString"/>
-                <Option name="UseHtml" value="0" type="QString"/>
-              </Option>
-            </config>
-          </editWidget>
-        </field>
-      </fieldConfiguration>
-      <aliases>
-        <alias field="soilveg" name="" index="0"/>
-        <alias field="k" name="" index="1"/>
-        <alias field="s" name="" index="2"/>
-        <alias field="n" name="" index="3"/>
-        <alias field="pi" name="" index="4"/>
-        <alias field="ppl" name="" index="5"/>
-        <alias field="b" name="" index="6"/>
-        <alias field="x" name="" index="7"/>
-        <alias field="y" name="" index="8"/>
-        <alias field="tau" name="" index="9"/>
-        <alias field="v" name="" index="10"/>
-        <alias field="ret" name="" index="11"/>
-      </aliases>
-      <excludeAttributesWMS/>
-      <excludeAttributesWFS/>
-      <defaults>
-        <default field="soilveg" applyOnUpdate="0" expression=""/>
-        <default field="k" applyOnUpdate="0" expression=""/>
-        <default field="s" applyOnUpdate="0" expression=""/>
-        <default field="n" applyOnUpdate="0" expression=""/>
-        <default field="pi" applyOnUpdate="0" expression=""/>
-        <default field="ppl" applyOnUpdate="0" expression=""/>
-        <default field="b" applyOnUpdate="0" expression=""/>
-        <default field="x" applyOnUpdate="0" expression=""/>
-        <default field="y" applyOnUpdate="0" expression=""/>
-        <default field="tau" applyOnUpdate="0" expression=""/>
-        <default field="v" applyOnUpdate="0" expression=""/>
-        <default field="ret" applyOnUpdate="0" expression=""/>
-      </defaults>
-      <constraints>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="soilveg"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="k"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="s"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="n"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="pi"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="ppl"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="b"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="x"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="y"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="tau"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="v"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="ret"/>
-      </constraints>
-      <constraintExpressions>
-        <constraint desc="" field="soilveg" exp=""/>
-        <constraint desc="" field="k" exp=""/>
-        <constraint desc="" field="s" exp=""/>
-        <constraint desc="" field="n" exp=""/>
-        <constraint desc="" field="pi" exp=""/>
-        <constraint desc="" field="ppl" exp=""/>
-        <constraint desc="" field="b" exp=""/>
-        <constraint desc="" field="x" exp=""/>
-        <constraint desc="" field="y" exp=""/>
-        <constraint desc="" field="tau" exp=""/>
-        <constraint desc="" field="v" exp=""/>
-        <constraint desc="" field="ret" exp=""/>
-      </constraintExpressions>
-      <expressionfields/>
-      <attributeactions>
-        <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
-      </attributeactions>
-      <attributetableconfig sortOrder="1" sortExpression="&quot;SOILVEG&quot;" actionWidgetStyle="dropDown">
-        <columns>
-          <column hidden="0" name="ret" type="field" width="-1"/>
-          <column hidden="1" type="actions" width="-1"/>
-          <column hidden="0" name="soilveg" type="field" width="-1"/>
-          <column hidden="0" name="k" type="field" width="-1"/>
-          <column hidden="0" name="s" type="field" width="-1"/>
-          <column hidden="0" name="n" type="field" width="-1"/>
-          <column hidden="0" name="pi" type="field" width="-1"/>
-          <column hidden="0" name="ppl" type="field" width="-1"/>
-          <column hidden="0" name="b" type="field" width="-1"/>
-          <column hidden="0" name="x" type="field" width="-1"/>
-          <column hidden="0" name="y" type="field" width="-1"/>
-          <column hidden="0" name="tau" type="field" width="-1"/>
-          <column hidden="0" name="v" type="field" width="-1"/>
-        </columns>
-      </attributetableconfig>
-      <conditionalstyles>
-        <rowstyles/>
-        <fieldstyles/>
-      </conditionalstyles>
-      <editform tolerant="1">.</editform>
-      <editforminit/>
-      <editforminitcodesource>0</editforminitcodesource>
-      <editforminitfilepath>.</editforminitfilepath>
-      <editforminitcode><![CDATA[# -*- coding: utf-8 -*-
-"""
-QGIS forms can have a Python function that is called when the form is
-opened.
-
-Use this function to add extra logic to your forms.
-
-Enter the name of the function in the "Python Init function"
-field.
-An example follows:
-"""
-from qgis.PyQt.QtWidgets import QWidget
-
-def my_form_open(dialog, layer, feature):
-	geom = feature.geometry()
-	control = dialog.findChild(QWidget, "MyLineEdit")
-]]></editforminitcode>
-      <featformsuppress>0</featformsuppress>
-      <editorlayout>generatedlayout</editorlayout>
-      <editable>
-        <field editable="1" name="B"/>
-        <field editable="1" name="K"/>
-        <field editable="1" name="N"/>
-        <field editable="1" name="PI"/>
-        <field editable="1" name="PPL"/>
-        <field editable="1" name="S"/>
-        <field editable="1" name="SOILVEG"/>
-        <field editable="1" name="TAU"/>
-        <field editable="1" name="V"/>
-        <field editable="1" name="X"/>
-        <field editable="1" name="Y"/>
-        <field editable="1" name="ret"/>
-      </editable>
-      <labelOnTop>
-        <field name="B" labelOnTop="0"/>
-        <field name="K" labelOnTop="0"/>
-        <field name="N" labelOnTop="0"/>
-        <field name="PI" labelOnTop="0"/>
-        <field name="PPL" labelOnTop="0"/>
-        <field name="S" labelOnTop="0"/>
-        <field name="SOILVEG" labelOnTop="0"/>
-        <field name="TAU" labelOnTop="0"/>
-        <field name="V" labelOnTop="0"/>
-        <field name="X" labelOnTop="0"/>
-        <field name="Y" labelOnTop="0"/>
-        <field name="ret" labelOnTop="0"/>
-      </labelOnTop>
-      <widgets/>
-      <previewExpression>COALESCE("SOILVEG", '&lt;NULL>')||', '||COALESCE("K", '&lt;NULL>')||', '||COALESCE("S", '&lt;NULL>')||', '||COALESCE("N", '&lt;NULL>')||', '||COALESCE("PI", '&lt;NULL>')||', '||COALESCE("PPL", '&lt;NULL>')||', '||COALESCE("B", '&lt;NULL>')||', '||COALESCE("X", '&lt;NULL>')||', '||COALESCE("Y", '&lt;NULL>')||', '||COALESCE("TAU", '&lt;NULL>')||', '||COALESCE("V", '&lt;NULL>')||', '||COALESCE("ret", '&lt;NULL>')</previewExpression>
-      <mapTip></mapTip>
-    </maplayer>
-    <maplayer refreshOnNotifyEnabled="0" simplifyAlgorithm="0" autoRefreshTime="0" simplifyDrawingTol="1" simplifyLocal="1" simplifyMaxScale="1" maxScale="0" hasScaleBasedVisibilityFlag="0" geometry="Line" labelsEnabled="0" simplifyDrawingHints="1" refreshOnNotifyMessage="" autoRefreshEnabled="0" type="vector" minScale="1e+08" styleCategories="AllStyleCategories" readOnly="0">
+    <maplayer simplifyDrawingHints="1" styleCategories="AllStyleCategories" labelsEnabled="0" simplifyAlgorithm="0" type="vector" autoRefreshTime="0" simplifyLocal="1" maxScale="0" wkbType="MultiLineString" autoRefreshEnabled="0" simplifyDrawingTol="1" hasScaleBasedVisibilityFlag="0" minScale="1e+08" refreshOnNotifyMessage="" refreshOnNotifyEnabled="0" readOnly="0" simplifyMaxScale="1" geometry="Line">
       <extent>
         <xmin>-713010.29315874760504812</xmin>
         <ymin>-1061383.9963286560960114</ymin>
@@ -1242,13 +1165,14 @@ def my_form_open(dialog, layer, feature):
       <layername>stream</layername>
       <srs>
         <spatialrefsys>
-          <proj4>+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=542.5,89.2,456.9,5.517,2.275,5.516,6.96 +pm=greenwich +units=m +no_defs</proj4>
+          <wkt>PROJCRS["S-JTSK / Krovak East North",BASEGEOGCRS["S-JTSK",DATUM["System of the Unified Trigonometrical Cadastral Network",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4156]],CONVERSION["Krovak East North (Greenwich)",METHOD["Krovak (North Orientated)",ID["EPSG",1041]],PARAMETER["Latitude of projection centre",49.5,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of origin",24.8333333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8833]],PARAMETER["Co-latitude of cone axis",30.2881397527778,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",1036]],PARAMETER["Latitude of pseudo standard parallel",78.5,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8818]],PARAMETER["Scale factor on pseudo standard parallel",0.9999,SCALEUNIT["unity",1],ID["EPSG",8819]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Czechoslovakia"],BBOX[47.73,12.09,51.06,22.56]],ID["EPSG",5514]]</wkt>
+          <proj4>+proj=krovak +lat_0=49.5 +lon_0=24.8333333333333 +alpha=30.2881397527778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs</proj4>
           <srsid>26812</srsid>
           <srid>5514</srid>
           <authid>EPSG:5514</authid>
-          <description>S-JTSK (Greenwich) / Krovak East North</description>
+          <description>S-JTSK / Krovak East North</description>
           <projectionacronym>krovak</projectionacronym>
-          <ellipsoidacronym>bessel</ellipsoidacronym>
+          <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
           <geographicflag>false</geographicflag>
         </spatialrefsys>
       </srs>
@@ -1273,6 +1197,7 @@ def my_form_open(dialog, layer, feature):
         <encoding></encoding>
         <crs>
           <spatialrefsys>
+            <wkt></wkt>
             <proj4></proj4>
             <srsid>0</srsid>
             <srid>0</srid>
@@ -1284,7 +1209,7 @@ def my_form_open(dialog, layer, feature):
           </spatialrefsys>
         </crs>
         <extent>
-          <spatial miny="0" minz="0" maxx="0" crs="" maxy="0" maxz="0" dimensions="2" minx="0"/>
+          <spatial crs="" maxx="0" minx="0" minz="0" maxz="0" dimensions="2" miny="0" maxy="0"/>
           <temporal>
             <period>
               <start></start>
@@ -1308,26 +1233,26 @@ def my_form_open(dialog, layer, feature):
         <Removable>1</Removable>
         <Searchable>1</Searchable>
       </flags>
-      <renderer-v2 enableorderby="0" type="singleSymbol" forceraster="0" symbollevels="0">
+      <renderer-v2 enableorderby="0" forceraster="0" symbollevels="0" type="singleSymbol">
         <symbols>
-          <symbol force_rhr="0" alpha="1" name="0" type="line" clip_to_extent="1">
-            <layer pass="0" enabled="1" class="SimpleLine" locked="0">
-              <prop k="capstyle" v="square"/>
-              <prop k="customdash" v="5;2"/>
-              <prop k="customdash_map_unit_scale" v="3x:0,0,0,0,0,0"/>
-              <prop k="customdash_unit" v="MM"/>
-              <prop k="draw_inside_polygon" v="0"/>
-              <prop k="joinstyle" v="bevel"/>
-              <prop k="line_color" v="31,120,180,255"/>
-              <prop k="line_style" v="solid"/>
-              <prop k="line_width" v="1.26"/>
-              <prop k="line_width_unit" v="MM"/>
-              <prop k="offset" v="0"/>
-              <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
-              <prop k="offset_unit" v="MM"/>
-              <prop k="ring_filter" v="0"/>
-              <prop k="use_custom_dash" v="0"/>
-              <prop k="width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+          <symbol name="0" force_rhr="0" clip_to_extent="1" type="line" alpha="1">
+            <layer enabled="1" locked="0" class="SimpleLine" pass="0">
+              <prop v="square" k="capstyle"/>
+              <prop v="5;2" k="customdash"/>
+              <prop v="3x:0,0,0,0,0,0" k="customdash_map_unit_scale"/>
+              <prop v="MM" k="customdash_unit"/>
+              <prop v="0" k="draw_inside_polygon"/>
+              <prop v="bevel" k="joinstyle"/>
+              <prop v="31,120,180,255" k="line_color"/>
+              <prop v="solid" k="line_style"/>
+              <prop v="1.26" k="line_width"/>
+              <prop v="MM" k="line_width_unit"/>
+              <prop v="0" k="offset"/>
+              <prop v="3x:0,0,0,0,0,0" k="offset_map_unit_scale"/>
+              <prop v="MM" k="offset_unit"/>
+              <prop v="0" k="ring_filter"/>
+              <prop v="0" k="use_custom_dash"/>
+              <prop v="3x:0,0,0,0,0,0" k="width_map_unit_scale"/>
               <data_defined_properties>
                 <Option type="Map">
                   <Option name="name" value="" type="QString"/>
@@ -1342,9 +1267,7 @@ def my_form_open(dialog, layer, feature):
         <sizescale/>
       </renderer-v2>
       <customproperties>
-        <property key="dualview/previewExpressions">
-          <value>Id</value>
-        </property>
+        <property key="dualview/previewExpressions" value="Id"/>
         <property key="embeddedWidgets/count" value="0"/>
         <property key="variableNames"/>
         <property key="variableValues"/>
@@ -1352,13 +1275,13 @@ def my_form_open(dialog, layer, feature):
       <blendMode>0</blendMode>
       <featureBlendMode>0</featureBlendMode>
       <layerOpacity>1</layerOpacity>
-      <SingleCategoryDiagramRenderer attributeLegend="1" diagramType="Histogram">
-        <DiagramCategory lineSizeType="MM" diagramOrientation="Up" minScaleDenominator="0" maxScaleDenominator="1e+08" height="15" sizeScale="3x:0,0,0,0,0,0" barWidth="5" minimumSize="0" sizeType="MM" enabled="0" penWidth="0" lineSizeScale="3x:0,0,0,0,0,0" labelPlacementMethod="XHeight" rotationOffset="270" backgroundColor="#ffffff" width="15" opacity="1" backgroundAlpha="255" penAlpha="255" penColor="#000000" scaleDependency="Area" scaleBasedVisibility="0">
+      <SingleCategoryDiagramRenderer diagramType="Histogram" attributeLegend="1">
+        <DiagramCategory sizeScale="3x:0,0,0,0,0,0" scaleDependency="Area" height="15" penColor="#000000" penAlpha="255" opacity="1" diagramOrientation="Up" barWidth="5" maxScaleDenominator="1e+08" backgroundAlpha="255" width="15" penWidth="0" scaleBasedVisibility="0" sizeType="MM" enabled="0" labelPlacementMethod="XHeight" backgroundColor="#ffffff" minScaleDenominator="0" rotationOffset="270" lineSizeScale="3x:0,0,0,0,0,0" minimumSize="0" lineSizeType="MM">
           <fontProperties description="Ubuntu,11,-1,5,50,0,0,0,0,0" style=""/>
-          <attribute field="" label="" color="#000000"/>
+          <attribute field="" color="#000000" label=""/>
         </DiagramCategory>
       </SingleCategoryDiagramRenderer>
-      <DiagramLayerSettings priority="0" showAll="1" dist="0" linePlacementFlags="2" zIndex="0" obstacle="0" placement="2">
+      <DiagramLayerSettings zIndex="0" priority="0" obstacle="0" showAll="1" placement="2" dist="0" linePlacementFlags="2">
         <properties>
           <Option type="Map">
             <Option name="name" value="" type="QString"/>
@@ -1367,7 +1290,7 @@ def my_form_open(dialog, layer, feature):
           </Option>
         </properties>
       </DiagramLayerSettings>
-      <geometryOptions removeDuplicateNodes="0" geometryPrecision="0">
+      <geometryOptions geometryPrecision="0" removeDuplicateNodes="0">
         <activeChecks/>
         <checkConfiguration/>
       </geometryOptions>
@@ -1391,38 +1314,39 @@ def my_form_open(dialog, layer, feature):
         </field>
       </fieldConfiguration>
       <aliases>
-        <alias field="id" name="" index="0"/>
-        <alias field="smoderp" name="" index="1"/>
+        <alias name="" field="id" index="0"/>
+        <alias name="" field="smoderp" index="1"/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <defaults>
-        <default field="id" applyOnUpdate="0" expression=""/>
-        <default field="smoderp" applyOnUpdate="0" expression=""/>
+        <default field="id" expression="" applyOnUpdate="0"/>
+        <default field="smoderp" expression="" applyOnUpdate="0"/>
       </defaults>
       <constraints>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="id"/>
-        <constraint constraints="0" unique_strength="0" exp_strength="0" notnull_strength="0" field="smoderp"/>
+        <constraint notnull_strength="0" unique_strength="0" field="id" constraints="0" exp_strength="0"/>
+        <constraint notnull_strength="0" unique_strength="0" field="smoderp" constraints="0" exp_strength="0"/>
       </constraints>
       <constraintExpressions>
-        <constraint desc="" field="id" exp=""/>
-        <constraint desc="" field="smoderp" exp=""/>
+        <constraint field="id" exp="" desc=""/>
+        <constraint field="smoderp" exp="" desc=""/>
       </constraintExpressions>
       <expressionfields/>
       <attributeactions>
         <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
       </attributeactions>
-      <attributetableconfig sortOrder="0" sortExpression="" actionWidgetStyle="dropDown">
+      <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="">
         <columns>
-          <column hidden="0" name="smoderp" type="field" width="-1"/>
+          <column name="smoderp" hidden="0" type="field" width="-1"/>
           <column hidden="1" type="actions" width="-1"/>
-          <column hidden="0" name="id" type="field" width="-1"/>
+          <column name="id" hidden="0" type="field" width="-1"/>
         </columns>
       </attributetableconfig>
       <conditionalstyles>
         <rowstyles/>
         <fieldstyles/>
       </conditionalstyles>
+      <storedexpressions/>
       <editform tolerant="1">.</editform>
       <editforminit/>
       <editforminitcodesource>0</editforminitcodesource>
@@ -1447,8 +1371,8 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field editable="1" name="Id"/>
-        <field editable="1" name="smoderp"/>
+        <field name="Id" editable="1"/>
+        <field name="smoderp" editable="1"/>
       </editable>
       <labelOnTop>
         <field name="Id" labelOnTop="0"/>
@@ -1458,7 +1382,7 @@ def my_form_open(dialog, layer, feature):
       <previewExpression>Id</previewExpression>
       <mapTip></mapTip>
     </maplayer>
-    <maplayer refreshOnNotifyEnabled="0" autoRefreshTime="0" maxScale="0" hasScaleBasedVisibilityFlag="0" refreshOnNotifyMessage="" autoRefreshEnabled="0" type="raster" minScale="1e+08" styleCategories="AllStyleCategories">
+    <maplayer refreshOnNotifyMessage="" refreshOnNotifyEnabled="0" autoRefreshTime="0" styleCategories="AllStyleCategories" minScale="1e+08" type="raster" hasScaleBasedVisibilityFlag="0" maxScale="0" autoRefreshEnabled="0">
       <extent>
         <xmin>-713966.79929997853469104</xmin>
         <ymin>-1061612.36961615923792124</ymin>
@@ -1473,13 +1397,14 @@ def my_form_open(dialog, layer, feature):
       <layername>dem10m</layername>
       <srs>
         <spatialrefsys>
-          <proj4>+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=542.5,89.2,456.9,5.517,2.275,5.516,6.96 +pm=greenwich +units=m +no_defs</proj4>
+          <wkt>PROJCRS["S-JTSK / Krovak East North",BASEGEOGCRS["S-JTSK",DATUM["System of the Unified Trigonometrical Cadastral Network",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4156]],CONVERSION["Krovak East North (Greenwich)",METHOD["Krovak (North Orientated)",ID["EPSG",1041]],PARAMETER["Latitude of projection centre",49.5,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of origin",24.8333333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8833]],PARAMETER["Co-latitude of cone axis",30.2881397527778,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",1036]],PARAMETER["Latitude of pseudo standard parallel",78.5,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8818]],PARAMETER["Scale factor on pseudo standard parallel",0.9999,SCALEUNIT["unity",1],ID["EPSG",8819]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Czechoslovakia"],BBOX[47.73,12.09,51.06,22.56]],ID["EPSG",5514]]</wkt>
+          <proj4>+proj=krovak +lat_0=49.5 +lon_0=24.8333333333333 +alpha=30.2881397527778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs</proj4>
           <srsid>26812</srsid>
           <srid>5514</srid>
           <authid>EPSG:5514</authid>
-          <description>S-JTSK (Greenwich) / Krovak East North</description>
+          <description>S-JTSK / Krovak East North</description>
           <projectionacronym>krovak</projectionacronym>
-          <ellipsoidacronym>bessel</ellipsoidacronym>
+          <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
           <geographicflag>false</geographicflag>
         </spatialrefsys>
       </srs>
@@ -1504,6 +1429,7 @@ def my_form_open(dialog, layer, feature):
         <encoding></encoding>
         <crs>
           <spatialrefsys>
+            <wkt></wkt>
             <proj4></proj4>
             <srsid>0</srsid>
             <srid>0</srid>
@@ -1515,7 +1441,7 @@ def my_form_open(dialog, layer, feature):
           </spatialrefsys>
         </crs>
         <extent>
-          <spatial miny="0" minz="0" maxx="0" crs="" maxy="0" maxz="0" dimensions="2" minx="0"/>
+          <spatial crs="" maxx="0" minx="0" minz="0" maxz="0" dimensions="2" miny="0" maxy="0"/>
           <temporal>
             <period>
               <start></start>
@@ -1526,7 +1452,7 @@ def my_form_open(dialog, layer, feature):
       </resourceMetadata>
       <provider>gdal</provider>
       <noData>
-        <noDataList useSrcNoData="1" bandNo="1"/>
+        <noDataList bandNo="1" useSrcNoData="1"/>
       </noData>
       <map-layer-style-manager current="default">
         <map-layer-style name="default"/>
@@ -1543,7 +1469,7 @@ def my_form_open(dialog, layer, feature):
         <property key="identify/format" value="Value"/>
       </customproperties>
       <pipe>
-        <rasterrenderer gradient="BlackToWhite" opacity="1" alphaBand="-1" type="singlebandgray" grayBand="1">
+        <rasterrenderer grayBand="1" alphaBand="-1" opacity="1" type="singlebandgray" gradient="BlackToWhite">
           <rasterTransparency/>
           <minMaxOrigin>
             <limits>None</limits>
@@ -1560,7 +1486,7 @@ def my_form_open(dialog, layer, feature):
           </contrastEnhancement>
         </rasterrenderer>
         <brightnesscontrast brightness="0" contrast="0"/>
-        <huesaturation grayscaleMode="0" colorizeRed="255" colorizeBlue="128" colorizeGreen="128" saturation="0" colorizeStrength="100" colorizeOn="0"/>
+        <huesaturation colorizeBlue="128" colorizeOn="0" colorizeGreen="128" colorizeStrength="100" saturation="0" colorizeRed="255" grayscaleMode="0"/>
         <rasterresampler maxOversampling="2"/>
       </pipe>
       <blendMode>0</blendMode>
@@ -1573,54 +1499,15 @@ def my_form_open(dialog, layer, feature):
     <layer id="tok20181017142312501"/>
   </layerorder>
   <properties>
-    <PositionPrecision>
-      <DecimalPlaces type="int">2</DecimalPlaces>
-      <Automatic type="bool">true</Automatic>
-    </PositionPrecision>
-    <Legend>
-      <filterByMap type="bool">false</filterByMap>
-    </Legend>
-    <SpatialRefSys>
-      <ProjectionsEnabled type="int">1</ProjectionsEnabled>
-      <ProjectCRSID type="int">26812</ProjectCRSID>
-      <ProjectCrs type="QString">EPSG:5514</ProjectCrs>
-      <ProjectCRSProj4String type="QString">+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=542.5,89.2,456.9,5.517,2.275,5.516,6.96 +pm=greenwich +units=m +no_defs</ProjectCRSProj4String>
-    </SpatialRefSys>
-    <Paths>
-      <Absolute type="bool">false</Absolute>
-    </Paths>
-    <Measurement>
-      <AreaUnits type="QString"></AreaUnits>
-      <DistanceUnits type="QString"></DistanceUnits>
-    </Measurement>
-    <PAL>
-      <TextFormat type="int">0</TextFormat>
-      <CandidatesPoint type="int">16</CandidatesPoint>
-      <ShowingCandidates type="bool">false</ShowingCandidates>
-      <ShowingAllLabels type="bool">false</ShowingAllLabels>
-      <CandidatesPolygon type="int">30</CandidatesPolygon>
-      <DrawRectOnly type="bool">false</DrawRectOnly>
-      <CandidatesLine type="int">50</CandidatesLine>
-      <SearchMethod type="int">0</SearchMethod>
-      <ShowingPartialsLabels type="bool">true</ShowingPartialsLabels>
-    </PAL>
-    <Gui>
-      <SelectionColorAlphaPart type="int">255</SelectionColorAlphaPart>
-      <SelectionColorBluePart type="int">0</SelectionColorBluePart>
-      <SelectionColorGreenPart type="int">255</SelectionColorGreenPart>
-      <CanvasColorBluePart type="int">255</CanvasColorBluePart>
-      <CanvasColorGreenPart type="int">255</CanvasColorGreenPart>
-      <SelectionColorRedPart type="int">255</SelectionColorRedPart>
-      <CanvasColorRedPart type="int">255</CanvasColorRedPart>
-    </Gui>
     <Digitizing>
-      <DefaultSnapType type="QString">off</DefaultSnapType>
-      <LayerSnappingToleranceList type="QStringList">
-        <value>0.000000</value>
-        <value>0.000000</value>
-      </LayerSnappingToleranceList>
-      <SnappingMode type="QString">current_layer</SnappingMode>
+      <AvoidIntersectionsList type="QStringList"/>
+      <DefaultSnapTolerance type="double">0</DefaultSnapTolerance>
       <DefaultSnapToleranceUnit type="int">2</DefaultSnapToleranceUnit>
+      <DefaultSnapType type="QString">off</DefaultSnapType>
+      <LayerSnapToList type="QStringList">
+        <value>to_vertex_and_segment</value>
+        <value>to_vertex_and_segment</value>
+      </LayerSnapToList>
       <LayerSnappingEnabledList type="QStringList">
         <value>disabled</value>
         <value>disabled</value>
@@ -1629,20 +1516,63 @@ def my_form_open(dialog, layer, feature):
         <value>points220181017141320216</value>
         <value>puda20181017141415385</value>
       </LayerSnappingList>
-      <DefaultSnapTolerance type="double">0</DefaultSnapTolerance>
+      <LayerSnappingToleranceList type="QStringList">
+        <value>0.000000</value>
+        <value>0.000000</value>
+      </LayerSnappingToleranceList>
       <LayerSnappingToleranceUnitList type="QStringList">
         <value>2</value>
         <value>2</value>
       </LayerSnappingToleranceUnitList>
-      <AvoidIntersectionsList type="QStringList"/>
-      <LayerSnapToList type="QStringList">
-        <value>to_vertex_and_segment</value>
-        <value>to_vertex_and_segment</value>
-      </LayerSnapToList>
+      <SnappingMode type="QString">current_layer</SnappingMode>
     </Digitizing>
+    <Gui>
+      <CanvasColorBluePart type="int">255</CanvasColorBluePart>
+      <CanvasColorGreenPart type="int">255</CanvasColorGreenPart>
+      <CanvasColorRedPart type="int">255</CanvasColorRedPart>
+      <SelectionColorAlphaPart type="int">255</SelectionColorAlphaPart>
+      <SelectionColorBluePart type="int">0</SelectionColorBluePart>
+      <SelectionColorGreenPart type="int">255</SelectionColorGreenPart>
+      <SelectionColorRedPart type="int">255</SelectionColorRedPart>
+    </Gui>
+    <Legend>
+      <filterByMap type="bool">false</filterByMap>
+    </Legend>
+    <Measurement>
+      <AreaUnits type="QString"></AreaUnits>
+      <DistanceUnits type="QString"></DistanceUnits>
+    </Measurement>
+    <PAL>
+      <CandidatesLine type="int">50</CandidatesLine>
+      <CandidatesPoint type="int">16</CandidatesPoint>
+      <CandidatesPolygon type="int">30</CandidatesPolygon>
+      <DrawRectOnly type="bool">false</DrawRectOnly>
+      <DrawUnplaced type="bool">false</DrawUnplaced>
+      <SearchMethod type="int">0</SearchMethod>
+      <ShowingAllLabels type="bool">false</ShowingAllLabels>
+      <ShowingCandidates type="bool">false</ShowingCandidates>
+      <ShowingPartialsLabels type="bool">true</ShowingPartialsLabels>
+      <TextFormat type="int">0</TextFormat>
+      <UnplacedColor type="QString">255,0,0,255</UnplacedColor>
+    </PAL>
+    <Paths>
+      <Absolute type="bool">false</Absolute>
+    </Paths>
+    <PositionPrecision>
+      <Automatic type="bool">true</Automatic>
+      <DecimalPlaces type="int">2</DecimalPlaces>
+    </PositionPrecision>
+    <SpatialRefSys>
+      <ProjectCRSID type="int">26812</ProjectCRSID>
+      <ProjectCRSProj4String type="QString">+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=542.5,89.2,456.9,5.517,2.275,5.516,6.96 +pm=greenwich +units=m +no_defs</ProjectCRSProj4String>
+      <ProjectCrs type="QString">EPSG:5514</ProjectCrs>
+      <ProjectionsEnabled type="int">1</ProjectionsEnabled>
+    </SpatialRefSys>
   </properties>
   <visibility-presets/>
-  <transformContext/>
+  <transformContext>
+    <srcDest coordinateOp="+proj=pipeline +step +proj=unitconvert +xy_in=deg +xy_out=rad +step +proj=push +v_3 +step +proj=cart +ellps=WGS84 +step +inv +proj=helmert +x=570.8 +y=85.7 +z=462.8 +rx=4.998 +ry=1.587 +rz=5.261 +s=3.56 +convention=position_vector +step +inv +proj=cart +ellps=bessel +step +proj=pop +v_3 +step +proj=krovak +lat_0=49.5 +lon_0=24.8333333333333 +alpha=30.2881397527778 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel" source="EPSG:4326" dest="EPSG:5514"/>
+  </transformContext>
   <projectMetadata>
     <identifier></identifier>
     <parentidentifier></parentidentifier>
@@ -1656,4 +1586,8 @@ def my_form_open(dialog, layer, feature):
   </projectMetadata>
   <Annotations/>
   <Layouts/>
+  <Bookmarks/>
+  <ProjectViewSettings UseProjectScales="0">
+    <Scales/>
+  </ProjectViewSettings>
 </qgis>
