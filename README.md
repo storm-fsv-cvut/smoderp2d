@@ -55,3 +55,11 @@ Run `r.smoderp2d` module:
 Launch SMODERP2D ArcToolbox from `bin\arcgis` directory.
 
 ![SMODERP2D ArcToolbox in action](img/arctoolbox.png?raw=true "SMODERP2D ArcToolbox in action")
+
+### From QGIS
+
+Quick test (on Linux):
+
+    QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/projekt.qgs
+
+Enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
