@@ -46,3 +46,5 @@ db.droptable table=soil_LU_property
 db.droptable table=soil_LU_property -f
 db.in.ogr in=soil_veg_tab_mean.dbf 
 db.select table=soil_veg_tab_mean_dbf
+db.in.ogr in=soil_veg_tab_mean.dbf out=soil_veg_tab_mean
+db.in.ogr in=tests/data/soil_veg_tab_mean.dbf out=soil_veg_tab_mean
