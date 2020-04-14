@@ -137,7 +137,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         # remove "soil_veg" if exists and create a new one
         Module('v.db.dropcolumn',
                map='vs_intersect',
-               columns='soil_veg_column'
+               columns=self._data['soil_veg_column']
         )
         Module('v.db.addcolumn',
                map='vs_intersect',
