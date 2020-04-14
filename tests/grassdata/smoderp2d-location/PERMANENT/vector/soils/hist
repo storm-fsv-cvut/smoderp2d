@@ -1,0 +1,8 @@
+COMMAND: v.in.ogr --overwrite -o input="soils.shp" min_area=0.0001 type="" snap=-1
+GISDBASE: /home/martin/git/storm-fsv-cvut/smoderp2d/tests/grassdata
+LOCATION: smoderp2d-location MAPSET: PERMANENT USER: martin DATE: Tue Apr 14 23:54:54 2020
+-----------------------------------------------------
+3 input polygons
+Total area: 860452 (3 areas)
+Overlapping area: 0 (0 areas)
+Area without category: 0 (0 areas)

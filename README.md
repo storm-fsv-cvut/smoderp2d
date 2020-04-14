@@ -41,11 +41,11 @@ Run `r.smoderp2d` module:
 
     ./bin/grass/r.smoderp2d/r.smoderp2d.py \
         elevation=dem10m \
-        soil=soil_LU soil_type=soil_id \
-        vegetation=soil_LU vegetation_type=lu_id \
+        soil=soils soil_type=SID \
+        vegetation=landuse vegetation_type=LandUse \
         rainfall_file=tests/data/rainfall.txt \
         points=points \
-        table_soil_vegetation=soil_LU_property table_soil_vegetation_code=soilveg \
+        table_soil_vegetation=soil_veg_tab_mean table_soil_vegetation_code=soilveg \
         stream=stream \
         table_stream_shape=stream_shape table_stream_shape_code=smoderp \
         maxdt=10 end_time=120 output_dir=/tmp/smoderp2d
