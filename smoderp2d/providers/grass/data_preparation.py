@@ -18,7 +18,7 @@ from grass.pygrass.modules import Module
 from grass.pygrass.vector import VectorTopo
 from grass.pygrass.raster import RasterRow, raster2numpy
 from grass.pygrass.gis import Region
-from grass.exceptions import CalledModuleError
+from grass.exceptions import CalledModuleError, OpenError
 
 class PrepareData(PrepareDataBase, ManageFields):
     def __init__(self, options, writter):
@@ -389,10 +389,13 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         :param str soil: soil vector (check for overlaping polygons)
         """
-        with VectorTopo(soil, mode='r') as fd:
-            for area in fd.viter('areas'):
-                cats = list(area.cats().get_list())
-                if len(cats) > 1:
-                    raise DataPreparationInvalidInput(
-                        "overlapping soil polygons detected"
-                    )
+        try:
+            with VectorTopo(soil, mode='r') as fd:
+                for area in fd.viter('areas'):
+                    cats = list(area.cats().get_list())
+                    if len(cats) > 1:
+                        raise DataPreparationInvalidInput(
+                            "overlapping soil polygons detected"
+                        )
+        except OpenError as e:
+            raise DataPreparationInvalidInput(e)
