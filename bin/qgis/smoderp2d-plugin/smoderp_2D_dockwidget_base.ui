@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>459</width>
-    <height>558</height>
+    <height>691</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -39,73 +39,10 @@
              <x>0</x>
              <y>0</y>
              <width>417</width>
-             <height>472</height>
+             <height>599</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_8">
-            <item row="0" column="0" colspan="2">
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>Input surface raster</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0" colspan="2">
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string>Input soil polygon features</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0" colspan="2">
-             <layout class="QGridLayout" name="gridLayout_2">
-              <item row="0" column="1">
-               <widget class="QToolButton" name="soil_toolButton">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QgsMapLayerComboBox" name="soil_comboBox"/>
-              </item>
-             </layout>
-            </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="label_3">
-              <property name="text">
-               <string>Soil types</string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="0" colspan="2">
-             <widget class="QLabel" name="label_4">
-              <property name="text">
-               <string>Input land use polygon features</string>
-              </property>
-             </widget>
-            </item>
-            <item row="7" column="0" colspan="2">
-             <layout class="QGridLayout" name="gridLayout_5">
-              <item row="0" column="1">
-               <widget class="QToolButton" name="vegetation_toolButton">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QgsMapLayerComboBox" name="vegetation_comboBox"/>
-              </item>
-             </layout>
-            </item>
-            <item row="8" column="0">
-             <widget class="QLabel" name="label_6">
-              <property name="text">
-               <string>Land use types</string>
-              </property>
-             </widget>
-            </item>
             <item row="10" column="0" colspan="2">
              <widget class="QLabel" name="label_9">
               <property name="text">
@@ -131,6 +68,13 @@
               </item>
              </layout>
             </item>
+            <item row="6" column="0" colspan="2">
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>Input land use polygon features</string>
+              </property>
+             </widget>
+            </item>
             <item row="12" column="0" colspan="2">
              <widget class="QLabel" name="label_13">
               <property name="text">
@@ -138,7 +82,48 @@
               </property>
              </widget>
             </item>
-            <item row="13" column="0" colspan="2">
+            <item row="1" column="0" colspan="2">
+             <layout class="QGridLayout" name="gridLayout">
+              <item row="0" column="0">
+               <widget class="QgsMapLayerComboBox" name="elevation_comboBox"/>
+              </item>
+              <item row="0" column="1">
+               <widget class="QToolButton" name="elevation_toolButton">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="9" column="0">
+             <widget class="QgsFieldComboBox" name="vegetation_type_comboBox"/>
+            </item>
+            <item row="5" column="0">
+             <widget class="QgsFieldComboBox" name="soil_type_comboBox"/>
+            </item>
+            <item row="3" column="0" colspan="2">
+             <layout class="QGridLayout" name="gridLayout_2">
+              <item row="0" column="1">
+               <widget class="QToolButton" name="soil_toolButton">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QgsMapLayerComboBox" name="soil_comboBox"/>
+              </item>
+             </layout>
+            </item>
+            <item row="8" column="0">
+             <widget class="QLabel" name="label_6">
+              <property name="text">
+               <string>Land use types</string>
+              </property>
+             </widget>
+            </item>
+            <item row="14" column="0" colspan="2">
              <layout class="QGridLayout" name="gridLayout_9">
               <item row="0" column="1">
                <widget class="QToolButton" name="stream_toolButton">
@@ -156,7 +141,35 @@
               </item>
              </layout>
             </item>
-            <item row="14" column="0">
+            <item row="7" column="0" colspan="2">
+             <layout class="QGridLayout" name="gridLayout_5">
+              <item row="0" column="1">
+               <widget class="QToolButton" name="vegetation_toolButton">
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QgsMapLayerComboBox" name="vegetation_comboBox"/>
+              </item>
+             </layout>
+            </item>
+            <item row="2" column="0" colspan="2">
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Input soil polygon features</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Soil types</string>
+              </property>
+             </widget>
+            </item>
+            <item row="16" column="0">
              <spacer name="horizontalSpacer">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
@@ -169,32 +182,32 @@
               </property>
              </spacer>
             </item>
-            <item row="14" column="1">
+            <item row="16" column="1">
              <widget class="QPushButton" name="run_dataprep">
               <property name="text">
                <string>Run</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="0" colspan="2">
-             <layout class="QGridLayout" name="gridLayout">
-              <item row="0" column="1">
-               <widget class="QToolButton" name="elevation_toolButton">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QgsMapLayerComboBox" name="elevation_comboBox"/>
-              </item>
-             </layout>
+            <item row="17" column="0">
+             <spacer name="verticalSpacer_3">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
             </item>
-            <item row="9" column="0">
-             <widget class="QgsFieldComboBox" name="vegetation_type_comboBox"/>
-            </item>
-            <item row="5" column="0">
-             <widget class="QgsFieldComboBox" name="soil_type_comboBox"/>
+            <item row="0" column="0" colspan="2">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Input surface raster</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -207,26 +220,15 @@
         <string>Computation</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_15">
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_16">
-          <property name="text">
-           <string>Input pickle</string>
+        <item row="5" column="0">
+         <widget class="QSpinBox" name="end_time_lineEdit">
+          <property name="maximum">
+           <number>99</number>
+          </property>
+          <property name="value">
+           <number>30</number>
           </property>
          </widget>
-        </item>
-        <item row="1" column="0">
-         <layout class="QGridLayout" name="gridLayout_12">
-          <item row="0" column="0">
-           <widget class="QLineEdit" name="pickle_lineEdit"/>
-          </item>
-          <item row="0" column="1">
-           <widget class="QToolButton" name="pickle_toolButton">
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
         </item>
         <item row="2" column="0">
          <widget class="QLabel" name="label_7">
@@ -235,17 +237,17 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
-         <layout class="QGridLayout" name="gridLayout_10">
-          <item row="0" column="0">
-           <widget class="QLineEdit" name="rainfall_lineEdit"/>
-          </item>
+        <item row="1" column="0">
+         <layout class="QGridLayout" name="gridLayout_12">
           <item row="0" column="1">
-           <widget class="QToolButton" name="rainfall_toolButton">
+           <widget class="QToolButton" name="pickle_toolButton">
             <property name="text">
              <string>...</string>
             </property>
            </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLineEdit" name="pickle_lineEdit"/>
           </item>
          </layout>
         </item>
@@ -255,6 +257,27 @@
            <string>Total running time [min]</string>
           </property>
          </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_16">
+          <property name="text">
+           <string>Input pickle</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <layout class="QGridLayout" name="gridLayout_10">
+          <item row="0" column="1">
+           <widget class="QToolButton" name="rainfall_toolButton">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLineEdit" name="rainfall_lineEdit"/>
+          </item>
+         </layout>
         </item>
         <item row="6" column="1">
          <spacer name="verticalSpacer">
@@ -268,16 +291,6 @@
            </size>
           </property>
          </spacer>
-        </item>
-        <item row="5" column="0">
-         <widget class="QSpinBox" name="end_time_lineEdit">
-          <property name="maximum">
-           <number>99</number>
-          </property>
-          <property name="value">
-           <number>30</number>
-          </property>
-         </widget>
         </item>
        </layout>
       </widget>

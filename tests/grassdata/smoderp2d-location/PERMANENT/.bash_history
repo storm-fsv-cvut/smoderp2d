@@ -25,3 +25,26 @@ g.remove type=raster name=w001001 -f
 ls
 rm -rf tests/grassdata/smoderp2d-location/stream_prep/
 g.remove type=raster name=w001001 -f
+g.list rast
+g.list vect
+g.remove vect=soils_LU
+g.remove name=soils_LU type=vect
+g.remove name=soils_LU type=vector
+g.remove name=soils_LU type=vector
+g.list vect
+g.remove name=soil_LU type=vector
+g.remove name=soil_LU type=vector -f
+ogrinfo soils
+ogrinfo soils.shp
+ogrinfo soils.shp -al
+v.import in=soils.shp 
+v.import in=soils.shp -o --o
+v.import in=landuse.shp -o --o
+db.tables 
+db.drop table=soil_LU_property
+db.droptable table=soil_LU_property
+db.droptable table=soil_LU_property -f
+db.in.ogr in=soil_veg_tab_mean.dbf 
+db.select table=soil_veg_tab_mean_dbf
+db.in.ogr in=soil_veg_tab_mean.dbf out=soil_veg_tab_mean
+db.in.ogr in=tests/data/soil_veg_tab_mean.dbf out=soil_veg_tab_mean

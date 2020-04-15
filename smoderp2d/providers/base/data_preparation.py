@@ -40,9 +40,7 @@ class PrepareDataBase(object):
         Logger.info("DATA PREPARATION")
 
         # check input data (overlaps)
-        self._check_input_data(
-            self._input_params['soil']
-        )
+        self._check_input_data()
 
         # set output data directory
         self._set_output_data()
@@ -211,15 +209,6 @@ class PrepareDataBase(object):
             "Creating temp directory <{}>".format(self.data['temp'])
         )
         os.makedirs(self.data['temp'])
-
-        # create core dir
-        core = os.path.join(
-            self.data['outdir'], "core"
-        )
-        Logger.debug(
-            "Creating core directory <{}>".format(core)
-        )
-        os.makedirs(core)
 
         # create control dir
         control = os.path.join(
@@ -457,7 +446,7 @@ class PrepareDataBase(object):
                 arr, out, 'temp'
             )
         self.storage.write_raster(
-            self.data['mat_hcrit'], 'mat_hcrit', 'core'
+            self.data['mat_hcrit'], 'mat_hcrit', ''
         )
 
     def _get_slope_dir(self, dem_clip):
@@ -589,10 +578,7 @@ class PrepareDataBase(object):
     def _streamPreparation(args):
         raise NotImplemented("Not implemented for base provider")
 
-    @staticmethod
-    def _check_input_data(soil):
+    def _check_input_data(self):
         """Check input data.
-
-        :param str soil: soil vector (check for overlaping polygons)
         """
         raise NotImplemented("Not implemented for base provider")

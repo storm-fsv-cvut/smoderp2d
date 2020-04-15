@@ -27,7 +27,7 @@ Download SMODERP2D source code to your computer.
 
 ### From command line
 
-    ./bin/start-smoderp2d.py --typecomp roff --indata tests/test.ini
+    ./bin/start-smoderp2d.py --typecomp roff --indata tests/quicktest.ini
 
 ### From GRASS GIS
 
@@ -41,11 +41,11 @@ Run `r.smoderp2d` module:
 
     ./bin/grass/r.smoderp2d/r.smoderp2d.py \
         elevation=dem10m \
-        soil=soil_LU soil_type=soil_id \
-        vegetation=soil_LU vegetation_type=lu_id \
+        soil=soils soil_type=SID \
+        vegetation=landuse vegetation_type=LandUse \
         rainfall_file=tests/data/rainfall.txt \
         points=points \
-        table_soil_vegetation=soil_LU_property table_soil_vegetation_code=soilveg \
+        table_soil_vegetation=soil_veg_tab_mean table_soil_vegetation_code=soilveg \
         stream=stream \
         table_stream_shape=stream_shape table_stream_shape_code=smoderp \
         maxdt=10 end_time=120 output_dir=/tmp/smoderp2d
@@ -55,3 +55,11 @@ Run `r.smoderp2d` module:
 Launch SMODERP2D ArcToolbox from `bin\arcgis` directory.
 
 ![SMODERP2D ArcToolbox in action](img/arctoolbox.png?raw=true "SMODERP2D ArcToolbox in action")
+
+### From QGIS
+
+Quick test (on Linux):
+
+    QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/projekt.qgs
+
+Enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
