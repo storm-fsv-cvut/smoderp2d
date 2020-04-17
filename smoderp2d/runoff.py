@@ -13,6 +13,7 @@ Classes:
 
 import time
 import os
+import numpy as np
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
@@ -37,6 +38,9 @@ class FlowControl(object):
     def __init__(self):
         """ Set iteration criteria variables. """
 
+        # number of rows and columns in numpy array
+        r, c = GridGlobals.get_dim()
+
         # type of infiltration
         #  - 0 for philip infiltration is the only
         #    one in current version
@@ -50,7 +54,7 @@ class FlowControl(object):
         self.tz = 0
 
         # stores cumulative interception
-        self.sum_interception = 0
+        self.sum_interception = np.zeros((r, c), float)
 
         # factor deviding the time step for rill calculation
         # currently inactive
@@ -63,7 +67,9 @@ class FlowControl(object):
         self.iter_ = 0
 
         # defined by save_vars()
-        self.tz_tmp = self.sum_interception_tmp = None
+        self.tz_tmp = None
+        self.sum_interception_tmp = np.copy(self.sum_interception)
+
         # defined by save_ratio()
         self.ratio_tmp = None
         
@@ -72,14 +78,14 @@ class FlowControl(object):
         in case of repeating time time stem iteration.
         """
         self.tz_tmp = self.tz
-        self.sum_interception_tmp = self.sum_interception
+        self.sum_interception_tmp = np.copy(self.sum_interception)
 
     def restore_vars(self):
         """Restore tz and sum of interception
         in case of repeating time time stem iteration.
         """
         self.tz = self.tz_tmp
-        self.sum_interception = self.sum_interception_tmp
+        self.sum_interception = np.copy(self.sum_interception_tmp)
 
     def refresh_iter(self):
         """Set current number of iteration to

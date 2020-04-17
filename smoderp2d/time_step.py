@@ -148,8 +148,8 @@ class TimeStep:
                 #
                 # current cell precipitation
                 #
-                actRain, fc.sum_interception, rain_arr.arr[i][j].veg = rain_f.current_rain(
-                    rain_arr.arr[i][j], potRain, fc.sum_interception)
+                actRain, fc.sum_interception[i][j], rain_arr.arr[i][j].veg = rain_f.current_rain(
+                    rain_arr.arr[i][j], potRain, fc.sum_interception[i][j])
                 surface.arr[i][j].cur_rain = actRain
 
                 #
