@@ -15,7 +15,7 @@ from smoderp2d.core.surface import surface_retention
 
 infilt_capa = 0
 infilt_time = 0
-max_infilt_capa = 0.003  # [m]
+max_infilt_capa = 0.000  # [m]
 
 
 # Class manages the one time step operation
@@ -148,8 +148,8 @@ class TimeStep:
                 #
                 # current cell precipitation
                 #
-                actRain, fc.sum_interception, rain_arr.arr[i][j].veg_true = rain_f.current_rain(
-                    rain_arr.arr[i][j], potRain, fc.sum_interception)
+                actRain, fc.sum_interception[i][j], rain_arr.arr[i][j].veg = rain_f.current_rain(
+                    rain_arr.arr[i][j], potRain, fc.sum_interception[i][j])
                 surface.arr[i][j].cur_rain = actRain
 
                 #

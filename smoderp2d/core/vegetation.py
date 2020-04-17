@@ -9,8 +9,8 @@ class VegArrs(object):
         """Vegetation attributes.
 
         :param veg bool: True for vegetation
-        :param ppl: TODO
-        :param pi: TODO
+        :param ppl: pomerna plocha listova (leave area index)
+        :param pi: potential interception
         """
         self.veg = veg
         self.ppl = ppl
@@ -18,12 +18,15 @@ class VegArrs(object):
 
 class Vegetation(GridGlobals, Size):
     def __init__(self):
-        """TODO."""
+        """Class stores info about the vegetation cover."""
         super(Vegetation, self).__init__()
         
+        # convert unit mm -> m 
+        # TODO move this conversion into data preparation
         mat_pi = Globals.get_mat_pi() / 1000.0
 
-        self.n = 3 # TODO ?
+        # number of variabes (used in class Size)
+        self.n = 3
 
         for i in range(self.r):
             for j in range(self.c):

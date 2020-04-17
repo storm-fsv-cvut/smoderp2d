@@ -25,7 +25,7 @@ class CmdWritter(BaseWritter):
         """
         file_output = self._raster_output_path(output_name, directory)
 
-        np.savetxt(file_output, array, fmt='%.3e')
+        np.savetxt(file_output, array, fmt='%.6e')
 
         self._print_array_stats(
             array, file_output
