@@ -171,20 +171,19 @@ def current_rain(rain, rainfallm, sum_interception):
     rain_veg = rain.veg
     rain_ppl = rain.ppl
     rain_pi = rain.pi
-    if rain_veg != int(5):
+    sum_interception_pre = sum_interception
+    if not rain_veg:
         interc = rain_ppl * rainfallm  # interception is konstant
-        # jj nemelo by to byt interc = (1-rain_ppl) * rainfallm
-        #                             -------------
-
         sum_interception += interc  # sum of intercepcion
-        NS = rainfallm - interc  # netto rainfallm
-        # jj nemela by byt srazka 0 dokun neni naplnena intercepcni zona?
-        #
 
-        # if potentional interception is overthrown by intercepcion sum, then
-        # the rainfall is effetive
         if sum_interception >= rain_pi:
-            rain_veg = int(5)
+            # rest of intercetpion
+            interc_rest = rain_pi - sum_interception_pre
+            NS = rainfallm - interc_rest  # netto rainfallm
+            rain_veg = True # as vegetatio interception is full
+        else:
+            NS = rainfallm - interc  # netto rainfallm
+    
     else:
         NS = rainfallm
 
