@@ -1,6 +1,7 @@
 from smoderp2d.stream_functions import stream_f
 from smoderp2d.core.general import GridGlobals, Globals as Gl
 from smoderp2d.providers import Logger
+from smoderp2d.exceptions import ProviderError
 
 class Reach(object):
     def __init__(self, id_, point_x, point_y, point_x_1, point_y_1,
@@ -106,7 +107,13 @@ class Stream(object):
     # Documentation for a reach inflows.
     #  @param id_ starts in 0 not 1000
     def reach_inflows(self, id_, inflows):
-        self.reach[id_].V_in_from_field += inflows
+        try:
+            self.reach[id_].V_in_from_field += inflows
+        except IndexError:
+            raise ProviderError(
+                "Unable to reach inflow. Index {} out of range (number of reach {})".format(
+                    id_, len(self.reach)
+            ))
 
     def stream_reach_outflow(self, dt):
         for id_ in range(self.nReaches):
