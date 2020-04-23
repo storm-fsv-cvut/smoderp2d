@@ -162,11 +162,6 @@ class TimeStep:
                 #
                 surBIL = surface.arr[i][j].h_total_pre + actRain + surface.arr[i][j].inflow_tm / pixel_area - (
                     surface.arr[i][j].vol_runoff / pixel_area + surface.arr[i][j].vol_runoff_rill / pixel_area)
-
-                #
-                # surface retention
-                #
-                surBIL = surface_retention(surBIL, surface.arr[i][j])
             
                 #
                 # infiltration
@@ -179,7 +174,12 @@ class TimeStep:
                         surface.arr[i][j].soil_type, surBIL)
                     surface.arr[i][j].infiltration = infiltration
 
+                #
                 # surface retention
+                #
+                surBIL = surface_retention(surBIL, surface.arr[i][j])
+
+                # add exfiltration
                 surBIL += subsurface.get_exfiltration(i, j)
                     
                     
