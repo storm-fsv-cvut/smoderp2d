@@ -38,8 +38,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>417</width>
-             <height>599</height>
+             <width>415</width>
+             <height>576</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_8">
@@ -181,13 +181,6 @@
                </size>
               </property>
              </spacer>
-            </item>
-            <item row="16" column="1">
-             <widget class="QPushButton" name="run_dataprep">
-              <property name="text">
-               <string>Run</string>
-              </property>
-             </widget>
             </item>
             <item row="17" column="0">
              <spacer name="verticalSpacer_3">
@@ -415,6 +408,13 @@
         </item>
        </layout>
       </widget>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPushButton" name="run_dataprep">
+      <property name="text">
+       <string>Run</string>
+      </property>
      </widget>
     </item>
    </layout>
