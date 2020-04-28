@@ -70,26 +70,26 @@ class Stream(object):
 
         self.cell_stream = Gl.cell_stream
 
-        self.reach = []
+        self.reach = {}
 
         for i in range(self.nReaches):
-            self.reach.append(
-                Reach(self.streams[0][i],
-                      self.streams[1][i],
-                      self.streams[2][i],
-                      self.streams[3][i],
-                      self.streams[4][i],
-                      self.streams[5][i],
-                      self.streams[6][i],
-                      self.streams[7][i],
-                      self.streams[8][i],
-                      self.streams[9][i],
-                      self.streams[10][i],
-                      self.streams[11][i],
-                      self.streams[12][i],
-                      self.streams[13][i],
-                      self.streams[14][i]))
-        
+            self.reach[int(self.streams[0][i])] = Reach(
+                self.streams[0][i],
+                self.streams[1][i],
+                self.streams[2][i],
+                self.streams[3][i],
+                self.streams[4][i],
+                self.streams[5][i],
+                self.streams[6][i],
+                self.streams[7][i],
+                self.streams[8][i],
+                self.streams[9][i],
+                self.streams[10][i],
+                self.streams[11][i],
+                self.streams[12][i],
+                self.streams[13][i],
+                self.streams[14][i]
+            )
         
         self.streams_loc = Gl.streams_loc
         self.mat_stream_reach = Gl.mat_stream_reach
@@ -101,61 +101,64 @@ class Stream(object):
         self.STREAM_RATIO = Gl.STREAM_RATIO
 
     def reset_inflows(self):
-        for id_ in range(self.nReaches):
-            self.reach[id_].V_in_from_field = 0
+        for r in self.reach.values():
+            r.V_in_from_field = 0
 
     # Documentation for a reach inflows.
-    #  @param id_ starts in 0 not 1000
-    def reach_inflows(self, id_, inflows):
+    #  @param fid feature id
+    def reach_inflows(self, fid, inflows):
         try:
-            self.reach[id_].V_in_from_field += inflows
-        except IndexError:
+            self.reach[fid].V_in_from_field += inflows
+        except KeyError:
             raise ProviderError(
-                "Unable to reach inflow. Index {} out of range (number of reach {})".format(
-                    id_, len(self.reach)
+                "Unable to reach inflow. Feature id {} not found in {}".format(
+                    fid, 
+                    ','.join(list(map(lambda x: str(x), self.reach.keys())))
             ))
 
     def stream_reach_outflow(self, dt):
-        for id_ in range(self.nReaches):
-            self.reach[id_].outflow_method(self.reach[id_], dt)
+        for r in self.reach.values():
+            r.outflow_method(r, dt)
 
     def stream_reach_inflow(self):
-        for id_ in range(self.nReaches):
-            self.reach[id_].V_in_from_reach = 0
-            self.reach[id_].V_out_domain = 0
+        for r in self.reach.values():
+            r.V_in_from_reach = 0
+            r.V_out_domain = 0
 
-        for id_ in range(self.nReaches):
-            id_to_node = int(self.reach[id_].to_node)
+        for r in self.reach.values():
+            id_to_node = int(r.to_node)
             if id_to_node == -9999:
-                self.reach[id_].V_out_domain += self.reach[id_].V_out
+                r.V_out_domain += r.V_out
             else:
-                self.reach[id_to_node].V_in_from_reach += self.reach[id_].V_out
+                self.reach[id_to_node].V_in_from_reach += r.V_out
 
     # jj jeste dodelat ty maxima a kumulativni zbyle
     def stream_cumulative(self, time):
-        for id_ in range(self.nReaches):
-            self.reach[id_].V_out_cum += self.reach[id_].V_out
-            self.reach[
-                id_].V_in_from_field_cum += self.reach[
-                    id_].V_in_from_field
-            if self.reach[id_].Q_out > self.reach[id_].Q_max:
-                self.reach[id_].Q_max = self.reach[id_].Q_out
-                self.reach[id_].timeQ_max = time
-            if self.reach[id_].h > self.reach[id_].h_max:
-                self.reach[id_].h_max = self.reach[id_].h
-                self.reach[id_].timeh_max = time
+        for r in self.reach.values():
+            r.V_out_cum += r.V_out
+            r.V_in_from_field_cum += r.V_in_from_field
+            if r.Q_out > r.Q_max:
+                r.Q_max = r.Q_out
+                r.timeQ_max = time
+            if r.h > r.h_max:
+                r.h_max = r.h
+                r.timeh_max = time
 
     def return_stream_str_vals(self, i, j, sep, dt, extraOut):
-        id_ = int(self.arr[i][j].state - 1000)
+        fid = int(self.arr[i][j].state - 1000)
         # Time;   V_runoff  ;   Q   ;    V_from_field  ;  V_rests_in_stream
         # print id_, self.reach[id_].Q_out, str(self.reach[id_].V_out)
+        r = self.reach[fid]
         if not(extraOut):
-            line = str(self.reach[id_].h) + sep + str(
-                self.reach[id_].Q_out) + sep + str(self.reach[id_].V_out)
+            line = '{r}{sep}{q}{sep}{v}'.format(
+                r=r, q=r.Q_out, v=r.V_out, sep=sep
+            )
         else:
-            line = str(self.reach[id_].h) + sep + str(self.reach[id_].V_out) + sep + str(self.reach[id_].Q_out) + sep + \
-                str(self.reach[id_].V_in_from_field) + sep + str(
-                self.reach[id_].vol_rest)
+            line = '{h}{sep}{v}{sep}{q}{sep}{vi}{sep}{vo}'.format(
+                h=r.h, v=r.V_out, q=r.Q_out, vi=r.V_in_from_field,
+                vo=r.vol_rest, sep=sep
+            )
+
         return line
 
 

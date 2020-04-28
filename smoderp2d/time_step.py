@@ -193,10 +193,12 @@ class TimeStep:
                     h_sub = subsurface.runoff_stream_cell(i, j)
 
                     inflowToReach = h_sub * pixel_area + surBIL * pixel_area
-                    
+
+                    print (surface_state)
+                    print (surface_state - 1000)
                     surface.reach_inflows(
-                        id_=int(surface_state - 1000),
-                        inflows=inflowToReach)
+                        surface_state - 1000,
+                        inflowToReach)
 
                 else:
                     surface.arr[i][j].h_total_new = surBIL
