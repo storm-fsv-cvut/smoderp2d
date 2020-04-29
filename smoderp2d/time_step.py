@@ -185,8 +185,8 @@ class TimeStep:
                     
                 surface_state = surface.arr[i][j].state
 
-                if surface_state >= 1000:
-                    # toto je pripraveno pro odtok v ryhach
+                if surface_state > 1000:
+                    # stream flow in the cell
 
                     surface.arr[i][j].h_total_new = 0.0
 

@@ -96,7 +96,7 @@ class Stream(object):
 
         for i in self.rr:
             for j in self.rc[i]:
-                self.arr[i][j].state += self.mat_stream_reach[i][j]
+                self.arr[i][j].state = self.mat_stream_reach[i][j]
 
         self.STREAM_RATIO = Gl.STREAM_RATIO
 

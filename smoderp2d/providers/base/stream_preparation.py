@@ -86,8 +86,9 @@ class StreamPreparationBase(object):
         # no. of stream parts
         for i in range(self.rows):
             for j in range(self.cols):
-                if mat_stream_seg[i][j] > 0:
-                    mat_stream_seg[i][j] += 999
+                if mat_stream_seg[i][j] > 0: # FID starts at 1
+                    # state 0|1|2 (>1000 -> stream flow)
+                    mat_stream_seg[i][j] += 1000
 
     def _stream_hydraulics(self, stream):
         """TODO: is it used?"""
