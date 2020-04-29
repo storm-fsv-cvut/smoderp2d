@@ -145,7 +145,7 @@ class Stream(object):
                 r.timeh_max = time
 
     def return_stream_str_vals(self, i, j, sep, dt, extraOut):
-        fid = int(self.arr[i][j].state - 1000)
+        fid = int(self.arr[i][j].state - Gl.streams_flow_inc)
         # Time;   V_runoff  ;   Q   ;    V_from_field  ;  V_rests_in_stream
         # print id_, self.reach[id_].Q_out, str(self.reach[id_].V_out)
         r = self.reach[fid]

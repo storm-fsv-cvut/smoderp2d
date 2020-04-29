@@ -42,7 +42,7 @@ class TimeStep:
 
                 surface_state = surface.arr[i][j].state
 
-                if surface_state >= 1000:
+                if surface_state > Globals.streams_flow_inc:
                     q_sheet = 0.0
                     v_sheet = 0.0
                     q_rill = 0.0
@@ -177,7 +177,7 @@ class TimeStep:
                     
                 surface_state = surface.arr[i][j].state
 
-                if surface_state > 1000:
+                if surface_state > Globals.streams_flow_inc:
                     # stream flow in the cell
 
                     surface.arr[i][j].h_total_new = 0.0
@@ -187,7 +187,7 @@ class TimeStep:
                     inflowToReach = h_sub * pixel_area + surBIL * pixel_area
 
                     surface.reach_inflows(
-                        surface_state - 1000,
+                        surface_state - Globals.streams_flow_inc,
                         inflowToReach)
 
                 else:

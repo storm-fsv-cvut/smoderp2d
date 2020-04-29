@@ -1,4 +1,5 @@
 from smoderp2d.providers.base import Logger
+from smoderp2d.core.general import Globals as Gl
 
 # definice erroru  na urovni modulu
 #
@@ -87,8 +88,8 @@ class StreamPreparationBase(object):
         for i in range(self.rows):
             for j in range(self.cols):
                 if mat_stream_seg[i][j] > 0: # FID starts at 1
-                    # state 0|1|2 (>1000 -> stream flow)
-                    mat_stream_seg[i][j] += 1000
+                    # state 0|1|2 (> Gl.streams_flow_inc -> stream flow)
+                    mat_stream_seg[i][j] += Gl.streams_flow_inc
 
     def _stream_hydraulics(self, stream):
         """TODO: is it used?"""
