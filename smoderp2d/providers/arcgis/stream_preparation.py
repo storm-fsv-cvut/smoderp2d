@@ -10,6 +10,7 @@ from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.stream_preparation import StreamPreparationBase
 from smoderp2d.providers.base.stream_preparation import StreamPreparationError, ZeroSlopeError
 from smoderp2d.providers.arcgis.manage_fields import ManageFields
+from smoderp2d.core.general import Globals as Gl
 
 class StreamPreparation(StreamPreparationBase, ManageFields):
     def __init__(self, args, writter):
@@ -242,6 +243,17 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         self._get_mat_stream_seg_(mat_stream_seg, no_of_streams)
         
         return mat_stream_seg
+
+    def _get_mat_stream_seg_(self, mat_stream_seg, no_of_streams):
+        # each element of stream has a number assigned from 0 to
+        # no. of stream parts
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if mat_stream_seg[i][j] > 0: 
+                    # FID in stream_seg starts at 1
+                    # BUT in fig  in streamlist start at 0 in arcgis
+                    # state 0|1|2 (> Gl.streams_flow_inc -> stream flow)
+                    mat_stream_seg[i][j] += (Gl.streams_flow_inc - 1)
 
     def _stream_slope(self, stream):
         """
