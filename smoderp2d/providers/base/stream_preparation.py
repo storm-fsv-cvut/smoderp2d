@@ -121,7 +121,7 @@ class StreamPreparationBase(object):
         raise NotImplemented("Not implemented for base provider") 
 
     def _streamlist(self):
-        self.streamlist = []
+        self.streamlist = {}
         for field_name in [self._primary_key,
                            'point_x',
                            'point_y',
@@ -142,6 +142,8 @@ class StreamPreparationBase(object):
             except ValueError:
                 idx = self.field_names.index(field_name.upper())
 
-            self.streamlist.append(
-                self.stream_tmp[idx]
-            )
+            self.streamlist[field_name] = self.stream_tmp[idx]
+
+        # primary key is provider specific, use generic 'fid'
+        self.streamlist['fid'] = self.streamlist[self._primary_key]
+        del self.streamlist[self._primary_key]

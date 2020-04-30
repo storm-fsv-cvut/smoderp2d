@@ -4,22 +4,22 @@ from smoderp2d.providers import Logger
 from smoderp2d.exceptions import ProviderError
 
 class Reach(object):
-    def __init__(self, id_, point_x, point_y, point_x_1, point_y_1,
-                 to_node, length, sklon, smoderp, number, shape, b, m, roughness, q365):
+    def __init__(self, fid, point_x, point_y, point_x_1, point_y_1,
+                 to_node, length, slope, smoderp, number, shapetype, b, m, roughness, q365):
 
-        self.id_ = id_
+        self.fid = fid
         self.pointsFrom = [point_x, point_y]
         self.pointsTo = [point_x_1, point_y_1]
         self.to_node = to_node
         self.length = length
-        if sklon < 0:
+        if slope < 0:
             Logger.info(
-                "Slope in reach part {} indicated minus slope in stream".format(id_
+                "Slope in reach part {} indicated minus slope in stream".format(fid
                 ))
-        self.slope = abs(sklon)
+        self.slope = abs(slope)
         self.smoderp = smoderp
         self.no = number
-        self.shape = shape
+        self.shapetype = shapetype
 
         self.b = b
         self.m = m
@@ -41,13 +41,13 @@ class Reach(object):
         self.V_out_domain = 0.0
 
 
-        if shape == 0:  # obdelnik
+        if shapetype == 0:  # obdelnik
             self.outflow_method = stream_f.rectangle
-        elif shape == 1:  # trapezoid
+        elif shapetype == 1:  # trapezoid
             self.outflow_method = stream_f.trapezoid
-        elif shape == 2:  # triangle
+        elif shapetype == 2:  # triangle
             self.outflow_method = stream_f.triangle
-        elif shape == 3:  # parabola
+        elif shapetype == 3:  # parabola
             self.outflow_method = stream_f.parabola
         else:
             self.outflow_method = stream_f.rectangle
@@ -66,31 +66,16 @@ class Stream(object):
         Logger.info('Stream: ON')
         self.streams = Gl.streams
 
-        self.nReaches = len(self.streams[0])
+        self.nReaches = len(self.streams['fid'])
 
         self.cell_stream = Gl.cell_stream
 
         self.reach = {}
 
         for i in range(self.nReaches):
-            self.reach[int(self.streams[0][i])] = Reach(
-                self.streams[0][i],
-                self.streams[1][i],
-                self.streams[2][i],
-                self.streams[3][i],
-                self.streams[4][i],
-                self.streams[5][i],
-                self.streams[6][i],
-                self.streams[7][i],
-                self.streams[8][i],
-                self.streams[9][i],
-                self.streams[10][i],
-                self.streams[11][i],
-                self.streams[12][i],
-                self.streams[13][i],
-                self.streams[14][i]
-            )
-        
+            args = {k:v[i] for k,v in self.streams.items()}
+            self.reach[int(self.streams['fid'][i])] = Reach(**args)
+
         self.streams_loc = Gl.streams_loc
         self.mat_stream_reach = Gl.mat_stream_reach
 
@@ -126,11 +111,11 @@ class Stream(object):
             r.V_out_domain = 0
 
         for r in self.reach.values():
-            id_to_node = int(r.to_node)
-            if id_to_node == -9999:
+            fid_to_node = int(r.to_node)
+            if fid_to_node == -9999:
                 r.V_out_domain += r.V_out
             else:
-                self.reach[id_to_node].V_in_from_reach += r.V_out
+                self.reach[fid_to_node].V_in_from_reach += r.V_out
 
     # jj jeste dodelat ty maxima a kumulativni zbyle
     def stream_cumulative(self, time):
@@ -147,7 +132,7 @@ class Stream(object):
     def return_stream_str_vals(self, i, j, sep, dt, extraOut):
         fid = int(self.arr[i][j].state - Gl.streams_flow_inc)
         # Time;   V_runoff  ;   Q   ;    V_from_field  ;  V_rests_in_stream
-        # print id_, self.reach[id_].Q_out, str(self.reach[id_].V_out)
+        # print fid, self.reach[fid].Q_out, str(self.reach[fid].V_out)
         r = self.reach[fid]
         if not(extraOut):
             line = '{r}{sep}{q}{sep}{v}'.format(
@@ -172,7 +157,7 @@ class StreamPass(object):
     def reset_inflows(self):
         pass
 
-    def reach_inflows(self, id_, inflows):
+    def reach_inflows(self, fid, inflows):
         pass
 
     def stream_reach_inflow(self):
