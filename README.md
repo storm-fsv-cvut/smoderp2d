@@ -39,16 +39,7 @@ Create testing mapset:
 
 Run `r.smoderp2d` module:
 
-    ./bin/grass/r.smoderp2d/r.smoderp2d.py \
-        elevation=dem10m \
-        soil=soils soil_type=SID \
-        vegetation=landuse vegetation_type=LandUse \
-        rainfall_file=tests/data/rainfall.txt \
-        points=points \
-        table_soil_vegetation=soil_veg_tab_mean table_soil_vegetation_code=soilveg \
-        stream=stream \
-        table_stream_shape=stream_shape table_stream_shape_code=smoderp \
-        maxdt=10 end_time=120 output_dir=/tmp/smoderp2d
+    ./bin/grass/test_r_smoderp2d.py
 
 ### From ArcGIS 10.x or Pro
 
