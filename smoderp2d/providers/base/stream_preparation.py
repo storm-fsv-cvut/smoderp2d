@@ -82,6 +82,15 @@ class StreamPreparationBase(object):
     def _get_mat_stream_seg(self, stream):
         raise NotImplemented("Not implemented for base provider")
 
+    def _get_mat_stream_seg_(self, mat_stream_seg, no_of_streams):
+        # each element of stream has a number assigned from 0 to
+        # no. of stream parts
+        for i in range(self.rows):
+            for j in range(self.cols):
+                if mat_stream_seg[i][j] > 0: # FID starts at 1
+                    # state 0|1|2 (> Gl.streams_flow_inc -> stream flow)
+                    mat_stream_seg[i][j] += Gl.streams_flow_inc
+
     def _stream_hydraulics(self, stream):
         """TODO: is it used?"""
         self._add_field(stream, "length", "DOUBLE", 0.0)  # (m)
