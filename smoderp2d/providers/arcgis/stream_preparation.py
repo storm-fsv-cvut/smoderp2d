@@ -171,20 +171,10 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
 
         fields = [self._primary_key, "POINT_X", "POINT_Y", "POINT_X_1", "POINT_Y_1", "to_node"]
 
-        # if stream is saved in gdb, it's id field begins with 1
-        # in further computation (stream.py) it would exceed array length
-        # MK 4.4.19
-        fid_offset_flag = True
-        fid_offset = 0
         with arcpy.da.SearchCursor(stream, fields) as cursor_start:
             for row in cursor_start:
-
-                if fid_offset_flag:
-                    fid_offset = row[0]
-                    fid_offset_flag = False
-
                 a = (row[1], row[2])
-                d = row[0] - fid_offset
+                d = row[0]
 
                 with arcpy.da.UpdateCursor(stream, fields) as cursor_end:
                     for row in cursor_end:
@@ -302,12 +292,5 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
             field_vals = [row.getValue(field) for field in self.field_names]
             for i in range(len(field_vals)):
                 self.stream_tmp[i].append(field_vals[i])
-
-        # check if ID field starts from 1, if so, make it start from 0
-        # it could not be done in stream feature class, bcs it's id field is locked
-        # MK 4.4.19
-        if self.stream_tmp[0][0] == 1:
-            for i in range(len(self.stream_tmp[0])):
-                self.stream_tmp[0][i] -= 1
 
         self._streamlist()
