@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 
 import os
-import tempfile
 import subprocess
 
 test_dir = os.path.dirname(__file__)
-tmp_dir = tempfile.mkdtemp()
-
+data_dir = os.path.join(test_dir, '..', '..', 'tests', 'data')
 test = subprocess.Popen([
     os.environ['GRASS_PYTHON'],
     os.path.join(test_dir, 'r.smoderp2d', 'r.smoderp2d.py'),
@@ -15,7 +13,7 @@ test = subprocess.Popen([
     'soil_type=SID',
     'vegetation=landuse',
     'vegetation_type=LandUse',
-    'rainfall_file={}'.format(os.path.join(test_dir, '..', '..', 'tests', 'data', 'rainfall.txt')),
+    'rainfall_file={}'.format(os.path.join(data_dir, 'rainfall.txt')),
     'points=points',
     'table_soil_vegetation=soil_veg_tab_mean',
     'table_soil_vegetation_code=soilveg',
@@ -24,6 +22,6 @@ test = subprocess.Popen([
     'table_stream_shape_code=smoderp',
     'maxdt=10',
     'end_time=120',
-    'output_dir={}_{}'.format(os.path.join(tmp_dir, 'smoderp2d'), os.getpid())
+    'output_dir={}'.format(os.path.join(data_dir, 'output_grass'))
 ])
 test.wait()

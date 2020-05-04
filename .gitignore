@@ -5,4 +5,4 @@ tests/grassdata/smoderp2d-location/PERMANENT/cell_misc/w001001/reclassed_to
 tests/grassdata/smoderp2d-location/stream_prep/
 tests/grassdata/smoderp2d-location/test
 tests/grassdata/smoderp2d-location/water
-tests/data/output
+tests/data/output*
