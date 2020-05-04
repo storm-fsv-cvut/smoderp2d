@@ -42,7 +42,7 @@ class TimeStep:
 
                 surface_state = surface.arr[i][j].state
 
-                if surface_state >= 1000:
+                if surface_state > Globals.streams_flow_inc:
                     q_sheet = 0.0
                     v_sheet = 0.0
                     q_rill = 0.0
@@ -56,7 +56,6 @@ class TimeStep:
 
                 # TODO: variable not used. Should we delete it?
                 q_surface = q_sheet + q_rill
-                # print v_sheet,v_rill
                 v = max(v_sheet, v_rill)
                 co = 'sheet'
                 courant.CFL(
@@ -73,9 +72,6 @@ class TimeStep:
 
                 # w1 = surface.arr[i][j].vol_runoff_rill
                 # w2 = surface.arr[i][j].v_rill_rest
-                # print surface.arr[i][j].h_total_pre
-                # if (w1 > 0 and w2 == 0) :
-                    # print 'asdf', w1, w2
 
         return potRain
 
@@ -127,7 +123,6 @@ class TimeStep:
                 delta_t,
                 fc.total_time - infilt_time,
                 NoDataValue)
-            # print total_time-infilt_time, iii[3]*1000, k, s
 
         infilt.set_combinatIndex(combinatIndex)
 
@@ -140,11 +135,8 @@ class TimeStep:
         subsurface.fill_slope()
         subsurface.new_inflows()
 
-        # print 'bbilll'
         for i in rr:
             for j in rc[i]:
-
-                # print i,j, surface.arr[i][j].h_total_pre, surface.arr[i][j].vol_runoff
                 #
                 # current cell precipitation
                 #
@@ -185,18 +177,18 @@ class TimeStep:
                     
                 surface_state = surface.arr[i][j].state
 
-                if surface_state >= 1000:
-                    # toto je pripraveno pro odtok v ryhach
+                if surface_state > Globals.streams_flow_inc:
+                    # stream flow in the cell
 
                     surface.arr[i][j].h_total_new = 0.0
 
                     h_sub = subsurface.runoff_stream_cell(i, j)
 
                     inflowToReach = h_sub * pixel_area + surBIL * pixel_area
-                    
+
                     surface.reach_inflows(
-                        id_=int(surface_state - 1000),
-                        inflows=inflowToReach)
+                        surface_state - Globals.streams_flow_inc,
+                        inflowToReach)
 
                 else:
                     surface.arr[i][j].h_total_new = surBIL

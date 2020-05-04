@@ -1,4 +1,5 @@
 from smoderp2d.providers.base import Logger
+from smoderp2d.core.general import Globals as Gl
 
 # definice erroru  na urovni modulu
 #
@@ -86,8 +87,9 @@ class StreamPreparationBase(object):
         # no. of stream parts
         for i in range(self.rows):
             for j in range(self.cols):
-                if mat_stream_seg[i][j] > 0:
-                    mat_stream_seg[i][j] += 999
+                if mat_stream_seg[i][j] > 0: # FID starts at 1
+                    # state 0|1|2 (> Gl.streams_flow_inc -> stream flow)
+                    mat_stream_seg[i][j] += Gl.streams_flow_inc
 
     def _stream_hydraulics(self, stream):
         """TODO: is it used?"""
@@ -119,7 +121,7 @@ class StreamPreparationBase(object):
         raise NotImplemented("Not implemented for base provider") 
 
     def _streamlist(self):
-        self.streamlist = []
+        self.streamlist = {}
         for field_name in [self._primary_key,
                            'point_x',
                            'point_y',
@@ -140,6 +142,8 @@ class StreamPreparationBase(object):
             except ValueError:
                 idx = self.field_names.index(field_name.upper())
 
-            self.streamlist.append(
-                self.stream_tmp[idx]
-            )
+            self.streamlist[field_name] = self.stream_tmp[idx]
+
+        # primary key is provider specific, use generic 'fid'
+        self.streamlist['fid'] = self.streamlist[self._primary_key]
+        del self.streamlist[self._primary_key]

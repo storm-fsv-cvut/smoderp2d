@@ -182,7 +182,9 @@ class Globals:
     maxdt = None
     # if true extra data are stores in the point*.dat files
     extraOut = None
-
+    # stream magic number
+    streams_flow_inc = 1000
+    
     @classmethod
     def get_type_of_computing(cls):
         return cls.type_of_computing

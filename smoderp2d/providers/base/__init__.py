@@ -413,25 +413,26 @@ class BaseProvider(object):
 
         # store stream reaches results to a table
         # if stream is calculated
-        if (stream) :
+        if stream:
             n = len(stream)
             m = 7
             outputtable = np.zeros([n,m])
+            fid = list(stream.keys())
             for i in range(n):
-                outputtable[i][0] = stream[i].id_
-                outputtable[i][1] = stream[i].b
-                outputtable[i][2] = stream[i].m
-                outputtable[i][3] = stream[i].roughness
-                outputtable[i][4] = stream[i].q365
-                outputtable[i][5] = stream[i].V_out_cum
-                outputtable[i][6] = stream[i].Q_max
+                outputtable[i][0] = stream[fid[i]].fid
+                outputtable[i][1] = stream[fid[i]].b
+                outputtable[i][2] = stream[fid[i]].m
+                outputtable[i][3] = stream[fid[i]].roughness
+                outputtable[i][4] = stream[fid[i]].q365
+                outputtable[i][5] = stream[fid[i]].V_out_cum
+                outputtable[i][6] = stream[fid[i]].Q_max
             
             path_ = os.path.join(
                     Globals.outdir,
                     'stream.csv'
                     )
             np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
-                    header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}q365_m3_s{sep}V_out_cum_m3{sep}Q_max_m3_s'.format(sep=';'))
+                       header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}q365_m3_s{sep}V_out_cum_m3{sep}Q_max_m3_s'.format(sep=';'))
 
 
     def _make_mask(self, arr, int_=False):
