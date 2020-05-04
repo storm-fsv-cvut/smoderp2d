@@ -7,7 +7,7 @@ import subprocess
 test_dir = os.path.dirname(__file__)
 tmp_dir = tempfile.mkdtemp()
 
-test = subprocess.Popen([
+subprocess.Popen([
     os.environ['GRASS_PYTHON'],
     os.path.join(test_dir, 'r.smoderp2d', 'r.smoderp2d.py'),
     'elevation=dem10m',
@@ -26,4 +26,3 @@ test = subprocess.Popen([
     'end_time=120',
     'output_dir={}_{}'.format(os.path.join(tmp_dir, 'smoderp2d'), os.getpid())
 ])
-test.wait()
