@@ -300,8 +300,8 @@ class Runoff(object):
             # last results are stored in hydrographs
             # and error is raised
             if not self.flow_control.max_iter_reached():
-                for i in Globals.rr:
-                    for j in Globals.rc[i]:
+                for i in GridGlobals.rr:
+                    for j in GridGlobals.rc[i]:
                         self.hydrographs.write_hydrographs_record(
                             i,
                             j,
