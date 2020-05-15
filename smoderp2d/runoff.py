@@ -310,11 +310,12 @@ class Runoff(object):
                             self.delta_t,
                             self.surface,
                             self.subsurface,
-                            self.curr_rain
+                            actRain
                         )
                 # TODO
                 # post_proc.do(self.cumulative, Globals.mat_slope, Gl, surface.arr)
-                raise MaxIterationExceeded(max_iter, total_time)
+                raise MaxIterationExceeded(self.flow_control.max_iter, 
+                        self.flow_control.total_time)
 
             # adjusts the last time step size
             if (Globals.end_time - self.flow_control.total_time) < self.delta_t and \
