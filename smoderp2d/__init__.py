@@ -42,6 +42,9 @@ class Runner(object):
         elif isinstance(self, WpsRunner):
             from smoderp2d.providers.wps import WpsProvider
             provider_class = WpsProvider
+        elif os.getenv('NOGIS'):
+            from smoderp2d.providers.nogis import NoGisProvider
+            provider_class = NoGisProvider
         else:
             from smoderp2d.providers.cmd import CmdProvider
             provider_class = CmdProvider
