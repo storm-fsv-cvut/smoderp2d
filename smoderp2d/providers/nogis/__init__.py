@@ -133,8 +133,32 @@ class NoGisProvider(BaseProvider):
         # allocate matrices
         self._alloc_matrices(data)
 
-        # set values to matrics
+        # topography
+        data['mat_slope'].fill(self._config.getfloat('topography', 'slope')) 
+        # TODO can mat boundary stay zero?
+        # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
+        # TODO can mat dem stay zero?
+        # data['mat_dem'] = np.zeros((data['r'],data['c']), float)
+        data['mat_efect_cont'] = 'stejne jako dx'
+        data['mat_fd'] = 'vymyslet posle staniceni'
+
+        # set values to parameter matrics
         data['mat_b'].fill(self._config.getfloat('parameters', 'b'))
+        data['mat_a'].fill(self._config.getfloat('parameters', 'X'))
+        data['mat_n'].fill(self._config.getfloat('parameters', 'n'))
+        data['mat_hcrit'].fill(self._config.getfloat('parameters', 'hcrit'))
+        data['mat_aa'] = data['mat_a']*data['mat_slope']**(
+            self._config.getfloat('parameters','Y')
+            )
+        # retention is converted from mm to m in _set_globals 
+        data['mat_reten'].fill(self._config.getfloat('parameters', 'ret'))
+        data['mat_pi'].fill(self._config.getfloat('parameters', 'pi'))
+        data['mat_ppl'].fill(self._config.getfloat('parameters', 'ppl'))
+
+        data['mat_nan'] = np.nan
+        data['mat_inf_index'] = 1 # 1 = philips infiltration 
+
+
 
         return data
 
