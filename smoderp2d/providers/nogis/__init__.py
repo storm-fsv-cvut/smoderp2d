@@ -65,14 +65,14 @@ class NoGisProvider(BaseProvider):
 
         try:
             # set logging level
-            Logger.setLevel(self._config.get('Other', 'logging'))
+            Logger.setLevel(self._config.get('general', 'logging'))
             # sys.stderr logging
             self._add_logging_handler(
                 logging.StreamHandler(stream=sys.stderr)
             )
 
             # must be defined for _cleanup() method
-            Globals.outdir = self._config.get('Other', 'outdir')
+            Globals.outdir = self._config.get('general', 'outdir')
         except NoSectionError as e:
             raise ConfigError('Config file {}: {}'.format(
                 self.args.cfg, e
@@ -90,7 +90,7 @@ class NoGisProvider(BaseProvider):
         """
         from smoderp2d.processes import rainfall
 
-        # the data are loared from a pickle file
+        # TOTO NAKONEC V NOGIS SMAZEM
         try:
             data = self._load_data(indata)
             if isinstance(data, list):
@@ -101,45 +101,62 @@ class NoGisProvider(BaseProvider):
         except IOError as e:
             raise ProviderError('{}'.format(e))
 
-        # some variables configs can be changes after loading from
-        # pickle.dump such as end time of simulation
+        # DEFAULTS for NOGIS provider
+        #  type of computing =  1 sheet and rill flow
+        data['type_of_computing'] = 1
+        data['mfda'] = False
 
-        if self._config.get('time', 'endtime') != '-':
-            data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
-
-        #  time of flow algorithm
-        if self._config.get('Other', 'mfda') != '-':
-            data['mfda'] = self._config.getboolean('Other', 'mfda')
-
-        #  type of computing:
-        #    0 sheet only,
-        #    1 sheet and rill flow,
-        #    2 sheet and subsurface flow,
-        #    3 sheet, rill and reach flow
-        if self._config.get('Other', 'typecomp') != '-':
-            data['type_of_computing'] = self._config.get('Other', 'typecomp')
-
-        #  output directory is always set
-        if data['outdir'] is None:
-            data['outdir'] = self._config.get('Other', 'outdir')
-
-        #  rainfall data can be saved
-        if self._config.get('rainfall', 'file') != '-':
-            try:
-                data['sr'], data['itera'] = rainfall.load_precipitation(
-                    self._config.get('rainfall', 'file')
-                )
-            except TypeError:
-                raise ProviderError('Invalid file in [rainfall] section')
-
-        # some self._configs are not in pickle.dump
-        data['extraOut'] = self._config.getboolean('Other', 'extraout')
-        # rainfall data can be saved
-        data['prtTimes'] = self._config.get('Other', 'printtimes')
-
+        # TIME setting
+        data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
 
+        #  rainfall data can be saved
+        try:
+            data['sr'], data['itera'] = rainfall.load_precipitation(
+                self._config.get('rainfall', 'file')
+            )
+        except TypeError:
+            raise ProviderError('Invalid file in [rainfall] section')
+
+        # general settings
+        # output directory is always set
+        data['outdir'] = self._config.get('general', 'outdir')
+        # some self._configs are not in pickle.dump
+        data['extraOut'] = self._config.getboolean('general', 'extraout')
+        # rainfall data can be saved
+        data['prtTimes'] = self._config.get('general', 'printtimes')
+
+        
+        data['r'] = self._config.getint('domain', 'nr')
+        data['c'] = self._config.getint('domain', 'nc')
+
+        # allocate matrices
+        self._alloc_matrices(data)
+
+        # set values to matrics
+        data['mat_b'].fill(self._config.getfloat('parameters', 'b'))
+
         return data
+
+    def _alloc_matrices(self, data):
+        # allocate matrices
+        data['mat_b'] = np.zeros((data['r'],data['c']), float)
+        data['mat_stream_reach'] = np.zeros((data['r'],data['c']), float)
+        data['mat_a'] = np.zeros((data['r'],data['c']), float)
+        data['mat_slope'] = np.zeros((data['r'],data['c']), float)
+        data['mat_n'] = np.zeros((data['r'],data['c']), float)
+        data['mat_dem'] = np.zeros((data['r'],data['c']), float)
+        data['mat_inf_index'] = np.zeros((data['r'],data['c']), float)
+        data['mat_fd'] = np.zeros((data['r'],data['c']), float)
+        data['mat_hcrit'] = np.zeros((data['r'],data['c']), float)
+        data['mat_aa'] = np.zeros((data['r'],data['c']), float)
+        data['mat_reten'] = np.zeros((data['r'],data['c']), float)
+        data['mat_nan'] = np.zeros((data['r'],data['c']), float)
+        data['mat_efect_cont'] = np.zeros((data['r'],data['c']), float)
+        data['mat_pi'] = np.zeros((data['r'],data['c']), float)
+        data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
+        data['mat_ppl'] = np.zeros((data['r'],data['c']), float)
+
     def load(self):
         """Load configuration data.
         from the config data
