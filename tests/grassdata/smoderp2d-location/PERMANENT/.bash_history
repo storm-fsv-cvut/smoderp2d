@@ -48,3 +48,30 @@ db.in.ogr in=soil_veg_tab_mean.dbf
 db.select table=soil_veg_tab_mean_dbf
 db.in.ogr in=soil_veg_tab_mean.dbf out=soil_veg_tab_mean
 db.in.ogr in=tests/data/soil_veg_tab_mean.dbf out=soil_veg_tab_mean
+v.info map=points@PERMANENT
+chmod +x import_grass.sh
+./import_grass.sh 
+./import_grass.sh 
+./import_grass.sh 
+g.list rast
+g.remove raster name=dem10
+g.remove raster name=dem10 -f
+./import_grass.sh 
+git status
+g.gui
+ogrinfo points.shp -al | grep Count
+v.info points
+./import_grass.sh 
+v.info points
+ogrinfo points.shp -al | grep Count
+ogrinfo points.shp -al 
+v.info points
+qgis points.shp
+sudo apt install qgis
+qgis points.shp
+qgis points.shp soils.shp
+./import_grass.sh 
+./import_grass.sh 
+cd
+cd git/storm-fsv-cvut/smoderp2d
+git status
