@@ -299,36 +299,24 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
             )
 
         sfields.insert(1, "smoderp")
-        # TODO: rewrite into pygrass syntax
-        ret = Module('v.db.select',
-                     flags='c',
-                     map=stream,
-                     columns=sfields,
-                     stdout_=PIPE
-        )
-        for row in ret.outputs.stdout.splitlines():
-            for value in row.split('|'):
-                if value == '':
-                    raise StreamPreparationError(
-                        "Empty value in {} found.".format(stream)
-                    )
+        with Vector(stream) as data:
+            names = data.table.columns.names()
+            for row in data.table:
+                for col in sfields:
+                    value = row[names.index(col)]
+                    if value == '':
+                        raise StreamPreparationError(
+                            "Empty value in {} found.".format(stream)
+                        )
 
         with Vector(stream) as data:
             self.field_names = data.table.columns.names()
-        self.stream_tmp = [[] for field in self.field_names]
+            self.stream_tmp = [[] for field in self.field_names]
 
-        # TODO: rewrite into pygrass syntax
-        ret = Module('v.db.select',
-                     flags='c',
-                     map=stream,
-                     columns=self.field_names,
-                     stdout_=PIPE
-        )
-        for row in ret.outputs.stdout.splitlines():
-            i = 0
-            for val in row.split('|'):
-                self.stream_tmp[i].append(float(val))
-                i += 1
+            for row in data.table:
+                i = 0
+                for col in self.field_names:
+                    self.stream_tmp[i].append(row[self.field_names.index(col)])
+                    i += 1
 
-        self.streamlist = []
         self._streamlist()
