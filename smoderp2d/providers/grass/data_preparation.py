@@ -63,7 +63,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         )
         # not needed to creare raster (just for comparision with ArcGIS)
         Module('r.mapcalc',
-               expression='{} = 1'.format('dem_mask')
+               expression='{} = if(MASK, 1, null())'.format('dem_mask')
         )
 
         return dem, dem
