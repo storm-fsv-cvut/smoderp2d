@@ -140,7 +140,8 @@ class NoGisProvider(BaseProvider):
         # TODO can mat dem stay zero?
         # data['mat_dem'] = np.zeros((data['r'],data['c']), float)
         data['mat_efect_cont'] = 'stejne jako dx'
-        data['mat_fd'] = 'vymyslet posle staniceni'
+        # flow direction is always to the south
+        data['mat_fd'].fill(4)
 
         # set values to parameter matrics
         data['mat_b'].fill(self._config.getfloat('parameters', 'b'))
@@ -156,9 +157,7 @@ class NoGisProvider(BaseProvider):
         data['mat_ppl'].fill(self._config.getfloat('parameters', 'ppl'))
 
         data['mat_nan'] = np.nan
-        data['mat_inf_index'] = 1 # 1 = philips infiltration 
-
-
+        data['mat_inf_index'].fill(1) # 1 = philips infiltration 
 
         return data
 
@@ -204,6 +203,7 @@ class NoGisProvider(BaseProvider):
             print(key)
         print ('')
         print ('in progress stop in {}'.format(os.path.join(os.path.dirname(__file__))))
+        print ('next step: construct rr and rc')
         sys.exit()
 
         self._set_globals(data)
