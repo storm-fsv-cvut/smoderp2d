@@ -159,6 +159,8 @@ class NoGisProvider(BaseProvider):
         data['mat_nan'] = np.nan
         data['mat_inf_index'].fill(1) # 1 = philips infiltration 
 
+        data['rr'], data['rc'] = self._construct_rr_rc(data)
+
         return data
 
     def _alloc_matrices(self, data):
@@ -179,6 +181,17 @@ class NoGisProvider(BaseProvider):
         data['mat_pi'] = np.zeros((data['r'],data['c']), float)
         data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
         data['mat_ppl'] = np.zeros((data['r'],data['c']), float)
+
+    def _construct_rr_rc(self, data):
+        """ creates list rr and list of lists rc
+        which contain i and j index of elements inside
+        the compuation domain"""
+
+        rr = range(data['r'])
+        rc = [range(data['c'])]*data['r']
+
+        return rr, rc
+
 
     def load(self):
         """Load configuration data.
@@ -204,6 +217,6 @@ class NoGisProvider(BaseProvider):
         print ('')
         print ('in progress stop in {}'.format(os.path.join(os.path.dirname(__file__))))
         print ('next step: construct rr and rc')
-        sys.exit()
 
         self._set_globals(data)
+        sys.exit()
