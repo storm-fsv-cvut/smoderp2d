@@ -121,6 +121,7 @@ class NoGisProvider(BaseProvider):
         # general settings
         # output directory is always set
         data['outdir'] = self._config.get('general', 'outdir')
+        data['temp'] = '{}{}{}'.format(data['outdir'],os.sep,'temp')
         # some self._configs are not in pickle.dump
         data['extraOut'] = self._config.getboolean('general', 'extraout')
         # rainfall data can be saved
@@ -129,6 +130,18 @@ class NoGisProvider(BaseProvider):
         
         data['r'] = self._config.getint('domain', 'nr')
         data['c'] = self._config.getint('domain', 'nc')
+        # set mask i and j must be set after 'r' and 'c'
+        data['rr'], data['rc'] = self._construct_rr_rc(data)
+
+        # other geometrical properties
+        data['yllcorner'] = 0.
+        data['xllcorner'] = 0.
+
+        # set cell sizes
+        print (data['vpix'])
+        print (data['pixel_area'])
+        print (data['spix'])
+
 
         # allocate matrices
         self._alloc_matrices(data)
@@ -137,7 +150,7 @@ class NoGisProvider(BaseProvider):
         data['mat_slope'].fill(self._config.getfloat('topography', 'slope')) 
         # TODO can mat boundary stay zero?
         # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
-        # TODO can mat dem stay zero?
+        # TODO can mat dem needs to be recunstructed from input data
         # data['mat_dem'] = np.zeros((data['r'],data['c']), float)
         data['mat_efect_cont'] = 'stejne jako dx'
         # flow direction is always to the south
@@ -151,7 +164,7 @@ class NoGisProvider(BaseProvider):
         data['mat_aa'] = data['mat_a']*data['mat_slope']**(
             self._config.getfloat('parameters','Y')
             )
-        # retention is converted from mm to m in _set_globals 
+        # retention is converted from mm to m in _set_globals function
         data['mat_reten'].fill(self._config.getfloat('parameters', 'ret'))
         data['mat_pi'].fill(self._config.getfloat('parameters', 'pi'))
         data['mat_ppl'].fill(self._config.getfloat('parameters', 'ppl'))
@@ -159,7 +172,17 @@ class NoGisProvider(BaseProvider):
         data['mat_nan'] = np.nan
         data['mat_inf_index'].fill(1) # 1 = philips infiltration 
 
-        data['rr'], data['rc'] = self._construct_rr_rc(data)
+        # TODO set infiltration values
+        # needs to be constructed from input data
+        self._set_combinatIndex(data)
+
+        # TODO set points to hydrographs
+        self._set_hydrographs(data)
+
+        # set no data value, likely used in nogis provider
+        data['NoDataValue'] = -9999
+        # and other unused variables
+        self._set_unused(data)
 
         return data
 
@@ -193,6 +216,26 @@ class NoGisProvider(BaseProvider):
         return rr, rc
 
 
+    def _set_combinatIndex(self, data):
+        pass
+
+    def _set_unused(self, data):
+        data['cell_stream'] = None
+        data['state_cell'] = None
+        data['outletCells'] = None
+        data['STREAM_RATIO'] = None
+        data['bc'] = None
+        data['br'] = None
+        data['streams_loc'] = None
+        data['streams'] = None
+        data['poradi'] = None
+        # path to the input git layer which does 
+        # not exists in no gis provider
+        data['points'] = None
+
+    def _set_hydrographs(self,data):
+        pass
+
     def load(self):
         """Load configuration data.
         from the config data
@@ -216,7 +259,7 @@ class NoGisProvider(BaseProvider):
             print(key)
         print ('')
         print ('in progress stop in {}'.format(os.path.join(os.path.dirname(__file__))))
-        print ('next step: construct rr and rc')
+        print ('next step: make poirts to print hydrograms, set combinatIndex  and set cell sizes')
 
         self._set_globals(data)
         sys.exit()
