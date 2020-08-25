@@ -322,9 +322,6 @@ class Runoff(object):
                (Globals.end_time - self.flow_control.total_time) > 0:
                 self.delta_t = Globals.end_time - self.flow_control.total_time
 
-            # proceed to next time
-            self.flow_control.update_total_time(self.delta_t)
-
             # if end time reached the main loop breaks
             if self.flow_control.total_time == Globals.end_time:
                 break
@@ -382,6 +379,8 @@ class Runoff(object):
 
                     self.surface.arr[i][j].h_total_pre = self.surface.arr[i][j].h_total_new
 
+            # proceed to next time
+            self.flow_control.update_total_time(self.delta_t)
 
         # perform postprocessing - store results
         Logger.info('Saving output data...')
