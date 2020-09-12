@@ -30,7 +30,7 @@ class PrepareDataBase(object):
             'points_mask' : 'core',
             'inter_mask' : 'control',
             'dem_clip' : 'control',
-            'slope_clip' : 'slope_inter',
+            'slope_clip' : 'control',
             'flow_clip' : 'control',
             'sfield_dir' : 'control',
         }
