@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # http://geo102.fsv.cvut.cz/~landa/tmp/smoderp_arcgis_output.zip
 
