@@ -22,6 +22,9 @@ test = subprocess.Popen([
     'table_stream_shape_code=smoderp',
     'maxdt=10',
     'end_time=120',
-    'output_dir={}'.format(os.path.join(data_dir, 'output_grass'))
+    'output_dir={}'.format(os.path.join(data_dir, 'output_grass')),
+    '-d', # data preparation only
+    'pickle_file={}'.format(os.path.join(data_dir, 'picke.save')),
+    '--overwrite'
 ])
 test.wait()
