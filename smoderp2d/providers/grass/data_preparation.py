@@ -131,16 +131,16 @@ class PrepareData(PrepareDataBase, ManageFields):
                ainput='soil_mask',
                binput='vegetation_mask',
                operator='and',
-               output='vs_intersect'
+               output='inter_soil_lu'
         )
 
         # remove "soil_veg" if exists and create a new one
         Module('v.db.dropcolumn',
-               map='vs_intersect',
+               map='inter_soil_lu',
                columns=self._data['soil_veg_column']
         )
         Module('v.db.addcolumn',
-               map='vs_intersect',
+               map='inter_soil_lu',
                columns='{} varchar(255)'.format(
                    self._data['soil_veg_column'])
         )
@@ -149,7 +149,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         vtype1 = vegetation_type + "_1" if soil_type == vegetation_type else vegetation_type
         try:
             Module('v.db.update',
-                   map='vs_intersect',
+                   map='inter_soil_lu',
                    column=self._data['soil_veg_column'],
                    query_column='a_{} || b_{}'.format(
                    soil_type, vtype1)
@@ -166,7 +166,7 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         # join table copy to intersect vector map
         self._join_table(
-            'vs_intersect', self._data['soil_veg_column'],
+            'inter_soil_lu', self._data['soil_veg_column'],
             'soil_veg_copy', table_soil_vegetation_code,
             self._data['sfield']
         )
@@ -174,7 +174,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         # TODO: rewrite into pygrass syntax
         ret = Module('v.db.select',
                      flags='c',
-                     map='vs_intersect',
+                     map='inter_soil_lu',
                      columns=self._data['sfield'],
                      where=' or '.join(
                          list(map(lambda x: '{} is NULL'.format(x), self._data['sfield']))),
@@ -185,7 +185,7 @@ class PrepareData(PrepareDataBase, ManageFields):
                 "Values in soilveg tab are not correct"
             )
 
-        return 'vs_intersect', 'vector_mask', self._data['sfield']
+        return 'inter_soil_lu', 'vector_mask', self._data['sfield']
 
     def _clip_data(self, dem, intersect):
         """
