@@ -5,7 +5,7 @@ Starting the rainfall/runoff/soil loss model
 SMODERP2D.
 
 Help:
-    ./bin/start-smoderp2d.py --typecomp roff --indata tests/test.ini
+    ./bin/start-nogis-smoderp2d.py -cfg tests/nogis.ini
 """
 import os
 import sys
