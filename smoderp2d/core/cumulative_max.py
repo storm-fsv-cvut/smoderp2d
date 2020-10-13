@@ -89,7 +89,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             # maximum surface water level [m]
             'h_sur_tot'    : CumulativeData('control', 'mWLevel_m'),     # 3
             # maximum sheet discharge [m3s-1]
-            'q_sheet'      : CumulativeData('control', 'mQsheet_m3_s'),  # 4
+            'q_sheet_tot'      : CumulativeData('control', 'mQsheet_m3_s'),  # 4
             # cumulative sheet runoff volume [m3]
             'vol_sheet'    : CumulativeData('control', 'cSheetVOutM3'),  # 5
             # maximum sheet velocity [ms-1]
@@ -99,7 +99,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             # maximum water level in rills [m]
             'h_rill'       : CumulativeData('control', 'mWLevelRill_m'), # 8
             # maximum discharge in rills [m3s-1]
-            'q_rill'       : CumulativeData('control', 'mQRill_m3_s'),   # 9
+            'q_rill_tot'       : CumulativeData('control', 'mQRill_m3_s'),   # 9
             # cumulative runoff volume in rills [m3]
             'vol_rill'     : CumulativeData('control', 'cRillVOut_m3'),  # 10
             # maximum rill width [m]
@@ -142,28 +142,28 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         self.inflow_sur[i][j] += sur_arr_el.inflow_tm
         self.sur_ret[i][j] += sur_arr_el.cur_sur_ret * GridGlobals.pixel_area
 
-        q_sheet = sur_arr_el.vol_runoff / delta_t
-        q_rill = sur_arr_el.vol_runoff_rill / delta_t
-        q_tot = q_sheet + q_rill
-        if q_tot > self.q_sur_tot[i][j]:
-            self.q_sur_tot[i][j] = q_tot
+        q_sheet_tot = sur_arr_el.vol_runoff / delta_t
+        q_rill_tot = sur_arr_el.vol_runoff_rill / delta_t
+        q_sur_tot = q_sheet_tot + q_rill_tot
+        if q_sur_tot > self.q_sur_tot[i][j]:
+            self.q_sur_tot[i][j] = q_sur_tot
 
         if sur_arr_el.state == 0:
             if sur_arr_el.h_total_new > self.h_sur_tot[i][j]:
                 self.h_sur_tot[i][j] = sur_arr_el.h_total_new
-                self.q_sheet[i][j] = q_sheet
+                self.q_sheet_tot[i][j] = q_sheet_tot
 
         elif (sur_arr_el.state == 1) or (sur_arr_el.state == 2):
             self.vol_rill[i][j] += sur_arr_el.vol_runoff_rill
             #self.v_rill_r[i][j] += sur_arr_el.v_rill_rest
             if sur_arr_el.h_total_new > self.h_sur_tot[i][j]:
-                self.h_sur_tot[i][j] = sur_arr_el.h_total_new
-                self.q_sheet[i][j] = q_sheet
+                self.h_sur_tot[i][j] = sur_arr_el.h_crit
+                self.q_sheet_tot[i][j] = q_sheet_tot
 
             elif sur_arr_el.h_rill > self.h_rill[i][j]:
                 self.h_rill[i][j] = sur_arr_el.h_rill
                 self.b_rill[i][j] = sur_arr_el.rillWidth
-                self.q_rill[i][j] = q_rill
+                self.q_rill_tot[i][j] = q_rill_tot
 
         self.update_cumulative_sur(
             i, j,

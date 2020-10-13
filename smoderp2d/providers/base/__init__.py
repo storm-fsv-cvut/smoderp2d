@@ -323,6 +323,7 @@ class BaseProvider(object):
 
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
+        dx = GridGlobals.get_size()[0]
 
         # compute maximum shear stress
         for i in rrows:
@@ -331,7 +332,7 @@ class BaseProvider(object):
                     cumulative.v_sheet[i][j] = 0.
                 else:
                     cumulative.v_sheet[i][j] = \
-                        cumulative.q_sheet[i][j] / cumulative.h_sur_tot[i][j]
+                        cumulative.q_sheet_tot[i][j] / (cumulative.h_sur_tot[i][j] * dx)
                 cumulative.shear_sheet[i][j] = \
                     cumulative.h_sur_tot[i][j] * 98.07 * Globals.mat_slope[i][j]
 
@@ -350,10 +351,10 @@ class BaseProvider(object):
         # if Globals.extraOut:
         data_output_extras = [
                 'h_sur_tot',
-                'q_sheet',
+                'q_sheet_tot',
                 'vol_sheet',
                 'h_rill',
-                'q_rill',
+                'q_rill_tot',
                 'vol_rill',
                 'b_rill',
                 'inflow_sur',
