@@ -82,36 +82,40 @@ class NoGisProvider(BaseProvider):
         # define storage writter
         self.storage = CmdWritter()
 
-    def _load_nogis(self, indata):
+    @staticmethod
+    def _load_csv_data(filename):
+        pass
+    
+    def _load_nogis(self, filename_indata, filename_soil_types):
         """Load configuration data from roff computation procedure.
 
-        :param str indata: configuration filename
+        :param str filename_indata: input CSV file
+        :param str filename_soil_types: soil types CSV file
 
         :return dict: loaded data
         """
         from smoderp2d.processes import rainfall
 
-        # TOTO NAKONEC V NOGIS SMAZEM
+        # TODO
+        # read input csv files
         try:
-            data = self._load_data(indata)
-            if isinstance(data, list):
-                raise ProviderError(
-                    'Saved data out-dated. Please use '
-                    'utils/convert-saved-data.py for update.'
-                )
+            data = self._load_data(filename_indata)
+            # TODO
+            # indata = self._load_csv_data(filename_indata)
+            # soil_types = self._load_csv_data(filename_soil_types)
         except IOError as e:
             raise ProviderError('{}'.format(e))
 
-        # DEFAULTS for NOGIS provider
+        # defaults for nogis provider
         #  type of computing =  1 sheet and rill flow
         data['type_of_computing'] = 1
         data['mfda'] = False
 
-        # TIME setting
+        # time setting
         data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
 
-        #  rainfall data can be saved
+        # load precipitation input file
         try:
             data['sr'], data['itera'] = rainfall.load_precipitation(
                 self._config.get('rainfall', 'file')
@@ -122,43 +126,46 @@ class NoGisProvider(BaseProvider):
         # general settings
         # output directory is always set
         data['outdir'] = self._config.get('general', 'outdir')
-        data['temp'] = '{}{}{}'.format(data['outdir'],os.sep,'temp')
+        data['temp'] = os.path.join(data['outdir'], 'temp')
         # some self._configs are not in pickle.dump
         data['extraOut'] = self._config.getboolean('general', 'extraout')
         # rainfall data can be saved
         data['prtTimes'] = self._config.get('general', 'printtimes')
 
-        
+        # TODO
+        # data['r'] = self._compute_rows(?, self._config.getfloat('domain', 'res'))
         data['r'] = self._config.getint('domain', 'nr')
-        data['c'] = self._config.getint('domain', 'nc')
+        data['c'] = 1
         # set mask i and j must be set after 'r' and 'c'
         data['rr'], data['rc'] = self._construct_rr_rc(data)
 
-        # other geometrical properties
+        # other geometrical properties (TODO: is it needed?)
         data['yllcorner'] = 0.
         data['xllcorner'] = 0.
 
         # set cell sizes
-        print (data['vpix'])
-        print (data['pixel_area'])
-        print (data['spix'])
-
+        data['vpix'] = data['spix'] = self._config.getfloat('domain', 'res')
+        data['pixel_area'] = data['vpix'] * data['spix']
 
         # allocate matrices
         self._alloc_matrices(data)
 
         # topography
+        # TODO: load from csv
         data['mat_slope'].fill(self._config.getfloat('topography', 'slope')) 
         # TODO can mat boundary stay zero?
         # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
         # TODO can mat dem needs to be recunstructed from input data
+        # QUESTION: same values or interp?
         # data['mat_dem'] = np.zeros((data['r'],data['c']), float)
+        # QUESTION: see https://github.com/storm-fsv-cvut/smoderp2d/issues/84#issuecomment-709123923
         data['mat_efect_cont'] = math.sqrt(data['pixel_area']) # 'stejne jako
         # dx'
         # flow direction is always to the south
         data['mat_fd'].fill(4)
 
         # set values to parameter matrics
+        # QUESTION: set from input csv
         data['mat_b'].fill(self._config.getfloat('parameters', 'b'))
         data['mat_a'].fill(self._config.getfloat('parameters', 'X'))
         data['mat_n'].fill(self._config.getfloat('parameters', 'n'))
@@ -174,11 +181,11 @@ class NoGisProvider(BaseProvider):
         data['mat_nan'] = np.nan
         data['mat_inf_index'].fill(1) # 1 = philips infiltration 
 
-        # TODO set infiltration values
+        # QUESTION: TODO set infiltration values
         # needs to be constructed from input data
         self._set_combinatIndex(data)
 
-        # TODO set points to hydrographs
+        # QUESTION: TODO set points to hydrographs
         self._set_hydrographs(data)
 
         # set no data value, likely used in nogis provider
@@ -189,6 +196,7 @@ class NoGisProvider(BaseProvider):
         return data
 
     def _alloc_matrices(self, data):
+        # TODO: use loop (check base provider)
         # allocate matrices
         data['mat_b'] = np.zeros((data['r'],data['c']), float)
         data['mat_stream_reach'] = np.zeros((data['r'],data['c']), float)
@@ -208,9 +216,11 @@ class NoGisProvider(BaseProvider):
         data['mat_ppl'] = np.zeros((data['r'],data['c']), float)
 
     def _construct_rr_rc(self, data):
-        """ creates list rr and list of lists rc
-        which contain i and j index of elements inside
-        the compuation domain"""
+        """Create list rr and list of lists rc which contain i and j index of
+        elements inside the compuation domain.
+
+        :return: rr, rc
+        """
 
         rr = range(data['r'])
         rc = [range(data['c'])]*data['r']
@@ -231,8 +241,6 @@ class NoGisProvider(BaseProvider):
         data['streams_loc'] = None
         data['streams'] = None
         data['poradi'] = None
-        # path to the input git layer which does 
-        # not exists in no gis provider
         data['points'] = None
 
     def _set_hydrographs(self,data):
@@ -249,7 +257,10 @@ class NoGisProvider(BaseProvider):
         self._cleanup()
 
         data = self._load_nogis(
-            self._config.get('Other', 'indata')
+            self._config.get('Other', 'indata'),
+            # TODO
+            # self._config.get('Other', 'data1d'),
+            self._config.get('Other', 'data1d_soil_types'),
         )
 
         #TODO
