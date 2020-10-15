@@ -9,6 +9,7 @@ else:
     from ConfigParser import ConfigParser, NoSectionError
 
 from smoderp2d.core.general import Globals
+import math
 from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter
 from smoderp2d.exceptions import ConfigError
 
@@ -152,7 +153,8 @@ class NoGisProvider(BaseProvider):
         # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
         # TODO can mat dem needs to be recunstructed from input data
         # data['mat_dem'] = np.zeros((data['r'],data['c']), float)
-        data['mat_efect_cont'] = 'stejne jako dx'
+        data['mat_efect_cont'] = math.sqrt(data['pixel_area']) # 'stejne jako
+        # dx'
         # flow direction is always to the south
         data['mat_fd'].fill(4)
 
@@ -262,4 +264,4 @@ class NoGisProvider(BaseProvider):
         print ('next step: make poirts to print hydrograms, set combinatIndex  and set cell sizes')
 
         self._set_globals(data)
-        sys.exit()
+        # sys.exit()

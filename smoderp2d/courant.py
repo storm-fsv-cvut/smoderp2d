@@ -144,7 +144,8 @@ class Courant():
                 return self.max_delta_t * self.max_delta_t_mult, ratio
 
             dt = round(
-                (Gl.mat_efect_cont[self.i, self.j] * self.cour_crit * self.cour_coef) /
+                # (Gl.mat_efect_cont[self.i, self.j] * self.cour_crit * self.cour_coef) /
+                (Gl.mat_efect_cont * self.cour_crit * self.cour_coef) /
                  self.cour_speed,
                 4)
 
