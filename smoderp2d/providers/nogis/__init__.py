@@ -103,6 +103,7 @@ class NoGisProvider(BaseProvider):
             # TODO
             # indata = self._load_csv_data(filename_indata)
             # soil_types = self._load_csv_data(filename_soil_types)
+            # data = self._table_join(indata, soil_types)
         except IOError as e:
             raise ProviderError('{}'.format(e))
 
@@ -111,7 +112,7 @@ class NoGisProvider(BaseProvider):
         data['type_of_computing'] = 1
         data['mfda'] = False
 
-        # time setting
+        # time settings
         data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
 
@@ -151,23 +152,20 @@ class NoGisProvider(BaseProvider):
         self._alloc_matrices(data)
 
         # topography
-        # TODO: load from csv
+        # TODO: load from csv - 1) hor. length + height 2) hor. length + ratio
+        # same cell values for each segment
         data['mat_slope'].fill(self._config.getfloat('topography', 'slope')) 
         # TODO can mat boundary stay zero?
         # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
-        # TODO can mat dem needs to be recunstructed from input data
-        # QUESTION: same values or interp?
+        # TODO probably not needed
         # data['mat_dem'] = np.zeros((data['r'],data['c']), float)
-        # QUESTION: see https://github.com/storm-fsv-cvut/smoderp2d/issues/84#issuecomment-709123923
-        data['mat_efect_cont'] = math.sqrt(data['pixel_area']) # 'stejne jako
-        # dx'
+        data['mat_efect_cont'] = data['spix'] # x-axis (EW) resolution
         # flow direction is always to the south
         data['mat_fd'].fill(4)
 
         # set values to parameter matrics
-        # QUESTION: set from input csv
-        data['mat_b'].fill(self._config.getfloat('parameters', 'b'))
-        data['mat_a'].fill(self._config.getfloat('parameters', 'X'))
+        data['mat_b'].fill(self._config.getfloat('parameters', 'b')) # soil types
+        data['mat_a'].fill(self._config.getfloat('parameters', 'X')) 
         data['mat_n'].fill(self._config.getfloat('parameters', 'n'))
         data['mat_hcrit'].fill(self._config.getfloat('parameters', 'hcrit'))
         data['mat_aa'] = data['mat_a']*data['mat_slope']**(
@@ -203,7 +201,8 @@ class NoGisProvider(BaseProvider):
         data['mat_a'] = np.zeros((data['r'],data['c']), float)
         data['mat_slope'] = np.zeros((data['r'],data['c']), float)
         data['mat_n'] = np.zeros((data['r'],data['c']), float)
-        data['mat_dem'] = np.zeros((data['r'],data['c']), float)
+        # dem is not needed for computation
+        # data['mat_dem'] = np.zeros((data['r'],data['c']), float)
         data['mat_inf_index'] = np.zeros((data['r'],data['c']), float)
         data['mat_fd'] = np.zeros((data['r'],data['c']), float)
         data['mat_hcrit'] = np.zeros((data['r'],data['c']), float)
