@@ -170,6 +170,8 @@ class NoGisProvider(BaseProvider):
         data['mat_fd'].fill(4)
 
         # set values to parameter matrics
+        # TODO: See providers/base/data_preparation._get_a()
+        # TODO: See providers/base/data_preparation._get_crit_water()
         data['mat_b'].fill(self._config.getfloat('parameters', 'b')) # soil types
         data['mat_a'].fill(self._config.getfloat('parameters', 'X')) 
         data['mat_n'].fill(self._config.getfloat('parameters', 'n'))
@@ -178,6 +180,7 @@ class NoGisProvider(BaseProvider):
             self._config.getfloat('parameters','Y')
             )
         # retention is converted from mm to m in _set_globals function
+        # TODO: See join table
         data['mat_reten'].fill(self._config.getfloat('parameters', 'ret'))
         data['mat_pi'].fill(self._config.getfloat('parameters', 'pi'))
         data['mat_ppl'].fill(self._config.getfloat('parameters', 'ppl'))
@@ -234,6 +237,7 @@ class NoGisProvider(BaseProvider):
 
 
     def _set_combinatIndex(self, data):
+        # TODO: See providers/base/data_preparation._get_mat_par()
         pass
 
     def _set_unused(self, data):
@@ -248,7 +252,9 @@ class NoGisProvider(BaseProvider):
         data['poradi'] = None
         data['points'] = None
 
-    def _set_hydrographs(self,data):
+    def _set_hydrographs(self, data):
+        # TODO: so far not needed
+        # TODO: do only in the lowest point
         pass
 
     def load(self):
