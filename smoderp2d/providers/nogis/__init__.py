@@ -84,8 +84,14 @@ class NoGisProvider(BaseProvider):
 
     @staticmethod
     def _load_csv_data(filename):
-        pass
-    
+        """Get data from a CSV file in a dict-like form.
+
+        :param filename: Path to the CSV file
+        :return: ndarray queryable as a dict (key_vals = data['key'])
+        """
+        return np.genfromtxt(filename, delimiter=';', names=True, dtype=None,
+                             encoding='utf-8-sig', deletechars='')
+
     def _load_nogis(self, filename_indata, filename_soil_types):
         """Load configuration data from roff computation procedure.
 
