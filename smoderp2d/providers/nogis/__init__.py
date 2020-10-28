@@ -36,7 +36,7 @@ class NoGisProvider(BaseProvider):
     def __init__(self):
         """Create argument parser."""
         super(NoGisProvider, self).__init__()
-        
+
         # define CLI parser
         parser = argparse.ArgumentParser(description='Run NoGis Smoderp2D.')
 
@@ -160,7 +160,7 @@ class NoGisProvider(BaseProvider):
         # topography
         # TODO: load from csv - 1) hor. length + height 2) hor. length + ratio
         # same cell values for each segment
-        data['mat_slope'].fill(self._config.getfloat('topography', 'slope')) 
+        data['mat_slope'].fill(self._config.getfloat('topography', 'slope'))
         # TODO can mat boundary stay zero?
         # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
         # TODO probably not needed
@@ -173,7 +173,7 @@ class NoGisProvider(BaseProvider):
         # TODO: See providers/base/data_preparation._get_a()
         # TODO: See providers/base/data_preparation._get_crit_water()
         data['mat_b'].fill(self._config.getfloat('parameters', 'b')) # soil types
-        data['mat_a'].fill(self._config.getfloat('parameters', 'X')) 
+        data['mat_a'].fill(self._config.getfloat('parameters', 'X'))
         data['mat_n'].fill(self._config.getfloat('parameters', 'n'))
         data['mat_hcrit'].fill(self._config.getfloat('parameters', 'hcrit'))
         data['mat_aa'] = data['mat_a']*data['mat_slope']**(
@@ -186,7 +186,7 @@ class NoGisProvider(BaseProvider):
         data['mat_ppl'].fill(self._config.getfloat('parameters', 'ppl'))
 
         data['mat_nan'] = np.nan
-        data['mat_inf_index'].fill(1) # 1 = philips infiltration 
+        data['mat_inf_index'].fill(1)  # 1 = philips infiltration
 
         # QUESTION: TODO set infiltration values
         # needs to be constructed from input data
