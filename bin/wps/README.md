@@ -39,3 +39,27 @@ Copy testing input data to demo server
 Run execute request
 
 http://127.0.0.1:5000/wps?service=wps&version=1.0.0&request=execute&identifier=smoderp2d&datainputs=input=http://127.0.0.1:5000/static/data/test.zip
+
+## Deploy SMODERP2D WPS server using Docker
+
+### Build image
+
+    docker-compose build
+    
+### Run container
+
+    docker-compose up
+    
+### Call WPS
+
+GetCapabilities:
+
+    http://localhost:8080/services/wps?service=wps&request=getcapabilities
+    
+DescribeProcess:
+
+    http://localhost:8080/services/wps?service=wps&request=describeprocess&version=2.0.0&identifier=smoderp1d
+    
+Execute (POST):
+
+    wget --post-file request.xml 'http://localhost:8080/services/wps?' -O /tmp/response.xml

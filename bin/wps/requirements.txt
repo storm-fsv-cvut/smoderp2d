@@ -1,0 +1,2 @@
+pywps==4.2.8
+python-magic==0.4.18
