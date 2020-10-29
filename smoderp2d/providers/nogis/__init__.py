@@ -11,7 +11,7 @@ else:
 from smoderp2d.core.general import Globals
 import math
 from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter
-from smoderp2d.exceptions import ConfigError
+from smoderp2d.exceptions import ConfigError, ProviderError
 
 class CmdWritter(BaseWritter):
     def __init__(self):
