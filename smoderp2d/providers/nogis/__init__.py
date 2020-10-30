@@ -163,8 +163,6 @@ class NoGisProvider(BaseProvider):
         data['mat_slope'].fill(self._config.getfloat('topography', 'slope'))
         # TODO can mat boundary stay zero?
         # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
-        # TODO probably not needed
-        # data['mat_dem'] = np.zeros((data['r'],data['c']), float)
         data['mat_efect_cont'] = data['spix'] # x-axis (EW) resolution
         # flow direction is always to the south
         data['mat_fd'].fill(4)
