@@ -139,9 +139,13 @@ class NoGisProvider(BaseProvider):
         # rainfall data can be saved
         data['prtTimes'] = self._config.get('general', 'printtimes')
 
-        # TODO
-        # data['r'] = self._compute_rows(?, self._config.getfloat('domain', 'res'))
-        data['r'] = self._config.getint('domain', 'nr')
+        resolution = self._config.getfloat('domain', 'res')
+        # TODO: Uncomment and comment the latter when trying with real
+        #  input CSV and not the .save file
+        # TODO: Change stah -> svah (ha ha) after being changed in the CSV
+        # data['r'] = self._compute_rows(indata['vodorovny_prumet_stahu[m]'],
+        #                                resolution)
+        data['r'] = 10
         data['c'] = 1
         # set mask i and j must be set after 'r' and 'c'
         data['rr'], data['rc'] = self._construct_rr_rc(data)
@@ -197,6 +201,20 @@ class NoGisProvider(BaseProvider):
         self._set_unused(data)
 
         return data
+
+    @staticmethod
+    def _compute_rows(lengths, resolution):
+        """Compute number of pixels the slope will be divided into.
+
+        :param lengths: np array with containing all lengths
+        :param resolution: intended resolution of one pixel
+        :return: number of pixels
+        """
+        length = lengths.sum()
+        # TODO: Change the horizonthal length to the one with the slope
+        nr_of_rows = round(length / resolution)
+
+        return nr_of_rows
 
     def _alloc_matrices(self, data):
         # TODO: use loop (check base provider)
