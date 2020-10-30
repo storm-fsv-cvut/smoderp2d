@@ -334,7 +334,7 @@ class BaseProvider(object):
                     cumulative.v_sheet[i][j] = \
                         cumulative.q_sheet_tot[i][j] / (cumulative.h_sur_tot[i][j] * dx)
                 cumulative.shear_sheet[i][j] = \
-                    cumulative.h_sur_tot[i][j] * 98.07 * Globals.mat_slope[i][j]
+                    cumulative.h_sur_tot[i][j] * 9807 * Globals.mat_slope[i][j]
 
         # define output data to be produced
         data_output = [

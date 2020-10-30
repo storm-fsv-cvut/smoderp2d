@@ -75,6 +75,8 @@ class PrepareDataBase(object):
         Logger.info("Computing parameters of DTM...")
         self.data['mat_dem'] = self._rst2np(dem_clip)
         self.data['mat_slope'] = self._rst2np(slope_clip)
+        # unit conversion % -> 0-1
+        self.data['mat_slope'] = self.data['mat_slope']/100.
 
         # update data dict for spatial ref info
         self._get_raster_dim(dem_clip)
@@ -382,11 +384,11 @@ class PrepareDataBase(object):
                     par_aa = nv
                 elif par_x == nv or par_y == nv or slope == 0.0:
                     par_a = 0.0001
-                    par_aa = par_a / 100 / mat_n[i][j]
+                    par_aa = par_a / mat_n[i][j]
                 else:
                     exp = np.power(slope, par_y)
                     par_a = par_x * exp
-                    par_aa = par_a / 100 / mat_n[i][j]
+                    par_aa = par_a / mat_n[i][j]
 
                 self.data['mat_a'][i][j] = par_a
                 self.data['mat_aa'][i][j] = par_aa
@@ -424,8 +426,8 @@ class PrepareDataBase(object):
 
                     else:
                         hcrit_v = np.power((v_crit / aa), exp)  # h critical from v
-                        hcrit_tau = tau_crit / 98.07 / slope  # h critical from tau
-                        hcrit_flux = np.power((flux_crit / slope / 98.07 / aa),(1 / mat_b[i][j]))  # kontrola jednotek
+                        hcrit_tau = tau_crit / 9807 / slope  # h critical from tau
+                        hcrit_flux = np.power((flux_crit / slope / 9807 / aa),(1 / mat_b[i][j]))  # kontrola jednotek
 
                     mat_hcrit_tau[i][j] = hcrit_tau
                     mat_hcrit_v[i][j] = hcrit_v
