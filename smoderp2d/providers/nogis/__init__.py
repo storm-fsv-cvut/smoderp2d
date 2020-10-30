@@ -146,10 +146,6 @@ class NoGisProvider(BaseProvider):
         # set mask i and j must be set after 'r' and 'c'
         data['rr'], data['rc'] = self._construct_rr_rc(data)
 
-        # other geometrical properties (TODO: is it needed?)
-        data['yllcorner'] = 0.
-        data['xllcorner'] = 0.
-
         # set cell sizes
         data['vpix'] = data['spix'] = self._config.getfloat('domain', 'res')
         data['pixel_area'] = data['vpix'] * data['spix']
