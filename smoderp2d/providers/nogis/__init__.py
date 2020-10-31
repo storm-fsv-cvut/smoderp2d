@@ -221,9 +221,10 @@ class NoGisProvider(BaseProvider):
         #  input CSV and not the .save file
         # data['mat_n'] = joint_data['n']
         data['mat_n'].fill(self._config.getfloat('parameters', 'n'))
+        # data['mat_b'] = joint_data['b']
+        data['mat_b'].fill(self._config.getfloat('parameters', 'b')) # soil types
         # TODO: See providers/base/data_preparation._get_a()
         # TODO: See providers/base/data_preparation._get_crit_water()
-        data['mat_b'].fill(self._config.getfloat('parameters', 'b')) # soil types
         data['mat_a'].fill(self._config.getfloat('parameters', 'X'))
         data['mat_hcrit'].fill(self._config.getfloat('parameters', 'hcrit'))
         data['mat_aa'] = data['mat_a']*data['mat_slope']**(
