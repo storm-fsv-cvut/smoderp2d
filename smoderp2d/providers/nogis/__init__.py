@@ -127,7 +127,8 @@ class NoGisProvider(BaseProvider):
             soilveg_line = soil_types[np.where(soil_types_soilveg == soilveg)]
 
             if filtered_soilvegs is not None:
-                np.concatenate((filtered_soilvegs, soilveg_line))
+                filtered_soilvegs = np.concatenate((filtered_soilvegs,
+                                                    soilveg_line))
             else:
                 filtered_soilvegs = soilveg_line
 
