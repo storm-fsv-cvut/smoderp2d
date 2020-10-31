@@ -222,8 +222,8 @@ class NoGisProvider(BaseProvider):
         # set values to parameter matrics
         # TODO: Uncomment and comment the latter two lines when trying with
         #  real input CSV and not the .save file
-        # data['mat_n'] = joint_data['n']
-        # data['mat_b'] = joint_data['b']
+        # data['mat_n'] = joint_data['n'].reshape((data['r'], data['c']))
+        # data['mat_b'] = joint_data['b'].reshape((data['r'], data['c']))
         data['mat_n'].fill(self._config.getfloat('parameters', 'n'))
         data['mat_b'].fill(self._config.getfloat('parameters', 'b'))
         # TODO: See providers/base/data_preparation._get_a()
