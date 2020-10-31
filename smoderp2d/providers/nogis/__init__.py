@@ -221,7 +221,7 @@ class NoGisProvider(BaseProvider):
         data['mat_fd'].fill(4)
 
         # set values to parameter matrics
-        # TODO: Uncomment and comment the latter six lines when trying with
+        # TODO: Uncomment and comment the latter 12 lines when trying with
         #  real input CSV and not the .save file
         # data['mat_n'] = joint_data['n'].reshape((data['r'], data['c']))
         # data['mat_b'] = joint_data['b'].reshape((data['r'], data['c']))
@@ -233,20 +233,28 @@ class NoGisProvider(BaseProvider):
         #     data['c'],
         #     data['NoDataValue'],
         #     data['mat_slope'])
-        data['mat_n'].fill(self._config.getfloat('parameters', 'n'))
+        # data['mat_hcrit'] = self._get_crit_water(
+        #     data['mat_b'],
+        #     joint_data['tau'].reshape((data['r'], data['c'])),
+        #     joint_data['v'].reshape((data['r'], data['c'])),
+        #     data['r'],
+        #     data['c'],
+        #     data['mat_slope'],
+        #     data['NoDataValue'],
+        #     data['mat_aa']
+        # )
+        # data['mat_reten'] = joint_data['ret'].reshape((data['r'], data['c']))
+        # data['mat_pi'] = joint_data['pi'].reshape((data['r'], data['c']))
+        # data['mat_ppl'] = joint_data['ppl'].reshape((data['r'], data['c']))
+        # data['mat_n'].fill(self._config.getfloat('parameters', 'n'))
         data['mat_b'].fill(self._config.getfloat('parameters', 'b'))
         data['mat_a'].fill(self._config.getfloat('parameters', 'X'))
         data['mat_aa'] = data['mat_a']*data['mat_slope']**(
             self._config.getfloat('parameters','Y')
             )
-        # TODO: See providers/base/data_preparation._get_crit_water()
         data['mat_hcrit'].fill(self._config.getfloat('parameters', 'hcrit'))
+        # TODO: Shall we consider the next comment?
         # retention is converted from mm to m in _set_globals function
-        # TODO: Uncomment and comment the latter three lines when trying with
-        #  real input CSV and not the .save file
-        # data['mat_reten'] = joint_data['ret'].reshape((data['r'], data['c']))
-        # data['pi'] = joint_data['pi'].reshape((data['r'], data['c']))
-        # data['ppl'] = joint_data['ppl'].reshape((data['r'], data['c']))
         data['mat_reten'].fill(self._config.getfloat('parameters', 'ret'))
         data['mat_pi'].fill(self._config.getfloat('parameters', 'pi'))
         data['mat_ppl'].fill(self._config.getfloat('parameters', 'ppl'))
@@ -315,6 +323,61 @@ class NoGisProvider(BaseProvider):
                 mat_aa[i][j] = par_aa
 
         return mat_a, mat_aa
+
+    def _get_crit_water(self, mat_b, mat_tau, mat_v, r, c, mat_slope,
+                        no_data_value, mat_aa):
+        """
+
+        :param all_attrib:
+        """
+        # critical water level
+        mat_hcrit_tau = np.zeros([r, c], float)
+        mat_hcrit_v = np.zeros([r, c], float)
+        mat_hcrit_flux = np.zeros([r, c], float)
+        mat_hcrit = np.zeros([r, c], float)
+
+        for i in range(r):
+            for j in range(c):
+                if mat_slope[i][j] != no_data_value \
+                   and mat_tau[i][j] != no_data_value:
+                    slope = mat_slope[i][j]
+                    tau_crit = mat_tau[i][j]
+                    v_crit = mat_v[i][j]
+                    b = mat_b[i][j]
+                    aa = mat_aa[i][j]
+                    flux_crit = tau_crit * v_crit
+                    exp = 1 / (b - 1)
+
+                    if slope == 0.0:
+                        hcrit_tau = hcrit_v = hcrit_flux = 1000
+
+                    else:
+                        hcrit_v = np.power((v_crit / aa), exp)  # h critical from v
+                        hcrit_tau = tau_crit / 98.07 / slope  # h critical from tau
+                        hcrit_flux = np.power((flux_crit / slope / 98.07 / aa),(1 / mat_b[i][j]))  # kontrola jednotek
+
+                    mat_hcrit_tau[i][j] = hcrit_tau
+                    mat_hcrit_v[i][j] = hcrit_v
+                    mat_hcrit_flux[i][j] = hcrit_flux
+                    hcrit = min(hcrit_tau, hcrit_v, hcrit_flux)
+                    mat_hcrit[i][j] = hcrit
+                else:
+                    mat_hcrit_tau[i][j] = no_data_value
+                    mat_hcrit_v[i][j] = no_data_value
+                    mat_hcrit_flux[i][j] = no_data_value
+                    mat_hcrit[i][j] = no_data_value
+
+        for out, arr in (("hcrit_tau", mat_hcrit_tau),
+                         ("hcrit_flux", mat_hcrit_flux),
+                         ("hcrit_v", mat_hcrit_v)):
+            self.storage.write_raster(
+                arr, out, 'temp'
+            )
+        self.storage.write_raster(
+            mat_hcrit, 'mat_hcrit', ''
+        )
+
+        return mat_hcrit
 
     def _alloc_matrices(self, data):
         # TODO: use loop (check base provider)
