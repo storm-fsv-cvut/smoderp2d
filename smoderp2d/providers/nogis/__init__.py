@@ -234,7 +234,11 @@ class NoGisProvider(BaseProvider):
             self._config.getfloat('parameters','Y')
             )
         # retention is converted from mm to m in _set_globals function
-        # TODO: See join table
+        # TODO: Uncomment and comment the latter three lines when trying with
+        #  real input CSV and not the .save file
+        # data['mat_reten'] = joint_data['ret'].reshape((data['r'], data['c']))
+        # data['pi'] = joint_data['pi'].reshape((data['r'], data['c']))
+        # data['ppl'] = joint_data['ppl'].reshape((data['r'], data['c']))
         data['mat_reten'].fill(self._config.getfloat('parameters', 'ret'))
         data['mat_pi'].fill(self._config.getfloat('parameters', 'pi'))
         data['mat_ppl'].fill(self._config.getfloat('parameters', 'ppl'))
