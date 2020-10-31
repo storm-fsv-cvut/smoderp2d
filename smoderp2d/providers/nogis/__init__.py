@@ -206,6 +206,9 @@ class NoGisProvider(BaseProvider):
         # allocate matrices
         self._alloc_matrices(data)
 
+        # set no data value, likely used in nogis provider
+        data['NoDataValue'] = -9999
+
         # topography
         # TODO: load from csv - 1) hor. length + height 2) hor. length + ratio
         # same cell values for each segment
@@ -245,9 +248,6 @@ class NoGisProvider(BaseProvider):
 
         # QUESTION: TODO set points to hydrographs
         self._set_hydrographs(data)
-
-        # set no data value, likely used in nogis provider
-        data['NoDataValue'] = -9999
         # and other unused variables
         self._set_unused(data)
 
