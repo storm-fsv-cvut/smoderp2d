@@ -82,15 +82,65 @@ class NoGisProvider(BaseProvider):
         # define storage writter
         self.storage = CmdWritter()
 
+    def _load_input_data(self, filename_indata, filename_soil_types):
+        """Load configuration data from roff computation procedure.
+
+        :param str filename_indata: input CSV file
+        :param str filename_soil_types: soil types CSV file
+
+        :return: loaded data in numpy structured array
+        """
+        # TODO: Uncomment and comment the latter when trying with real
+        #  input CSV and not the .save file
+        # indata = self._load_csv_data(filename_indata)
+        indata = self._load_csv_data(filename_soil_types[:-15] + '.csv')
+        soil_types = self._load_csv_data(filename_soil_types)
+
+        return self._join_indata_soils(indata, soil_types)
+
     @staticmethod
     def _load_csv_data(filename):
         """Get data from a CSV file in a dict-like form.
 
         :param filename: Path to the CSV file
-        :return: ndarray queryable as a dict (key_vals = data['key'])
+        :return: numpy structured array
         """
         return np.genfromtxt(filename, delimiter=';', names=True, dtype=None,
                              encoding='utf-8-sig', deletechars='')
+
+    @staticmethod
+    def _join_indata_soils(indata, soil_types):
+        """Join data with slopes with corresponding parameters from soil types.
+
+        :param indata: Data with slope attributes from input CSV file
+        :param soil_types: Data with soil type attributes from input CSV file
+        :return: joint and filtered data in numpy structured array
+        """
+        from numpy.lib.recfunctions import append_fields
+
+        filtered_soilvegs = None
+        soil_types_soilveg = soil_types['soilveg']
+
+        for index in range(len(indata)):
+            soilveg = indata['puda'][index] + indata['povrch'][index]
+            # a = soil_types[np.in1d(soil_types['soilveg'], ('PXOP', 'HXGEO'))]
+            soilveg_line = soil_types[np.where(soil_types_soilveg == soilveg)]
+
+            if filtered_soilvegs is not None:
+                np.concatenate((filtered_soilvegs, soilveg_line))
+            else:
+                filtered_soilvegs = soilveg_line
+
+        soil_types_fields = filtered_soilvegs.dtype.names
+
+        result = append_fields(
+            indata,
+            filtered_soilvegs.dtype.names,
+            [filtered_soilvegs[name] for name in soil_types_fields],
+            usemask=False
+        )
+
+        return result
 
     def _load_nogis(self, filename_indata, filename_soil_types):
         """Load configuration data from roff computation procedure.
@@ -105,11 +155,10 @@ class NoGisProvider(BaseProvider):
         # TODO
         # read input csv files
         try:
+            # TODO: Delete the next line
             data = self._load_data(filename_indata)
-            # TODO
-            # indata = self._load_csv_data(filename_indata)
-            # soil_types = self._load_csv_data(filename_soil_types)
-            # data = self._table_join(indata, soil_types)
+            joint_data = self._load_input_data(filename_indata,
+                                               filename_soil_types)
         except IOError as e:
             raise ProviderError('{}'.format(e))
 
