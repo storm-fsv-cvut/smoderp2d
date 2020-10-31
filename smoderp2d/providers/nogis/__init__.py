@@ -220,19 +220,26 @@ class NoGisProvider(BaseProvider):
         data['mat_fd'].fill(4)
 
         # set values to parameter matrics
-        # TODO: Uncomment and comment the latter two lines when trying with
+        # TODO: Uncomment and comment the latter six lines when trying with
         #  real input CSV and not the .save file
         # data['mat_n'] = joint_data['n'].reshape((data['r'], data['c']))
         # data['mat_b'] = joint_data['b'].reshape((data['r'], data['c']))
+        # data['mat_a'], data['mat_aa'] = self._get_a(
+        #     data['mat_n'],
+        #     joint_data['x'].reshape((data['r'], data['c'])),
+        #     joint_data['y'].reshape((data['r'], data['c'])),
+        #     data['r'],
+        #     data['c'],
+        #     data['NoDataValue'],
+        #     data['mat_slope'])
         data['mat_n'].fill(self._config.getfloat('parameters', 'n'))
         data['mat_b'].fill(self._config.getfloat('parameters', 'b'))
-        # TODO: See providers/base/data_preparation._get_a()
-        # TODO: See providers/base/data_preparation._get_crit_water()
         data['mat_a'].fill(self._config.getfloat('parameters', 'X'))
-        data['mat_hcrit'].fill(self._config.getfloat('parameters', 'hcrit'))
         data['mat_aa'] = data['mat_a']*data['mat_slope']**(
             self._config.getfloat('parameters','Y')
             )
+        # TODO: See providers/base/data_preparation._get_crit_water()
+        data['mat_hcrit'].fill(self._config.getfloat('parameters', 'hcrit'))
         # retention is converted from mm to m in _set_globals function
         # TODO: Uncomment and comment the latter three lines when trying with
         #  real input CSV and not the .save file
@@ -270,6 +277,43 @@ class NoGisProvider(BaseProvider):
         nr_of_rows = round(length / resolution)
 
         return nr_of_rows
+
+    def _get_a(self, mat_n, mat_x, mat_y, r, c, no_data_value, mat_slope):
+        """
+        Build 'a' array.
+
+        :param all_attrib: list of attributes (numpy arrays)
+        """
+        mat_a = np.zeros(
+            [r, c], float
+        )
+        mat_aa = np.zeros(
+            [r, c], float
+        )
+
+        nv = no_data_value
+        # calculating the "a" parameter
+        for i in range(r):
+            for j in range(c):
+                slope = mat_slope[i][j]
+                par_x = mat_x[i][j]
+                par_y = mat_y[i][j]
+
+                if par_x == nv or par_y == nv or slope == nv:
+                    par_a = nv
+                    par_aa = nv
+                elif par_x == nv or par_y == nv or slope == 0.0:
+                    par_a = 0.0001
+                    par_aa = par_a / 100 / mat_n[i][j]
+                else:
+                    exp = np.power(slope, par_y)
+                    par_a = par_x * exp
+                    par_aa = par_a / 100 / mat_n[i][j]
+
+                mat_a[i][j] = par_a
+                mat_aa[i][j] = par_aa
+
+        return mat_a, mat_aa
 
     def _alloc_matrices(self, data):
         # TODO: use loop (check base provider)
