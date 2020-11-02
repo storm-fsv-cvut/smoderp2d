@@ -193,7 +193,7 @@ class NoGisProvider(BaseProvider):
         # TODO: Uncomment and comment the latter when trying with real
         #  input CSV and not the .save file
         # TODO: Change stah -> svah (ha ha) after being changed in the CSV
-        # data['r'] = self._compute_rows(indata['vodorovny_prumet_stahu[m]'],
+        # data['r'] = self._compute_rows(joint_data['vodorovny_prumet_stahu[m]'],
         #                                resolution)
         data['r'] = 10
         data['c'] = 1
