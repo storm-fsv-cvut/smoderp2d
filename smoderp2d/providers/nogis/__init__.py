@@ -222,8 +222,6 @@ class NoGisProvider(BaseProvider):
         data['mat_fd'].fill(4)
 
         # set values to parameter matrics
-        # TODO: Uncomment and comment the latter 12 lines when trying with
-        #  real input CSV and not the .save file
         data['mat_n'] = parsed_data['n'].reshape((data['r'], data['c']))
         data['mat_b'] = parsed_data['b'].reshape((data['r'], data['c']))
         data['mat_a'], data['mat_aa'] = self._get_a(
