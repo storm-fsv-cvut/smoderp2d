@@ -224,41 +224,31 @@ class NoGisProvider(BaseProvider):
         # set values to parameter matrics
         # TODO: Uncomment and comment the latter 12 lines when trying with
         #  real input CSV and not the .save file
-        # data['mat_n'] = parsed_data['n'].reshape((data['r'], data['c']))
-        # data['mat_b'] = parsed_data['b'].reshape((data['r'], data['c']))
-        # data['mat_a'], data['mat_aa'] = self._get_a(
-        #     data['mat_n'],
-        #     parsed_data['x'].reshape((data['r'], data['c'])),
-        #     parsed_data['y'].reshape((data['r'], data['c'])),
-        #     data['r'],
-        #     data['c'],
-        #     data['NoDataValue'],
-        #     data['mat_slope'])
-        # data['mat_hcrit'] = self._get_crit_water(
-        #     data['mat_b'],
-        #     parsed_data['tau'].reshape((data['r'], data['c'])),
-        #     parsed_data['v'].reshape((data['r'], data['c'])),
-        #     data['r'],
-        #     data['c'],
-        #     data['mat_slope'],
-        #     data['NoDataValue'],
-        #     data['mat_aa']
-        # )
-        # data['mat_reten'] = parsed_data['ret'].reshape((data['r'], data['c']))
-        # data['mat_pi'] = parsed_data['pi'].reshape((data['r'], data['c']))
-        # data['mat_ppl'] = parsed_data['ppl'].reshape((data['r'], data['c']))
-        data['mat_n'].fill(self._config.getfloat('parameters', 'n'))
-        data['mat_b'].fill(self._config.getfloat('parameters', 'b'))
-        data['mat_a'].fill(self._config.getfloat('parameters', 'X'))
-        data['mat_aa'] = data['mat_a']*data['mat_slope']**(
-            self._config.getfloat('parameters','Y')
-            )
-        data['mat_hcrit'].fill(self._config.getfloat('parameters', 'hcrit'))
+        data['mat_n'] = parsed_data['n'].reshape((data['r'], data['c']))
+        data['mat_b'] = parsed_data['b'].reshape((data['r'], data['c']))
+        data['mat_a'], data['mat_aa'] = self._get_a(
+            data['mat_n'],
+            parsed_data['x'].reshape((data['r'], data['c'])),
+            parsed_data['y'].reshape((data['r'], data['c'])),
+            data['r'],
+            data['c'],
+            data['NoDataValue'],
+            data['mat_slope'])
+        data['mat_hcrit'] = self._get_crit_water(
+            data['mat_b'],
+            parsed_data['tau'].reshape((data['r'], data['c'])),
+            parsed_data['v'].reshape((data['r'], data['c'])),
+            data['r'],
+            data['c'],
+            data['mat_slope'],
+            data['NoDataValue'],
+            data['mat_aa']
+        )
         # TODO: Shall we consider the next comment?
         # retention is converted from mm to m in _set_globals function
-        data['mat_reten'].fill(self._config.getfloat('parameters', 'ret'))
-        data['mat_pi'].fill(self._config.getfloat('parameters', 'pi'))
-        data['mat_ppl'].fill(self._config.getfloat('parameters', 'ppl'))
+        data['mat_reten'] = parsed_data['ret'].reshape((data['r'], data['c']))
+        data['mat_pi'] = parsed_data['pi'].reshape((data['r'], data['c']))
+        data['mat_ppl'] = parsed_data['ppl'].reshape((data['r'], data['c']))
 
         data['mat_nan'] = np.nan
         data['mat_inf_index'].fill(1)  # 1 = philips infiltration
