@@ -201,6 +201,10 @@ class NoGisProvider(BaseProvider):
         data['vpix'] = data['spix'] = self._config.getfloat('domain', 'res')
         data['pixel_area'] = data['vpix'] * data['spix']
 
+        # divide joint data slope into rows corresponding with data['r']
+        parsed_data = self.divide_joint_data(joint_data, data['r'],
+                                             data['vpix'])
+
         # allocate matrices
         self._alloc_matrices(data)
 
@@ -220,29 +224,29 @@ class NoGisProvider(BaseProvider):
         # set values to parameter matrics
         # TODO: Uncomment and comment the latter 12 lines when trying with
         #  real input CSV and not the .save file
-        # data['mat_n'] = joint_data['n'].reshape((data['r'], data['c']))
-        # data['mat_b'] = joint_data['b'].reshape((data['r'], data['c']))
+        # data['mat_n'] = parsed_data['n'].reshape((data['r'], data['c']))
+        # data['mat_b'] = parsed_data['b'].reshape((data['r'], data['c']))
         # data['mat_a'], data['mat_aa'] = self._get_a(
         #     data['mat_n'],
-        #     joint_data['x'].reshape((data['r'], data['c'])),
-        #     joint_data['y'].reshape((data['r'], data['c'])),
+        #     parsed_data['x'].reshape((data['r'], data['c'])),
+        #     parsed_data['y'].reshape((data['r'], data['c'])),
         #     data['r'],
         #     data['c'],
         #     data['NoDataValue'],
         #     data['mat_slope'])
         # data['mat_hcrit'] = self._get_crit_water(
         #     data['mat_b'],
-        #     joint_data['tau'].reshape((data['r'], data['c'])),
-        #     joint_data['v'].reshape((data['r'], data['c'])),
+        #     parsed_data['tau'].reshape((data['r'], data['c'])),
+        #     parsed_data['v'].reshape((data['r'], data['c'])),
         #     data['r'],
         #     data['c'],
         #     data['mat_slope'],
         #     data['NoDataValue'],
         #     data['mat_aa']
         # )
-        # data['mat_reten'] = joint_data['ret'].reshape((data['r'], data['c']))
-        # data['mat_pi'] = joint_data['pi'].reshape((data['r'], data['c']))
-        # data['mat_ppl'] = joint_data['ppl'].reshape((data['r'], data['c']))
+        # data['mat_reten'] = parsed_data['ret'].reshape((data['r'], data['c']))
+        # data['mat_pi'] = parsed_data['pi'].reshape((data['r'], data['c']))
+        # data['mat_ppl'] = parsed_data['ppl'].reshape((data['r'], data['c']))
         data['mat_n'].fill(self._config.getfloat('parameters', 'n'))
         data['mat_b'].fill(self._config.getfloat('parameters', 'b'))
         data['mat_a'].fill(self._config.getfloat('parameters', 'X'))
@@ -283,6 +287,30 @@ class NoGisProvider(BaseProvider):
         nr_of_rows = round(length / resolution)
 
         return nr_of_rows
+
+    @staticmethod
+    def divide_joint_data(joint_data, r, res):
+        parsed_data = None
+        subsegment_unseen = 0
+
+        total_length = joint_data['vodorovny_prumet_stahu[m]'].sum()
+        mod = total_length % r
+        addition = mod / r
+        one_pix_len = res + addition
+
+        for slope_segment in joint_data:
+            subsegment_unseen += slope_segment['vodorovny_prumet_stahu[m]']
+
+            while subsegment_unseen >= (one_pix_len / 2):
+                if parsed_data is not None:
+                    parsed_data = np.concatenate((parsed_data,
+                                                  slope_segment[True]))
+                else:
+                    parsed_data = slope_segment[True]
+
+                subsegment_unseen -= one_pix_len
+
+        return parsed_data
 
     def _get_a(self, mat_n, mat_x, mat_y, r, c, no_data_value, mat_slope):
         """
