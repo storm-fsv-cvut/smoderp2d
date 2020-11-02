@@ -202,8 +202,8 @@ class NoGisProvider(BaseProvider):
         data['pixel_area'] = data['vpix'] * data['spix']
 
         # divide joint data slope into rows corresponding with data['r']
-        parsed_data = self.divide_joint_data(joint_data, data['r'],
-                                             data['vpix'])
+        parsed_data = self._divide_joint_data(joint_data, data['r'],
+                                              data['vpix'])
 
         # allocate matrices
         self._alloc_matrices(data)
@@ -283,16 +283,26 @@ class NoGisProvider(BaseProvider):
         :return: number of pixels
         """
         length = lengths.sum()
-        # TODO: Change the horizonthal length to the one with the slope
+        # TODO: Change the horizonthal length to the one with the slope (also
+        #  in _divide_joint_data)
         nr_of_rows = round(length / resolution)
 
         return nr_of_rows
 
     @staticmethod
-    def divide_joint_data(joint_data, r, res):
+    def _divide_joint_data(joint_data, r, res):
+        """Divide joint data into corresponding number of rows.
+
+        :param joint_data: np structurred array with the joint data
+        :param r: number of rows
+        :param res: pixel resolution
+        :return: divided, parsed joint data
+        """
         parsed_data = None
         subsegment_unseen = 0
 
+        # TODO: Change the horizonthal length to the one with the slope (also
+        #  in _compute_rows)
         total_length = joint_data['vodorovny_prumet_stahu[m]'].sum()
         mod = total_length % r
         addition = mod / r
