@@ -246,7 +246,7 @@ class NoGisProvider(BaseProvider):
         # data['mat_reten'] = joint_data['ret'].reshape((data['r'], data['c']))
         # data['mat_pi'] = joint_data['pi'].reshape((data['r'], data['c']))
         # data['mat_ppl'] = joint_data['ppl'].reshape((data['r'], data['c']))
-        # data['mat_n'].fill(self._config.getfloat('parameters', 'n'))
+        data['mat_n'].fill(self._config.getfloat('parameters', 'n'))
         data['mat_b'].fill(self._config.getfloat('parameters', 'b'))
         data['mat_a'].fill(self._config.getfloat('parameters', 'X'))
         data['mat_aa'] = data['mat_a']*data['mat_slope']**(
