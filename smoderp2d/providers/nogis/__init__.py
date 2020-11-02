@@ -251,9 +251,15 @@ class NoGisProvider(BaseProvider):
         data['mat_nan'] = np.nan
         data['mat_inf_index'].fill(1)  # 1 = philips infiltration
 
-        # QUESTION: TODO set infiltration values
-        # needs to be constructed from input data
-        self._set_combinatIndex(data)
+        data['mat_nan'], data['mat_inf_index'], data['combinatIndex'] = \
+            self._set_combinatIndex(
+                data['r'],
+                data['c'],
+                parsed_data['k'].reshape((data['r'], data['c'])),
+                parsed_data['s'].reshape((data['r'], data['c'])),
+                data['NoDataValue'],
+                data['mat_dem'],
+                data['mat_slope'])
 
         # QUESTION: TODO set points to hydrographs
         self._set_hydrographs(data)
@@ -411,7 +417,7 @@ class NoGisProvider(BaseProvider):
         data['mat_slope'] = np.zeros((data['r'],data['c']), float)
         data['mat_n'] = np.zeros((data['r'],data['c']), float)
         # dem is not needed for computation
-        # data['mat_dem'] = np.zeros((data['r'],data['c']), float)
+        data['mat_dem'] = np.zeros((data['r'],data['c']), float)
         data['mat_inf_index'] = np.zeros((data['r'],data['c']), float)
         data['mat_fd'] = np.zeros((data['r'],data['c']), float)
         data['mat_hcrit'] = np.zeros((data['r'],data['c']), float)
@@ -435,10 +441,66 @@ class NoGisProvider(BaseProvider):
 
         return rr, rc
 
+    def _set_combinatIndex(self, r, c, mat_k, mat_s, no_data_value,
+                           mat_dem, mat_slope):
+        mat_nan = np.zeros(
+            [r, c], float
+        )
 
-    def _set_combinatIndex(self, data):
-        # TODO: See providers/base/data_preparation._get_mat_par()
-        pass
+        mat_inf_index = None
+        combinatIndex = None
+
+        infiltration_type = 0  # "Phillip"
+        if infiltration_type == 0:
+            # to se rovna vzdycky ne? nechapu tuhle podminku 23.05.2018 MK
+            mat_inf_index = np.zeros(
+                [r, c], int
+            )
+            combinat = []
+            combinatIndex = []
+            for i in range(r):
+                for j in range(c):
+                    kkk = mat_k[i][j]
+                    sss = mat_s[i][j]
+                    ccc = [kkk, sss]
+                    try:
+                        if combinat.index(ccc):
+                            mat_inf_index[i][j] = combinat.index(ccc)
+                    except:
+                        combinat.append(ccc)
+                        combinatIndex.append(
+                            [combinat.index(ccc), kkk, sss, 0]
+                        )
+                        mat_inf_index[i][j] = combinat.index(
+                            ccc
+                        )
+
+        # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u
+        # sklonu a acc
+        i = j = 0
+
+        # data value vector intersection
+        # TODO: Why are mat_slope and mat_dem being modified here? Shall them
+        #  be returned too?
+        nv = no_data_value
+        for i in range(r):
+            for j in range(c):
+                x_mat_dem = mat_dem[i][j]
+                slp = mat_slope[i][j]
+                if x_mat_dem == nv or slp == nv:
+                    mat_nan[i][j] = nv
+                    mat_slope[i][j] = nv
+                    mat_dem[i][j] = nv
+                else:
+                    mat_nan[i][j] = 0
+
+        self.storage.write_raster(
+            mat_nan,
+            'mat_nan',
+            'temp'
+        )
+
+        return mat_nan, mat_inf_index, combinatIndex
 
     def _set_unused(self, data):
         data['cell_stream'] = None
