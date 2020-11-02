@@ -190,12 +190,9 @@ class NoGisProvider(BaseProvider):
         data['prtTimes'] = self._config.get('general', 'printtimes')
 
         resolution = self._config.getfloat('domain', 'res')
-        # TODO: Uncomment and comment the latter when trying with real
-        #  input CSV and not the .save file
         # TODO: Change stah -> svah (ha ha) after being changed in the CSV
-        # data['r'] = self._compute_rows(joint_data['vodorovny_prumet_stahu[m]'],
-        #                                resolution)
-        data['r'] = 10
+        data['r'] = self._compute_rows(joint_data['vodorovny_prumet_stahu[m]'],
+                                       resolution)
         data['c'] = 1
         # set mask i and j must be set after 'r' and 'c'
         data['rr'], data['rc'] = self._construct_rr_rc(data)
