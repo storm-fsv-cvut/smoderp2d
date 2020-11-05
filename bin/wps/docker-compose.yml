@@ -3,6 +3,8 @@ services:
   nginx:
     restart: unless-stopped
     build: .
+    image: smoderp-wps-demo
+    container_name: smoderp-wps-demo-1
     ports:
       - "8080:80"
     environment:
