@@ -54,11 +54,11 @@ http://127.0.0.1:5000/wps?service=wps&version=1.0.0&request=execute&identifier=s
 
 GetCapabilities:
 
-    http://localhost:8080/services/wps?service=wps&request=getcapabilities
+http://localhost:8080/services/wps?service=wps&request=getcapabilities
     
 DescribeProcess:
 
-    http://localhost:8080/services/wps?service=wps&request=describeprocess&version=2.0.0&identifier=smoderp1d
+http://localhost:8080/services/wps?service=wps&request=describeprocess&version=2.0.0&identifier=smoderp1d
     
 Execute (POST):
 
