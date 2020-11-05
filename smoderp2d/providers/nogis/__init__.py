@@ -215,7 +215,7 @@ class NoGisProvider(BaseProvider):
         # TODO: load from csv - 1) hor. length + height 2) hor. length + ratio
         # same cell values for each segment
         data['mat_slope'].fill(self._config.getfloat('topography', 'slope'))
-        # TODO can mat boundary stay zero?
+        # TODO can be probably removed (?) or stay zero
         # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
         data['mat_efect_cont'] = data['spix'] # x-axis (EW) resolution
         # flow direction is always to the south
@@ -242,8 +242,9 @@ class NoGisProvider(BaseProvider):
             data['NoDataValue'],
             data['mat_aa']
         )
-        # TODO: Shall we consider the next comment?
-        # retention is converted from mm to m in _set_globals function
+
+        # TODO: retention is converted from mm to m (negative ->
+        # positive values), see base._set_globals function
         data['mat_reten'] = parsed_data['ret'].reshape((data['r'], data['c']))
         data['mat_pi'] = parsed_data['pi'].reshape((data['r'], data['c']))
         data['mat_ppl'] = parsed_data['ppl'].reshape((data['r'], data['c']))
@@ -481,7 +482,7 @@ class NoGisProvider(BaseProvider):
 
         # data value vector intersection
         # TODO: Why are mat_slope and mat_dem being modified here? Shall them
-        #  be returned too?
+        #  be returned too? Yes, but no loop needed
         nv = no_data_value
         for i in range(r):
             for j in range(c):
