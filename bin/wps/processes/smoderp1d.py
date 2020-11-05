@@ -9,7 +9,10 @@ class Smoderp1d(Process):
                          supported_formats=[Format('text/csv')])
         ]
         outputs = [
-            ComplexOutput('output', 'Output CSV file',
+            ComplexOutput('profile', 'Output profile CSV file',
+                          supported_formats=[Format('text/csv')],
+                          as_reference=True),
+            ComplexOutput('hydrogram', 'Output hydrogram CSV file',
                           supported_formats=[Format('text/csv')],
                           as_reference=True)
         ]
@@ -27,4 +30,5 @@ subsurface runoff and erosion
         )
 
     def _handler(self, request, response):
-        response.outputs['output'].file = request.inputs['input'][0].file
+        response.outputs['profile'].file = 'processes/profile.csv'
+        response.outputs['hydrogram'].file = 'processes/hydrogram.csv'

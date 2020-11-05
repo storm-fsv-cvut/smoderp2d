@@ -4,25 +4,25 @@
   <wps:Input>
     <ows:Identifier>input</ows:Identifier>
     <wps:Data>
-      <wps:ComplexData mimeType="text/csv"><![CDATA[
-vodorovny prumet stahu[m];prevyseni[m];povrch;puda;sklon
-37.3;5;GEO;HX;0.134048257
-]]></wps:ComplexData>
+      <wps:ComplexData mimeType="text/csv"><![CDATA[vodorovny prumet stahu[m];prevyseni[m];povrch;puda;sklon
+37.3;5;GEO;HX;0.134048257]]></wps:ComplexData>
     </wps:Data>
   </wps:Input>
   <wps:Input>
     <ows:Identifier>soil_types</ows:Identifier>
     <wps:Data>
-      <wps:ComplexData mimeType="text/csv"><![CDATA[
-soilveg;k;s;n;pi;ppl;ret;b;x;y;tau;v
-HXGEO;0.00000138889;0.00030983900;0.12000000000;1.00000000000;0.40000000000;8;1.58470000000;7.98480000000;0.48890000000;60.00000000000;1.00000000000
-]]></wps:ComplexData>
+      <wps:ComplexData mimeType="text/csv"><![CDATA[soilveg;k;s;n;pi;ppl;ret;b;x;y;tau;v
+HXGEO;0.00000138889;0.00030983900;0.12000000000;1.00000000000;0.40000000000;8;1.58470000000;7.98480000000;0.48890000000;60.00000000000;1.00000000000]]></wps:ComplexData>
     </wps:Data>
   </wps:Input>
 </wps:DataInputs>
 <wps:ResponseForm>
   <wps:ResponseDocument lineage="false" storeExecuteResponse="false" status="false">
-    <wps:Output asreference="true" mimeType="text/csv"><ows:Identifier>output</ows:Identifier>
+    <wps:Output asreference="true" mimeType="text/csv"><ows:Identifier>profile</ows:Identifier>
+    </wps:Output>
+  </wps:ResponseDocument>
+  <wps:ResponseDocument lineage="false" storeExecuteResponse="false" status="false">
+    <wps:Output asreference="true" mimeType="text/csv"><ows:Identifier>hydrogram</ows:Identifier>
     </wps:Output>
   </wps:ResponseDocument>
 </wps:ResponseForm>
