@@ -10,5 +10,5 @@ services:
     ports:
       - 8080:80
     environment:
-      - NGINX_HOST=rain1.fsv.cvut.cz
+      - NGINX_HOST=localhost
       - NGINX_PORT=8080
