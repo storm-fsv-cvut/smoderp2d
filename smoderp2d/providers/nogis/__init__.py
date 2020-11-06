@@ -260,9 +260,6 @@ class NoGisProvider(BaseProvider):
                 data['mat_dem'],
                 data['mat_slope'])
 
-        # TODO: retention conversion only in Globals - is that fine?
-        self._set_globals(data)
-
         # QUESTION: TODO set points to hydrographs
         self._set_hydrographs(data)
         # and other unused variables
