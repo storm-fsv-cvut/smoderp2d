@@ -243,8 +243,6 @@ class NoGisProvider(BaseProvider):
             data['mat_aa']
         )
 
-        # TODO: retention is converted from mm to m (negative ->
-        # positive values), see base._set_globals function
         data['mat_reten'] = parsed_data['ret'].reshape((data['r'], data['c']))
         data['mat_pi'] = parsed_data['pi'].reshape((data['r'], data['c']))
         data['mat_ppl'] = parsed_data['ppl'].reshape((data['r'], data['c']))
@@ -261,6 +259,9 @@ class NoGisProvider(BaseProvider):
                 data['NoDataValue'],
                 data['mat_dem'],
                 data['mat_slope'])
+
+        # TODO: retention conversion only in Globals - is that fine?
+        self._set_globals(data)
 
         # QUESTION: TODO set points to hydrographs
         self._set_hydrographs(data)
