@@ -1,0 +1,5 @@
+# Certbot
+location /.well-known/acme-challenge {
+    root /var/www/certbot;
+    allow all;
+}

@@ -4,15 +4,15 @@ language=cs-CZ
 parallelprocesses=4
 maxrequestsize=10mb
 maxsingleinputsize=10mb
-outputurl=http://localhost/outputs/
+outputurl=http://${NGINX_HOST}:${NGINX_PORT}/wps/outputs/
 outputpath=/var/www/wps/outputs
-url=http://localhost/wps
+url=http://${NGINX_HOST}:${NGINX_PORT}/services/wps
 
 [metadata:main]
 identification_title=SMODERP2D WPS Server
 identification_abstract=Experimental SMODERP2D WPS Server
 identification_keywords=SMODERP2D,GRASS,GIS,WPS
-provider_url=http://localhost
+provider_url=http://${NGINX_HOST}
 provider_name=CVUT v Praze, Fakulta stavebni
 contact_name=Martin Landa
 contact_address=Thakurova 7
