@@ -557,16 +557,9 @@ class NoGisProvider(BaseProvider):
             self._config.get('Other', 'data1d_soil_types'),
         )
 
-        #TODO
-        print ('')
-        print ('')
         print ('NO GIS PROVIDER')
         print ('')
         for key in data:
             print(key)
-        print ('')
-        print ('in progress stop in {}'.format(os.path.join(os.path.dirname(__file__))))
-        print ('next step: make poirts to print hydrograms, set combinatIndex  and set cell sizes')
 
         self._set_globals(data)
-        # sys.exit()
