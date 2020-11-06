@@ -250,7 +250,7 @@ class NoGisProvider(BaseProvider):
         data['mat_nan'] = np.nan
         data['mat_inf_index'].fill(1)  # 1 = philips infiltration
 
-        data['mat_nan'], data['mat_inf_index'], data['combinatIndex'] = \
+        data['mat_nan'], data['mat_inf_index'], data['combinatIndex'], data['mat_slope'], data['mat_dem'] = \
             self._set_combinatIndex(
                 data['r'],
                 data['c'],
@@ -502,8 +502,7 @@ class NoGisProvider(BaseProvider):
         i = j = 0
 
         # data value vector intersection
-        # TODO: Why are mat_slope and mat_dem being modified here? Shall them
-        #  be returned too? Yes, but no loop needed
+        # TODO: no loop needed
         nv = no_data_value
         for i in range(r):
             for j in range(c):
@@ -522,7 +521,7 @@ class NoGisProvider(BaseProvider):
             'temp'
         )
 
-        return mat_nan, mat_inf_index, combinatIndex
+        return mat_nan, mat_inf_index, combinatIndex, mat_slope, mat_dem
 
     def _set_unused(self, data):
         data['cell_stream'] = None
