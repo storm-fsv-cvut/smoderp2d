@@ -191,6 +191,7 @@ class NoGisProvider(BaseProvider):
         resolution = self._config.getfloat('domain', 'res')
         # TODO: Change stah -> svah (ha ha) after being changed in the CSV
         data['r'] = self._compute_rows(joint_data['vodorovny_prumet_stahu[m]'],
+                                       joint_data['prevyseni[m]'],
                                        resolution)
         data['c'] = 1
         # set mask i and j must be set after 'r' and 'c'
@@ -268,23 +269,37 @@ class NoGisProvider(BaseProvider):
 
         return data
 
-    @staticmethod
-    def _compute_rows(lengths, resolution):
+    def _compute_rows(self, lengths, heights, resolution):
         """Compute number of pixels the slope will be divided into.
 
         :param lengths: np array with containing all lengths
+        :param heights: np array with containing all heights
         :param resolution: intended resolution of one pixel
         :return: number of pixels
         """
-        length = lengths.sum()
-        # TODO: Change the horizonthal length to the one with the slope (also
-        #  in _divide_joint_data)
-        nr_of_rows = round(length / resolution)
+        slope_length = self._compute_slope_length(lengths, heights)
+
+        nr_of_rows = round(slope_length / resolution)
 
         return nr_of_rows
 
     @staticmethod
-    def _divide_joint_data(joint_data, r, res):
+    def _compute_slope_length(lengths, heights):
+        """Compute the slope length from lengths and heights.
+
+        :param lengths: np array with containing horizontal lengths
+        :param heights: np array with containing heights
+        :return: length of slope
+        """
+        total_hor_length = lengths.sum()
+        total_height = heights.sum()
+        slope_length = math.sqrt(
+            math.pow(total_hor_length, 2) + math.pow(total_height, 2)
+        )
+
+        return slope_length
+
+    def _divide_joint_data(self, joint_data, r, res):
         """Divide joint data into corresponding number of rows.
 
         :param joint_data: np structurred array with the joint data
@@ -295,15 +310,21 @@ class NoGisProvider(BaseProvider):
         parsed_data = None
         subsegment_unseen = 0
 
-        # TODO: Change the horizonthal length to the one with the slope (also
-        #  in _compute_rows)
         total_length = joint_data['vodorovny_prumet_stahu[m]'].sum()
-        mod = total_length % r
+        slope_length = self._compute_slope_length(
+            joint_data['vodorovny_prumet_stahu[m]'],
+            joint_data['prevyseni[m]']
+        )
+        mod = slope_length % r
         addition = mod / r
         one_pix_len = res + addition
 
         for slope_segment in joint_data:
-            subsegment_unseen += slope_segment['vodorovny_prumet_stahu[m]']
+            segment_length = self._compute_slope_length(
+                slope_segment['vodorovny_prumet_stahu[m]'],
+                slope_segment['prevyseni[m]']
+            )
+            subsegment_unseen += segment_length
 
             while subsegment_unseen >= (one_pix_len / 2):
                 if parsed_data is not None:
