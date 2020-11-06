@@ -153,7 +153,6 @@ class NoGisProvider(BaseProvider):
         """
         from smoderp2d.processes import rainfall
 
-        # TODO
         # read input csv files
         try:
             # TODO: Delete the next line
