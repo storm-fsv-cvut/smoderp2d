@@ -76,11 +76,7 @@ class PrepareDataBase(object):
         self.data['mat_dem'] = self._rst2np(dem_clip)
         self.data['mat_slope'] = self._rst2np(slope_clip)
         # unit conversion % -> 0-1
-        for i in range(self.data['mat_slope'].shape[0]):
-            for j in range(self.data['mat_slope'].shape[1]):
-                nv = self.data['NoDataValue']
-                if self.data['mat_slope'][i][j] != nv:
-                    self.data['mat_slope'][i][j] = self.data['mat_slope'][i][j]/100.
+        self._convert_slope_units()
 
         # update data dict for spatial ref info
         self._get_raster_dim(dem_clip)
@@ -566,6 +562,16 @@ class PrepareDataBase(object):
             inDomain = False
             inBoundary = False
             self.data['rc'].append(oneCol)
+
+    def _convert_slope_units(self):
+        """
+        Converts slope units from % to 0-1 range in the mask.
+        """
+        for i in range(self.data['mat_slope'].shape[0]):
+            for j in range(self.data['mat_slope'].shape[1]):
+                nv = self.data['NoDataValue']
+                if self.data['mat_slope'][i][j] != nv:
+                    self.data['mat_slope'][i][j] = self.data['mat_slope'][i][j]/100.
 
     def _clip_data(self, dem, intersect):
         raise NotImplemented("Not implemented for base provider")
