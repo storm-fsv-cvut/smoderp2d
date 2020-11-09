@@ -76,7 +76,11 @@ class PrepareDataBase(object):
         self.data['mat_dem'] = self._rst2np(dem_clip)
         self.data['mat_slope'] = self._rst2np(slope_clip)
         # unit conversion % -> 0-1
-        self.data['mat_slope'] = self.data['mat_slope']/100.
+        for i in range(self.data['mat_slope'].shape[0]):
+            for j in range(self.data['mat_slope'].shape[1]):
+                nv = self.data['NoDataValue']
+                if self.data['mat_slope'][i][j] != nv:
+                    self.data['mat_slope'][i][j] = self.data['mat_slope'][i][j]/100.
 
         # update data dict for spatial ref info
         self._get_raster_dim(dem_clip)
