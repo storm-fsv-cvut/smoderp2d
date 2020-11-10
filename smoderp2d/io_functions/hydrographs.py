@@ -3,6 +3,8 @@ import os
 from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers import Logger
 
+SEP = ';'
+
 class Hydrographs:
     def __init__(self, item='core'):
         points = Globals.get_array_points()
@@ -83,9 +85,13 @@ class Hydrographs:
             if i == self.inStream[iStream]:
 
                 if not Globals.extraOut:
-                    header += '# time[s];deltaTime[s];rainfall[m];reachWaterLevel[m];reachFlow[m3/s];reachVolRunoff[m3]'
+                    header += '# time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
+                              '{sep}reachWaterLevel[m]{sep}reachFlow[m3/s]'\
+                              '{sep}reachVolRunoff[m3]'.format(sep=SEP)
                 else:
-                    header += '# time[s];deltaTime[s];Rainfall[m];Waterlevel[m];V_runoff[m3];Q[m3/s];V_from_field[m3];V_rests_in_stream[m3]'
+                    header += '# time[s]{sep}deltaTime[s]{sep}Rainfall[m]'\
+                              '{sep}Waterlevel[m]{sep}V_runoff[m3]{sep}Q[m3/s]'\
+                              '{sep}V_from_field[m3]{sep}V_rests_in_stream[m3]'.format(sep=SEP)
                 header += os.linesep
                 iStream += 1
                 self.header.append(header)
@@ -93,17 +99,29 @@ class Hydrographs:
             elif i == self.inSurface[iSurface]:
 
                 if not Globals.extraOut:
-                    header += '# time[s];deltaTime[s];rainfall[m];totalWaterLevel[m];surfaceFlow[m3/s];surfaceVolRunoff[m3]{}'.format(os.linesep)
+                    header += '# time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
+                              '{sep}totalWaterLevel[m]{sep}surfaceFlow[m3/s]'\
+                              '{sep}surfaceVolRunoff[m3]'\
+                              '{linesep}'.format(sep=SEP, linesep = os.linesep)
                 else:
-                    header += '# time[s];deltaTime[s];Rainfall[m];Water_level_[m];Sheet_Flow[m3/s];Sheet_V_runoff[m3];Sheet_V_rest[m3];Infiltration[m];Surface_retetion[m];State;V_inflow[m3];WlevelTotal[m]{}'
+                    header += '# time[s]{sep}deltaTime[s]{sep}Rainfall[m]{sep}'\
+                              'Water_level_[m]{sep}Sheet_Flow[m3/s]{sep}Sheet_V_runoff[m3]{sep}'\
+                              'Sheet_V_rest[m3]{sep}Infiltration[m]{sep}Surface_retetion[m]{sep}'\
+                              'State{sep}V_inflow[m3]{sep}WlevelTotal[m]'.format(sep=SEP)
 
                     if Globals.isRill:
-                        header += ';WlevelRill[m];Rill_width[m];Rill_flow[m3/s];Rill_V_runoff[m3];Rill_V_rest;Surface_Flow[m3/s];Surface_V_runoff[m3]'
-                    header += ';SurfaceBil[m3]'
+                        header += '{sep}WlevelRill[m]{sep}Rill_width[m]'\
+                                  '{sep}Rill_flow[m3/s]{sep}Rill_V_runoff[m3]'\
+                                  '{sep}Rill_V_rest{sep}Surface_Flow[m3/s]'\
+                                  '{sep}Surface_V_runoff[m3]'.format(sep=SEP)
+                    header += '{sep}SurfaceBil[m3]'.format(sep=SEP)
                     if Globals.subflow:
-                        header += ';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[];exfiltration[]'
+                        header += '{sep}Sub_Water_level_[m]{sep}Sub_Flow_[m3/s]'\
+                        '{sep}Sub_V_runoff[m3]{sep}Sub_V_rest[m3]'\
+                        '{sep}Percolation[]{sep}exfiltration[]'.format(sep=SEP)
                     if Globals.extraOut:
-                        header += ';V_to_rill.m3.;ratio;courant;courantrill;iter'
+                        header += '{sep}V_to_rill.m3.{sep}ratio{sep}courant'\
+                        '{sep}courantrill{sep}iter'.format(sep=SEP)
                     header += os.linesep
 
                 iSurface += 1
@@ -124,7 +142,7 @@ class Hydrographs:
         Logger.info("Hydrographs files has been created...")
 
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface, subsurface,
-                                 currRain, inStream=False, sep=';'):
+                                 currRain, inStream=False, sep=SEP):
         ratio = fc.ratio
         total_time = fc.total_time + dt
         iter_ = fc.iter_
@@ -184,7 +202,7 @@ class Hydrographs:
 
 class HydrographsPass:
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface, subsurface,
-                                 currRain, inStream=False, sep=';'):
+                                 currRain, inStream=False, sep=SEP):
         pass
 
     def _output_path(self, output, directory='core'):
