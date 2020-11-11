@@ -254,7 +254,7 @@ def compute_h_hrill(h_total_pre, h_crit, state, rill_width, h_rill_pre):
     elif state == 1:
         h_sheet = min(h_crit, h_total_pre)
         h_rill = max(h_total_pre - h_crit, 0)
-        hRillPre = h_rill
+        h_rill_pre = h_rill
 
         return h_sheet, h_rill, h_rill_pre
 
