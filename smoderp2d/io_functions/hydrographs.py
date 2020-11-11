@@ -85,11 +85,11 @@ class Hydrographs:
             if i == self.inStream[iStream]:
 
                 if not Globals.extraOut:
-                    header += '# time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
+                    header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
                               '{sep}reachWaterLevel[m]{sep}reachFlow[m3/s]'\
                               '{sep}reachVolRunoff[m3]'.format(sep=SEP)
                 else:
-                    header += '# time[s]{sep}deltaTime[s]{sep}Rainfall[m]'\
+                    header += 'time[s]{sep}deltaTime[s]{sep}Rainfall[m]'\
                               '{sep}Waterlevel[m]{sep}V_runoff[m3]{sep}Q[m3/s]'\
                               '{sep}V_from_field[m3]{sep}V_rests_in_stream[m3]'.format(sep=SEP)
                 header += os.linesep
@@ -99,12 +99,12 @@ class Hydrographs:
             elif i == self.inSurface[iSurface]:
 
                 if not Globals.extraOut:
-                    header += '# time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
+                    header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
                               '{sep}totalWaterLevel[m]{sep}surfaceFlow[m3/s]'\
                               '{sep}surfaceVolRunoff[m3]'\
                               '{linesep}'.format(sep=SEP, linesep = os.linesep)
                 else:
-                    header += '# time[s]{sep}deltaTime[s]{sep}Rainfall[m]{sep}'\
+                    header += 'time[s]{sep}deltaTime[s]{sep}Rainfall[m]{sep}'\
                               'Water_level_[m]{sep}Sheet_Flow[m3/s]{sep}Sheet_V_runoff[m3]{sep}'\
                               'Sheet_V_rest[m3]{sep}Infiltration[m]{sep}Surface_retetion[m]{sep}'\
                               'State{sep}V_inflow[m3]{sep}WlevelTotal[m]'.format(sep=SEP)
