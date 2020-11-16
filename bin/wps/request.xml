@@ -15,6 +15,20 @@
 HXGEO;0.00000138889;0.00030983900;0.12000000000;1.00000000000;0.40000000000;8;1.58470000000;7.98480000000;0.48890000000;60.00000000000;1.00000000000]]></wps:ComplexData>
     </wps:Data>
   </wps:Input>
+  <wps:Input>
+    <ows:Identifier>rainfall</ows:Identifier>
+    <wps:Data>
+      <wps:ComplexData mimeType="text/plain"><![CDATA[30 60]]></wps:ComplexData>
+    </wps:Data>
+  </wps:Input>
+  <wps:Input>
+    <ows:Identifier>config</ows:Identifier>
+    <wps:Data>
+      <wps:ComplexData mimeType="text/plain"><![CDATA[[domain]
+# spatial resolution in meters
+res: 1]]></wps:ComplexData>
+    </wps:Data>
+  </wps:Input>
 </wps:DataInputs>
 <wps:ResponseForm>
   <wps:ResponseDocument lineage="false" storeExecuteResponse="false" status="false">

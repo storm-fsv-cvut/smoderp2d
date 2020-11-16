@@ -6,7 +6,11 @@ class Smoderp1d(Process):
             ComplexInput('input', 'Input profile CSV file',
                          supported_formats=[Format('text/csv')]),
             ComplexInput('soil_types', 'Input soil types CSV file',
-                         supported_formats=[Format('text/csv')])
+                         supported_formats=[Format('text/csv')]),
+            ComplexInput('rainfall', 'Input rainfall file',
+                         supported_formats=[Format('text/plain')]),
+            ComplexInput('config', 'Configuration INI file',
+                         supported_formats=[Format('text/plain')])
         ]
         outputs = [
             ComplexOutput('profile', 'Output profile CSV file',
