@@ -1,3 +1,5 @@
+import time
+
 from pywps import Process, ComplexInput, ComplexOutput, Format
 
 class Smoderp1d(Process):
@@ -30,9 +32,16 @@ class Smoderp1d(Process):
 subsurface runoff and erosion
 (https://github.com/storm-fsv-cvut/smoderp2d) in 1D""",
             inputs=inputs,
-            outputs=outputs, store_supported=True, status_supported=True
+            outputs=outputs,
+            store_supported=True,
+            status_supported=True
         )
 
     def _handler(self, request, response):
+        # dummy computation
+        for p in range(10, 101, 10):
+            time.sleep(1)
+            response.update_status(message='dummy computation', status_percentage=p)
+
         response.outputs['profile'].file = 'processes/profile.csv'
         response.outputs['hydrogram'].file = 'processes/hydrogram.csv'
