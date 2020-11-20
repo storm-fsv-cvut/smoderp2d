@@ -6,3 +6,4 @@ tests/
 output.zip
 outputs/
 nginx/conf.d/default.conf
+pywps/pywps.cfg

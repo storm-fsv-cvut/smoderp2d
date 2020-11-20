@@ -43,5 +43,5 @@ subsurface runoff and erosion
             time.sleep(1)
             response.update_status(message='dummy computation', status_percentage=p)
 
-        response.outputs['profile'].file = 'processes/profile.csv'
-        response.outputs['hydrogram'].file = 'processes/hydrogram.csv'
+        response.outputs['profile'].file = '/opt/pywps/processes/profile.csv'
+        response.outputs['hydrogram'].file = '/opt/pywps/processes/hydrogram.csv'
