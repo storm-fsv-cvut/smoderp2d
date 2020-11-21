@@ -288,11 +288,8 @@ class NoGisProvider(BaseProvider):
         :param heights: np array containing heights
         :return: length of slope
         """
-        total_hor_length = lengths.sum()
-        total_height = heights.sum()
-        slope_length = math.sqrt(
-            math.pow(total_hor_length, 2) + math.pow(total_height, 2)
-        )
+        slope_lengths = np.sqrt(np.power(lengths, 2) + np.power(heights, 2))
+        slope_length = np.sum(slope_lengths)
 
         return slope_length
 
