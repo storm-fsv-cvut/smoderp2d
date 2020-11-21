@@ -270,8 +270,8 @@ class NoGisProvider(BaseProvider):
     def _compute_rows(self, lengths, heights, resolution):
         """Compute number of pixels the slope will be divided into.
 
-        :param lengths: np array with containing all lengths
-        :param heights: np array with containing all heights
+        :param lengths: np array containing all lengths
+        :param heights: np array containing all heights
         :param resolution: intended resolution of one pixel
         :return: number of pixels
         """
@@ -285,8 +285,8 @@ class NoGisProvider(BaseProvider):
     def _compute_slope_length(lengths, heights):
         """Compute the slope length from lengths and heights.
 
-        :param lengths: np array with containing horizontal lengths
-        :param heights: np array with containing heights
+        :param lengths: np array containing horizontal lengths
+        :param heights: np array containing heights
         :return: length of slope
         """
         total_hor_length = lengths.sum()
