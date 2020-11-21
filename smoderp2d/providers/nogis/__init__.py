@@ -212,9 +212,8 @@ class NoGisProvider(BaseProvider):
         data['NoDataValue'] = -9999
 
         # topography
-        # TODO: load from csv - 1) hor. length + height 2) hor. length + ratio
-        # same cell values for each segment
-        data['mat_slope'].fill(self._config.getfloat('topography', 'slope'))
+        data['mat_slope'] = parsed_data['len'].reshape((data['r'], data['c']))
+        # data['mat_slope'].fill(self._config.getfloat('topography', 'slope'))
         # TODO can be probably removed (?) or stay zero
         # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
         data['mat_efect_cont'] = data['spix'] # x-axis (EW) resolution
@@ -305,9 +304,11 @@ class NoGisProvider(BaseProvider):
         :param res: pixel resolution
         :return: divided, parsed joint data
         """
+        from numpy.lib.recfunctions import merge_arrays
         parsed_data = None
         subsegment_unseen = 0
 
+        # TODO: Len for segments
         total_length = joint_data['vodorovny_prumet_stahu[m]'].sum()
         slope_length = self._compute_slope_length(
             joint_data['vodorovny_prumet_stahu[m]'],
@@ -322,14 +323,19 @@ class NoGisProvider(BaseProvider):
                 slope_segment['vodorovny_prumet_stahu[m]'],
                 slope_segment['prevyseni[m]']
             )
+
+            seg_len_arr = np.array([segment_length / r], dtype=[('len', 'f4')])
+            data_entry = merge_arrays((slope_segment, seg_len_arr),
+                                      flatten=True)
+
             subsegment_unseen += segment_length
 
             while subsegment_unseen >= (one_pix_len / 2):
                 if parsed_data is not None:
                     parsed_data = np.concatenate((parsed_data,
-                                                  slope_segment[True]))
+                                                  data_entry[True]))
                 else:
-                    parsed_data = slope_segment[True]
+                    parsed_data = data_entry[True]
 
                 subsegment_unseen -= one_pix_len
 
