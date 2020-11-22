@@ -90,10 +90,7 @@ class NoGisProvider(BaseProvider):
 
         :return: loaded data in numpy structured array
         """
-        # TODO: Uncomment and comment the latter when trying with real
-        #  input CSV and not the .save file
-        # indata = self._load_csv_data(filename_indata)
-        indata = self._load_csv_data(filename_soil_types[:-15] + '.csv')
+        indata = self._load_csv_data(filename_indata)
         soil_types = self._load_csv_data(filename_soil_types)
 
         return self._join_indata_soils(indata, soil_types)
@@ -155,8 +152,6 @@ class NoGisProvider(BaseProvider):
 
         # read input csv files
         try:
-            # TODO: Delete the next line
-            data = self._load_data(filename_indata)
             joint_data = self._load_input_data(filename_indata,
                                                filename_soil_types)
         except IOError as e:
@@ -164,6 +159,7 @@ class NoGisProvider(BaseProvider):
 
         # defaults for nogis provider
         #  type of computing =  1 sheet and rill flow
+        data = {}
         data['type_of_computing'] = 1
         data['mfda'] = False
 
@@ -213,7 +209,6 @@ class NoGisProvider(BaseProvider):
 
         # topography
         data['mat_slope'] = parsed_data['len'].reshape((data['r'], data['c']))
-        # data['mat_slope'].fill(self._config.getfloat('topography', 'slope'))
         # TODO can be probably removed (?) or stay zero
         # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
         data['mat_efect_cont'] = data['spix'] # x-axis (EW) resolution
@@ -305,8 +300,6 @@ class NoGisProvider(BaseProvider):
         parsed_data = None
         subsegment_unseen = 0
 
-        # TODO: Len for segments
-        total_length = joint_data['vodorovny_prumet_stahu[m]'].sum()
         slope_length = self._compute_slope_length(
             joint_data['vodorovny_prumet_stahu[m]'],
             joint_data['prevyseni[m]']
@@ -551,9 +544,7 @@ class NoGisProvider(BaseProvider):
         self._cleanup()
 
         data = self._load_nogis(
-            self._config.get('Other', 'indata'),
-            # TODO
-            # self._config.get('Other', 'data1d'),
+            self._config.get('Other', 'data1d'),
             self._config.get('Other', 'data1d_soil_types'),
         )
 
