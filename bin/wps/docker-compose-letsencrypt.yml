@@ -8,6 +8,7 @@ services:
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt/
       - ./nginx/conf.letsencrypt/:/etc/nginx/conf.d/
+      - ./pywps/:/opt/pywps
     ports:
       - 8080:80
       - 4444:443
