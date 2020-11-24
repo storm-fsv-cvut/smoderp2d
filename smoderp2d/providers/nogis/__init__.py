@@ -255,8 +255,7 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
                 data['mat_dem'],
                 data['mat_slope'])
 
-        # QUESTION: TODO set points to hydrographs
-        self._set_hydrographs(data)
+        data['array_points'], data['points'] = self._set_hydrographs(data['r'] - 1)
         # and other unused variables
         self._set_unused(data)
 
@@ -527,12 +526,19 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
         data['streams_loc'] = None
         data['streams'] = None
         data['poradi'] = None
-        data['points'] = None
 
-    def _set_hydrographs(self, data):
-        # TODO: so far not needed
-        # TODO: do only in the lowest point
-        pass
+    def _set_hydrographs(self, max_row):
+        """Get array_points and points for the data dictionary.
+
+        These keys are needed to force the run to compute hydrographs.
+        Hydrograph is computed only for the last row, therefore preset values.
+
+        :param max_row: index of the last cell
+        """
+        array_points = np.array([1, max_row, 0, 0, 0]).reshape((1, 5))
+        points = 'test'
+
+        return array_points, points
 
     def load(self):
         """Load configuration data.
