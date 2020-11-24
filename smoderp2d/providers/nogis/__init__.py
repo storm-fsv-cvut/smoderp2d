@@ -10,10 +10,11 @@ else:
 
 from smoderp2d.core.general import Globals
 import math
-from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter
+from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter, CmdArgumentParser
 from smoderp2d.exceptions import ConfigError, ProviderError
 
 class CmdWritter(BaseWritter):
+    # TODO: avoid duplication (cmd.CmdWritter)
     def __init__(self):
         super(CmdWritter, self).__init__()
 
@@ -32,7 +33,7 @@ class CmdWritter(BaseWritter):
             array, file_output
         )
 
-class NoGisProvider(BaseProvider):
+class NoGisProvider(BaseProvider, CmdArgumentParser):
     def __init__(self):
         """Create argument parser."""
         super(NoGisProvider, self).__init__()
@@ -42,7 +43,7 @@ class NoGisProvider(BaseProvider):
 
         # data file (only required for runoff)
         parser.add_argument(
-            '-cfg',
+            '-cfg', # TODO: config
             help='file with configuration',
             type=str
         )
@@ -539,10 +540,11 @@ class NoGisProvider(BaseProvider):
 
         Only roff procedure supported.
         """
-
+        # TODO: don't override load() - use base.load()
         # cleanup output directory first
         self._cleanup()
 
+        # TODO: _load_nogis -> _load_roff(config)
         data = self._load_nogis(
             self._config.get('Other', 'data1d'),
             self._config.get('Other', 'data1d_soil_types'),
