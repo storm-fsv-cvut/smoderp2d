@@ -106,12 +106,14 @@ class Hydrographs:
                 else:
                     header += 'time[s]{sep}deltaTime[s]{sep}Rainfall[m]{sep}'\
                               'Water_level_[m]{sep}Sheet_Flow[m3/s]{sep}Sheet_V_runoff[m3]{sep}'\
+                              'Sheet_flow_velocity[m/s]{sep}'\
                               'Sheet_V_rest[m3]{sep}Infiltration[m]{sep}Surface_retetion[m]{sep}'\
                               'State{sep}V_inflow[m3]{sep}WlevelTotal[m]'.format(sep=SEP)
 
                     if Globals.isRill:
                         header += '{sep}WlevelRill[m]{sep}Rill_width[m]'\
                                   '{sep}Rill_flow[m3/s]{sep}Rill_V_runoff[m3]'\
+                                  '{sep}Rill_flow_velocity[m/s]'\
                                   '{sep}Rill_V_rest{sep}Surface_Flow[m3/s]'\
                                   '{sep}Surface_V_runoff[m3]'.format(sep=SEP)
                     header += '{sep}SurfaceBil[m3]'.format(sep=SEP)

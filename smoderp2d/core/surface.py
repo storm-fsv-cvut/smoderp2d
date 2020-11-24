@@ -51,6 +51,7 @@ class SurArrs(object):
         self.h_rill = 0.
         self.h_rillPre = 0.
         self.vol_runoff_rill = 0.
+        self.vel_rill = 0.
         # self.vol_runoff_rill_pre= float(0)
         self.v_rill_rest = 0.
         # self.v_rill_rest_pre =  float(0)
@@ -112,10 +113,15 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
             )
             bil_ = ''
         else:
-            line = '{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}{sep}{7}{sep}{8}'.format(
+            if arr.h_sheet == 0 :
+                velocity = 0
+            else :
+                velocity = arr.vol_runoff / dt / (arr.h_sheet*GridGlobals.dx)
+            line = '{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}{sep}{7}{sep}{8}{sep}{9}'.format(
                 arr.h_sheet,
                 arr.vol_runoff / dt,
                 arr.vol_runoff,
+                velocity,
                 arr.vol_rest,
                 arr.infiltration,
                 arr.cur_sur_ret,
@@ -126,11 +132,12 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
             )
 
             if Globals.isRill:
-                line += '{sep}{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}'.format(
+                line += '{sep}{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}{sep}{7}'.format(
                     arr.h_rill,
                     arr.rillWidth,
                     arr.vol_runoff_rill / dt,
                     arr.vol_runoff_rill,
+                    arr.vel_rill,
                     arr.v_rill_rest,
                     arr.vol_runoff / dt + arr.vol_runoff_rill / dt,
                     arr.vol_runoff + arr.vol_runoff_rill,
@@ -182,6 +189,7 @@ def __runoff(i, j, sur, dt, efect_vrst, ratio):
     else:
         q_rill, v_rill, ratio, rill_courant = 0, 0, ratio, 0.0
 
+    sur.vel_rill = v_rill
     return q_sheet, v_sheet, q_rill, v_rill, ratio, rill_courant
 
 
