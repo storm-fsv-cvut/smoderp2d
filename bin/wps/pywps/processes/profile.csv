@@ -1,4 +1,4 @@
-length[m],soil_vegFID,maximalSurfaceFlow[m3/s],totalRuonoff[m3],maximalSurfaceRunoffVelocity[m/s],maximalTangentialStress[Pa],rillRunoff[Y/N]
+length[m],soil_vegFID,maximalSurfaceFlow[m3/s],totalRunoff[m3],maximalSurfaceRunoffVelocity[m/s],maximalTangentialStress[Pa],rillRunoff[Y/N]
 1,HH_pvc,0.0100,2.000,0.4500,12.10,0
 2,HH_pvc,0.0105,2.100,0.4725,12.71,0
 3,HH_pvc,0.0110,2.205,0.4961,13.34,0
