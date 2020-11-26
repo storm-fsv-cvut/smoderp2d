@@ -22,7 +22,7 @@ class WpsProvider(BaseProvider):
 
         :param options: options dict to set
         """
-        self._config.read(options['indata'])
+        self._config.read(options['config'])
 
         try:
             # set logging level
@@ -36,7 +36,7 @@ class WpsProvider(BaseProvider):
             Globals.outdir = self._config.get('Other', 'outdir')
         except NoSectionError as e:
             raise ConfigError('Config file {}: {}'.format(
-                options['indata'], e
+                options['config'], e
             ))
 
         # define storage writter
@@ -51,7 +51,7 @@ class WpsProvider(BaseProvider):
         self._cleanup()
 
         data = self._load_roff(
-            self._config.get('Other', 'indata')
+            self._config.get('Other', 'config')
         )
 
         self._set_globals(data)

@@ -25,7 +25,7 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
 
         # data file (only required for runoff)
         parser.add_argument(
-            '-cfg', # TODO: config
+            '--config',
             help='file with configuration',
             type=str
         )
@@ -36,16 +36,19 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
         self.args.typecomp = 'roff'
         self.args.typecomp = CompType()[self.args.typecomp]
 
+        # set data_file to config
+        self.args.data_file = self.args.config
+
         # load configuration
         self._config = ConfigParser()
         if self.args.typecomp == CompType.roff:
-            if not self.args.cfg:
-                parser.error('-cfg required')
-            if not os.path.exists(self.args.cfg):
+            if not self.args.config:
+                parser.error('--config required')
+            if not os.path.exists(self.args.config):
                 raise ConfigError("{} does not exist".format(
-                    self.args.cfg
+                    self.args.config
                 ))
-            self._config.read(self.args.cfg)
+            self._config.read(self.args.config)
 
         try:
             # set logging level
@@ -59,7 +62,7 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
             Globals.outdir = self._config.get('general', 'outdir')
         except NoSectionError as e:
             raise ConfigError('Config file {}: {}'.format(
-                self.args.cfg, e
+                self.args.config, e
             ))
 
         # define storage writter
@@ -538,3 +541,4 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
         )
 
         self._set_globals(data)
+

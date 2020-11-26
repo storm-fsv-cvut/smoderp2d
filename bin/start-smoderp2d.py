@@ -5,7 +5,7 @@ Starting the rainfall/runoff/soil loss model
 SMODERP2D.
 
 Help:
-    ./bin/start-smoderp2d.py --typecomp roff --indata tests/test.ini
+    ./bin/start-smoderp2d.py --typecomp roff --config tests/test.ini
 """
 import os
 import sys
