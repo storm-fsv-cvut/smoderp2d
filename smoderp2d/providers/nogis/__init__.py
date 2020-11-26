@@ -123,7 +123,7 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
 
         return result
 
-    def _load_nogis(self, filename_indata, filename_soil_types):
+    def _load_roff(self, filename_indata, filename_soil_types):
         """Load configuration data from roff computation procedure.
 
         :param str filename_indata: input CSV file
@@ -532,8 +532,7 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
         # cleanup output directory first
         self._cleanup()
 
-        # TODO: _load_nogis -> _load_roff(config)
-        data = self._load_nogis(
+        data = self._load_roff(
             self._config.get('Other', 'data1d'),
             self._config.get('Other', 'data1d_soil_types'),
         )
