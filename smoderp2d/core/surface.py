@@ -105,7 +105,7 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
 
         # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
         if not extra_out:
-            line = '{0}{sep}{1}{sep}{2}'.format(
+            line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'.format(
                 arr.h_total_new,
                 arr.vol_runoff / dt + arr.vol_runoff_rill / dt,
                 arr.vol_runoff + arr.vol_runoff_rill,
@@ -117,7 +117,8 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
                 velocity = 0
             else :
                 velocity = arr.vol_runoff / dt / (arr.h_sheet*GridGlobals.dx)
-            line = '{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}{sep}{7}{sep}{8}{sep}{9}'.format(
+            line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}{sep}'\
+            '{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
                 arr.h_sheet,
                 arr.vol_runoff / dt,
                 arr.vol_runoff,
@@ -132,7 +133,8 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
             )
 
             if Globals.isRill:
-                line += '{sep}{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}{sep}{6}{sep}{7}'.format(
+                line += '{sep}{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}'\
+                '{sep}{5:.4e}{sep}{6:.4e}{sep}{7:.4e}'.format(
                     arr.h_rill,
                     arr.rillWidth,
                     arr.vol_runoff_rill / dt,

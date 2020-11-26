@@ -157,7 +157,7 @@ class Hydrographs:
                 l = self.point_int[ip][1]
                 m = self.point_int[ip][2]
                 self.files[ip].writelines(
-                    '{0}{sep}{1}{sep}{2}{sep}{3}{linesep}'.format(
+                    '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{linesep}'.format(
                     total_time, dt, currRain,
                     surface.return_stream_str_vals(l, m, sep, dt, Globals.extraOut),
                     sep=sep, linesep=os.linesep
@@ -168,7 +168,7 @@ class Hydrographs:
                 m = self.point_int[ip][2]
                 if i == l and j == m:
                     linebil = surface.return_str_vals(l, m, sep, dt, Globals.extraOut)
-                    line = '{0}{sep}{1}{sep}{2}{sep}{3}'.format(
+                    line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3}'.format(
                         total_time, dt, currRain,
                         linebil[0],
                         sep=sep
@@ -176,7 +176,8 @@ class Hydrographs:
                     # line += subsurface.return_str_vals(l,m,sep,dt) + sep   #
                     # prozatim
                     if Globals.extraOut:
-                        line += '{sep}{0}{sep}{1}{sep}{2}{sep}{3}{sep}{4}{sep}{5}'.format(
+                        line += '{sep}{0:.4e}{sep}{0:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}'\
+                        '{4:.4e}{sep}{5:.4e}'.format(
                             linebil[1], surface.arr[l][m].vol_to_rill,
                             ratio, courantMost, courantRill, iter_,
                             sep=sep)
