@@ -11,27 +11,9 @@ else:
 from smoderp2d.core.general import Globals
 import math
 from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter, CmdArgumentParser
+from smoderp2d.providers.cmd import CmdWritter
 from smoderp2d.exceptions import ConfigError, ProviderError
 
-class CmdWritter(BaseWritter):
-    # TODO: avoid duplication (cmd.CmdWritter)
-    def __init__(self):
-        super(CmdWritter, self).__init__()
-
-    def write_raster(self, array, output_name, directory='core'):
-        """Write raster (numpy array) to ASCII file.
-
-        :param array: numpy array
-        :param output_name: output filename
-        :param directory: directory where to write output file
-        """
-        file_output = self._raster_output_path(output_name, directory)
-
-        np.savetxt(file_output, array, fmt='%.6e')
-
-        self._print_array_stats(
-            array, file_output
-        )
 
 class NoGisProvider(BaseProvider, CmdArgumentParser):
     def __init__(self):
