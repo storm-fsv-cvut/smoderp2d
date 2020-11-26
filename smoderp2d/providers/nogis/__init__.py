@@ -537,9 +537,4 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
             self._config.get('Other', 'data1d_soil_types'),
         )
 
-        print ('NO GIS PROVIDER')
-        print ('')
-        for key in data:
-            print(key)
-
         self._set_globals(data)
