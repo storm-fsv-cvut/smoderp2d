@@ -1,5 +1,6 @@
 import os
 import sys
+import csv
 import argparse
 import logging
 import numpy as np
@@ -243,6 +244,9 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
         data['array_points'], data['points'] = self._set_hydrographs(data['r'] - 1)
         # and other unused variables
         self._set_unused(data)
+
+        # keep soilveg in memory - needed for profile.csv
+        self.mat_soilveg = np.char.add(parsed_data['puda'], parsed_data['povrch'])
 
         return data
 
@@ -541,4 +545,29 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
         )
 
         self._set_globals(data)
+
+    def postprocessing(self, cumulative, surface_array, stream):
+        super().postprocessing(cumulative, surface_array, stream)
+
+        # extra to normal postprocessing - write profile.csv
+
+        header = ['length[m]', 'soil_vegFID', 'maximalSurfaceFlow[m3/s]',
+                  'totalRunoff[m3]','maximalSurfaceRunoffVelocity[m/s]',
+                  'maximalTangentialStress[Pa]', 'rillRunoff[Y/N]']
+        vals_to_write = (
+            Globals.mat_slope.flatten(),
+            self.mat_soilveg.flatten(),
+            cumulative.q_sur_tot.flatten(),
+            cumulative.vol_rill.flatten(),
+            cumulative.v_sheet.flatten(),
+            cumulative.shear_sheet.flatten(),
+            cumulative.q_sur_tot.flatten() # TODO: should be rillRunoff[Y/N]
+        )
+
+        profile_path = os.path.join(Globals.outdir, 'profile.csv')
+        with open(profile_path, 'w') as out_csv:
+            writer = csv.writer(out_csv)
+
+            writer.writerow(header)
+            writer.writerows(zip(*vals_to_write))
 
