@@ -252,11 +252,11 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
         :param lengths: np array containing all lengths
         :param heights: np array containing all heights
         :param resolution: intended resolution of one pixel
-        :return: number of pixels
+        :return: number of pixels, must be integer
         """
         slope_length = self._compute_slope_length(lengths, heights)
 
-        nr_of_rows = round(slope_length / resolution)
+        nr_of_rows = int(round(slope_length / resolution))
 
         return nr_of_rows
 
