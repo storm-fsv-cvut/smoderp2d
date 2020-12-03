@@ -207,13 +207,17 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
         # flow direction is always to the south
         data['mat_fd'].fill(4)
 
+        # set x and y
+        data['x'] = parsed_data['x'].reshape((data['r'], data['c']))
+        data['y'] = parsed_data['y'].reshape((data['r'], data['c']))
+
         # set values to parameter matrics
         data['mat_n'] = parsed_data['n'].reshape((data['r'], data['c']))
         data['mat_b'] = parsed_data['b'].reshape((data['r'], data['c']))
         data['mat_a'], data['mat_aa'] = self._get_a(
             data['mat_n'],
-            parsed_data['x'].reshape((data['r'], data['c'])),
-            parsed_data['y'].reshape((data['r'], data['c'])),
+            data['x'],
+            data['y'],
             data['r'],
             data['c'],
             data['NoDataValue'],
