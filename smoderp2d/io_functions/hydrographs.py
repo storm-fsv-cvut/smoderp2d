@@ -157,7 +157,7 @@ class Hydrographs:
                 l = self.point_int[ip][1]
                 m = self.point_int[ip][2]
                 self.files[ip].writelines(
-                    '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{linesep}'.format(
+                    '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3}{linesep}'.format(
                     total_time, dt, currRain,
                     surface.return_stream_str_vals(l, m, sep, dt, Globals.extraOut),
                     sep=sep, linesep=os.linesep
