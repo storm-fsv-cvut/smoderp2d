@@ -298,8 +298,8 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
             joint_data['vodorovny_prumet_stahu[m]'],
             joint_data['prevyseni[m]']
         )
-        mod = slope_length % r
-        addition = mod / r
+        diff = slope_length - r
+        addition = diff / r
         one_pix_len = res + addition
 
         for slope_segment in joint_data:
