@@ -307,8 +307,11 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
                 slope_segment['vodorovny_prumet_stahu[m]'],
                 slope_segment['prevyseni[m]']
             )
+            seg_r = self._compute_rows(
+                segment_length, slope_segment['prevyseni[m]'], one_pix_len)
 
-            seg_len_arr = np.array([segment_length / r], dtype=[('len', 'f4')])
+            seg_len_arr = np.array([segment_length / seg_r],
+                                   dtype=[('len', 'f4')])
             data_entry = merge_arrays((slope_segment, seg_len_arr),
                                       flatten=True)
 
