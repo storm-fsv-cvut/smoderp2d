@@ -89,8 +89,13 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
         :param filename: Path to the CSV file
         :return: numpy structured array
         """
-        return np.genfromtxt(filename, delimiter=';', names=True, dtype=None,
+        data = np.genfromtxt(filename, delimiter=';', names=True, dtype=None,
                              encoding='utf-8-sig', deletechars='')
+
+        if data.size == 1:
+            data = data.reshape(1)
+
+        return data
 
     @staticmethod
     def _join_indata_soils(indata, soil_types):
