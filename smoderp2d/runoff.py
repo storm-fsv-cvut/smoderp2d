@@ -287,9 +287,6 @@ class Runoff(object):
                 newtime_minut = (self.flow_control.total_time+self.delta_t)/60
                 if (math.floor(newtime_minut) > math.floor(oldtime_minut)):
                     self.delta_t = (math.floor(newtime_minut) - oldtime_minut)*60.
-                    print (self.delta_t)
-                    print (self.flow_control.total_time+self.delta_t)
-
 
                 # courant conditions is satisfied (time step did
                 # change) the iteration loop breaks
