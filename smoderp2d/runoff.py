@@ -201,6 +201,7 @@ class Runoff(object):
                     self.delta_t,
                     self.surface,
                     self.subsurface,
+                    self.cumulative,
                     0.0
                 )
         # record values into stream hydrographs at time zero
@@ -212,6 +213,7 @@ class Runoff(object):
             self.delta_t,
             self.surface,
             self.subsurface,
+            self.cumulative,
             0.0,
             True
         )
@@ -322,6 +324,7 @@ class Runoff(object):
                             self.delta_t,
                             self.surface,
                             self.subsurface,
+                            self.cumulative,
                             actRain
                         )
                 # TODO
@@ -357,6 +360,7 @@ class Runoff(object):
                 self.delta_t,
                 self.surface,
                 self.subsurface,
+                self.cumulative,
                 actRain,
                 True
             )
