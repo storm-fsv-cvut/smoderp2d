@@ -155,8 +155,9 @@ class Hydrographs:
         # the hydrography is recorded only 
         # at the top of each minute
         # the function ends here ohterwise
-        time_minutes = (total_time)/60.
-        if time_minutes - int(time_minutes) != 0: return
+        if not Globals.extraOut:
+            time_minutes = (total_time)/60.
+            if time_minutes - int(time_minutes) != 0: return
 
         courantMost = courant.cour_most
         courantRill = courant.cour_most_rill
