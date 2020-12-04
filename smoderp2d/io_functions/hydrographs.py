@@ -4,6 +4,7 @@ from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers import Logger
 
 SEP = ';'
+os.linesep='\n'
 
 class Hydrographs:
     def __init__(self, item='core'):
@@ -159,7 +160,7 @@ class Hydrographs:
                 self.files[ip].writelines(
                     '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3}{linesep}'.format(
                     total_time, dt, currRain,
-                    surface.return_stream_str_vals(l, m, sep, dt, Globals.extraOut),
+                    surface.return_stream_str_vals(l, m, SEP, dt, Globals.extraOut),
                     sep=sep, linesep=os.linesep
                 ))
         else:
@@ -167,13 +168,13 @@ class Hydrographs:
                 l = self.point_int[ip][1]
                 m = self.point_int[ip][2]
                 if i == l and j == m:
-                    linebil = surface.return_str_vals(l, m, sep, dt, Globals.extraOut)
+                    linebil = surface.return_str_vals(l, m, SEP, dt, Globals.extraOut)
                     line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3}'.format(
                         total_time, dt, currRain,
                         linebil[0],
                         sep=sep
                     )
-                    # line += subsurface.return_str_vals(l,m,sep,dt) + sep   #
+                    # line += subsurface.return_str_vals(l,m,SEP,dt) + sep   #
                     # prozatim
                     if Globals.extraOut:
                         line += '{sep}{0:.4e}{sep}{0:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}'\
