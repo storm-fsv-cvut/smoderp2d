@@ -88,7 +88,7 @@ class Hydrographs:
                 if not Globals.extraOut:
                     header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
                               '{sep}reachWaterLevel[m]{sep}reachFlow[m3/s]'\
-                              '{sep}reachVolRunoff[m3]'.format(sep=SEP)
+                              '{sep}CumReachVolRunoff[m3]'.format(sep=SEP)
                 else:
                     header += 'time[s]{sep}deltaTime[s]{sep}Rainfall[m]'\
                               '{sep}Waterlevel[m]{sep}V_runoff[m3]{sep}Q[m3/s]'\
@@ -102,7 +102,7 @@ class Hydrographs:
                 if not Globals.extraOut:
                     header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
                               '{sep}totalWaterLevel[m]{sep}surfaceFlow[m3/s]'\
-                              '{sep}surfaceVolRunoff[m3]'\
+                              '{sep}CumSurfaceVolRunoff[m3]'\
                               '{linesep}'.format(sep=SEP, linesep = os.linesep)
                 else:
                     header += 'time[s]{sep}deltaTime[s]{sep}Rainfall[m]{sep}'\
@@ -145,6 +145,7 @@ class Hydrographs:
         Logger.info("Hydrographs files has been created...")
 
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface, subsurface,
+                                 cumulative,
                                  currRain, inStream=False, sep=SEP):
 
 
