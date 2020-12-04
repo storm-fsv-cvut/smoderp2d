@@ -215,7 +215,7 @@ class TimeStep:
                     delta_t,
                     surface,
                     subsurface,
-                    cumulative.
+                    cumulative,
                     actRain)
 
         return actRain
