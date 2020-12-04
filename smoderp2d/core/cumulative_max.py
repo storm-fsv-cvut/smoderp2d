@@ -170,3 +170,6 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             subsur_arr_el,
             subsur_arr_el
         )
+    def return_str_val(self, i, j):
+        return self.vol_sheet[i][j] + self.vol_rill[i][j] 
+

@@ -105,10 +105,9 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
 
         # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
         if not extra_out:
-            line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'.format(
+            line = '{0:.4e}{sep}{1:.4e}'.format(
                 arr.h_total_new,
                 arr.vol_runoff / dt + arr.vol_runoff_rill / dt,
-                arr.vol_runoff + arr.vol_runoff_rill,
                 sep=sep
             )
             bil_ = ''
