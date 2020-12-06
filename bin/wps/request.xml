@@ -29,21 +29,10 @@ PXOP;0.00000366600;0.00007745900;0.03500000000;0.16000000000;0.13000000000;5;1.7
       <ows:Identifier>config</ows:Identifier>
       <wps:Data>
         <wps:ComplexData mimeType="text/plain"><![CDATA[[domain]
-# spatial resolution in meters
 res: 1
-[rainfall]
-file: tests/data/rainfall.txt
 [time]
 maxdt: 30
-endtime: 60
-[general]
-outdir: tests/data/output
-extraout: True
-logging: DEBUG
-[Other]
-data1d: tests/data/nogis/data1D.csv
-data1d_soil_types: tests/data/nogis/data1D_soil_types.csv
-]]></wps:ComplexData>
+endtime: 60]]></wps:ComplexData>
       </wps:Data>
     </wps:Input>
   </wps:DataInputs>

@@ -1,7 +1,10 @@
 import os
 import sys
+import fileinput
+from configparser import ConfigParser
 
 from pywps import Process, ComplexInput, ComplexOutput, Format, LOGGER
+from pywps.app.exceptions import ProcessError
 
 class Smoderp1d(Process):
     def __init__(self):
@@ -38,10 +41,36 @@ subsurface runoff and erosion
             status_supported=True
         )
 
-    @staticmethod
-    def __update_config(input_, soil_types, rainfall, config):
-        # TODO
+    def __update_config(self, input_, soil_types, rainfall, config):
+        """Update configuration file."""
+        config_parser = ConfigParser()
+        config_parser.read(config)
+
+        config_parser['rainfall'] = {}
+        config_parser['rainfall']['file'] = rainfall
+        config_parser['Other'] = {}
+        config_parser['Other']['data1d'] = input_
+        config_parser['Other']['data1d_soil_types'] = soil_types
+        config_parser['general'] = {}
+        config_parser['general']['outdir'] = os.path.join(self.workdir, 'output')
+        config_parser['general']['printtimes'] = '' # TODO
+        config_parser['general']['logging'] = 'INFO' # TODO
+        config_parser['general']['extraout'] = 'True'
+
+        with open(config, 'w') as fd:
+            config_parser.write(fd)
+
         return config
+
+    @staticmethod
+    def __set_response_output(response, output_dir, key):
+        """Set response output."""
+        filepath = os.path.join(output_dir,
+                                '{}.csv'.format(key))
+        if not os.path.exists(filepath):
+            raise ProcessError("Missing output - {}".format(filepath))
+        else:
+            response.outputs[key].file = filepath
 
     def _handler(self, request, response):
         # dummy computation
@@ -68,8 +97,7 @@ subsurface runoff and erosion
             # TODO
             pass
 
+        # set response output
         LOGGER.info("Output data stored in: {}".format(Globals.get_outdir()))
-        response.outputs['profile'].file = os.path.join(Globals.get_outdir(),
-                                                        'profile.csv')
-        response.outputs['hydrogram'].file = os.path.join(Globals.get_outdir(),
-                                                          'hydrogram.csv')
+        self.__set_response_output(response, Globals.get_outdir(), 'profile')
+        # self.__set_response_output(response, Globals.get_outdir(), 'hydroram')
