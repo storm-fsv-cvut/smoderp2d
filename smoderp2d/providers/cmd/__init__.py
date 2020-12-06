@@ -9,7 +9,7 @@ else:
     from ConfigParser import ConfigParser, NoSectionError
 
 from smoderp2d.core.general import Globals
-from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter, CmdArgumentParser
+from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter
 from smoderp2d.exceptions import ConfigError
 
 class CmdWritter(BaseWritter):
@@ -31,7 +31,7 @@ class CmdWritter(BaseWritter):
             array, file_output
         )
 
-class CmdProvider(BaseProvider, CmdArgumentParser):
+class CmdProvider(BaseProvider):
     def __init__(self):
         """Create argument parser."""
         super(CmdProvider, self).__init__()

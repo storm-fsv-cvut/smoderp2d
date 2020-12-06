@@ -29,7 +29,8 @@ from .exceptions import SmoderpError
 
 class Runner(object):
     def __init__(self):
-        self._provider = self._provider_factory()
+        provider_class = self._provider_factory()
+        self._provider = provider_class()
 
     def _provider_factory(self):
         # initialize provider
@@ -39,18 +40,14 @@ class Runner(object):
         elif os.getenv('GISRC'):
             from smoderp2d.providers.grass import GrassGisProvider
             provider_class = GrassGisProvider
-        elif isinstance(self, WpsRunner):
-            from smoderp2d.providers.wps import WpsProvider
-            provider_class = WpsProvider
         elif os.getenv('NOGIS'):
             from smoderp2d.providers.nogis import NoGisProvider
             provider_class = NoGisProvider
         else:
             from smoderp2d.providers.cmd import CmdProvider
             provider_class = CmdProvider
-        provider = provider_class()
 
-        return provider
+        return provider_class
 
     def set_comptype(self, comp_type, data_file=None):
         """Set computation type.
@@ -153,5 +150,6 @@ class QGISRunner(GrassRunner):
         pass
 
 class WpsRunner(Runner):
-    def set_options(self, options):
-        self._provider.set_options(options)
+    def __init__(self, **args):
+        provider_class = self._provider_factory()
+        self._provider = provider_class(**args)
