@@ -73,7 +73,7 @@ subsurface runoff and erosion
             response.outputs[key].file = filepath
 
     def _handler(self, request, response):
-        # dummy computation
+        # TODO: report progress
         # for p in range(10, 101, 10):
         #     time.sleep(1)
         #     response.update_status(message='dummy computation', status_percentage=p)
@@ -94,10 +94,10 @@ subsurface runoff and erosion
             runner = WpsRunner(config_file=config)
             runner.run()
         except (ConfigError, ProviderError) as e:
-            # TODO
-            pass
+            raise ProcessError("SMODERP failed: {}".format(e))
 
         # set response output
         LOGGER.info("Output data stored in: {}".format(Globals.get_outdir()))
         self.__set_response_output(response, Globals.get_outdir(), 'profile')
+        # TODO
         # self.__set_response_output(response, Globals.get_outdir(), 'hydroram')
