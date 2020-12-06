@@ -8,6 +8,8 @@ services:
     volumes:
       - ./nginx/conf.d/:/etc/nginx/conf.d/
       - ./pywps/:/opt/pywps
+      - ./logs:/var/log/pywps
+      - ./../../:/opt/smoderp2d
     ports:
       - 8080:80
     environment:

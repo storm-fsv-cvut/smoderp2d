@@ -1,41 +1,58 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<wps:Execute service="WPS" version="1.0.0" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsExecute_request.xsd"><ows:Identifier>smoderp1d</ows:Identifier>
-<wps:DataInputs>
-  <wps:Input>
-    <ows:Identifier>input</ows:Identifier>
-    <wps:Data>
-      <wps:ComplexData mimeType="text/csv"><![CDATA[vodorovny prumet stahu[m];prevyseni[m];povrch;puda;sklon
-37.3;5;GEO;HX;0.134048257]]></wps:ComplexData>
-    </wps:Data>
-  </wps:Input>
-  <wps:Input>
-    <ows:Identifier>soil_types</ows:Identifier>
-    <wps:Data>
-      <wps:ComplexData mimeType="text/csv"><![CDATA[soilveg;k;s;n;pi;ppl;ret;b;x;y;tau;v
-HXGEO;0.00000138889;0.00030983900;0.12000000000;1.00000000000;0.40000000000;8;1.58470000000;7.98480000000;0.48890000000;60.00000000000;1.00000000000]]></wps:ComplexData>
-    </wps:Data>
-  </wps:Input>
-  <wps:Input>
-    <ows:Identifier>rainfall</ows:Identifier>
-    <wps:Data>
-      <wps:ComplexData mimeType="text/plain"><![CDATA[30 60]]></wps:ComplexData>
-    </wps:Data>
-  </wps:Input>
-  <wps:Input>
-    <ows:Identifier>config</ows:Identifier>
-    <wps:Data>
-      <wps:ComplexData mimeType="text/plain"><![CDATA[[domain]
+<wps:Execute service="WPS" version="1.0.0" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsExecute_request.xsd">
+  <ows:Identifier>smoderp1d</ows:Identifier>
+  <wps:DataInputs>
+    <wps:Input>
+      <ows:Identifier>input</ows:Identifier>
+      <wps:Data>
+        <wps:ComplexData mimeType="text/csv"><![CDATA[vodorovny prumet stahu[m];prevyseni[m];povrch;puda;sklon
+37.3;5;GEO;HX;0.134048257
+26;5;OP;PX;0.192307692]]></wps:ComplexData>
+      </wps:Data>
+    </wps:Input>
+    <wps:Input>
+      <ows:Identifier>soil_types</ows:Identifier>
+      <wps:Data>
+        <wps:ComplexData mimeType="text/csv"><![CDATA[soilveg;k;s;n;pi;ppl;ret;b;x;y;tau;v
+HXGEO;0.00000138889;0.00030983900;0.12000000000;1.00000000000;0.40000000000;8;1.58470000000;7.98480000000;0.48890000000;60.00000000000;1.00000000000
+PXOP;0.00000366600;0.00007745900;0.03500000000;0.16000000000;0.13000000000;5;1.79250000000;9.20430000000;0.46220000000;10.66000000000;0.24500000000
+]]></wps:ComplexData>
+      </wps:Data>
+    </wps:Input>
+    <wps:Input>
+      <ows:Identifier>rainfall</ows:Identifier>
+      <wps:Data>
+        <wps:ComplexData mimeType="text/plain"><![CDATA[30 60]]></wps:ComplexData>
+      </wps:Data>
+    </wps:Input>
+    <wps:Input>
+      <ows:Identifier>config</ows:Identifier>
+      <wps:Data>
+        <wps:ComplexData mimeType="text/plain"><![CDATA[[domain]
 # spatial resolution in meters
-res: 1]]></wps:ComplexData>
-    </wps:Data>
-  </wps:Input>
-</wps:DataInputs>
-<wps:ResponseForm>
-  <wps:ResponseDocument lineage="true" storeExecuteResponse="true" status="true">
-    <wps:Output asreference="true" mimeType="text/csv"><ows:Identifier>profile</ows:Identifier>
-    </wps:Output>
-    <wps:Output asreference="true" mimeType="text/csv"><ows:Identifier>hydrogram</ows:Identifier>
-    </wps:Output>
-  </wps:ResponseDocument>
-</wps:ResponseForm>
+res: 1
+[rainfall]
+file: tests/data/rainfall.txt
+[time]
+maxdt: 30
+endtime: 60
+[general]
+outdir: tests/data/output
+extraout: True
+logging: DEBUG
+[Other]
+data1d: tests/data/nogis/data1D.csv
+data1d_soil_types: tests/data/nogis/data1D_soil_types.csv
+]]></wps:ComplexData>
+      </wps:Data>
+    </wps:Input>
+  </wps:DataInputs>
+  <wps:ResponseForm>
+    <wps:ResponseDocument lineage="false" storeExecuteResponse="false" status="false">
+      <wps:Output asreference="true" mimeType="text/csv"><ows:Identifier>profile</ows:Identifier>
+      </wps:Output>
+      <wps:Output asreference="true" mimeType="text/csv"><ows:Identifier>hydrogram</ows:Identifier>
+      </wps:Output>
+    </wps:ResponseDocument>
+  </wps:ResponseForm>
 </wps:Execute>

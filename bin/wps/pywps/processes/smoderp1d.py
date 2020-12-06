@@ -1,6 +1,7 @@
-import time
+import os
+import sys
 
-from pywps import Process, ComplexInput, ComplexOutput, Format
+from pywps import Process, ComplexInput, ComplexOutput, Format, LOGGER
 
 class Smoderp1d(Process):
     def __init__(self):
@@ -37,11 +38,38 @@ subsurface runoff and erosion
             status_supported=True
         )
 
+    @staticmethod
+    def __update_config(input_, soil_types, rainfall, config):
+        # TODO
+        return config
+
     def _handler(self, request, response):
         # dummy computation
-        for p in range(10, 101, 10):
-            time.sleep(1)
-            response.update_status(message='dummy computation', status_percentage=p)
+        # for p in range(10, 101, 10):
+        #     time.sleep(1)
+        #     response.update_status(message='dummy computation', status_percentage=p)
 
-        response.outputs['profile'].file = '/opt/pywps/processes/profile.csv'
-        response.outputs['hydrogram'].file = '/opt/pywps/processes/hydrogram.csv'
+        sys.path.insert(0, "/opt/smoderp2d")
+
+        os.environ["NOGIS"] = "1"
+        from smoderp2d import WpsRunner
+        from smoderp2d.exceptions import ProviderError, ConfigError
+        from smoderp2d.core.general import Globals
+
+        config = self.__update_config(request.inputs['input'][0].file,
+                                      request.inputs['soil_types'][0].file,
+                                      request.inputs['rainfall'][0].file,
+                                      request.inputs['config'][0].file)
+
+        try:
+            runner = WpsRunner(config_file=config)
+            runner.run()
+        except (ConfigError, ProviderError) as e:
+            # TODO
+            pass
+
+        LOGGER.info("Output data stored in: {}".format(Globals.get_outdir()))
+        response.outputs['profile'].file = os.path.join(Globals.get_outdir(),
+                                                        'profile.csv')
+        response.outputs['hydrogram'].file = os.path.join(Globals.get_outdir(),
+                                                          'hydrogram.csv')

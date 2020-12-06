@@ -62,4 +62,4 @@ http://localhost:8080/services/wps?service=wps&request=describeprocess&version=2
     
 Execute (POST):
 
-    wget --post-file request.xml 'http://localhost:8080/services/wps?' -O /tmp/response.xml
+    wget --post-file request.xml 'http://localhost:8080/services/wps?' -O -
