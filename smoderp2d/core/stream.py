@@ -136,7 +136,7 @@ class Stream(object):
         r = self.reach[fid]
         if not(extraOut):
             line = '{h}{sep}{q}{sep}{cumvol}'.format(
-                h=r.h, q=r.Q_out, vimvol=r.V_out_cum, sep=sep
+                h=r.h, q=r.Q_out, cumvol=r.V_out_cum, sep=sep
             )
         else:
             line = '{h}{sep}{v}{sep}{q}{sep}{vi}{sep}{vo}'.format(
