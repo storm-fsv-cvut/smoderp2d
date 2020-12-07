@@ -52,7 +52,7 @@ class CmdProvider(BaseProvider):
 
         # data file (only required for runoff)
         parser.add_argument(
-            '--indata',
+            '--config',
             help='file with prepared data',
             type=str
         )
@@ -62,13 +62,13 @@ class CmdProvider(BaseProvider):
         # load configuration
         self._config = ConfigParser()
         if self.args.typecomp == CompType.roff:
-            if not self.args.indata:
-                parser.error('--indata required')
-            if not os.path.exists(self.args.indata):
+            if not self.args.config:
+                parser.error('--config required')
+            if not os.path.exists(self.args.config):
                 raise ConfigError("{} does not exist".format(
-                    self.args.indata
+                    self.args.config
                 ))
-            self._config.read(self.args.indata)
+            self._config.read(self.args.config)
 
         try:
             # set logging level
@@ -82,7 +82,7 @@ class CmdProvider(BaseProvider):
             Globals.outdir = self._config.get('Other', 'outdir')
         except NoSectionError as e:
             raise ConfigError('Config file {}: {}'.format(
-                self.args.indata, e
+                self.args.config, e
             ))
 
         # define storage writter
@@ -98,7 +98,7 @@ class CmdProvider(BaseProvider):
             self._cleanup()
 
             data = self._load_roff(
-                self._config.get('Other', 'indata')
+                self._config.get('Other', 'config')
             )
 
             self._set_globals(data)

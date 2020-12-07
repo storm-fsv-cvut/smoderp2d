@@ -27,7 +27,7 @@ Download SMODERP2D source code to your computer.
 
 ### From command line
 
-    ./bin/start-smoderp2d.py --typecomp roff --indata tests/quicktest.ini
+    ./bin/start-smoderp2d.py --typecomp roff --config tests/quicktest.ini
 
 ### From GRASS GIS
 

@@ -1,0 +1,17 @@
+version: "3"
+services:
+  nginx:
+    restart: unless-stopped
+    build: .
+    image: smoderp_wps_demo
+    container_name: smoderp_wps_demo_1
+    volumes:
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+      - ./pywps/:/opt/pywps
+      - ./logs:/var/log/pywps
+      - ./../../:/opt/smoderp2d
+    ports:
+      - 8080:80
+    environment:
+      - NGINX_HOST=localhost
+      - NGINX_PORT=8080

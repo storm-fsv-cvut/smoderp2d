@@ -50,9 +50,11 @@ class TimeStep:
                     rill_courant = 0.0
                 else:
                     q_sheet, v_sheet, q_rill, v_rill, fc.ratio, rill_courant = runoff(
-                        i, j, surface.arr[i][j], delta_t, mat_efect_cont[i][j], fc.ratio
+                        # i, j, surface.arr[i][j], delta_t, mat_efect_cont[i][j], fc.ratio
+                        i, j, surface.arr[i][j], delta_t, mat_efect_cont, fc.ratio
                     )
-                    subsurface.runoff(i, j, delta_t, mat_efect_cont[i][j])
+                    # subsurface.runoff(i, j, delta_t, mat_efect_cont[i][j])
+                    subsurface.runoff(i, j, delta_t, mat_efect_cont)
 
                 # TODO: variable not used. Should we delete it?
                 q_surface = q_sheet + q_rill
@@ -64,7 +66,8 @@ class TimeStep:
                     surface.arr[i][j].h_total_pre,
                     v,
                     delta_t,
-                    mat_efect_cont[i][j],
+                    # mat_efect_cont[i][j],
+                    mat_efect_cont,
                     co,
                     rill_courant)
                 # TODO: variable not used. Should we delet it?
