@@ -11,45 +11,49 @@ else:
 
 from smoderp2d.core.general import Globals
 import math
-from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter, CmdArgumentParser
+from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter
 from smoderp2d.providers.cmd import CmdWritter
 from smoderp2d.exceptions import ConfigError, ProviderError
 
-
-class NoGisProvider(BaseProvider, CmdArgumentParser):
-    def __init__(self):
+class NoGisProvider(BaseProvider):
+    def __init__(self, config_file=None):
         """Create argument parser."""
         super(NoGisProvider, self).__init__()
 
+        # no gis has only roff comp type
+        self.args.typecomp = CompType()['roff']
+        self.args.data_file = config_file if config_file else self.__set_config_from_cli()
+        self.__load_config(self.args.data_file)
+
+        # define storage writter
+        self.storage = CmdWritter()
+
+    @staticmethod
+    def __set_config_from_cli():
         # define CLI parser
         parser = argparse.ArgumentParser(description='Run NoGis Smoderp2D.')
 
-        # data file (only required for runoff)
+        # config file required
         parser.add_argument(
             '--config',
             help='file with configuration',
-            type=str
+            type=str,
+            required=True
         )
 
-        self.args = parser.parse_args()
+        args = parser.parse_args()
 
-        # no gis has only roff comp type
-        self.args.typecomp = 'roff'
-        self.args.typecomp = CompType()[self.args.typecomp]
+        return args.config
 
-        # set data_file to config
-        self.args.data_file = self.args.config
-
+    def __load_config(self, config_file):
         # load configuration
+        if not os.path.exists(config_file):
+            raise ConfigError("{} does not exist".format(
+                config_file
+            ))
+
         self._config = ConfigParser()
-        if self.args.typecomp == CompType.roff:
-            if not self.args.config:
-                parser.error('--config required')
-            if not os.path.exists(self.args.config):
-                raise ConfigError("{} does not exist".format(
-                    self.args.config
-                ))
-            self._config.read(self.args.config)
+        self._config.read(config_file)
 
         try:
             # set logging level
@@ -63,11 +67,8 @@ class NoGisProvider(BaseProvider, CmdArgumentParser):
             Globals.outdir = self._config.get('general', 'outdir')
         except NoSectionError as e:
             raise ConfigError('Config file {}: {}'.format(
-                self.args.config, e
+                config_file, e
             ))
-
-        # define storage writter
-        self.storage = CmdWritter()
 
     def _load_input_data(self, filename_indata, filename_soil_types):
         """Load configuration data from roff computation procedure.
