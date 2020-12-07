@@ -204,7 +204,7 @@ class NoGisProvider(BaseProvider):
         data['mat_slope'] = parsed_data['len'].reshape((data['r'], data['c']))
         # TODO can be probably removed (?) or stay zero
         # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
-        data['mat_efect_cont'] = data['spix'] # x-axis (EW) resolution
+        data['mat_efect_cont'].fill(data['spix']) # x-axis (EW) resolution
         # flow direction is always to the south
         data['mat_fd'].fill(4)
 
