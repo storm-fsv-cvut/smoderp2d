@@ -54,7 +54,7 @@ def load_precipitation(fh):
         fh = open(fh, "r")
         x = []
         for line in fh.readlines():
-            z = line.split()
+            z = line.replace(',', '.').split()
             if len(z) == 0:
                 continue
             elif z[0].find('#') >= 0:
