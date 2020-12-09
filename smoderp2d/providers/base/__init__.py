@@ -234,8 +234,16 @@ class BaseProvider(object):
             # no output directory defined
             return
         if os.path.exists(output_dir):
-            shutil.rmtree(output_dir)
-        os.makedirs(output_dir)
+            output_elements = ['control', 'core', 'mat_hcrit.asc',
+                               'point001.csv', 'profile.csv', 'temp']
+            for output_element in output_elements:
+                path_to_output = os.path.join(output_dir, output_element)
+                if os.path.isdir(path_to_output):
+                    shutil.rmtree(path_to_output)
+                elif os.path.isfile(path_to_output):
+                    os.remove(path_to_output)
+        else:
+            os.makedirs(output_dir)
         
     @staticmethod
     def _comp_type(tc):
