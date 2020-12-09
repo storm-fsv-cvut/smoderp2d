@@ -72,14 +72,14 @@ class CmdProvider(BaseProvider):
 
         try:
             # set logging level
-            Logger.setLevel(self._config.get('Other', 'logging'))
+            Logger.setLevel(self._config.get('other', 'logging'))
             # sys.stderr logging
             self._add_logging_handler(
                 logging.StreamHandler(stream=sys.stderr)
             )
 
             # must be defined for _cleanup() method
-            Globals.outdir = self._config.get('Other', 'outdir')
+            Globals.outdir = self._config.get('other', 'outdir')
         except NoSectionError as e:
             raise ConfigError('Config file {}: {}'.format(
                 self.args.config, e
@@ -98,7 +98,7 @@ class CmdProvider(BaseProvider):
             self._cleanup()
 
             data = self._load_roff(
-                self._config.get('Other', 'config')
+                self._config.get('other', 'config')
             )
 
             self._set_globals(data)

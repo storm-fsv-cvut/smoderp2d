@@ -134,20 +134,20 @@ class BaseProvider(object):
             data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
 
         #  time of flow algorithm
-        if self._config.get('Other', 'mfda') != '-':
-            data['mfda'] = self._config.getboolean('Other', 'mfda')
+        if self._config.get('other', 'mfda') != '-':
+            data['mfda'] = self._config.getboolean('other', 'mfda')
 
         #  type of computing:
         #    0 sheet only,
         #    1 sheet and rill flow,
         #    2 sheet and subsurface flow,
         #    3 sheet, rill and reach flow
-        if self._config.get('Other', 'typecomp') != '-':
-            data['type_of_computing'] = self._config.get('Other', 'typecomp')
+        if self._config.get('other', 'typecomp') != '-':
+            data['type_of_computing'] = self._config.get('other', 'typecomp')
 
         #  output directory is always set
         if data['outdir'] is None:
-            data['outdir'] = self._config.get('Other', 'outdir')
+            data['outdir'] = self._config.get('other', 'outdir')
 
         #  rainfall data can be saved
         if self._config.get('rainfall', 'file') != '-':
@@ -159,9 +159,9 @@ class BaseProvider(object):
                 raise ProviderError('Invalid file in [rainfall] section')
 
         # some self._configs are not in pickle.dump
-        data['extraOut'] = self._config.getboolean('Other', 'extraout')
+        data['extraOut'] = self._config.getboolean('other', 'extraout')
         # rainfall data can be saved
-        data['prtTimes'] = self._config.get('Other', 'printtimes')
+        data['prtTimes'] = self._config.get('other', 'printtimes')
 
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
 

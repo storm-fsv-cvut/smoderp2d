@@ -48,9 +48,9 @@ subsurface runoff and erosion
 
         config_parser['rainfall'] = {}
         config_parser['rainfall']['file'] = rainfall
-        config_parser['Other'] = {}
-        config_parser['Other']['data1d'] = input_
-        config_parser['Other']['data1d_soil_types'] = soil_types
+        config_parser['other'] = {}
+        config_parser['other']['data1d'] = input_
+        config_parser['other']['data1d_soil_types'] = soil_types
         config_parser['general'] = {}
         config_parser['general']['outdir'] = os.path.join(self.workdir, 'output')
         config_parser['general']['printtimes'] = '' # TODO

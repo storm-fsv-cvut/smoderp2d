@@ -553,8 +553,8 @@ class NoGisProvider(BaseProvider):
         self._cleanup()
 
         data = self._load_roff(
-            self._config.get('Other', 'data1d'),
-            self._config.get('Other', 'data1d_soil_types'),
+            self._config.get('other', 'data1d'),
+            self._config.get('other', 'data1d_soil_types'),
         )
 
         self._set_globals(data)
