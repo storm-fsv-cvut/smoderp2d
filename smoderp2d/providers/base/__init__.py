@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import os
 import sys
+import glob
 import shutil
 import math
 import pickle
@@ -235,13 +236,16 @@ class BaseProvider(object):
             return
         if os.path.exists(output_dir):
             output_elements = ['control', 'core', 'mat_hcrit.asc',
-                               'point001.csv', 'profile.csv', 'temp']
+                               'profile.csv', 'temp']
             for output_element in output_elements:
                 path_to_output = os.path.join(output_dir, output_element)
                 if os.path.isdir(path_to_output):
                     shutil.rmtree(path_to_output)
                 elif os.path.isfile(path_to_output):
                     os.remove(path_to_output)
+            for point_x in glob.glob(os.path.join(output_dir, 'point*.csv')):
+                # can be more pointxxxx.csv files
+                os.remove(point_x)
         else:
             os.makedirs(output_dir)
         
