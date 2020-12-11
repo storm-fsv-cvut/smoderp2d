@@ -565,7 +565,7 @@ class NoGisProvider(BaseProvider):
         # extra to normal postprocessing - write profile.csv
 
         header = ['length[m]', 'soil_vegFID', 'maximalSurfaceFlow[m3/s]',
-                  'totalRunoff[m3]','maximalSurfaceRunoffVelocity[m/s]',
+                  'totalRunoff[m3]', 'maximalSurfaceRunoffVelocity[m/s]',
                   'maximalTangentialStress[Pa]', 'rillRunoff[Y/N]']
         vals_to_write = (
             Globals.mat_slope.flatten(),
