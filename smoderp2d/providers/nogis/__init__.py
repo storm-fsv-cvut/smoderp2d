@@ -29,10 +29,6 @@ class NoGisProvider(BaseProvider):
         # define storage writter
         self.storage = CmdWritter()
 
-    @staticmethod
-    def __set_config_from_cli():
-        return CmdArgumentParser('Run NoGis Smoderp2D.', typecomp=False).args.config
-    
     def _load_input_data(self, filename_indata, filename_soil_types):
         """Load configuration data from roff computation procedure.
 

@@ -33,7 +33,7 @@ class CmdArgumentParser(object):
 
     def set_config(self, description, typecomp=None):
         if self.config_file:
-            return self.config_file
+            return self.config_file, CompType()[typecomp]
 
         # define CLI parser
         parser = argparse.ArgumentParser(description)
