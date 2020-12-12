@@ -4,12 +4,16 @@
 
 ### Build image
 
-    docker-compose build
-    
+```
+docker-compose build
+```
+
 ### Run container
 
-    docker-compose up
-    
+```
+docker-compose up
+```
+
 ### Call WPS
 
 GetCapabilities:
@@ -24,4 +28,7 @@ http://localhost:8080/services/wps?service=wps&request=describeprocess&version=1
     
 Execute (POST):
 
-    wget --post-file request-smoderp1d.xml 'http://localhost:8080/services/wps?' -O -
+```
+python3 request-template.py --template request-smoderp1d.xml > /tmp/request.xml && \
+wget --post-file /tmp/request.xml 'http://localhost:8080/services/wps?' -O -
+```
