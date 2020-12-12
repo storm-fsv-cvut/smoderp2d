@@ -1,6 +1,6 @@
 import os
 import sys
-from zipfile import ZipFile, ZIP_DEFLATED
+from configparser import ConfigParser
 
 from pywps import Process, ComplexInput, ComplexOutput, Format
 

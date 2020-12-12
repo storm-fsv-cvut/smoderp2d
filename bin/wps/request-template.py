@@ -25,7 +25,11 @@ if 'smoderp1d' in args.template:
         'config': file_content(os.path.join(tests_dir, 'nogis.ini'))
     }
 else: # smoderp2d
-    pass
+    d = {
+        'input': file_content(os.path.join(tests_dir, 'data', 'destak.save')),
+        'rainfall': file_content(os.path.join(tests_dir, 'data', 'rainfall.txt')),
+        'config': file_content(os.path.join(tests_dir, 'quicktest.ini'))
+    }
 
 with open(args.template, 'r') as f:
     src = Template(f.read())

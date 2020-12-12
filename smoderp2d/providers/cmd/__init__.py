@@ -75,41 +75,6 @@ class CmdProvider(BaseProvider):
         # define storage writter
         self.storage = CmdWritter()
 
-    @staticmethod
-    def __set_config_from_cli():
-        parser = CmdArgumentParser('Run Smoderp2D.')
-
-        self.args.typecomp = CompType()[parser.args.typecomp]
-
-        # load configuration
-        self._config = ConfigParser()
-        if self.args.typecomp == CompType.roff:
-            if not self.args.config:
-                parser.error('--config required')
-            if not os.path.exists(self.args.config):
-                raise ConfigError("{} does not exist".format(
-                    self.args.config
-                ))
-            self._config.read(self.args.config)
-
-        try:
-            # set logging level
-            Logger.setLevel(self._config.get('other', 'logging'))
-            # sys.stderr logging
-            self._add_logging_handler(
-                logging.StreamHandler(stream=sys.stderr)
-            )
-
-            # must be defined for _cleanup() method
-            Globals.outdir = self._config.get('other', 'outdir')
-        except NoSectionError as e:
-            raise ConfigError('Config file {}: {}'.format(
-                self.args.config, e
-            ))
-
-        # define storage writter
-        self.storage = CmdWritter()
-
     def load(self):
         """Load configuration data.
 

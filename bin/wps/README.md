@@ -1,34 +1,45 @@
-# SMODERP2D Web Processing Service
+# Deploy SMODERP2D Demo WPS server using Docker
 
-## Deploy SMODERP2D Demo WPS server using Docker
-
-### Build image
+## Build image
 
 ```
 docker-compose build
 ```
 
-### Run container
+## Run container
 
 ```
 docker-compose up
 ```
 
-### Call WPS
+## Call WPS
 
 GetCapabilities:
 
 http://localhost:8080/services/wps?service=wps&request=getcapabilities
-    
+
+### smoderp1d
+
 DescribeProcess:
 
 http://localhost:8080/services/wps?service=wps&request=describeprocess&version=1.0.0&identifier=smoderp1d
 
-http://localhost:8080/services/wps?service=wps&request=describeprocess&version=1.0.0&identifier=smoderp2d
-    
-Execute (POST):
+Execute:
 
 ```
 python3 request-template.py --template request-smoderp1d.xml > /tmp/request.xml && \
+wget --post-file /tmp/request.xml 'http://localhost:8080/services/wps?' -O -
+```
+
+### smoderp2d
+
+DescribeProcess:
+
+http://localhost:8080/services/wps?service=wps&request=describeprocess&version=1.0.0&identifier=smoderp2d
+
+Execute:
+
+```
+python3 request-template.py --template request-smoderp2d.xml > /tmp/request.xml && \
 wget --post-file /tmp/request.xml 'http://localhost:8080/services/wps?' -O -
 ```
