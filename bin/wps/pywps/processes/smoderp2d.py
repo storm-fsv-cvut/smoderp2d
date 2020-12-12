@@ -25,7 +25,9 @@ class Smoderp2d(Process):
             identifier='smoderp2d',
             version='0.1',
             title="Experimental SMODERP2D process",
-            abstract="Performs SMODERP2D distributed event-based model for surface and subsurface runoff and erosion (https://github.com/storm-fsv-cvut/smoderp2d)",
+            abstract="""Performs SMODERP distributed event-based model for surface and
+subsurface runoff and erosion
+(https://github.com/storm-fsv-cvut/smoderp2d) in 2D""",
             inputs=inputs,
             outputs=outputs,
             store_supported=True,

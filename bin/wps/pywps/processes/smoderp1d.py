@@ -32,7 +32,7 @@ class Smoderp1d(Process):
             identifier='smoderp1d',
             version='0.1',
             title="Experimental SMODERP1D process",
-            abstract="""Performs SMODERP2D distributed event-based model for surface and
+            abstract="""Performs SMODERP distributed event-based model for surface and
 subsurface runoff and erosion
 (https://github.com/storm-fsv-cvut/smoderp2d) in 1D""",
             inputs=inputs,
@@ -51,11 +51,10 @@ subsurface runoff and erosion
         config_parser['other'] = {}
         config_parser['other']['data1d'] = input_
         config_parser['other']['data1d_soil_types'] = soil_types
-        config_parser['general'] = {}
-        config_parser['general']['outdir'] = os.path.join(self.workdir, 'output')
-        config_parser['general']['printtimes'] = '' # TODO
-        config_parser['general']['logging'] = 'INFO' # TODO
-        config_parser['general']['extraout'] = 'True'
+        config_parser['other']['outdir'] = os.path.join(self.workdir, 'output')
+        config_parser['other']['printtimes'] = '' # TODO
+        config_parser['other']['logging'] = 'INFO' # TODO
+        config_parser['other']['extraout'] = 'True'
 
         with open(config, 'w') as fd:
             config_parser.write(fd)
