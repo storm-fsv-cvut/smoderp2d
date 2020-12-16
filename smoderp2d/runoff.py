@@ -364,20 +364,20 @@ class Runoff(object):
             # check if rill flow occur
             for i in self.surface.rr:
                 for j in self.surface.rc[i]:
-                    if self.surface.arr[i][j].state == 0:
-                        if self.surface.arr[i][j].h_total_new > self.surface.arr[i][j].h_crit:
-                            self.surface.arr[i][j].state = 1
+                    if self.surface.arr[i, j].state == 0:
+                        if self.surface.arr[i, j].h_total_new > self.surface.arr[i, j].h_crit:
+                            self.surface.arr[i, j].state = 1
 
-                    if self.surface.arr[i][j].state == 1:
-                        if self.surface.arr[i][j].h_total_new < self.surface.arr[i][j].h_total_pre:
-                            self.surface.arr[i][j].h_last_state1 = self.surface.arr[i][j].h_total_pre
-                            self.surface.arr[i][j].state = 2
+                    if self.surface.arr[i, j].state == 1:
+                        if self.surface.arr[i, j].h_total_new < self.surface.arr[i, j].h_total_pre:
+                            self.surface.arr[i, j].h_last_state1 = self.surface.arr[i, j].h_total_pre
+                            self.surface.arr[i, j].state = 2
 
-                    if self.surface.arr[i][j].state == 2:
-                        if self.surface.arr[i][j].h_total_new > self.surface.arr[i][j].h_last_state1:
-                            self.surface.arr[i][j].state = 1
+                    if self.surface.arr[i, j].state == 2:
+                        if self.surface.arr[i, j].h_total_new > self.surface.arr[i, j].h_last_state1:
+                            self.surface.arr[i, j].state = 1
 
-                    self.surface.arr[i][j].h_total_pre = self.surface.arr[i][j].h_total_new
+                    self.surface.arr[i, j].h_total_pre = self.surface.arr[i, j].h_total_new
 
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)

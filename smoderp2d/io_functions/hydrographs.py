@@ -179,7 +179,7 @@ class Hydrographs:
                     if Globals.extraOut:
                         line += '{sep}{0:.4e}{sep}{0:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}'\
                         '{4:.4e}{sep}{5:.4e}'.format(
-                            linebil[1], surface.arr[l][m].vol_to_rill,
+                            linebil[1], surface.arr[l, m].vol_to_rill,
                             ratio, courantMost, courantRill, iter_,
                             sep=sep)
                     line += os.linesep

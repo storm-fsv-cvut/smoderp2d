@@ -60,9 +60,9 @@ class Courant():
 
         # for i in sur.rr:
         # for j in sur.rc[i]:
-          # sumA += sur.arr[i][j].a
-          # sumB += sur.arr[i][j].b
-          # sumHCrit += sur.arr[i][j].h_crit
+          # sumA += sur.arr[i, j].a
+          # sumB += sur.arr[i, j].b
+          # sumHCrit += sur.arr[i, j].h_crit
           # count += 1
 
         # meanA = sumA/float(count)

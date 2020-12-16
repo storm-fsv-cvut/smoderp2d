@@ -152,9 +152,9 @@ def do(cumulative, mat_slope, G, surArr):
         # for ii in rrows:
             # for jj in rcols[ii]:
                 # if (finState[ii][jj]>=1000):
-                # tmparr[ii][jj] = GG.NoDataValue
+                # tmparr[ii, jj] = GG.NoDataValue
                 # else:
-                # tmparr[ii][jj] = totalBil[ii][jj]
+                # tmparr[ii, jj] = totalBil[ii][jj]
         # saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, GG.dx, GG.dy, GG.NoDataValue)
         # saveAG.save(outName)
 
@@ -162,11 +162,11 @@ def do(cumulative, mat_slope, G, surArr):
         # for ii in rrows:
             # for jj in rcols[ii]:
                 # if (totalBil[ii][jj]>=2000):
-                # tmparr[ii][jj] = GG.mat_stream_seg
+                # tmparr[ii, jj] = GG.mat_stream_seg
                 # if (totalBil[ii][jj]>=1):
-                # tmparr[ii][jj] = 1
+                # tmparr[ii, jj] = 1
                 # else:
-                # tmparr[ii][jj] = totalBil[ii][jj]
+                # tmparr[ii, jj] = totalBil[ii][jj]
 
         # pokud nechci extra output opoustim funkci tu
         # if not(Gl.extraOut) :
@@ -177,7 +177,7 @@ def do(cumulative, mat_slope, G, surArr):
         # tmparr.fill(GG.NoDataValue)
         # for ii in rrows:
             # for jj in rcols[ii]:
-                # tmparr[ii][jj] = vRest[ii][jj]
+                # tmparr[ii, jj] = vRest[ii][jj]
         # saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, GG.dx, GG.dy, GG.NoDataValue)
         # saveAG.save(outName)
 
@@ -186,7 +186,7 @@ def do(cumulative, mat_slope, G, surArr):
         # tmparr.fill(GG.NoDataValue)
         # for ii in rrows:
             # for jj in rcols[ii]:
-                # tmparr[ii][jj] = finState[ii][jj]
+                # tmparr[ii, jj] = finState[ii][jj]
         # saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, GG.dx, GG.dy, GG.NoDataValue)
         # saveAG.save(outName)
 
@@ -195,7 +195,7 @@ def do(cumulative, mat_slope, G, surArr):
         # tmparr.fill(GG.NoDataValue)
         # for ii in rrows:
             # for jj in rcols[ii]:
-                # tmparr[ii][jj] = hCrit[ii][jj]
+                # tmparr[ii, jj] = hCrit[ii][jj]
         # saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, GG.dx, GG.dy, GG.NoDataValue)
         # saveAG.save(outName)
 

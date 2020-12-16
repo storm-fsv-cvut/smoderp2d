@@ -78,7 +78,7 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
         # assign array objects
         for i in range(self.r):
             for j in range(self.c):
-                self.arr[i][j] = SurArrs(
+                self.arr[i, j] = SurArrs(
                     Globals.get_mat_reten(i, j),
                     Globals.get_mat_inf_index(i, j),
                     Globals.get_mat_hcrit(i, j),
@@ -101,7 +101,7 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
 
         :return: TODO
         """
-        arr = self.arr[i][j]
+        arr = self.arr[i, j]
 
         # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
         if not extra_out:

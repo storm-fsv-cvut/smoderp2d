@@ -30,7 +30,7 @@ class Vegetation(GridGlobals, Size):
 
         for i in range(self.r):
             for j in range(self.c):
-                self.arr[i][j] = VegArrs(False,
+                self.arr[i, j] = VegArrs(False,
                                          DataGlobals.get_mat_ppl(i, j),
                                          mat_pi[i][j]
                 )
