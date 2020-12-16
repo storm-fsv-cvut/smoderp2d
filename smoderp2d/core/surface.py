@@ -75,6 +75,9 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
 
         self.n = 15
 
+        # set array outsides to zeros
+        self.arr.set_outsides(SurArrs)
+
         # assign array objects
         for i in range(self.r):
             for j in range(self.c):

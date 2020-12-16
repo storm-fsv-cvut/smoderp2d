@@ -14,6 +14,37 @@ class Size(object):
         # arrayNBytes eq self.state.nbytes
         return (self.n * arrayNBytes) / m
 
+
+class GridGlobalsArray(np.ndarray):
+    """Class overriding np.ndarray to handle SMODERP border problems."""
+
+    def __getitem__(self, item):
+        """Override np.ndarray.__getitem__().
+
+        Override to return empty SurArrs when querying for values at negative
+        positions, do as expected otherwise.
+
+        :param item: position in the array
+        :return: object at position specified with item or empty SurArrs
+        """
+        if isinstance(item, int):
+            return super(GridGlobalsArray, self).__getitem__(item)
+        elif any(i < 0 for i in item):
+            return self.invalid_sur_arr
+        else:
+            return super(GridGlobalsArray, self).__getitem__(item)
+
+    def set_outsides(self, surarrs):
+        """Setup the empty SurArrs.
+
+        The empty SurArrs is intended to be returned when querying values at
+        negative positions.
+
+        :param surarrs: SurrArs class
+        """
+        self.invalid_sur_arr = surarrs(0, 0, 0, 0, 0)
+
+
 class GridGlobals(object):
     # number of raster rows (int)
     r = None
@@ -47,7 +78,7 @@ class GridGlobals(object):
         if self.r is None or self.c is None:
             raise SmoderpError("Global variables are not assigned")
 
-        self.arr = np.empty((self.r, self.c), dtype=object)
+        self.arr = GridGlobalsArray((self.r, self.c), dtype=object)
 
     @classmethod        
     def get_dim(cls):
