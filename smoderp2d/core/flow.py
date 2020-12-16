@@ -73,7 +73,7 @@ class D8(object):
                 insurfflow_from_cell = 0.0
             try:
                 inrillflow_from_cell = self.arr[iax][jbx].vol_runoff_rill
-                if (iax < 0) : insurfflow_from_cell = 0
+                if (iax < 0) : inrillflow_from_cell = 0
             except:
                 inrillflow_from_cell = 0.0
             inflow_from_cells = inflow_from_cells + \
