@@ -63,10 +63,10 @@ subsurface runoff and erosion
         return config
 
     @staticmethod
-    def __set_response_output(response, output_dir, key):
+    def __set_response_output(response, output_dir, key, filename=None):
         """Set response output."""
         filepath = os.path.join(output_dir,
-                                '{}.csv'.format(key))
+                                '{}.csv'.format(key if filename is None else filename))
         if not os.path.exists(filepath):
             raise ProcessError("Missing output - {}".format(filepath))
         else:
@@ -99,5 +99,4 @@ subsurface runoff and erosion
         # set response output
         LOGGER.info("Output data stored in: {}".format(Globals.get_outdir()))
         self.__set_response_output(response, Globals.get_outdir(), 'profile')
-        # TODO
-        # self.__set_response_output(response, Globals.get_outdir(), 'hydrogram')
+        self.__set_response_output(response, Globals.get_outdir(), 'hydrogram', 'point001')
