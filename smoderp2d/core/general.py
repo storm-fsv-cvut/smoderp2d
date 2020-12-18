@@ -144,7 +144,7 @@ class Globals:
     mat_boundary = None
     # list containing coordinates of catchment outlet cells
     outletCells = None
-    # array containing information of hydrogram points
+    # array containing information of hydrograph points
     array_points = None
     # combinatIndex
     combinatIndex = None

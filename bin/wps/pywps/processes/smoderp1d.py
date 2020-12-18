@@ -22,7 +22,7 @@ class Smoderp1d(Process):
             ComplexOutput('profile', 'Output profile CSV file',
                           supported_formats=[Format('text/csv')],
                           as_reference=True),
-            ComplexOutput('hydrogram', 'Output hydrogram CSV file',
+            ComplexOutput('hydrograph', 'Output hydrograph CSV file',
                           supported_formats=[Format('text/csv')],
                           as_reference=True)
         ]
@@ -99,4 +99,5 @@ subsurface runoff and erosion
         # set response output
         LOGGER.info("Output data stored in: {}".format(Globals.get_outdir()))
         self.__set_response_output(response, Globals.get_outdir(), 'profile')
-        self.__set_response_output(response, Globals.get_outdir(), 'hydrogram', 'point001')
+        self.__set_response_output(response, Globals.get_outdir(),
+                                   'hydrograph', 'point001')
