@@ -100,4 +100,4 @@ subsurface runoff and erosion
         LOGGER.info("Output data stored in: {}".format(Globals.get_outdir()))
         self.__set_response_output(response, Globals.get_outdir(), 'profile')
         # TODO
-        # self.__set_response_output(response, Globals.get_outdir(), 'hydroram')
+        # self.__set_response_output(response, Globals.get_outdir(), 'hydrogram')
