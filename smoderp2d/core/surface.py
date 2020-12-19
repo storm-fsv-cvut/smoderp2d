@@ -116,7 +116,7 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
             )
             bil_ = ''
         else:
-            if arr.h_sheet == 0 :
+            if arr.h_sheet == 0:
                 velocity = 0
             else :
                 velocity = arr.vol_runoff / dt / (arr.h_sheet*GridGlobals.dx)
