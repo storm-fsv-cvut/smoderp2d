@@ -2,18 +2,6 @@ import numpy as np
 
 from smoderp2d.exceptions import SmoderpError
 
-class Size(object):
-    @staticmethod
-    def size(arrayNBytes, m=1.0):
-        """Method to compute size of class arrays.
-
-        :param <numpy array>.nbytes arrayNBytes:
-        :param float m: value in denominator to get bytes, kilobytes
-        (m=2**10), megabytes (m=2**10+m**10) and so on.
-        """
-        # arrayNBytes eq self.state.nbytes
-        return (self.n * arrayNBytes) / m
-
 
 class GridGlobalsArray(np.ndarray):
     """Class overriding np.ndarray to handle SMODERP border problems."""

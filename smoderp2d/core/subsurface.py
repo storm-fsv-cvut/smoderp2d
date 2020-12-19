@@ -2,7 +2,7 @@ import numpy as np
 import math
 
 
-from smoderp2d.core.general import GridGlobals, Globals, Size
+from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.core.kinematic_diffuse import Kinematic
 from smoderp2d.exceptions import SmoderpError
 from smoderp2d.providers import Logger
@@ -37,7 +37,7 @@ class SubArrs:
         self.vg_l = vg_l
 
 
-class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
+class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
     def __init__(self, L_sub, Ks, vg_n, vg_l):
         """TODO.
 
@@ -47,7 +47,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
         :param vg_l: TODO
         """
         GridGlobals.__init__()
-        
+
         for i in range(self.r):
             for j in range(self.c):
                 self.arr[i, j] = SubArrs(
@@ -168,7 +168,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic, Size):
 
 # Class
 #  empty class if no subsurface flow is considered
-class SubsurfacePass(GridGlobals, Size):
+class SubsurfacePass(GridGlobals):
 
     def __init__(self, L_sub, Ks, vg_n, vg_l):
         super(SubsurfacePass, self).__init__()

@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from smoderp2d.core.general import GridGlobals, DataGlobals, Size, Globals
+from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
 
 class VegArrs(object):
     def __init__(self, veg, ppl, pi):
@@ -16,17 +16,14 @@ class VegArrs(object):
         self.ppl = ppl
         self.pi = pi
 
-class Vegetation(GridGlobals, Size):
+class Vegetation(GridGlobals):
     def __init__(self):
         """Class stores info about the vegetation cover."""
         super(Vegetation, self).__init__()
-        
-        # convert unit mm -> m 
+
+        # convert unit mm -> m
         # TODO move this conversion into data preparation
         mat_pi = Globals.get_mat_pi() / 1000.0
-
-        # number of variabes (used in class Size)
-        self.n = 3
 
         for i in range(self.r):
             for j in range(self.c):

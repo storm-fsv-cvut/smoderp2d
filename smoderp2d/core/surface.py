@@ -4,7 +4,7 @@
 import numpy as np
 import math
 
-from smoderp2d.core.general import Globals, GridGlobals, Size
+from smoderp2d.core.general import Globals, GridGlobals
 if Globals.isStream:
     from smoderp2d.core.stream import Stream
 else:
@@ -60,7 +60,7 @@ class SurArrs(object):
         self.h_last_state1 = 0.
 
 
-class Surface(GridGlobals, Size, Stream, Kinematic):
+class Surface(GridGlobals, Stream, Kinematic):
     """Contains data and methods to calculate the surface and rill runoff.
     """
     def __init__(self):
