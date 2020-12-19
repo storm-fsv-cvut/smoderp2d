@@ -30,8 +30,9 @@ class GridGlobalsArray(np.ndarray):
         if isinstance(item, tuple) or isinstance(item, list):
             if any(i < 0 for i in item):
                 return self.invalid_sur_arr
-        elif item < 0:
-            return self.invalid_sur_arr
+        elif isinstance(item, int) or isinstance(item, float):
+            if item < 0:
+                return self.invalid_sur_arr
 
         return super(GridGlobalsArray, self).__getitem__(item)
 
