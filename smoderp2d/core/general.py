@@ -27,12 +27,13 @@ class GridGlobalsArray(np.ndarray):
         :param item: position in the array
         :return: object at position specified with item or empty SurArrs
         """
-        if isinstance(item, int):
-            return super(GridGlobalsArray, self).__getitem__(item)
-        elif any(i < 0 for i in item):
+        if isinstance(item, tuple) or isinstance(item, list):
+            if any(i < 0 for i in item):
+                return self.invalid_sur_arr
+        elif item < 0:
             return self.invalid_sur_arr
-        else:
-            return super(GridGlobalsArray, self).__getitem__(item)
+
+        return super(GridGlobalsArray, self).__getitem__(item)
 
     def set_outsides(self, surarrs):
         """Setup the empty SurArrs.
