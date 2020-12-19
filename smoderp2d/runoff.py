@@ -14,6 +14,7 @@ Classes:
 import time
 import os
 import numpy as np
+import math
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
@@ -200,6 +201,7 @@ class Runoff(object):
                     self.delta_t,
                     self.surface,
                     self.subsurface,
+                    self.cumulative,
                     0.0
                 )
         # record values into stream hydrographs at time zero
@@ -211,6 +213,7 @@ class Runoff(object):
             self.delta_t,
             self.surface,
             self.subsurface,
+            self.cumulative,
             0.0,
             True
         )
@@ -277,6 +280,14 @@ class Runoff(object):
                     potRain, self.delta_t, self.flow_control.ratio
                 )
 
+                # if current time plus timestep is in next minute
+                # of computation the dt is reduced so the next
+                # coputed time is exactli at the top of each minute
+                oldtime_minut = self.flow_control.total_time/60
+                newtime_minut = (self.flow_control.total_time+self.delta_t)/60
+                if (math.floor(newtime_minut) > math.floor(oldtime_minut)):
+                    self.delta_t = (math.floor(newtime_minut) - oldtime_minut)*60.
+
                 # courant conditions is satisfied (time step did
                 # change) the iteration loop breaks
                 if delta_t_tmp == self.delta_t and self.flow_control.compare_ratio():
@@ -310,6 +321,7 @@ class Runoff(object):
                             self.delta_t,
                             self.surface,
                             self.subsurface,
+                            self.cumulative,
                             actRain
                         )
                 # TODO
@@ -325,14 +337,6 @@ class Runoff(object):
             # if end time reached the main loop breaks
             if self.flow_control.total_time == Globals.end_time:
                 break
-
-            timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
-            Logger.progress(
-                timeperc,
-                self.delta_t,
-                self.flow_control.iter_,
-                self.flow_control.total_time + self.delta_t
-            )
 
             # calculate outflow from each reach of the stream network
             self.surface.stream_reach_outflow(self.delta_t)
@@ -353,6 +357,7 @@ class Runoff(object):
                 self.delta_t,
                 self.surface,
                 self.subsurface,
+                self.cumulative,
                 actRain,
                 True
             )
@@ -378,6 +383,14 @@ class Runoff(object):
                             self.surface.arr[i, j].state = 1
 
                     self.surface.arr[i, j].h_total_pre = self.surface.arr[i, j].h_total_new
+
+            timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
+            Logger.progress(
+                timeperc,
+                self.delta_t,
+                self.flow_control.iter_,
+                self.flow_control.total_time + self.delta_t
+            )
 
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
