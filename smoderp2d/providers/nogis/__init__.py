@@ -180,7 +180,6 @@ class NoGisProvider(BaseProvider):
         resolution = self._config.getfloat('domain', 'res')
         # TODO: Change stah -> svah (ha ha) after being changed in the CSV
         data['r'] = self._compute_rows(joint_data['vodorovny_prumet_stahu[m]'],
-                                       joint_data['prevyseni[m]'],
                                        resolution)
         data['c'] = 1
         # set mask i and j must be set after 'r' and 'c'
@@ -201,9 +200,8 @@ class NoGisProvider(BaseProvider):
         data['NoDataValue'] = -9999
 
         # topography
-        # data['mat_slope'] = parsed_data['len'].reshape((data['r'], data['c']))
         data['mat_slope'] = self._compute_mat_slope(
-            parsed_data['len'], parsed_data['prevyseni[m]'])
+            parsed_data['hor_len'], parsed_data['prevyseni[m]'])
         # TODO can be probably removed (?) or stay zero
         # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
         data['mat_efect_cont'].fill(data['spix']) # x-axis (EW) resolution
@@ -259,20 +257,18 @@ class NoGisProvider(BaseProvider):
 
         # keep soilveg in memory - needed for profile.csv
         self.mat_soilveg = np.char.add(parsed_data['puda'], parsed_data['povrch'])
+        self.hor_lengths = parsed_data['hor_len']
 
         return data
 
-    def _compute_rows(self, lengths, heights, resolution):
+    def _compute_rows(self, lengths, resolution):
         """Compute number of pixels the slope will be divided into.
 
         :param lengths: np array containing all lengths
-        :param heights: np array containing all heights
         :param resolution: intended resolution of one pixel
         :return: number of pixels, must be integer
         """
-        slope_length = self._compute_slope_length(lengths, heights)
-
-        nr_of_rows = int(round(slope_length / resolution))
+        nr_of_rows = int(round(np.sum(lengths) / resolution))
 
         return nr_of_rows
 
@@ -313,26 +309,22 @@ class NoGisProvider(BaseProvider):
         parsed_data = None
         subsegment_unseen = 0
 
-        slope_length = self._compute_slope_length(
-            joint_data['vodorovny_prumet_stahu[m]'],
-            joint_data['prevyseni[m]']
-        )
-        diff = slope_length - r
+        hor_length = np.sum(joint_data['vodorovny_prumet_stahu[m]'])
+        diff = hor_length - (r * res)
         addition = diff / r
         one_pix_len = res + addition
 
         for slope_segment in joint_data:
-            segment_length = self._compute_slope_length(
-                slope_segment['vodorovny_prumet_stahu[m]'],
-                slope_segment['prevyseni[m]']
-            )
-            seg_r = self._compute_rows(
-                segment_length, slope_segment['prevyseni[m]'], one_pix_len)
+            segment_length = np.sum(
+                slope_segment['vodorovny_prumet_stahu[m]'])
+            seg_r = self._compute_rows(segment_length, one_pix_len)
 
-            seg_len_arr = np.array([segment_length / seg_r],
-                                   dtype=[('len', 'f4')])
-            data_entry = merge_arrays((slope_segment, seg_len_arr),
-                                      flatten=True)
+            seg_hor_len_arr = np.array(
+                [one_pix_len],
+                dtype=[('hor_len', 'f4')])
+            data_entry = merge_arrays(
+                (slope_segment, seg_hor_len_arr),
+                flatten=True)
 
             subsegment_unseen += segment_length
 
@@ -582,7 +574,7 @@ class NoGisProvider(BaseProvider):
                   'totalRunoff[m3]', 'maximalSurfaceRunoffVelocity[m/s]',
                   'maximalTangentialStress[Pa]', 'rillRunoff[Y/N]']
         vals_to_write = (
-            Globals.mat_slope.flatten(),
+            self.hor_lengths.flatten(),
             self.mat_soilveg.flatten(),
             cumulative.q_sur_tot.flatten(),
             cumulative.vol_rill.flatten(),
