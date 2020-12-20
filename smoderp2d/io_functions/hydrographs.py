@@ -88,7 +88,7 @@ class Hydrographs:
                 if not Globals.extraOut:
                     header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
                               '{sep}reachWaterLevel[m]{sep}reachFlow[m3/s]'\
-                              '{sep}reachVolRunoff[m3]'.format(sep=SEP)
+                              '{sep}CumReachVolRunoff[m3]'.format(sep=SEP)
                 else:
                     header += 'time[s]{sep}deltaTime[s]{sep}Rainfall[m]'\
                               '{sep}Waterlevel[m]{sep}V_runoff[m3]{sep}Q[m3/s]'\
@@ -102,7 +102,7 @@ class Hydrographs:
                 if not Globals.extraOut:
                     header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
                               '{sep}totalWaterLevel[m]{sep}surfaceFlow[m3/s]'\
-                              '{sep}surfaceVolRunoff[m3]'\
+                              '{sep}CumSurfaceVolRunoff[m3]'\
                               '{linesep}'.format(sep=SEP, linesep = os.linesep)
                 else:
                     header += 'time[s]{sep}deltaTime[s]{sep}Rainfall[m]{sep}'\
@@ -145,10 +145,20 @@ class Hydrographs:
         Logger.info("Hydrographs files has been created...")
 
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface, subsurface,
+                                 cumulative,
                                  currRain, inStream=False, sep=SEP):
+
+
         ratio = fc.ratio
         total_time = fc.total_time + dt
         iter_ = fc.iter_
+
+        # the hydrography is recorded only 
+        # at the top of each minute
+        # the function ends here ohterwise
+        if not Globals.extraOut:
+            time_minutes = (total_time)/60.
+            if time_minutes - int(time_minutes) != 0: return
 
         courantMost = courant.cour_most
         courantRill = courant.cour_most_rill
@@ -169,9 +179,10 @@ class Hydrographs:
                 m = self.point_int[ip][2]
                 if i == l and j == m:
                     linebil = surface.return_str_vals(l, m, SEP, dt, Globals.extraOut)
-                    line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3}'.format(
+                    cumulativeline = cumulative.return_str_val(l,m)
+                    line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3}{sep}{4}'.format(
                         total_time, dt, currRain,
-                        linebil[0],
+                        linebil[0],cumulativeline,
                         sep=sep
                     )
                     # line += subsurface.return_str_vals(l,m,SEP,dt) + sep   #
@@ -179,7 +190,7 @@ class Hydrographs:
                     if Globals.extraOut:
                         line += '{sep}{0:.4e}{sep}{0:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}'\
                         '{4:.4e}{sep}{5:.4e}'.format(
-                            linebil[1], surface.arr[l][m].vol_to_rill,
+                            linebil[1], surface.arr[l, m].vol_to_rill,
                             ratio, courantMost, courantRill, iter_,
                             sep=sep)
                     line += os.linesep

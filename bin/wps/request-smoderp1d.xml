@@ -31,7 +31,7 @@
     <wps:ResponseDocument lineage="false" storeExecuteResponse="false" status="false">
       <wps:Output asreference="true" mimeType="text/csv"><ows:Identifier>profile</ows:Identifier>
       </wps:Output>
-      <wps:Output asreference="true" mimeType="text/csv"><ows:Identifier>hydrogram</ows:Identifier>
+      <wps:Output asreference="true" mimeType="text/csv"><ows:Identifier>hydrograph</ows:Identifier>
       </wps:Output>
     </wps:ResponseDocument>
   </wps:ResponseForm>

@@ -499,7 +499,7 @@ class BaseProvider(object):
 
         for i in rrows:
             for j in rcols[i]:
-                arr[i][j] = copy_arr[i][j]
+                arr[i, j] = copy_arr[i, j]
 
         return arr
 

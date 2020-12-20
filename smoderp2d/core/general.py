@@ -2,17 +2,38 @@ import numpy as np
 
 from smoderp2d.exceptions import SmoderpError
 
-class Size(object):
-    @staticmethod
-    def size(arrayNBytes, m=1.0):
-        """Method to compute size of class arrays.    
-        
-        :param <numpy array>.nbytes arrayNBytes:
-        :param float m: value in denominator to get bytes, kilobytes
-        (m=2**10), megabytes (m=2**10+m**10) and so on.
+
+class GridGlobalsArray(np.ndarray):
+    """Class overriding np.ndarray to handle SMODERP border problems."""
+
+    def __getitem__(self, item):
+        """Override np.ndarray.__getitem__().
+
+        Override to return empty SurArrs when querying for values at negative
+        positions, do as expected otherwise.
+
+        :param item: position in the array
+        :return: object at position specified with item or empty SurArrs
         """
-        # arrayNBytes eq self.state.nbytes
-        return (self.n * arrayNBytes) / m
+        if isinstance(item, tuple) or isinstance(item, list):
+            if any(i < 0 for i in item):
+                return self.invalid_sur_arr
+        elif isinstance(item, int) or isinstance(item, float):
+            if item < 0:
+                return self.invalid_sur_arr
+
+        return super(GridGlobalsArray, self).__getitem__(item)
+
+    def set_outsides(self, surarrs):
+        """Setup the empty SurArrs.
+
+        The empty SurArrs is intended to be returned when querying values at
+        negative positions.
+
+        :param surarrs: SurrArs class
+        """
+        self.invalid_sur_arr = surarrs(0, 0, 0, 0, 0)
+
 
 class GridGlobals(object):
     # number of raster rows (int)
@@ -47,9 +68,9 @@ class GridGlobals(object):
         if self.r is None or self.c is None:
             raise SmoderpError("Global variables are not assigned")
 
-        self.arr = np.empty((self.r, self.c), dtype=object)
+        self.arr = GridGlobalsArray((self.r, self.c), dtype=object)
 
-    @classmethod        
+    @classmethod
     def get_dim(cls):
         return (cls.r, cls.c)
 
@@ -99,7 +120,7 @@ class DataGlobals:
     @classmethod
     def get_mat_ppl(cls, i, j):
         return cls.mat_ppl[i][j]
-    
+
 class Globals:
     """Globals contains global variables from data_preparation, in
     instance of class needed the data are taken from import of this
@@ -113,7 +134,7 @@ class Globals:
     mat_boundary = None
     # list containing coordinates of catchment outlet cells
     outletCells = None
-    # array containing information of hydrogram points
+    # array containing information of hydrograph points
     array_points = None
     # combinatIndex
     combinatIndex = None
@@ -184,7 +205,7 @@ class Globals:
     extraOut = None
     # stream magic number
     streams_flow_inc = 1000
-    
+
     @classmethod
     def get_type_of_computing(cls):
         return cls.type_of_computing

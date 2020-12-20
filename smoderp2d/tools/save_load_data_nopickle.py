@@ -147,7 +147,7 @@ class LoadItems:
 
         for i, line in enumerate(self.lines[2:]):
             for j, el in enumerate(line.split(';')):
-                arr[i][j] = self.npyel(el)
+                arr[i, j] = self.npyel(el)
 
         return arr
 

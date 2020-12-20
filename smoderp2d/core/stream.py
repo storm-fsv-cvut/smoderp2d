@@ -81,7 +81,7 @@ class Stream(object):
 
         for i in self.rr:
             for j in self.rc[i]:
-                self.arr[i][j].state = self.mat_stream_reach[i][j]
+                self.arr[i, j].state = self.mat_stream_reach[i][j]
 
         self.STREAM_RATIO = Gl.STREAM_RATIO
 
@@ -130,13 +130,13 @@ class Stream(object):
                 r.timeh_max = time
 
     def return_stream_str_vals(self, i, j, sep, dt, extraOut):
-        fid = int(self.arr[i][j].state - Gl.streams_flow_inc)
+        fid = int(self.arr[i, j].state - Gl.streams_flow_inc)
         # Time;   V_runoff  ;   Q   ;    V_from_field  ;  V_rests_in_stream
         # print fid, self.reach[fid].Q_out, str(self.reach[fid].V_out)
         r = self.reach[fid]
         if not(extraOut):
-            line = '{h}{sep}{q}{sep}{v}'.format(
-                h=r.h, q=r.Q_out, v=r.V_out, sep=sep
+            line = '{h}{sep}{q}{sep}{cumvol}'.format(
+                h=r.h, q=r.Q_out, cumvol=r.V_out_cum, sep=sep
             )
         else:
             line = '{h}{sep}{v}{sep}{q}{sep}{vi}{sep}{vo}'.format(

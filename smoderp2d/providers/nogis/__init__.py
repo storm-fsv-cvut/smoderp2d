@@ -160,7 +160,9 @@ class NoGisProvider(BaseProvider):
         data['NoDataValue'] = -9999
 
         # topography
-        data['mat_slope'] = parsed_data['len'].reshape((data['r'], data['c']))
+        # data['mat_slope'] = parsed_data['len'].reshape((data['r'], data['c']))
+        data['mat_slope'] = self._compute_mat_slope(
+            parsed_data['len'], parsed_data['prevyseni[m]'])
         # TODO can be probably removed (?) or stay zero
         # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
         data['mat_efect_cont'].fill(data['spix']) # x-axis (EW) resolution
@@ -245,6 +247,18 @@ class NoGisProvider(BaseProvider):
         slope_length = np.sum(slope_lengths)
 
         return slope_length
+
+    @staticmethod
+    def _compute_mat_slope(lengths, heights):
+        height_division = np.ones(heights.shape)
+        for seg_height in np.unique(heights):
+            seg_height_bool = heights == seg_height
+            height_division = np.where(
+                seg_height_bool, np.sum(seg_height_bool), height_division)
+
+        pix_heights = heights / height_division
+
+        return pix_heights / lengths
 
     def _divide_joint_data(self, joint_data, r, res):
         """Divide joint data into corresponding number of rows.
