@@ -3,6 +3,7 @@ import sys
 from configparser import ConfigParser
 
 from pywps import Process, ComplexInput, ComplexOutput, Format
+from pywps.app.exceptions import ProcessError
 
 class Smoderp2d(Process):
     def __init__(self):
@@ -57,8 +58,10 @@ subsurface runoff and erosion
         config_parser['rainfall']['file'] = rainfall
         config_parser['other'] = {}
         config_parser['other']['config'] = input_
+        config_parser['other']['logging'] = 'INFO' # TODO
+        config_parser['other']['outdir'] = os.path.join(self.workdir, 'output')
         config_parser['general'] = {}
-        config_parser['general']['outdir'] = os.path.join(self.workdir, 'output')
+
 
         with open(config, 'w') as fd:
             config_parser.write(fd)
