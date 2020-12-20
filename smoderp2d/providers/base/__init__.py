@@ -85,6 +85,10 @@ class BaseProvider(object):
         # storage writter must be defined
         self.storage = None
 
+    @property
+    def typecomp(self):
+        return self.args.typecomp
+
     @staticmethod
     def _add_logging_handler(handler, formatter=None):
         """Register new logging handler.
@@ -170,10 +174,11 @@ class BaseProvider(object):
 
     def load(self):
         """Load configuration data."""
-        if self.args.typecomp not in (CompType.dpre, CompType.roff, CompType.full):
-            raise ProviderError('Unsupported partial computing: {}'.format(
-                self.args.typecomp
-            ))
+        # set percentage counter
+        if self.args.typecomp == CompType.dpre:
+            Logger.set_progress(0, 100)
+        elif self.args.typecomp == CompType.full:
+            Logger.set_progress(0, 50)
 
         # cleanup output directory first
         self._cleanup()
