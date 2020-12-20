@@ -84,15 +84,18 @@ class Runner(object):
         # must be called after initialization (!)
         from smoderp2d.runoff import Runoff
 
-        # set percentage counter
-        if self._provider.typecomp == CompType.full:
-            Logger.set_progress(50, 100)
-        elif self._provider.typecomp == CompType.roff:
-            Logger.set_progress(0, 100)
-
-        # the computation
+        # run computation
         runoff = Runoff(self._provider)
+        # set percentage counter for counter
+        if self._provider.typecomp == CompType.full:
+            Logger.set_progress(50, 95)
+        elif self._provider.typecomp == CompType.roff:
+            Logger.set_progress(0, 95)
         runoff.run()
+
+        # save result data
+        Logger.set_progress(95, 100)
+        runoff.save_output()
 
         return 0
 
