@@ -62,7 +62,6 @@ subsurface runoff and erosion
         config_parser['other']['outdir'] = os.path.join(self.workdir, 'output')
         config_parser['general'] = {}
 
-
         with open(config, 'w') as fd:
             config_parser.write(fd)
 
