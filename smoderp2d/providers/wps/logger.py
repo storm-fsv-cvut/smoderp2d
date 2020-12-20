@@ -1,13 +1,8 @@
-import logging
-
-from grass.script.core import fatal, warning, info, debug
-from smoderp2d.providers import PROGRESS_INFO
-
-class GrassGisLogHandler(logging.Handler):
-    """Custom logging class that bounces messages to the GRASS GIS.
+class PyWpsLogHandler(logging.Handler):
+    """Custom logging class that bounces messages to the pyWPS.
     """
     def __init__(self):
-        super(GrassGisLogHandler, self).__init__()
+        super(PyWpsLogHandler, self).__init__()
 
     def emit(self, record):
         """ Write the log message.

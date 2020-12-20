@@ -6,6 +6,9 @@ import time
 import logging
 import logging.config
 
+# custom logging level
+PROGRESS_INFO = 101
+
 class BaseLogger(logging.Logger):
     def __init__(self, name):
         super(BaseLogger, self).__init__(name)
