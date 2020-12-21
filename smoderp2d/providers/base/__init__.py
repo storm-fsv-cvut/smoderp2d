@@ -14,12 +14,14 @@ from smoderp2d.providers.base.exceptions import DataPreparationError
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
 from smoderp2d.exceptions import ProviderError
 
+
 class Args:
     # type of computation (CompType)
     typecomp = None
     # path to data file (used by 'dpre' for output and 'roff' for
     # input)
     data_file = None
+
 
 # unfortunately Python version shipped by ArcGIS 10 lacks Enum
 class CompType:
@@ -36,6 +38,7 @@ class CompType:
             return cls.roff
         else:
             return cls.full
+
 
 class BaseWritter(object):
     def __init__(self):
@@ -71,6 +74,7 @@ class BaseWritter(object):
     # todo: abstractmethod
     def write_raster(self, arr, output):
         pass
+
 
 class BaseProvider(object):
     def __init__(self):
@@ -446,7 +450,6 @@ class BaseProvider(object):
                     )
             np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
                        header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}q365_m3_s{sep}V_out_cum_m3{sep}Q_max_m3_s'.format(sep=';'))
-
 
     def _make_mask(self, arr, int_=False):
         """ Assure that the no data value is outside the
