@@ -88,7 +88,7 @@ class BaseProvider(object):
     @staticmethod
     def _add_logging_handler(handler, formatter=None):
         """Register new logging handler.
-        
+
         :param handler: logging handler to be registered
         :param formatter: logging handler formatting
         """
