@@ -4,6 +4,7 @@ import csv
 import argparse
 import logging
 import numpy as np
+
 if sys.version_info.major >= 3:
     from configparser import ConfigParser, NoSectionError
 else:
@@ -14,6 +15,7 @@ import math
 from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter
 from smoderp2d.providers.cmd import CmdWritter
 from smoderp2d.exceptions import ConfigError, ProviderError
+
 
 class NoGisProvider(BaseProvider):
     def __init__(self, config_file=None):
@@ -589,4 +591,3 @@ class NoGisProvider(BaseProvider):
 
             writer.writerow(header)
             writer.writerows(zip(*vals_to_write))
-
