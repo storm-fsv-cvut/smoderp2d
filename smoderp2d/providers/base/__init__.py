@@ -89,7 +89,7 @@ class BaseProvider(object):
     def _add_logging_handler(handler, formatter=None):
         """Register new logging handler.
         
-        :param handler: loggging handler to be registerered
+        :param handler: logging handler to be registered
         :param formatter: logging handler formatting
         """
         if not formatter:
