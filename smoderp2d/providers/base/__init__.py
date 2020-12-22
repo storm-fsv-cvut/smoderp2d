@@ -121,7 +121,7 @@ class BaseProvider(object):
         """
         from smoderp2d.processes import rainfall
 
-        # the data are loared from a pickle file
+        # the data are loaded from a pickle file
         try:
             data = self._load_data(indata)
             if isinstance(data, list):
