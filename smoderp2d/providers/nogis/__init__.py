@@ -371,8 +371,8 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
 
                     else:
                         hcrit_v = np.power((v_crit / aa), exp)  # h critical from v
-                        hcrit_tau = tau_crit / 98.07 / slope  # h critical from tau
-                        hcrit_flux = np.power((flux_crit / slope / 98.07 / aa),(1 / mat_b[i][j]))  # kontrola jednotek
+                        hcrit_tau = tau_crit / 9807 / slope  # h critical from tau
+                        hcrit_flux = np.power((flux_crit / slope / 9807 / aa),(1 / mat_b[i][j]))  # kontrola jednotek
 
                     mat_hcrit_tau[i][j] = hcrit_tau
                     mat_hcrit_v[i][j] = hcrit_v
