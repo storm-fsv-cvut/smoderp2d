@@ -140,7 +140,6 @@ class NoGisProvider(BaseProvider):
 
         :param str filename_indata: input CSV file
         :param str filename_soil_types: soil types CSV file
-
         :return dict: loaded data
         """
         from smoderp2d.processes import rainfall
