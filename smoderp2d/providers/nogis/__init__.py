@@ -61,14 +61,14 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
 
         try:
             # set logging level
-            Logger.setLevel(self._config.get('general', 'logging'))
+            Logger.setLevel(self._config.get('logging', 'level'))
             # sys.stderr logging
             self._add_logging_handler(
                 logging.StreamHandler(stream=sys.stderr)
             )
 
             # must be defined for _cleanup() method
-            Globals.outdir = self._config.get('general', 'outdir')
+            Globals.outdir = self._config.get('output', 'outdir')
         except NoSectionError as e:
             raise ConfigError('Config file {}: {}'.format(
                 config_file, e
@@ -166,19 +166,20 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         # load precipitation input file
         try:
             data['sr'], data['itera'] = rainfall.load_precipitation(
-                self._config.get('rainfall', 'file')
+                self._config.get('data', 'rainfall')
             )
         except TypeError:
-            raise ProviderError('Invalid file in [rainfall] section')
+            raise ProviderError('Invalid rainfall file in [data] section')
 
         # general settings
         # output directory is always set
-        data['outdir'] = self._config.get('general', 'outdir')
+        # TODO: isn't it already in globals?
+        data['outdir'] = self._config.get('output', 'outdir')
         data['temp'] = os.path.join(data['outdir'], 'temp')
         # some self._configs are not in pickle.dump
-        data['extraOut'] = self._config.getboolean('general', 'extraout')
+        data['extraOut'] = self._config.getboolean('output', 'extraout')
         # rainfall data can be saved
-        data['prtTimes'] = self._config.get('general', 'printtimes')
+        data['prtTimes'] = self._config.get('output', 'printtimes')
 
         resolution = self._config.getfloat('domain', 'res')
         # TODO: Change stah -> svah (ha ha) after being changed in the CSV
@@ -525,8 +526,8 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         self._cleanup()
 
         data = self._load_roff(
-            self._config.get('other', 'data1d'),
-            self._config.get('other', 'data1d_soil_types'),
+            self._config.get('data', 'data1d'),
+            self._config.get('data', 'data1d_soil_types'),
         )
 
         self._set_globals(data)
