@@ -46,7 +46,7 @@ class PrepareDataBase(object):
         self._set_output_data()
 
         # create output folder, where temporary data are stored
-        self._set_output() 
+        self._set_output()
         dem_copy, dem_mask = self._set_mask()
 
         # intersect
@@ -92,7 +92,7 @@ class PrepareDataBase(object):
         all_attrib = self._get_mat_par(sfield, intersect)
 
         # build points array
-        Logger.info("Prepare points for hydrographs...") 
+        Logger.info("Prepare points for hydrographs...")
         self._get_array_points()
 
         # build a/aa arrays
@@ -219,10 +219,10 @@ class PrepareDataBase(object):
         )
         os.makedirs(control)
 
-        
+
     def _set_mask(self):
         raise NotImplemented("Not implemented for base provider")
-    
+
     def _terrain_products(self, dem):
         raise NotImplemented("Not implemented for base provider")
 
