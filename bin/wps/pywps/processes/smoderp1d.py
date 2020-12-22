@@ -1,6 +1,7 @@
 import os
 import sys
 import fileinput
+import logging
 from configparser import ConfigParser
 
 from pywps import Process, ComplexInput, ComplexOutput, Format, LOGGER
@@ -84,6 +85,8 @@ subsurface runoff and erosion
         from smoderp2d import WpsRunner
         from smoderp2d.exceptions import ProviderError, ConfigError
         from smoderp2d.core.general import Globals
+        from smoderp2d.providers.wps.logger import WpsLogHandler
+
 
         config = self.__update_config(request.inputs['input'][0].file,
                                       request.inputs['soil_types'][0].file,
@@ -92,6 +95,11 @@ subsurface runoff and erosion
 
         try:
             runner = WpsRunner(config_file=config)
+            runner._provider.add_logging_handler(
+                handler=WpsLogHandler(response),
+                formatter=logging.Formatter("%(message)s")
+            )
+
             runner.run()
         except (ConfigError, ProviderError) as e:
             raise ProcessError("SMODERP failed: {}".format(e))
