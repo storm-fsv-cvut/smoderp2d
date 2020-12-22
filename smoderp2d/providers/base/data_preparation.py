@@ -102,7 +102,10 @@ class PrepareDataBase(object):
         self._get_array_points()
 
         # build a/aa arrays
-        self.data['mat_a'], self.data['mat_aa'] = self._get_a(all_attrib)
+        self.data['mat_a'], self.data['mat_aa'] = self._get_a(
+            all_attrib[2], all_attrib[7], all_attrib[8], self.data['r'],
+            self.data['c'], self.data['NoDataValue'], self.data['mat_slope']
+        )
 
         Logger.info("Computing critical level...")
         self._get_crit_water(all_attrib)
