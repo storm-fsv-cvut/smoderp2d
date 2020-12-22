@@ -395,7 +395,7 @@ class PrepareDataBase(object):
                 mat_a[i][j] = par_a
                 mat_aa[i][j] = par_aa
 
-            return mat_a, mat_aa
+        return mat_a, mat_aa
 
     def _get_crit_water(self, all_attrib):
         """
