@@ -91,12 +91,18 @@ class PrepareDataBase(object):
         # build numpy array from selected attributes
         all_attrib = self._get_mat_par(sfield, intersect)
 
+        self.data['mat_n'] = all_attrib[2]
+        self.data['mat_pi'] = all_attrib[3]
+        self.data['mat_ppl'] = all_attrib[4]
+        self.data['mat_reten'] = all_attrib[5]
+        self.data['mat_b'] = all_attrib[6]
+
         # build points array
         Logger.info("Prepare points for hydrographs...")
         self._get_array_points()
 
         # build a/aa arrays
-        self._get_a(all_attrib)
+        self.data['mat_a'], self.data['mat_aa'] = self._get_a(all_attrib)
 
         Logger.info("Computing critical level...")
         self._get_crit_water(all_attrib)
@@ -113,12 +119,6 @@ class PrepareDataBase(object):
 
         # define mask (rc/rc variables)
         self._find_boundary_cells()
-
-        self.data['mat_n'] = all_attrib[2]
-        self.data['mat_pi'] = all_attrib[3]
-        self.data['mat_ppl'] = all_attrib[4]
-        self.data['mat_reten'] = all_attrib[5]
-        self.data['mat_b'] = all_attrib[6]
 
         self.data['mfda'] = False
         self.data['mat_boundary'] = None
@@ -354,35 +354,37 @@ class PrepareDataBase(object):
 
         return i
 
-    def _get_a(self, all_attrib):
-        """
-        Build 'a' array.
+    @staticmethod
+    def _get_a(mat_n, mat_x, mat_y, r, c, no_data, mat_slope):
+        """Build 'a' and 'aa' arrays.
 
-        :param all_attrib: list of attributes (numpy arrays)
+        :param mat_n:
+        :param mat_x:
+        :param mat_y:
+        :param r: number of rows
+        :param c: number of columns
+        :param no_data: no data value
+        :param mat_slope:
+        :return: np ndarray for mat_a and for mat_aa
         """
-        mat_n = all_attrib[2]
-        mat_x = all_attrib[7]
-        mat_y = all_attrib[8]
-        
-        self.data['mat_a']  = np.zeros(
-            [self.data['r'], self.data['c']], float
+        mat_a = np.zeros(
+            [r, c], float
         )
-        self.data['mat_aa'] = np.zeros(
-            [self.data['r'], self.data['c']], float
+        mat_aa = np.zeros(
+            [r, c], float
         )
 
-        nv = self.data['NoDataValue']
         # calculating the "a" parameter
-        for i in range(self.data['r']):
-            for j in range(self.data['c']):
-                slope = self.data['mat_slope'][i][j]
+        for i in range(r):
+            for j in range(c):
+                slope = mat_slope[i][j]
                 par_x = mat_x[i][j]
                 par_y = mat_y[i][j]
 
-                if par_x == nv or par_y == nv or slope == nv:
-                    par_a = nv
-                    par_aa = nv
-                elif par_x == nv or par_y == nv or slope == 0.0:
+                if par_x == no_data or par_y == no_data or slope == no_data:
+                    par_a = no_data
+                    par_aa = no_data
+                elif par_x == no_data or par_y == no_data or slope == 0.0:
                     par_a = 0.0001
                     par_aa = par_a / mat_n[i][j]
                 else:
@@ -390,8 +392,10 @@ class PrepareDataBase(object):
                     par_a = par_x * exp
                     par_aa = par_a / mat_n[i][j]
 
-                self.data['mat_a'][i][j] = par_a
-                self.data['mat_aa'][i][j] = par_aa
+                mat_a[i][j] = par_a
+                mat_aa[i][j] = par_aa
+
+            return mat_a, mat_aa
 
     def _get_crit_water(self, all_attrib):
         """

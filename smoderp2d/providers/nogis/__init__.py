@@ -12,12 +12,14 @@ else:
 
 from smoderp2d.core.general import Globals
 import math
-from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter
+from smoderp2d.providers.base import BaseProvider, Logger, CompType, \
+    BaseWritter
+from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.cmd import CmdWritter
 from smoderp2d.exceptions import ConfigError, ProviderError
 
 
-class NoGisProvider(BaseProvider):
+class NoGisProvider(BaseProvider, PrepareDataBase):
     def __init__(self, config_file=None):
         """Create argument parser."""
         super(NoGisProvider, self).__init__()
@@ -339,43 +341,6 @@ class NoGisProvider(BaseProvider):
                 subsegment_unseen -= one_pix_len
 
         return parsed_data
-
-    def _get_a(self, mat_n, mat_x, mat_y, r, c, no_data_value, mat_slope):
-        """
-        Build 'a' array.
-
-        :param all_attrib: list of attributes (numpy arrays)
-        """
-        mat_a = np.zeros(
-            [r, c], float
-        )
-        mat_aa = np.zeros(
-            [r, c], float
-        )
-
-        nv = no_data_value
-        # calculating the "a" parameter
-        for i in range(r):
-            for j in range(c):
-                slope = mat_slope[i][j]
-                par_x = mat_x[i][j]
-                par_y = mat_y[i][j]
-
-                if par_x == nv or par_y == nv or slope == nv:
-                    par_a = nv
-                    par_aa = nv
-                elif par_x == nv or par_y == nv or slope == 0.0:
-                    par_a = 0.0001
-                    par_aa = par_a / 100 / mat_n[i][j]
-                else:
-                    exp = np.power(slope, par_y)
-                    par_a = par_x * exp
-                    par_aa = par_a / 100 / mat_n[i][j]
-
-                mat_a[i][j] = par_a
-                mat_aa[i][j] = par_aa
-
-        return mat_a, mat_aa
 
     def _get_crit_water(self, mat_b, mat_tau, mat_v, r, c, mat_slope,
                         no_data_value, mat_aa):
