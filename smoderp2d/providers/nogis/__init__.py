@@ -117,7 +117,14 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
 
         for index in range(len(indata)):
             soilveg = indata['puda'][index] + indata['povrch'][index]
-            # a = soil_types[np.in1d(soil_types['soilveg'], ('PXOP', 'HXGEO'))]
+
+            if soilveg not in soil_types_soilveg:
+                raise ConfigError(
+                    'soilveg {} from the data-data1d CSV file does not '
+                    'match any soilveg from the data-data1d_soil_types CSV '
+                    'file'.format(soilveg)
+                )
+
             soilveg_line = soil_types[np.where(soil_types_soilveg == soilveg)]
 
             if filtered_soilvegs is not None:
