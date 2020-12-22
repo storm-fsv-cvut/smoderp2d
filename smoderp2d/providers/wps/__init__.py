@@ -28,7 +28,7 @@ class WpsProvider(BaseProvider):
             # set logging level
             Logger.setLevel(self._config.get('Other', 'logging'))
             # sys.stderr logging
-            self._add_logging_handler(
+            self.add_logging_handler(
                 logging.StreamHandler(stream=sys.stderr)
             )
 

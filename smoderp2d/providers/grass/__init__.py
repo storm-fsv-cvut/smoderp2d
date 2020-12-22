@@ -75,7 +75,7 @@ class GrassGisProvider(BaseProvider):
         self._options = None
 
         # logger
-        self._add_logging_handler(
+        self.add_logging_handler(
             handler=GrassGisLogHandler(),
             formatter = logging.Formatter("%(message)s")
         )

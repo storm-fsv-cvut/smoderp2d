@@ -90,7 +90,7 @@ class BaseProvider(object):
         return self.args.typecomp
 
     @staticmethod
-    def _add_logging_handler(handler, formatter=None):
+    def add_logging_handler(handler, formatter=None):
         """Register new logging handler.
         
         :param handler: loggging handler to be registerered

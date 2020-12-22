@@ -168,5 +168,14 @@ class QGISRunner(GrassRunner):
 
 class WpsRunner(Runner):
     def __init__(self, **args):
+        import logging
+        from smoderp2d.providers.wps.logger import WpsLogHandler
+
         provider_class = self._provider_factory()
         self._provider = provider_class(**args)
+
+        # add logging handler
+        self._provider.add_logging_handler(
+            handler=WpsLogHandler(),
+            formatter=logging.Formatter("%(message)s")
+        )

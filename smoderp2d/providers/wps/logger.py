@@ -1,8 +1,14 @@
-class PyWpsLogHandler(logging.Handler):
+import logging
+
+from pywps import LOGGER
+
+from smoderp2d.providers import PROGRESS_INFO
+
+class WpsLogHandler(logging.Handler):
     """Custom logging class that bounces messages to the pyWPS.
     """
     def __init__(self):
-        super(PyWpsLogHandler, self).__init__()
+        super(WpsLogHandler, self).__init__()
 
     def emit(self, record):
         """ Write the log message.
@@ -10,12 +16,12 @@ class PyWpsLogHandler(logging.Handler):
         :param record: record to emit
         """
         if record.levelno >= PROGRESS_INFO:
-            pass
+            LOGGER.info("Progress value: {}%".format(record.msg))
         elif record.levelno >= logging.ERROR:
-            fatal(record.msg)
+            LOGGER.critical(record.msg)
         elif record.levelno >= logging.WARNING:
-            warning(record.msg)
+            LOGGER.warning(record.msg)
         elif record.levelno >= logging.INFO:
-            info(record.msg)
+            LOGGER.info(record.msg)
         elif record.levelno >= logging.DEBUG:
-            debug(record.msg)
+            LOGGER.debug(record.msg)
