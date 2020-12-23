@@ -553,7 +553,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
             cumulative.vol_rill.flatten(),
             cumulative.v_sheet.flatten(),
             cumulative.shear_sheet.flatten(),
-            cumulative.q_sur_tot.flatten() # TODO: should be rillRunoff[Y/N]
+            [i.state for i in surface_array.flatten()]
         )
 
         profile_path = os.path.join(Globals.outdir, 'profile.csv')
