@@ -553,7 +553,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
             cumulative.vol_rill.flatten(),
             cumulative.v_sheet.flatten(),
             cumulative.shear_sheet.flatten(),
-            [i.state for i in surface_array.flatten()]
+            [0 if i.state == 0 else 1 for i in surface_array.flatten()]
         )
 
         profile_path = os.path.join(Globals.outdir, 'profile.csv')
