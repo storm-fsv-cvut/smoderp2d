@@ -9,6 +9,8 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt/
       - ./nginx/conf.letsencrypt/:/etc/nginx/conf.d/
       - ./pywps/:/opt/pywps
+      - ./logs:/var/log/pywps
+      - ./../../:/opt/smoderp2d
     ports:
       - 8080:80
       - 4444:443
