@@ -16,10 +16,11 @@ class GridGlobalsArray(np.ndarray):
         :return: object at position specified with item or empty SurArrs
         """
         if isinstance(item, tuple) or isinstance(item, list):
-            if any(i < 0 for i in item):
-                return self.invalid_sur_arr
+            if self.ndim > 1:
+                if any(i < 0 for i in item if isinstance(i, int)):
+                    return self.invalid_sur_arr
         elif isinstance(item, int) or isinstance(item, float):
-            if item < 0:
+            if self.ndim > 1 and item < 0:
                 return self.invalid_sur_arr
 
         return super(GridGlobalsArray, self).__getitem__(item)
