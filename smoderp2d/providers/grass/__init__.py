@@ -88,7 +88,7 @@ class GrassGisProvider(BaseProvider):
         # force overwrite
         os.environ['GRASS_OVERWRITE'] = '1'
         # be quiet
-        os.environ['GRASS_VERBOSE'] = '1'
+        os.environ['GRASS_VERBOSE'] = '-1'
 
         # define storage writter
         self.storage = GrassGisWritter()

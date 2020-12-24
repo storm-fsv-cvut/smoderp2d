@@ -3,6 +3,7 @@ import logging
 
 # custom logging level
 PROGRESS_INFO = 101
+logging.addLevelName(PROGRESS_INFO, "PROGRESS_INFO")
 
 class BaseLogger(logging.Logger):
     def __init__(self, name):
@@ -21,14 +22,17 @@ class BaseLogger(logging.Logger):
             'range': int(end) - int(start)
         }
 
-    def progress(self, perc, delta_t=None, t_iter=None, total_time=None):
-        if delta_t and t_iter and total_time:
-            self._progress(perc, delta_t, t_iter, total_time)
+    def progress(self, perc, *args, **kwargs):
+        if args:
+            self._progress(perc, *args)
+        if self.isEnabledFor(PROGRESS_INFO):
+            perc_int = int(
+                self._progress_info['start'] + (perc/100.0) * self._progress_info['range']
+            )
+            self._log(PROGRESS_INFO, perc_int, args, **kwargs)
+        else:
+            self.info("Progress value: {}%".format(perc_int))
 
-        self.info("Progress value: {}%".format(
-            int(self._progress_info['start'] + (perc/100.0)*self._progress_info['range'])
-        ))
-        
     def _progress(self, perc, delta_t, t_iter, total_time):
         self.info('-' * 80)
         self.info("Total time      [secs]: {0:.2f}".format(total_time)) # TODO: ms ???
