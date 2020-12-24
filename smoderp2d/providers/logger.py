@@ -9,22 +9,29 @@ class BaseLogger(logging.Logger):
     def __init__(self, name):
         super(BaseLogger, self).__init__(name)
         self.start_time = time.time()
+        self._progress_info = {
+            'start': 0,
+            'end': 0,
+            'range': 0
+        }
 
-    def set_progress(self, start, end):
+    def set_progress(self, end):
         """Set percentage progress counter.
 
-        :param int start: start value in %
         :param int end: end value in %
+        :param int start: start value in %
         """
         self._progress_info = {
-            'start': int(start),
-            'end': int(end),
-            'range': int(end) - int(start)
+            'start': self._progress_info['end'],
+            'end': int(end)
         }
+        self._progress_info['range'] = \
+            self._progress_info['end'] - self._progress_info['start']
 
     def progress(self, perc, *args, **kwargs):
         if args:
             self._progress(perc, *args)
+            args = ()
         if self.isEnabledFor(PROGRESS_INFO):
             perc_int = int(
                 self._progress_info['start'] + (perc/100.0) * self._progress_info['range']

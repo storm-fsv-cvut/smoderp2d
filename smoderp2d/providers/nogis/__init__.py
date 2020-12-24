@@ -133,11 +133,8 @@ class NoGisProvider(BaseProvider):
 
         return result
 
-    def _load_roff(self, filename_indata, filename_soil_types):
+    def _load_roff(self):
         """Load configuration data from roff computation procedure.
-
-        :param str filename_indata: input CSV file
-        :param str filename_soil_types: soil types CSV file
 
         :return dict: loaded data
         """
@@ -145,8 +142,10 @@ class NoGisProvider(BaseProvider):
 
         # read input csv files
         try:
-            joint_data = self._load_input_data(filename_indata,
-                                               filename_soil_types)
+            joint_data = self._load_input_data(
+                self._config.get('other', 'data1d'),
+                self._config.get('other', 'data1d_soil_types')
+            )
         except IOError as e:
             raise ProviderError('{}'.format(e))
 
@@ -167,6 +166,7 @@ class NoGisProvider(BaseProvider):
             )
         except TypeError:
             raise ProviderError('Invalid file in [rainfall] section')
+        Logger.progress(10)
 
         # general settings
         # output directory is always set
@@ -555,23 +555,6 @@ class NoGisProvider(BaseProvider):
         points = 'test'
 
         return array_points, points
-
-    def load(self):
-        """Load configuration data.
-        from the config data
-
-        Only roff procedure supported.
-        """
-        # TODO: don't override load() - use base.load()
-        # cleanup output directory first
-        self._cleanup()
-
-        data = self._load_roff(
-            self._config.get('other', 'data1d'),
-            self._config.get('other', 'data1d_soil_types'),
-        )
-
-        self._set_globals(data)
 
     def postprocessing(self, cumulative, surface_array, stream):
         super().postprocessing(cumulative, surface_array, stream)

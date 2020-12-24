@@ -69,6 +69,7 @@ class CmdProvider(BaseProvider):
                     self.args.config
                 ))
             self._config.read(self.args.config)
+        self.args.data_file = self._config.get('other', 'config')
 
         try:
             # set logging level
@@ -87,22 +88,3 @@ class CmdProvider(BaseProvider):
 
         # define storage writter
         self.storage = CmdWritter()
-
-    def load(self):
-        """Load configuration data.
-
-        Only roff procedure supported.
-        """
-        if self.args.typecomp == CompType.roff:
-            # cleanup output directory first
-            self._cleanup()
-
-            data = self._load_roff(
-                self._config.get('other', 'config')
-            )
-
-            self._set_globals(data)
-        else:
-            raise ProviderError('Unsupported partial computing: {}'.format(
-                self.args.typecomp
-            ))

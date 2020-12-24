@@ -112,10 +112,8 @@ class BaseProvider(object):
         """
         raise NotImplementedError()
 
-    def _load_roff(self, indata):
+    def _load_roff(self):
         """Load configuration data from roff computation procedure.
-
-        :param str indata: configuration filename
 
         :return dict: loaded data
         """
@@ -123,7 +121,7 @@ class BaseProvider(object):
 
         # the data are loared from a pickle file
         try:
-            data = self._load_data(indata)
+            data = self._load_data(self.args.data_file)
             if isinstance(data, list):
                 raise ProviderError(
                     'Saved data out-dated. Please use '
@@ -174,12 +172,6 @@ class BaseProvider(object):
 
     def load(self):
         """Load configuration data."""
-        # set percentage counter
-        if self.args.typecomp == CompType.dpre:
-            Logger.set_progress(0, 100)
-        elif self.args.typecomp == CompType.full:
-            Logger.set_progress(0, 50)
-
         # cleanup output directory first
         self._cleanup()
 
@@ -195,7 +187,7 @@ class BaseProvider(object):
                 return
 
         if self.args.typecomp == CompType.roff:
-            data = self._load_roff(self.args.data_file)
+            data = self._load_roff()
 
         # roff || full
         self._set_globals(data)
