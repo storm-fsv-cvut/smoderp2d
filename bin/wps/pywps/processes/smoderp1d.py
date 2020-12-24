@@ -46,15 +46,10 @@ subsurface runoff and erosion
         config_parser = ConfigParser()
         config_parser.read(config)
 
-        config_parser['rainfall'] = {}
         config_parser['rainfall']['file'] = rainfall
-        config_parser['other'] = {}
         config_parser['other']['data1d'] = input_
         config_parser['other']['data1d_soil_types'] = soil_types
         config_parser['other']['outdir'] = os.path.join(self.workdir, 'output')
-        config_parser['other']['printtimes'] = '' # TODO
-        config_parser['other']['logging'] = 'INFO' # TODO
-        config_parser['other']['extraout'] = 'True'
 
         with open(config, 'w') as fd:
             config_parser.write(fd)
