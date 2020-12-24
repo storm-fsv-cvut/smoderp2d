@@ -71,6 +71,14 @@ class Runner(object):
                 self._provider.typecomp
             ))
 
+        # set percentage counter
+        if self._provider.typecomp == CompType.dpre:
+            Logger.set_progress(100)
+        elif self._provider.typecomp == CompType.full:
+            Logger.set_progress(40)
+        else:
+            Logger.set_progress(10)
+
         # load configuration (set global variables)
         try:
             self._provider.load()
@@ -81,20 +89,20 @@ class Runner(object):
             # data prepararation only requested
             return
 
+        # import time
+        # time.sleep(10)
         # must be called after initialization (!)
         from smoderp2d.runoff import Runoff
 
+        # set percentage counter for counter
+        Logger.set_progress(95)
+
         # run computation
         runoff = Runoff(self._provider)
-        # set percentage counter for counter
-        if self._provider.typecomp == CompType.full:
-            Logger.set_progress(50, 95)
-        elif self._provider.typecomp == CompType.roff:
-            Logger.set_progress(0, 95)
         runoff.run()
 
         # save result data
-        Logger.set_progress(95, 100)
+        Logger.set_progress(100)
         runoff.save_output()
 
         return 0
