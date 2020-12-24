@@ -6,9 +6,9 @@ import logging
 import numpy as np
 
 if sys.version_info.major >= 3:
-    from configparser import ConfigParser, NoSectionError
+    from configparser import ConfigParser, NoSectionError, NoOptionError
 else:
-    from ConfigParser import ConfigParser, NoSectionError
+    from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 from smoderp2d.core.general import Globals
 import math
@@ -491,10 +491,13 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         # cleanup output directory first
         self._cleanup()
 
-        data = self._load_roff(
-            self._config.get('data', 'data1d'),
-            self._config.get('data', 'data1d_soil_types'),
-        )
+        try:
+            data = self._load_roff(
+                self._config.get('data', 'data1d'),
+                self._config.get('data', 'data1d_soil_types'),
+            )
+        except NoOptionError as e:
+            raise ConfigError("Invalid configuration: {}".format(e))
 
         self._set_globals(data)
 
