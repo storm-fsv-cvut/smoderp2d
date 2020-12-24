@@ -126,7 +126,7 @@ class BaseProvider(object):
             )
 
             # must be defined for _cleanup() method
-            Globals.outdir = config.get('other', 'outdir')
+            Globals.outdir = config.get('output', 'outdir')
         except NoSectionError as e:
             raise ConfigError('Config file {}: {}'.format(
                 self.args.data_file, e
@@ -171,34 +171,34 @@ class BaseProvider(object):
             data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
 
         #  time of flow algorithm
-        if self._config.get('other', 'mfda') != '-':
-            data['mfda'] = self._config.getboolean('other', 'mfda')
+        if self._config.get('processes', 'mfda') != '-':
+            data['mfda'] = self._config.getboolean('processes', 'mfda')
 
         #  type of computing:
         #    0 sheet only,
         #    1 sheet and rill flow,
         #    2 sheet and subsurface flow,
         #    3 sheet, rill and reach flow
-        if self._config.get('other', 'typecomp') != '-':
-            data['type_of_computing'] = self._config.get('other', 'typecomp')
+        if self._config.get('processes', 'typecomp') != '-':
+            data['type_of_computing'] = self._config.get('processes', 'typecomp')
 
         #  output directory is always set
         if data['outdir'] is None:
-            data['outdir'] = self._config.get('other', 'outdir')
+            data['outdir'] = self._config.get('output', 'outdir')
 
         #  rainfall data can be saved
-        if self._config.get('rainfall', 'file') != '-':
+        if self._config.get('data', 'rainfall') != '-':
             try:
                 data['sr'], data['itera'] = rainfall.load_precipitation(
-                    self._config.get('rainfall', 'file')
+                    self._config.get('data', 'rainfall')
                 )
             except TypeError:
-                raise ProviderError('Invalid file in [rainfall] section')
+                raise ProviderError('Invalid rainfall file')
 
         # some self._configs are not in pickle.dump
-        data['extraOut'] = self._config.getboolean('other', 'extraout')
+        data['extraOut'] = self._config.getboolean('output', 'extraout')
         # rainfall data can be saved
-        data['prtTimes'] = self._config.get('other', 'printtimes')
+        data['prtTimes'] = self._config.get('output', 'printtimes')
 
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
 

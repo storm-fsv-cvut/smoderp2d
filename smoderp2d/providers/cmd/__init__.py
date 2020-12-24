@@ -85,7 +85,7 @@ class CmdProvider(BaseProvider):
             self._cleanup()
 
             data = self._load_roff(
-                self._config.get('other', 'config')
+                self._config.get('data', 'pickle')
             )
 
             self._set_globals(data)
