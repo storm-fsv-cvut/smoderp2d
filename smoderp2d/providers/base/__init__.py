@@ -9,9 +9,9 @@ import pickle
 import logging
 import numpy as np
 if sys.version_info.major >= 3:
-    from configparser import ConfigParser, NoSectionError
+    from configparser import ConfigParser, NoSectionError, NoOptionError
 else:
-    from ConfigParser import ConfigParser, NoSectionError
+    from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError
@@ -126,8 +126,8 @@ class BaseProvider(object):
             )
 
             # must be defined for _cleanup() method
-            Globals.outdir = config.get('other', 'outdir')
-        except NoSectionError as e:
+            Globals.outdir = config.get('output', 'outdir')
+        except (NoSectionError, NoOptionError) as e:
             raise ConfigError('Config file {}: {}'.format(
                 self.args.data_file, e
             ))
@@ -167,38 +167,38 @@ class BaseProvider(object):
         # some variables configs can be changes after loading from
         # pickle.dump such as end time of simulation
 
-        if self._config.get('time', 'endtime') != '-':
+        if self._config.get('time', 'endtime'):
             data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
 
         #  time of flow algorithm
-        if self._config.get('other', 'mfda') != '-':
-            data['mfda'] = self._config.getboolean('other', 'mfda')
+        if self._config.get('processes', 'mfda'):
+            data['mfda'] = self._config.getboolean('processes', 'mfda')
 
         #  type of computing:
         #    0 sheet only,
         #    1 sheet and rill flow,
         #    2 sheet and subsurface flow,
         #    3 sheet, rill and reach flow
-        if self._config.get('other', 'typecomp') != '-':
-            data['type_of_computing'] = self._config.get('other', 'typecomp')
+        if self._config.get('processes', 'typecomp'):
+            data['type_of_computing'] = self._config.get('processes', 'typecomp')
 
         #  output directory is always set
         if data['outdir'] is None:
-            data['outdir'] = self._config.get('other', 'outdir')
+            data['outdir'] = self._config.get('output', 'outdir')
 
         #  rainfall data can be saved
-        if self._config.get('rainfall', 'file') != '-':
+        if self._config.get('data', 'rainfall'):
             try:
                 data['sr'], data['itera'] = rainfall.load_precipitation(
-                    self._config.get('rainfall', 'file')
+                    self._config.get('data', 'rainfall')
                 )
             except TypeError:
-                raise ProviderError('Invalid file in [rainfall] section')
+                raise ProviderError('Invalid rainfall file')
 
         # some self._configs are not in pickle.dump
-        data['extraOut'] = self._config.getboolean('other', 'extraout')
+        data['extraOut'] = self._config.getboolean('output', 'extraout', fallback=False)
         # rainfall data can be saved
-        data['prtTimes'] = self._config.get('other', 'printtimes')
+        data['prtTimes'] = self._config.get('output', 'printtimes')
 
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
 

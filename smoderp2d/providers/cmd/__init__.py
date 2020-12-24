@@ -3,6 +3,10 @@ import sys
 import argparse
 import logging
 import numpy as np
+if sys.version_info.major >= 3:
+    from configparser import NoOptionError
+else:
+    from ConfigParser import NoOptionError
 
 from smoderp2d.core.general import Globals
 from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter
@@ -80,16 +84,19 @@ class CmdProvider(BaseProvider):
 
         Only roff procedure supported.
         """
-        if self.args.typecomp == CompType.roff:
-            # cleanup output directory first
-            self._cleanup()
-
-            data = self._load_roff(
-                self._config.get('other', 'config')
-            )
-
-            self._set_globals(data)
-        else:
+        if not self.args.typecomp == CompType.roff:
             raise ProviderError('Unsupported partial computing: {}'.format(
                 self.args.typecomp
             ))
+
+        # cleanup output directory first
+        self._cleanup()
+
+        try:
+            data = self._load_roff(
+                self._config.get('data', 'pickle')
+            )
+        except NoOptionError as e:
+            raise ConfigError("Invalid configuration: {}".format(e))
+
+        self._set_globals(data)
