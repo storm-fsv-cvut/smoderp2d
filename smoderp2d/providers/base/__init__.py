@@ -18,12 +18,14 @@ from smoderp2d.providers.base.exceptions import DataPreparationError
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
 from smoderp2d.exceptions import ProviderError, ConfigError
 
+
 class Args:
     # type of computation (CompType)
     typecomp = None
     # path to data file (used by 'dpre' for output and 'roff' for
     # input)
     data_file = None
+
 
 # unfortunately Python version shipped by ArcGIS 10 lacks Enum
 class CompType:
@@ -40,6 +42,7 @@ class CompType:
             return cls.roff
         else:
             return cls.full
+
 
 class BaseWritter(object):
     def __init__(self):
@@ -76,6 +79,7 @@ class BaseWritter(object):
     def write_raster(self, arr, output):
         pass
 
+
 class BaseProvider(object):
     def __init__(self):
         self.args = Args()
@@ -92,8 +96,8 @@ class BaseProvider(object):
     @staticmethod
     def _add_logging_handler(handler, formatter=None):
         """Register new logging handler.
-        
-        :param handler: loggging handler to be registerered
+
+        :param handler: logging handler to be registered
         :param formatter: logging handler formatting
         """
         if not formatter:
@@ -149,7 +153,7 @@ class BaseProvider(object):
         """
         from smoderp2d.processes import rainfall
 
-        # the data are loared from a pickle file
+        # the data are loaded from a pickle file
         try:
             data = self._load_data(indata)
             if isinstance(data, list):
@@ -280,11 +284,11 @@ class BaseProvider(object):
                 os.remove(point_x)
         else:
             os.makedirs(output_dir)
-        
+
     @staticmethod
     def _comp_type(tc):
         """Returns boolean information about the components of the computation.
-        
+
         Return 4 true/values for rill, subflow, stream, diffuse
         presence/non-presence.
 
@@ -403,7 +407,7 @@ class BaseProvider(object):
                 'b_rill',
                 'inflow_sur',
                 'sur_ret',
-                'vol_sur_r' 
+                'vol_sur_r'
         ]
 
         if Globals.subflow:
@@ -419,7 +423,7 @@ class BaseProvider(object):
                 cumulative.data[item].file_name
             )
 
-        # make extra rasters from cumulative clasess into temp dir 
+        # make extra rasters from cumulative clasess into temp dir
         for item in data_output_extras:
             self.storage.write_raster(
                 self._make_mask(getattr(cumulative, item)),
@@ -440,7 +444,7 @@ class BaseProvider(object):
                 if finState[i][j] >= 1000:
                     vRest[i][j] = GridGlobals.NoDataValue
                 else:
-                    vRest[i][j] = surface_array[i][j].h_total_new * GridGlobals.pixel_area 
+                    vRest[i][j] = surface_array[i][j].h_total_new * GridGlobals.pixel_area
 
         totalBil = (cumulative.precipitation + cumulative.inflow_sur) - \
             (cumulative.infiltration + cumulative.vol_sur_tot) - \
@@ -471,7 +475,7 @@ class BaseProvider(object):
                 outputtable[i][4] = stream[fid[i]].q365
                 outputtable[i][5] = stream[fid[i]].V_out_cum
                 outputtable[i][6] = stream[fid[i]].Q_max
-            
+
             path_ = os.path.join(
                     Globals.outdir,
                     'stream.csv'
@@ -479,12 +483,11 @@ class BaseProvider(object):
             np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
                        header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}q365_m3_s{sep}V_out_cum_m3{sep}Q_max_m3_s'.format(sep=';'))
 
-
     def _make_mask(self, arr, int_=False):
-        """ Assure that the no data value is outside the 
+        """ Assure that the no data value is outside the
         computation region.
         Works only for type float.
-        
+
         :param arrr: numpy array
         """
 

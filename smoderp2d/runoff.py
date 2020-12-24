@@ -1,12 +1,12 @@
 """ A computation part of the model SMODERP2D is performer in runoff.py
 
-All date which used by this module was prepared by the provider 
-before this module is loaded. The data are stored in classes Globals 
+All date which used by this module was prepared by the provider
+before this module is loaded. The data are stored in classes Globals
 GridGlobals.
 
 Classes:
     FlowControl - class controls the computation flow, e.g. controls the
-    iterations 
+    iterations
     Runoff - class contains methods which perform the computation
 
 """
@@ -73,7 +73,7 @@ class FlowControl(object):
 
         # defined by save_ratio()
         self.ratio_tmp = None
-        
+
     def save_vars(self):
         """Store tz and sum of interception
         in case of repeating time time stem iteration.
@@ -137,7 +137,7 @@ class Runoff(object):
         stream and subsurface processes handling.
         """
         self.provider = provider
-        
+
         # handling print of the solution in given times
         self.times_prt = TimesPrt()
 
@@ -221,20 +221,20 @@ class Runoff(object):
         Logger.info('-' * 80)
 
     def run(self):
-        """ The computation of the water level development 
-        is performed here. 
-        
+        """ The computation of the water level development
+        is performed here.
+
         The *main loop* which goes through time steps
-        has *nested loop* for iterations (in case the 
+        has *nested loop* for iterations (in case the
         computation does not converge).
 
         The computation has been divided in two parts
-        First, in iteration (*nested*) loop is calculated 
-        the surface runoff (to which is the time step 
+        First, in iteration (*nested*) loop is calculated
+        the surface runoff (to which is the time step
         sensitive) in a function time_step.do_flow()
 
-        Next water balance is performed at each cell of the 
-        raster. Water level in next time step is calculated by 
+        Next water balance is performed at each cell of the
+        raster. Water level in next time step is calculated by
         a function time_step.do_next_h().
 
         Selected values are stored in at the end of each loop.
@@ -326,7 +326,7 @@ class Runoff(object):
                         )
                 # TODO
                 # post_proc.do(self.cumulative, Globals.mat_slope, Gl, surface.arr)
-                raise MaxIterationExceeded(self.flow_control.max_iter, 
+                raise MaxIterationExceeded(self.flow_control.max_iter,
                         self.flow_control.total_time)
 
             # adjusts the last time step size
@@ -398,7 +398,7 @@ class Runoff(object):
         # perform postprocessing - store results
         Logger.info('Saving output data...')
         self.provider.postprocessing(self.cumulative, self.surface.arr,
-                self.surface.reach)
+                                     self.surface.reach)
 
         # TODO
         # post_proc.stream_table(Globals.outdir + os.sep, self.surface,
