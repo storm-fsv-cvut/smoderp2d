@@ -15,7 +15,7 @@ import math
 from smoderp2d.providers.base import BaseProvider, Logger, CompType, \
     BaseWritter
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
-from smoderp2d.providers.cmd import CmdWritter
+from smoderp2d.providers.cmd import CmdWritter, CmdArgumentParser
 from smoderp2d.exceptions import ConfigError, ProviderError
 
 
