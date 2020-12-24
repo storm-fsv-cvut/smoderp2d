@@ -1,6 +1,6 @@
 version: "3"
 services:
-  nginx:
+  smoderp_wps:
     restart: unless-stopped
     build: .
     image: smoderp_wps_demo
@@ -8,7 +8,7 @@ services:
     volumes:
       - ./nginx/conf.d/:/etc/nginx/conf.d/
       - ./pywps/:/opt/pywps
-      - ./logs:/var/log/pywps
+      - ./log:/var/log/pywps
       - ./../../:/opt/smoderp2d
     ports:
       - 8080:80

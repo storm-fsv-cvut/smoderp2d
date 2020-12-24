@@ -3,14 +3,10 @@ import sys
 import argparse
 import logging
 import numpy as np
-if sys.version_info.major >= 3:
-    from configparser import ConfigParser, NoSectionError
-else:
-    from ConfigParser import ConfigParser, NoSectionError
 
 from smoderp2d.core.general import Globals
 from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter
-from smoderp2d.exceptions import ConfigError
+from smoderp2d.exceptions import ConfigError, ProviderError
 
 class CmdWritter(BaseWritter):
     def __init__(self):
@@ -31,59 +27,50 @@ class CmdWritter(BaseWritter):
             array, file_output
         )
 
-class CmdProvider(BaseProvider):
-    def __init__(self):
-        """Create argument parser."""
-        super(CmdProvider, self).__init__()
-        
+class CmdArgumentParser(object):
+    def __init__(self, config_file):
+        self.config_file = config_file
+
+    def set_config(self, description, typecomp=None):
+        if self.config_file:
+            return self.config_file, CompType()['roff']
+
         # define CLI parser
-        parser = argparse.ArgumentParser(description='Run Smoderp2D.')
+        parser = argparse.ArgumentParser(description)
 
         # type of computation
+        if typecomp is None:
+            parser.add_argument(
+                '--typecomp',
+                help='type of computation',
+                type=str,
+                choices=['full', 'dpre', 'roff'],
+                required=True
+            )
+
+        # config file required
         parser.add_argument(
-            '--typecomp',
-            help='type of computation',
+            '--config',
+            help='file with configuration',
             type=str,
-            choices=['full',
-                     'dpre',
-                     'roff'],
             required=True
         )
 
-        # data file (only required for runoff)
-        parser.add_argument(
-            '--config',
-            help='file with prepared data',
-            type=str
-        )
-        self.args = parser.parse_args()
-        self.args.typecomp = CompType()[self.args.typecomp]
+        args = parser.parse_args()
+
+        if typecomp is None:
+            return args.config, CompType()[args.typecomp]
+
+        return args.config, CompType()[typecomp]
+
+class CmdProvider(BaseProvider):
+    def __init__(self, config_file=None):
+        super(CmdProvider, self).__init__()
 
         # load configuration
-        self._config = ConfigParser()
-        if self.args.typecomp == CompType.roff:
-            if not self.args.config:
-                parser.error('--config required')
-            if not os.path.exists(self.args.config):
-                raise ConfigError("{} does not exist".format(
-                    self.args.config
-                ))
-            self._config.read(self.args.config)
-
-        try:
-            # set logging level
-            Logger.setLevel(self._config.get('other', 'logging'))
-            # sys.stderr logging
-            self._add_logging_handler(
-                logging.StreamHandler(stream=sys.stderr)
-            )
-
-            # must be defined for _cleanup() method
-            Globals.outdir = self._config.get('other', 'outdir')
-        except NoSectionError as e:
-            raise ConfigError('Config file {}: {}'.format(
-                self.args.config, e
-            ))
+        cloader = CmdArgumentParser(config_file)
+        self.args.data_file, self.args.typecomp = cloader.set_config("Run SMODERP2D.")
+        self._config = self._load_config()
 
         # define storage writter
         self.storage = CmdWritter()

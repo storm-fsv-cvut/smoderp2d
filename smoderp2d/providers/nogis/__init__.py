@@ -15,64 +15,23 @@ import math
 from smoderp2d.providers.base import BaseProvider, Logger, CompType, \
     BaseWritter
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
-from smoderp2d.providers.cmd import CmdWritter
+from smoderp2d.providers.cmd import CmdWritter, CmdArgumentParser
 from smoderp2d.exceptions import ConfigError, ProviderError
 
 
 class NoGisProvider(BaseProvider, PrepareDataBase):
     def __init__(self, config_file=None):
-        """Create argument parser."""
         super(NoGisProvider, self).__init__()
 
+        # load configuration
+        cloader = CmdArgumentParser(config_file)
         # no gis has only roff comp type
-        self.args.typecomp = CompType()['roff']
-        self.args.data_file = config_file if config_file else self.__set_config_from_cli()
-        self.__load_config(self.args.data_file)
+        self.args.data_file, self.args.typecomp = cloader.set_config(
+            "Run SMODERP1D.", typecomp='roff')
+        self._config = self._load_config()
 
         # define storage writter
         self.storage = CmdWritter()
-
-    @staticmethod
-    def __set_config_from_cli():
-        # define CLI parser
-        parser = argparse.ArgumentParser(description='Run NoGis Smoderp2D.')
-
-        # config file required
-        parser.add_argument(
-            '--config',
-            help='file with configuration',
-            type=str,
-            required=True
-        )
-
-        args = parser.parse_args()
-
-        return args.config
-
-    def __load_config(self, config_file):
-        # load configuration
-        if not os.path.exists(config_file):
-            raise ConfigError("{} does not exist".format(
-                config_file
-            ))
-
-        self._config = ConfigParser()
-        self._config.read(config_file)
-
-        try:
-            # set logging level
-            Logger.setLevel(self._config.get('logging', 'level'))
-            # sys.stderr logging
-            self._add_logging_handler(
-                logging.StreamHandler(stream=sys.stderr)
-            )
-
-            # must be defined for _cleanup() method
-            Globals.outdir = self._config.get('output', 'outdir')
-        except NoSectionError as e:
-            raise ConfigError('Config file {}: {}'.format(
-                config_file, e
-            ))
 
     def _load_input_data(self, filename_indata, filename_soil_types):
         """Load configuration data from roff computation procedure.
@@ -117,7 +76,14 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
 
         for index in range(len(indata)):
             soilveg = indata['puda'][index] + indata['povrch'][index]
-            # a = soil_types[np.in1d(soil_types['soilveg'], ('PXOP', 'HXGEO'))]
+
+            if soilveg not in soil_types_soilveg:
+                raise ConfigError(
+                    'soilveg {} from the data-data1d CSV file does not '
+                    'match any soilveg from the data-data1d_soil_types CSV '
+                    'file'.format(soilveg)
+                )
+
             soilveg_line = soil_types[np.where(soil_types_soilveg == soilveg)]
 
             if filtered_soilvegs is not None:
@@ -547,7 +513,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
             cumulative.vol_rill.flatten(),
             cumulative.v_sheet.flatten(),
             cumulative.shear_sheet.flatten(),
-            cumulative.q_sur_tot.flatten() # TODO: should be rillRunoff[Y/N]
+            [0 if i.state == 0 else 1 for i in surface_array.flatten()]
         )
 
         profile_path = os.path.join(Globals.outdir, 'profile.csv')

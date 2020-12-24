@@ -1,65 +1,45 @@
-# SMODERP2D Web Processing Service
+# Deploy SMODERP2D Demo WPS server using Docker
 
-## Experimental Rain WPS Process
+## Build image
 
-#### DescribeProcess
+```
+docker-compose build
+```
 
-https://rain1.fsv.cvut.cz/services/wps?service=wps&version=1.0.0&request=describeprocess&identifier=smoderp2d
+## Run container
 
-#### Execute
+```
+docker-compose up
+```
 
-https://rain1.fsv.cvut.cz/services/wps?service=wps&version=1.0.0&request=execute&identifier=smoderp2d&datainputs=input=http://rain.fsv.cvut.cz/geodata/smoderp2d.zip
-
-## Development SMODERP2D WPS demo server
-
-### Requirements
-
-    pip3 install pywps flask
-
-### How to test
-
-Run demo WPS server
-
-    python3 demo.py
-
-Open http://127.0.0.1:5000
-
-#### DescribeProcess
-
-http://127.0.0.1:5000/wps?service=wps&version=1.0.0&request=describeprocess&identifier=smoderp2d
-
-#### Execute
-
-Copy testing input data to demo server
-
-    (cd ../..;
-    zip test.zip tests/quicktest.ini tests/data/rainfall.txt tests/data/destak.save
-    mv test.zip bin/wps/static/data)
-
-Run execute request
-
-http://127.0.0.1:5000/wps?service=wps&version=1.0.0&request=execute&identifier=smoderp2d&datainputs=input=http://127.0.0.1:5000/static/data/test.zip
-
-## Deploy SMODERP2D WPS server using Docker
-
-### Build image
-
-    docker-compose build
-    
-### Run container
-
-    docker-compose up
-    
-### Call WPS
+## Call WPS
 
 GetCapabilities:
 
 http://localhost:8080/services/wps?service=wps&request=getcapabilities
-    
+
+### smoderp1d
+
 DescribeProcess:
 
-http://localhost:8080/services/wps?service=wps&request=describeprocess&version=2.0.0&identifier=smoderp1d
-    
-Execute (POST):
+http://localhost:8080/services/wps?service=wps&request=describeprocess&version=1.0.0&identifier=smoderp1d
 
-    wget --post-file request.xml 'http://localhost:8080/services/wps?' -O -
+Execute:
+
+```
+python3 request-template.py --template request-smoderp1d.xml > /tmp/request.xml && \
+wget --post-file /tmp/request.xml 'http://localhost:8080/services/wps?' -O -
+```
+
+### smoderp2d
+
+DescribeProcess:
+
+http://localhost:8080/services/wps?service=wps&request=describeprocess&version=1.0.0&identifier=smoderp2d
+
+Execute:
+
+```
+python3 request-template.py --template request-smoderp2d.xml > /tmp/request.xml && \
+wget --post-file /tmp/request.xml 'http://localhost:8080/services/wps?' -O -
+```

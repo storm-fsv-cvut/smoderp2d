@@ -8,11 +8,15 @@ import math
 import pickle
 import logging
 import numpy as np
+if sys.version_info.major >= 3:
+    from configparser import ConfigParser, NoSectionError
+else:
+    from ConfigParser import ConfigParser, NoSectionError
 
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
-from smoderp2d.exceptions import ProviderError
+from smoderp2d.exceptions import ProviderError, ConfigError
 
 
 class Args:
@@ -84,7 +88,7 @@ class BaseProvider(object):
         self._print_logo_fn = print
 
         # default logging level (can be modified by provider)
-        Logger.setLevel(logging.DEBUG)
+        Logger.setLevel(logging.INFO)
 
         # storage writter must be defined
         self.storage = None
@@ -103,6 +107,34 @@ class BaseProvider(object):
         handler.setFormatter(formatter)
         Logger.addHandler(handler)
 
+    def _load_config(self):
+        # load configuration
+        if not os.path.exists(self.args.data_file):
+            raise ConfigError("{} does not exist".format(
+                self.args.data_file
+            ))
+
+        config = ConfigParser()
+        config.read(self.args.data_file)
+
+        try:
+            # set logging level
+            Logger.setLevel(config.get('logging', 'level', fallback=logging.INFO))
+            # sys.stderr logging
+            self._add_logging_handler(
+                logging.StreamHandler(stream=sys.stderr)
+            )
+
+            # must be defined for _cleanup() method
+            Globals.outdir = config.get('other', 'outdir')
+        except NoSectionError as e:
+            raise ConfigError('Config file {}: {}'.format(
+                self.args.data_file, e
+            ))
+
+        return config
+        
+        
     def _load_dpre(self):
         """Run data preparation procedure.
 
