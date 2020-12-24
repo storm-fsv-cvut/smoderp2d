@@ -88,7 +88,7 @@ class BaseProvider(object):
         self._print_logo_fn = print
 
         # default logging level (can be modified by provider)
-        Logger.setLevel(logging.DEBUG)
+        Logger.setLevel(logging.INFO)
 
         # storage writter must be defined
         self.storage = None
@@ -119,7 +119,7 @@ class BaseProvider(object):
 
         try:
             # set logging level
-            Logger.setLevel(config.get('other', 'logging'))
+            Logger.setLevel(config.get('logging', 'level', fallback=logging.INFO))
             # sys.stderr logging
             self._add_logging_handler(
                 logging.StreamHandler(stream=sys.stderr)
