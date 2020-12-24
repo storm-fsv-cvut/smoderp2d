@@ -55,9 +55,9 @@ subsurface runoff and erosion
         config_parser = ConfigParser()
         config_parser.read(config)
 
-        config_parser['rainfall']['file'] = rainfall
-        config_parser['other']['config'] = input_
-        config_parser['other']['outdir'] = os.path.join(self.workdir, 'output')
+        config_parser['data']['rainfall'] = rainfall
+        config_parser['data']['pickle'] = input_
+        config_parser['output']['outdir'] = os.path.join(self.workdir, 'output')
 
         with open(config, 'w') as fd:
             config_parser.write(fd)
