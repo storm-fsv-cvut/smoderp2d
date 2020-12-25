@@ -81,7 +81,6 @@ subsurface runoff and erosion
         from smoderp2d.core.general import Globals
         from smoderp2d.providers.wps.logger import WpsLogHandler
 
-
         config = self.__update_config(request.inputs['input'][0].file,
                                       request.inputs['soil_types'][0].file,
                                       request.inputs['rainfall'][0].file,
