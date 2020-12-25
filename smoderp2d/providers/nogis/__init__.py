@@ -77,6 +77,13 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         for index in range(len(indata)):
             soilveg = indata['puda'][index] + indata['povrch'][index]
 
+            # check for the misusage of comma for deciamls
+            if any([',' in i for i in indata[index] if isinstance(i, str)]):
+                raise ConfigError(
+                    'Commas are not allowed characters in the data-data1d '
+                    'CSV file. If used as decimal separators, please replace '
+                    'them with dots')
+
             if soilveg not in soil_types_soilveg:
                 raise ConfigError(
                     'soilveg {} from the data-data1d CSV file does not '
