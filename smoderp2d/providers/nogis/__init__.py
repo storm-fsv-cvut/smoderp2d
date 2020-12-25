@@ -26,7 +26,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         # load configuration
         cloader = CmdArgumentParser(config_file)
         # no gis has only roff comp type
-        self.args.data_file, self.args.typecomp = cloader.set_config(
+        self.args.config_file, self.args.typecomp = cloader.set_config(
             "Run SMODERP1D.", typecomp='roff')
         self._config = self._load_config()
 
@@ -113,8 +113,8 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         # read input csv files
         try:
             joint_data = self._load_input_data(
-                self._config.get('other', 'data1d'),
-                self._config.get('other', 'data1d_soil_types')
+                self._config.get('data', 'data1d'),
+                self._config.get('data', 'data1d_soil_types')
             )
         except IOError as e:
             raise ProviderError('{}'.format(e))

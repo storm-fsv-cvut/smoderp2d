@@ -73,8 +73,9 @@ class CmdProvider(BaseProvider):
 
         # load configuration
         cloader = CmdArgumentParser(config_file)
-        self.args.data_file, self.args.typecomp = cloader.set_config("Run SMODERP2D.")
+        self.args.config_file, self.args.typecomp = cloader.set_config("Run SMODERP2D.")
         self._config = self._load_config()
+        self.args.data_file = self._config['data']['pickle']
 
         # define storage writter
         self.storage = CmdWritter()

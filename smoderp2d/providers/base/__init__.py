@@ -22,10 +22,11 @@ from smoderp2d.exceptions import ProviderError, ConfigError
 class Args:
     # type of computation (CompType)
     typecomp = None
-    # path to data file (used by 'dpre' for output and 'roff' for
-    # input)
+    # path to pickle data file
+    # used by 'dpre' for output and 'roff' for input
     data_file = None
-
+    # config file
+    config_file = None
 
 # unfortunately Python version shipped by ArcGIS 10 lacks Enum
 class CompType:
@@ -113,19 +114,19 @@ class BaseProvider(object):
 
     def _load_config(self):
         # load configuration
-        if not os.path.exists(self.args.data_file):
+        if not os.path.exists(self.args.config_file):
             raise ConfigError("{} does not exist".format(
-                self.args.data_file
+                self.args.config_file
             ))
 
         config = ConfigParser()
-        config.read(self.args.data_file)
+        config.read(self.args.config_file)
 
         try:
             # set logging level
             Logger.setLevel(config.get('logging', 'level', fallback=logging.INFO))
             # sys.stderr logging
-            self._add_logging_handler(
+            self.add_logging_handler(
                 logging.StreamHandler(stream=sys.stderr)
             )
 
@@ -133,7 +134,7 @@ class BaseProvider(object):
             Globals.outdir = config.get('output', 'outdir')
         except (NoSectionError, NoOptionError) as e:
             raise ConfigError('Config file {}: {}'.format(
-                self.args.data_file, e
+                self.args.config_file, e
             ))
 
         return config
@@ -157,6 +158,7 @@ class BaseProvider(object):
 
         # the data are loaded from a pickle file
         try:
+            print(self.args.data_file)
             data = self._load_data(self.args.data_file)
             if isinstance(data, list):
                 raise ProviderError(
