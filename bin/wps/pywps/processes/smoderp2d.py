@@ -1,14 +1,20 @@
 import os
 import sys
+from configparser import ConfigParser
 from zipfile import ZipFile, ZIP_DEFLATED
 
 from pywps import Process, ComplexInput, ComplexOutput, Format
+from pywps.app.exceptions import ProcessError
 
 class Smoderp2d(Process):
     def __init__(self):
         inputs = [
-            ComplexInput('input', 'Input files (zip-archive)',
-                         supported_formats=[Format('application/zip; charset=binary')])
+            ComplexInput('input', 'Input SAVE file',
+                         supported_formats=[Format('text/plain')]),
+            ComplexInput('rainfall', 'Input rainfall file',
+                         supported_formats=[Format('text/plain')]),
+            ComplexInput('config', 'Configuration INI file',
+                         supported_formats=[Format('text/plain')])
         ]
         outputs = [
             ComplexOutput('output', 'Output ASCII raster data (zip-archive)',
@@ -21,26 +27,14 @@ class Smoderp2d(Process):
             identifier='smoderp2d',
             version='0.1',
             title="Experimental SMODERP2D process",
-            abstract="Performs SMODERP2D distributed event-based model for surface and subsurface runoff and erosion (https://github.com/storm-fsv-cvut/smoderp2d)",
+            abstract="""Performs SMODERP distributed event-based model for surface and
+subsurface runoff and erosion
+(https://github.com/storm-fsv-cvut/smoderp2d) in 2D""",
             inputs=inputs,
             outputs=outputs,
             store_supported=True,
             status_supported=True
         )
-
-    @staticmethod
-    def process_input(input_zip):
-        # input data (why .file is not working?
-        from io import BytesIO
-        from urllib.request import urlopen
-        resp = urlopen(input_zip)
-        with ZipFile(BytesIO(resp.read())) as zipfile:
-            zipfile.extractall()
-            for f in zipfile.namelist():
-                if os.path.splitext(f)[1] == '.ini':
-                    indata = f
-
-        return indata
 
     @staticmethod
     def process_output(outdir):
@@ -56,28 +50,35 @@ class Smoderp2d(Process):
 
         return outfile
 
+    def __update_config(self, input_, rainfall, config):
+        """Update configuration file."""
+        config_parser = ConfigParser()
+        config_parser.read(config)
+
+        config_parser['data']['rainfall'] = rainfall
+        config_parser['data']['pickle'] = input_
+        config_parser['output']['outdir'] = os.path.join(self.workdir, 'output')
+
+        with open(config, 'w') as fd:
+            config_parser.write(fd)
+
+        return config
+    
     def _handler(self, request, response):
-        # lazy import
-        sys.path.insert(0, os.path.join(os.path.dirname(__file__),
-                        '..', '..', '..'))
+        sys.path.insert(0, "/opt/smoderp2d")
         from smoderp2d import WpsRunner
         from smoderp2d.exceptions import ProviderError, ConfigError
         from smoderp2d.core.general import Globals
 
-        # input data
-        indata = self.process_input(request.inputs['input'][0].data)
-        if not indata:
-            raise Exception("Input ini file not found")
+        config = self.__update_config(request.inputs['input'][0].file,
+                                      request.inputs['rainfall'][0].file,
+                                      request.inputs['config'][0].file)
 
-        # run computation
-        runner = WpsRunner()
-        runner.set_options({
-            'typecomp': 'roff',
-            'indata': indata
-        })
-        runner.run()
+        try:
+            runner = WpsRunner(config_file=config)
+            runner.run()
+        except (ConfigError, ProviderError) as e:
+            raise ProcessError("SMODERP failed: {}".format(e))
 
         # output data
         response.outputs['output'].file = self.process_output(Globals.get_outdir())
-
-        return response

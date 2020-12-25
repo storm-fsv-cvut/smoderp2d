@@ -2,18 +2,6 @@ import numpy as np
 
 from smoderp2d.exceptions import SmoderpError
 
-class Size(object):
-    @staticmethod
-    def size(arrayNBytes, m=1.0):
-        """Method to compute size of class arrays.    
-        
-        :param <numpy array>.nbytes arrayNBytes:
-        :param float m: value in denominator to get bytes, kilobytes
-        (m=2**10), megabytes (m=2**10+m**10) and so on.
-        """
-        # arrayNBytes eq self.state.nbytes
-        return (self.n * arrayNBytes) / m
-
 
 class GridGlobalsArray(np.ndarray):
     """Class overriding np.ndarray to handle SMODERP border problems."""
@@ -27,12 +15,15 @@ class GridGlobalsArray(np.ndarray):
         :param item: position in the array
         :return: object at position specified with item or empty SurArrs
         """
-        if isinstance(item, int):
-            return super(GridGlobalsArray, self).__getitem__(item)
-        elif any(i < 0 for i in item):
-            return self.invalid_sur_arr
-        else:
-            return super(GridGlobalsArray, self).__getitem__(item)
+        if isinstance(item, tuple) or isinstance(item, list):
+            if self.ndim > 1:
+                if any(i < 0 for i in item if isinstance(i, int)):
+                    return self.invalid_sur_arr
+        elif isinstance(item, int) or isinstance(item, float):
+            if self.ndim > 1 and item < 0:
+                return self.invalid_sur_arr
+
+        return super(GridGlobalsArray, self).__getitem__(item)
 
     def set_outsides(self, surarrs):
         """Setup the empty SurArrs.
@@ -80,7 +71,7 @@ class GridGlobals(object):
 
         self.arr = GridGlobalsArray((self.r, self.c), dtype=object)
 
-    @classmethod        
+    @classmethod
     def get_dim(cls):
         return (cls.r, cls.c)
 
@@ -130,7 +121,7 @@ class DataGlobals:
     @classmethod
     def get_mat_ppl(cls, i, j):
         return cls.mat_ppl[i][j]
-    
+
 class Globals:
     """Globals contains global variables from data_preparation, in
     instance of class needed the data are taken from import of this
@@ -144,7 +135,7 @@ class Globals:
     mat_boundary = None
     # list containing coordinates of catchment outlet cells
     outletCells = None
-    # array containing information of hydrogram points
+    # array containing information of hydrograph points
     array_points = None
     # combinatIndex
     combinatIndex = None
@@ -215,7 +206,7 @@ class Globals:
     extraOut = None
     # stream magic number
     streams_flow_inc = 1000
-    
+
     @classmethod
     def get_type_of_computing(cls):
         return cls.type_of_computing

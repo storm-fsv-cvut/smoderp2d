@@ -4,7 +4,7 @@
 import numpy as np
 import math
 
-from smoderp2d.core.general import Globals, GridGlobals, Size
+from smoderp2d.core.general import Globals, GridGlobals
 if Globals.isStream:
     from smoderp2d.core.stream import Stream
 else:
@@ -60,7 +60,7 @@ class SurArrs(object):
         self.h_last_state1 = 0.
 
 
-class Surface(GridGlobals, Size, Stream, Kinematic):
+class Surface(GridGlobals, Stream, Kinematic):
     """Contains data and methods to calculate the surface and rill runoff.
     """
     def __init__(self):
@@ -108,15 +108,15 @@ class Surface(GridGlobals, Size, Stream, Kinematic):
 
         # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
         if not extra_out:
-            line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'.format(
+
+            line = '{0:.4e}{sep}{1:.4e}'.format(
                 arr.h_total_new,
                 arr.vol_runoff / dt + arr.vol_runoff_rill / dt,
-                arr.vol_runoff + arr.vol_runoff_rill,
                 sep=sep
             )
             bil_ = ''
         else:
-            if arr.h_sheet == 0 :
+            if arr.h_sheet == 0:
                 velocity = 0
             else :
                 velocity = arr.vol_runoff / dt / (arr.h_sheet*GridGlobals.dx)

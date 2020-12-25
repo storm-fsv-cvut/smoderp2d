@@ -1,12 +1,12 @@
 """ A computation part of the model SMODERP2D is performer in runoff.py
 
-All date which used by this module was prepared by the provider 
-before this module is loaded. The data are stored in classes Globals 
+All date which used by this module was prepared by the provider
+before this module is loaded. The data are stored in classes Globals
 GridGlobals.
 
 Classes:
     FlowControl - class controls the computation flow, e.g. controls the
-    iterations 
+    iterations
     Runoff - class contains methods which perform the computation
 
 """
@@ -14,6 +14,7 @@ Classes:
 import time
 import os
 import numpy as np
+import math
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
@@ -72,7 +73,7 @@ class FlowControl(object):
 
         # defined by save_ratio()
         self.ratio_tmp = None
-        
+
     def save_vars(self):
         """Store tz and sum of interception
         in case of repeating time time stem iteration.
@@ -136,7 +137,7 @@ class Runoff(object):
         stream and subsurface processes handling.
         """
         self.provider = provider
-        
+
         # handling print of the solution in given times
         self.times_prt = TimesPrt()
 
@@ -200,6 +201,7 @@ class Runoff(object):
                     self.delta_t,
                     self.surface,
                     self.subsurface,
+                    self.cumulative,
                     0.0
                 )
         # record values into stream hydrographs at time zero
@@ -211,6 +213,7 @@ class Runoff(object):
             self.delta_t,
             self.surface,
             self.subsurface,
+            self.cumulative,
             0.0,
             True
         )
@@ -218,20 +221,20 @@ class Runoff(object):
         Logger.info('-' * 80)
 
     def run(self):
-        """ The computation of the water level development 
-        is performed here. 
-        
+        """ The computation of the water level development
+        is performed here.
+
         The *main loop* which goes through time steps
-        has *nested loop* for iterations (in case the 
+        has *nested loop* for iterations (in case the
         computation does not converge).
 
         The computation has been divided in two parts
-        First, in iteration (*nested*) loop is calculated 
-        the surface runoff (to which is the time step 
+        First, in iteration (*nested*) loop is calculated
+        the surface runoff (to which is the time step
         sensitive) in a function time_step.do_flow()
 
-        Next water balance is performed at each cell of the 
-        raster. Water level in next time step is calculated by 
+        Next water balance is performed at each cell of the
+        raster. Water level in next time step is calculated by
         a function time_step.do_next_h().
 
         Selected values are stored in at the end of each loop.
@@ -277,6 +280,14 @@ class Runoff(object):
                     potRain, self.delta_t, self.flow_control.ratio
                 )
 
+                # if current time plus timestep is in next minute
+                # of computation the dt is reduced so the next
+                # coputed time is exactli at the top of each minute
+                oldtime_minut = self.flow_control.total_time/60
+                newtime_minut = (self.flow_control.total_time+self.delta_t)/60
+                if (math.floor(newtime_minut) > math.floor(oldtime_minut)):
+                    self.delta_t = (math.floor(newtime_minut) - oldtime_minut)*60.
+
                 # courant conditions is satisfied (time step did
                 # change) the iteration loop breaks
                 if delta_t_tmp == self.delta_t and self.flow_control.compare_ratio():
@@ -310,11 +321,12 @@ class Runoff(object):
                             self.delta_t,
                             self.surface,
                             self.subsurface,
+                            self.cumulative,
                             actRain
                         )
                 # TODO
                 # post_proc.do(self.cumulative, Globals.mat_slope, Gl, surface.arr)
-                raise MaxIterationExceeded(self.flow_control.max_iter, 
+                raise MaxIterationExceeded(self.flow_control.max_iter,
                         self.flow_control.total_time)
 
             # adjusts the last time step size
@@ -325,14 +337,6 @@ class Runoff(object):
             # if end time reached the main loop breaks
             if self.flow_control.total_time == Globals.end_time:
                 break
-
-            timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
-            Logger.progress(
-                timeperc,
-                self.delta_t,
-                self.flow_control.iter_,
-                self.flow_control.total_time + self.delta_t
-            )
 
             # calculate outflow from each reach of the stream network
             self.surface.stream_reach_outflow(self.delta_t)
@@ -353,6 +357,7 @@ class Runoff(object):
                 self.delta_t,
                 self.surface,
                 self.subsurface,
+                self.cumulative,
                 actRain,
                 True
             )
@@ -378,6 +383,14 @@ class Runoff(object):
                             self.surface.arr[i, j].state = 1
 
                     self.surface.arr[i, j].h_total_pre = self.surface.arr[i, j].h_total_new
+
+            timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
+            Logger.progress(
+                timeperc,
+                self.delta_t,
+                self.flow_control.iter_,
+                self.flow_control.total_time + self.delta_t
+            )
 
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)

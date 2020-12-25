@@ -23,7 +23,7 @@ class Smoderp1d(Process):
             ComplexOutput('profile', 'Output profile CSV file',
                           supported_formats=[Format('text/csv')],
                           as_reference=True),
-            ComplexOutput('hydrogram', 'Output hydrogram CSV file',
+            ComplexOutput('hydrograph', 'Output hydrograph CSV file',
                           supported_formats=[Format('text/csv')],
                           as_reference=True)
         ]
@@ -33,7 +33,7 @@ class Smoderp1d(Process):
             identifier='smoderp1d',
             version='0.1',
             title="Experimental SMODERP1D process",
-            abstract="""Performs SMODERP2D distributed event-based model for surface and
+            abstract="""Performs SMODERP distributed event-based model for surface and
 subsurface runoff and erosion
 (https://github.com/storm-fsv-cvut/smoderp2d) in 1D""",
             inputs=inputs,
@@ -47,16 +47,10 @@ subsurface runoff and erosion
         config_parser = ConfigParser()
         config_parser.read(config)
 
-        config_parser['rainfall'] = {}
-        config_parser['rainfall']['file'] = rainfall
-        config_parser['other'] = {}
-        config_parser['other']['data1d'] = input_
-        config_parser['other']['data1d_soil_types'] = soil_types
-        config_parser['general'] = {}
-        config_parser['general']['outdir'] = os.path.join(self.workdir, 'output')
-        config_parser['general']['printtimes'] = '' # TODO
-        config_parser['general']['logging'] = 'INFO' # TODO
-        config_parser['general']['extraout'] = 'True'
+        config_parser['data']['rainfall'] = rainfall
+        config_parser['data']['data1d'] = input_
+        config_parser['data']['data1d_soil_types'] = soil_types
+        config_parser['output']['outdir'] = os.path.join(self.workdir, 'output')
 
         with open(config, 'w') as fd:
             config_parser.write(fd)
@@ -107,4 +101,5 @@ subsurface runoff and erosion
         # set response output
         LOGGER.info("Output data stored in: {}".format(Globals.get_outdir()))
         self.__set_response_output(response, Globals.get_outdir(), 'profile')
-        self.__set_response_output(response, Globals.get_outdir(), 'hydrogram', 'point001')
+        self.__set_response_output(response, Globals.get_outdir(),
+                                   'hydrograph', 'point001')

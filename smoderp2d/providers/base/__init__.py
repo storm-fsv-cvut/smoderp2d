@@ -8,11 +8,16 @@ import math
 import pickle
 import logging
 import numpy as np
+if sys.version_info.major >= 3:
+    from configparser import ConfigParser, NoSectionError, NoOptionError
+else:
+    from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
-from smoderp2d.exceptions import ProviderError
+from smoderp2d.exceptions import ProviderError, ConfigError
+
 
 class Args:
     # type of computation (CompType)
@@ -20,6 +25,7 @@ class Args:
     # path to data file (used by 'dpre' for output and 'roff' for
     # input)
     data_file = None
+
 
 # unfortunately Python version shipped by ArcGIS 10 lacks Enum
 class CompType:
@@ -36,6 +42,7 @@ class CompType:
             return cls.roff
         else:
             return cls.full
+
 
 class BaseWritter(object):
     def __init__(self):
@@ -72,6 +79,7 @@ class BaseWritter(object):
     def write_raster(self, arr, output):
         pass
 
+
 class BaseProvider(object):
     def __init__(self):
         self.args = Args()
@@ -80,7 +88,7 @@ class BaseProvider(object):
         self._print_logo_fn = print
 
         # default logging level (can be modified by provider)
-        Logger.setLevel(logging.DEBUG)
+        Logger.setLevel(logging.INFO)
 
         # storage writter must be defined
         self.storage = None
@@ -92,8 +100,8 @@ class BaseProvider(object):
     @staticmethod
     def add_logging_handler(handler, formatter=None):
         """Register new logging handler.
-        
-        :param handler: loggging handler to be registerered
+
+        :param handler: logging handler to be registered
         :param formatter: logging handler formatting
         """
         if not formatter:
@@ -103,6 +111,34 @@ class BaseProvider(object):
         handler.setFormatter(formatter)
         Logger.addHandler(handler)
 
+    def _load_config(self):
+        # load configuration
+        if not os.path.exists(self.args.data_file):
+            raise ConfigError("{} does not exist".format(
+                self.args.data_file
+            ))
+
+        config = ConfigParser()
+        config.read(self.args.data_file)
+
+        try:
+            # set logging level
+            Logger.setLevel(config.get('logging', 'level', fallback=logging.INFO))
+            # sys.stderr logging
+            self._add_logging_handler(
+                logging.StreamHandler(stream=sys.stderr)
+            )
+
+            # must be defined for _cleanup() method
+            Globals.outdir = config.get('output', 'outdir')
+        except (NoSectionError, NoOptionError) as e:
+            raise ConfigError('Config file {}: {}'.format(
+                self.args.data_file, e
+            ))
+
+        return config
+        
+        
     def _load_dpre(self):
         """Run data preparation procedure.
 
@@ -119,7 +155,7 @@ class BaseProvider(object):
         """
         from smoderp2d.processes import rainfall
 
-        # the data are loared from a pickle file
+        # the data are loaded from a pickle file
         try:
             data = self._load_data(self.args.data_file)
             if isinstance(data, list):
@@ -133,38 +169,38 @@ class BaseProvider(object):
         # some variables configs can be changes after loading from
         # pickle.dump such as end time of simulation
 
-        if self._config.get('time', 'endtime') != '-':
+        if self._config.get('time', 'endtime'):
             data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
 
         #  time of flow algorithm
-        if self._config.get('other', 'mfda') != '-':
-            data['mfda'] = self._config.getboolean('other', 'mfda')
+        if self._config.get('processes', 'mfda'):
+            data['mfda'] = self._config.getboolean('processes', 'mfda')
 
         #  type of computing:
         #    0 sheet only,
         #    1 sheet and rill flow,
         #    2 sheet and subsurface flow,
         #    3 sheet, rill and reach flow
-        if self._config.get('other', 'typecomp') != '-':
-            data['type_of_computing'] = self._config.get('other', 'typecomp')
+        if self._config.get('processes', 'typecomp'):
+            data['type_of_computing'] = self._config.get('processes', 'typecomp')
 
         #  output directory is always set
         if data['outdir'] is None:
-            data['outdir'] = self._config.get('other', 'outdir')
+            data['outdir'] = self._config.get('output', 'outdir')
 
         #  rainfall data can be saved
-        if self._config.get('rainfall', 'file') != '-':
+        if self._config.get('data', 'rainfall'):
             try:
                 data['sr'], data['itera'] = rainfall.load_precipitation(
-                    self._config.get('rainfall', 'file')
+                    self._config.get('data', 'rainfall')
                 )
             except TypeError:
-                raise ProviderError('Invalid file in [rainfall] section')
+                raise ProviderError('Invalid rainfall file')
 
         # some self._configs are not in pickle.dump
-        data['extraOut'] = self._config.getboolean('other', 'extraout')
+        data['extraOut'] = self._config.getboolean('output', 'extraout', fallback=False)
         # rainfall data can be saved
-        data['prtTimes'] = self._config.get('other', 'printtimes')
+        data['prtTimes'] = self._config.get('output', 'printtimes')
 
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
 
@@ -245,11 +281,11 @@ class BaseProvider(object):
                 os.remove(point_x)
         else:
             os.makedirs(output_dir)
-        
+
     @staticmethod
     def _comp_type(tc):
         """Returns boolean information about the components of the computation.
-        
+
         Return 4 true/values for rill, subflow, stream, diffuse
         presence/non-presence.
 
@@ -368,7 +404,7 @@ class BaseProvider(object):
                 'b_rill',
                 'inflow_sur',
                 'sur_ret',
-                'vol_sur_r' 
+                'vol_sur_r'
         ]
 
         if Globals.subflow:
@@ -384,7 +420,7 @@ class BaseProvider(object):
                 cumulative.data[item].file_name
             )
 
-        # make extra rasters from cumulative clasess into temp dir 
+        # make extra rasters from cumulative clasess into temp dir
         for item in data_output_extras:
             self.storage.write_raster(
                 self._make_mask(getattr(cumulative, item)),
@@ -405,7 +441,7 @@ class BaseProvider(object):
                 if finState[i][j] >= 1000:
                     vRest[i][j] = GridGlobals.NoDataValue
                 else:
-                    vRest[i][j] = surface_array[i][j].h_total_new * GridGlobals.pixel_area 
+                    vRest[i][j] = surface_array[i][j].h_total_new * GridGlobals.pixel_area
 
         totalBil = (cumulative.precipitation + cumulative.inflow_sur) - \
             (cumulative.infiltration + cumulative.vol_sur_tot) - \
@@ -436,7 +472,7 @@ class BaseProvider(object):
                 outputtable[i][4] = stream[fid[i]].q365
                 outputtable[i][5] = stream[fid[i]].V_out_cum
                 outputtable[i][6] = stream[fid[i]].Q_max
-            
+
             path_ = os.path.join(
                     Globals.outdir,
                     'stream.csv'
@@ -444,12 +480,11 @@ class BaseProvider(object):
             np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
                        header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}q365_m3_s{sep}V_out_cum_m3{sep}Q_max_m3_s'.format(sep=';'))
 
-
     def _make_mask(self, arr, int_=False):
-        """ Assure that the no data value is outside the 
+        """ Assure that the no data value is outside the
         computation region.
         Works only for type float.
-        
+
         :param arrr: numpy array
         """
 
