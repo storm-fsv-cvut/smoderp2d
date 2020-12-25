@@ -1,6 +1,6 @@
 version: "3"
 services:
-  nginx:
+  smoderp_wps:
     restart: unless-stopped
     build: .
     image: smoderp_wps_demo
