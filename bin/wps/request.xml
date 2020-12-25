@@ -37,7 +37,7 @@ endtime: 60]]></wps:ComplexData>
     </wps:Input>
   </wps:DataInputs>
   <wps:ResponseForm>
-    <wps:ResponseDocument lineage="false" storeExecuteResponse="false" status="false">
+    <wps:ResponseDocument lineage="true" storeExecuteResponse="true" status="true">
       <wps:Output asreference="true" mimeType="text/csv"><ows:Identifier>profile</ows:Identifier>
       </wps:Output>
       <wps:Output asreference="true" mimeType="text/csv"><ows:Identifier>hydrogram</ows:Identifier>
