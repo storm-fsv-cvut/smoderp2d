@@ -24,8 +24,9 @@ The computational options are as follows:
 import os
 
 from smoderp2d.providers.base import CompType
-from .providers.base.exceptions import DataPreparationInvalidInput
-from .exceptions import SmoderpError
+from smoderp2d.providers import Logger
+from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
+from smoderp2d.exceptions import SmoderpError
 
 class Runner(object):
     def __init__(self):
@@ -64,6 +65,20 @@ class Runner(object):
         # print logo
         self._provider.logo()
 
+        # check typecomp consistency
+        if self._provider.typecomp not in (CompType.dpre, CompType.roff, CompType.full):
+            raise ProviderError('Unsupported partial computing: {}'.format(
+                self._provider.typecomp
+            ))
+
+        # set percentage counter
+        if self._provider.typecomp == CompType.dpre:
+            Logger.set_progress(100)
+        elif self._provider.typecomp == CompType.full:
+            Logger.set_progress(40)
+        else:
+            Logger.set_progress(10)
+
         # load configuration (set global variables)
         try:
             self._provider.load()
@@ -76,9 +91,17 @@ class Runner(object):
 
         # must be called after initialization (!)
         from smoderp2d.runoff import Runoff
-        # the computation
+
+        # set percentage counter for counter
+        Logger.set_progress(95)
+
+        # run computation
         runoff = Runoff(self._provider)
         runoff.run()
+
+        # save result data
+        Logger.set_progress(100)
+        runoff.save_output()
 
         return 0
 

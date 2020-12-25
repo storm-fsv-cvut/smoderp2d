@@ -73,30 +73,9 @@ class CmdProvider(BaseProvider):
 
         # load configuration
         cloader = CmdArgumentParser(config_file)
-        self.args.data_file, self.args.typecomp = cloader.set_config("Run SMODERP2D.")
+        self.args.config_file, self.args.typecomp = cloader.set_config("Run SMODERP2D.")
         self._config = self._load_config()
+        self.args.data_file = self._config['data']['pickle']
 
         # define storage writter
         self.storage = CmdWritter()
-
-    def load(self):
-        """Load configuration data.
-
-        Only roff procedure supported.
-        """
-        if not self.args.typecomp == CompType.roff:
-            raise ProviderError('Unsupported partial computing: {}'.format(
-                self.args.typecomp
-            ))
-
-        # cleanup output directory first
-        self._cleanup()
-
-        try:
-            data = self._load_roff(
-                self._config.get('data', 'pickle')
-            )
-        except NoOptionError as e:
-            raise ConfigError("Invalid configuration: {}".format(e))
-
-        self._set_globals(data)

@@ -1,6 +1,7 @@
 import os
 import sys
 import fileinput
+import logging
 from configparser import ConfigParser
 
 from pywps import Process, ComplexInput, ComplexOutput, Format, LOGGER
@@ -46,9 +47,11 @@ subsurface runoff and erosion
         config_parser = ConfigParser()
         config_parser.read(config)
 
+        config_parser['data'] = {}
         config_parser['data']['rainfall'] = rainfall
         config_parser['data']['data1d'] = input_
         config_parser['data']['data1d_soil_types'] = soil_types
+
         config_parser['output']['outdir'] = os.path.join(self.workdir, 'output')
 
         with open(config, 'w') as fd:
@@ -67,17 +70,12 @@ subsurface runoff and erosion
             response.outputs[key].file = filepath
 
     def _handler(self, request, response):
-        # TODO: report progress
-        # for p in range(10, 101, 10):
-        #     time.sleep(1)
-        #     response.update_status(message='dummy computation', status_percentage=p)
-
         sys.path.insert(0, "/opt/smoderp2d")
 
-        os.environ["NOGIS"] = "1"
         from smoderp2d import WpsRunner
         from smoderp2d.exceptions import ProviderError, ConfigError
         from smoderp2d.core.general import Globals
+        from smoderp2d.providers.wps.logger import WpsLogHandler
 
         config = self.__update_config(request.inputs['input'][0].file,
                                       request.inputs['soil_types'][0].file,
@@ -85,7 +83,13 @@ subsurface runoff and erosion
                                       request.inputs['config'][0].file)
 
         try:
+            os.environ["NOGIS"] = "1"
             runner = WpsRunner(config_file=config)
+            runner._provider.add_logging_handler(
+                handler=WpsLogHandler(response),
+                formatter=logging.Formatter("%(message)s")
+            )
+
             runner.run()
         except (ConfigError, ProviderError) as e:
             raise ProcessError("SMODERP failed: {}".format(e))

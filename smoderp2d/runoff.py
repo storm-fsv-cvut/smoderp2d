@@ -395,26 +395,19 @@ class Runoff(object):
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
 
-        # perform postprocessing - store results
+    def save_output(self):
         Logger.info('Saving output data...')
+        # perform postprocessing - store results
         self.provider.postprocessing(self.cumulative, self.surface.arr,
                                      self.surface.reach)
+        Logger.progress(100)
 
         # TODO
         # post_proc.stream_table(Globals.outdir + os.sep, self.surface,
         #                        Globals.streams_loc)
 
+    def __del__(self):
         Logger.info('-' * 80)
-        Logger.info('Total computing time: {}'.format(
-            time.time() - Logger.start_time)
+        Logger.info('Total computing time: {} sec'.format(
+            int(time.time() - Logger.start_time))
         )
-
-        # TODO: print stats in better way
-        # import platform
-        # if platform.system() == "Linux":
-        #     pid = os.getpid()
-        #     Logger.info("/proc/{}/status reading".format(pid))
-        #     with open(os.path.join('/', 'proc', str(pid), "status"), 'r') as fp:
-        #         for i, line in enumerate(fp):
-        #             if i >= 11 and i <= 23:
-        #                 Logger.info(line.rstrip(os.linesep))

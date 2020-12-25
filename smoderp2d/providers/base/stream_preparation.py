@@ -55,17 +55,17 @@ class StreamPreparationBase(object):
 
         Logger.info("Clip stream...")
         stream, stream_loc = self._clip_stream()
+        Logger.progress(60)
 
         Logger.info("Computing stream direction and elevation...")
         self._stream_direction(stream)
 
         mat_stream_seg = self._get_mat_stream_seg(stream)
+        Logger.progress(80)
 
         Logger.info("Computing stream hydraulics...")
         self._stream_hydraulics(stream)
-
         self._stream_slope(stream)
-
         self._get_streamlist(stream)
 
         return self.streamlist, mat_stream_seg, stream_loc

@@ -75,7 +75,7 @@ class GrassGisProvider(BaseProvider):
         self._options = None
 
         # logger
-        self._add_logging_handler(
+        self.add_logging_handler(
             handler=GrassGisLogHandler(),
             formatter = logging.Formatter("%(message)s")
         )
@@ -88,7 +88,7 @@ class GrassGisProvider(BaseProvider):
         # force overwrite
         os.environ['GRASS_OVERWRITE'] = '1'
         # be quiet
-        os.environ['GRASS_VERBOSE'] = '1'
+        os.environ['GRASS_VERBOSE'] = '-1'
 
         # define storage writter
         self.storage = GrassGisWritter()

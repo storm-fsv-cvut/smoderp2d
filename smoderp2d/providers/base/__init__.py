@@ -22,10 +22,11 @@ from smoderp2d.exceptions import ProviderError, ConfigError
 class Args:
     # type of computation (CompType)
     typecomp = None
-    # path to data file (used by 'dpre' for output and 'roff' for
-    # input)
+    # path to pickle data file
+    # used by 'dpre' for output and 'roff' for input
     data_file = None
-
+    # config file
+    config_file = None
 
 # unfortunately Python version shipped by ArcGIS 10 lacks Enum
 class CompType:
@@ -93,8 +94,12 @@ class BaseProvider(object):
         # storage writter must be defined
         self.storage = None
 
+    @property
+    def typecomp(self):
+        return self.args.typecomp
+
     @staticmethod
-    def _add_logging_handler(handler, formatter=None):
+    def add_logging_handler(handler, formatter=None):
         """Register new logging handler.
 
         :param handler: logging handler to be registered
@@ -109,19 +114,19 @@ class BaseProvider(object):
 
     def _load_config(self):
         # load configuration
-        if not os.path.exists(self.args.data_file):
+        if not os.path.exists(self.args.config_file):
             raise ConfigError("{} does not exist".format(
-                self.args.data_file
+                self.args.config_file
             ))
 
         config = ConfigParser()
-        config.read(self.args.data_file)
+        config.read(self.args.config_file)
 
         try:
             # set logging level
             Logger.setLevel(config.get('logging', 'level', fallback=logging.INFO))
             # sys.stderr logging
-            self._add_logging_handler(
+            self.add_logging_handler(
                 logging.StreamHandler(stream=sys.stderr)
             )
 
@@ -129,7 +134,7 @@ class BaseProvider(object):
             Globals.outdir = config.get('output', 'outdir')
         except (NoSectionError, NoOptionError) as e:
             raise ConfigError('Config file {}: {}'.format(
-                self.args.data_file, e
+                self.args.config_file, e
             ))
 
         return config
@@ -144,10 +149,8 @@ class BaseProvider(object):
         """
         raise NotImplementedError()
 
-    def _load_roff(self, indata):
+    def _load_roff(self):
         """Load configuration data from roff computation procedure.
-
-        :param str indata: configuration filename
 
         :return dict: loaded data
         """
@@ -155,7 +158,8 @@ class BaseProvider(object):
 
         # the data are loaded from a pickle file
         try:
-            data = self._load_data(indata)
+            print(self.args.data_file)
+            data = self._load_data(self.args.data_file)
             if isinstance(data, list):
                 raise ProviderError(
                     'Saved data out-dated. Please use '
@@ -206,11 +210,6 @@ class BaseProvider(object):
 
     def load(self):
         """Load configuration data."""
-        if self.args.typecomp not in (CompType.dpre, CompType.roff, CompType.full):
-            raise ProviderError('Unsupported partial computing: {}'.format(
-                self.args.typecomp
-            ))
-
         # cleanup output directory first
         self._cleanup()
 
@@ -226,7 +225,7 @@ class BaseProvider(object):
                 return
 
         if self.args.typecomp == CompType.roff:
-            data = self._load_roff(self.args.data_file)
+            data = self._load_roff()
 
         # roff || full
         self._set_globals(data)

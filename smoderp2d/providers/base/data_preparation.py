@@ -60,6 +60,7 @@ class PrepareDataBase(object):
             self._input_params['table_soil_vegetation'],
             self._input_params['table_soil_vegetation_code']
         )
+        Logger.progress(10)
 
         # clip
         Logger.info("Clip of the source data by intersect...")
@@ -70,6 +71,7 @@ class PrepareDataBase(object):
             "Computing fill, flow direction, flow accumulation, slope..."
         )
         flow_direction_clip, flow_accumulation_clip, slope_clip = self._terrain_products(dem_clip)
+        Logger.progress(20)
 
         # raster to numpy array conversion
         Logger.info("Computing parameters of DTM...")
@@ -90,6 +92,7 @@ class PrepareDataBase(object):
 
         # build numpy array from selected attributes
         all_attrib = self._get_mat_par(sfield, intersect)
+        Logger.progress(30)
 
         self.data['mat_n'] = all_attrib[2]
         self.data['mat_pi'] = all_attrib[3]
@@ -106,6 +109,7 @@ class PrepareDataBase(object):
             all_attrib[2], all_attrib[7], all_attrib[8], self.data['r'],
             self.data['c'], self.data['NoDataValue'], self.data['mat_slope']
         )
+        Logger.progress(40)
 
         Logger.info("Computing critical level...")
         self._get_crit_water(all_attrib)
@@ -116,6 +120,7 @@ class PrepareDataBase(object):
 
         # compute aspect
         self._get_slope_dir(dem_clip)
+        Logger.progress(50)
 
         Logger.info("Computing stream preparation...")
         self._prepare_streams(mask_shp, dem_clip, intersect, flow_accumulation_clip)
@@ -127,6 +132,7 @@ class PrepareDataBase(object):
         self.data['mat_boundary'] = None
         self.data['spix'] = None
         self.data['vpix'] = None
+        Logger.progress(100)
 
         Logger.info("Data preparation has been finished")
         Logger.info('-' * 80)
