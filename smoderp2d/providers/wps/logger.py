@@ -2,7 +2,7 @@ import logging
 
 from pywps import LOGGER
 
-from smoderp2d.providers.logger import PROGRESS_INFO
+from smoderp2d.providers.logger import PROGRESS
 
 class WpsLogHandler(logging.Handler):
     """Custom logging class that bounces messages to the pyWPS.
@@ -16,7 +16,7 @@ class WpsLogHandler(logging.Handler):
 
         :param record: record to emit
         """
-        if record.levelno >= PROGRESS_INFO:
+        if record.levelno >= PROGRESS:
             LOGGER.info("Progress value: {}%".format(record.msg))
             self._response.update_status(
                 message='Computation progress',

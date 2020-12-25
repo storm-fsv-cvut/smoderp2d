@@ -3,7 +3,7 @@ import logging
 
 from grass.script.core import info, error, warning, debug, percent
 
-from smoderp2d.providers.logger import PROGRESS_INFO
+from smoderp2d.providers.logger import PROGRESS
 
 class GrassGisLogHandler(logging.Handler):
     """Custom logging class that bounces messages to the GRASS GIS.
@@ -20,7 +20,7 @@ class GrassGisLogHandler(logging.Handler):
         """
         os.environ['GRASS_VERBOSE'] = '1' # show message
 
-        if record.levelno >= PROGRESS_INFO:
+        if record.levelno >= PROGRESS:
             percent(record.msg, 100, 1)
             print() # otherwise percent is not printed (TODO: why?)
         elif record.levelno >= logging.ERROR:
