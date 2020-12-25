@@ -89,8 +89,6 @@ class Runner(object):
             # data prepararation only requested
             return
 
-        # import time
-        # time.sleep(10)
         # must be called after initialization (!)
         from smoderp2d.runoff import Runoff
 
