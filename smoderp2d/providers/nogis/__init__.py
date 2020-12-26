@@ -154,9 +154,9 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         data['outdir'] = self._config.get('output', 'outdir')
         data['temp'] = os.path.join(data['outdir'], 'temp')
         # some self._configs are not in pickle.dump
-        data['extraOut'] = self._config.getboolean('output', 'extraout')
+        data['extraOut'] = self._config.getboolean('output', 'extraout', fallback=False)
         # rainfall data can be saved
-        data['prtTimes'] = self._config.get('output', 'printtimes')
+        data['prtTimes'] = self._config.get('output', 'printtimes', fallback=None)
 
         resolution = self._config.getfloat('domain', 'res')
         # TODO: Change stah -> svah (ha ha) after being changed in the CSV

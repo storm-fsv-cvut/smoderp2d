@@ -175,16 +175,14 @@ class BaseProvider(object):
             data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
 
         #  time of flow algorithm
-        if self._config.get('processes', 'mfda'):
-            data['mfda'] = self._config.getboolean('processes', 'mfda')
+        data['mfda'] = self._config.getboolean('processes', 'mfda', fallback=False)
 
         #  type of computing:
         #    0 sheet only,
         #    1 sheet and rill flow,
         #    2 sheet and subsurface flow,
         #    3 sheet, rill and reach flow
-        if self._config.get('processes', 'typecomp'):
-            data['type_of_computing'] = self._config.get('processes', 'typecomp')
+        data['type_of_computing'] = self._config.get('processes', 'typecomp', fallback=3)
 
         #  output directory is always set
         if data['outdir'] is None:
@@ -202,7 +200,7 @@ class BaseProvider(object):
         # some self._configs are not in pickle.dump
         data['extraOut'] = self._config.getboolean('output', 'extraout', fallback=False)
         # rainfall data can be saved
-        data['prtTimes'] = self._config.get('output', 'printtimes')
+        data['prtTimes'] = self._config.get('output', 'printtimes', fallback=None)
 
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
 
