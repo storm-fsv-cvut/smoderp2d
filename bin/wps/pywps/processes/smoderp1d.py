@@ -51,7 +51,7 @@ subsurface runoff and erosion
         config_parser['data']['rainfall'] = rainfall
         config_parser['data']['data1d'] = input_
         config_parser['data']['data1d_soil_types'] = soil_types
-
+        config_parser['output'] = {}
         config_parser['output']['outdir'] = os.path.join(self.workdir, 'output')
 
         with open(config, 'w') as fd:
