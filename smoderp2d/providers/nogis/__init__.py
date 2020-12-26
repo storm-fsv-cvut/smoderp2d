@@ -101,7 +101,10 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
             else:
                 filtered_soilvegs = soilveg_line
 
-        soil_types_fields = filtered_soilvegs.dtype.names
+        try:
+            soil_types_fields = filtered_soilvegs.dtype.names
+        except AttributeError:
+            raise ProviderError("Invalid input data. Empty joined dataset.")
 
         result = append_fields(
             indata,
