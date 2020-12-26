@@ -129,9 +129,9 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             )
 
     def update_cumulative(self, i, j, sur_arr_el, subsur_arr_el, delta_t):
-        """ Update arrays with cumulative and maximum 
+        """ Update arrays with cumulative and maximum
         values of key computation results.
-        
+
         :param int i:
         :param int j:
         :param float sur_arr_el: single element in surface.arr
