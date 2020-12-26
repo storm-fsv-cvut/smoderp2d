@@ -40,6 +40,7 @@ class CumulativeSubsurface(CumulativeSubsurfacePass):
     The class is inhered by the class Cumulative
     if the subsurface computation is desired
     """
+
     def __init__(self):
         super(CumulativeSubsurface, self).__init__()
 
@@ -79,6 +80,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
     Stores array of max or cumulative values at of important variables from
     the surface and rill flow.
     """
+
     def __init__(self):
         super(Cumulative, self).__init__()
 
