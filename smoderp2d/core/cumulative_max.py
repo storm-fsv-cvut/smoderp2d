@@ -10,10 +10,12 @@ import numpy as np
 from smoderp2d.providers import Logger
 from smoderp2d.core.general import GridGlobals, Globals
 
+
 class CumulativeData:
     def __init__(self, data_type, file_name):
         self.data_type = data_type
         self.file_name = file_name
+
 
 class CumulativeSubsurfacePass(object):
     """
@@ -26,6 +28,7 @@ class CumulativeSubsurfacePass(object):
 
     def update_cumulative_sur(self, i, j, sub, q_subsur):
         pass
+
 
 class CumulativeSubsurface(CumulativeSubsurfacePass):
     """
@@ -67,6 +70,7 @@ class CumulativeSubsurface(CumulativeSubsurfacePass):
             self.h_sub[i][j] = sub.h
         if q_subsur > self.q_sub[i][j]:
             self.q_sub[i][j] = q_subsur
+
 
 class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfacePass):
     """
