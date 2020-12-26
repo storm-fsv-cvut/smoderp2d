@@ -53,9 +53,11 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         :param filename: Path to the CSV file
         :return: numpy structured array
         """
-        data = np.genfromtxt(filename, delimiter=';', names=True, dtype=None,
-                             encoding='utf-8-sig', deletechars='')
-
+        try:
+            data = np.genfromtxt(filename, delimiter=';', names=True, dtype=None,
+                                 encoding='utf-8-sig', deletechars='')
+        except IndexError:
+            raise ProviderError("Input file '{}' empty or invalid".format(filename))
         if data.size == 1:
             data = data.reshape(1)
 
