@@ -112,7 +112,10 @@ class PrepareDataBase(object):
         Logger.progress(40)
 
         Logger.info("Computing critical level...")
-        self._get_crit_water(all_attrib)
+        self.data['mat_hcrit'] = self._get_crit_water(
+            self.data['mat_b'], all_attrib[9], all_attrib[10], self.data['r'],
+            self.data['c'], self.data['mat_slope'],
+            self.data['NoDataValue'], self.data['mat_aa'])
 
         # load precipitation input file
         self.data['sr'], self.data['itera'] = \
@@ -406,31 +409,27 @@ class PrepareDataBase(object):
 
         return mat_a, mat_aa
 
-    def _get_crit_water(self, all_attrib):
+    def _get_crit_water(self, mat_b, mat_tau, mat_v, r, c, mat_slope,
+                        no_data_value, mat_aa):
         """
 
         :param all_attrib:
         """
-
-        mat_b = all_attrib[6]
-        mat_tau = all_attrib[9]
-        mat_v = all_attrib[10]
-
         # critical water level
-        mat_hcrit_tau = np.zeros([self.data['r'], self.data['c']], float)
-        mat_hcrit_v = np.zeros([self.data['r'], self.data['c']], float)
-        mat_hcrit_flux = np.zeros([self.data['r'], self.data['c']], float)
-        self.data['mat_hcrit'] = np.zeros([self.data['r'], self.data['c']], float)
+        mat_hcrit_tau = np.zeros([r, c], float)
+        mat_hcrit_v = np.zeros([r, c], float)
+        mat_hcrit_flux = np.zeros([r, c], float)
+        mat_hcrit = np.zeros([r, c], float)
 
-        for i in range(self.data['r']):
-            for j in range(self.data['c']):
-                if self.data['mat_slope'][i][j] != self.data['NoDataValue'] \
-                   and mat_tau[i][j] != self.data['NoDataValue']:
-                    slope = self.data['mat_slope'][i][j]
+        for i in range(r):
+            for j in range(c):
+                if mat_slope[i][j] != no_data_value \
+                   and mat_tau[i][j] != no_data_value:
+                    slope = mat_slope[i][j]
                     tau_crit = mat_tau[i][j]
                     v_crit = mat_v[i][j]
                     b = mat_b[i][j]
-                    aa = self.data['mat_aa'][i][j]
+                    aa = mat_aa[i][j]
                     flux_crit = tau_crit * v_crit
                     exp = 1 / (b - 1)
 
@@ -446,12 +445,12 @@ class PrepareDataBase(object):
                     mat_hcrit_v[i][j] = hcrit_v
                     mat_hcrit_flux[i][j] = hcrit_flux
                     hcrit = min(hcrit_tau, hcrit_v, hcrit_flux)
-                    self.data['mat_hcrit'][i][j] = hcrit
+                    mat_hcrit[i][j] = hcrit
                 else:
-                    mat_hcrit_tau[i][j] = self.data['NoDataValue']
-                    mat_hcrit_v[i][j] = self.data['NoDataValue']
-                    mat_hcrit_flux[i][j] = self.data['NoDataValue']
-                    self.data['mat_hcrit'][i][j] = self.data['NoDataValue']
+                    mat_hcrit_tau[i][j] = no_data_value
+                    mat_hcrit_v[i][j] = no_data_value
+                    mat_hcrit_flux[i][j] = no_data_value
+                    mat_hcrit[i][j] = no_data_value
 
         for out, arr in (("hcrit_tau", mat_hcrit_tau),
                          ("hcrit_flux", mat_hcrit_flux),
@@ -460,8 +459,10 @@ class PrepareDataBase(object):
                 arr, out, 'temp'
             )
         self.storage.write_raster(
-            self.data['mat_hcrit'], 'mat_hcrit', ''
+            mat_hcrit, 'mat_hcrit', ''
         )
+
+        return mat_hcrit
 
     def _get_slope_dir(self, dem_clip):
         raise NotImplemented("Not implemented for base provider")

@@ -323,61 +323,6 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
 
         return parsed_data
 
-    def _get_crit_water(self, mat_b, mat_tau, mat_v, r, c, mat_slope,
-                        no_data_value, mat_aa):
-        """
-
-        :param all_attrib:
-        """
-        # critical water level
-        mat_hcrit_tau = np.zeros([r, c], float)
-        mat_hcrit_v = np.zeros([r, c], float)
-        mat_hcrit_flux = np.zeros([r, c], float)
-        mat_hcrit = np.zeros([r, c], float)
-
-        for i in range(r):
-            for j in range(c):
-                if mat_slope[i][j] != no_data_value \
-                   and mat_tau[i][j] != no_data_value:
-                    slope = mat_slope[i][j]
-                    tau_crit = mat_tau[i][j]
-                    v_crit = mat_v[i][j]
-                    b = mat_b[i][j]
-                    aa = mat_aa[i][j]
-                    flux_crit = tau_crit * v_crit
-                    exp = 1 / (b - 1)
-
-                    if slope == 0.0:
-                        hcrit_tau = hcrit_v = hcrit_flux = 1000
-
-                    else:
-                        hcrit_v = np.power((v_crit / aa), exp)  # h critical from v
-                        hcrit_tau = tau_crit / 9807 / slope  # h critical from tau
-                        hcrit_flux = np.power((flux_crit / slope / 9807 / aa),(1 / mat_b[i][j]))  # kontrola jednotek
-
-                    mat_hcrit_tau[i][j] = hcrit_tau
-                    mat_hcrit_v[i][j] = hcrit_v
-                    mat_hcrit_flux[i][j] = hcrit_flux
-                    hcrit = min(hcrit_tau, hcrit_v, hcrit_flux)
-                    mat_hcrit[i][j] = hcrit
-                else:
-                    mat_hcrit_tau[i][j] = no_data_value
-                    mat_hcrit_v[i][j] = no_data_value
-                    mat_hcrit_flux[i][j] = no_data_value
-                    mat_hcrit[i][j] = no_data_value
-
-        for out, arr in (("hcrit_tau", mat_hcrit_tau),
-                         ("hcrit_flux", mat_hcrit_flux),
-                         ("hcrit_v", mat_hcrit_v)):
-            self.storage.write_raster(
-                arr, out, 'temp'
-            )
-        self.storage.write_raster(
-            mat_hcrit, 'mat_hcrit', ''
-        )
-
-        return mat_hcrit
-
     def _alloc_matrices(self, data):
         # TODO: use loop (check base provider)
         # allocate matrices
