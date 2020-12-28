@@ -104,7 +104,7 @@ class Surface(GridGlobals, Stream, Kinematic):
 
         :return: TODO
         """
-        arr = self.arr[i, j]
+        arr = self.arr.get_item([i, j])
 
         # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
         if not extra_out:

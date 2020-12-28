@@ -369,20 +369,20 @@ class Runoff(object):
             # check if rill flow occur
             for i in self.surface.rr:
                 for j in self.surface.rc[i]:
-                    if self.surface.arr[i, j].state == 0:
-                        if self.surface.arr[i, j].h_total_new > self.surface.arr[i, j].h_crit:
-                            self.surface.arr[i, j].state = 1
+                    if self.surface.arr.get_item([i, j]).state == 0:
+                        if self.surface.arr.get_item([i, j]).h_total_new > self.surface.arr.get_item([i, j]).h_crit:
+                            self.surface.arr.get_item([i, j]).state = 1
 
-                    if self.surface.arr[i, j].state == 1:
-                        if self.surface.arr[i, j].h_total_new < self.surface.arr[i, j].h_total_pre:
-                            self.surface.arr[i, j].h_last_state1 = self.surface.arr[i, j].h_total_pre
-                            self.surface.arr[i, j].state = 2
+                    if self.surface.arr.get_item([i, j]).state == 1:
+                        if self.surface.arr.get_item([i, j]).h_total_new < self.surface.arr.get_item([i, j]).h_total_pre:
+                            self.surface.arr.get_item([i, j]).h_last_state1 = self.surface.arr.get_item([i, j]).h_total_pre
+                            self.surface.arr.get_item([i, j]).state = 2
 
-                    if self.surface.arr[i, j].state == 2:
-                        if self.surface.arr[i, j].h_total_new > self.surface.arr[i, j].h_last_state1:
-                            self.surface.arr[i, j].state = 1
+                    if self.surface.arr.get_item([i, j]).state == 2:
+                        if self.surface.arr.get_item([i, j]).h_total_new > self.surface.arr.get_item([i, j]).h_last_state1:
+                            self.surface.arr.get_item([i, j]).state = 1
 
-                    self.surface.arr[i, j].h_total_pre = self.surface.arr[i, j].h_total_new
+                    self.surface.arr.get_item([i, j]).h_total_pre = self.surface.arr.get_item([i, j]).h_total_new
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
             Logger.progress(

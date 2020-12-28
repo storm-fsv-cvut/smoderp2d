@@ -153,7 +153,7 @@ class Hydrographs:
         total_time = fc.total_time + dt
         iter_ = fc.iter_
 
-        # the hydrography is recorded only 
+        # the hydrography is recorded only
         # at the top of each minute
         # the function ends here ohterwise
         if not Globals.extraOut:
@@ -190,7 +190,8 @@ class Hydrographs:
                     if Globals.extraOut:
                         line += '{sep}{0:.4e}{sep}{0:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}'\
                         '{4:.4e}{sep}{5:.4e}'.format(
-                            linebil[1], surface.arr[l, m].vol_to_rill,
+                            linebil[1],
+                            surface.arr.get_item([l, m]).vol_to_rill,
                             ratio, courantMost, courantRill, iter_,
                             sep=sep)
                     line += os.linesep

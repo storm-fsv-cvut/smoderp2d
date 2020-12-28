@@ -35,7 +35,7 @@ class TimesPrt(object):
     def prt(self, time, dt, sur):
         if not self.fTimes:
             return
-        
+
         if self.__n == len(self.times):
             return
 
@@ -50,7 +50,7 @@ class TimesPrt(object):
 
             for i in Globalsobals.rr:
                 for j in Globals.rc[i]:
-                    tmp[i][j] = sur.arr[i, j].h_total_new
+                    tmp[i][j] = sur.arr.get_item([i, j]).h_total_new
 
             make_ASC_raster(filen, tmp, Globals)
 

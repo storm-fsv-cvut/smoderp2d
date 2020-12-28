@@ -6,24 +6,26 @@ from smoderp2d.exceptions import SmoderpError
 class GridGlobalsArray(np.ndarray):
     """Class overriding np.ndarray to handle SMODERP border problems."""
 
-    def __getitem__(self, item):
-        """Override np.ndarray.__getitem__().
+    def get_item(self, item):
+        """Get item at position.
 
-        Override to return empty SurArrs when querying for values at negative
-        positions, do as expected otherwise.
+        Return empty SurArrs when querying for values at negative positions,
+        do normal query with __getitem__() otherwise.
 
         :param item: position in the array
         :return: object at position specified with item or empty SurArrs
         """
-        if isinstance(item, tuple) or isinstance(item, list):
-            if self.ndim > 1:
-                if any(i < 0 for i in item if isinstance(i, int)):
-                    return self.invalid_sur_arr
+        if isinstance(item, list):
+            item = tuple(item)
+
+        if isinstance(item, tuple) and self.ndim > 1:
+            if any(i < 0 for i in item if isinstance(i, int)):
+                return self.invalid_sur_arr
         elif isinstance(item, int) or isinstance(item, float):
             if self.ndim > 1 and item < 0:
                 return self.invalid_sur_arr
 
-        return super(GridGlobalsArray, self).__getitem__(item)
+        return self[item]
 
     def set_outsides(self, surarrs):
         """Setup the empty SurArrs.

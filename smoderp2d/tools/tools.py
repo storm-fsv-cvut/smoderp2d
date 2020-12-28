@@ -21,8 +21,8 @@ def make_sur_raster(surArr, G, t, output):
     arrrill = np.zeros(np.shape(surArr), float)
     for i in rrows:
         for j in rcols[i]:
-            arr[i, j] = surArr[i, j].h
-            arrrill[i, j] = surArr[i, j].h_rill
+            arr[i, j] = surArr.get_item([i, j]).h
+            arrrill[i, j] = surArr.get_item([i, j]).h_rill
 
     outName = output + os.sep + 'prubeh' + \
         os.sep + str(int(t)).zfill(10) + 'h' + ".asc"
@@ -38,7 +38,7 @@ def make_state_raster(surArr, G, t):
     arr = np.zeros(np.shape(surArr), float)
     for i in rrows:
         for j in rcols[i]:
-            arr[i, j] = surArr[i, j].state
+            arr[i, j] = surArr.get_item([i, j]).state
 
     outName = 'state' + str(int(t)).zfill(10) + 'h' + ".asc"
     make_ASC_raster(outName, arr, G)
@@ -50,7 +50,7 @@ def make_sub_raster(subArr, G, t, output):
     arr = np.zeros(np.shape(subArr), float)
     for i in rrows:
         for j in rcols[i]:
-            arr[i, j] = subArr[i, j].h
+            arr[i, j] = subArr.get_item([i, j]).h
 
     outName = output + os.sep + 'prubeh' + \
         os.sep + str(int(t)).zfill(10) + 'hsub' + ".asc"
