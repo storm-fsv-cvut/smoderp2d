@@ -129,7 +129,10 @@ class PrepareDataBase(object):
         self._prepare_streams(mask_shp, dem_clip, intersect, flow_accumulation_clip)
 
         # define mask (rc/rc variables)
-        self._find_boundary_cells()
+        self.data['rr'], self.data['rc'], self.data['mat_boundary'] = \
+            self._find_boundary_cells(self.data['r'], self.data['c'],
+                                      self.data['NoDataValue'],
+                                      self.data['mat_nan'])
 
         self.data['mfda'] = False
         self.data['mat_boundary'] = None
@@ -512,45 +515,43 @@ class PrepareDataBase(object):
             self.data['mat_stream_reach'] = None
             self.data['streams_loc'] = None
 
-    def _find_boundary_cells(self):
+    def _find_boundary_cells(self, r, c, no_data_value, mat_nan):
         """
         ? TODO: is it used?
         """
+        # TODO: should be split into two functions (boundary, rr + rc)
         # Identification of cells at the domain boundary
 
-        self.data['mat_boundary'] = np.zeros(
-            [self.data['r'], self.data['c']], float
-        )
+        mat_boundary = np.zeros([r, c], float)
 
-        nr = range(self.data['r'])
-        nc = range(self.data['c'])
+        nr = range(r)
+        nc = range(c)
 
-        self.data['rc'] = []
-        self.data['rr'] = []
+        rr = []
+        rc = []
 
-        nv = self.data['NoDataValue']
+        nv = no_data_value
         for i in nr:
             for j in nc:
-                val = self.data['mat_nan'][i][j]
-                if i == 0 or j == 0 or \
-                   i == (self.data['r'] - 1) or j == (self.data['c'] - 1):
+                val = mat_nan[i][j]
+                if i == 0 or j == 0 or i == (r - 1) or j == (c - 1):
                     if val != nv:
                         val = -99
                 else:
                     if val != nv:
-                        if  self.data['mat_nan'][i - 1][j] == nv or \
-                            self.data['mat_nan'][i + 1][j] == nv or \
-                            self.data['mat_nan'][i][j - 1] == nv or \
-                            self.data['mat_nan'][i][j - 1] == nv:
+                        if  mat_nan[i - 1][j] == nv or \
+                            mat_nan[i + 1][j] == nv or \
+                            mat_nan[i][j - 1] == nv or \
+                            mat_nan[i][j - 1] == nv:
                             val = -99
-                        if  self.data['mat_nan'][i - 1][j + 1] == nv or \
-                            self.data['mat_nan'][i + 1][j + 1] == nv or \
-                            self.data['mat_nan'][i - 1][j - 1] == nv or \
-                            self.data['mat_nan'][i + 1][j - 1] == nv:
+                        if  mat_nan[i - 1][j + 1] == nv or \
+                            mat_nan[i + 1][j + 1] == nv or \
+                            mat_nan[i - 1][j - 1] == nv or \
+                            mat_nan[i + 1][j - 1] == nv:
 
                             val = -99.
 
-                self.data['mat_boundary'][i][j] = val
+                mat_boundary[i][j] = val
 
         inDomain = False
         inBoundary = False
@@ -560,22 +561,24 @@ class PrepareDataBase(object):
             oneColBoundary = []
             for j in nc:
 
-                if self.data['mat_boundary'][i][j] == -99 and inBoundary == False:
+                if mat_boundary[i][j] == -99 and inBoundary == False:
                     inBoundary = True
 
-                if self.data['mat_boundary'][i][j] == -99 and inBoundary:
+                if mat_boundary[i][j] == -99 and inBoundary:
                     oneColBoundary.append(j)
 
-                if (self.data['mat_boundary'][i][j] == 0.0) and inDomain == False:
-                    self.data['rr'].append(i)
+                if (mat_boundary[i][j] == 0.0) and inDomain == False:
+                    rr.append(i)
                     inDomain = True
 
-                if (self.data['mat_boundary'][i][j] == 0.0) and inDomain:
+                if (mat_boundary[i][j] == 0.0) and inDomain:
                     oneCol.append(j)
 
             inDomain = False
             inBoundary = False
-            self.data['rc'].append(oneCol)
+            rc.append(oneCol)
+
+        return rr, rc, mat_boundary
 
     def _convert_slope_units(self):
         """
