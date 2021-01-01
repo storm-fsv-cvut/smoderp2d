@@ -129,10 +129,12 @@ class PrepareDataBase(object):
         self._prepare_streams(mask_shp, dem_clip, intersect, flow_accumulation_clip)
 
         # define mask (rc/rc variables)
-        self.data['rr'], self.data['rc'], self.data['mat_boundary'] = \
-            self._find_boundary_cells(self.data['r'], self.data['c'],
-                                      self.data['NoDataValue'],
-                                      self.data['mat_nan'])
+        self.data['mat_boundary'] = self._find_boundary_cells(
+            self.data['r'], self.data['c'], self.data['NoDataValue'],
+            self.data['mat_nan'])
+
+        self.data['rr'], self.data['rc'] = self._get_rr_rc(
+            self.data['r'], self.data['c'], self.data['mat_boundary'])
 
         self.data['mfda'] = False
         self.data['mat_boundary'] = None
@@ -515,11 +517,11 @@ class PrepareDataBase(object):
             self.data['mat_stream_reach'] = None
             self.data['streams_loc'] = None
 
-    def _find_boundary_cells(self, r, c, no_data_value, mat_nan):
+    @staticmethod
+    def _find_boundary_cells(r, c, no_data_value, mat_nan):
         """
         ? TODO: is it used?
         """
-        # TODO: should be split into two functions (boundary, rr + rc)
         # Identification of cells at the domain boundary
 
         mat_boundary = np.zeros([r, c], float)
@@ -553,32 +555,44 @@ class PrepareDataBase(object):
 
                 mat_boundary[i][j] = val
 
-        inDomain = False
-        inBoundary = False
+        return mat_boundary
+
+    @staticmethod
+    def _get_rr_rc(r, c, mat_boundary):
+        """Create list rr and list of lists rc which contain i and j index of
+        elements inside the compuation domain."""
+        nr = range(r)
+        nc = range(c)
+
+        rr = []
+        rc = []
+
+        in_domain = False
+        in_boundary = False
 
         for i in nr:
-            oneCol = []
-            oneColBoundary = []
+            one_col = []
+            one_col_boundary = []
             for j in nc:
 
-                if mat_boundary[i][j] == -99 and inBoundary == False:
-                    inBoundary = True
+                if mat_boundary[i][j] == -99 and in_boundary is False:
+                    in_boundary = True
 
-                if mat_boundary[i][j] == -99 and inBoundary:
-                    oneColBoundary.append(j)
+                if mat_boundary[i][j] == -99 and in_boundary is True:
+                    one_col_boundary.append(j)
 
-                if (mat_boundary[i][j] == 0.0) and inDomain == False:
+                if (mat_boundary[i][j] == 0.0) and in_domain is False:
                     rr.append(i)
-                    inDomain = True
+                    in_domain = True
 
-                if (mat_boundary[i][j] == 0.0) and inDomain:
-                    oneCol.append(j)
+                if (mat_boundary[i][j] == 0.0) and in_domain is True:
+                    one_col.append(j)
 
-            inDomain = False
-            inBoundary = False
-            rc.append(oneCol)
+            in_domain = False
+            in_boundary = False
+            rc.append(one_col)
 
-        return rr, rc, mat_boundary
+        return rr, rc
 
     def _convert_slope_units(self):
         """

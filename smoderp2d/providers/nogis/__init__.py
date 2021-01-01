@@ -166,8 +166,6 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         data['r'] = self._compute_rows(joint_data['vodorovny_prumet_stahu[m]'],
                                        resolution)
         data['c'] = 1
-        # set mask i and j must be set after 'r' and 'c'
-        data['rr'], data['rc'] = self._construct_rr_rc(data)
 
         # set cell sizes
         data['vpix'] = data['spix'] = self._config.getfloat('domain', 'res')
@@ -238,6 +236,8 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         data['array_points'], data['points'] = self._set_hydrographs(data['r'] - 1)
         # and other unused variables
         self._set_unused(data)
+        data['rr'], data['rc'] = self._get_rr_rc(data['r'], data['c'],
+                                                 data['mat_boundary'])
 
         # keep soilveg in memory - needed for profile.csv
         self.mat_soilveg = np.char.add(parsed_data['puda'], parsed_data['povrch'])
@@ -343,18 +343,6 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         data['mat_pi'] = np.zeros((data['r'],data['c']), float)
         data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
         data['mat_ppl'] = np.zeros((data['r'],data['c']), float)
-
-    def _construct_rr_rc(self, data):
-        """Create list rr and list of lists rc which contain i and j index of
-        elements inside the compuation domain.
-
-        :return: rr, rc
-        """
-
-        rr = range(data['r'])
-        rc = [range(data['c'])]*data['r']
-
-        return rr, rc
 
     def _set_combinatIndex(self, r, c, mat_k, mat_s, no_data_value,
                            mat_dem, mat_slope):
