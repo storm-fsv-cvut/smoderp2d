@@ -138,8 +138,11 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         data['mfda'] = False
 
         # time settings
-        data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
-        data['maxdt'] = self._config.getfloat('time', 'maxdt')
+        try:
+            data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
+            data['maxdt'] = self._config.getfloat('time', 'maxdt')
+        except NoSectionError as e:
+            raise ConfigError(e)
 
         # load precipitation input file
         try:
