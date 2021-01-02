@@ -129,7 +129,9 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
                 self._config.get('data', 'data1d_soil_types')
             )
         except IOError as e:
-            raise ProviderError('{}'.format(e))
+            raise ProviderError(e)
+        except NoOptionError as e:
+            raise ConfigError(e)
 
         # defaults for nogis provider
         #  type of computing =  1 sheet and rill flow

@@ -8,20 +8,10 @@ Help:
     ./bin/start-nogis-smoderp2d.py --config tests/nogis.ini
 """
 import os
-import sys
+from start import start_smoderp2d
 
 if __name__ == "__main__":
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-    # set new environmental variable for provider factory in
-    # smoderp2d.__init__.py
     os.environ["NOGIS"] = "1"
-    from smoderp2d import Runner
-    from smoderp2d.exceptions import ProviderError, ConfigError
-
-    try:
-        runner = Runner()
-        sys.exit(runner.run())
-    except (ConfigError, ProviderError) as e:
-        sys.exit('ERROR: {}'.format(e))
+    start_smoderp2d()
 else:
     sys.exit("Can be run only as standalone program.")

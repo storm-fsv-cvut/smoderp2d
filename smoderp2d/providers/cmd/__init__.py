@@ -10,7 +10,7 @@ else:
 
 from smoderp2d.core.general import Globals
 from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter
-from smoderp2d.exceptions import ConfigError, ProviderError
+from smoderp2d.exceptions import ConfigError
 
 class CmdWritter(BaseWritter):
     def __init__(self):
@@ -35,22 +35,12 @@ class CmdArgumentParser(object):
     def __init__(self, config_file):
         self.config_file = config_file
 
-    def set_config(self, description, typecomp=None):
+    def set_config(self, description, typecomp):
         if self.config_file:
             return self.config_file, CompType()['roff']
 
         # define CLI parser
         parser = argparse.ArgumentParser(description)
-
-        # type of computation
-        if typecomp is None:
-            parser.add_argument(
-                '--typecomp',
-                help='type of computation',
-                type=str,
-                choices=['full', 'dpre', 'roff'],
-                required=True
-            )
 
         # config file required
         parser.add_argument(
@@ -62,9 +52,6 @@ class CmdArgumentParser(object):
 
         args = parser.parse_args()
 
-        if typecomp is None:
-            return args.config, CompType()[args.typecomp]
-
         return args.config, CompType()[typecomp]
 
 class CmdProvider(BaseProvider):
@@ -73,9 +60,13 @@ class CmdProvider(BaseProvider):
 
         # load configuration
         cloader = CmdArgumentParser(config_file)
-        self.args.config_file, self.args.typecomp = cloader.set_config("Run SMODERP2D.")
+        self.args.config_file, self.args.typecomp = cloader.set_config(
+            "Run SMODERP2D.", typecomp='roff')
         self._config = self._load_config()
-        self.args.data_file = self._config['data']['pickle']
+        try:
+            self.args.data_file = self._config['data']['pickle']
+        except KeyError:
+            raise ConfigError("No pickle defined")
 
         # define storage writter
         self.storage = CmdWritter()

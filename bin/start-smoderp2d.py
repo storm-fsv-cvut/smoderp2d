@@ -5,20 +5,12 @@ Starting the rainfall/runoff/soil loss model
 SMODERP2D.
 
 Help:
-    ./bin/start-smoderp2d.py --typecomp roff --config tests/test.ini
+    ./bin/start-smoderp2d.py --config tests/quicktest.ini
 """
-import os
-import sys
+
+from start import start_smoderp2d
 
 if __name__ == "__main__":
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-    from smoderp2d import Runner
-    from smoderp2d.exceptions import ProviderError, ConfigError
-
-    try:
-        runner = Runner()
-        sys.exit(runner.run())
-    except (ConfigError, ProviderError) as e:
-        sys.exit('ERROR: {}'.format(e))
+    start_smoderp2d()
 else:
     sys.exit("Can be run only as standalone program.")
