@@ -13,10 +13,13 @@ class MaxIterationExceeded(SmoderpError):
     """Number of iteration exceed max iteration criterion.
     """
     def __init__(self, mi, t):
-        Logger.fatal(
-            'Maximum of iterations (max_iter = {}) was exceeded of at time [s]: {}'.format(
-                mi, t
-        ))
+        self.msg = 'Maximum of iterations (max_iter = {}) was exceeded of at time [s]: {}'.format(
+            mi, t
+        )
+        super().__init__(self.msg)
+
+    def __str__(self):
+        return self.msg
 
 class GlobalsNotSet(SmoderpError):
     """Exception raised if globals called variable is None.

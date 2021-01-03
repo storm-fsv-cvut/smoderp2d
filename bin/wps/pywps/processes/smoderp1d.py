@@ -73,7 +73,7 @@ subsurface runoff and erosion
         sys.path.insert(0, "/opt/smoderp2d")
 
         from smoderp2d import WpsRunner
-        from smoderp2d.exceptions import ProviderError, ConfigError
+        from smoderp2d.exceptions import ProviderError, ConfigError, MaxIterationExceeded
         from smoderp2d.core.general import Globals
         from smoderp2d.providers.wps.logger import WpsLogHandler
 
@@ -91,7 +91,7 @@ subsurface runoff and erosion
             )
 
             runner.run()
-        except (ConfigError, ProviderError) as e:
+        except (ConfigError, ProviderError, MaxIterationExceeded) as e:
             raise ProcessError("SMODERP failed: {}".format(e))
 
         # set response output
