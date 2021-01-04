@@ -146,7 +146,7 @@ class Courant():
             dt = round(
                 (Gl.mat_efect_cont[self.i, self.j] * self.cour_crit * self.cour_coef) /
                  self.cour_speed,
-                4)
+                8)
 
             # nove dt nesmi byt vetsi nez je maxdt * max_delta_t_mult
             # max_delta_t_mult se meni podle ryh, vyse v teto funkci
