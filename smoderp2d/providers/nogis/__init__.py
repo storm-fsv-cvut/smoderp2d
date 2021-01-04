@@ -438,14 +438,16 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
 
         # extra to normal postprocessing - write profile.csv
 
+        slope_width = float(self._config.get('domain', 'slope_width'))
+
         header = ['length[m]', 'soil_vegFID', 'maximalSurfaceFlow[m3/s]',
                   'totalRunoff[m3]', 'maximalSurfaceRunoffVelocity[m/s]',
                   'maximalTangentialStress[Pa]', 'rillRunoff[Y/N]']
         vals_to_write = (
             self.hor_lengths.flatten(),
             self.mat_soilveg.flatten(),
-            cumulative.q_sur_tot.flatten(),
-            cumulative.vol_rill.flatten(),
+            cumulative.q_sur_tot.flatten() * slope_width,
+            cumulative.vol_rill.flatten() * slope_width,
             cumulative.v_sheet.flatten(),
             cumulative.shear_sheet.flatten(),
             [0 if i.state == 0 else 1 for i in surface_array.flatten()]
