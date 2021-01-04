@@ -41,3 +41,14 @@ class NegativeWaterLevel(SmoderpError):
 
 class ConfigError(Exception):
     pass
+
+class WrongParameterValue(ConfigError):
+    """ Exception raised if a parameter reaches a wrong numeric value
+    """
+    def __init__(self,param,value):
+        self.msg = "Parameter '{}' has a wrong value ({}).".format(param,value)
+        super().__init__(self.msg)
+
+    def __str__(self):
+        return self.msg
+
