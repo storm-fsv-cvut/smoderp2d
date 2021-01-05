@@ -100,6 +100,11 @@ class PrepareDataBase(object):
         self.data['mat_reten'] = all_attrib[5]
         self.data['mat_b'] = all_attrib[6]
 
+        self.data['mat_nan'], self.data['mat_slope'], self.data['mat_dem'] = \
+            self._get_mat_nan(self.data['r'], self.data['c'],
+                              self.data['NoDataValue'], self.data['mat_slope'],
+                              self.data['mat_dem'])
+
         # build points array
         Logger.info("Prepare points for hydrographs...")
         self._get_array_points()
@@ -274,10 +279,6 @@ class PrepareDataBase(object):
         """
         all_attrib = self._get_attrib(sfield, intersect)
 
-        self.data['mat_nan'] = np.zeros(
-            [self.data['r'], self.data['c']], float
-        )
-
         mat_k = all_attrib[0]
         mat_s = all_attrib[1]
 
@@ -308,29 +309,6 @@ class PrepareDataBase(object):
                         self.data['mat_inf_index'][i][j] = combinat.index(
                             ccc
                         )
-
-        # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u
-        # sklonu a acc
-        i = j = 0
-
-        # data value vector intersection
-        nv = self.data['NoDataValue']
-        for i in range(self.data['r']):
-            for j in range(self.data['c']):
-                x_mat_dem = self.data['mat_dem'][i][j]
-                slp = self.data['mat_slope'][i][j]
-                if x_mat_dem == nv or slp == nv:
-                    self.data['mat_nan'][i][j] = nv
-                    self.data['mat_slope'][i][j] = nv
-                    self.data['mat_dem'][i][j] = nv
-                else:
-                    self.data['mat_nan'][i][j] = 0
-
-        self.storage.write_raster(
-            self.data['mat_nan'],
-            'mat_nan',
-            'temp'
-        )
 
         return all_attrib
 
@@ -468,6 +446,37 @@ class PrepareDataBase(object):
         )
 
         return mat_hcrit
+
+    def _get_mat_nan(self, r, c, no_data_value, mat_dem, mat_slope):
+        # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u
+        # sklonu a acc
+        mat_nan = np.zeros(
+            [r, c], float
+        )
+
+        i = j = 0
+
+        # data value vector intersection
+        # TODO: no loop needed?
+        nv = no_data_value
+        for i in range(r):
+            for j in range(c):
+                x_mat_dem = mat_dem[i][j]
+                slp = mat_slope[i][j]
+                if x_mat_dem == nv or slp == nv:
+                    mat_nan[i][j] = nv
+                    mat_slope[i][j] = nv
+                    mat_dem[i][j] = nv
+                else:
+                    mat_nan[i][j] = 0
+
+        self.storage.write_raster(
+            mat_nan,
+            'mat_nan',
+            'temp'
+        )
+
+        return mat_nan, mat_slope, mat_dem
 
     def _get_slope_dir(self, dem_clip):
         raise NotImplemented("Not implemented for base provider")

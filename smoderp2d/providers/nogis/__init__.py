@@ -228,15 +228,16 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         data['mat_nan'] = np.nan
         data['mat_inf_index'].fill(1)  # 1 = philips infiltration
 
-        data['mat_nan'], data['mat_inf_index'], data['combinatIndex'], data['mat_slope'], data['mat_dem'] = \
+        data['mat_inf_index'], data['combinatIndex'] = \
             self._set_combinatIndex(
                 data['r'],
                 data['c'],
                 parsed_data['k'].reshape((data['r'], data['c'])),
-                parsed_data['s'].reshape((data['r'], data['c'])),
-                data['NoDataValue'],
-                data['mat_dem'],
-                data['mat_slope'])
+                parsed_data['s'].reshape((data['r'], data['c'])))
+
+        data['mat_nan'], data['mat_slope'], data['mat_dem'] = \
+            self._get_mat_nan(data['r'], data['c'], data['NoDataValue'],
+                              data['mat_dem'], data['mat_slope'])
 
         data['array_points'], data['points'] = self._set_hydrographs(data['r'] - 1)
         # and other unused variables
@@ -349,12 +350,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
         data['mat_ppl'] = np.zeros((data['r'],data['c']), float)
 
-    def _set_combinatIndex(self, r, c, mat_k, mat_s, no_data_value,
-                           mat_dem, mat_slope):
-        mat_nan = np.zeros(
-            [r, c], float
-        )
-
+    def _set_combinatIndex(self, r, c, mat_k, mat_s):
         mat_inf_index = None
         combinatIndex = None
 
@@ -383,31 +379,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
                             ccc
                         )
 
-        # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u
-        # sklonu a acc
-        i = j = 0
-
-        # data value vector intersection
-        # TODO: no loop needed
-        nv = no_data_value
-        for i in range(r):
-            for j in range(c):
-                x_mat_dem = mat_dem[i][j]
-                slp = mat_slope[i][j]
-                if x_mat_dem == nv or slp == nv:
-                    mat_nan[i][j] = nv
-                    mat_slope[i][j] = nv
-                    mat_dem[i][j] = nv
-                else:
-                    mat_nan[i][j] = 0
-
-        self.storage.write_raster(
-            mat_nan,
-            'mat_nan',
-            'temp'
-        )
-
-        return mat_nan, mat_inf_index, combinatIndex, mat_slope, mat_dem
+        return mat_inf_index, combinatIndex
 
     def _set_unused(self, data):
         data['cell_stream'] = None
