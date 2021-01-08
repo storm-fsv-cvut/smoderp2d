@@ -77,7 +77,8 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         soil_types_soilveg = soil_types['soilveg']
 
         for index in range(len(indata)):
-            soilveg = indata['puda'][index] + indata['povrch'][index]
+            soilveg = indata['soil_type'][index] + \
+                      indata['surface_protection'][index]
 
             # check for the misusage of comma for deciamls
             if any([',' in i for i in indata[index] if isinstance(i, str)]):
@@ -167,8 +168,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         data['prtTimes'] = self._config.get('output', 'printtimes', fallback=None)
 
         resolution = self._config.getfloat('domain', 'res')
-        # TODO: Change stah -> svah (ha ha) after being changed in the CSV
-        data['r'] = self._compute_rows(joint_data['vodorovny_prumet_stahu[m]'],
+        data['r'] = self._compute_rows(joint_data['horizontal_projection_[m]'],
                                        resolution)
         data['c'] = 1
 
@@ -188,7 +188,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
 
         # topography
         data['mat_slope'] = self._compute_mat_slope(
-            parsed_data['hor_len'], parsed_data['prevyseni[m]'])
+            parsed_data['hor_len'], parsed_data['vertical_distance_[m]'])
         # TODO can be probably removed (?) or stay zero
         # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
         data['mat_efect_cont'].fill(data['spix']) # x-axis (EW) resolution
@@ -246,7 +246,8 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
                                                  data['mat_boundary'])
 
         # keep soilveg in memory - needed for profile.csv
-        self.mat_soilveg = np.char.add(parsed_data['puda'], parsed_data['povrch'])
+        self.mat_soilveg = np.char.add(parsed_data['soil_type'],
+                                       parsed_data['surface_protection'])
         self.hor_lengths = parsed_data['hor_len']
 
         return data
@@ -299,14 +300,14 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         parsed_data = None
         subsegment_unseen = 0
 
-        hor_length = np.sum(joint_data['vodorovny_prumet_stahu[m]'])
+        hor_length = np.sum(joint_data['horizontal_projection_[m]'])
         diff = hor_length - (r * res)
         addition = diff / r
         one_pix_len = res + addition
 
         for slope_segment in joint_data:
             segment_length = np.sum(
-                slope_segment['vodorovny_prumet_stahu[m]'])
+                slope_segment['horizontal_projection_[m]'])
             seg_r = self._compute_rows(segment_length, one_pix_len)
 
             seg_hor_len_arr = np.array(
