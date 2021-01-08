@@ -91,7 +91,10 @@ class PrepareDataBase(object):
             )
 
         # build numpy array from selected attributes
-        all_attrib = self._get_mat_par(sfield, intersect)
+        all_attrib = self._get_attrib(sfield, intersect)
+        self.data['mat_inf_index'], self.data['combinatIndex'] = \
+            self._get_inf_combinat_index(self.data['r'], self.data['c'],
+                                         all_attrib[0], all_attrib[1])
         Logger.progress(30)
 
         self.data['mat_n'] = all_attrib[2]
@@ -269,7 +272,8 @@ class PrepareDataBase(object):
         dim = [self.data['r'], self.data['c']]
         return [np.zeros(dim, float)] * len(sfield)
 
-    def _get_mat_par(self, sfield, intersect):
+    @staticmethod
+    def _get_inf_combinat_index(r, c, mat_k, mat_s):
         """
 
         :param sfield:
@@ -277,40 +281,35 @@ class PrepareDataBase(object):
 
         :return all_atrib:
         """
-        all_attrib = self._get_attrib(sfield, intersect)
-
-        mat_k = all_attrib[0]
-        mat_s = all_attrib[1]
-
-        self.data['mat_inf_index'] = None
-        self.data['combinatIndex'] = None
+        mat_inf_index = None
+        combinatIndex = None
 
         infiltration_type = 0  # "Phillip"
         if infiltration_type == 0:
             # to se rovna vzdycky ne? nechapu tuhle podminku 23.05.2018 MK
-            self.data['mat_inf_index'] = np.zeros(
-                [self.data['r'], self.data['c']], int
+            mat_inf_index = np.zeros(
+                [r, c], int
             )
             combinat = []
-            self.data['combinatIndex'] = []
-            for i in range(self.data['r']):
-                for j in range(self.data['c']):
+            combinatIndex = []
+            for i in range(r):
+                for j in range(c):
                     kkk = mat_k[i][j]
                     sss = mat_s[i][j]
                     ccc = [kkk, sss]
                     try:
                         if combinat.index(ccc):
-                            self.data['mat_inf_index'][i][j] = combinat.index(ccc)
+                            mat_inf_index[i][j] = combinat.index(ccc)
                     except:
                         combinat.append(ccc)
-                        self.data['combinatIndex'].append(
+                        combinatIndex.append(
                             [combinat.index(ccc), kkk, sss, 0]
                         )
-                        self.data['mat_inf_index'][i][j] = combinat.index(
+                        mat_inf_index[i][j] = combinat.index(
                             ccc
                         )
 
-        return all_attrib
+        return mat_inf_index, combinatIndex
 
     def _get_array_points(self):
         raise NotImplemented("Not implemented for base provider")

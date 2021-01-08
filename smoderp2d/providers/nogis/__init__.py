@@ -229,7 +229,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         data['mat_inf_index'].fill(1)  # 1 = philips infiltration
 
         data['mat_inf_index'], data['combinatIndex'] = \
-            self._set_combinatIndex(
+            self._get_inf_combinat_index(
                 data['r'],
                 data['c'],
                 parsed_data['k'].reshape((data['r'], data['c'])),
@@ -349,37 +349,6 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         data['mat_pi'] = np.zeros((data['r'],data['c']), float)
         data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
         data['mat_ppl'] = np.zeros((data['r'],data['c']), float)
-
-    def _set_combinatIndex(self, r, c, mat_k, mat_s):
-        mat_inf_index = None
-        combinatIndex = None
-
-        infiltration_type = 0  # "Phillip"
-        if infiltration_type == 0:
-            # to se rovna vzdycky ne? nechapu tuhle podminku 23.05.2018 MK
-            mat_inf_index = np.zeros(
-                [r, c], int
-            )
-            combinat = []
-            combinatIndex = []
-            for i in range(r):
-                for j in range(c):
-                    kkk = mat_k[i][j]
-                    sss = mat_s[i][j]
-                    ccc = [kkk, sss]
-                    try:
-                        if combinat.index(ccc):
-                            mat_inf_index[i][j] = combinat.index(ccc)
-                    except:
-                        combinat.append(ccc)
-                        combinatIndex.append(
-                            [combinat.index(ccc), kkk, sss, 0]
-                        )
-                        mat_inf_index[i][j] = combinat.index(
-                            ccc
-                        )
-
-        return mat_inf_index, combinatIndex
 
     def _set_unused(self, data):
         data['cell_stream'] = None
