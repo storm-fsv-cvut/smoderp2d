@@ -21,7 +21,7 @@ class WpsLogHandler(logging.Handler):
         if record.levelno >= PROGRESS:
             LOGGER.info("Progress value: {}%".format(record.msg))
             if self._last_status is None or time.time() - self._last_status > 5:
-                # update status no more often than every 10 sec
+                # update status no more often than every 5 sec
                 # (otherwise it will slowdown computation
                 # significantly, see
                 # https://github.com/storm-fsv-cvut/smoderp2d/issues/114)
