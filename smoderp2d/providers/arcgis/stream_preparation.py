@@ -43,23 +43,6 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         :return stream:
         :return stream_loc:
         """
-
-#        stream = os.path.join(
-#            self.temp, "{}.shp".format(self._data['stream'])
-#        )
-#        stream_loc = os.path.join(
-#            self.temp, "{}.shp".format(self._data['stream_loc'])
-#        )
-#        aoi = os.path.join(
-#            self.temp, "{}.shp".format(self._data['aoi'])
-#        )
-
-#        aoi_buffer = arcpy.Buffer_analysis(
-#            aoi,
-#            os.path.join(self.temp, "{}.shp".format(self._data['aoi_buffer'])),
-#            -self.spix / 3, "FULL", "ROUND", "NONE"
-#        )
-
         stream = self.storage.output_filepath('stream', item='')
         stream_loc = self.storage.output_filepath('stream_loc')
         aoi = self.storage.output_filepath('aoi')
@@ -71,7 +54,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         aoi_buffer = arcpy.Buffer_analysis(
             aoi,
             self.storage.output_filepath('aoi_buffer'),
-            -self.spix / 3, "FULL", "ROUND", "NONE"
+            -self.dx / 3, "FULL", "ROUND", "NONE"
         )
 
         stream = arcpy.Clip_analysis(
@@ -208,7 +191,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         stream_seg = self.storage.output_filepath('stream_seg')
         arcpy.PolylineToRaster_conversion(
             stream, self._primary_key, stream_seg,
-            "MAXIMUM_LENGTH", "NONE", self.spix
+            "MAXIMUM_LENGTH", "NONE", self.dx
         )
 
         # TODO: reclassification rule is invalid, stream_seg is the same as stream_rst

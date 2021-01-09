@@ -173,12 +173,12 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         data['c'] = 1
 
         # set cell sizes
-        data['vpix'] = data['spix'] = self._config.getfloat('domain', 'res')
-        data['pixel_area'] = data['vpix'] * data['spix']
+        data['dy'] = data['dx'] = self._config.getfloat('domain', 'res')
+        data['pixel_area'] = data['dy'] * data['dx']
 
         # divide joint data slope into rows corresponding with data['r']
         parsed_data = self._divide_joint_data(joint_data, data['r'],
-                                              data['vpix'])
+                                              data['dy'])
 
         # allocate matrices
         self._alloc_matrices(data)
@@ -191,7 +191,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
             parsed_data['hor_len'], parsed_data['vertical_distance_[m]'])
         # TODO can be probably removed (?) or stay zero
         # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
-        data['mat_efect_cont'].fill(data['spix']) # x-axis (EW) resolution
+        data['mat_efect_cont'].fill(data['dx']) # x-axis (EW) resolution
         # flow direction is always to the south
         data['mat_fd'].fill(4)
 

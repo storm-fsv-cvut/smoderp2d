@@ -285,7 +285,7 @@ class PrepareData(PrepareDataBase, ManageFields):
             output = os.path.join(self.data['outdir'], self._data['sfield_dir'], "r{}".format(field))
             arcpy.PolygonToRaster_conversion(
                 intersect, field, output,
-                "MAXIMUM_AREA", "", self.data['vpix']
+                "MAXIMUM_AREA", "", self.data['dy']
             )
             all_attrib[idx] = self._rst2np(output)
             idx += 1
@@ -317,10 +317,10 @@ class PrepareData(PrepareDataBase, ManageFields):
         self.data['yllcorner'] = dem_desc.Extent.YMin
         GridGlobals.set_size((dem_desc.MeanCellHeight,
                               dem_desc.MeanCellWidth))
-        self.data['vpix'] = dem_desc.MeanCellHeight
-        self.data['spix'] = dem_desc.MeanCellWidth
-        GridGlobals.set_pixel_area(self.data['spix'] * self.data['vpix'])
-        self.data['pixel_area'] = self.data['spix'] * self.data['vpix']
+        self.data['dy'] = dem_desc.MeanCellHeight
+        self.data['dx'] = dem_desc.MeanCellWidth
+        GridGlobals.set_pixel_area(self.data['dx'] * self.data['dy'])
+        self.data['pixel_area'] = self.data['dx'] * self.data['dy']
 
         # size of the raster [0] = number of rows; [1] = number of columns
         self.data['r'] = self.data['mat_dem'].shape[0]
@@ -377,7 +377,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         times1 = arcpy.sa.Plus(cosslope, sinslope)
         times1.save(self.storage.output_filepath('ratio_cell'))
 
-        efect_cont = arcpy.sa.Times(times1, self.data['spix'])
+        efect_cont = arcpy.sa.Times(times1, self.data['dx'])
         efect_cont.save(self.storage.output_filepath('efect_cont'))
         self.data['mat_efect_cont'] = self._rst2np(efect_cont)
 

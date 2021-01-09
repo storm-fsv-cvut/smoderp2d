@@ -281,8 +281,8 @@ class PrepareData(PrepareDataBase, ManageFields):
             self.data['xllcorner'] = data.info.west
             self.data['yllcorner'] = data.info.south
             # x/y resolution
-            self.data['vpix'] = data.info.nsres
-            self.data['spix'] = data.info.ewres
+            self.data['dy'] = data.info.nsres
+            self.data['dx'] = data.info.ewres
             # check data consistency
             # see https://github.com/storm-fsv-cvut/smoderp2d/issues/42
             if data.info.rows != self.data['r'] or \
@@ -293,7 +293,7 @@ class PrepareData(PrepareDataBase, ManageFields):
                 ))
 
         self.data['NoDataValue'] = None
-        self.data['pixel_area'] = self.data['spix'] * self.data['vpix']
+        self.data['pixel_area'] = self.data['dx'] * self.data['dy']
 
     def _get_attrib(self, sfield, intersect):
         """
@@ -374,7 +374,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         efect_cont = 'efect_cont'
         Module('r.mapcalc',
                expression='{} = {} * {}'.format(
-                   efect_cont, ratio, self.data['spix']
+                   efect_cont, ratio, self.data['dx']
         ))
         self.data['mat_efect_cont'] = self._rst2np(efect_cont)
 
