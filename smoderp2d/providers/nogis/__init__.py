@@ -252,7 +252,8 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
 
         return data
 
-    def _compute_rows(self, lengths, resolution):
+    @staticmethod
+    def _compute_rows(lengths, resolution):
         """Compute number of pixels the slope will be divided into.
 
         :param lengths: np array containing all lengths
