@@ -105,13 +105,14 @@ class Surface(GridGlobals, Stream, Kinematic):
         :return: TODO
         """
         arr = self.arr.get_item([i, j])
+        sw = Globals.slope_width
 
         # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
         if not extra_out:
 
             line = '{0:.4e}{sep}{1:.4e}'.format(
                 arr.h_total_new,
-                arr.vol_runoff / dt + arr.vol_runoff_rill / dt,
+                (arr.vol_runoff / dt + arr.vol_runoff_rill / dt) * sw,
                 sep=sep
             )
             bil_ = ''
@@ -123,14 +124,14 @@ class Surface(GridGlobals, Stream, Kinematic):
             line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}{sep}'\
             '{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
                 arr.h_sheet,
-                arr.vol_runoff / dt,
-                arr.vol_runoff,
+                (arr.vol_runoff / dt) * sw,
+                arr.vol_runoff * sw,
                 velocity,
-                arr.vol_rest,
-                arr.infiltration,
+                arr.vol_rest * sw,
+                arr.infiltration * sw,
                 arr.cur_sur_ret,
                 arr.state,
-                arr.inflow_tm,
+                arr.inflow_tm * sw,
                 arr.h_total_new,
                 sep=sep
             )
@@ -140,11 +141,11 @@ class Surface(GridGlobals, Stream, Kinematic):
                 '{sep}{5:.4e}{sep}{6:.4e}{sep}{7:.4e}'.format(
                     arr.h_rill,
                     arr.rillWidth,
-                    arr.vol_runoff_rill / dt,
-                    arr.vol_runoff_rill,
+                    (arr.vol_runoff_rill / dt) * sw,
+                    arr.vol_runoff_rill * sw,
                     arr.vel_rill,
-                    arr.v_rill_rest,
-                    arr.vol_runoff / dt + arr.vol_runoff_rill / dt,
+                    arr.v_rill_rest * sw,
+                    (arr.vol_runoff / dt + arr.vol_runoff_rill / dt) * sw,
                     arr.vol_runoff + arr.vol_runoff_rill,
                     sep=sep
                 )

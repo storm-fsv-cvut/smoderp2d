@@ -257,6 +257,14 @@ class BaseProvider(object):
         Globals.isStream = self._comp_type(data['type_of_computing'])['stream']
         Globals.prtTimes = data.get('prtTimes', None)
 
+        # If nogis provider is used the values 
+        # should be set in the loop at the beginning
+        # of this method since it is part of the 
+        # data dict (only in nogis provider).
+        # Otherwise is has to be set to 1.
+        if (Globals.slope_width is None):
+            Globals.slope_width = 1
+
     @staticmethod
     def _cleanup():
         """Clean-up output directory.

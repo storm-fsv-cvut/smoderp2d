@@ -253,6 +253,9 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
                                        parsed_data['surface_protection'])
         self.hor_lengths = parsed_data['hor_len']
 
+        slope_width = float(self._config.get('domain', 'slope_width'))
+        data['slope_width'] = slope_width
+
         return data
 
     @staticmethod

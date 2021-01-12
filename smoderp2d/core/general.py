@@ -208,6 +208,8 @@ class Globals:
     extraOut = None
     # stream magic number
     streams_flow_inc = 1000
+    # slope width 
+    slope_width = None
 
     @classmethod
     def get_type_of_computing(cls):
