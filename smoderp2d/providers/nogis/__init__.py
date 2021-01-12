@@ -77,8 +77,11 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         soil_types_soilveg = soil_types['soilveg']
 
         for index in range(len(indata)):
-            soilveg = indata['soil_type'][index] + \
-                      indata['surface_protection'][index]
+            try:
+                soilveg = indata['soil_type'][index] + \
+                    indata['surface_protection'][index]
+            except ValueError as e:
+                raise ProviderError(e)
 
             # check for the misusage of comma for deciamls
             if any([',' in i for i in indata[index] if isinstance(i, str)]):
