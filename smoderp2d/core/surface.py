@@ -121,17 +121,21 @@ class Surface(GridGlobals, Stream, Kinematic):
                 velocity = 0
             else :
                 velocity = arr.vol_runoff / dt / (arr.h_sheet*GridGlobals.dx)
+
+            # if nogit provider - the data in extra output are the unit width data
+            #                     if you need runoff from non-unit slope and
+            #                     with extra output calculate it yourself
             line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}{sep}'\
             '{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
                 arr.h_sheet,
-                (arr.vol_runoff / dt) * sw,
-                arr.vol_runoff * sw,
+                arr.vol_runoff / dt,
+                arr.vol_runoff,
                 velocity,
-                arr.vol_rest * sw,
-                arr.infiltration * sw,
+                arr.vol_rest,
+                arr.infiltration,
                 arr.cur_sur_ret,
                 arr.state,
-                arr.inflow_tm * sw,
+                arr.inflow_tm,
                 arr.h_total_new,
                 sep=sep
             )
@@ -141,11 +145,11 @@ class Surface(GridGlobals, Stream, Kinematic):
                 '{sep}{5:.4e}{sep}{6:.4e}{sep}{7:.4e}'.format(
                     arr.h_rill,
                     arr.rillWidth,
-                    (arr.vol_runoff_rill / dt) * sw,
-                    arr.vol_runoff_rill * sw,
+                    arr.vol_runoff_rill / dt,
+                    arr.vol_runoff_rill,
                     arr.vel_rill,
-                    arr.v_rill_rest * sw,
-                    (arr.vol_runoff / dt + arr.vol_runoff_rill / dt) * sw,
+                    arr.v_rill_rest,
+                    arr.vol_runoff / dt + arr.vol_runoff_rill / dt,
                     arr.vol_runoff + arr.vol_runoff_rill,
                     sep=sep
                 )
