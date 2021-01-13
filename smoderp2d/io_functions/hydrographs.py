@@ -88,11 +88,12 @@ class Hydrographs:
                 if not Globals.extraOut:
                     header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
                               '{sep}reachWaterLevel[m]{sep}reachFlow[m3/s]'\
-                              '{sep}CumReachVolRunoff[m3]'.format(sep=SEP)
+                              '{sep}cumReachVolRunoff[m3]'.format(sep=SEP)
                 else:
-                    header += 'time[s]{sep}deltaTime[s]{sep}Rainfall[m]'\
-                              '{sep}Waterlevel[m]{sep}V_runoff[m3]{sep}Q[m3/s]'\
-                              '{sep}V_from_field[m3]{sep}V_rests_in_stream[m3]'.format(sep=SEP)
+                    header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
+                              '{sep}waterlevel[m]{sep}vRunoff[m3]{sep}q[m3/s]'\
+                              '{sep}vFromField[m3]{sep}' \
+                              'vRestsInStream[m3]'.format(sep=SEP)
                 header += os.linesep
                 iStream += 1
                 self.header.append(header)
@@ -102,29 +103,29 @@ class Hydrographs:
                 if not Globals.extraOut:
                     header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
                               '{sep}totalWaterLevel[m]{sep}surfaceFlow[m3/s]'\
-                              '{sep}CumSurfaceVolRunoff[m3]'\
+                              '{sep}cumSurfaceVolRunoff[m3]'\
                               '{linesep}'.format(sep=SEP, linesep = os.linesep)
                 else:
-                    header += 'time[s]{sep}deltaTime[s]{sep}Rainfall[m]{sep}'\
-                              'Water_level_[m]{sep}Sheet_Flow[m3/s]{sep}Sheet_V_runoff[m3]{sep}'\
-                              'Sheet_flow_velocity[m/s]{sep}'\
-                              'Sheet_V_rest[m3]{sep}Infiltration[m]{sep}Surface_retetion[m]{sep}'\
-                              'State{sep}V_inflow[m3]{sep}WlevelTotal[m]'.format(sep=SEP)
+                    header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]{sep}'\
+                              'waterLevel[m]{sep}sheetFlow[m3/s]{sep}sheetVRunoff[m3]{sep}'\
+                              'sheetFlowVelocity[m/s]{sep}'\
+                              'sheetVRest[m3]{sep}infiltration[m]{sep}surfaceRetetion[m]{sep}'\
+                              'state{sep}vInflow[m3]{sep}wLevelTotal[m]'.format(sep=SEP)
 
                     if Globals.isRill:
-                        header += '{sep}WlevelRill[m]{sep}Rill_width[m]'\
-                                  '{sep}Rill_flow[m3/s]{sep}Rill_V_runoff[m3]'\
-                                  '{sep}Rill_flow_velocity[m/s]'\
-                                  '{sep}Rill_V_rest{sep}Surface_Flow[m3/s]'\
-                                  '{sep}Surface_V_runoff[m3]'.format(sep=SEP)
-                    header += '{sep}SurfaceBil[m3]'.format(sep=SEP)
+                        header += '{sep}wLevelRill[m]{sep}rillWidth[m]'\
+                                  '{sep}rillFlow[m3/s]{sep}rillVRunoff[m3]'\
+                                  '{sep}rillFlowVelocity[m/s]'\
+                                  '{sep}rillVRest{sep}surfaceFlow[m3/s]'\
+                                  '{sep}surfaceVRunoff[m3]'.format(sep=SEP)
+                    header += '{sep}surfaceBil[m3]'.format(sep=SEP)
                     if Globals.subflow:
-                        header += '{sep}Sub_Water_level_[m]{sep}Sub_Flow_[m3/s]'\
-                        '{sep}Sub_V_runoff[m3]{sep}Sub_V_rest[m3]'\
-                        '{sep}Percolation[]{sep}exfiltration[]'.format(sep=SEP)
+                        header += '{sep}subWaterLevel[m]{sep}subFlow[m3/s]'\
+                        '{sep}subVRunoff[m3]{sep}subVRest[m3]'\
+                        '{sep}percolation[]{sep}exfiltration[]'.format(sep=SEP)
                     if Globals.extraOut:
-                        header += '{sep}V_to_rill.m3.{sep}ratio{sep}courant'\
-                        '{sep}courantrill{sep}iter'.format(sep=SEP)
+                        header += '{sep}vToRill[m3]{sep}ratio{sep}courant'\
+                        '{sep}courantRill{sep}iter'.format(sep=SEP)
                     header += os.linesep
 
                 iSurface += 1

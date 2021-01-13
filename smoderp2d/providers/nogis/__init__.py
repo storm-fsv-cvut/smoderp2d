@@ -74,12 +74,12 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         from numpy.lib.recfunctions import append_fields
 
         filtered_soilvegs = None
-        soil_types_soilveg = soil_types['soilveg']
+        soil_types_soilveg = soil_types['soilVeg']
 
         for index in range(len(indata)):
             try:
-                soilveg = indata['soil_type'][index] + \
-                    indata['surface_protection'][index]
+                soilveg = indata['soilType'][index] + \
+                    indata['surfaceProtection'][index]
             except ValueError as e:
                 raise ProviderError(e)
 
@@ -171,7 +171,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         data['prtTimes'] = self._config.get('output', 'printtimes', fallback=None)
 
         resolution = self._config.getfloat('domain', 'res')
-        data['r'] = self._compute_rows(joint_data['horizontal_projection_[m]'],
+        data['r'] = self._compute_rows(joint_data['horizontalProjection[m]'],
                                        resolution)
         data['c'] = 1
 
@@ -191,7 +191,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
 
         # topography
         data['mat_slope'] = self._compute_mat_slope(
-            parsed_data['hor_len'], parsed_data['vertical_distance_[m]'])
+            parsed_data['hor_len'], parsed_data['verticalDistance[m]'])
         # TODO can be probably removed (?) or stay zero
         # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
         data['mat_efect_cont'].fill(data['spix']) # x-axis (EW) resolution
@@ -249,8 +249,8 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
                                                  data['mat_boundary'])
 
         # keep soilveg in memory - needed for profile.csv
-        self.mat_soilveg = np.char.add(parsed_data['soil_type'],
-                                       parsed_data['surface_protection'])
+        self.mat_soilveg = np.char.add(parsed_data['soilType'],
+                                       parsed_data['surfaceProtection'])
         self.hor_lengths = parsed_data['hor_len']
 
         return data
@@ -304,14 +304,14 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         parsed_data = None
         subsegment_unseen = 0
 
-        hor_length = np.sum(joint_data['horizontal_projection_[m]'])
+        hor_length = np.sum(joint_data['horizontalProjection[m]'])
         diff = hor_length - (r * res)
         addition = diff / r
         one_pix_len = res + addition
 
         for slope_segment in joint_data:
             segment_length = np.sum(
-                slope_segment['horizontal_projection_[m]'])
+                slope_segment['horizontalProjection[m]'])
             seg_r = self._compute_rows(segment_length, one_pix_len)
 
             seg_hor_len_arr = np.array(
@@ -386,7 +386,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
 
         slope_width = float(self._config.get('domain', 'slope_width'))
 
-        header = ['length[m]', 'soil_vegFID', 'maximalSurfaceFlow[m3/s]',
+        header = ['length[m]', 'soilVegFID', 'maximalSurfaceFlow[m3/s]',
                   'totalRunoff[m3]', 'maximalSurfaceRunoffVelocity[m/s]',
                   'maximalTangentialStress[Pa]', 'rillRunoff[Y/N]']
         vals_to_write = (
