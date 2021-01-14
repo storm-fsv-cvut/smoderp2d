@@ -74,7 +74,10 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         from numpy.lib.recfunctions import append_fields
 
         filtered_soilvegs = None
-        soil_types_soilveg = soil_types['soilVeg']
+        try:
+            soil_types_soilveg = soil_types['soilVeg']
+        except ValueError as e:
+            raise ProviderError(e)
 
         for index in range(len(indata)):
             try:
