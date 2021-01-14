@@ -1,7 +1,7 @@
 [server]
 encoding=utf-8
 language=cs-CZ
-parallelprocesses=4
+parallelprocesses=20
 maxrequestsize=10mb
 maxsingleinputsize=10mb
 outputurl=http://${NGINX_HOST}:${NGINX_PORT}/wps/outputs/
