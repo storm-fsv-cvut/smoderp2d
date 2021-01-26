@@ -98,13 +98,13 @@ class Mfda(object):
 
         Logger.info("Multiflow direction algorithm")
         self.inflows, fd_rill = mfd.new_mfda(
-            mat_dem, mat_nan, mat_fd, vpix, spix, rows, cols
+            mat_dem, mat_nan, mat_fd, dy, dx, rows, cols
         )
         self.inflowsRill = D8_.new_inflows(fd_rill)
 
     def update_inflows(self, fd):
         self.inflows, fd_rill = mfd.new_mfda(
-            self.H, mat_nan, fd, vpix, spix, rows, cols)
+            self.H, mat_nan, fd, dy, dx, rows, cols)
         self.inflowsRill = D8_.new_inflows(fd_rill)
 
     def cell_runoff(self, i, j, sur=True):

@@ -11,7 +11,7 @@ from smoderp2d.flow_algorithm.py_dmtfce import removeCellsWithSameHeightNeighbor
     neighbors, dirSlope, boolToInt, FB, VE
 from smoderp2d.providers import Logger
 
-def new_mfda(mat_dem, mat_nan, mat_fd, vpix, spix, rows, cols):
+def new_mfda(mat_dem, mat_nan, mat_fd, dy, dx, rows, cols):
     state = 0
     state2 = 0
 
@@ -50,7 +50,7 @@ def new_mfda(mat_dem, mat_nan, mat_fd, vpix, spix, rows, cols):
                 possible_circulation = 0
 
                 nbrs = neighbors(i, j, mat_dem, rows, cols)
-                fldir, flsp = dirSlope(point_m, nbrs, vpix, spix)
+                fldir, flsp = dirSlope(point_m, nbrs, dy, dx)
 
                 flprop = np.zeros(8, float)
                 sum_slgr = 0

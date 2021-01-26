@@ -68,7 +68,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         Module('v.buffer',
                input='aoi',
                output='aoi_buffer',
-               distance=-self.spix / 3
+               distance=-self.dx / 3
         )
 
         stream_clip = 'stream_clip'
@@ -208,7 +208,7 @@ class StreamPreparation(StreamPreparationBase, ManageFields):
         """
         Module('g.region',
                vector=stream,
-               res=self.spix
+               res=self.dx
         )
         Module('v.to.rast',
                input=stream,
