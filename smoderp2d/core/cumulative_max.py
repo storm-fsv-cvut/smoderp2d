@@ -94,10 +94,14 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             'precipitation': CumulativeData('core',    'cRain_m3'),      # 2
             # maximum surface water level [m]
             'h_sur_tot'    : CumulativeData('control', 'mWLevel_m'),     # 3
-            # maximum sheet discharge [m3s-1]
-            'q_sheet_tot'      : CumulativeData('control', 'mQsheet_m3_s'),  # 4
+            # maximal total surface flow [m3/s]
+            'q_sur_tot'    : CumulativeData('core',    'mQsur_m3_s'),    # 15
+            # cumulative total surface flow [m3/s]
+            'vol_sur_tot'  : CumulativeData('core',    'cVsur_m3')       # 16
             # maximum sheet water level [m]
             'h_sheet_tot'      : CumulativeData('control', 'mWLevelsheet_m'),  # 4
+            # maximum sheet discharge [m3s-1]
+            'q_sheet_tot'      : CumulativeData('control', 'mQsheet_m3_s'),  # 4
             # cumulative sheet runoff volume [m3]
             'vol_sheet'    : CumulativeData('control', 'cSheetVOutM3'),  # 5
             # maximum sheet velocity [ms-1]
@@ -116,10 +120,6 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             'inflow_sur'   : CumulativeData('control', 'cVIn_M3'),       # 12
             # maximum surface retention [m]
             'sur_ret'      : CumulativeData('control', 'surRet_M'),      # 13
-            # maximal total surface flow [m3/s]
-            'q_sur_tot'    : CumulativeData('core',    'mQsur_m3_s'),    # 15
-            # cumulative total surface flow [m3/s]
-            'vol_sur_tot'  : CumulativeData('core',    'cVsur_m3')       # 16
         })
         # define arrays class attributes
         for item in self.data.keys():
