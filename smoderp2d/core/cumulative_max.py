@@ -178,4 +178,5 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         )
 
     def return_str_val(self, i, j):
-        return '{:.4e}'.format(self.vol_sur_tot[i][j])
+        sw = Globals.slope_width
+        return '{:.4e}'.format(self.vol_sur_tot[i][j] * sw)
