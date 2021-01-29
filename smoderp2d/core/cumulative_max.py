@@ -97,7 +97,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             # maximal total surface flow [m3/s]
             'q_sur_tot'    : CumulativeData('core',    'mQsur_m3_s'),    # 15
             # cumulative total surface flow [m3/s]
-            'vol_sur_tot'  : CumulativeData('core',    'cVsur_m3')       # 16
+            'vol_sur_tot'  : CumulativeData('core',    'cVsur_m3'),       # 16
             # maximum sheet water level [m]
             'h_sheet_tot'      : CumulativeData('control', 'mWLevelsheet_m'),  # 4
             # maximum sheet discharge [m3s-1]
