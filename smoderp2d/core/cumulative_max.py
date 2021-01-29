@@ -116,8 +116,6 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             'inflow_sur'   : CumulativeData('control', 'cVIn_M3'),       # 12
             # maximum surface retention [m]
             'sur_ret'      : CumulativeData('control', 'surRet_M'),      # 13
-            # cumulative surface runoff volume [m3]
-            'vol_sur_r'    : CumulativeData('control', 'CumVRestL3'),    # 14
             # maximal total surface flow [m3/s]
             'q_sur_tot'    : CumulativeData('core',    'mQsur_m3_s'),    # 15
             # cumulative total surface flow [m3/s]

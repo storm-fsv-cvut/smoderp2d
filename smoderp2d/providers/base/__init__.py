@@ -404,7 +404,6 @@ class BaseProvider(object):
                 'b_rill',
                 'inflow_sur',
                 'sur_ret',
-                'vol_sur_r'
         ]
 
         if Globals.subflow:
