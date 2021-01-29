@@ -177,6 +177,22 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             subsur_arr_el
         )
 
+    def calculate_vsheet_sheerstress(self):
+        """ compute maximum shear stress and velocity """
+
+        rrows = GridGlobals.rr
+        rcols = GridGlobals.rc
+        dx = GridGlobals.get_size()[0]
+        for i in rrows:
+            for j in rcols[i]:
+                if self.h_sur_tot[i][j] == 0.:
+                    self.v_sheet[i][j] = 0.
+                else:
+                    self.v_sheet[i][j] = \
+                        self.q_sheet_tot[i][j] / (self.h_sheet_tot[i][j] * dx)
+                self.shear_sheet[i][j] = \
+                    self.h_sheet_tot[i][j] * 9807 * Globals.mat_slope[i][j]
+
     def return_str_val(self, i, j):
         sw = Globals.slope_width
         return '{:.4e}'.format(self.vol_sur_tot[i][j] * sw)
