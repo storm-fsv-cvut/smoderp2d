@@ -94,14 +94,8 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             'precipitation': CumulativeData('core',    'cRain_m3'),      # 2
             # maximum surface water level [m]
             'h_sur_tot'    : CumulativeData('control', 'mWLevel_m'),     # 3
-            # maximal total surface flow [m3/s]
-            'q_sur_tot'    : CumulativeData('core',    'mQsur_m3_s'),    # 15
-            # cumulative total surface flow [m3/s]
-            'vol_sur_tot'  : CumulativeData('core',    'cVsur_m3'),       # 16
-            # maximum sheet water level [m]
-            'h_sheet_tot'      : CumulativeData('control', 'mWLevelsheet_m'),  # 4
             # maximum sheet discharge [m3s-1]
-            'q_sheet_tot'      : CumulativeData('control', 'mQsheet_m3_s'),  # 4
+            'q_sheet_tot'  : CumulativeData('control', 'mQsheet_m3_s'),  # 4
             # cumulative sheet runoff volume [m3]
             'vol_sheet'    : CumulativeData('control', 'cSheetVOutM3'),  # 5
             # maximum sheet velocity [ms-1]
@@ -111,7 +105,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             # maximum water level in rills [m]
             'h_rill'       : CumulativeData('control', 'mWLevelRill_m'), # 8
             # maximum discharge in rills [m3s-1]
-            'q_rill_tot'       : CumulativeData('control', 'mQRill_m3_s'),   # 9
+            'q_rill_tot'   : CumulativeData('control', 'mQRill_m3_s'),   # 9
             # cumulative runoff volume in rills [m3]
             'vol_rill'     : CumulativeData('control', 'cRillVOut_m3'),  # 10
             # maximum rill width [m]
@@ -120,6 +114,12 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             'inflow_sur'   : CumulativeData('control', 'cVIn_M3'),       # 12
             # maximum surface retention [m]
             'sur_ret'      : CumulativeData('control', 'surRet_M'),      # 13
+            # maximum sheet water level [m]
+            'h_sheet_tot'  : CumulativeData('control', 'mWLevelsheet_m'),  # 14
+            # maximal total surface flow [m3/s]
+            'q_sur_tot'    : CumulativeData('core',    'mQsur_m3_s'),    # 15
+            # cumulative total surface flow [m3/s]
+            'vol_sur_tot'  : CumulativeData('core',    'cVsur_m3'),       # 16
         })
         # define arrays class attributes
         for item in self.data.keys():
@@ -129,18 +129,16 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             )
 
     def update_cumulative(self, i, j, sur_arr_el, subsur_arr_el, delta_t):
-        """ Update arrays with cumulative and maximum
+        """Update arrays with cumulative and maximum
         values of key computation results.
 
         :param int i:
         :param int j:
         :param float sur_arr_el: single element in surface.arr
         :param float subsur_arr_el: single element in subsurface.arr (to be
-        implemented)
+            implemented)
         :param floet delta_t: length of time step
         """
-
-
         self.infiltration[i][j] += sur_arr_el.infiltration * GridGlobals.pixel_area
         self.precipitation[i][j] += sur_arr_el.cur_rain * GridGlobals.pixel_area
         self.vol_sheet[i][j] += sur_arr_el.vol_runoff
@@ -165,7 +163,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
 
         if sur_arr_el.state == 0:
             if (sur_arr_el.h_total_new > self.h_sheet_tot[i][j]):
-                self.h_sheet_tot[i][j] = sur_arr_el.h_total_new 
+                self.h_sheet_tot[i][j] = sur_arr_el.h_total_new
 
         elif (sur_arr_el.state == 1) or (sur_arr_el.state == 2):
             self.h_sheet_tot[i][j] = sur_arr_el.h_crit
@@ -177,8 +175,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         )
 
     def calculate_vsheet_sheerstress(self):
-        """ compute maximum shear stress and velocity """
-
+        """Compute maximum shear stress and velocity."""
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
         dx = GridGlobals.get_size()[0]
