@@ -164,7 +164,8 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             self.q_rill_tot[i][j] = q_rill_tot
 
         if sur_arr_el.state == 0:
-            self.h_sheet_tot[i][j] = sur_arr_el.h_total_new 
+            if (sur_arr_el.h_total_new > self.h_sheet_tot[i][j]):
+                self.h_sheet_tot[i][j] = sur_arr_el.h_total_new 
 
         elif (sur_arr_el.state == 1) or (sur_arr_el.state == 2):
             self.h_sheet_tot[i][j] = sur_arr_el.h_crit
