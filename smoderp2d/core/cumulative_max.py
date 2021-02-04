@@ -190,5 +190,8 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
                     self.h_sheet_tot[i][j] * 9807 * Globals.mat_slope[i][j]
 
     def return_str_val(self, i, j):
+        """ returns the cumulative precipitation in mm and cumulative runoff 
+        at a given cell"""
         sw = Globals.slope_width
-        return '{:.4e}'.format(self.vol_sur_tot[i][j] * sw)
+        return '{:.4e}'.format(self.precipitation[i][j]/GridGlobals.pixel_area), \
+            '{:.4e}'.format(self.vol_sur_tot[i][j] * sw)

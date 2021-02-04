@@ -180,10 +180,11 @@ class Hydrographs:
                 m = self.point_int[ip][2]
                 if i == l and j == m:
                     linebil = surface.return_str_vals(l, m, SEP, dt, Globals.extraOut)
-                    cumulativeline = cumulative.return_str_val(l,m)
-                    line = '{0:.4e}{sep}{1:.4e}{sep}{2}{sep}{3}'.format(
-                        total_time, currRain,
-                        linebil[0],cumulativeline,
+                    cumulativelines = cumulative.return_str_val(l,m)
+                    print (cumulativelines)  
+                    line = '{0:.4e}{sep}{1}{sep}{2}{sep}{3}'.format(
+                        total_time, cumulativelines[0],
+                        linebil[0], cumulativelines[1],
                         sep=sep
                     )
                     # line += subsurface.return_str_vals(l,m,SEP,dt) + sep   #
