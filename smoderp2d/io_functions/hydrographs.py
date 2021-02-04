@@ -101,7 +101,7 @@ class Hydrographs:
             elif i == self.inSurface[iSurface]:
 
                 if not Globals.extraOut:
-                    header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
+                    header += 'time[s]{sep}rainfall[m]'\
                               '{sep}totalWaterLevel[m]{sep}surfaceFlow[m3/s]'\
                               '{sep}cumSurfaceVolRunoff[m3]'\
                               '{linesep}'.format(sep=SEP, linesep = os.linesep)
@@ -181,8 +181,8 @@ class Hydrographs:
                 if i == l and j == m:
                     linebil = surface.return_str_vals(l, m, SEP, dt, Globals.extraOut)
                     cumulativeline = cumulative.return_str_val(l,m)
-                    line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3}{sep}{4}'.format(
-                        total_time, dt, currRain,
+                    line = '{0:.4e}{sep}{1:.4e}{sep}{2}{sep}{3}'.format(
+                        total_time, currRain,
                         linebil[0],cumulativeline,
                         sep=sep
                     )
