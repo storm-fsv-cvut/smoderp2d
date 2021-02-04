@@ -378,16 +378,8 @@ class BaseProvider(object):
         rcols = GridGlobals.rc
         dx = GridGlobals.get_size()[0]
 
-        # compute maximum shear stress
-        for i in rrows:
-            for j in rcols[i]:
-                if cumulative.h_sur_tot[i][j] == 0.:
-                    cumulative.v_sheet[i][j] = 0.
-                else:
-                    cumulative.v_sheet[i][j] = \
-                        cumulative.q_sheet_tot[i][j] / (cumulative.h_sur_tot[i][j] * dx)
-                cumulative.shear_sheet[i][j] = \
-                    cumulative.h_sur_tot[i][j] * 9807 * Globals.mat_slope[i][j]
+        # compute maximum shear stress and velocity
+        cumulative.calculate_vsheet_sheerstress()
 
         # define output data to be produced
         data_output = [
@@ -412,7 +404,6 @@ class BaseProvider(object):
                 'b_rill',
                 'inflow_sur',
                 'sur_ret',
-                'vol_sur_r'
         ]
 
         if Globals.subflow:
