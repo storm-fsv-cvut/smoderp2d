@@ -68,7 +68,6 @@ class D8(object):
             jbx = j + bx
             try:
                 insurfflow_from_cell = self.arr.get_item([iax, jbx]).vol_runoff
-                print (insurfflow_from_cell)
             except:
                 insurfflow_from_cell = 0.0
             try:

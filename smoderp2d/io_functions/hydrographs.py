@@ -181,7 +181,6 @@ class Hydrographs:
                 if i == l and j == m:
                     linebil = surface.return_str_vals(l, m, SEP, dt, Globals.extraOut)
                     cumulativelines = cumulative.return_str_val(l,m)
-                    print (cumulativelines)  
                     line = '{0:.4e}{sep}{1}{sep}{2}{sep}{3}'.format(
                         total_time, cumulativelines[0],
                         linebil[0], cumulativelines[1],
