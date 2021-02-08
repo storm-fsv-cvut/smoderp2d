@@ -446,7 +446,7 @@ class PrepareDataBase(object):
 
         return mat_hcrit
 
-    def _get_mat_nan(self, r, c, no_data_value, mat_dem, mat_slope):
+    def _get_mat_nan(self, r, c, no_data_value, mat_slope, mat_dem):
         # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u
         # sklonu a acc
         mat_nan = np.zeros(
