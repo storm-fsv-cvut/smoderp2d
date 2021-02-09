@@ -243,7 +243,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
 
         data['mat_nan'], data['mat_slope'], data['mat_dem'] = \
             self._get_mat_nan(data['r'], data['c'], data['NoDataValue'],
-                              data['mat_dem'], data['mat_slope'])
+                              data['mat_slope'], data['mat_dem'])
 
         data['array_points'], data['points'] = self._set_hydrographs(data['r'] - 1)
         # and other unused variables
