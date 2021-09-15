@@ -29,16 +29,18 @@ class BaseLogger(logging.Logger):
             self._progress_info['end'] - self._progress_info['start']
 
     def progress(self, perc, *args, **kwargs):
-        if args:
-            self._progress(perc, *args)
-            args = ()
-        if self.isEnabledFor(PROGRESS):
-            perc_int = int(
-                self._progress_info['start'] + (perc/100.0) * self._progress_info['range']
-            )
-            self._log(PROGRESS, perc_int, args, **kwargs)
-        else:
-            self.info("Progress value: {}%".format(perc_int))
+        self._progress(perc, *args)
+        # The commented code bellow caused problems with arcgis.
+        #if args:
+        #    self._progress(perc, *args)
+        #    args = ()
+        #if self.isEnabledFor(PROGRESS):
+        #    perc_int = int(
+        #        self._progress_info['start'] + (perc/100.0) * self._progress_info['range']
+        #    )
+        #    self._log(PROGRESS, perc_int, args, **kwargs)
+        #else:
+        #    self.info("Progress value: {}%".format(perc_int))
 
     def _progress(self, perc, delta_t, t_iter, total_time):
         self.info('-' * 80)

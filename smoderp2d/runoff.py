@@ -402,7 +402,7 @@ class Runoff(object):
         # perform postprocessing - store results
         self.provider.postprocessing(self.cumulative, self.surface.arr,
                                      self.surface.reach)
-        Logger.progress(100)
+        #Logger.progress(100)
 
         # TODO
         # post_proc.stream_table(Globals.outdir + os.sep, self.surface,

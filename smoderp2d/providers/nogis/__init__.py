@@ -160,7 +160,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
             )
         except TypeError:
             raise ProviderError('Invalid rainfall file in [data] section')
-        Logger.progress(10)
+        #Logger.progress(10)
 
 
         # general settings
