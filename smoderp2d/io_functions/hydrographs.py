@@ -189,9 +189,12 @@ class Hydrographs:
                     # line += subsurface.return_str_vals(l,m,SEP,dt) + sep   #
                     # prozatim
                     if Globals.extraOut:
-                        line += '{sep}{0:.4e}{sep}{0:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}'\
-                        '{4:.4e}{sep}{5:.4e}'.format(
-                            linebil[1],
+                        line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'\
+                               '{sep}{3}{sep}{4}'\
+                               '{sep}{5:.4e}'\
+                               '{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
+                            total_time, dt, currRain, 
+                            linebil[0],linebil[1],
                             surface.arr.get_item([l, m]).vol_to_rill,
                             ratio, courantMost, courantRill, iter_,
                             sep=sep)
