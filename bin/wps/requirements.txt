@@ -1,4 +1,4 @@
-pywps==4.2.8
+pywps==4.5.0
 python-magic==0.4.18
 numpy>=1.14
 werkzeug<2
