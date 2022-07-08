@@ -39,7 +39,7 @@ def phlilip(k, s, deltaT, totalT, NoDataValue):
         # try:
     else:
 
-        infiltration = (0.5 * s / math.sqrt(totalT + deltaT) + k) * deltaT
+        infiltration = (0.5 * s / math.sqrt(totalT) + k) * deltaT
         # except ValueError:
     # print k, s
     return infiltration
