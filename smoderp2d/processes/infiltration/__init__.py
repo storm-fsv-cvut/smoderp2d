@@ -33,17 +33,13 @@ def philip_infiltration(soil, bil):
 def phlilip(k, s, deltaT, totalT, NoDataValue):
     if k and s == NoDataValue:
         infiltration = NoDataValue
-        dinft = NoDataValue
     # elif totalT == 0:
         # infiltration = k*deltaT  ## toto je chyba, infiltrace se rovna k az po ustaleni. Na zacatku je teoreticky nekonecno
     # else:
         # try:
     else:
 
-        infiltration = (0.5 * s / math.sqrt(totalT+deltaT) + k) * deltaT
-        infiltration1 =  s * totalT**0.5 + k * totalT
-        infiltration2 =  s * (totalT+deltaT)**0.5 + k * (totalT+deltaT)
-        dinft = (infiltration2 - infiltration1)
+        infiltration = (0.5 * s / math.sqrt(totalT + deltaT) + k) * deltaT
         # except ValueError:
     # print k, s
-    return dinft 
+    return infiltration
