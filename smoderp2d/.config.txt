@@ -1,0 +1,3 @@
+[outputs]
+# or no
+extraout = no
