@@ -104,7 +104,11 @@ class Hydrographs:
                     header += 'time[s]{sep}rainfall[m]'\
                               '{sep}totalWaterLevel[m]{sep}surfaceFlow[m3/s]'\
                               '{sep}cumSurfaceVolRunoff[m3]'\
-                              '{linesep}'.format(sep=SEP, linesep = os.linesep)
+                              .format(sep=SEP)
+                    if Globals.subflow:
+                        header += '{sep}subWaterLevel[m]{sep}subFlow[m3/s]'\
+                        '{sep}subVRunoff[m3]'.format(sep=SEP)
+                    header += os.linesep
                 else:
                     header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]{sep}'\
                               'waterLevel[m]{sep}sheetFlow[m3/s]{sep}sheetVRunoff[m3]{sep}'\
@@ -171,7 +175,8 @@ class Hydrographs:
                 self.files[ip].writelines(
                     '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3}{linesep}'.format(
                     total_time, dt, currRain,
-                    surface.return_stream_str_vals(l, m, SEP, dt, Globals.extraOut),
+                    surface.return_stream_str_vals(l, m, SEP, dt,
+                        Globals.extraOut),
                     sep=sep, linesep=os.linesep
                 ))
         else:
@@ -179,15 +184,19 @@ class Hydrographs:
                 l = self.point_int[ip][1]
                 m = self.point_int[ip][2]
                 if i == l and j == m:
-                    linebil = surface.return_str_vals(l, m, SEP, dt, Globals.extraOut)
+                    linebil = surface.return_str_vals(l, m, SEP, dt,
+                            Globals.extraOut)
                     cumulativelines = cumulative.return_str_val(l,m)
                     line = '{0:.4e}{sep}{1}{sep}{2}{sep}{3}'.format(
                         total_time, cumulativelines[0],
                         linebil[0], cumulativelines[1],
                         sep=sep
                     )
-                    # line += subsurface.return_str_vals(l,m,SEP,dt) + sep   #
-                    # prozatim
+                    if Globals.subflow:
+                        linebilsub = subsurface.return_str_vals(l,m,SEP,dt,
+                                Globals.extraOut)
+                        line += sep + linebilsub
+                    
                     if Globals.extraOut:
                         line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'\
                                '{sep}{3}{sep}{4}'\

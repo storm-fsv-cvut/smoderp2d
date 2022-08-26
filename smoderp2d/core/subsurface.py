@@ -154,16 +154,36 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
             for j in self.rc[i]:
                 self.arr.get_item([i, j]).vol_runoff_pre = self.arr.get_item([i, j]).vol_runoff
 
-    def return_str_vals(self, i, j, sep, dt):
+    def return_str_vals(self, i, j, sep, dt, extra_out):
+        """TODO.
+
+        :param i: row index
+        :param j: col index
+        :param sep: separator
+        :param dt: TODO
+        :param extra_out: append extra output
+
+        :return: TODO
+        """
         arr = self.arr.get_item([i, j])
+        sw = Globals.slope_width
+
          #';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[],exfiltration[];'
-        line = str(
-            arr.h) + sep + str(
-                arr.vol_runoff / dt) + sep + str(
-            arr.vol_runoff) + sep + str(
-                arr.vol_rest) + sep + str(
-                    arr.percolation) + sep + str(
-                        arr.exfiltration)
+        if not extra_out:
+            line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'.format(
+                arr.h,
+                arr.vol_runoff / dt * sw,
+                999,
+                sep=sep
+            )
+        else:
+            line = str(
+                arr.h) + sep + str(
+                    arr.vol_runoff / dt) + sep + str(
+                arr.vol_runoff) + sep + str(
+                    arr.vol_rest) + sep + str(
+                        arr.percolation) + sep + str(
+                            arr.exfiltration)
         return line
 
 
