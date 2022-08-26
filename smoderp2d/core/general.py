@@ -273,8 +273,8 @@ class Globals:
         return cls.mat_fd
 
     @classmethod
-    def get_mat_dem(cls):
-        return cls.mat_dem
+    def get_mat_dem(cls,i,j):
+        return cls.mat_dem[i][j]
 
     @classmethod
     def get_mat_efect_cont(cls):

@@ -50,7 +50,8 @@ class TimeStep:
                     rill_courant = 0.0
                 else:
                     q_sheet, v_sheet, q_rill, v_rill, fc.ratio, rill_courant = runoff(
-                        i, j, surface.arr.get_item([i, j]), delta_t, mat_efect_cont[i][j], fc.ratio
+                        i, j, surface.arr.get_item(
+                            [i, j]), delta_t, mat_efect_cont[i][j], fc.ratio
                     )
                     subsurface.runoff(i, j, delta_t, mat_efect_cont[i][j])
 
@@ -148,13 +149,19 @@ class TimeStep:
                 #
                 # Inflows from surroundings cells
                 #
-                surface.arr.get_item([i, j]).inflow_tm = surface.cell_runoff(i, j)
+                surface.arr.get_item(
+                    [i, j]).inflow_tm = surface.cell_runoff(i, j)
 
                 #
                 # Surface BILANCE
                 #
-                surBIL = surface.arr.get_item([i, j]).h_total_pre + actRain + surface.arr.get_item([i, j]).inflow_tm / pixel_area - (
-                    surface.arr.get_item([i, j]).vol_runoff / pixel_area + surface.arr.get_item([i, j]).vol_runoff_rill / pixel_area)
+                surBIL = surface.arr.get_item([i, j]).h_total_pre + \
+                    actRain + \
+                    surface.arr.get_item([i, j]).inflow_tm / pixel_area - \
+                    ( \
+                       surface.arr.get_item([i, j]).vol_runoff / pixel_area + \
+                       surface.arr.get_item([i, j]).vol_runoff_rill / pixel_area \
+                    )
 
                 #
                 # infiltration
@@ -170,11 +177,11 @@ class TimeStep:
                 #
                 # surface retention
                 #
-                surBIL = surface_retention(surBIL, surface.arr.get_item([i, j]))
+                surBIL = surface_retention(
+                    surBIL, surface.arr.get_item([i, j]))
 
                 # add exfiltration
                 surBIL += subsurface.get_exfiltration(i, j)
-
 
                 surface_state = surface.arr.get_item([i, j]).state
 
