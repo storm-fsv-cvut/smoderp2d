@@ -9,6 +9,7 @@ from smoderp2d.providers import Logger
 
 import smoderp2d.processes.subsurface as darcy
 
+
 class SubArrs:
     def __init__(self, L_sub, Ks, vg_n, vg_l, z, ele):
         """Subsurface attributes.
@@ -58,13 +59,13 @@ class SubsurfaceC(GridGlobals, Kinematic):
                     Ks,
                     vg_n,
                     vg_l,
-                    Globals.get_mat_dem(i,j) - L_sub,
-                    Globals.get_mat_dem(i,j))
+                    Globals.get_mat_dem(i, j) - L_sub,
+                    Globals.get_mat_dem(i, j))
 
         for i in self.rr:
             for j in self.rc[i]:
                 self.arr.get_item([i, j]).slope = \
-                    Globals.get_mat_dem(i,j)
+                    Globals.get_mat_dem(i, j)
 
         self.Kr = darcy.relative_unsat_conductivity
         self.darcy = darcy.darcy
@@ -97,17 +98,20 @@ class SubsurfaceC(GridGlobals, Kinematic):
     def bilance(self, i, j, infilt, inflow, dt):
 
         arr = self.arr.get_item([i, j])
-        bil = infilt + arr.vol_rest / self.pixel_area + inflow
+        pixel_area = GridGlobals.get_pixel_area()
 
-        # print bil, infilt , arr.vol_rest/self.pixel_area , inflow
+        # flow in and out
+        bil = infilt + arr.vol_rest / self.pixel_area + inflow - \
+            arr.vol_runoff/pixel_area
+
+        # balance minus percolation
         percolation = self.calc_percolation(i, j, bil, dt)
         arr.cum_percolation += percolation
-        bil -= percolation
-        # print bil,
         arr.percolation = percolation
+        bil -= percolation
+
+        # new h after exfiltration
         arr.h, arr.exfiltration = self.calc_exfiltration(i, j, bil)
-        # print arr.h
-        # print arr.h, infilt, arr.vol_rest/self.pixel_area, inflow
 
     def calc_percolation(self, i, j, bil, dt):
 
@@ -153,7 +157,8 @@ class SubsurfaceC(GridGlobals, Kinematic):
     def curr_to_pre(self):
         for i in self.rr:
             for j in self.rc[i]:
-                self.arr.get_item([i, j]).vol_runoff_pre = self.arr.get_item([i, j]).vol_runoff
+                self.arr.get_item([i, j]).vol_runoff_pre = self.arr.get_item(
+                    [i, j]).vol_runoff
 
     def return_str_vals(self, i, j, sep, dt, extra_out):
         """TODO.
@@ -169,7 +174,7 @@ class SubsurfaceC(GridGlobals, Kinematic):
         arr = self.arr.get_item([i, j])
         sw = Globals.slope_width
 
-         #';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[],exfiltration[];'
+        #';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[],exfiltration[];'
         if not extra_out:
             line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'.format(
                 arr.h,
