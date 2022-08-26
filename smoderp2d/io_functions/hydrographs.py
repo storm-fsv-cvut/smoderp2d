@@ -123,13 +123,13 @@ class Hydrographs:
                                   '{sep}rillVRest{sep}surfaceFlow[m3/s]'\
                                   '{sep}surfaceVRunoff[m3]'.format(sep=SEP)
                     header += '{sep}surfaceBil[m3]'.format(sep=SEP)
-                    if Globals.subflow:
-                        header += '{sep}subWaterLevel[m]{sep}subFlow[m3/s]'\
-                        '{sep}subVRunoff[m3]{sep}subVRest[m3]'\
-                        '{sep}percolation[]{sep}exfiltration[]'.format(sep=SEP)
                     if Globals.extraOut:
                         header += '{sep}vToRill[m3]{sep}ratio{sep}courant'\
                         '{sep}courantRill{sep}iter'.format(sep=SEP)
+                    if Globals.subflow:
+                        header += '{sep}subWaterLevel[m]{sep}subFlow[m3/s]'\
+                        '{sep}subVRunoff[m3]{sep}subVRest[m3]'\
+                        '{sep}percolation[m]{sep}exfiltration[m]'.format(sep=SEP)
                     header += os.linesep
 
                 iSurface += 1
@@ -192,11 +192,6 @@ class Hydrographs:
                         linebil[0], cumulativelines[1],
                         sep=sep
                     )
-                    if Globals.subflow:
-                        linebilsub = subsurface.return_str_vals(l,m,SEP,dt,
-                                Globals.extraOut)
-                        line += sep + linebilsub
-                    
                     if Globals.extraOut:
                         line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'\
                                '{sep}{3}{sep}{4}'\
@@ -207,6 +202,11 @@ class Hydrographs:
                             surface.arr.get_item([l, m]).vol_to_rill,
                             ratio, courantMost, courantRill, iter_,
                             sep=sep)
+                    if Globals.subflow:
+                        linebilsub = subsurface.return_str_vals(l,m,SEP,dt,
+                                Globals.extraOut)
+                        line += sep + linebilsub
+                    
                     line += os.linesep
                     self.files[ip].writelines(line)
 

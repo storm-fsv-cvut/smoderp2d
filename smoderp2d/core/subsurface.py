@@ -174,7 +174,6 @@ class SubsurfaceC(GridGlobals, Kinematic):
         arr = self.arr.get_item([i, j])
         sw = Globals.slope_width
 
-        #';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[],exfiltration[];'
         if not extra_out:
             line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'.format(
                 arr.h,
@@ -183,13 +182,15 @@ class SubsurfaceC(GridGlobals, Kinematic):
                 sep=sep
             )
         else:
-            line = str(
-                arr.h) + sep + str(
-                    arr.vol_runoff / dt) + sep + str(
-                arr.vol_runoff) + sep + str(
-                    arr.vol_rest) + sep + str(
-                        arr.percolation) + sep + str(
-                            arr.exfiltration)
+            line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}{sep}{5:.4e}'.format(
+                arr.h,
+                arr.vol_runoff / dt * sw,
+                arr.vol_runoff,
+                arr.vol_rest,
+                arr.percolation,
+                arr.exfiltration,
+                sep=sep
+            )
         return line
 
 
