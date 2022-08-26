@@ -37,7 +37,8 @@ class SubArrs:
         self.vg_l = vg_l
 
 
-class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
+# class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
+class SubsurfaceC(GridGlobals, Kinematic):
     def __init__(self, L_sub, Ks, vg_n, vg_l):
         """TODO.
 
@@ -47,6 +48,8 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
         :param vg_l: TODO
         """
         GridGlobals.__init__(self)
+        Kinematic.__init__(self)
+        #super(SubsurfaceC, self).__init__()
 
         for i in range(self.r):
             for j in range(self.c):
@@ -138,9 +141,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
     def runoff(self, i, j, delta_t, efect_vrst):
 
         arr = self.arr.get_item([i, j])
-        # print arr .Ks
         self.q_subsurface = self.darcy(arr, efect_vrst)
-        # print arr.h
         arr.vol_runoff = delta_t * self.q_subsurface
         arr.vol_rest = arr.h * self.pixel_area - delta_t * self.q_subsurface
 

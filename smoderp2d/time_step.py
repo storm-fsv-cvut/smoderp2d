@@ -134,8 +134,9 @@ class TimeStep:
         surface.reset_inflows()
         surface.new_inflows()
 
-        subsurface.fill_slope()
-        subsurface.new_inflows()
+        #subsurface.fill_slope()
+        #subsurface.reset_inflows()
+        #subsurface.new_inflows()
 
         for i in rr:
             for j in rc[i]:
@@ -203,11 +204,11 @@ class TimeStep:
 
                 surface_state = surface.arr.get_item([i, j]).state
                 # subsurface inflow
-                """
-        inflow_sub = subsurface.cell_runoff(i,j,False)
-        subsurface.bilance(i,j,infiltration,inflow_sub/pixel_area,delta_t)
-        subsurface.fill_slope()
-        """
+                
+                inflow_sub = subsurface.cell_runoff(i,j)
+                subsurface.bilance(i,j,infiltration,inflow_sub/pixel_area,delta_t)
+                subsurface.fill_slope()
+        
                 cumulative.update_cumulative(
                     i,
                     j,
