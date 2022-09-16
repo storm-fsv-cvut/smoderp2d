@@ -312,6 +312,8 @@ class BaseProvider(object):
         itc = int(tc)
         if itc == 1:
             ret['rill'] = True
+        elif itc == 2:
+            ret['subflow'] = True
         elif itc == 3:
             ret['stream'] = True
             ret['rill'] = True
