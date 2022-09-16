@@ -157,7 +157,8 @@ class Runoff(object):
                 L_sub=0.1,
                 Ks=0.005,
                 vg_n=1.5,
-                vg_l=0.5
+                vg_l=0.5, 
+                poro=0.5
             )
         else:
             self.subsurface = Subsurface()
