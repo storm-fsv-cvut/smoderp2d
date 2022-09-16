@@ -6,5 +6,6 @@ def relative_unsat_conductivity(S, l, m):
 def darcy(sub, efect_vrst):
     Ks = sub.Ks
     h = sub.h
+    poro = sub.poro
     slope = sub.slope
-    return Ks * h * efect_vrst * slope
+    return (Ks * h * efect_vrst * slope)/poro

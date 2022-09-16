@@ -11,7 +11,7 @@ import smoderp2d.processes.subsurface as darcy
 
 
 class SubArrs:
-    def __init__(self, L_sub, Ks, vg_n, vg_l, z, ele):
+    def __init__(self, L_sub, Ks, vg_n, vg_l, z, ele, poro):
         """Subsurface attributes.
 
         :param L_sub: TODO
@@ -36,11 +36,13 @@ class SubArrs:
         self.vg_n = vg_n
         self.vg_m = 1.0 - 1.0 / vg_n
         self.vg_l = vg_l
+        self.poro = poro
+
 
 
 # class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
 class SubsurfaceC(GridGlobals, Kinematic):
-    def __init__(self, L_sub, Ks, vg_n, vg_l):
+    def __init__(self, L_sub, Ks, vg_n, vg_l, poro):
         """TODO.
 
         :param L_sub: TODO
@@ -60,7 +62,7 @@ class SubsurfaceC(GridGlobals, Kinematic):
                     vg_n,
                     vg_l,
                     Globals.get_mat_dem(i, j) - L_sub,
-                    Globals.get_mat_dem(i, j))
+                    Globals.get_mat_dem(i, j), poro)
 
         for i in self.rr:
             for j in self.rc[i]:
@@ -101,7 +103,7 @@ class SubsurfaceC(GridGlobals, Kinematic):
         pixel_area = GridGlobals.get_pixel_area()
 
         # flow in and out
-        bil = infilt + arr.vol_rest / self.pixel_area + inflow - \
+        bil = infilt/arr.poro + arr.vol_rest / self.pixel_area + inflow - \
             arr.vol_runoff/pixel_area
 
         # balance minus percolation
@@ -133,7 +135,6 @@ class SubsurfaceC(GridGlobals, Kinematic):
 
         arr = self.arr.get_item([i, j])
         if (bil > arr.L_sub):
-            # print bil
             exfilt = bil - arr.L_sub
             bil = arr.L_sub
             # print exfilt
@@ -237,11 +238,12 @@ class SubsurfacePass(GridGlobals):
 
 class Subsurface(SubsurfaceC if Globals.subflow else SubsurfacePass):
 
-    def __init__(self, L_sub=0.010, Ks=0.001, vg_n=1.5, vg_l=0.5):
+    def __init__(self, L_sub=0.010, Ks=0.001, vg_n=1.5, vg_l=0.5, poro=0.5):
         Logger.info("Subsurface:")
         super(Subsurface, self).__init__(
             L_sub=L_sub,
             Ks=Ks,
             vg_n=vg_n,
-            vg_l=vg_l
+            vg_l=vg_l,
+            poro=poro
         )
