@@ -5,6 +5,8 @@ import numpy as np
 import smoderp2d.processes.rainfall as rainfall
 
 from smoderp2d.providers.base import Logger
+from smoderp2d.exceptions import SmallParameterValue
+from smoderp2d.exceptions import LargeParameterValue
 
 class PrepareDataBase(object):
     def __init__(self, writter):
@@ -98,6 +100,8 @@ class PrepareDataBase(object):
         #Logger.progress(30)
 
         self.data['mat_n'] = all_attrib[2]
+        self._check_parameter_value('n', self.data['mat_n'], [0,10])
+
         self.data['mat_pi'] = all_attrib[3]
         self.data['mat_ppl'] = all_attrib[4]
         self.data['mat_reten'] = all_attrib[5]
@@ -154,6 +158,13 @@ class PrepareDataBase(object):
         Logger.info('-' * 80)
 
         return self.data
+
+    def _check_parameter_value(self, name, arr, range_):
+        min_ = (np.nanmin(arr))
+        max_ = (np.nanmax(arr))
+        max_ = 100
+        if (range_[0] > min_) : raise SmallParameterValue(name, min_, range_[0])
+        if (range_[1] < max_) : raise LargeParameterValue(name, max_, range_[1])
 
     def _set_output_data(self):
         """
