@@ -162,7 +162,6 @@ class PrepareDataBase(object):
     def _check_parameter_value(self, name, arr, range_):
         min_ = (np.nanmin(arr))
         max_ = (np.nanmax(arr))
-        max_ = 100
         if (range_[0] > min_) : raise SmallParameterValue(name, min_, range_[0])
         if (range_[1] < max_) : raise LargeParameterValue(name, max_, range_[1])
 
