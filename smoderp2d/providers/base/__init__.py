@@ -373,7 +373,12 @@ class BaseProvider(object):
         return data
 
     def postprocessing(self, cumulative, surface_array, stream):
+        """Perform postprocessing steps. Store results.
 
+        :param cumulative: Cumulative object
+        :param surface_array: numpy array
+        :param stream: stream array (reach)
+        """
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
         dx = GridGlobals.get_size()[0]
