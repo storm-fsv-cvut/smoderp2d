@@ -59,8 +59,6 @@ class CmdProvider(BaseProvider):
         super(CmdProvider, self).__init__()
 
         # load configuration
-        if config_file is None and os.getenv("SMODERP2D_CONFIG_FILE"):
-            config_file = os.getenv("SMODERP2D_CONFIG_FILE")
         cloader = CmdArgumentParser(config_file)
         self.args.config_file, self.args.typecomp = cloader.set_config(
             "Run SMODERP2D.", typecomp='roff')
