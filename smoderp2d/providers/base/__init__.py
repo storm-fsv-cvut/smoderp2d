@@ -437,7 +437,7 @@ class BaseProvider(object):
         for i in rrows:
             for j in rcols[i]:
                 finState[i][j] = int(surface_array[i][j].state)
-                if finState[i][j] >= 1000:
+                if finState[i][j] >= Globals.streams_flow_inc:
                     vRest[i][j] = GridGlobals.NoDataValue
                 else:
                     vRest[i][j] = surface_array[i][j].h_total_new * GridGlobals.pixel_area
@@ -448,7 +448,7 @@ class BaseProvider(object):
 
         for i in rrows:
             for j in rcols[i]:
-                if  int(surface_array[i][j].state) >= 1000 :
+                if  int(surface_array[i][j].state) >= Globals.streams_flow_inc :
                     totalBil[i][j] = GridGlobals.NoDataValue
 
         self.storage.write_raster(self._make_mask(totalBil), 'massBalance')
