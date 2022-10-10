@@ -3,6 +3,7 @@
 
 import math
 from smoderp2d.providers import Logger
+
 from smoderp2d.core.general import Globals as Gl
 
 # Contains variables and methods needed for time step size handling
@@ -20,7 +21,7 @@ class Courant():
         self.maxh = 0
         self.cour_speed = 0
         # citical courant value
-        self.cour_crit = 0.8
+        self.cour_crit = 0.95
         self.cour_most = self.cour_crit + 1.0
         self.cour_most_rill = self.cour_crit + 1.0
         self.cour_coef = 0.5601
@@ -59,9 +60,9 @@ class Courant():
 
         # for i in sur.rr:
         # for j in sur.rc[i]:
-          # sumA += sur.arr[i][j].a
-          # sumB += sur.arr[i][j].b
-          # sumHCrit += sur.arr[i][j].h_crit
+          # sumA += sur.arr[i, j].a
+          # sumB += sur.arr[i, j].b
+          # sumHCrit += sur.arr[i, j].h_crit
           # count += 1
 
         # meanA = sumA/float(count)
@@ -134,7 +135,6 @@ class Courant():
         #                                      xor
         if ((self.cour_most < self.cour_least) != (self.cour_crit <= self.cour_most)):
 
-
         # pokud se na povrchu nic nedeje
         # nema se zmena dt cim ridit
         # a zmeni se podle maxima nasobeneho max_delta_t_mult
@@ -146,7 +146,7 @@ class Courant():
             dt = round(
                 (Gl.mat_efect_cont[self.i, self.j] * self.cour_crit * self.cour_coef) /
                  self.cour_speed,
-                4)
+                8)
 
             # nove dt nesmi byt vetsi nez je maxdt * max_delta_t_mult
             # max_delta_t_mult se meni podle ryh, vyse v teto funkci
