@@ -416,7 +416,7 @@ class PrepareDataBase(object):
                     exp = 1 / (b - 1)
 
                     if slope == 0.0:
-                        hcrit_tau = hcrit_v = hcrit_flux = 1000
+                        hcrit_tau = hcrit_v = hcrit_flux = 1000 # set come auxiliary high value for zero slope
 
                     else:
                         hcrit_v = np.power((v_crit / aa), exp)  # h critical from v

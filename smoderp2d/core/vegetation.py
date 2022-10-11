@@ -24,9 +24,8 @@ class Vegetation(GridGlobals):
 
         self.arr.set_outsides(SurArrs)
 
-        # convert unit mm -> m
         # TODO move this conversion into data preparation
-        mat_pi = Globals.get_mat_pi() / 1000.0
+        mat_pi = Globals.get_mat_pi() / 1000.0 # convert unit mm -> m
 
         for i in range(self.r):
             for j in range(self.c):

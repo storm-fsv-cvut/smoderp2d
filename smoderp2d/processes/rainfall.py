@@ -67,8 +67,8 @@ def load_precipitation(fh):
                 elif ((float(z[0])==0) & (float(z[1])==0)) : # if the record start with zero minutes and rainfall the line is ignored
                     continue
                 else:
-                    y0 = float(z[0]) * 60.0  # prevod na vteriny
-                    y1 = float(z[1]) / 1000.0  # prevod na metry
+                    y0 = float(z[0]) * 60.0  # convert minutes to seconds 
+                    y1 = float(z[1]) / 1000.0  # convert mm to m
                     if y1 < y2:
                         raise NonCumulativeRainData()
                     y2 = y1
