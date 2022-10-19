@@ -1,6 +1,6 @@
 # SMODERP2D
 
-[![pytest](https://github.com/pesekon2/smoderp2d/actions/workflows/pytest.yml/badge.svg?branch=master)](https://github.com/pesekon2/smoderp2d/actions/workflows/pytest.yml)
+[![pytest](https://github.com/storm-fsv-cvut/smoderp2d/actions/workflows/pytest.yml/badge.svg?branch=master)](https://github.com/storm-fsv-cvut/smoderp2d/actions/workflows/pytest.yml)
 
 Distributed event-based model for surface and subsurface runoff and erosion.
 
