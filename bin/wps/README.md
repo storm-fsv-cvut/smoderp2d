@@ -43,3 +43,12 @@ Execute:
 python3 request-template.py --template request-smoderp2d.xml > /tmp/request.xml && \
 wget --post-file /tmp/request.xml 'http://localhost:8080/services/wps?' -O -
 ```
+
+## Restart service on rain1 server
+
+```
+cd /opt/smoderp2d/bin/wps
+docker-compose down
+git pull
+docker-compose -f docker-compose-letsencrypt.yml up -d
+```

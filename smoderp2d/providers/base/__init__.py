@@ -243,7 +243,7 @@ class BaseProvider(object):
                 setattr(DataGlobals, item, data[item])
 
         GridGlobals.NoDataInt = int(-9999)
-        Globals.mat_reten = -1.0 * data['mat_reten'] / 1000
+        Globals.mat_reten = -1.0 * data['mat_reten'] / 1000 # converts mm to m
         Globals.diffuse = self._comp_type(data['type_of_computing'])['diffuse']
         Globals.subflow = self._comp_type(data['type_of_computing'])['subflow']
         # TODO: 2 lines bellow are duplicated for arcgis provider. fist
@@ -256,6 +256,14 @@ class BaseProvider(object):
         Globals.isRill = self._comp_type(data['type_of_computing'])['rill']
         Globals.isStream = self._comp_type(data['type_of_computing'])['stream']
         Globals.prtTimes = data.get('prtTimes', None)
+
+        # If nogis provider is used the values 
+        # should be set in the loop at the beginning
+        # of this method since it is part of the 
+        # data dict (only in nogis provider).
+        # Otherwise is has to be set to 1.
+        if (Globals.slope_width is None):
+            Globals.slope_width = 1
 
     @staticmethod
     def _cleanup():
@@ -370,16 +378,8 @@ class BaseProvider(object):
         rcols = GridGlobals.rc
         dx = GridGlobals.get_size()[0]
 
-        # compute maximum shear stress
-        for i in rrows:
-            for j in rcols[i]:
-                if cumulative.h_sur_tot[i][j] == 0.:
-                    cumulative.v_sheet[i][j] = 0.
-                else:
-                    cumulative.v_sheet[i][j] = \
-                        cumulative.q_sheet_tot[i][j] / (cumulative.h_sur_tot[i][j] * dx)
-                cumulative.shear_sheet[i][j] = \
-                    cumulative.h_sur_tot[i][j] * 9807 * Globals.mat_slope[i][j]
+        # compute maximum shear stress and velocity
+        cumulative.calculate_vsheet_sheerstress()
 
         # define output data to be produced
         data_output = [
@@ -404,7 +404,6 @@ class BaseProvider(object):
                 'b_rill',
                 'inflow_sur',
                 'sur_ret',
-                'vol_sur_r'
         ]
 
         if Globals.subflow:
@@ -438,7 +437,7 @@ class BaseProvider(object):
         for i in rrows:
             for j in rcols[i]:
                 finState[i][j] = int(surface_array[i][j].state)
-                if finState[i][j] >= 1000:
+                if finState[i][j] >= Globals.streams_flow_inc:
                     vRest[i][j] = GridGlobals.NoDataValue
                 else:
                     vRest[i][j] = surface_array[i][j].h_total_new * GridGlobals.pixel_area
@@ -449,7 +448,7 @@ class BaseProvider(object):
 
         for i in rrows:
             for j in rcols[i]:
-                if  int(surface_array[i][j].state) >= 1000 :
+                if  int(surface_array[i][j].state) >= Globals.streams_flow_inc :
                     totalBil[i][j] = GridGlobals.NoDataValue
 
         self.storage.write_raster(self._make_mask(totalBil), 'massBalance')

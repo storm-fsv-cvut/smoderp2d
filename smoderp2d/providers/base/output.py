@@ -33,7 +33,7 @@ class RasterAsciiBase(object):
             # TODO: explain
             for i in rrows:
                 for j in rcols[i]:
-                    if fs[i][j] >= 1000:
+                    if fs[i][j] >= Globals.streams_flow_inc:
                         out_array[i][j] = no_data
 
         return out_array

@@ -105,13 +105,14 @@ class Surface(GridGlobals, Stream, Kinematic):
         :return: TODO
         """
         arr = self.arr.get_item([i, j])
+        sw = Globals.slope_width
 
         # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
         if not extra_out:
 
             line = '{0:.4e}{sep}{1:.4e}'.format(
                 arr.h_total_new,
-                arr.vol_runoff / dt + arr.vol_runoff_rill / dt,
+                (arr.vol_runoff / dt + arr.vol_runoff_rill / dt) * sw,
                 sep=sep
             )
             bil_ = ''
@@ -120,6 +121,10 @@ class Surface(GridGlobals, Stream, Kinematic):
                 velocity = 0
             else :
                 velocity = arr.vol_runoff / dt / (arr.h_sheet*GridGlobals.dx)
+
+            # if nogis provider - the data in extra output are the unit width data
+            #                     if you need runoff from non-unit slope and
+            #                     with extra output calculate it yourself
             line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}{sep}'\
             '{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
                 arr.h_sheet,

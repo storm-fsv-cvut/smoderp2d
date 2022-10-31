@@ -54,7 +54,8 @@ class Hydrographs:
                 l = point_int[ip][1]
                 m = point_int[ip][2]
 
-                if Globals.get_mat_stream_reach(l, m) >= 1000:
+                if Globals.get_mat_stream_reach(l, m) >= \
+                        Globals.stream_flow_inc:
                     self.inStream.append(counter)
                     counter += 1
                 else:
@@ -88,11 +89,12 @@ class Hydrographs:
                 if not Globals.extraOut:
                     header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
                               '{sep}reachWaterLevel[m]{sep}reachFlow[m3/s]'\
-                              '{sep}CumReachVolRunoff[m3]'.format(sep=SEP)
+                              '{sep}cumReachVolRunoff[m3]'.format(sep=SEP)
                 else:
-                    header += 'time[s]{sep}deltaTime[s]{sep}Rainfall[m]'\
-                              '{sep}Waterlevel[m]{sep}V_runoff[m3]{sep}Q[m3/s]'\
-                              '{sep}V_from_field[m3]{sep}V_rests_in_stream[m3]'.format(sep=SEP)
+                    header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
+                              '{sep}waterlevel[m]{sep}vRunoff[m3]{sep}q[m3/s]'\
+                              '{sep}vFromField[m3]{sep}' \
+                              'vRestsInStream[m3]'.format(sep=SEP)
                 header += os.linesep
                 iStream += 1
                 self.header.append(header)
@@ -100,31 +102,31 @@ class Hydrographs:
             elif i == self.inSurface[iSurface]:
 
                 if not Globals.extraOut:
-                    header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]'\
+                    header += 'time[s]{sep}rainfall[m]'\
                               '{sep}totalWaterLevel[m]{sep}surfaceFlow[m3/s]'\
-                              '{sep}CumSurfaceVolRunoff[m3]'\
+                              '{sep}cumSurfaceVolRunoff[m3]'\
                               '{linesep}'.format(sep=SEP, linesep = os.linesep)
                 else:
-                    header += 'time[s]{sep}deltaTime[s]{sep}Rainfall[m]{sep}'\
-                              'Water_level_[m]{sep}Sheet_Flow[m3/s]{sep}Sheet_V_runoff[m3]{sep}'\
-                              'Sheet_flow_velocity[m/s]{sep}'\
-                              'Sheet_V_rest[m3]{sep}Infiltration[m]{sep}Surface_retetion[m]{sep}'\
-                              'State{sep}V_inflow[m3]{sep}WlevelTotal[m]'.format(sep=SEP)
+                    header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]{sep}'\
+                              'waterLevel[m]{sep}sheetFlow[m3/s]{sep}sheetVRunoff[m3]{sep}'\
+                              'sheetFlowVelocity[m/s]{sep}'\
+                              'sheetVRest[m3]{sep}infiltration[m]{sep}surfaceRetetion[m]{sep}'\
+                              'state{sep}vInflow[m3]{sep}wLevelTotal[m]'.format(sep=SEP)
 
                     if Globals.isRill:
-                        header += '{sep}WlevelRill[m]{sep}Rill_width[m]'\
-                                  '{sep}Rill_flow[m3/s]{sep}Rill_V_runoff[m3]'\
-                                  '{sep}Rill_flow_velocity[m/s]'\
-                                  '{sep}Rill_V_rest{sep}Surface_Flow[m3/s]'\
-                                  '{sep}Surface_V_runoff[m3]'.format(sep=SEP)
-                    header += '{sep}SurfaceBil[m3]'.format(sep=SEP)
+                        header += '{sep}wLevelRill[m]{sep}rillWidth[m]'\
+                                  '{sep}rillFlow[m3/s]{sep}rillVRunoff[m3]'\
+                                  '{sep}rillFlowVelocity[m/s]'\
+                                  '{sep}rillVRest{sep}surfaceFlow[m3/s]'\
+                                  '{sep}surfaceVRunoff[m3]'.format(sep=SEP)
+                    header += '{sep}surfaceBil[m3]'.format(sep=SEP)
                     if Globals.subflow:
-                        header += '{sep}Sub_Water_level_[m]{sep}Sub_Flow_[m3/s]'\
-                        '{sep}Sub_V_runoff[m3]{sep}Sub_V_rest[m3]'\
-                        '{sep}Percolation[]{sep}exfiltration[]'.format(sep=SEP)
+                        header += '{sep}subWaterLevel[m]{sep}subFlow[m3/s]'\
+                        '{sep}subVRunoff[m3]{sep}subVRest[m3]'\
+                        '{sep}percolation[]{sep}exfiltration[]'.format(sep=SEP)
                     if Globals.extraOut:
-                        header += '{sep}V_to_rill.m3.{sep}ratio{sep}courant'\
-                        '{sep}courantrill{sep}iter'.format(sep=SEP)
+                        header += '{sep}vToRill[m3]{sep}ratio{sep}courant'\
+                        '{sep}courantRill{sep}iter'.format(sep=SEP)
                     header += os.linesep
 
                 iSurface += 1
@@ -179,18 +181,21 @@ class Hydrographs:
                 m = self.point_int[ip][2]
                 if i == l and j == m:
                     linebil = surface.return_str_vals(l, m, SEP, dt, Globals.extraOut)
-                    cumulativeline = cumulative.return_str_val(l,m)
-                    line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3}{sep}{4}'.format(
-                        total_time, dt, currRain,
-                        linebil[0],cumulativeline,
+                    cumulativelines = cumulative.return_str_val(l,m)
+                    line = '{0:.4e}{sep}{1}{sep}{2}{sep}{3}'.format(
+                        total_time, cumulativelines[0],
+                        linebil[0], cumulativelines[1],
                         sep=sep
                     )
                     # line += subsurface.return_str_vals(l,m,SEP,dt) + sep   #
                     # prozatim
                     if Globals.extraOut:
-                        line += '{sep}{0:.4e}{sep}{0:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}'\
-                        '{4:.4e}{sep}{5:.4e}'.format(
-                            linebil[1],
+                        line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'\
+                               '{sep}{3}{sep}{4}'\
+                               '{sep}{5:.4e}'\
+                               '{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
+                            total_time, dt, currRain, 
+                            linebil[0],linebil[1],
                             surface.arr.get_item([l, m]).vol_to_rill,
                             ratio, courantMost, courantRill, iter_,
                             sep=sep)
