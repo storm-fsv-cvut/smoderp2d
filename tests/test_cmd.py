@@ -58,7 +58,7 @@ class TestCmd:
         runner = Runner()
         runner.run()
 
-        assert output_path.is_dir()
+        assert os.path.isdir(output_path)
 
         assert are_dir_trees_equal(
             output_path,
