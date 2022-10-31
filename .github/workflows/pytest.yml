@@ -15,6 +15,7 @@ jobs:
         os:
           - ubuntu-22.04
         python-version:
+          - "2.7"
           - "3.8"
           - "3.11.0-rc.2"
       fail-fast: true
