@@ -44,7 +44,7 @@ class TestCmd:
         assert config['data']['rainfall'] == 'tests/data/rainfall.txt'
 
     def test_002_run(self):
-        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
         from smoderp2d import Runner
 
         config = configparser.ConfigParser()
