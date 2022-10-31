@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import sys
 import os
@@ -50,9 +50,11 @@ def main(filename):
         data['points'],                   \
         data['poradi'],                   \
         data['end_time'],                 \
+        data['spix'],                     \
         data['state_cell'],               \
         data['temp'],                     \
         data['type_of_computing'],        \
+        data['vpix'],                     \
         data['mfda'],                     \
         data['sr'],                       \
         data['itera'],                    \
