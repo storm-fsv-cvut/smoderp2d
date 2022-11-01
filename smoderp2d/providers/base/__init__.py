@@ -94,7 +94,7 @@ class ConfigParserWrapper(ConfigParser, object):
 
     def getboolean(self, *args, **kwargs):
         if sys.version_info.major == 2:
-            return bool(self.__get(*args, **kwargs))
+            return False if self.__get(*args, **kwargs) == 'False' else 'True'
         return super().getboolean(*args, **kwargs)
     
 class BaseProvider(object):
