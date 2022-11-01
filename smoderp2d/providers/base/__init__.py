@@ -80,6 +80,12 @@ class BaseWritter(object):
     def write_raster(self, arr, output):
         pass
 
+class ConfigParserWrapper(ConfigParser):
+    def get(self, *args, **kwargs):
+        if sys.version_info.major == 2:
+            kwargs['fallback'] = None
+
+        super().get(*args, **kwargs)
 
 class BaseProvider(object):
     def __init__(self):
@@ -119,7 +125,7 @@ class BaseProvider(object):
                 self.args.config_file
             ))
 
-        config = ConfigParser()
+        config = ConfigParserWrapper()
         config.read(self.args.config_file)
 
         try:
