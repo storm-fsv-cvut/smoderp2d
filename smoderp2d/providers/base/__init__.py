@@ -84,6 +84,8 @@ class ConfigParserWrapper(ConfigParser):
     def get(self, *args, **kwargs):
         if sys.version_info.major == 2:
             kwargs['fallback'] = None
+            value = super().get(*args, **kwargs)
+            return kwargs['fallback'] if value is None else value
 
         return super().get(*args, **kwargs)
 
