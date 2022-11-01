@@ -13,9 +13,8 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-20.04
+          - ubuntu-22.04
         python-version:
-          - "2.7"
           - "3.8"
           - "3.11.0-rc.2"
       fail-fast: true

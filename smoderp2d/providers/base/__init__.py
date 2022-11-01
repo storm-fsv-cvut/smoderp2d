@@ -80,23 +80,6 @@ class BaseWritter(object):
     def write_raster(self, arr, output):
         pass
 
-class ConfigParserWrapper(ConfigParser, object):
-    def __get(self, *args, **kwargs):
-        fallback = kwargs.get('fallback')
-        kwargs.pop('fallback', None)
-        value = super(ConfigParserWrapper, self).get(*args, **kwargs)
-        return fallback if value is None else value
-        
-    def get(self, *args, **kwargs):
-        if sys.version_info.major == 2:
-            return self.__get(*args, **kwargs)
-        return super().get(*args, **kwargs)
-
-    def getboolean(self, *args, **kwargs):
-        if sys.version_info.major == 2:
-            return False if self.__get(*args, **kwargs) == 'False' else 'True'
-        return super().getboolean(*args, **kwargs)
-    
 class BaseProvider(object):
     def __init__(self):
         self.args = Args()
@@ -135,7 +118,7 @@ class BaseProvider(object):
                 self.args.config_file
             ))
 
-        config = ConfigParserWrapper()
+        config = ConfigParser()
         config.read(self.args.config_file)
 
         try:
