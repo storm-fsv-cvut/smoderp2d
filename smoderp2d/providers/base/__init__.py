@@ -83,9 +83,10 @@ class BaseWritter(object):
 class ConfigParserWrapper(ConfigParser, object):
     def get(self, *args, **kwargs):
         if sys.version_info.major == 2:
-            kwargs['fallback'] = None
+            fallback = kwargs['fallback']
+            del kwargs['fallback']
             value = super(ConfigParserWrapper, self).get(*args, **kwargs)
-            return kwargs['fallback'] if value is None else value
+            return fallback if value is None else value
 
         return super().get(*args, **kwargs)
 
