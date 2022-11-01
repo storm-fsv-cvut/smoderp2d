@@ -80,7 +80,7 @@ class BaseWritter(object):
     def write_raster(self, arr, output):
         pass
 
-class ConfigParserWrapper(ConfigParser):
+class ConfigParserWrapper(ConfigParser, object):
     def get(self, *args, **kwargs):
         if sys.version_info.major == 2:
             kwargs['fallback'] = None
