@@ -85,7 +85,7 @@ class ConfigParserWrapper(ConfigParser):
         if sys.version_info.major == 2:
             kwargs['fallback'] = None
 
-        super().get(*args, **kwargs)
+        return super().get(*args, **kwargs)
 
 class BaseProvider(object):
     def __init__(self):
