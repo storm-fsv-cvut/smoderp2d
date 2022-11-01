@@ -41,7 +41,7 @@ class TestCmd:
 
         config = configparser.ConfigParser()
         config.read(self.config_file)
-        assert config['data']['rainfall'] == 'tests/data/rainfall.txt'
+        assert config.get('data', 'rainfall') == 'tests/data/rainfall.txt'
 
     def test_002_run(self):
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -49,7 +49,7 @@ class TestCmd:
 
         config = configparser.ConfigParser()
         config.read(self.config_file)
-        output_path = config["output"]["outdir"]
+        output_path = config.get("output", "outdir")
         if os.path.exists(output_path):
             rmtree(output_path)
 

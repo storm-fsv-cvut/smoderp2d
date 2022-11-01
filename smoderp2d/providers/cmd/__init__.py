@@ -66,7 +66,7 @@ class CmdProvider(BaseProvider):
             "Run SMODERP2D.", typecomp='roff')
         self._config = self._load_config()
         try:
-            self.args.data_file = self._config['data']['pickle']
+            self.args.data_file = self._config.get('data', 'pickle')
         except KeyError:
             raise ConfigError("No pickle defined")
 
