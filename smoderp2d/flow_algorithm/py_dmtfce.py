@@ -157,11 +157,11 @@ def removeCellsWithSameHeightNeighborhood(mat_dem, mat_nan, rows, cols):  # func
     return mat_dem, mat_nan
 
 
-def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangular facet outflow direction and slope
+def dirSlope(point_m, nbrs, dy, dx):  # function calculates for each triangular facet outflow direction and slope
     "Return a list of direction a slope values for each triangular facet"
     direction = np.zeros(8)
     slope = np.zeros(8)
-    VPIX_SQRT = vpix * math.sqrt(2)
+    DY_SQRT = dy * math.sqrt(2)
     d0 = -1
     s0 = -1
     d1 = -1
@@ -189,16 +189,16 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
             # one of two neighbor points has NoData value
             elif nbrs[0] > 0 and nbrs[1] < 0:
                 d0 = 0
-                s0 = (point_m - nbrs[0]) / VPIX_SQRT
+                s0 = (point_m - nbrs[0]) / DY_SQRT
             # one of two neighbor points has NoData value
             elif nbrs[1] > 0 and nbrs[0] < 0 or (abs(point_m - nbrs[1]) < 1e-8 and nbrs[0] > point_m):
                 d0 = FB
-                s0 = (point_m - nbrs[1]) / vpix
+                s0 = (point_m - nbrs[1]) / dy
             else:
-                x1 = spix
+                x1 = dx
                 x2 = 0
-                y1 = vpix
-                y2 = vpix
+                y1 = dy
+                y2 = dy
                 z1 = nbrs[0] - point_m
                 z2 = nbrs[1] - point_m
 
@@ -219,10 +219,10 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 if d0 > FB:
                     if point_m >= nbrs[1] and nbrs[0] >= nbrs[1]:
                         d0 = FB
-                        s0 = (point_m - nbrs[1]) / vpix
+                        s0 = (point_m - nbrs[1]) / dy
                     elif point_m >= nbrs[0] and nbrs[1] >= nbrs[0]:
                         d0 = 0
-                        s0 = (point_m - nbrs[0]) / VPIX_SQRT
+                        s0 = (point_m - nbrs[0]) / DY_SQRT
                     else:
                         d0 = -1
                         s0 = -1
@@ -233,15 +233,15 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 s1 = -1
             elif nbrs[1] > 0 and nbrs[2] < 0:
                 d1 = 0
-                s0 = (point_m - nbrs[1]) / vpix
+                s0 = (point_m - nbrs[1]) / dy
             elif nbrs[2] > 0 and nbrs[1] < 0 or (abs(point_m - nbrs[2]) < 1e-8 and nbrs[1] > point_m):
                 d1 = FB
-                s0 = (point_m - nbrs[2]) / VPIX_SQRT
+                s0 = (point_m - nbrs[2]) / DY_SQRT
             else:
                 x1 = 0
-                x2 = spix
-                y1 = vpix
-                y2 = vpix
+                x2 = dx
+                y1 = dy
+                y2 = dy
                 z1 = nbrs[1] - point_m
                 z2 = nbrs[2] - point_m
 
@@ -262,10 +262,10 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 if d1 > FB:
                     if point_m >= nbrs[2] and nbrs[1] >= nbrs[2]:
                         d1 = FB
-                        s1 = (point_m - nbrs[2]) / VPIX_SQRT
+                        s1 = (point_m - nbrs[2]) / DY_SQRT
                     elif point_m >= nbrs[1] and nbrs[2] >= nbrs[1]:
                         d1 = 0
-                        s1 = (point_m - nbrs[1]) / vpix
+                        s1 = (point_m - nbrs[1]) / dy
                     else:
                         d1 = -1
                         s1 = -1
@@ -276,14 +276,14 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 s2 = -1
             elif nbrs[2] > 0 and nbrs[4] < 0:
                 d2 = 0
-                s2 = (point_m - nbrs[2]) / VPIX_SQRT
+                s2 = (point_m - nbrs[2]) / DY_SQRT
             elif nbrs[4] > 0 and nbrs[2] < 0 or (abs(point_m - nbrs[4]) < 1e-8 and nbrs[2] > point_m):
                 d2 = FB
-                s2 = (point_m - nbrs[4]) / spix
+                s2 = (point_m - nbrs[4]) / dx
             else:
-                x1 = spix
-                x2 = spix
-                y1 = vpix
+                x1 = dx
+                x2 = dx
+                y1 = dy
                 y2 = 0
                 z1 = nbrs[2] - point_m
                 z2 = nbrs[4] - point_m
@@ -305,11 +305,11 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 if d2 > FB:
                     if point_m >= nbrs[4] and nbrs[2] >= nbrs[4]:
                         d2 = FB
-                        s2 = (point_m - nbrs[4]) / spix
+                        s2 = (point_m - nbrs[4]) / dx
 
                     elif point_m >= nbrs[2] and nbrs[4] >= nbrs[2]:
                         d2 = 0
-                        s2 = (point_m - nbrs[2]) / VPIX_SQRT
+                        s2 = (point_m - nbrs[2]) / DY_SQRT
                     else:
                         d2 = -1
                         s2 = -1
@@ -320,15 +320,15 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 s3 = -1
             elif nbrs[4] > 0 and nbrs[7] < 0:
                 d3 = 0
-                s3 = (point_m - nbrs[4]) / spix
+                s3 = (point_m - nbrs[4]) / dx
             elif nbrs[7] > 0 and nbrs[4] < 0 or (abs(point_m - nbrs[7]) < 1e-8 and nbrs[4] > point_m):
                 d3 = FB
-                s3 = (point_m - nbrs[7]) / VPIX_SQRT
+                s3 = (point_m - nbrs[7]) / DY_SQRT
             else:
-                x1 = spix
-                x2 = spix
+                x1 = dx
+                x2 = dx
                 y1 = 0
-                y2 = vpix
+                y2 = dy
                 z1 = nbrs[4] - point_m
                 z2 = nbrs[7] - point_m
 
@@ -349,10 +349,10 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 if d3 > FB:
                     if point_m >= nbrs[7] and nbrs[4] >= nbrs[7]:
                         d3 = FB
-                        s3 = (point_m - nbrs[7]) / VPIX_SQRT
+                        s3 = (point_m - nbrs[7]) / DY_SQRT
                     elif point_m >= nbrs[4] and nbrs[7] >= nbrs[4]:
                         d3 = 0
-                        s3 = (point_m - nbrs[4]) / spix
+                        s3 = (point_m - nbrs[4]) / dx
                     else:
                         d3 = -1
                         s3 = -1
@@ -363,15 +363,15 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 s4 = -1
             elif nbrs[7] > 0 and nbrs[6] < 0:
                 d4 = 0
-                s4 = (point_m - nbrs[7]) / VPIX_SQRT
+                s4 = (point_m - nbrs[7]) / DY_SQRT
             elif nbrs[6] > 0 and nbrs[7] < 0 or (abs(point_m - nbrs[6]) < 1e-8 and nbrs[7] > point_m):
                 d4 = FB
-                s4 = (point_m - nbrs[6]) / vpix
+                s4 = (point_m - nbrs[6]) / dy
             else:
-                x1 = spix
+                x1 = dx
                 x2 = 0
-                y1 = vpix
-                y2 = vpix
+                y1 = dy
+                y2 = dy
                 z1 = nbrs[7] - point_m
                 z2 = nbrs[6] - point_m
 
@@ -392,10 +392,10 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 if d4 > FB:
                     if point_m >= nbrs[6] and nbrs[7] >= nbrs[6]:
                         d4 = FB
-                        s4 = (point_m - nbrs[6]) / vpix
+                        s4 = (point_m - nbrs[6]) / dy
                     elif point_m >= nbrs[7] and nbrs[6] >= nbrs[7]:
                         d4 = 0
-                        s4 = (point_m - nbrs[7]) / VPIX_SQRT
+                        s4 = (point_m - nbrs[7]) / DY_SQRT
                     else:
                         d4 = -1
                         s4 = -1
@@ -406,15 +406,15 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 s5 = -1
             elif nbrs[6] > 0 and nbrs[5] < 0:
                 d5 = 0
-                s5 = (point_m - nbrs[6]) / vpix
+                s5 = (point_m - nbrs[6]) / dy
             elif nbrs[5] > 0 and nbrs[6] < 0 or (abs(point_m - nbrs[5]) < 1e-8 and nbrs[6] > point_m):
                 d5 = FB
-                s5 = (point_m - nbrs[5]) / VPIX_SQRT
+                s5 = (point_m - nbrs[5]) / DY_SQRT
             else:
                 x1 = 0
-                x2 = spix
-                y1 = vpix
-                y2 = vpix
+                x2 = dx
+                y1 = dy
+                y2 = dy
                 z1 = nbrs[6] - point_m
                 z2 = nbrs[5] - point_m
 
@@ -435,10 +435,10 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 if d5 > FB:
                     if point_m >= nbrs[5] and nbrs[6] >= nbrs[5]:
                         d5 = FB
-                        s5 = (point_m - nbrs[5]) / VPIX_SQRT
+                        s5 = (point_m - nbrs[5]) / DY_SQRT
                     elif point_m >= nbrs[6] and nbrs[5] >= nbrs[6]:
                         d5 = 0
-                        s5 = (point_m - nbrs[6]) / vpix
+                        s5 = (point_m - nbrs[6]) / dy
                     else:
                         d5 = -1
                         s5 = -1
@@ -449,14 +449,14 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 s6 = -1
             elif nbrs[5] > 0 and nbrs[3] < 0:
                 d6 = 0
-                s6 = (point_m - nbrs[5]) / VPIX_SQRT
+                s6 = (point_m - nbrs[5]) / DY_SQRT
             elif nbrs[3] > 0 and nbrs[5] < 0 or (abs(point_m - nbrs[3]) < 1e-8 and nbrs[5] > point_m):
                 d6 = FB
-                s6 = (point_m - nbrs[3]) / spix
+                s6 = (point_m - nbrs[3]) / dx
             else:
-                x1 = spix
-                x2 = spix
-                y1 = vpix
+                x1 = dx
+                x2 = dx
+                y1 = dy
                 y2 = 0
                 z1 = nbrs[5] - point_m
                 z2 = nbrs[3] - point_m
@@ -478,10 +478,10 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 if d6 > FB:
                     if point_m >= nbrs[3] and nbrs[5] >= nbrs[3]:
                         d6 = FB
-                        s6 = (point_m - nbrs[3]) / spix
+                        s6 = (point_m - nbrs[3]) / dx
                     elif point_m >= nbrs[5] and nbrs[3] >= nbrs[5]:
                         d6 = 0
-                        s6 = (point_m - nbrs[5]) / VPIX_SQRT
+                        s6 = (point_m - nbrs[5]) / DY_SQRT
                     else:
                         d6 = -1
                         s6 = -1
@@ -492,15 +492,15 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 s7 = -1
             elif nbrs[3] > 0 and nbrs[0] < 0:
                 d7 = 0
-                s7 = (point_m - nbrs[3]) / spix
+                s7 = (point_m - nbrs[3]) / dx
             elif nbrs[0] > 0 and nbrs[3] < 0 or (abs(point_m - nbrs[0]) < 1e-8 and nbrs[3] > point_m):
                 d7 = FB
-                s7 = (point_m - nbrs[0]) / VPIX_SQRT
+                s7 = (point_m - nbrs[0]) / DY_SQRT
             else:
-                x1 = spix
-                x2 = spix
+                x1 = dx
+                x2 = dx
                 y1 = 0
-                y2 = vpix
+                y2 = dy
                 z1 = nbrs[3] - point_m
                 z2 = nbrs[0] - point_m
 
@@ -521,10 +521,10 @@ def dirSlope(point_m, nbrs, vpix, spix):  # function calculates for each triangu
                 if d7 > FB:
                     if point_m >= nbrs[0] and nbrs[3] >= nbrs[0]:
                         d7 = FB
-                        s7 = (point_m - nbrs[0]) / VPIX_SQRT
+                        s7 = (point_m - nbrs[0]) / DY_SQRT
                     elif point_m >= nbrs[3] and nbrs[0] >= nbrs[3]:
                         d7 = 0
-                        s7 = (point_m - nbrs[3]) / spix
+                        s7 = (point_m - nbrs[3]) / dx
                     else:
                         d7 = -1
                         s7 = -1
@@ -597,11 +597,11 @@ def boolToInt(x):  # function creates bit value from vector of ones and zeros
     return y
 
 
-def lenght(flow_direction, vpix, spix):
+def lenght(flow_direction, dy, dx):
     if fd == 32 or fd == 128 or fd == 8 or fd == 2:
-        L = math.sqrt(vpix * vpix + spix * spix)
+        L = math.sqrt(dy * dy + dx * dx)
     elif fd == 64 or fd == 4:
-        L = vpix
+        L = dy
     elif fd == 1 or fd == 16:
-        L = spix
+        L = dx
     return L

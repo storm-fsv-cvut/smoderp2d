@@ -146,8 +146,6 @@ class PrepareDataBase(object):
 
         self.data['mfda'] = False
         self.data['mat_boundary'] = None
-        self.data['spix'] = None
-        self.data['vpix'] = None
         #Logger.progress(100)
 
         Logger.info("Data preparation has been finished")
@@ -195,11 +193,9 @@ class PrepareDataBase(object):
             'points': self._input_params['points'], # TODO: used outside?
             'poradi': None,
             'end_time': self._input_params['end_time'],
-            'spix': None,
             'state_cell': None,
             'temp': None,
             'type_of_computing': None,
-            'vpix': None,
             'mfda': None,
             'sr': None,
             'itera': None,
@@ -318,8 +314,8 @@ class PrepareDataBase(object):
         """Internal method called by _get_array_points().
         """
         # position i,j in raster (starts at 0)
-        r = int(self.data['r'] - ((y - self.data['yllcorner']) // self.data['vpix']) - 1)
-        c = int((x - self.data['xllcorner']) // self.data['spix'])
+        r = int(self.data['r'] - ((y - self.data['yllcorner']) // self.data['dy']) - 1)
+        c = int((x - self.data['xllcorner']) // self.data['dx'])
 
         # if point is not on the edge of raster or its
         # neighbours are not "NoDataValue", it will be saved
@@ -506,7 +502,7 @@ class PrepareDataBase(object):
                 self._input_params['table_stream_shape_code'],
                 self._input_params['elevation'],
                 mask_shp,
-                self.data['spix'],
+                self.data['dx'],
                 self.data['r'],
                 self.data['c'],
                 (self.data['xllcorner'], self.data['yllcorner']),

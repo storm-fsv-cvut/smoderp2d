@@ -177,14 +177,10 @@ class Globals:
     poradi = None
     # end time of computation
     end_time = None
-    # ???
-    spix = None
     # raster contains cell flow state information
     state_cell = None
     # path to directory for temporal data storage
     temp = None
-    # ???
-    vpix = None
     # bool variable for flow direction algorithm (false=one direction, true
     # multiple flow direction)
     mfda = None
@@ -309,20 +305,12 @@ class Globals:
         return cls.end_time
 
     @classmethod
-    def get_spix(cls):
-        return cls.spix
-
-    @classmethod
     def get_state_cell(cls):
         return cls.state_cell
 
     @classmethod
     def get_temp(cls):
         return cls.temp
-
-    @classmethod
-    def get_vpix(cls):
-        return cls.vpix
 
     @classmethod
     def get_mfda(cls):

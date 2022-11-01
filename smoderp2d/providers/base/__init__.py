@@ -80,7 +80,6 @@ class BaseWritter(object):
     def write_raster(self, arr, output):
         pass
 
-
 class BaseProvider(object):
     def __init__(self):
         self.args = Args()
