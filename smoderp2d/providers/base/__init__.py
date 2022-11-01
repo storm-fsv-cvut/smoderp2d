@@ -81,15 +81,22 @@ class BaseWritter(object):
         pass
 
 class ConfigParserWrapper(ConfigParser, object):
+    def _get(self, *args, **kwargs):
+        fallback = kwargs.get('fallback')
+        kwargs.pop('fallback', None)
+        value = super(ConfigParserWrapper, self).get(*args, **kwargs)
+        return fallback if value is None else value
+        
     def get(self, *args, **kwargs):
         if sys.version_info.major == 2:
-            fallback = kwargs.get('fallback')
-            kwargs.pop('fallback', None)
-            value = super(ConfigParserWrapper, self).get(*args, **kwargs)
-            return fallback if value is None else value
-
+            return self._get(*args, **kwargs)
         return super().get(*args, **kwargs)
 
+    def getboolean(self, *args, **kwargs):
+        if sys.version_info.major == 2:
+            return bool(self._get(*args, **kwargs))
+        return super().getboolean(*args, **kwargs)
+    
 class BaseProvider(object):
     def __init__(self):
         self.args = Args()
