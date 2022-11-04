@@ -115,7 +115,7 @@ class BaseProvider(object):
 
     def __load_hidden_config(self):
         # load hidden configuration with advanced settings 
-        _path = os.path.join(os.path.dirname(__file__), '../../.config.txt')
+        _path = os.path.join(os.path.dirname(__file__), '..', '..', '.config.txt')
         if not os.path.exists(_path):
             raise ConfigError("{} does not exist".format(
                 _path
