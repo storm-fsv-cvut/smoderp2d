@@ -8,10 +8,11 @@ import math
 import pickle
 import logging
 import numpy as np
-if sys.version_info.major >= 3:
-    from configparser import ConfigParser, NoSectionError, NoOptionError
-else:
-    from ConfigParser import ConfigParser, NoSectionError, NoOptionError
+# if sys.version_info.major >= 3:
+#     from configparser import ConfigParser, NoSectionError, NoOptionError
+# else:
+#     from ConfigParser import ConfigParser, NoSectionError, NoOptionError
+from configparser import ConfigParser, NoSectionError, NoOptionError
 
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError
@@ -159,7 +160,8 @@ class BaseProvider(object):
             ))
 
         print(self.args.config_file)
-        config = ConfigParserWrapper()
+        config = ConfigParser()
+        # config = ConfigParserWrapper()
         config.read(self.args.config_file)
 
         try:
