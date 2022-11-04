@@ -182,6 +182,13 @@ class PrepareDataBase(object):
         return self.data
 
     def _check_parameter_value(self, name, arr, range_):
+        """ check the parameter margins 
+
+        :param str name: name of the variable
+        :param np.array arr: the array holding the parameter values 
+        :param list range_: range of appropriate parameters
+        """
+
         min_ = (np.nanmin(arr))
         max_ = (np.nanmax(arr))
         if (range_[0] > min_) : raise SmallParameterValue(name, min_, range_[0])
