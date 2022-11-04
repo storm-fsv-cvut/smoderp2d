@@ -7,6 +7,9 @@ import pytest
 
 
 def print_diff_files(dcmp):
+    for name in dcmp.same_files:
+        print("same_file {} found in {} and {}".format(name, dcmp.left,
+              dcmp.right))
     for name in dcmp.diff_files:
         print("diff_file {} found in {} and {}".format(name, dcmp.left,
               dcmp.right))
