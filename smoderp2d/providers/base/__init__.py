@@ -86,9 +86,6 @@ class ConfigParserWrapper(ConfigParser, object):
     def __get(self, *args, **kwargs):
         fallback = kwargs.get('fallback')
         kwargs.pop('fallback', None)
-        print('*' * 30)
-        print(args)
-        print(kwargs)
         value = super(ConfigParserWrapper, self).get(*args, **kwargs)
         return fallback if value is None else value
 
@@ -159,7 +156,6 @@ class BaseProvider(object):
                 self.args.config_file
             ))
 
-        print(self.args.config_file)
         config = ConfigParser()
         # config = ConfigParserWrapper()
         config.read(self.args.config_file)

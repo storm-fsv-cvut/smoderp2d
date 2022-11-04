@@ -72,17 +72,7 @@ class TestCmd:
 
         assert os.path.isdir(output_path)
 
-        are_dir_trees_equal(
+        assert are_dir_trees_equal(
             output_path,
             os.path.join(os.path.dirname(__file__), "data", "reference", "quicktest")
         )
-
-        cap = capsys.readouterr()
-
-        with open('/tmp/out.txt', 'w') as out:
-            out.write(cap.out)
-
-        # assert are_dir_trees_equal(
-        #     output_path,
-        #     os.path.join(os.path.dirname(__file__), "data", "reference", "quicktest")
-        # )
