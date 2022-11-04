@@ -92,6 +92,7 @@ class BaseProvider(object):
 
         # storage writter must be defined
         self.storage = None
+        self._hidden_config = self.__load_hidden_config()
 
     @property
     def typecomp(self):
@@ -111,6 +112,23 @@ class BaseProvider(object):
         handler.setFormatter(formatter)
         Logger.addHandler(handler)
 
+    def __load_hidden_config(self):
+        # load hidden configuration with advanced settings 
+        _path = os.path.join(os.path.dirname(__file__), '..', '..', '.config.ini')
+        if not os.path.exists(_path):
+            raise ConfigError("{} does not exist".format(
+                _path
+            ))
+
+        config = ConfigParser()
+        config.read(_path)
+
+        if not config.has_option('outputs', 'extraout'):
+            raise ConfigError('Section "outputs" or option "extraout" is not set properly in file {}'.format( _path))
+
+        return config
+        
+        
     def _load_config(self):
         # load configuration
         if not os.path.exists(self.args.config_file):
@@ -255,6 +273,7 @@ class BaseProvider(object):
         Globals.isRill = self._comp_type(data['type_of_computing'])['rill']
         Globals.isStream = self._comp_type(data['type_of_computing'])['stream']
         Globals.prtTimes = data.get('prtTimes', None)
+        Globals.extraOut = self._hidden_config['outputs'].getboolean('extraout')
 
         # If nogis provider is used the values 
         # should be set in the loop at the beginning
