@@ -83,12 +83,12 @@ class BaseWritter(object):
 
 class ConfigParserWrapper(ConfigParser, object):
     def __init__(self, *args, **kwargs):
-        kwargs.pop('fallback', None)
         kwargs.update({'allow_no_value': True})
         super(ConfigParserWrapper, self).__init__(*args, **kwargs)
 
     def __get(self, *args, **kwargs):
         fallback = kwargs.get('fallback')
+        kwargs.pop('fallback', None)
         print('*' * 30)
         print(args)
         print(kwargs)
