@@ -21,7 +21,7 @@ class StreamPreparationBase(object):
         self.tab_stream_shape_code = args[2]
         self.dem = args[3]
         self.null = args[4]
-        self.spix = args[5]
+        self.dx = args[5]
         self.rows = args[6]
         self.cols = args[7]
         self.ll_corner = args[8]
