@@ -85,7 +85,7 @@ class ConfigParserWrapper(ConfigParser, object):
     def __get(self, *args, **kwargs):
         fallback = kwargs.get('fallback')
         kwargs.pop('fallback', None)
-        kwargs.update({allow_no_value: True})
+        kwargs.update({'allow_no_value': True})
         print('*' * 30)
         print(args)
         print(kwargs)
