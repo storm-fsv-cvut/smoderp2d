@@ -44,6 +44,7 @@ def are_dir_trees_equal(dir1, dir2):
             return False
     return True
 
+
 class TestCmd:
     config_file = os.path.join(os.path.dirname(__file__), "quicktest.ini")
 
