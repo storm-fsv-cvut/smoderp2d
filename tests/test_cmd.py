@@ -5,6 +5,8 @@ import filecmp
 from shutil import rmtree
 import pytest
 
+from difflib import unified_diff
+
 
 def print_diff_files(dcmp):
     for name in dcmp.same_files:
@@ -13,6 +15,7 @@ def print_diff_files(dcmp):
     for name in dcmp.diff_files:
         print("diff_file {} found in {} and {}".format(name, dcmp.left,
               dcmp.right))
+        print(unified_diff(os.path.join(dcmp.left, name), os.path.join(dcmp.right, name)))
 
     for sub_dcmp in dcmp.subdirs.values():
         print_diff_files(sub_dcmp)
