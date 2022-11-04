@@ -15,7 +15,9 @@ def print_diff_files(dcmp):
     for name in dcmp.diff_files:
         print("diff_file {} found in {} and {}".format(name, dcmp.left,
               dcmp.right))
-        sys.stdout.writelines(unified_diff(os.path.join(dcmp.left, name), os.path.join(dcmp.right, name)))
+        with open(os.path.join(dcmp.left, name)) as left:
+            with open(os.path.join(dcmp.right, name)) as right:
+                sys.stdout.writelines(unified_diff(left.readlines(), right.readlines()))
 
     for sub_dcmp in dcmp.subdirs.values():
         print_diff_files(sub_dcmp)
