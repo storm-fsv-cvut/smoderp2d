@@ -114,7 +114,6 @@ class PrepareDataBase(object):
         self._check_parameter_value('ppl', self.data['mat_ppl'], [0,1])
 
         self.data['mat_reten'] = all_attrib[5]
-        print (all_attrib[5])
         self._check_parameter_value('reten', self.data['mat_reten'], [-1,0])
 
         self.data['mat_b'] = all_attrib[6]
@@ -143,9 +142,9 @@ class PrepareDataBase(object):
 
         Logger.info("Computing critical level...")
         
-        # check the critical tension and celocity TODO
-        # self._check_parameter_value('xxx', all_attrib[9], [1,200])
-        # self._check_parameter_value('xxx', all_attrib[10], [0.01,1])
+        # check the critical tension and velocity
+        self._check_parameter_value('tau', all_attrib[9], [1,100])
+        self._check_parameter_value('v', all_attrib[10], [0.1,5])
         
         self.data['mat_hcrit'] = self._get_crit_water(
             self.data['mat_b'], all_attrib[9], all_attrib[10], self.data['r'],
