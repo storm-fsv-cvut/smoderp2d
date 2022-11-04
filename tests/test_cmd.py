@@ -79,7 +79,7 @@ class TestCmd:
 
         cap = capsys.readouterr()
 
-        with open(f'/tmp/out.txt', 'w') as out:
+        with open('/tmp/out.txt', 'w') as out:
             out.write(cap.out)
 
         # assert are_dir_trees_equal(
