@@ -5,6 +5,16 @@ import filecmp
 from shutil import rmtree
 import pytest
 
+
+def print_diff_files(dcmp):
+    for name in dcmp.diff_files:
+        print("diff_file {} found in {} and {}".format(name, dcmp.left,
+              dcmp.right))
+
+    for sub_dcmp in dcmp.subdirs.values():
+        print_diff_files(sub_dcmp)
+
+
 def are_dir_trees_equal(dir1, dir2):
     """
     Taken from https://stackoverflow.com/questions/4187564/recursively-compare-two-directories-to-ensure-they-have-the-same-files-and-subdi
@@ -19,6 +29,7 @@ def are_dir_trees_equal(dir1, dir2):
         False otherwise.
     """
     dirs_cmp = filecmp.dircmp(dir1, dir2)
+    print_diff_files(dirs_cmp)
     if len(dirs_cmp.left_only)>0 or len(dirs_cmp.right_only)>0 or \
         len(dirs_cmp.funny_files)>0:
         return False
@@ -43,7 +54,7 @@ class TestCmd:
         config.read(self.config_file)
         assert config.get('data', 'rainfall') == 'tests/data/rainfall.txt'
 
-    def test_002_run(self):
+    def test_002_run(self, capsys):
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
         from smoderp2d import Runner
 
@@ -60,7 +71,17 @@ class TestCmd:
 
         assert os.path.isdir(output_path)
 
-        assert are_dir_trees_equal(
+        are_dir_trees_equal(
             output_path,
             os.path.join(os.path.dirname(__file__), "data", "reference", "quicktest")
         )
+
+        cap = capsys.readouterr()
+
+        with open(f'/tmp/out.txt', 'w') as out:
+            out.write(cap.out)
+
+        # assert are_dir_trees_equal(
+        #     output_path,
+        #     os.path.join(os.path.dirname(__file__), "data", "reference", "quicktest")
+        # )
