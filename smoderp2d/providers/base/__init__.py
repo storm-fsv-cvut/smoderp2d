@@ -124,7 +124,7 @@ class BaseProvider(object):
         config = ConfigParser()
         config.read(_path)
 
-        if not(config.has_option('outputs', 'extraout')):
+        if not config.has_option('outputs', 'extraout'):
             raise ConfigError('Section "outputs" or option "extraout" is not set properly in file {}'.format( _path))
 
         return config
