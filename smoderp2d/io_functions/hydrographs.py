@@ -80,7 +80,7 @@ class Hydrographs:
         self.header = []
 
         for i in range(self.n):
-            header = '# Hydrograph at the point with coordinates: {:.17} {:.17}{}'.format(
+            header = '# Hydrograph at the point with coordinates: {:.17} {:.16}{}'.format(
                 self.point_int[i][3], self.point_int[i][4], os.linesep)
             header += '# A pixel size is [m2]: {}{}'.format(
                     GridGlobals.pixel_area,os.linesep)
