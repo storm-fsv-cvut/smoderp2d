@@ -114,8 +114,8 @@ class PrepareDataBase(object):
         self._check_parameter_value('ppl', self.data['mat_ppl'], [0,1])
 
         self.data['mat_reten'] = all_attrib[5]
-        # TODO check extremely low valus in testing dataset
-        # self._check_parameter_value('reten', self.data['mat_reten'], [0,50])
+        print (all_attrib[5])
+        self._check_parameter_value('reten', self.data['mat_reten'], [-1,0])
 
         self.data['mat_b'] = all_attrib[6]
         self._check_parameter_value('b', self.data['mat_b'], [1,2.5])
