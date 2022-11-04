@@ -159,6 +159,7 @@ class BaseProvider(object):
                 self.args.config_file
             ))
 
+        print(self.args.config_file)
         config = ConfigParserWrapper()
         config.read(self.args.config_file)
 
