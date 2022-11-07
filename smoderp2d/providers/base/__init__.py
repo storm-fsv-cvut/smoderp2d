@@ -273,7 +273,7 @@ class BaseProvider(object):
         Globals.isRill = self._comp_type(data['type_of_computing'])['rill']
         Globals.isStream = self._comp_type(data['type_of_computing'])['stream']
         Globals.prtTimes = data.get('prtTimes', None)
-        Globals.extraOut = self._hidden_config['outputs'].getboolean('extraout')
+        Globals.extraOut = self._hidden_config.getboolean('outputs','extraout')
 
         # If nogis provider is used the values 
         # should be set in the loop at the beginning
