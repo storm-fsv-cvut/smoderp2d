@@ -40,8 +40,7 @@ class NegativeWaterLevel(SmoderpError):
         )
 
 class ConfigError(Exception):
-    def __str__(self):
-        return self.msg
+    pass
 
 class SmallParameterValue(ConfigError):
     """ Exception raised if a parameter reaches a wrong numeric value
@@ -49,7 +48,7 @@ class SmallParameterValue(ConfigError):
     def __init__(self,param,value,limit):
         self.msg = "Parameter '{}' has low value ({} < {}).".format(
                 param,value,limit)
-        super().__init__(self.msg)
+        Logger.fatal(self.msg)
 
 class LargeParameterValue(ConfigError):
     """ Exception raised if a parameter reaches a wrong numeric value
@@ -57,11 +56,11 @@ class LargeParameterValue(ConfigError):
     def __init__(self,param,value,limit):
         self.msg = "Parameter '{}' has a wrong value ({} > {}).".format(
                 param,value,limit)
-        super().__init__(self.msg)
+        Logger.fatal(self.msg)
 
 class WrongParameterValue(ConfigError):
     """ Exception raised if a parameter reaches a wrong numeric value
     """
     def __init__(self,param,value):
         self.msg = "Parameter '{}' has a wrong value ({}).".format(param,value)
-        super().__init__(self.msg)
+        Logger.fatal(self.msg)
