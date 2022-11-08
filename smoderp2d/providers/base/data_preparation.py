@@ -156,22 +156,33 @@ class PrepareDataBase(object):
         self.data['rr'], self.data['rc'] = self._get_rr_rc(
             self.data['r'], self.data['c'], self.data['mat_boundary'])
 
-        # all checks must be after rr and rc are created.
-        # check Ks and S for infiltraiton
-        self._check_parameter_value('Ks', all_attrib[0], [0,1])
-        self._check_parameter_value('S', all_attrib[1], [0,1])
+        # all checks must be after rr and rc are created.  check Ks and S for
+        # infiltraiton
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'Ks',
+                all_attrib[0], [0,1])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'S',
+                all_attrib[1], [0,1])
         # build a/aa arrays
-        self._check_parameter_value('X', all_attrib[7], [1,200])
-        self._check_parameter_value('Y', all_attrib[8], [0.01,1])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'X',
+                all_attrib[7], [1,200])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'Y',
+                all_attrib[8], [0.01,1])
         # check the critical tension and velocity
-        self._check_parameter_value('tau', all_attrib[9], [1,100])
-        self._check_parameter_value('v', all_attrib[10], [0.1,5])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'tau',
+                all_attrib[9], [1,100])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'v',
+                all_attrib[10], [0.1,5])
 
-        self._check_parameter_value('n', self.data['mat_n'], [0,10])
-        self._check_parameter_value('pi', self.data['mat_pi'], [0,10])
-        self._check_parameter_value('ppl', self.data['mat_ppl'], [0,1])
-        self._check_parameter_value('reten', self.data['mat_reten'], [-1,0])
-        self._check_parameter_value('b', self.data['mat_b'], [1,2.5])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'n',
+                self.data['mat_n'], [0,10])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'pi',
+                self.data['mat_pi'], [0,10])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'ppl',
+                self.data['mat_ppl'], [0,1])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'reten',
+                self.data['mat_reten'], [-1,0])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'b',
+                self.data['mat_b'], [1,2.5])
 
 
 
