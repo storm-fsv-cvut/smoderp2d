@@ -180,7 +180,7 @@ class PrepareDataBase(object):
         self._check_parameter_value(self.data['rr'], self.data['rc'], 'ppl',
                 self.data['mat_ppl'], [0,1])
         self._check_parameter_value(self.data['rr'], self.data['rc'], 'reten',
-                self.data['mat_reten'], [-1,0])
+                self.data['mat_reten'], [0,100])
         self._check_parameter_value(self.data['rr'], self.data['rc'], 'b',
                 self.data['mat_b'], [1,2.5])
 
