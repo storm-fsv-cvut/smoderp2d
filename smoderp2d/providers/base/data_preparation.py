@@ -5,8 +5,8 @@ import numpy as np
 import smoderp2d.processes.rainfall as rainfall
 
 from smoderp2d.providers.base import Logger
-from smoderp2d.exceptions import SmallParameterValue
-from smoderp2d.exceptions import LargeParameterValue
+from smoderp2d.exceptions import SmallParameterValueError
+from smoderp2d.exceptions import LargeParameterValueError
 
 class PrepareDataBase(object):
     def __init__(self, writter):
@@ -102,16 +102,10 @@ class PrepareDataBase(object):
         #Logger.progress(30)
 
         self.data['mat_n'] = all_attrib[2]
-
         self.data['mat_pi'] = all_attrib[3]
-
         self.data['mat_ppl'] = all_attrib[4]
-
         self.data['mat_reten'] = all_attrib[5]
-
         self.data['mat_b'] = all_attrib[6]
-
-
         
         self.data['mat_nan'], self.data['mat_slope'], self.data['mat_dem'] = \
             self._get_mat_nan(self.data['r'], self.data['c'],
@@ -123,6 +117,7 @@ class PrepareDataBase(object):
         self._get_array_points()
 
 
+        # build a/aa arrays
         self.data['mat_a'], self.data['mat_aa'] = self._get_a(
             all_attrib[2], all_attrib[7], all_attrib[8], self.data['r'],
             self.data['c'], self.data['NoDataValue'], self.data['mat_slope']
@@ -162,7 +157,7 @@ class PrepareDataBase(object):
                 all_attrib[0], [0,1])
         self._check_parameter_value(self.data['rr'], self.data['rc'], 'S',
                 all_attrib[1], [0,1])
-        # build a/aa arrays
+
         self._check_parameter_value(self.data['rr'], self.data['rc'], 'X',
                 all_attrib[7], [1,200])
         self._check_parameter_value(self.data['rr'], self.data['rc'], 'Y',
@@ -183,8 +178,6 @@ class PrepareDataBase(object):
                 self.data['mat_reten'], [0,100])
         self._check_parameter_value(self.data['rr'], self.data['rc'], 'b',
                 self.data['mat_b'], [1,2.5])
-
-
 
 
         self.data['mfda'] = False
@@ -211,8 +204,8 @@ class PrepareDataBase(object):
         for i in rr:
             for j in rc[i]:
                 val = arr[i][j]
-                if (range_[0] > val) : raise SmallParameterValue(name, val, range_[0])
-                if (range_[1] < val) : raise LargeParameterValue(name, val, range_[1])
+                if (range_[0] > val) : raise SmallParameterValueError(name, val, range_[0])
+                if (range_[1] < val) : raise LargeParameterValueError(name, val, range_[1])
 
         Logger.info('{} parameter values checked.'.format(name))
 
