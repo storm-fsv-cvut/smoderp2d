@@ -214,6 +214,9 @@ class PrepareDataBase(object):
                 if (range_[0] > val) : raise SmallParameterValue(name, val, range_[0])
                 if (range_[1] < val) : raise LargeParameterValue(name, val, range_[1])
 
+        Logger.info('{} parameters values checked.'.format(name))
+
+
     def _set_output_data(self):
         """
         Creates dictionary to which model parameters are computed.
