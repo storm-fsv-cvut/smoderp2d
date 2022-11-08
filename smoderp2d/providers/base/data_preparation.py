@@ -95,9 +95,6 @@ class PrepareDataBase(object):
         # build numpy array from selected attributes
         all_attrib = self._get_attrib(sfield, intersect)
 
-        # check Ks and S for infiltraiton
-        self._check_parameter_value('Ks', all_attrib[0], [0,1])
-        self._check_parameter_value('S', all_attrib[1], [0,1])
 
         self.data['mat_inf_index'], self.data['combinatIndex'] = \
             self._get_inf_combinat_index(self.data['r'], self.data['c'],
@@ -105,19 +102,14 @@ class PrepareDataBase(object):
         #Logger.progress(30)
 
         self.data['mat_n'] = all_attrib[2]
-        self._check_parameter_value('n', self.data['mat_n'], [0,10])
 
         self.data['mat_pi'] = all_attrib[3]
-        self._check_parameter_value('pi', self.data['mat_pi'], [0,10])
 
         self.data['mat_ppl'] = all_attrib[4]
-        self._check_parameter_value('ppl', self.data['mat_ppl'], [0,1])
 
         self.data['mat_reten'] = all_attrib[5]
-        self._check_parameter_value('reten', self.data['mat_reten'], [-1,0])
 
         self.data['mat_b'] = all_attrib[6]
-        self._check_parameter_value('b', self.data['mat_b'], [1,2.5])
 
 
         
@@ -130,9 +122,6 @@ class PrepareDataBase(object):
         Logger.info("Prepare points for hydrographs...")
         self._get_array_points()
 
-        # build a/aa arrays
-        self._check_parameter_value('X', all_attrib[7], [1,200])
-        self._check_parameter_value('Y', all_attrib[8], [0.01,1])
 
         self.data['mat_a'], self.data['mat_aa'] = self._get_a(
             all_attrib[2], all_attrib[7], all_attrib[8], self.data['r'],
@@ -142,9 +131,6 @@ class PrepareDataBase(object):
 
         Logger.info("Computing critical level...")
         
-        # check the critical tension and velocity
-        self._check_parameter_value('tau', all_attrib[9], [1,100])
-        self._check_parameter_value('v', all_attrib[10], [0.1,5])
         
         self.data['mat_hcrit'] = self._get_crit_water(
             self.data['mat_b'], all_attrib[9], all_attrib[10], self.data['r'],
@@ -169,6 +155,26 @@ class PrepareDataBase(object):
 
         self.data['rr'], self.data['rc'] = self._get_rr_rc(
             self.data['r'], self.data['c'], self.data['mat_boundary'])
+
+        # all checks must be after rr and rc are created.
+        # check Ks and S for infiltraiton
+        self._check_parameter_value('Ks', all_attrib[0], [0,1])
+        self._check_parameter_value('S', all_attrib[1], [0,1])
+        # build a/aa arrays
+        self._check_parameter_value('X', all_attrib[7], [1,200])
+        self._check_parameter_value('Y', all_attrib[8], [0.01,1])
+        # check the critical tension and velocity
+        self._check_parameter_value('tau', all_attrib[9], [1,100])
+        self._check_parameter_value('v', all_attrib[10], [0.1,5])
+
+        self._check_parameter_value('n', self.data['mat_n'], [0,10])
+        self._check_parameter_value('pi', self.data['mat_pi'], [0,10])
+        self._check_parameter_value('ppl', self.data['mat_ppl'], [0,1])
+        self._check_parameter_value('reten', self.data['mat_reten'], [-1,0])
+        self._check_parameter_value('b', self.data['mat_b'], [1,2.5])
+
+
+
 
         self.data['mfda'] = False
         self.data['mat_boundary'] = None
