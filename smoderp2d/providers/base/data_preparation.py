@@ -187,18 +187,21 @@ class PrepareDataBase(object):
 
         return self.data
 
-    def _check_parameter_value(self, name, arr, range_):
+    def _check_parameter_value(self, rr, rc, name, arr, range_):
         """ check the parameter margins 
 
+        :param list rr: list of i indices in the computaion domain
+        :param list rc: list of j indices in the computaion domain
         :param str name: name of the variable
         :param np.array arr: the array holding the parameter values 
         :param list range_: range of appropriate parameters
         """
 
-        min_ = (np.nanmin(arr))
-        max_ = (np.nanmax(arr))
-        if (range_[0] > min_) : raise SmallParameterValue(name, min_, range_[0])
-        if (range_[1] < max_) : raise LargeParameterValue(name, max_, range_[1])
+        for i in rr:
+            for j in rc[i]:
+                val = arr[i][j]
+                if (range_[0] > val) : raise SmallParameterValue(name, val, range_[0])
+                if (range_[1] < val) : raise LargeParameterValue(name, val, range_[1])
 
     def _set_output_data(self):
         """
