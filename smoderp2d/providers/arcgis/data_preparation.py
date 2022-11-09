@@ -362,5 +362,5 @@ class PrepareData(PrepareDataBase, ManageFields):
     def _check_input_data(self):
         """Check input data.
         """
-        # TODO: not imlemented yet
+        # TODO: not imlemented yet...
         pass
