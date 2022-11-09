@@ -19,18 +19,13 @@ from smoderp2d.providers.arcgis import constants
 from smoderp2d.providers.arcgis.manage_fields import ManageFields
 
 import arcpy
-import arcgisscripting
-from arcpy.sa import *
 
 class PrepareData(PrepareDataBase, ManageFields):
     def __init__(self, writter):
         super(PrepareData, self).__init__(writter)
 
-        # creating the geoprocessor object
-        self.gp = arcgisscripting.create()
-
         # setting the workspace environment
-        self.gp.workspace = self.gp.GetParameterAsText(
+        arcpy.env.workspace = arcpy.GetParameterAsText(
             constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY
         )
 
@@ -44,36 +39,21 @@ class PrepareData(PrepareDataBase, ManageFields):
         """Get input parameters from ArcGIS toolbox.
         """
         self._input_params = {
-            'elevation': self.gp.GetParameterAsText(
-                constants.PARAMETER_DEM),
-            'soil': self.gp.GetParameterAsText(
-                constants.PARAMETER_SOIL),
-            'soil_type': self.gp.GetParameterAsText(
-                constants.PARAMETER_SOIL_TYPE),
-            'vegetation': self.gp.GetParameterAsText(
-                constants.PARAMETER_VEGETATION),
-            'vegetation_type': self.gp.GetParameterAsText(
-                constants.PARAMETER_VEGETATION_TYPE),
-            'rainfall_file': self.gp.GetParameterAsText(
-                constants.PARAMETER_PATH_TO_RAINFALL_FILE),
-            'maxdt': float(self.gp.GetParameterAsText(
-                constants.PARAMETER_MAX_DELTA_T)),
-            'end_time': float(self.gp.GetParameterAsText(
-                constants.PARAMETER_END_TIME)) * 60.0,  # prevod na s
-            'points': self.gp.GetParameterAsText(
-                constants.PARAMETER_POINTS),
-            'output': self.gp.GetParameterAsText(
-                constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY),
-            'table_soil_vegetation': self.gp.GetParameterAsText(
-                constants.PARAMETER_SOILVEGTABLE),
-            'table_soil_vegetation_code': self.gp.GetParameterAsText(
-                constants.PARAMETER_SOILVEGTABLE_CODE),
-            'stream': self.gp.GetParameterAsText(
-                constants.PARAMETER_STREAM),
-            'table_stream_shape': self.gp.GetParameterAsText(
-                constants.PARAMETER_STREAMTABLE),
-            'table_stream_shape_code': self.gp.GetParameterAsText(
-                constants.PARAMETER_STREAMTABLE_CODE)
+            'elevation': arcpy.GetParameterAsText(constants.PARAMETER_DEM),
+            'soil': arcpy.GetParameterAsText(constants.PARAMETER_SOIL),
+            'soil_type': arcpy.GetParameterAsText(constants.PARAMETER_SOIL_TYPE),
+            'vegetation': arcpy.GetParameterAsText(constants.PARAMETER_VEGETATION),
+            'vegetation_type': arcpy.GetParameterAsText(constants.PARAMETER_VEGETATION_TYPE),
+            'rainfall_file': arcpy.GetParameterAsText(constants.PARAMETER_PATH_TO_RAINFALL_FILE),
+            'maxdt': float(arcpy.GetParameterAsText(constants.PARAMETER_MAX_DELTA_T)),
+            'end_time': float(arcpy.GetParameterAsText(constants.PARAMETER_END_TIME)) * 60.0,  # convert input to seconds
+            'points': arcpy.GetParameterAsText(constants.PARAMETER_POINTS),
+            'output': arcpy.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY),
+            'table_soil_vegetation': arcpy.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE),
+            'table_soil_vegetation_code': arcpy.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE_CODE),
+            'stream': arcpy.GetParameterAsText(constants.PARAMETER_STREAM),
+            'table_stream_shape': arcpy.GetParameterAsText(constants.PARAMETER_STREAMTABLE),
+            'table_stream_shape_code': arcpy.GetParameterAsText(constants.PARAMETER_STREAMTABLE_CODE)
         }
 
     def _add_message(self, message):
@@ -81,6 +61,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         Pops up a message into arcgis and saves it into log file.
         :param message: Message to be printed.
         """
+        arcpy.AddMessage(message)
         Logger.info(message)
 
 
@@ -101,15 +82,16 @@ class PrepareData(PrepareDataBase, ManageFields):
         # dem_copy = os.path.join(self.data['temp'], 'dem_copy')
         dem_copy = self.storage.output_filepath('dem_copy')
 
-        arcpy.CopyRaster_management(
+        arcpy.management.CopyRaster(
             self._input_params['elevation'], dem_copy
         )
 
         # align computation region to DTM grid
         arcpy.env.snapRaster = self._input_params['elevation']
+        arcpy.env.Extent = self._input_params['elevation']
 
         dem_mask = self.storage.output_filepath('dem_mask')
-        self.gp.Reclassify_sa(
+        arcpy.sa.Reclassify(
             dem_copy, "VALUE", "-100000 100000 1", dem_mask, "DATA"
         )
         
@@ -153,45 +135,36 @@ class PrepareData(PrepareDataBase, ManageFields):
         """
         # convert mask into polygon feature class
         mask_shp = self.storage.output_filepath('vector_mask')
-        arcpy.RasterToPolygon_conversion(
-            mask, mask_shp, "NO_SIMPLIFY")
+        arcpy.conversion.RasterToPolygon(mask, mask_shp, "NO_SIMPLIFY")
 
         # dissolve soil and vegmetation polygons
         soil_boundary = self.storage.output_filepath('soil_boundary')
         vegetation_boundary = self.storage.output_filepath('vegetation_boundary')
-        arcpy.Dissolve_management(
-            vegetation, vegetation_boundary, vegetation_type
-        )
-        arcpy.Dissolve_management(
-            soil, soil_boundary, soil_type
-        )
+        arcpy.management.Dissolve(vegetation, vegetation_boundary, vegetation_type)
+        arcpy.management.Dissolve(soil, soil_boundary, soil_type)
 
         # do intersection
         group = [soil_boundary, vegetation_boundary, mask_shp]
         intersect = self.storage.output_filepath('inter_soil_lu')
-        arcpy.Intersect_analysis(
-            group, intersect, "ALL", "", "INPUT")
+        arcpy.analysis.Intersect(group, intersect, "ALL", "", "INPUT")
 
         # remove "soil_veg" if exists and create a new one
-        if self.gp.ListFields(intersect, self._data['soil_veg_column']).Next():
-            arcpy.DeleteField_management(intersect, self._data['soil_veg_column'])
-        arcpy.AddField_management(
-            intersect, self._data['soil_veg_column'], "TEXT", "", "", "15", "",
-            "NULLABLE", "NON_REQUIRED","")
+        if self._data['soil_veg_column'] in arcpy.ListFields(intersect):
+            arcpy.management.DeleteField(intersect, self._data['soil_veg_column'])
+            Logger.info("'"+self._data['soil_veg_column']+"' attribute field was replaced")
+        arcpy.management.AddField(intersect, self._data['soil_veg_column'], "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED","")
 
         # compute "soil_veg" values (soil_type + vegetation_type)
         vtype1 = vegetation_type + "_1" if soil_type == vegetation_type else vegetation_type
         fields = [soil_type, vtype1, self._data['soil_veg_column']]
-        with arcpy.da.UpdateCursor(intersect, fields) as cursor:
-            for row in cursor:
+        with arcpy.da.UpdateCursor(intersect, fields) as table:
+            for row in table:
                 row[2] = row[0] + row[1]
-                cursor.updateRow(row)
+                table.updateRow(row)
 
         # copy attribute table to DBF file for modifications
-        soil_veg_copy = os.path.join(
-            self.data['outdir'], self._data['soil_veg_copy'], "soil_veg_tab_current.dbf"
-        )
-        arcpy.CopyRows_management(table_soil_vegetation, soil_veg_copy)
+        soil_veg_copy_dir = os.path.join(self.data['outdir'], self._data['soil_veg_copy'])
+        arcpy.conversion.TableToTable(table_soil_vegetation, soil_veg_copy_dir, "soil_veg_tab_current.dbf")
 
         # join table copy to intersect feature class
         self._join_table(
@@ -203,15 +176,15 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         # check for empty values
         with arcpy.da.SearchCursor(intersect, self._data['sfield']) as cursor:
-            row_idx = 0
+            row_id = 0
             for row in cursor:
-                row_idx += 1
+                row_id += 1
                 for i in range(len(row)):
-                    if row[i] == " ": # TODO: empty string or NULL value?
+                    if row[i] in ("", " ", None): # TODO: empty string or NULL value?
                         raise DataPreparationInvalidInput(
                             "Values in soilveg tab are not correct "
                             "(field '{}': empty value found in row {})".format(
-                                self._data['sfield'][i], row_idx
+                                self._data['sfield'][i], row_id
                         ))
 
         return intersect, mask_shp, self._data['sfield']
@@ -240,12 +213,12 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         # create raster mask based on intersect feature call
         mask = self.storage.output_filepath('inter_mask')
-        arcpy.PolygonToRaster_conversion(
+        arcpy.conversion.PolygonToRaster(
             intersect, self.storage.primary_key, mask, "MAXIMUM_AREA",
             cellsize = dem_desc.MeanCellHeight)
 
         # cropping rasters
-        dem_clip = ExtractByMask(dem, mask)
+        dem_clip = arcpy.sa.ExtractByMask(dem, mask)
         dem_clip.save(self.storage.output_filepath('dem_inter'))
         
         return dem_clip
@@ -283,7 +256,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         idx = 0
         for field in sfield:
             output = os.path.join(self.data['outdir'], self._data['sfield_dir'], "r{}".format(field))
-            arcpy.PolygonToRaster_conversion(
+            arcpy.conversion.PolygonToRaster(
                 intersect, field, output,
                 "MAXIMUM_AREA", "", self.data['dy']
             )
@@ -329,32 +302,32 @@ class PrepareData(PrepareDataBase, ManageFields):
     def _get_array_points(self):
         """Get array of points. Points near AOI border are skipped.
         """
-        if self.data['points'] and \
-           (self.data['points'] != "#") and (self.data['points'] != ""):
-            # identify the geometry field
-            desc = arcpy.Describe(self.data['points'])
-            shapefieldname = desc.ShapeFieldName
-            # create search cursor
-            rows_p = arcpy.SearchCursor(self.data['points'])
-            
+        if (self.data['points'] not in("", "#", None)):
             # get number of points
-            count = arcpy.GetCount_management(self.data['points'])  # result
-            count = count.getOutput(0)
+            count = arcpy.GetCount_management(self.data['points']).getOutput(0)
+            
+            if count > 0:
+                # identify the geometry field
+                desc = arcpy.Describe(self.data['points'])
+                shapefieldname = desc.ShapeFieldName
 
-            # empty array
-            self.data['array_points'] = np.zeros([int(count), 5], float)
+                # empty array
+                self.data['array_points'] = np.zeros([int(count), 5], float)
 
-            i = 0
-            for row in rows_p:
-                fid = row.getValue(self.storage.primary_key)
-                # geometry
-                feat = row.getValue(shapefieldname)
-                pnt = feat.getPart()
+                # get the points geometry and IDs into array
+                with arcpy.da.SearchCursor(self.data['points'], [self.storage.primary_key, shapefieldname]) as table:
+                    i = 0
+                    for row in table:
+                        fid = row[0]
+                        # geometry
+                        feature = row[1]
+                        pnt = feature.getPart()
 
-                i = self._get_array_points_(
-                    pnt.X, pnt.Y, fid, i
-                )
-                i += 1
+                        i = self._get_array_points_(pnt.X, pnt.Y, fid, i) # tak tomuhle nerozumim
+                        # self.data['array_points'].append([pnt.X, pnt.Y, fid, i]) # nemelo to bejt neco jako tohle?
+                        i += 1
+            else:
+                self.data['array_points'] = None
         else:
             self.data['array_points'] = None
 
