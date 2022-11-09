@@ -35,7 +35,7 @@ class Runner(object):
 
     def _provider_factory(self):
         # initialize provider
-        if os.getenv('ESRIACTIVEINSTALLATION'):
+        if os.getenv('ESRIACTIVEINSTALLATION') or os.getenv('ESRI_OS_DIR_DONOTUSE'):
             from smoderp2d.providers.arcgis import ArcGisProvider
             provider_class = ArcGisProvider
         elif os.getenv('GISRC'):

@@ -12,7 +12,7 @@ def logger():
 
     logging.setLoggerClass(BaseLogger)
     logger_name = 'SMODERP2D'
-    if os.getenv('ESRIACTIVEINSTALLATION'):
+    if os.getenv('ESRIACTIVEINSTALLATION') or os.getenv('ESRI_OS_DIR_DONOTUSE'):
         # create unique logger for each run (see ArcGIS issue #22)
         logger_name += '_{}'.format(time.time())
     logger = logging.getLogger(logger_name)
