@@ -191,7 +191,7 @@ class Hydrographs:
                     # prozatim
                     if Globals.extraOut:
                         line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'\
-                               '{sep}{3}{sep}{4}'\
+                                '{sep}{3}{sep}{4:.4e}'\
                                '{sep}{5:.4e}'\
                                '{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
                             total_time, dt, currRain, 
