@@ -8,10 +8,6 @@ import math
 import pickle
 import logging
 import numpy as np
-# if sys.version_info.major >= 3:
-#     from configparser import ConfigParser, NoSectionError, NoOptionError
-# else:
-#     from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 from configparser import ConfigParser, NoSectionError, NoOptionError
 
 from smoderp2d.providers import Logger
@@ -80,24 +76,6 @@ class BaseWritter(object):
     # todo: abstractmethod
     def write_raster(self, arr, output):
         pass
-
-
-class ConfigParserWrapper(ConfigParser, object):
-    def __get(self, *args, **kwargs):
-        fallback = kwargs.get('fallback')
-        kwargs.pop('fallback', None)
-        value = super(ConfigParserWrapper, self).get(*args, **kwargs)
-        return fallback if value is None else value
-
-    def get(self, *args, **kwargs):
-        if sys.version_info.major == 2:
-            return self.__get(*args, **kwargs)
-        return super().get(*args, **kwargs)
-
-    def getboolean(self, *args, **kwargs):
-        if sys.version_info.major == 2:
-            return False if self.__get(*args, **kwargs) == 'False' else 'True'
-        return super().getboolean(*args, **kwargs)
     
 
 class BaseProvider(object):
@@ -157,7 +135,6 @@ class BaseProvider(object):
             ))
 
         config = ConfigParser()
-        # config = ConfigParserWrapper()
         config.read(self.args.config_file)
 
         try:
