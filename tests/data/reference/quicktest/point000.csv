@@ -1,4 +1,4 @@
-# Hydrograph at the point with coordinates: 0.8956551055682931 3.2496212438829577
+# Hydrograph at the point with coordinates: 0.89565511 3.2496212
 # A pixel size is [m2]: 0.25
 time[s];deltaTime[s];rainfall[m];waterLevel[m];sheetFlow[m3/s];sheetVRunoff[m3];sheetFlowVelocity[m/s];sheetVRest[m3];infiltration[m];surfaceRetetion[m];state;vInflow[m3];wLevelTotal[m];wLevelRill[m];rillWidth[m];rillFlow[m3/s];rillVRunoff[m3];rillFlowVelocity[m/s];rillVRest;surfaceFlow[m3/s];surfaceVRunoff[m3];surfaceBil[m3];vToRill[m3];ratio;courant;courantRill;iter
 3.0000e+01;3.0000e+01;0.0000e+00;0.0000e+00;0.0000e+00;0.0000e+00;0.0000e+00;0.0000e+00;0.0000e+00;0.0000e+00;0.0000e+00;0.0000e+00;0.0000e+00;0.0000e+00;0.0000e+00;0.0000e+00;0.0000e+00;0.0000e+00;0.0000e+00;0.0000e+00;0.0000e+00;0.0;0.0000e+00;1.0000e+00;1.9500e+00;1.9500e+00;0.0000e+00
