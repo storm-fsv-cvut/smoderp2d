@@ -9,6 +9,6 @@ call py3_env.bat
 @echo off
 
 cd /d ..
-"%PYTHONHOME%\python" bin/start-nogis-smoderp2d.py --config tests/nogis.ini
+"%PYTHONHOME%\python" bin/start-profile1d-smoderp2d.py --config tests/profile1d.ini
 
 pause

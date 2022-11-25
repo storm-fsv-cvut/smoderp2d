@@ -83,7 +83,7 @@ subsurface runoff and erosion
                                       request.inputs['config'][0].file)
 
         try:
-            os.environ["NOGIS"] = "1"
+            os.environ["PROFILE1D"] = "1"
             runner = WpsRunner(config_file=config)
             runner._provider.add_logging_handler(
                 handler=WpsLogHandler(response),

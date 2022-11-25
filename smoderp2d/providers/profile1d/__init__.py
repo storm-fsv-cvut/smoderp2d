@@ -19,9 +19,9 @@ from smoderp2d.providers.cmd import CmdWritter, CmdArgumentParser
 from smoderp2d.exceptions import ConfigError, ProviderError
 
 
-class NoGisProvider(BaseProvider, PrepareDataBase):
+class Profile1DProvider(BaseProvider, PrepareDataBase):
     def __init__(self, config_file=None):
-        super(NoGisProvider, self).__init__()
+        super(Profile1DProvider, self).__init__()
 
         # load configuration
         cloader = CmdArgumentParser(config_file)
@@ -140,7 +140,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         except NoOptionError as e:
             raise ConfigError(e)
 
-        # defaults for nogis provider
+        # defaults for profile1d provider
         #  type of computing =  1 sheet and rill flow
         data = {}
         data['type_of_computing'] = 1
@@ -189,7 +189,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
         # allocate matrices
         self._alloc_matrices(data)
 
-        # set no data value, likely used in nogis provider
+        # set no data value, likely used in profile1d provider
         data['NoDataValue'] = -9999
 
         # topography
