@@ -80,8 +80,8 @@ class Hydrographs:
         self.header = []
 
         for i in range(self.n):
-            header = '# Hydrograph at the point with coordinates: {:.8f} {:.8f}{}'.format(
-                self.point_int[i][3], self.point_int[i][4], os.linesep)
+            header = '# Hydrograph at the point with coordinates: {:.8} {:.8}{}'.format(
+                float(self.point_int[i][3]), float(self.point_int[i][4]), os.linesep)
             header += '# A pixel size is [m2]: {}{}'.format(
                     GridGlobals.pixel_area,os.linesep)
             if i == self.inStream[iStream]:
