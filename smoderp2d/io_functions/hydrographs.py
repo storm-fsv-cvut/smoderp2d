@@ -80,7 +80,7 @@ class Hydrographs:
         self.header = []
 
         for i in range(self.n):
-            header = '# Hydrograph at the point with coordinates: {} {}{}'.format(
+            header = '# Hydrograph at the point with coordinates: {:.8} {:.8}{}'.format(
                 self.point_int[i][3], self.point_int[i][4], os.linesep)
             header += '# A pixel size is [m2]: {}{}'.format(
                     GridGlobals.pixel_area,os.linesep)
@@ -191,7 +191,7 @@ class Hydrographs:
                     # prozatim
                     if Globals.extraOut:
                         line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'\
-                               '{sep}{3}{sep}{4}'\
+                               '{sep}{3}{sep}{4:.4e}'\
                                '{sep}{5:.4e}'\
                                '{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
                             total_time, dt, currRain, 
