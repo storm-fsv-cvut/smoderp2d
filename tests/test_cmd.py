@@ -63,7 +63,7 @@ class TestCmd:
         config.read(self.config_file)
         assert config.get('data', 'rainfall') == 'tests/data/rainfall.txt'
 
-    def test_002_run(self, capsys):
+    def test_002_run(self):
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
         from smoderp2d import Runner
 
