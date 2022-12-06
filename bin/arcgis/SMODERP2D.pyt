@@ -1,0 +1,318 @@
+# -*- coding: utf-8 -*-
+
+import arcpy
+import sys
+import os
+import locale
+import numpy
+
+sys.path.append(r"d:\Dokumenty\SMODERP\smoderp2d\bin")
+from start_smoderp2d import start_smoderp2d
+sys.path.append(r"d:\Dokumenty\SMODERP\smoderp2d\providers\arcgis")
+from smoderp2d.providers.arcgis import constants
+
+class Toolbox(object):
+    def __init__(self):
+        """Set of tools for preparation and executing the SMODERP2D soil erosion model"""
+        self.label = "SMODERP2D tools"
+        self.alias = ""
+        self.description = "Set of tools for executing the SMODERP2D soil erosion model\nDepartment of Irrigation, Drainage and Landscape Water Management\nFaculty of Civil " \
+                           "Engineering, Czech Technical University. 2022"
+
+        # List of tool classes associated with this toolbox
+        self.tools = [SMODERP2D]
+
+
+class SMODERP2D(object):
+
+    def __init__(self):
+        """The tool to execute the SMODERP model"""
+        self.label = "SMODERP2D"
+        self.description = ""
+        self.canRunInBackground = False
+        self.category = ""
+
+        self.processignGDBname = "processing.gdb"
+        self.AIO_outline = None
+
+        self.dem_slope = None
+        self.dem_fill = None
+        self.dem_flowdir = None
+        self.dem_flowacc = None
+        self.dem_aspect = None
+
+        self.dem_aoi = None
+        self.dem_slope_aoi = None
+        self.dem_flowacc_aoi = None
+        self.dem_aspect_aoi = None
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        inputSurfaceRaster = arcpy.Parameter(
+           displayName="Input surface raster",
+           name="inputSurfaceRaster",
+           datatype="GPRasterLayer",
+           parameterType="Required",
+           direction="Input"
+        )
+        inputSoilPolygons = arcpy.Parameter(
+           displayName="Soil polygons feature layer",
+           name="inputSoilPolygons",
+           datatype="GPFeatureLayer",
+           parameterType="Required",
+           direction="Input"
+        )
+        soilTypefieldName = arcpy.Parameter(
+           displayName="Field with the soil type identifier",
+           name="soilTypefieldName",
+           datatype="Field",
+           parameterType="Required",
+           direction="Input",
+        )
+        soilTypefieldName.parameterDependencies = [inputSoilPolygons.name]
+
+        inputLUPolygons = arcpy.Parameter(
+           displayName="Landuse polygons feature layer",
+           name="inputLUPolygons",
+           datatype="GPFeatureLayer",
+           parameterType="Required",
+           direction="Input"
+        )
+        LUtypeFieldName = arcpy.Parameter(
+           displayName="Field with the landuse type identifier",
+           name="LUtypeFieldName",
+           datatype="Field",
+           parameterType="Optional",
+           direction="Input",
+        )
+        LUtypeFieldName.parameterDependencies = [inputLUPolygons.name]
+
+        inputRainfall = arcpy.Parameter(
+           displayName="Definition of the rainfall event",
+           name="inputRainfall",
+           datatype="DEFile",
+           parameterType="Required",
+           direction="Input"
+        )
+        inputRainfall.filter.list = ["txt"]
+
+        maxTimeStep = arcpy.Parameter(
+           displayName="Maximum time step [s]",
+           name="maxTimeStep",
+           datatype="GPDouble",
+           parameterType="Optional",
+           direction="Input",
+           category="Settings"
+        )
+        maxTimeStep.value = 30
+
+        totalRunTime = arcpy.Parameter(
+           displayName="Total running time [min]",
+           name="totalRunTime",
+           datatype="GPDouble",
+           parameterType="Optional",
+           direction="Input",
+           category="Settings"
+        )
+        totalRunTime.value = 40
+
+        inputPoints = arcpy.Parameter(
+           displayName="Input points feature layer",
+           name="inputPoints",
+           datatype="GPFeatureLayer",
+           parameterType="Optional",
+           direction="Input"
+        )
+        outDir = arcpy.Parameter(
+           displayName="Output folder",
+           name="outDir",
+           datatype="DEWorkspace",
+           parameterType="Required",
+           direction="Input"
+        )
+        outDir.filter.list = ["File System"]
+
+        soilvegPropertiesTable = arcpy.Parameter(
+           displayName="Soils and Landuse parameters table",
+           name="soilvegPropertiesTable",
+           datatype="GPTableView",
+           parameterType="Required",
+           direction="Input"
+        )
+        soilvegIDfieldName = arcpy.Parameter(
+           displayName="Field with the landuse type identifier",
+           name="soilvegIDfieldName",
+           datatype="Field",
+           parameterType="Required",
+           direction="Input",
+        )
+        soilvegIDfieldName.parameterDependencies = [soilvegPropertiesTable.name]
+
+        reachFeatures = arcpy.Parameter(
+           displayName="Reach feature layer",
+           name="reachFeatures",
+           datatype="GPFeatureLayer",
+           parameterType="Optional",
+           direction="Input"
+        )
+        reachTable = arcpy.Parameter(
+           displayName="Reach shapes table",
+           name="reachTable",
+           datatype="GPTableView",
+           parameterType="Optional",
+           direction="Input"
+        )
+        reachIDfieldName = arcpy.Parameter(
+           displayName="Field with the reach feature identifier",
+           name="reachIDfieldName",
+           datatype="Field",
+           parameterType="Optional",
+           direction="Input",
+        )
+        reachTable.parameterDependencies = [reachTable.name]
+
+        dataprepOnly = arcpy.Parameter(
+           displayName="Do the data preparation only",
+           name="dataprepOnly",
+           datatype="GPBoolean",
+           parameterType="Optional",
+           direction="Input",
+        )
+        dataprepOnly.value = True
+
+        params = [inputSurfaceRaster, inputSoilPolygons, soilTypefieldName, inputLUPolygons, LUtypeFieldName, inputRainfall, maxTimeStep, totalRunTime, inputPoints, outDir,
+                 soilvegPropertiesTable, soilvegIDfieldName, reachFeatures, reachTable, reachIDfieldName, dataprepOnly]
+        return params
+
+    def updateParameters(self, parameters):
+        """Values and properties of parameters before internal validation is performed.  This method is called whenever a parameter has been changed.#"""
+
+        return
+
+    def updateMessages(self, parameters):
+        """Messages created by internal validation for each tool parameter.  This method is called after internal validation.#"""
+
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+
+
+        #start_smoderp2d() # uncomment when tool parameters passing works ...
+
+        self._get_input_params(parameters)
+        self.initiateTask()
+        self.calculate_AOI_outline()
+        self.calculate_DEM_products()
+        self.clip_DEM_products()
+
+        return
+
+    def _get_input_params(self, parameters):
+        """Get input parameters from ArcGIS toolbox.
+        """
+        self._input_params = {
+            # parameter indexes from the bin/arcgis/SMODERP2D.pyt tool for ArcGIS
+            'elevation': parameters[constants.PARAMETER_DEM].valueAsText,
+            'soil': parameters[constants.PARAMETER_SOIL].valueAsText,
+            'soil_type': parameters[constants.PARAMETER_SOIL_TYPE].valueAsText,
+            'vegetation': parameters[constants.PARAMETER_VEGETATION].valueAsText,
+            'vegetation_type': parameters[constants.PARAMETER_VEGETATION_TYPE].valueAsText,
+            'rainfall_file': parameters[constants.PARAMETER_PATH_TO_RAINFALL_FILE].valueAsText,
+            'maxdt': float(parameters[constants.PARAMETER_MAX_DELTA_T].valueAsText),
+            'end_time': float(parameters[constants.PARAMETER_END_TIME].valueAsText) * 60.0,  # convert input to seconds
+            'points': parameters[constants.PARAMETER_POINTS].valueAsText,
+            'output': parameters[constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
+            'table_soil_vegetation': parameters[constants.PARAMETER_SOILVEGTABLE].valueAsText,
+            'table_soil_vegetation_code': parameters[constants.PARAMETER_SOILVEGTABLE_CODE].valueAsText,
+            'stream': parameters[constants.PARAMETER_STREAM].valueAsText,
+            'table_stream_shape': parameters[constants.PARAMETER_STREAMTABLE].valueAsText,
+            'table_stream_shape_code': parameters[constants.PARAMETER_STREAMTABLE_CODE].valueAsText
+        }
+
+    def initiateTask(self):
+        self.processingGDBpath = os.path.join(self._input_params['output'], self.processignGDBname)
+
+        if os.path.exists(self.processingGDBpath):
+            arcpy.AddMessage("Geodatabse '" + self.processingGDBpath + "' allready exists. Some datasets may be overwriten!")
+        else:
+            # create the geodatabase
+            arcpy.management.CreateFileGDB(self._input_params['output'], self.processignGDBname)
+        return
+
+    def calculate_AOI_outline(self):
+        #dem_mask = self.storage.output_filepath('dem_mask')
+        dem_mask_path = os.path.join(self.processingGDBpath, "dem_mask")
+        dem_mask = arcpy.sa.Reclassify( self._input_params['elevation'], "VALUE", "-100000 100000 1", "DATA")
+        dem_mask.save(dem_mask_path)
+        #dem_polygon = os.path.join(self.data['temp'], 'dem_outline')
+        dem_polygon = os.path.join(self.processingGDBpath, "dem_polygon")
+        arcpy.conversion.RasterToPolygon(dem_mask, dem_polygon, "NO_SIMPLIFY", "VALUE")
+
+        #dem_soil_veg_intersection = os.path.join(self.data['temp'], 'AOI')
+        dem_soil_veg_intersection = os.path.join(self.processingGDBpath, "veg_soil_AOI")
+        arcpy.analysis.Intersect([dem_polygon, self._input_params['soil'], self._input_params['vegetation']], dem_soil_veg_intersection, "NO_FID")
+
+        AOI_outline = os.path.join(self.processingGDBpath, "AOI")
+        arcpy.management.Dissolve(dem_soil_veg_intersection, AOI_outline)
+
+        self.AIO_outline = AOI_outline
+        return
+
+    def calculate_DEM_products(self):
+        # calculate the depressionless DEM
+        if not self.dem_fill:
+            dem_fill_path = os.path.join(self.processingGDBpath, "dem_fill")
+            dem_fill = arcpy.sa.Fill(self._input_params['elevation'])
+            dem_fill.save(dem_fill_path)
+            self.dem_fill = dem_fill_path
+
+        # calculate the flow direction
+        if not self.dem_flowacc:
+            if not self.dem_flowdir:
+                dem_flowdir_path = os.path.join(self.processingGDBpath, "dem_flowdir")
+                flowdir = arcpy.sa.FlowDirection(self.dem_fill)
+                flowdir.save(dem_flowdir_path)
+                self.dem_flowdir = dem_flowdir_path
+
+            dem_flowacc_path = os.path.join(self.processingGDBpath, "dem_flowacc")
+            flowacc = arcpy.sa.FlowAccumulation(self.dem_flowdir)
+            flowacc.save(dem_flowacc_path)
+            self.dem_flowacc = dem_flowacc_path
+
+        # calculate slope
+        if not self.dem_slope:
+            dem_slope_path = os.path.join(self.processingGDBpath, "dem_slope")
+            dem_slope = arcpy.sa.Slope(self.dem_fill, "PERCENT_RISE", 1)
+            dem_slope.save(dem_slope_path)
+            self.dem_slope = dem_slope_path
+
+        # calculate aspect
+        if not self.dem_aspect:
+            dem_aspect_path = os.path.join(self.processingGDBpath, "dem_aspect")
+            dem_aspect = arcpy.sa.Aspect(self.dem_fill, "", "")
+            dem_aspect.save(dem_aspect_path)
+            self.dem_aspect = dem_aspect_path
+        return
+
+    def clip_DEM_products(self):
+        # clip DEM
+        if not self.dem_aoi:
+            dem_aoi_path = os.path.join(self.processingGDBpath, "dem_aoi")
+            self.dem_aoi = arcpy.management.Clip(self.dem_fill, "", dem_aoi_path, self.AIO_outline, "", "ClippingGeometry")
+
+        # clip the flow direction
+        if self.dem_flowacc and not self.dem_flowacc_aoi:
+            flowacc_aoi_path = os.path.join(self.processingGDBpath, "dem_flowacc_aoi")
+            self.dem_flowacc_aoi = arcpy.management.Clip(self.dem_flowacc, "", flowacc_aoi_path, self.AIO_outline, "", "ClippingGeometry")
+
+        # clip the slope
+        if self.dem_slope and not self.dem_slope_aoi:
+            slope_aoi_path = os.path.join(self.processingGDBpath, "dem_slope_aoi")
+            self.dem_slope_aoi = arcpy.management.Clip(self.dem_slope, "", slope_aoi_path, self.AIO_outline, "", "ClippingGeometry")
+
+        # calculate aspect
+        if self.dem_aspect and not self.dem_aspect_aoi:
+            aspect_aoi_path = os.path.join(self.processingGDBpath, "dem_aspect_aoi")
+            self.dem_slope_aoi = arcpy.management.Clip(self.dem_aspect, "", aspect_aoi_path, self.AIO_outline, "", "ClippingGeometry")
+        return

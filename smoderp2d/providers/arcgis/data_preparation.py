@@ -4,33 +4,33 @@ import sys
 import numpy as np
 import math
 import csv
+import arcpy
 
 import smoderp2d.processes.rainfall as rainfall
 
 from smoderp2d.core.general import GridGlobals
 
-from smoderp2d.providers.arcgis import constants
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
 
-from smoderp2d.providers.arcgis.terrain import compute_products
 from smoderp2d.providers.arcgis import constants
+from smoderp2d.providers.arcgis.terrain import compute_products
 from smoderp2d.providers.arcgis.manage_fields import ManageFields
-
-import arcpy
 
 class PrepareData(PrepareDataBase, ManageFields):
     def __init__(self, writter):
         super(PrepareData, self).__init__(writter)
 
         # setting the workspace environment
-        arcpy.env.workspace = arcpy.GetParameterAsText(
-            constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY
-        )
+        arcpy.env.workspace = arcpy.GetParameterAsText(9)
 
-        # checking arcgis if ArcGIS Spatial extension is available
-        arcpy.CheckOutExtension("Spatial")
+        # checking if ArcGIS Spatial extension is available
+        if arcpy.CheckExtension("Spatial") == "Available":
+            arcpy.CheckOutExtension("Spatial")
+        else:
+            #raise Error...
+            self._add_message(self, "Spatial extension for ArcGIS not available - can not continue.")
 
         # get input parameters
         self._get_input_params()
@@ -39,21 +39,22 @@ class PrepareData(PrepareDataBase, ManageFields):
         """Get input parameters from ArcGIS toolbox.
         """
         self._input_params = {
-            'elevation': arcpy.GetParameterAsText(constants.PARAMETER_DEM),
-            'soil': arcpy.GetParameterAsText(constants.PARAMETER_SOIL),
-            'soil_type': arcpy.GetParameterAsText(constants.PARAMETER_SOIL_TYPE),
-            'vegetation': arcpy.GetParameterAsText(constants.PARAMETER_VEGETATION),
-            'vegetation_type': arcpy.GetParameterAsText(constants.PARAMETER_VEGETATION_TYPE),
-            'rainfall_file': arcpy.GetParameterAsText(constants.PARAMETER_PATH_TO_RAINFALL_FILE),
-            'maxdt': float(arcpy.GetParameterAsText(constants.PARAMETER_MAX_DELTA_T)),
-            'end_time': float(arcpy.GetParameterAsText(constants.PARAMETER_END_TIME)) * 60.0,  # convert input to seconds
-            'points': arcpy.GetParameterAsText(constants.PARAMETER_POINTS),
-            'output': arcpy.GetParameterAsText(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY),
-            'table_soil_vegetation': arcpy.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE),
-            'table_soil_vegetation_code': arcpy.GetParameterAsText(constants.PARAMETER_SOILVEGTABLE_CODE),
-            'stream': arcpy.GetParameterAsText(constants.PARAMETER_STREAM),
-            'table_stream_shape': arcpy.GetParameterAsText(constants.PARAMETER_STREAMTABLE),
-            'table_stream_shape_code': arcpy.GetParameterAsText(constants.PARAMETER_STREAMTABLE_CODE)
+            # parameter indexes from the bin/arcgis/SMODERP2D.pyt tool for ArcGIS
+            'elevation': arcpy.parameters[constants.PARAMETER_DEM].valueAsText,
+            'soil': arcpy.parameters[constants.PARAMETER_SOIL].valueAsText,
+            'soil_type': arcpy.parameters[constants.PARAMETER_SOIL_TYPE].valueAsText,
+            'vegetation': arcpy.parameters[constants.PARAMETER_VEGETATION].valueAsText,
+            'vegetation_type': arcpy.parameters[constants.PARAMETER_VEGETATION_TYPE].valueAsText,
+            'rainfall_file': arcpy.parameters[constants.PARAMETER_PATH_TO_RAINFALL_FILE].valueAsText,
+            'maxdt': float(arcpy.parameters[constants.PARAMETER_MAX_DELTA_T].valueAsText),
+            'end_time': float(arcpy.parameters[constants.PARAMETER_END_TIME].valueAsText) * 60.0,  # convert input to seconds
+            'points': arcpy.parameters[constants.PARAMETER_POINTS].valueAsText,
+            'output': arcpy.parameters[constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
+            'table_soil_vegetation': arcpy.parameters[constants.PARAMETER_SOILVEGTABLE].valueAsText,
+            'table_soil_vegetation_code': arcpy.parameters[constants.PARAMETER_SOILVEGTABLE_CODE].valueAsText,
+            'stream': arcpy.parameters[constants.PARAMETER_STREAM].valueAsText,
+            'table_stream_shape': arcpy.parameters[constants.PARAMETER_STREAMTABLE].valueAsText,
+            'table_stream_shape_code': arcpy.parameters[constants.PARAMETER_STREAMTABLE_CODE].valueAsText
         }
 
     def _add_message(self, message):
@@ -73,18 +74,18 @@ class PrepareData(PrepareDataBase, ManageFields):
         super(PrepareData, self)._set_output()
         self.storage.create_storage(self._input_params['output'])
 
-    def _set_mask(self):
+    def _create_mask(self):
         """Set mask from elevation map.
 
         :return: dem copy, binary mask
         """
         # Do not work for CopyRaster, https://github.com/storm-fsv-cvut/smoderp2d/issues/46
         # dem_copy = os.path.join(self.data['temp'], 'dem_copy')
-        dem_copy = self.storage.output_filepath('dem_copy')
-
-        arcpy.management.CopyRaster(
-            self._input_params['elevation'], dem_copy
-        )
+        # dem_copy = self.storage.output_filepath('dem_copy')
+        #
+        # arcpy.management.CopyRaster(
+        #     self._input_params['elevation'], dem_copy
+        # )
 
         # align computation region to DTM grid
         arcpy.env.snapRaster = self._input_params['elevation']
@@ -92,10 +93,15 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         dem_mask = self.storage.output_filepath('dem_mask')
         arcpy.sa.Reclassify(
-            dem_copy, "VALUE", "-100000 100000 1", dem_mask, "DATA"
+            self._input_params['elevation'], "VALUE", "-100000 100000 1", dem_mask, "DATA"
         )
-        
-        return dem_copy, dem_mask
+        dem_polygon = os.path.join(self.data['temp'], 'dem_outline')
+        arcpy.conversion.RasterToPolygon(dem_mask, dem_polygon, "NO_SIMPLIFY", "VALUE")
+
+        dem_soil_veg_intersection = os.path.join(self.data['temp'], 'AOI')
+        arcpy.analysis.Intersect([dem_polygon, self._input_params['soil'], self._input_params['vegetation']], dem_soil_veg_intersection, "NO_FID")
+
+        return dem_soil_veg_intersection, dem_mask
 
     def _terrain_products(self, dem):
         """Computes terrains products.
@@ -104,18 +110,15 @@ class PrepareData(PrepareDataBase, ManageFields):
         
         :return: (filled elevation, flow direction, flow accumulation, slope)
         """
-        flow_direction_clip, \
-        flow_accumulation_clip, \
-        slope_clip = compute_products(dem, self.data['outdir'])
+        flow_direction_clip, flow_accumulation_clip, slope_clip = compute_products(dem, self.data['outdir'])
+
         # this is a workaround if the input dem does not have nodatavalue assigned 
         # or has different nodatavalue compared to env nodatavalue. 
         slope_clip_desc = arcpy.Describe(slope_clip)
         self.data['NoDataValue'] = slope_clip_desc.nodatavalue
         return flow_direction_clip, flow_accumulation_clip, slope_clip 
 
-    def _get_intersect(self, dem, mask,
-                        vegetation, soil, vegetation_type, soil_type,
-                        table_soil_vegetation, table_soil_vegetation_code):
+    def _get_intersect(self, dem, mask, vegetation, soil, vegetation_type, soil_type, table_soil_vegetation, table_soil_vegetation_code):
         """
         Intersect data by area of interest.
 
@@ -137,7 +140,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         mask_shp = self.storage.output_filepath('vector_mask')
         arcpy.conversion.RasterToPolygon(mask, mask_shp, "NO_SIMPLIFY")
 
-        # dissolve soil and vegmetation polygons
+        # dissolve soil and vegetation polygons
         soil_boundary = self.storage.output_filepath('soil_boundary')
         vegetation_boundary = self.storage.output_filepath('vegetation_boundary')
         arcpy.management.Dissolve(vegetation, vegetation_boundary, vegetation_type)
@@ -183,9 +186,7 @@ class PrepareData(PrepareDataBase, ManageFields):
                     if row[i] in ("", " ", None): # TODO: empty string or NULL value?
                         raise DataPreparationInvalidInput(
                             "Values in soilveg tab are not correct "
-                            "(field '{}': empty value found in row {})".format(
-                                self._data['sfield'][i], row_id
-                        ))
+                            "(field '{}': empty value found in row {})".format(self._data['sfield'][i], row_id))
 
         return intersect, mask_shp, self._data['sfield']
 
@@ -256,10 +257,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         idx = 0
         for field in sfield:
             output = os.path.join(self.data['outdir'], self._data['sfield_dir'], "r{}".format(field))
-            arcpy.conversion.PolygonToRaster(
-                intersect, field, output,
-                "MAXIMUM_AREA", "", self.data['dy']
-            )
+            arcpy.conversion.PolygonToRaster(intersect, field, output, "MAXIMUM_AREA", "", self.data['dy'])
             all_attrib[idx] = self._rst2np(output)
             idx += 1
             
@@ -284,12 +282,10 @@ class PrepareData(PrepareDataBase, ManageFields):
         dem_desc = arcpy.Describe(dem_clip)
         
         # lower left corner coordinates
-        GridGlobals.set_llcorner((dem_desc.Extent.XMin,
-                                  dem_desc.Extent.YMin))
+        GridGlobals.set_llcorner((dem_desc.Extent.XMin, dem_desc.Extent.YMin))
         self.data['xllcorner'] = dem_desc.Extent.XMin
         self.data['yllcorner'] = dem_desc.Extent.YMin
-        GridGlobals.set_size((dem_desc.MeanCellHeight,
-                              dem_desc.MeanCellWidth))
+        GridGlobals.set_size((dem_desc.MeanCellHeight, dem_desc.MeanCellWidth))
         self.data['dy'] = dem_desc.MeanCellHeight
         self.data['dx'] = dem_desc.MeanCellWidth
         GridGlobals.set_pixel_area(self.data['dx'] * self.data['dy'])
@@ -304,7 +300,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         """
         if (self.data['points'] not in("", "#", None)):
             # get number of points
-            count = arcpy.GetCount_management(self.data['points']).getOutput(0)
+            count = arcpy.management.GetCount(self.data['points']).getOutput(0)
             
             if count > 0:
                 # identify the geometry field

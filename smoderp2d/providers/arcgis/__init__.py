@@ -11,6 +11,7 @@ from smoderp2d.providers.arcgis.logger import ArcPyLogHandler
 from smoderp2d.providers import Logger
 from smoderp2d.exceptions import GlobalsNotSet
 
+
 class ArcGisWritter(BaseWritter):
     def __init__(self):
         super(ArcGisWritter, self).__init__()
@@ -25,19 +26,13 @@ class ArcGisWritter(BaseWritter):
 
     def create_storage(self,outdir):
         # create core ArcGIS File Geodatabase
-        arcpy.CreateFileGDB_management(
-            outdir,
-            "data.gdb")
+        arcpy.management.CreateFileGDB(outdir, "data.gdb")
 
         # create temporary ArcGIS File Geodatabase
-        arcpy.CreateFileGDB_management(
-            os.path.join(outdir, 'temp'),
-            "data.gdb")
+        arcpy.management.CreateFileGDB( os.path.join(outdir, 'temp'), "data.gdb")
 
         # create control ArcGIS File Geodatabase
-        arcpy.CreateFileGDB_management(
-            os.path.join(outdir, 'control'),
-            "data.gdb")
+        arcpy.management.CreateFileGDB(os.path.join(outdir, 'control'), "data.gdb")
 
     def output_filepath(self, name, item='temp'):
         """Get ArcGIS data path.
@@ -103,9 +98,7 @@ class ArcGisProvider(BaseProvider):
         self._print_fn = self._print_logo_fn = arcpy.AddMessage
 
         # output directory must be defined for _cleanup() method
-        Globals.outdir = self._get_argv(
-            constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY
-        )
+        Globals.outdir = self._get_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
 
         # computation type
         if self._get_argv(constants.PARAMETER_DPRE_ONLY).lower() == 'true':
@@ -131,7 +124,13 @@ class ArcGisProvider(BaseProvider):
 
         :param int idx: index
         """
-        return sys.argv[idx+1]
+        # for execution from command line
+        if (len(sys.argv) > 1):
+            # returns +1 because the 1st element in sys.argv is the name of the script
+            return sys.argv[idx+1]
+        # for execution from arcgis toolbox
+        else:
+            return arcpy.parameters[idx].valueAsText
 
     def _load_dpre(self):
         """Run data preparation procedure.
