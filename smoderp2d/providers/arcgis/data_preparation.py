@@ -19,7 +19,7 @@ from smoderp2d.providers.arcgis.terrain import compute_products
 from smoderp2d.providers.arcgis.manage_fields import ManageFields
 
 class PrepareData(PrepareDataBase, ManageFields):
-    def __init__(self, writter):
+    def __init__(self, options, writter):
         super(PrepareData, self).__init__(writter)
 
         # setting the workspace environment
@@ -33,7 +33,7 @@ class PrepareData(PrepareDataBase, ManageFields):
             self._add_message(self, "Spatial extension for ArcGIS not available - can not continue.")
 
         # get input parameters
-        self._get_input_params()
+        self._get_input_params(options)
 
     def _get_input_params(self, options):
         """Get input parameters from ArcGIS toolbox.

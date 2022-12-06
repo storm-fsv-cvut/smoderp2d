@@ -120,7 +120,7 @@ class ArcGisProvider(BaseProvider):
         self._options = options
 
         # set output directory
-        Globals.outdir = options['output_dir']
+        Globals.outdir = options['output']
 
     def _load_dpre(self):
         """Run data preparation procedure.
@@ -129,5 +129,5 @@ class ArcGisProvider(BaseProvider):
         """
         from smoderp2d.providers.arcgis.data_preparation import PrepareData
        
-        prep = PrepareData(self.storage)
+        prep = PrepareData(self._options, self.storage)
         return prep.run()

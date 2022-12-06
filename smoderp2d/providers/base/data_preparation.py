@@ -47,7 +47,7 @@ class PrepareDataBase(object):
 
         # create output folder, where temporary data are stored
         self._set_output()
-        dem_copy, dem_mask = self._set_mask()
+        # dem_copy, dem_mask = self._set_mask()
 
         # intersect
         Logger.info("Computing intersect of input data...")
@@ -241,25 +241,23 @@ class PrepareDataBase(object):
         os.makedirs(control)
 
 
-    def _set_mask(self):
-        raise NotImplemented("Not implemented for base provider")
-
-    def _terrain_products(self, dem):
-        raise NotImplemented("Not implemented for base provider")
-
-    def _get_intersect(self, dem_copy, mask, vegetation, soil,
-                       vegetation_type, soil_type,
-                       table_soil_vegetation, table_soil_vegetation_code):
-        raise NotImplemented("Not implemented for base provider")
-
-    def _get_input_params(self):
-        raise NotImplemented("Not implemented for base provider")
-
-    def _rst2np(self, raster):
-        raise NotImplemented("Not implemented for base provider")
-
-    def _get_attrib(self, sfield, intersect):
-        raise NotImplemented("Not implemented for base provider")
+    # def _set_mask(self):
+    #     raise NotImplemented("Not implemented for base provider")
+    #
+    # def _terrain_products(self, dem):
+    #     raise NotImplemented("Not implemented for base provider")
+    #
+    # def _get_intersect(self, dem_copy, mask, vegetation, soil,vegetation_type, soil_type,table_soil_vegetation, table_soil_vegetation_code):
+    #     raise NotImplemented("Not implemented for base provider")
+    #
+    # def _get_input_params(self):
+    #     raise NotImplemented("Not implemented for base provider")
+    #
+    # def _rst2np(self, raster):
+    #     raise NotImplemented("Not implemented for base provider")
+    #
+    # def _get_attrib(self, sfield, intersect):
+    #     raise NotImplemented("Not implemented for base provider")
 
     def _init_attrib(self, sfield, intersect):
         """Internal method. initialize attributes array.

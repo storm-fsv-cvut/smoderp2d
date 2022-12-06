@@ -5,9 +5,11 @@ import sys
 import os
 import locale
 import numpy
+#from importlib import reload
 
 sys.path.append(r"d:\Dokumenty\SMODERP\smoderp2d")
-from smoderp2d import ArcGISRunner
+#import smoderp2d
+from smoderp2d import ArcGisRunner
 from smoderp2d.providers.base import CompType
 from smoderp2d.exceptions import ProviderError
 
@@ -219,8 +221,15 @@ class SMODERP2D(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
+        import smoderp2d
+        sys.path.append(r"d:\Dokumenty\SMODERP\smoderp2d")
+        arcpy.AddMessage(smoderp2d.__file__)
+        arcpy.AddMessage(sys.path)
+
+        reload(smoderp2d) # remove when finished ...
+        #
         try:
-            runner = ArcGisRunner()
+            runner = smoderp2d.ArcGisRunner()
 
             runner.set_options(self._get_input_params(parameters))
             # if flags['d']:
@@ -248,32 +257,24 @@ class SMODERP2D(object):
         """
         return {
             # parameter indexes from the bin/arcgis/SMODERP2D.pyt tool for ArcGIS
-            'elevation': parameters[constants.PARAMETER_DEM].valueAsText,
-            'soil': parameters[constants.PARAMETER_SOIL].valueAsText,
-            'soil_type': parameters[constants.PARAMETER_SOIL_TYPE].valueAsText,
-            'vegetation': parameters[constants.PARAMETER_VEGETATION].valueAsText,
-            'vegetation_type': parameters[constants.PARAMETER_VEGETATION_TYPE].valueAsText,
-            'rainfall_file': parameters[constants.PARAMETER_PATH_TO_RAINFALL_FILE].valueAsText,
-            'maxdt': float(parameters[constants.PARAMETER_MAX_DELTA_T].valueAsText),
-            'end_time': float(parameters[constants.PARAMETER_END_TIME].valueAsText) * 60.0,  # convert input to seconds
-            'points': parameters[constants.PARAMETER_POINTS].valueAsText,
-            'output': parameters[constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
-            'table_soil_vegetation': parameters[constants.PARAMETER_SOILVEGTABLE].valueAsText,
-            'table_soil_vegetation_code': parameters[constants.PARAMETER_SOILVEGTABLE_CODE].valueAsText,
-            'stream': parameters[constants.PARAMETER_STREAM].valueAsText,
-            'table_stream_shape': parameters[constants.PARAMETER_STREAMTABLE].valueAsText,
-            'table_stream_shape_code': parameters[constants.PARAMETER_STREAMTABLE_CODE].valueAsText
+            'elevation': parameters[PARAMETER_DEM].valueAsText,
+            'soil': parameters[PARAMETER_SOIL].valueAsText,
+            'soil_type': parameters[PARAMETER_SOIL_TYPE].valueAsText,
+            'vegetation': parameters[PARAMETER_VEGETATION].valueAsText,
+            'vegetation_type': parameters[PARAMETER_VEGETATION_TYPE].valueAsText,
+            'rainfall_file': parameters[PARAMETER_PATH_TO_RAINFALL_FILE].valueAsText,
+            'maxdt': float(parameters[PARAMETER_MAX_DELTA_T].valueAsText),
+            'end_time': float(parameters[PARAMETER_END_TIME].valueAsText) * 60.0,  # convert input to seconds
+            'points': parameters[PARAMETER_POINTS].valueAsText,
+            'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
+            'table_soil_vegetation': parameters[PARAMETER_SOILVEGTABLE].valueAsText,
+            'table_soil_vegetation_code': parameters[PARAMETER_SOILVEGTABLE_CODE].valueAsText,
+            'stream': parameters[PARAMETER_STREAM].valueAsText,
+            'table_stream_shape': parameters[PARAMETER_STREAMTABLE].valueAsText,
+            'table_stream_shape_code': parameters[PARAMETER_STREAMTABLE_CODE].valueAsText
         }
 
-    def initiateTask(self):
-        self.processingGDBpath = os.path.join(self._input_params['output'], self.processignGDBname)
 
-        if os.path.exists(self.processingGDBpath):
-            arcpy.AddMessage("Geodatabse '" + self.processingGDBpath + "' allready exists. Some datasets may be overwriten!")
-        else:
-            # create the geodatabase
-            arcpy.management.CreateFileGDB(self._input_params['output'], self.processignGDBname)
-        return
 
     def calculate_AOI_outline(self):
         #dem_mask = self.storage.output_filepath('dem_mask')
