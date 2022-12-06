@@ -35,27 +35,13 @@ class PrepareData(PrepareDataBase, ManageFields):
         # get input parameters
         self._get_input_params()
 
-    def _get_input_params(self):
+    def _get_input_params(self, options):
         """Get input parameters from ArcGIS toolbox.
         """
-        self._input_params = {
-            # parameter indexes from the bin/arcgis/SMODERP2D.pyt tool for ArcGIS
-            'elevation': arcpy.parameters[constants.PARAMETER_DEM].valueAsText,
-            'soil': arcpy.parameters[constants.PARAMETER_SOIL].valueAsText,
-            'soil_type': arcpy.parameters[constants.PARAMETER_SOIL_TYPE].valueAsText,
-            'vegetation': arcpy.parameters[constants.PARAMETER_VEGETATION].valueAsText,
-            'vegetation_type': arcpy.parameters[constants.PARAMETER_VEGETATION_TYPE].valueAsText,
-            'rainfall_file': arcpy.parameters[constants.PARAMETER_PATH_TO_RAINFALL_FILE].valueAsText,
-            'maxdt': float(arcpy.parameters[constants.PARAMETER_MAX_DELTA_T].valueAsText),
-            'end_time': float(arcpy.parameters[constants.PARAMETER_END_TIME].valueAsText) * 60.0,  # convert input to seconds
-            'points': arcpy.parameters[constants.PARAMETER_POINTS].valueAsText,
-            'output': arcpy.parameters[constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
-            'table_soil_vegetation': arcpy.parameters[constants.PARAMETER_SOILVEGTABLE].valueAsText,
-            'table_soil_vegetation_code': arcpy.parameters[constants.PARAMETER_SOILVEGTABLE_CODE].valueAsText,
-            'stream': arcpy.parameters[constants.PARAMETER_STREAM].valueAsText,
-            'table_stream_shape': arcpy.parameters[constants.PARAMETER_STREAMTABLE].valueAsText,
-            'table_stream_shape_code': arcpy.parameters[constants.PARAMETER_STREAMTABLE_CODE].valueAsText
-        }
+        self._input_params = options
+        # cast some options to float
+        for opt in ('maxdt', 'end_time'):
+            self._input_params[opt] = float(self._input_params[opt])
 
     def _add_message(self, message):
         """

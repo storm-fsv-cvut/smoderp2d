@@ -6,10 +6,33 @@ import os
 import locale
 import numpy
 
-sys.path.append(r"d:\Dokumenty\SMODERP\smoderp2d\bin")
-from start_smoderp2d import start_smoderp2d
-sys.path.append(r"d:\Dokumenty\SMODERP\smoderp2d\providers\arcgis")
-from smoderp2d.providers.arcgis import constants
+sys.path.append(r"d:\Dokumenty\SMODERP\smoderp2d")
+from smoderp2d import ArcGISRunner
+from smoderp2d.providers.base import CompType
+from smoderp2d.exceptions import ProviderError
+
+
+# input parameters constants
+PARAMETER_DEM = 0
+PARAMETER_SOIL = 1
+PARAMETER_SOIL_TYPE = 2
+PARAMETER_VEGETATION = 3
+PARAMETER_VEGETATION_TYPE = 4
+PARAMETER_PATH_TO_RAINFALL_FILE = 5
+
+PARAMETER_MAX_DELTA_T = 6
+
+PARAMETER_END_TIME = 7
+#PARAMETER_SURFACE_RETENTION = 6  # nula jen docasne, typ vypoctu se resi jinak
+PARAMETER_POINTS = 8
+PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 9
+
+PARAMETER_SOILVEGTABLE = 10
+PARAMETER_SOILVEGTABLE_CODE = 11
+PARAMETER_STREAM = 12
+PARAMETER_STREAMTABLE = 13
+PARAMETER_STREAMTABLE_CODE = 14
+PARAMETER_DPRE_ONLY = 15
 
 class Toolbox(object):
     def __init__(self):
@@ -196,22 +219,34 @@ class SMODERP2D(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
+        try:
+            runner = ArcGisRunner()
 
+            runner.set_options(self._get_input_params(parameters))
+            # if flags['d']:
+            #     runner.set_comptype(
+            #         comp_type=CompType.dpre,
+            #         data_file=options['pickle_file']
+            # )
 
-        #start_smoderp2d() # uncomment when tool parameters passing works ...
+            runner.run()
+        except ProviderError as e:
+            # gs.fatal(e)
+            # arcpy....
+            pass
 
-        self._get_input_params(parameters)
-        self.initiateTask()
-        self.calculate_AOI_outline()
-        self.calculate_DEM_products()
-        self.clip_DEM_products()
+        #self.initiateTask()
+        #self.calculate_AOI_outline()
+        #self.calculate_DEM_products()
+        #self.clip_DEM_products()
 
         return
 
-    def _get_input_params(self, parameters):
+    @staticmethod
+    def _get_input_params(parameters):
         """Get input parameters from ArcGIS toolbox.
         """
-        self._input_params = {
+        return {
             # parameter indexes from the bin/arcgis/SMODERP2D.pyt tool for ArcGIS
             'elevation': parameters[constants.PARAMETER_DEM].valueAsText,
             'soil': parameters[constants.PARAMETER_SOIL].valueAsText,

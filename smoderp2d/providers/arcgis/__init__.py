@@ -97,17 +97,11 @@ class ArcGisProvider(BaseProvider):
 
         self._print_fn = self._print_logo_fn = arcpy.AddMessage
 
-        # output directory must be defined for _cleanup() method
-        Globals.outdir = self._get_argv(constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY)
+        # type of computation (default)
+        self.args.typecomp = CompType.full
 
-        # computation type
-        if self._get_argv(constants.PARAMETER_DPRE_ONLY).lower() == 'true':
-            self.args.typecomp = CompType.dpre
-            self.args.data_file = os.path.join(
-                Globals.outdir, 'save.pickle'
-            )
-        else:
-            self.args.typecomp = CompType.full
+        # options must be defined by set_options()
+        self._options = None
 
         # logger
         self.add_logging_handler(
@@ -118,19 +112,15 @@ class ArcGisProvider(BaseProvider):
         # define storage writter
         self.storage = ArcGisWritter()
 
-    @staticmethod
-    def _get_argv(idx):
-        """Get argument by index.
+    def set_options(self, options):
+        """Set input paramaters.
 
-        :param int idx: index
+        :param options: options dict to set
         """
-        # for execution from command line
-        if (len(sys.argv) > 1):
-            # returns +1 because the 1st element in sys.argv is the name of the script
-            return sys.argv[idx+1]
-        # for execution from arcgis toolbox
-        else:
-            return arcpy.parameters[idx].valueAsText
+        self._options = options
+
+        # set output directory
+        Globals.outdir = options['output_dir']
 
     def _load_dpre(self):
         """Run data preparation procedure.

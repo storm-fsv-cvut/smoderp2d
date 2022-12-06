@@ -105,6 +105,10 @@ class Runner(object):
 
         return 0
 
+class ArcGisRunner(Runner):
+    def set_options(self, options):
+        self._provider.set_options(options)
+
 
 class GrassRunner(Runner):
     def set_options(self, options):
