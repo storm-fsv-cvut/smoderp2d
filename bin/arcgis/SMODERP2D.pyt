@@ -244,7 +244,6 @@ class SMODERP2D(object):
             # arcpy....
             pass
 
-        #self.initiateTask()
         #self.calculate_AOI_outline()
         #self.calculate_DEM_products()
         #self.clip_DEM_products()
@@ -276,60 +275,60 @@ class SMODERP2D(object):
 
 
 
-    def calculate_AOI_outline(self):
-        #dem_mask = self.storage.output_filepath('dem_mask')
-        dem_mask_path = os.path.join(self.processingGDBpath, "dem_mask")
-        dem_mask = arcpy.sa.Reclassify( self._input_params['elevation'], "VALUE", "-100000 100000 1", "DATA")
-        dem_mask.save(dem_mask_path)
-        #dem_polygon = os.path.join(self.data['temp'], 'dem_outline')
-        dem_polygon = os.path.join(self.processingGDBpath, "dem_polygon")
-        arcpy.conversion.RasterToPolygon(dem_mask, dem_polygon, "NO_SIMPLIFY", "VALUE")
+    # def calculate_AOI_outline(self):
+    #     #dem_mask = self.storage.output_filepath('dem_mask')
+    #     dem_mask_path = os.path.join(self.processingGDBpath, "dem_mask")
+    #     dem_mask = arcpy.sa.Reclassify( self._input_params['elevation'], "VALUE", "-100000 100000 1", "DATA")
+    #     dem_mask.save(dem_mask_path)
+    #     #dem_polygon = os.path.join(self.data['temp'], 'dem_outline')
+    #     dem_polygon = os.path.join(self.processingGDBpath, "dem_polygon")
+    #     arcpy.conversion.RasterToPolygon(dem_mask, dem_polygon, "NO_SIMPLIFY", "VALUE")
+    #
+    #     #dem_soil_veg_intersection = os.path.join(self.data['temp'], 'AOI')
+    #     dem_soil_veg_intersection = os.path.join(self.processingGDBpath, "veg_soil_AOI")
+    #     arcpy.analysis.Intersect([dem_polygon, self._input_params['soil'], self._input_params['vegetation']], dem_soil_veg_intersection, "NO_FID")
+    #
+    #     AOI_outline = os.path.join(self.processingGDBpath, "AOI")
+    #     arcpy.management.Dissolve(dem_soil_veg_intersection, AOI_outline)
+    #
+    #     self.AIO_outline = AOI_outline
+    #     return
 
-        #dem_soil_veg_intersection = os.path.join(self.data['temp'], 'AOI')
-        dem_soil_veg_intersection = os.path.join(self.processingGDBpath, "veg_soil_AOI")
-        arcpy.analysis.Intersect([dem_polygon, self._input_params['soil'], self._input_params['vegetation']], dem_soil_veg_intersection, "NO_FID")
-
-        AOI_outline = os.path.join(self.processingGDBpath, "AOI")
-        arcpy.management.Dissolve(dem_soil_veg_intersection, AOI_outline)
-
-        self.AIO_outline = AOI_outline
-        return
-
-    def calculate_DEM_products(self):
-        # calculate the depressionless DEM
-        if not self.dem_fill:
-            dem_fill_path = os.path.join(self.processingGDBpath, "dem_fill")
-            dem_fill = arcpy.sa.Fill(self._input_params['elevation'])
-            dem_fill.save(dem_fill_path)
-            self.dem_fill = dem_fill_path
-
-        # calculate the flow direction
-        if not self.dem_flowacc:
-            if not self.dem_flowdir:
-                dem_flowdir_path = os.path.join(self.processingGDBpath, "dem_flowdir")
-                flowdir = arcpy.sa.FlowDirection(self.dem_fill)
-                flowdir.save(dem_flowdir_path)
-                self.dem_flowdir = dem_flowdir_path
-
-            dem_flowacc_path = os.path.join(self.processingGDBpath, "dem_flowacc")
-            flowacc = arcpy.sa.FlowAccumulation(self.dem_flowdir)
-            flowacc.save(dem_flowacc_path)
-            self.dem_flowacc = dem_flowacc_path
-
-        # calculate slope
-        if not self.dem_slope:
-            dem_slope_path = os.path.join(self.processingGDBpath, "dem_slope")
-            dem_slope = arcpy.sa.Slope(self.dem_fill, "PERCENT_RISE", 1)
-            dem_slope.save(dem_slope_path)
-            self.dem_slope = dem_slope_path
-
-        # calculate aspect
-        if not self.dem_aspect:
-            dem_aspect_path = os.path.join(self.processingGDBpath, "dem_aspect")
-            dem_aspect = arcpy.sa.Aspect(self.dem_fill, "", "")
-            dem_aspect.save(dem_aspect_path)
-            self.dem_aspect = dem_aspect_path
-        return
+    # def calculate_DEM_products(self):
+    #     # calculate the depressionless DEM
+    #     if not self.dem_fill:
+    #         dem_fill_path = os.path.join(self.processingGDBpath, "dem_fill")
+    #         dem_fill = arcpy.sa.Fill(self._input_params['elevation'])
+    #         dem_fill.save(dem_fill_path)
+    #         self.dem_fill = dem_fill_path
+    #
+    #     # calculate the flow direction
+    #     if not self.dem_flowacc:
+    #         if not self.dem_flowdir:
+    #             dem_flowdir_path = os.path.join(self.processingGDBpath, "dem_flowdir")
+    #             flowdir = arcpy.sa.FlowDirection(self.dem_fill)
+    #             flowdir.save(dem_flowdir_path)
+    #             self.dem_flowdir = dem_flowdir_path
+    #
+    #         dem_flowacc_path = os.path.join(self.processingGDBpath, "dem_flowacc")
+    #         flowacc = arcpy.sa.FlowAccumulation(self.dem_flowdir)
+    #         flowacc.save(dem_flowacc_path)
+    #         self.dem_flowacc = dem_flowacc_path
+    #
+    #     # calculate slope
+    #     if not self.dem_slope:
+    #         dem_slope_path = os.path.join(self.processingGDBpath, "dem_slope")
+    #         dem_slope = arcpy.sa.Slope(self.dem_fill, "PERCENT_RISE", 1)
+    #         dem_slope.save(dem_slope_path)
+    #         self.dem_slope = dem_slope_path
+    #
+    #     # calculate aspect
+    #     if not self.dem_aspect:
+    #         dem_aspect_path = os.path.join(self.processingGDBpath, "dem_aspect")
+    #         dem_aspect = arcpy.sa.Aspect(self.dem_fill, "", "")
+    #         dem_aspect.save(dem_aspect_path)
+    #         self.dem_aspect = dem_aspect_path
+    #     return
 
     def clip_DEM_products(self):
         # clip DEM

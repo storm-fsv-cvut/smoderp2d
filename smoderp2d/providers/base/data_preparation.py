@@ -49,24 +49,26 @@ class PrepareDataBase(object):
         self._set_output()
         # dem_copy, dem_mask = self._set_mask()
 
-        # intersect
-        Logger.info("Computing intersect of input data...")
-        intersect, mask_shp, sfield = self._get_intersect(
-            dem_copy, dem_mask,
-            self._input_params['vegetation'],
-            self._input_params['soil'],
-            self._input_params['vegetation_type'],
-            self._input_params['soil_type'],
-            self._input_params['table_soil_vegetation'],
-            self._input_params['table_soil_vegetation_code']
-        )
+        # intersect the input datasest to define the area of interest
+        Logger.info("Creating intersect of input datasets...")
+        self._create_AOI_outline()
         #Logger.progress(10)
 
-        # clip
+        # calculate DEM derivatives
+        # intentionally done on non-clipped DEM to avoid edge effects
+        self._create_DEM_products()
+
+        # prepare all needed layers for further processing
+        #   clip the input layers to AIO outline
+        self._clip_input_layers()
+        #   join the attributes to soil_veg intersect and check the table consistency
+        self._prepare_soilveg_layer()
+
         Logger.info("Clip of the source data by intersect...")
+
         dem_clip = self._clip_data(dem_copy, intersect)
 
-        # DTM computation
+        # DEM computation
         Logger.info(
             "Computing fill, flow direction, flow accumulation, slope..."
         )

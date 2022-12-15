@@ -6,7 +6,6 @@ import arcpy
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.providers.base import BaseProvider, CompType, BaseWritter
-from smoderp2d.providers.arcgis import constants
 from smoderp2d.providers.arcgis.logger import ArcPyLogHandler
 from smoderp2d.providers import Logger
 from smoderp2d.exceptions import GlobalsNotSet
