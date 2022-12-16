@@ -23,8 +23,8 @@ class PrepareDataBase(object):
             # TODO: needed?
             'soil_mask': 'control',
             'vs_intersect': 'control',
-            'soil_veg_column': 'soil_veg',
-            'soil_veg_copy': 'control',
+            'soil_veg_fieldname': 'soil_veg',
+            'soil_veg_table': 'control',
             'sfield': ["k", "s", "n", "pi", "ppl",
                        "ret", "b", "x", "y", "tau", "v"],
             'points_mask' : 'core',
@@ -50,23 +50,24 @@ class PrepareDataBase(object):
         # dem_copy, dem_mask = self._set_mask()
 
         # intersect the input datasest to define the area of interest
-        Logger.info("Creating intersect of input datasets...")
+        Logger.info("Creating intersect of input datasets ...")
         self._create_AOI_outline()
         #Logger.progress(10)
 
         # calculate DEM derivatives
         # intentionally done on non-clipped DEM to avoid edge effects
+        Logger.info("Creating DEM-derived layers ...")
         self._create_DEM_products()
 
         # prepare all needed layers for further processing
-        #   clip the input layers to AIO outline
+        #   clip the input layers to AIO outline including the record points
+        Logger.info("Clipping input layers to AoI outline ...")
         self._clip_input_layers()
+
         #   join the attributes to soil_veg intersect and check the table consistency
+        Logger.info("Preparing soil and vegetation properties table ...")
         self._prepare_soilveg_layer()
 
-        Logger.info("Clip of the source data by intersect...")
-
-        dem_clip = self._clip_data(dem_copy, intersect)
 
         # DEM computation
         Logger.info(
@@ -192,7 +193,7 @@ class PrepareDataBase(object):
             'mat_n': None,
             'outdir': self._input_params['output'],
             'pixel_area': None,
-            'points': self._input_params['points'], # TODO: used outside?
+            'points': self._input_params['points'], # TODO: needs to be replaced by the clipped points dataset
             'poradi': None,
             'end_time': self._input_params['end_time'],
             'state_cell': None,
@@ -338,9 +339,7 @@ class PrepareDataBase(object):
         else:
             Logger.info(
                 "Point FID = {} is at the edge of the raster. "
-                "This point will not be included in results.".format(
-                    fid
-            ))
+                "This point will not be included in results.".format(fid))
 
         return i
 

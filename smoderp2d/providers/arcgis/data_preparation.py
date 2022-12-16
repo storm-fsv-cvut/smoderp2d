@@ -31,8 +31,15 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         self.dem_aoi = None
         self.dem_slope_aoi = None
+        self.dem_flowdir_aoi = None
         self.dem_flowacc_aoi = None
         self.dem_aspect_aoi = None
+        self.soilveg_aoi = None
+
+        self.record_points_aoi = None
+
+        self.veg_fieldname = "veg_type"
+        self.soil_veg_filename = "soil_veg.dbf"
 
         # setting the workspace environment
         arcpy.env.workspace = arcpy.GetParameterAsText(9)
@@ -41,7 +48,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         if arcpy.CheckExtension("Spatial") == "Available":
             arcpy.CheckOutExtension("Spatial")
         else:
-            #raise Error...
+            #raise LicenceNotAvailableError("Spatial Analysis extension for ArcGIS is not available")
             self._add_message(self, "Spatial extension for ArcGIS not available - can not continue.")
 
         # get input parameters
@@ -81,7 +88,10 @@ class PrepareData(PrepareDataBase, ManageFields):
         dem_slope_mask_path = os.path.join(self.data['temp'], 'dem_slope_mask')
         dem_mask = arcpy.sa.Reclassify( self._input_params['elevation'], "VALUE", "-100000 100000 1", "DATA")
         dem_slope_mask = arcpy.sa.Shrink(dem_mask, 1, 1)
+        # the slope raster extent will be used in further intersections as it is always smaller then the DEM extent ...
+        self._add_message(dem_slope_mask_path)
         dem_slope_mask.save(dem_slope_mask_path)
+
 
         dem_polygon = os.path.join(self.data['temp'], "dem_polygon")
         arcpy.conversion.RasterToPolygon(dem_slope_mask, dem_polygon, "NO_SIMPLIFY", "VALUE")
@@ -92,11 +102,21 @@ class PrepareData(PrepareDataBase, ManageFields):
         AOI_outline = os.path.join(self.data['outdir'], "AOI_polygon")
         arcpy.management.Dissolve(dem_soil_veg_intersection, AOI_outline)
 
-        self.AIO_outline = AOI_outline
-        return AOI_outline
+        if (int(arcpy.management.GetCount(AOI_outline).getOutput(0)) == 0):
+            raise DataPreparationInvalidInput(
+                "The input layers are not correct!"
+                "The geometrical intersection of input datasets is empty.")
+            return None
+        else:
+            self.AIO_outline = AOI_outline
+            return AOI_outline
 
 
     def _create_DEM_products(self):
+        """
+        Creates all the needed DEM derivatives in the DEM's original extent to avoid raster edge effects.
+        # the clipping extent could be replaced be AOI border buffered by 1 cell to prevent time consuming operations on DEM if the DEM is much larger then the AOI
+        """
         # calculate the depressionless DEM
         if not self.dem_fill:
             dem_fill_path = os.path.join(self.data['outdir'], "dem_fill")
@@ -130,151 +150,130 @@ class PrepareData(PrepareDataBase, ManageFields):
             dem_aspect = arcpy.sa.Aspect(self.dem_fill, "", "")
             dem_aspect.save(dem_aspect_path)
             self.dem_aspect = dem_aspect_path
-        return
+
+        return dem_flowdir_path, dem_flowacc_path, dem_slope_path, dem_aspect_path
 
 
-####################################################
-    def _terrain_products(self, dem):
-        """Computes terrains products.
-
-        :param str elev: DTM raster map name
-        
-        :return: (filled elevation, flow direction, flow accumulation, slope)
+    def _clip_input_layers(self):
         """
-        flow_direction_clip, flow_accumulation_clip, slope_clip = compute_products(dem, self.data['outdir'])
-
-        # this is a workaround if the input dem does not have nodatavalue assigned 
-        # or has different nodatavalue compared to env nodatavalue. 
-        slope_clip_desc = arcpy.Describe(slope_clip)
-        self.data['NoDataValue'] = slope_clip_desc.nodatavalue
-        return flow_direction_clip, flow_accumulation_clip, slope_clip 
-
-    def _get_intersect(self, dem, mask, vegetation, soil, vegetation_type, soil_type, table_soil_vegetation, table_soil_vegetation_code):
+        Clips all the input and derived input layers to the AOI.
+        Saves the record points inside the AOI as new feature class and logs those outside AOI
         """
-        Intersect data by area of interest.
 
+        # check if the clipping polygon exists and if not create it
+        if not self.AIO_outline:
+            self._create_AOI_outline()
 
-        :param str dem: DTM raster name
-        :param str mask: raster mask name
-        :param str vegetation: vegetation input vector name
-        :param soil: soil input vector name
-        :param vegetation_type: attribute vegetation column for dissolve
-        :param soil_type: attribute soil column for dissolve
-        :param table_soil_vegetation: soil table to join
-        :param table_soil_vegetation_code: key soil attribute 
+        # check if the needed DEM derivatives exist and if not create them
+        if (not self.dem_slope or not self.dem_flowdir or not self.dem_flowacc or not self.dem_flowacc):
+            self._create_DEM_products()
 
-        :return intersect: intersect vector name
-        :return mask_shp: vector mask name
-        :return sfield: list of selected attributes
+        dem_aoi_path = os.path.join(self.data['temp'], "dem_aoi")
+        self.dem_aoi = arcpy.analysis.Clip(self._input_params['elevation'], self.AIO_outline, dem_aoi_path)
+
+        dem_slope_aoi_path = os.path.join(self.data['temp'], "dem_slope_aoi")
+        self.dem_slope_aoi = arcpy.analysis.Clip(self.dem_slope, self.AIO_outline, dem_slope_aoi_path)
+
+        dem_flowdir_aoi_path = os.path.join(self.data['temp'], "dem_flowdir_aoi")
+        self.dem_flowdir_aoi = arcpy.analysis.Clip(self.dem_flowdir, self.AIO_outline, dem_flowdir_aoi_path)
+
+        dem_flowacc_aoi_path = os.path.join(self.data['temp'], "dem_flowacc_aoi")
+        self.dem_slope_aoi = arcpy.analysis.Clip(self.dem_flowacc, self.AIO_outline, dem_flowacc_aoi_path)
+
+        dem_aspect_aoi_path = os.path.join(self.data['temp'], "dem_aspect_aoi")
+        self.dem_aspect_aoi = arcpy.analysis.Clip(self.dem_flowacc, self.AIO_outline, dem_aspect_aoi_path)
+
+        # create a feature layer for the selections
+        points_layer = arcpy.management.MakeFeatureLayer(self._input_params['points'], "points_layer")
+        # select points inside the AIO
+        arcpy.management.SelectLayerByLocation(points_layer, "WITHIN", self.AIO_outline, "", "NEW_SELECTION")
+        # save them as a new dataset
+        points_AIO_path = os.path.join(self.data['temp'], "points_AOI")
+        self.record_points_aoi = arcpy.management.CopyFeatures(points_layer, points_AIO_path)
+
+        # select points outside the AIO
+        # TODO: shouldn't be the point to close the border removed here as well?
+        arcpy.management.SelectLayerByLocation(points_layer, "WITHIN", self.AIO_outline, "", "NEW_SELECTION", "INVERT")
+        numOutside = int(arcpy.management.GetCount(points_layer).getOutput(0))
+        pointsOID = arcpy.Describe(self._input_params['points']).OIDFieldName
+        outsideList = []
+        outsideListString = ""
+        # get their IDs
+        with arcpy.da.SearchCursor(points_layer, [pointsOID]) as table:
+            for row in table:
+                outsideList.append(row[0])
+                if (len(outsideListString) == 0):
+                    outsideListString = str(row[0])
+                else:
+                    outsideListString += ", "+str(row[0])
+        # report them to the user
+        self._add_message(str(numOutside)+" record points outside of the area of interest ("+pointsOID+": "+outsideListString)
+
+        return dem_flowdir_aoi_path, dem_flowacc_aoi_path, dem_slope_aoi_path, dem_aspect_aoi_path, points_AIO_path
+
+    def _prepare_soilveg(self):
         """
-        # convert mask into polygon feature class
-        mask_shp = self.storage.output_filepath('vector_mask')
-        arcpy.conversion.RasterToPolygon(mask, mask_shp, "NO_SIMPLIFY")
+        Prepares the combination of soils and vegetation input layers.
+        Gets the spatial intersection of both and checks the consistency of attribute table.
 
-        # dissolve soil and vegetation polygons
-        soil_boundary = self.storage.output_filepath('soil_boundary')
-        vegetation_boundary = self.storage.output_filepath('vegetation_boundary')
-        arcpy.management.Dissolve(vegetation, vegetation_boundary, vegetation_type)
-        arcpy.management.Dissolve(soil, soil_boundary, soil_type)
+        """
 
-        # do intersection
-        group = [soil_boundary, vegetation_boundary, mask_shp]
-        intersect = self.storage.output_filepath('inter_soil_lu')
-        arcpy.analysis.Intersect(group, intersect, "ALL", "", "INPUT")
+        # check if the soil and vegetation intersect exists and create it if not
+        if (not self.soilveg_aoi):
+            soilveg_aoi_path = os.path.join(self.data['outdir'], "soilveg_aoi")
 
-        # remove "soil_veg" if exists and create a new one
-        if self._data['soil_veg_column'] in arcpy.ListFields(intersect):
-            arcpy.management.DeleteField(intersect, self._data['soil_veg_column'])
-            Logger.info("'"+self._data['soil_veg_column']+"' attribute field was replaced")
-        arcpy.management.AddField(intersect, self._data['soil_veg_column'], "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED","")
+            # check if the soil_type and vegetation_type field names are equal and deal with it if not
+            if (self._input_params['soil_type'] == self._input_params['vegetation_type']):
+                Logger.info("The vegetation type attribute field name ('"+self._input_params['vegetation_type']+"') is equal to the soil type attribute field name.("
+                    "'"+self._input_params['soil_type']+"')! '"+self._input_params['vegetation_type']+"' will be renamed to '"+self.veg_fieldname+"'.")
+                # add the new field
+                arcpy.management.AddField(self._input_params['vegetation'], self.veg_fieldname, "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED", "")
+                # copy the values
+                with arcpy.da.UpdateCursor(self._input_params['vegetation'], [self._input_params['vegetation_type'], self.veg_fieldname]) as table:
+                    for row in table:
+                        row[1] = row[0]
+                        table.updateRow(row)
+                # and remove the original field
+                arcpy.management.DeleteField(self._input_params['vegetation'], self._input_params['vegetation_type'])
+            else:
+                self.veg_fieldname = self._input_params['vegetation_type']
 
-        # compute "soil_veg" values (soil_type + vegetation_type)
-        vtype1 = vegetation_type + "_1" if soil_type == vegetation_type else vegetation_type
-        fields = [soil_type, vtype1, self._data['soil_veg_column']]
-        with arcpy.da.UpdateCursor(intersect, fields) as table:
+            # create the geometric intersection of soil and vegetation layers
+            self.soilveg_aoi = arcpy.analysis.Intersect([self._input_params['soil'], self._input_params['vegetation'], self.AIO_outline], soilveg_aoi_path, "NO_FID")
+
+        if self._data['soil_veg_fieldname'] in arcpy.ListFields(self.soilveg_aoi):
+            arcpy.management.DeleteField(self.soilveg_aoi, self._data['soil_veg_fieldname'])
+            Logger.info("'"+self._data['soil_veg_fieldname']+"' attribute field already in the table and will be replaced.")
+
+        arcpy.management.AddField(self.soilveg_aoi, self._data['soil_veg_fieldname'], "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED","")
+
+        # calculate "soil_veg" values (soil_type + vegetation_type)
+        with arcpy.da.UpdateCursor(self.soilveg_aoi, [self._input_params['soil_type'], self.veg_fieldname, self._data['soil_veg_fieldname']]) as table:
             for row in table:
                 row[2] = row[0] + row[1]
                 table.updateRow(row)
 
         # copy attribute table to DBF file for modifications
-        soil_veg_copy_dir = os.path.join(self.data['outdir'], self._data['soil_veg_copy'])
-        arcpy.conversion.TableToTable(table_soil_vegetation, soil_veg_copy_dir, "soil_veg_tab_current.dbf")
+        soilveg_props_path = os.join( self.data['outdir'], self.soil_veg_filename)
+        arcpy.conversion.TableToTable(self.soilveg_aoi, self.data['outdir'], self.soil_veg_filename)
 
-        # join table copy to intersect feature class
-        self._join_table(
-            intersect, self._data['soil_veg_column'],
-            soil_veg_copy,
-            table_soil_vegetation_code,
-            ";".join(self._data['sfield'])
-        )
+        # join table copy to intersect feature class ... I'm missing the point of this step
+        arcpy.management.JoinField(self.soilveg_aoi, self._data['soil_veg_fieldname'], soilveg_props_path, self._data['soil_veg_fieldname'], self._data['sfield'])
 
         # check for empty values
-        with arcpy.da.SearchCursor(intersect, self._data['sfield']) as cursor:
+        with arcpy.da.SearchCursor(self.soilveg_aoi, self._data['sfield']) as cursor:
             row_id = 0
             for row in cursor:
                 row_id += 1
                 for i in range(len(row)):
-                    if row[i] in ("", " ", None): # TODO: empty string or NULL value?
+                    if row[i] in ("", " ", None):
                         raise DataPreparationInvalidInput(
-                            "Values in soilveg tab are not correct "
+                            "Values in soilveg table are not correct "
                             "(field '{}': empty value found in row {})".format(self._data['sfield'][i], row_id))
 
-        return intersect, mask_shp, self._data['sfield']
 
-    def _clip_data(self, dem, intersect):
-        """
-        Clip input data based on AOI.
-
-        :param str dem: raster DTM name
-        :param str intersect: vector intersect feature call name
-
-        :return str dem_clip: output clipped DTM name
-
-        """
-        if self.data['points']:
-            self.data['points'] = self._clip_points(intersect)
-
-        # set extent from intersect vector map
-        arcpy.env.extent = intersect
-
-        # raster description
-        dem_desc = arcpy.Describe(dem)
-
-        # output raster coordinate system
-        arcpy.env.outputCoordinateSystem = dem_desc.SpatialReference
-
-        # create raster mask based on intersect feature call
-        mask = self.storage.output_filepath('inter_mask')
-        arcpy.conversion.PolygonToRaster(
-            intersect, self.storage.primary_key, mask, "MAXIMUM_AREA",
-            cellsize = dem_desc.MeanCellHeight)
-
-        # cropping rasters
-        dem_clip = arcpy.sa.ExtractByMask(dem, mask)
-        dem_clip.save(self.storage.output_filepath('dem_inter'))
-        
-        return dem_clip
-
-    def _clip_points(self, intersect):
-        """
-        Clip input points data.
-
-        :param intersect: vector intersect feature class
-        """
-        pointsClipCheck = self.storage.output_filepath('points_inter', item='')
-        arcpy.Clip_analysis(
-            self.data['points'], intersect, pointsClipCheck
-        )
-
-        # count number of features (rows)
-        npoints = arcpy.GetCount_management(self._input_params['points'])
-        npoints_clipped = arcpy.GetCount_management(pointsClipCheck)
-                
-        self._diff_npoints(int(npoints[0]), int(npoints_clipped[0]))
-
-        return pointsClipCheck
-
-    def _get_attrib(self, sfield, intersect):
+###############
+    def _get_soilveg_attribs(self, sfield, intersect):
         """
         Get numpy arrays of selected attributes.
 

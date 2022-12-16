@@ -11,19 +11,14 @@ class ManageFields(object):
         :param default_value:
         """
         try:
-            arcpy.DeleteField_management(vector, newfield)
+            arcpy.management.DeleteField(vector, newfield)
         except:
             pass
 
-        arcpy.AddField_management(
-            vector, newfield, datatype
-        )
-        arcpy.CalculateField_management(
-            vector, newfield, default_value, "PYTHON"
-        )
+        arcpy.management.AddField(vector, newfield, datatype)
+        arcpy.management.CalculateField(vector, newfield, default_value, "PYTHON")
 
-    def _join_table(self, in_vector, in_field,
-                    join_table, join_field, fields=None):
+    def _join_table(self, in_vector, in_field, join_table, join_field, fields=None):
         """
         Join attribute table.
 
@@ -33,21 +28,13 @@ class ManageFields(object):
         :param join_field: column to join
         :param fields: list of fields (None for all fields)
         """
-        if fields == None:
-            arcpy.JoinField_management(
-                in_vector, in_field, join_table, join_field
-            )
-        else:
-            arcpy.JoinField_management(
-                in_vector, in_field, join_table, join_field, fields
-            )
+        arcpy.management.JoinField(in_vector, in_field, join_table, join_field, fields)
 
     def _delete_fields(self, table, fields):
         """Delete attributes.
 
-        :param str table: attrubute table
-        :param list fields: attributes to delete
+        :param str table: attribute table
+        :param list fields: attribute fields to be deleted
         """
-        arcpy.DeleteField_management(
-            table, fields
-        )
+        for f in fields:
+            arcpy.management.DeleteField(table, f)
