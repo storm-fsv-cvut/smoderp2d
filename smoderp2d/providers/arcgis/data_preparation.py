@@ -154,7 +154,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         return dem_flowdir_path, dem_flowacc_path, dem_slope_path, dem_aspect_path
 
 
-    def _clip_input_layers(self):
+    def _clip_input_layers(self, noDataValue):
         """
         Clips all the input and derived input layers to the AOI.
         Saves the record points inside the AOI as new feature class and logs those outside AOI
@@ -169,19 +169,19 @@ class PrepareData(PrepareDataBase, ManageFields):
             self._create_DEM_products()
 
         dem_aoi_path = os.path.join(self.data['temp'], "dem_aoi")
-        self.dem_aoi = arcpy.analysis.Clip(self._input_params['elevation'], self.AIO_outline, dem_aoi_path)
+        self.dem_aoi = arcpy.management.Clip(self._input_params['elevation'], self.AIO_outline, dem_aoi_path, "", noDataValue, "ClippingGeometry")
 
         dem_slope_aoi_path = os.path.join(self.data['temp'], "dem_slope_aoi")
-        self.dem_slope_aoi = arcpy.analysis.Clip(self.dem_slope, self.AIO_outline, dem_slope_aoi_path)
+        self.dem_slope_aoi = arcpy.management.Clip(self.dem_slope, self.AIO_outline, dem_slope_aoi_path, "", noDataValue, "ClippingGeometry")
 
         dem_flowdir_aoi_path = os.path.join(self.data['temp'], "dem_flowdir_aoi")
-        self.dem_flowdir_aoi = arcpy.analysis.Clip(self.dem_flowdir, self.AIO_outline, dem_flowdir_aoi_path)
+        self.dem_flowdir_aoi = arcpy.management.Clip(self.dem_flowdir, self.AIO_outline, dem_flowdir_aoi_path, "", noDataValue, "ClippingGeometry")
 
         dem_flowacc_aoi_path = os.path.join(self.data['temp'], "dem_flowacc_aoi")
-        self.dem_slope_aoi = arcpy.analysis.Clip(self.dem_flowacc, self.AIO_outline, dem_flowacc_aoi_path)
+        self.dem_slope_aoi = arcpy.management.Clip(self.dem_flowacc, self.AIO_outline, dem_flowacc_aoi_path, "", noDataValue, "ClippingGeometry")
 
         dem_aspect_aoi_path = os.path.join(self.data['temp'], "dem_aspect_aoi")
-        self.dem_aspect_aoi = arcpy.analysis.Clip(self.dem_flowacc, self.AIO_outline, dem_aspect_aoi_path)
+        self.dem_aspect_aoi = arcpy.management.Clip(self.dem_flowacc, self.AIO_outline, dem_aspect_aoi_path, "", noDataValue, "ClippingGeometry")
 
         # create a feature layer for the selections
         points_layer = arcpy.management.MakeFeatureLayer(self._input_params['points'], "points_layer")
