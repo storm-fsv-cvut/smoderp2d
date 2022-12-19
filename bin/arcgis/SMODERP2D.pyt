@@ -222,7 +222,7 @@ class SMODERP2D(object):
         parameters[PARAMETER_MAX_DELTA_T].value = 30
         parameters[PARAMETER_END_TIME].value = 40
         parameters[PARAMETER_POINTS].value = "points.shp"
-        parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].value = "output"
+        # parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].value = "output"
         parameters[PARAMETER_SOILVEGTABLE].value = "soil_veg_tab_mean.dbf"
         parameters[PARAMETER_SOILVEGTABLE_CODE].value = "soilveg"
         # parameters[PARAMETER_STREAM].value =

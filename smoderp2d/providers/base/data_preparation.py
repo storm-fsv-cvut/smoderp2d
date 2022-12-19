@@ -13,6 +13,7 @@ class PrepareDataBase(object):
         # internal output data
         self._data = {
             'dem_mask' : 'control',
+            'dem_slope_mask': 'control',
             'ratio_cell' : 'control',
             'efect_cont' : 'control',
             'soil_boundary': 'control',
@@ -34,6 +35,7 @@ class PrepareDataBase(object):
             'flow_clip' : 'control',
             'sfield_dir' : 'control',
         }
+        self.storage.set_data_target(self._data)
 
     def run(self):
         Logger.info('-' * 80)

@@ -33,7 +33,10 @@ class ArcGisWritter(BaseWritter):
         # create control ArcGIS File Geodatabase
         arcpy.management.CreateFileGDB(os.path.join(outdir, 'control'), "data.gdb")
 
-    def output_filepath(self, name, item=None):
+    def set_data_target(self, data):
+        self._data_target = data
+
+    def output_filepath(self, name):
         """Get ArcGIS data path.
 
         TODO: item needs to be set for each raster 
@@ -42,6 +45,7 @@ class ArcGisWritter(BaseWritter):
         :param name: layer name
         :param item: target item (temp, control)
         """
+        item = self._data_target.get(name)
         if item not in (None, "temp", "control"):
             raise ProviderError("Invalid item for output_filepath: {}".format(item))
 

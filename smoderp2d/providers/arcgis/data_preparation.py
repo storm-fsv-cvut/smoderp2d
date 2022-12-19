@@ -85,7 +85,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         *slope is not created yet, but generally the edge pixels have nonsense values so "one pixel shrinked DEM" extent is used instead
 
         """
-        dem_slope_mask_path = self.storage.output_filepath('dem_slope_mask', 'temp')
+        dem_slope_mask_path = self.storage.output_filepath('dem_slope_mask')
         dem_mask = arcpy.sa.Reclassify( self._input_params['elevation'], "VALUE", "-100000 100000 1", "DATA")
         dem_slope_mask = arcpy.sa.Shrink(dem_mask, 1, 1)
         # the slope raster extent will be used in further intersections as it is always smaller then the DEM extent ...
