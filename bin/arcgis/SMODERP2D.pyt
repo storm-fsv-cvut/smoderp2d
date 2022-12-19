@@ -7,7 +7,7 @@ import locale
 import numpy
 #from importlib import reload
 
-sys.path.append(r"d:\Dokumenty\SMODERP\smoderp2d")
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 #import smoderp2d
 from smoderp2d import ArcGisRunner
 from smoderp2d.providers.base import CompType
