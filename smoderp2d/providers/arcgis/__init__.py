@@ -8,7 +8,7 @@ from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.providers.base import BaseProvider, CompType, BaseWritter
 from smoderp2d.providers.arcgis.logger import ArcPyLogHandler
 from smoderp2d.providers import Logger
-from smoderp2d.exceptions import GlobalsNotSet
+from smoderp2d.exceptions import GlobalsNotSet, ProviderError
 
 
 class ArcGisWritter(BaseWritter):
@@ -33,24 +33,23 @@ class ArcGisWritter(BaseWritter):
         # create control ArcGIS File Geodatabase
         arcpy.management.CreateFileGDB(os.path.join(outdir, 'control'), "data.gdb")
 
-    def output_filepath(self, name, item='temp'):
+    def output_filepath(self, name, item=None):
         """Get ArcGIS data path.
 
         TODO: item needs to be set for each raster 
         reparatelly. Now all is in temp dir.
 
         :param name: layer name
-
-        :return: full path
+        :param item: target item (temp, control)
         """
-        #try:
-        #    item = self._data[name]
-        #except:
-        #    item = 'temp'
+        if item not in (None, "temp", "control"):
+            raise ProviderError("Invalid item for output_filepath: {}".format(item))
 
-        path = os.path.join(
-            Globals.get_outdir(), item, 'data.gdb', name
-        )
+        path = Globals.get_outdir()
+        if item:
+            path = os.path.join(path, item)
+        path = os.path.join(path, 'data.gdb', name)
+
         Logger.debug('File path: {}'.format(path))
 
         return path
