@@ -114,7 +114,7 @@ class PrepareDataBase(object):
             )
 
         # build numpy array from selected attributes
-        all_attrib = self._get_attrib(self._data['sfield'], soil_veg)
+        all_attrib = self._get_soilveg_attribs(self._data['sfield'], soil_veg)
         self.data['mat_inf_index'], self.data['combinatIndex'] = \
             self._get_inf_combinat_index(self.data['r'], self.data['c'],
                                          all_attrib[0], all_attrib[1])
@@ -285,12 +285,12 @@ class PrepareDataBase(object):
     # def _rst2np(self, raster):
     #     raise NotImplemented("Not implemented for base provider")
     #
-    # def _get_attrib(self, sfield, intersect):
-    #     raise NotImplemented("Not implemented for base provider")
+    def _get_soilveg_attribs(self):
+         raise NotImplemented("Not implemented for base provider")
 
     def _init_attrib(self, sfield, intersect):
         """Internal method. initialize attributes array.
-        Called by _get_attrib().
+        Called by _get_soilveg_attribs().
         """
         dim = [self.data['r'], self.data['c']]
         return [np.zeros(dim, float)] * len(sfield)

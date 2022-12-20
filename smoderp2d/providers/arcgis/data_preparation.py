@@ -257,8 +257,6 @@ class PrepareData(PrepareDataBase, ManageFields):
                         "empty value found in row {})".format(row[1]))
                     return None
 
-###############
-
     def _get_soilveg_attribs(self, sfield, intersect):
         """
         Get numpy arrays of selected attributes.
