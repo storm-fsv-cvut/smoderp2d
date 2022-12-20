@@ -10,17 +10,24 @@ class PrepareDataBase(object):
     def __init__(self, writter):
         self.storage = writter
 
-        # internal output data
+        # complete dictionary of datasets and their type
         self._data = {
             'dem_slope_mask' : 'temp',
             'dem_polygon': 'temp',
-            'AOI': 'temp',
-            'AOI_polygon': 'core',
+            'AoI': 'temp',
+            'AoI_polygon': 'core',
             'dem_filled': 'temp',
             'dem_flowdir': 'temp',
             'dem_flowacc': 'temp',
             'dem_slope': 'temp',
             'dem_aspect': 'temp',
+            'dem_aoi': 'temp',
+            'dem_slope_aoi': 'temp',
+            'dem_flowdir_aoi': 'temp',
+            'dem_flowacc_aoi': 'temp',
+            'dem_aspect_aoi': 'temp',
+            'points_AoI': 'temp',
+
             'ratio_cell' : 'control',
             'efect_cont' : 'control',
             'soil_boundary': 'control',
@@ -60,7 +67,7 @@ class PrepareDataBase(object):
 
         # intersect the input datasest to define the area of interest
         Logger.info("Creating intersect of input datasets ...")
-        self._create_AOI_outline()
+        self._create_AoI_outline()
         #Logger.progress(10)
 
         # calculate DEM derivatives

@@ -22,10 +22,10 @@ class PrepareData(PrepareDataBase, ManageFields):
     def __init__(self, options, writter):
         super(PrepareData, self).__init__(writter)
 
-        self.AIO_outline = None
+        self.AoI_outline = None
 
         self.dem_slope = None
-        self.dem_fill = None
+        self.dem_filled = None
         self.dem_flowdir = None
         self.dem_flowacc = None
         self.dem_aspect = None
@@ -81,7 +81,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         super(PrepareData, self)._set_output()
         self.storage.create_storage(self._input_params['output'])
 
-    def _create_AOI_outline(self):
+    def _create_AoI_outline(self):
         """
         Creates geometric intersection of input DEM, slope raster*, soil definition and landuse definition that will be used as Area of Interest outline
         *slope is not created yet, but generally the edge pixels have nonsense values so "one pixel shrinked DEM" extent is used instead
@@ -97,20 +97,20 @@ class PrepareData(PrepareDataBase, ManageFields):
         dem_polygon = self.storage.output_filepath('dem_polygon')
         arcpy.conversion.RasterToPolygon(dem_slope_mask, dem_polygon, "NO_SIMPLIFY", "VALUE")
         #self.storage.output_filepath('soil_boundary')
-        dem_soil_veg_intersection = self.storage.output_filepath('AOI')
+        dem_soil_veg_intersection = self.storage.output_filepath('AoI')
         arcpy.analysis.Intersect([dem_polygon, self._input_params['soil'], self._input_params['vegetation']], dem_soil_veg_intersection, "NO_FID")
 
-        AOI_outline = self.storage.output_filepath('AOI_polygon')
-        arcpy.management.Dissolve(dem_soil_veg_intersection, AOI_outline)
+        AoI_outline = self.storage.output_filepath('AoI_polygon')
+        arcpy.management.Dissolve(dem_soil_veg_intersection, AoI_outline)
 
-        if (int(arcpy.management.GetCount(AOI_outline).getOutput(0)) == 0):
+        if (int(arcpy.management.GetCount(AoI_outline).getOutput(0)) == 0):
             raise DataPreparationInvalidInput(
                 "The input layers are not correct!"
                 "The geometrical intersection of input datasets is empty.")
             return None
         else:
-            self.AIO_outline = AOI_outline
-            return AOI_outline
+            self.AoI_outline = AoI_outline
+            return AoI_outline
 
 
     def _create_DEM_derivatives(self):
@@ -119,17 +119,17 @@ class PrepareData(PrepareDataBase, ManageFields):
         # the clipping extent could be replaced be AOI border buffered by 1 cell to prevent time consuming operations on DEM if the DEM is much larger then the AOI
         """
         # calculate the depressionless DEM
-        if not self.dem_fill:
-            dem_fill_path = self.storage.output_filepath('dem_filled')
-            dem_fill = arcpy.sa.Fill(self._input_params['elevation'])
-            dem_fill.save(dem_fill_path)
-            self.dem_fill = dem_fill_path
+        if not self.dem_filled:
+            dem_filled_path = self.storage.output_filepath('dem_filled')
+            dem_filled = arcpy.sa.Fill(self._input_params['elevation'])
+            dem_filled.save(dem_filled_path)
+            self.dem_filled = dem_filled_path
 
         # calculate the flow direction
         if not self.dem_flowacc:
             if not self.dem_flowdir:
                 dem_flowdir_path = self.storage.output_filepath('dem_flowdir')
-                flowdir = arcpy.sa.FlowDirection(self.dem_fill)
+                flowdir = arcpy.sa.FlowDirection(self.dem_filled)
                 flowdir.save(dem_flowdir_path)
                 self.dem_flowdir = dem_flowdir_path
 
@@ -141,14 +141,14 @@ class PrepareData(PrepareDataBase, ManageFields):
         # calculate slope
         if not self.dem_slope:
             dem_slope_path = self.storage.output_filepath('dem_slope')
-            dem_slope = arcpy.sa.Slope(self.dem_fill, "PERCENT_RISE", 1)
+            dem_slope = arcpy.sa.Slope(self.dem_filled, "PERCENT_RISE", 1)
             dem_slope.save(dem_slope_path)
             self.dem_slope = dem_slope_path
 
         # calculate aspect
         if not self.dem_aspect:
             dem_aspect_path = self.storage.output_filepath('dem_aspect')
-            dem_aspect = arcpy.sa.Aspect(self.dem_fill, "", "")
+            dem_aspect = arcpy.sa.Aspect(self.dem_filled, "", "")
             dem_aspect.save(dem_aspect_path)
             self.dem_aspect = dem_aspect_path
 
@@ -162,35 +162,35 @@ class PrepareData(PrepareDataBase, ManageFields):
         """
 
         # check if the clipping polygon exists and if not create it
-        if not self.AIO_outline:
-            self._create_AOI_outline()
+        if not self.AoI_outline:
+            self._create_AoI_outline()
 
         # check if the needed DEM derivatives exist and if not create them
         if (not self.dem_slope or not self.dem_flowdir or not self.dem_flowacc or not self.dem_flowacc):
-            self._create_DEM_products()
+            self._create_DEM_derivatives()
 
-        dem_aoi_path = os.path.join(self.data['temp'], "dem_aoi")
-        self.dem_aoi = arcpy.management.Clip(self._input_params['elevation'], self.AIO_outline, dem_aoi_path, "", noDataValue, "ClippingGeometry")
+        dem_aoi_path = self.storage.output_filepath('dem_aoi')
+        self.dem_aoi = arcpy.management.Clip(self.dem_filled, self.AoI_outline, dem_aoi_path, "", noDataValue, "ClippingGeometry")
 
-        dem_slope_aoi_path = os.path.join(self.data['temp'], "dem_slope_aoi")
-        self.dem_slope_aoi = arcpy.management.Clip(self.dem_slope, self.AIO_outline, dem_slope_aoi_path, "", noDataValue, "ClippingGeometry")
+        dem_slope_aoi_path = self.storage.output_filepath('dem_slope_aoi')
+        self.dem_slope_aoi = arcpy.management.Clip(self.dem_slope, self.AoI_outline, dem_slope_aoi_path, "", noDataValue, "ClippingGeometry")
 
-        dem_flowdir_aoi_path = os.path.join(self.data['temp'], "dem_flowdir_aoi")
-        self.dem_flowdir_aoi = arcpy.management.Clip(self.dem_flowdir, self.AIO_outline, dem_flowdir_aoi_path, "", noDataValue, "ClippingGeometry")
+        dem_flowdir_aoi_path = self.storage.output_filepath('dem_flowdir_aoi')
+        self.dem_flowdir_aoi = arcpy.management.Clip(self.dem_flowdir, self.AoI_outline, dem_flowdir_aoi_path, "", noDataValue, "ClippingGeometry")
 
-        dem_flowacc_aoi_path = os.path.join(self.data['temp'], "dem_flowacc_aoi")
-        self.dem_slope_aoi = arcpy.management.Clip(self.dem_flowacc, self.AIO_outline, dem_flowacc_aoi_path, "", noDataValue, "ClippingGeometry")
+        dem_flowacc_aoi_path = self.storage.output_filepath('dem_flowacc_aoi')
+        self.dem_slope_aoi = arcpy.management.Clip(self.dem_flowacc, self.AoI_outline, dem_flowacc_aoi_path, "", noDataValue, "ClippingGeometry")
 
-        dem_aspect_aoi_path = os.path.join(self.data['temp'], "dem_aspect_aoi")
-        self.dem_aspect_aoi = arcpy.management.Clip(self.dem_flowacc, self.AIO_outline, dem_aspect_aoi_path, "", noDataValue, "ClippingGeometry")
+        dem_aspect_aoi_path = self.storage.output_filepath('dem_aspect_aoi')
+        self.dem_aspect_aoi = arcpy.management.Clip(self.dem_flowacc, self.AoI_outline, dem_aspect_aoi_path, "", noDataValue, "ClippingGeometry")
 
         # create a feature layer for the selections
         points_layer = arcpy.management.MakeFeatureLayer(self._input_params['points'], "points_layer")
         # select points inside the AIO
-        arcpy.management.SelectLayerByLocation(points_layer, "WITHIN", self.AIO_outline, "", "NEW_SELECTION")
+        arcpy.management.SelectLayerByLocation(points_layer, "WITHIN", self.AoI_outline, "", "NEW_SELECTION")
         # save them as a new dataset
-        points_AIO_path = os.path.join(self.data['temp'], "points_AOI")
-        self.record_points_aoi = arcpy.management.CopyFeatures(points_layer, points_AIO_path)
+        points_AoI_path = self.storage.output_filepath('points_AoI')
+        self.record_points_aoi = arcpy.management.CopyFeatures(points_layer, points_AoI_path)
 
         # select points outside the AIO
         # TODO: shouldn't be the point to close the border removed here as well?
