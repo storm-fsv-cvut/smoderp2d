@@ -170,6 +170,7 @@ class PrepareData(PrepareDataBase, ManageFields):
             self._create_DEM_derivatives()
 
         dem_aoi_path = self.storage.output_filepath('dem_aoi')
+        self._add_message(self.dem_filled+", "+self.AoI_outline)
         self.dem_aoi = arcpy.management.Clip(self.dem_filled, self.AoI_outline, dem_aoi_path, "", noDataValue, "ClippingGeometry")
 
         dem_slope_aoi_path = self.storage.output_filepath('dem_slope_aoi')
