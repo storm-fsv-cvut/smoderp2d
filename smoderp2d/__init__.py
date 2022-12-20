@@ -106,6 +106,10 @@ class Runner(object):
         return 0
 
 class ArcGisRunner(Runner):
+    def __init__(self):
+        os.environ['ESRIACTIVEINSTALLATION'] = 'dummy'
+        super(ArcGisRunner, self).__init__()
+
     def set_options(self, options):
         self._provider.set_options(options)
 
