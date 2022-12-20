@@ -7,7 +7,7 @@ from configparser import ConfigParser
 from pywps import Process, ComplexInput, ComplexOutput, Format, LOGGER
 from pywps.app.exceptions import ProcessError
 
-class Smoderp1d(Process):
+class Profile1d(Process):
     def __init__(self):
         inputs = [
             ComplexInput('input', 'Input profile CSV file',
@@ -28,11 +28,11 @@ class Smoderp1d(Process):
                           as_reference=True)
         ]
 
-        super(Smoderp1d, self).__init__(
+        super(Profile1d, self).__init__(
             self._handler,
-            identifier='smoderp1d',
+            identifier='profile1d',
             version='0.1',
-            title="Experimental SMODERP1D process",
+            title="Experimental PROFILE1D process",
             abstract="""Performs SMODERP distributed event-based model for surface and
 subsurface runoff and erosion
 (https://github.com/storm-fsv-cvut/smoderp2d) in 1D""",

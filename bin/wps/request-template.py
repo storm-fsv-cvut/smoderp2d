@@ -17,7 +17,7 @@ parser.add_argument(
 
 args = parser.parse_args()
 tests_dir = os.path.join('..', '..', 'tests')
-if 'smoderp1d' in args.template:
+if 'profile1d' in args.template:
     d = {
         'input': file_content(os.path.join(tests_dir, 'data', 'profile1d', 'data1D.csv')),
         'soil_types': file_content(os.path.join(tests_dir, 'data', 'profile1d', 'data1D_soil_types.csv')),

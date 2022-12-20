@@ -27,7 +27,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         cloader = CmdArgumentParser(config_file)
         # no gis has only roff comp type
         self.args.config_file, self.args.typecomp = cloader.set_config(
-            "Run SMODERP1D.", typecomp='roff')
+            "Run PROFILE1D.", typecomp='roff')
         self._config = self._load_config()
 
         # define storage writter

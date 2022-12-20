@@ -18,16 +18,16 @@ GetCapabilities:
 
 http://localhost:8080/services/wps?service=wps&request=getcapabilities
 
-### smoderp1d
+### profile1d
 
 DescribeProcess:
 
-http://localhost:8080/services/wps?service=wps&request=describeprocess&version=1.0.0&identifier=smoderp1d
+http://localhost:8080/services/wps?service=wps&request=describeprocess&version=1.0.0&identifier=profile1d
 
 Execute:
 
 ```
-python3 request-template.py --template request-smoderp1d.xml > /tmp/request.xml && \
+python3 request-template.py --template request-profile1d.xml > /tmp/request.xml && \
 wget --post-file /tmp/request.xml 'http://localhost:8080/services/wps?' -O -
 ```
 
