@@ -5,6 +5,7 @@ import sys
 import os
 import locale
 import numpy
+
 py3 = sys.version_info[0] == 3
 if py3:
     from importlib import reload
@@ -218,7 +219,7 @@ class SMODERP2D(object):
         parameters[PARAMETER_SOIL_TYPE].value = "SID"
         parameters[PARAMETER_VEGETATION].value = "landuse.shp"
         parameters[PARAMETER_VEGETATION_TYPE].value = "LandUse"
-        parameters[PARAMETER_PATH_TO_RAINFALL_FILE].value = "rainfall.txt"
+        parameters[PARAMETER_PATH_TO_RAINFALL_FILE].value = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "data", "rainfall.txt")
         parameters[PARAMETER_MAX_DELTA_T].value = 30
         parameters[PARAMETER_END_TIME].value = 40
         parameters[PARAMETER_POINTS].value = "points.shp"
@@ -284,81 +285,3 @@ class SMODERP2D(object):
             'table_stream_shape_code': parameters[PARAMETER_STREAMTABLE_CODE].valueAsText
         }
 
-
-
-    # def calculate_AOI_outline(self):
-    #     #dem_mask = self.storage.output_filepath('dem_mask')
-    #     dem_mask_path = os.path.join(self.processingGDBpath, "dem_mask")
-    #     dem_mask = arcpy.sa.Reclassify( self._input_params['elevation'], "VALUE", "-100000 100000 1", "DATA")
-    #     dem_mask.save(dem_mask_path)
-    #     #dem_polygon = os.path.join(self.data['temp'], 'dem_outline')
-    #     dem_polygon = os.path.join(self.processingGDBpath, "dem_polygon")
-    #     arcpy.conversion.RasterToPolygon(dem_mask, dem_polygon, "NO_SIMPLIFY", "VALUE")
-    #
-    #     #dem_soil_veg_intersection = os.path.join(self.data['temp'], 'AOI')
-    #     dem_soil_veg_intersection = os.path.join(self.processingGDBpath, "veg_soil_AOI")
-    #     arcpy.analysis.Intersect([dem_polygon, self._input_params['soil'], self._input_params['vegetation']], dem_soil_veg_intersection, "NO_FID")
-    #
-    #     AOI_outline = os.path.join(self.processingGDBpath, "AOI")
-    #     arcpy.management.Dissolve(dem_soil_veg_intersection, AOI_outline)
-    #
-    #     self.AIO_outline = AOI_outline
-    #     return
-
-    # def calculate_DEM_products(self):
-    #     # calculate the depressionless DEM
-    #     if not self.dem_fill:
-    #         dem_fill_path = os.path.join(self.processingGDBpath, "dem_fill")
-    #         dem_fill = arcpy.sa.Fill(self._input_params['elevation'])
-    #         dem_fill.save(dem_fill_path)
-    #         self.dem_fill = dem_fill_path
-    #
-    #     # calculate the flow direction
-    #     if not self.dem_flowacc:
-    #         if not self.dem_flowdir:
-    #             dem_flowdir_path = os.path.join(self.processingGDBpath, "dem_flowdir")
-    #             flowdir = arcpy.sa.FlowDirection(self.dem_fill)
-    #             flowdir.save(dem_flowdir_path)
-    #             self.dem_flowdir = dem_flowdir_path
-    #
-    #         dem_flowacc_path = os.path.join(self.processingGDBpath, "dem_flowacc")
-    #         flowacc = arcpy.sa.FlowAccumulation(self.dem_flowdir)
-    #         flowacc.save(dem_flowacc_path)
-    #         self.dem_flowacc = dem_flowacc_path
-    #
-    #     # calculate slope
-    #     if not self.dem_slope:
-    #         dem_slope_path = os.path.join(self.processingGDBpath, "dem_slope")
-    #         dem_slope = arcpy.sa.Slope(self.dem_fill, "PERCENT_RISE", 1)
-    #         dem_slope.save(dem_slope_path)
-    #         self.dem_slope = dem_slope_path
-    #
-    #     # calculate aspect
-    #     if not self.dem_aspect:
-    #         dem_aspect_path = os.path.join(self.processingGDBpath, "dem_aspect")
-    #         dem_aspect = arcpy.sa.Aspect(self.dem_fill, "", "")
-    #         dem_aspect.save(dem_aspect_path)
-    #         self.dem_aspect = dem_aspect_path
-    #     return
-
-    def clip_DEM_products(self):
-        # clip DEM
-        if not self.dem_aoi:
-            dem_aoi_path = os.path.join(self.processingGDBpath, "dem_aoi")
-            self.dem_aoi = arcpy.management.Clip(self.dem_fill, "", dem_aoi_path, self.AIO_outline, "", "ClippingGeometry")
-
-        # clip the flow direction
-        if self.dem_flowacc and not self.dem_flowacc_aoi:
-            flowacc_aoi_path = os.path.join(self.processingGDBpath, "dem_flowacc_aoi")
-            self.dem_flowacc_aoi = arcpy.management.Clip(self.dem_flowacc, "", flowacc_aoi_path, self.AIO_outline, "", "ClippingGeometry")
-
-        # clip the slope
-        if self.dem_slope and not self.dem_slope_aoi:
-            slope_aoi_path = os.path.join(self.processingGDBpath, "dem_slope_aoi")
-            self.dem_slope_aoi = arcpy.management.Clip(self.dem_slope, "", slope_aoi_path, self.AIO_outline, "", "ClippingGeometry")
-
-        # calculate aspect
-        if self.dem_aspect and not self.dem_aspect_aoi:
-            aspect_aoi_path = os.path.join(self.processingGDBpath, "dem_aspect_aoi")
-            self.dem_slope_aoi = arcpy.management.Clip(self.dem_aspect, "", aspect_aoi_path, self.AIO_outline, "", "ClippingGeometry")
-        return

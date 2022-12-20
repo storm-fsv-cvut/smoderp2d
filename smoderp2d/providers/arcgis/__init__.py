@@ -37,21 +37,21 @@ class ArcGisWritter(BaseWritter):
         self._data_target = data
 
     def output_filepath(self, name):
-        """Get ArcGIS data path.
+        """
+        Get correct path to store dataset 'name'.
 
-        TODO: item needs to be set for each raster 
-        reparatelly. Now all is in temp dir.
-
-        :param name: layer name
-        :param item: target item (temp, control)
+        :param name: layer name to be saved
+        :return: full path to the dataset
         """
         item = self._data_target.get(name)
-        if item not in (None, "temp", "control"):
+        if item not in (None, "temp", "control", "core"):
             raise ProviderError("Invalid item for output_filepath: {}".format(item))
 
         path = Globals.get_outdir()
-        if item:
+        # 'core' datasets don't have directory, only the geodatabase
+        if item in ("temp", "control"):
             path = os.path.join(path, item)
+
         path = os.path.join(path, 'data.gdb', name)
 
         Logger.debug('File path: {}'.format(path))

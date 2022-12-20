@@ -8,3 +8,9 @@ class DataPreparationInvalidInput(DataPreparationError):
         Logger.fatal(
             "Invalid input for data preparation: {}".format(msg)
         )
+
+class LicenceNotAvailable(DataPreparationError):
+    def __init__(self, msg):
+        Logger.fatal(
+            "Essential software licence missing: {}".format(msg)
+        )

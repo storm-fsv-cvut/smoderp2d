@@ -13,6 +13,7 @@ from smoderp2d.core.general import GridGlobals
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
+#from smoderp2d.providers.base.exceptions import LicenceNotAvailable
 
 from smoderp2d.providers.arcgis.terrain import compute_products
 from smoderp2d.providers.arcgis.manage_fields import ManageFields
@@ -48,8 +49,9 @@ class PrepareData(PrepareDataBase, ManageFields):
         if arcpy.CheckExtension("Spatial") == "Available":
             arcpy.CheckOutExtension("Spatial")
         else:
-            #raise LicenceNotAvailableError("Spatial Analysis extension for ArcGIS is not available")
             self._add_message(self, "Spatial extension for ArcGIS not available - can not continue.")
+            #raise LicenceNotAvailable("Spatial Analysis extension for ArcGIS is not available")
+
 
         # get input parameters
         self._get_input_params(options)
@@ -84,22 +86,21 @@ class PrepareData(PrepareDataBase, ManageFields):
         Creates geometric intersection of input DEM, slope raster*, soil definition and landuse definition that will be used as Area of Interest outline
         *slope is not created yet, but generally the edge pixels have nonsense values so "one pixel shrinked DEM" extent is used instead
 
+        :return: string path to AIO polygon feature class
         """
         dem_slope_mask_path = self.storage.output_filepath('dem_slope_mask')
         dem_mask = arcpy.sa.Reclassify( self._input_params['elevation'], "VALUE", "-100000 100000 1", "DATA")
         dem_slope_mask = arcpy.sa.Shrink(dem_mask, 1, 1)
         # the slope raster extent will be used in further intersections as it is always smaller then the DEM extent ...
-        self._add_message(dem_slope_mask_path)
         dem_slope_mask.save(dem_slope_mask_path)
 
-
-        dem_polygon = os.path.join(self.data['temp'], "dem_polygon")
+        dem_polygon = self.storage.output_filepath('dem_polygon')
         arcpy.conversion.RasterToPolygon(dem_slope_mask, dem_polygon, "NO_SIMPLIFY", "VALUE")
         #self.storage.output_filepath('soil_boundary')
-        dem_soil_veg_intersection = os.path.join(self.data['temp'], 'AOI')
+        dem_soil_veg_intersection = self.storage.output_filepath('AOI')
         arcpy.analysis.Intersect([dem_polygon, self._input_params['soil'], self._input_params['vegetation']], dem_soil_veg_intersection, "NO_FID")
 
-        AOI_outline = os.path.join(self.data['outdir'], "AOI_polygon")
+        AOI_outline = self.storage.output_filepath('AOI_polygon')
         arcpy.management.Dissolve(dem_soil_veg_intersection, AOI_outline)
 
         if (int(arcpy.management.GetCount(AOI_outline).getOutput(0)) == 0):
@@ -112,14 +113,14 @@ class PrepareData(PrepareDataBase, ManageFields):
             return AOI_outline
 
 
-    def _create_DEM_products(self):
+    def _create_DEM_derivatives(self):
         """
         Creates all the needed DEM derivatives in the DEM's original extent to avoid raster edge effects.
         # the clipping extent could be replaced be AOI border buffered by 1 cell to prevent time consuming operations on DEM if the DEM is much larger then the AOI
         """
         # calculate the depressionless DEM
         if not self.dem_fill:
-            dem_fill_path = os.path.join(self.data['outdir'], "dem_fill")
+            dem_fill_path = self.storage.output_filepath('dem_filled')
             dem_fill = arcpy.sa.Fill(self._input_params['elevation'])
             dem_fill.save(dem_fill_path)
             self.dem_fill = dem_fill_path
@@ -127,26 +128,26 @@ class PrepareData(PrepareDataBase, ManageFields):
         # calculate the flow direction
         if not self.dem_flowacc:
             if not self.dem_flowdir:
-                dem_flowdir_path = os.path.join(self.data['temp'], "dem_flowdir")
+                dem_flowdir_path = self.storage.output_filepath('dem_flowdir')
                 flowdir = arcpy.sa.FlowDirection(self.dem_fill)
                 flowdir.save(dem_flowdir_path)
                 self.dem_flowdir = dem_flowdir_path
 
-            dem_flowacc_path = os.path.join(self.data['outdir'], "dem_flowacc")
+            dem_flowacc_path = self.storage.output_filepath('dem_flowacc')
             flowacc = arcpy.sa.FlowAccumulation(self.dem_flowdir)
             flowacc.save(dem_flowacc_path)
             self.dem_flowacc = dem_flowacc_path
 
         # calculate slope
         if not self.dem_slope:
-            dem_slope_path = os.path.join(self.data['outdir'], "dem_slope")
+            dem_slope_path = self.storage.output_filepath('dem_slope')
             dem_slope = arcpy.sa.Slope(self.dem_fill, "PERCENT_RISE", 1)
             dem_slope.save(dem_slope_path)
             self.dem_slope = dem_slope_path
 
         # calculate aspect
         if not self.dem_aspect:
-            dem_aspect_path = os.path.join(self.data['outdir'], "dem_aspect")
+            dem_aspect_path = self.storage.output_filepath('dem_aspect')
             dem_aspect = arcpy.sa.Aspect(self.dem_fill, "", "")
             dem_aspect.save(dem_aspect_path)
             self.dem_aspect = dem_aspect_path

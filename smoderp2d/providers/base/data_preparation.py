@@ -12,8 +12,15 @@ class PrepareDataBase(object):
 
         # internal output data
         self._data = {
-            'dem_mask' : 'control',
-            'dem_slope_mask': 'control',
+            'dem_slope_mask' : 'temp',
+            'dem_polygon': 'temp',
+            'AOI': 'temp',
+            'AOI_polygon': 'core',
+            'dem_filled': 'temp',
+            'dem_flowdir': 'temp',
+            'dem_flowacc': 'temp',
+            'dem_slope': 'temp',
+            'dem_aspect': 'temp',
             'ratio_cell' : 'control',
             'efect_cont' : 'control',
             'soil_boundary': 'control',
@@ -59,12 +66,12 @@ class PrepareDataBase(object):
         # calculate DEM derivatives
         # intentionally done on non-clipped DEM to avoid edge effects
         Logger.info("Creating DEM-derived layers ...")
-        self._create_DEM_products()
+        self._create_DEM_derivatives()
 
         # prepare all needed layers for further processing
         #   clip the input layers to AIO outline including the record points
         Logger.info("Clipping input layers to AoI outline ...")
-        self._clip_input_layers()
+        self._clip_input_layers("")
 
         #   join the attributes to soil_veg intersect and check the table consistency
         Logger.info("Preparing soil and vegetation properties table ...")
