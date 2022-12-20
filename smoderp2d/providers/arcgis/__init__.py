@@ -44,7 +44,7 @@ class ArcGisWritter(BaseWritter):
         :return: full path to the dataset
         """
         item = self._data_target.get(name)
-        if item not in (None, "temp", "control", "core"):
+        if item is None or item not in ("temp", "control", "core"):
             raise ProviderError("Invalid item for output_filepath: {}".format(item))
 
         path = Globals.get_outdir()
