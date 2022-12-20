@@ -5,7 +5,7 @@ Starting the rainfall/runoff/soil loss model
 SMODERP2D.
 
 Help:
-    ./bin/start-profile1d-smoderp2d.py --config tests/profile1d.ini
+    ./bin/start-smoderp2d-profile1d.py --config tests/profile1d.ini
 """
 import os
 from start import start_smoderp2d
