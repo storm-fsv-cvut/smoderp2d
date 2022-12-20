@@ -27,27 +27,30 @@ class PrepareDataBase(object):
             'dem_flowacc_aoi': 'temp',
             'dem_aspect_aoi': 'temp',
             'points_AoI': 'temp',
+            'soil_veg': 'temp',
+            'soilveg_aoi': 'temp',
 
             'ratio_cell' : 'control',
             'efect_cont' : 'control',
-            'soil_boundary': 'control',
-            'vegetation_boundary': 'control',
-            'vector_mask': 'control',
+
             # TODO: needed?
             'vegetation_mask': 'control',
             # TODO: needed?
             'soil_mask': 'control',
             'vs_intersect': 'control',
-            'soil_veg_fieldname': 'soil_veg',
             'soil_veg_table': 'control',
-            'sfield': ["k", "s", "n", "pi", "ppl",
-                       "ret", "b", "x", "y", "tau", "v"],
             'points_mask' : 'core',
             'inter_mask' : 'control',
             'dem_clip' : 'control',
             'slope_clip' : 'control',
             'flow_clip' : 'control',
             'sfield_dir' : 'control',
+
+            'soil_veg_fieldname': 'soilveg',
+            'veg_fieldname': "veg_type",
+            'sfield': ["k", "s", "n", "pi", "ppl",
+                       "ret", "b", "x", "y", "tau", "v"],
+            'noData_value': -9999
         }
         self.storage.set_data_target(self._data)
 
@@ -67,33 +70,34 @@ class PrepareDataBase(object):
 
         # intersect the input datasest to define the area of interest
         Logger.info("Creating intersect of input datasets ...")
-        self._create_AoI_outline()
+        AoI_outline = self._create_AoI_outline()
         #Logger.progress(10)
 
         # calculate DEM derivatives
         # intentionally done on non-clipped DEM to avoid edge effects
         Logger.info("Creating DEM-derived layers ...")
-        self._create_DEM_derivatives()
+        dem_filled, dem_flowdir, dem_flowacc, dem_slope, dem_aspect = self._create_DEM_derivatives()
 
         # prepare all needed layers for further processing
         #   clip the input layers to AIO outline including the record points
         Logger.info("Clipping input layers to AoI outline ...")
-        self._clip_input_layers("")
+        # NoData value to be used in the output rasters
+        NoDataValue = self._data['noData_value']
+
+        dem_clip = self._clip_raster_layer(dem_filled, AoI_outline, NoDataValue, 'dem_aoi')
+        flowdir_clip = self._clip_raster_layer(dem_flowdir, AoI_outline, NoDataValue, 'dem_flowdir_aoi')
+        self._clip_raster_layer(dem_flowacc, AoI_outline, NoDataValue, 'dem_flowacc_aoi')
+        slope_clip = self._clip_raster_layer(dem_slope, AoI_outline, NoDataValue, 'dem_slope_aoi')
+        self._clip_raster_layer(dem_aspect, AoI_outline, NoDataValue, 'dem_aspect_aoi')
+
+        self._clip_record_points(self._input_params['points'], AoI_outline, 'points_AoI')
 
         #   join the attributes to soil_veg intersect and check the table consistency
         Logger.info("Preparing soil and vegetation properties table ...")
-        self._prepare_soilveg_layer()
-
-
-        # DEM computation
-        Logger.info(
-            "Computing fill, flow direction, flow accumulation, slope..."
-        )
-        flow_direction_clip, flow_accumulation_clip, slope_clip = self._terrain_products(dem_clip)
-        #Logger.progress(20)
+        soil_veg = self._prepare_soilveg()
 
         # raster to numpy array conversion
-        Logger.info("Computing parameters of DTM...")
+        Logger.info("Computing parameters of DEM...")
         self.data['mat_dem'] = self._rst2np(dem_clip)
         self.data['mat_slope'] = self._rst2np(slope_clip)
         # unit conversion % -> 0-1
@@ -101,8 +105,8 @@ class PrepareDataBase(object):
 
         # update data dict for spatial ref info
         self._get_raster_dim(dem_clip)
-        if flow_direction_clip is not None:
-            self.data['mat_fd'] = self._rst2np(flow_direction_clip)
+        if flowdir_clip is not None:
+            self.data['mat_fd'] = self._rst2np(flowdir_clip)
             self.storage.write_raster(
                 self.data['mat_fd'],
                 'fl_dir',
@@ -110,7 +114,7 @@ class PrepareDataBase(object):
             )
 
         # build numpy array from selected attributes
-        all_attrib = self._get_attrib(sfield, intersect)
+        all_attrib = self._get_attrib(self._data['sfield'], soil_veg)
         self.data['mat_inf_index'], self.data['combinatIndex'] = \
             self._get_inf_combinat_index(self.data['r'], self.data['c'],
                                          all_attrib[0], all_attrib[1])
@@ -260,15 +264,21 @@ class PrepareDataBase(object):
         os.makedirs(control)
 
 
-    # def _set_mask(self):
-    #     raise NotImplemented("Not implemented for base provider")
-    #
-    # def _terrain_products(self, dem):
-    #     raise NotImplemented("Not implemented for base provider")
-    #
-    # def _get_intersect(self, dem_copy, mask, vegetation, soil,vegetation_type, soil_type,table_soil_vegetation, table_soil_vegetation_code):
-    #     raise NotImplemented("Not implemented for base provider")
-    #
+    def _create_AoI_outline(self):
+        raise NotImplemented("Not implemented for base provider")
+
+    def _create_DEM_derivatives(self, dem):
+        raise NotImplemented("Not implemented for base provider")
+
+    def _clip_raster_layer(self, dataset, outline, noDataValue, name):
+        raise NotImplemented("Not implemented for base provider")
+
+    def _clip_record_points(self, dataset, outline, name):
+        raise NotImplemented("Not implemented for base provider")
+
+    def _prepare_soilveg(self):
+        raise NotImplemented("Not implemented for base provider")
+
     # def _get_input_params(self):
     #     raise NotImplemented("Not implemented for base provider")
     #

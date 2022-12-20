@@ -22,26 +22,6 @@ class PrepareData(PrepareDataBase, ManageFields):
     def __init__(self, options, writter):
         super(PrepareData, self).__init__(writter)
 
-        self.AoI_outline = None
-
-        self.dem_slope = None
-        self.dem_filled = None
-        self.dem_flowdir = None
-        self.dem_flowacc = None
-        self.dem_aspect = None
-
-        self.dem_aoi = None
-        self.dem_slope_aoi = None
-        self.dem_flowdir_aoi = None
-        self.dem_flowacc_aoi = None
-        self.dem_aspect_aoi = None
-        self.soilveg_aoi = None
-
-        self.record_points_aoi = None
-
-        self.veg_fieldname = "veg_type"
-        self.soil_veg_filename = "soil_veg.dbf"
-
         # setting the workspace environment
         arcpy.env.workspace = arcpy.GetParameterAsText(9)
 
@@ -69,7 +49,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         Pops up a message into arcgis and saves it into log file.
         :param message: Message to be printed.
         """
-        arcpy.AddMessage(message)
+        #arcpy.AddMessage(message)
         Logger.info(message)
 
 
@@ -118,86 +98,72 @@ class PrepareData(PrepareDataBase, ManageFields):
         Creates all the needed DEM derivatives in the DEM's original extent to avoid raster edge effects.
         # the clipping extent could be replaced be AOI border buffered by 1 cell to prevent time consuming operations on DEM if the DEM is much larger then the AOI
         """
+        inputDEM = self._input_params['elevation']
         # calculate the depressionless DEM
-        if not self.dem_filled:
-            dem_filled_path = self.storage.output_filepath('dem_filled')
-            dem_filled = arcpy.sa.Fill(self._input_params['elevation'])
-            dem_filled.save(dem_filled_path)
-            self.dem_filled = dem_filled_path
+        dem_filled_path = self.storage.output_filepath('dem_filled')
+        dem_filled = arcpy.sa.Fill(inputDEM)
+        dem_filled.save(dem_filled_path)
 
         # calculate the flow direction
-        if not self.dem_flowacc:
-            if not self.dem_flowdir:
-                dem_flowdir_path = self.storage.output_filepath('dem_flowdir')
-                flowdir = arcpy.sa.FlowDirection(self.dem_filled)
-                flowdir.save(dem_flowdir_path)
-                self.dem_flowdir = dem_flowdir_path
+        dem_flowdir_path = self.storage.output_filepath('dem_flowdir')
+        flowdir = arcpy.sa.FlowDirection(inputDEM)
+        flowdir.save(dem_flowdir_path)
 
-            dem_flowacc_path = self.storage.output_filepath('dem_flowacc')
-            flowacc = arcpy.sa.FlowAccumulation(self.dem_flowdir)
-            flowacc.save(dem_flowacc_path)
-            self.dem_flowacc = dem_flowacc_path
+        dem_flowacc_path = self.storage.output_filepath('dem_flowacc')
+        flowacc = arcpy.sa.FlowAccumulation(flowdir)
+        flowacc.save(dem_flowacc_path)
 
         # calculate slope
-        if not self.dem_slope:
-            dem_slope_path = self.storage.output_filepath('dem_slope')
-            dem_slope = arcpy.sa.Slope(self.dem_filled, "PERCENT_RISE", 1)
-            dem_slope.save(dem_slope_path)
-            self.dem_slope = dem_slope_path
+        dem_slope_path = self.storage.output_filepath('dem_slope')
+        dem_slope = arcpy.sa.Slope(dem_filled, "PERCENT_RISE", 1)
+        dem_slope.save(dem_slope_path)
 
         # calculate aspect
-        if not self.dem_aspect:
-            dem_aspect_path = self.storage.output_filepath('dem_aspect')
-            dem_aspect = arcpy.sa.Aspect(self.dem_filled, "", "")
-            dem_aspect.save(dem_aspect_path)
-            self.dem_aspect = dem_aspect_path
+        dem_aspect_path = self.storage.output_filepath('dem_aspect')
+        dem_aspect = arcpy.sa.Aspect(dem_filled, "", "")
+        dem_aspect.save(dem_aspect_path)
 
-        return dem_flowdir_path, dem_flowacc_path, dem_slope_path, dem_aspect_path
+        return dem_filled_path, dem_flowdir_path, dem_flowacc_path, dem_slope_path, dem_aspect_path
 
 
-    def _clip_input_layers(self, noDataValue):
+    def _clip_raster_layer(self, dataset, outline, noDataValue, name):
         """
-        Clips all the input and derived input layers to the AOI.
-        Saves the record points inside the AOI as new feature class and logs those outside AOI
+        Clips raster dataset to given polygon.
+
+        :param dataset: raster dataset to be clipped
+        :param outline: feature class to be used as the clipping geometry
+        :param noDataValue: raster value to be used outside the AoI
+        :param name: dataset name in the _data dictionary
+
+        :return: full path to clipped raster
         """
 
-        # check if the clipping polygon exists and if not create it
-        if not self.AoI_outline:
-            self._create_AoI_outline()
+        output_path = self.storage.output_filepath(name)
+        arcpy.management.Clip(dataset, "", output_path, outline, noDataValue, "ClippingGeometry")
+        return output_path
 
-        # check if the needed DEM derivatives exist and if not create them
-        if (not self.dem_slope or not self.dem_flowdir or not self.dem_flowacc or not self.dem_flowacc):
-            self._create_DEM_derivatives()
+    def _clip_record_points(self, dataset, outline, name):
+        """
+        Makes a copy of record points inside the AOI as new feature class and logs those outside AOI
 
-        dem_aoi_path = self.storage.output_filepath('dem_aoi')
-        self._add_message(self.dem_filled+", "+self.AoI_outline)
-        self.dem_aoi = arcpy.management.Clip(self.dem_filled, self.AoI_outline, dem_aoi_path, "", noDataValue, "ClippingGeometry")
+        :param dataset: points dataset to be clipped
+        :param outline: polygon feature class of the AoI
+        :param name: output dataset name in the _data dictionary
 
-        dem_slope_aoi_path = self.storage.output_filepath('dem_slope_aoi')
-        self.dem_slope_aoi = arcpy.management.Clip(self.dem_slope, self.AoI_outline, dem_slope_aoi_path, "", noDataValue, "ClippingGeometry")
-
-        dem_flowdir_aoi_path = self.storage.output_filepath('dem_flowdir_aoi')
-        self.dem_flowdir_aoi = arcpy.management.Clip(self.dem_flowdir, self.AoI_outline, dem_flowdir_aoi_path, "", noDataValue, "ClippingGeometry")
-
-        dem_flowacc_aoi_path = self.storage.output_filepath('dem_flowacc_aoi')
-        self.dem_slope_aoi = arcpy.management.Clip(self.dem_flowacc, self.AoI_outline, dem_flowacc_aoi_path, "", noDataValue, "ClippingGeometry")
-
-        dem_aspect_aoi_path = self.storage.output_filepath('dem_aspect_aoi')
-        self.dem_aspect_aoi = arcpy.management.Clip(self.dem_flowacc, self.AoI_outline, dem_aspect_aoi_path, "", noDataValue, "ClippingGeometry")
-
+        :return: full path to clipped points dataset
+        """
         # create a feature layer for the selections
-        points_layer = arcpy.management.MakeFeatureLayer(self._input_params['points'], "points_layer")
+        points_layer = arcpy.management.MakeFeatureLayer(dataset, "points_layer")
         # select points inside the AIO
-        arcpy.management.SelectLayerByLocation(points_layer, "WITHIN", self.AoI_outline, "", "NEW_SELECTION")
+        arcpy.management.SelectLayerByLocation(points_layer, "WITHIN", outline, "", "NEW_SELECTION")
         # save them as a new dataset
-        points_AoI_path = self.storage.output_filepath('points_AoI')
-        self.record_points_aoi = arcpy.management.CopyFeatures(points_layer, points_AoI_path)
+        arcpy.management.CopyFeatures(points_layer, self.storage.output_filepath(name))
 
-        # select points outside the AIO
+        # select points outside the AoI
         # TODO: shouldn't be the point to close the border removed here as well?
-        arcpy.management.SelectLayerByLocation(points_layer, "WITHIN", self.AIO_outline, "", "NEW_SELECTION", "INVERT")
+        arcpy.management.SelectLayerByLocation(points_layer, "WITHIN", outline, "", "NEW_SELECTION", "INVERT")
         numOutside = int(arcpy.management.GetCount(points_layer).getOutput(0))
-        pointsOID = arcpy.Describe(self._input_params['points']).OIDFieldName
+        pointsOID = arcpy.Describe(dataset).OIDFieldName
         outsideList = []
         outsideListString = ""
         # get their IDs
@@ -209,61 +175,59 @@ class PrepareData(PrepareDataBase, ManageFields):
                 else:
                     outsideListString += ", "+str(row[0])
         # report them to the user
-        self._add_message(str(numOutside)+" record points outside of the area of interest ("+pointsOID+": "+outsideListString)
+        self._add_message("     "+str(numOutside)+" record points outside of the area of interest ("+pointsOID+": "+outsideListString+")")
 
-        return dem_flowdir_aoi_path, dem_flowacc_aoi_path, dem_slope_aoi_path, dem_aspect_aoi_path, points_AIO_path
+        return self.storage.output_filepath(name)
 
     def _prepare_soilveg(self):
         """
         Prepares the combination of soils and vegetation input layers.
         Gets the spatial intersection of both and checks the consistency of attribute table.
 
+        :return: full path to soil and vegetation dataset
         """
 
-        # check if the soil and vegetation intersect exists and create it if not
-        if (not self.soilveg_aoi):
-            soilveg_aoi_path = os.path.join(self.data['outdir'], "soilveg_aoi")
+        self._check_empty_values(self._input_params['vegetation'], self._input_params['vegetation_type'])
+        self._check_empty_values(self._input_params['soil'], self._input_params['soil_type'])
 
-            # check if the soil_type and vegetation_type field names are equal and deal with it if not
-            if (self._input_params['soil_type'] == self._input_params['vegetation_type']):
-                Logger.info("The vegetation type attribute field name ('"+self._input_params['vegetation_type']+"') is equal to the soil type attribute field name.("
-                    "'"+self._input_params['soil_type']+"')! '"+self._input_params['vegetation_type']+"' will be renamed to '"+self.veg_fieldname+"'.")
-                # add the new field
-                arcpy.management.AddField(self._input_params['vegetation'], self.veg_fieldname, "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED", "")
-                # copy the values
-                with arcpy.da.UpdateCursor(self._input_params['vegetation'], [self._input_params['vegetation_type'], self.veg_fieldname]) as table:
-                    for row in table:
-                        row[1] = row[0]
-                        table.updateRow(row)
-                # and remove the original field
-                arcpy.management.DeleteField(self._input_params['vegetation'], self._input_params['vegetation_type'])
-            else:
-                self.veg_fieldname = self._input_params['vegetation_type']
+        soilveg_aoi_path = self.storage.output_filepath("soilveg_aoi")
 
-            # create the geometric intersection of soil and vegetation layers
-            self.soilveg_aoi = arcpy.analysis.Intersect([self._input_params['soil'], self._input_params['vegetation'], self.AIO_outline], soilveg_aoi_path, "NO_FID")
+        # check if the soil_type and vegetation_type field names are equal and deal with it if not
+        if (self._input_params['soil_type'] == self._input_params['vegetation_type']):
+            Logger.info("The vegetation type attribute field name ('"+self._input_params['vegetation_type']+"') is equal to the soil type attribute field name.("
+                "'"+self._input_params['soil_type']+"')! '"+self._input_params['vegetation_type']+"' will be renamed to '"+self.veg_fieldname+"'.")
+            # add the new field
+            arcpy.management.AddField(self._input_params['vegetation'], self._data['veg_type'], "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED", "")
+            # copy the values
+            with arcpy.da.UpdateCursor(self._input_params['vegetation'], [self._input_params['vegetation_type'], self.veg_fieldname]) as table:
+                for row in table:
+                    row[1] = row[0]
+                    table.updateRow(row)
+            # and remove the original field
+            arcpy.management.DeleteField(self._input_params['vegetation'], self._input_params['vegetation_type'])
+        else:
+            self.veg_fieldname = self._input_params['vegetation_type']
 
-        if self._data['soil_veg_fieldname'] in arcpy.ListFields(self.soilveg_aoi):
-            arcpy.management.DeleteField(self.soilveg_aoi, self._data['soil_veg_fieldname'])
+        # create the geometric intersection of soil and vegetation layers
+        arcpy.analysis.Intersect([self._input_params['soil'], self._input_params['vegetation'], self.AoI_outline], soilveg_aoi_path, "NO_FID")
+
+        if self._data['soil_veg_fieldname'] in arcpy.ListFields(soilveg_aoi_path):
+            arcpy.management.DeleteField(soilveg_aoi_path, self._data['soil_veg_fieldname'])
             Logger.info("'"+self._data['soil_veg_fieldname']+"' attribute field already in the table and will be replaced.")
 
-        arcpy.management.AddField(self.soilveg_aoi, self._data['soil_veg_fieldname'], "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED","")
+        arcpy.management.AddField(soilveg_aoi_path, self._data['soil_veg_fieldname'], "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED","")
 
         # calculate "soil_veg" values (soil_type + vegetation_type)
-        with arcpy.da.UpdateCursor(self.soilveg_aoi, [self._input_params['soil_type'], self.veg_fieldname, self._data['soil_veg_fieldname']]) as table:
+        with arcpy.da.UpdateCursor(soilveg_aoi_path, [self._input_params['soil_type'], self.veg_fieldname, self._data['soil_veg_fieldname']]) as table:
             for row in table:
                 row[2] = row[0] + row[1]
                 table.updateRow(row)
 
-        # copy attribute table to DBF file for modifications
-        soilveg_props_path = os.join( self.data['outdir'], self.soil_veg_filename)
-        arcpy.conversion.TableToTable(self.soilveg_aoi, self.data['outdir'], self.soil_veg_filename)
-
-        # join table copy to intersect feature class ... I'm missing the point of this step
-        arcpy.management.JoinField(self.soilveg_aoi, self._data['soil_veg_fieldname'], soilveg_props_path, self._data['soil_veg_fieldname'], self._data['sfield'])
+        # join soil and vegetation model parameters from input table
+        arcpy.management.JoinField(soilveg_aoi_path, self._data['soil_veg_fieldname'], self._input_params['table_soil_vegetation'], self._data['soil_veg_fieldname'], self._data['sfield'])
 
         # check for empty values
-        with arcpy.da.SearchCursor(self.soilveg_aoi, self._data['sfield']) as cursor:
+        with arcpy.da.SearchCursor(soilveg_aoi_path, self._data['sfield']) as cursor:
             row_id = 0
             for row in cursor:
                 row_id += 1
@@ -272,9 +236,29 @@ class PrepareData(PrepareDataBase, ManageFields):
                         raise DataPreparationInvalidInput(
                             "Values in soilveg table are not correct "
                             "(field '{}': empty value found in row {})".format(self._data['sfield'][i], row_id))
+        return soilveg_aoi_path
 
+    def _check_empty_values(self, table, field):
+        """
+        Checks for empty (None or empty string) values in attribute field 'field' in table 'table'
+
+        :param table: table to be searched in
+        :param field: attribute field to be checked for empty values
+
+        :return: true if no empty values found else false
+        """
+        oidfn = arcpy.Describe(table).OIDFieldName
+        with arcpy.da.SearchCursor(table, [field, oidfn]) as cursor:
+            for row in cursor:
+                if row[0] in (None, ""):
+                    self._add_message("'"+field+"' values in '"+table+"' table are not correct, empty value found in row {})".format(row[1]))
+                    raise DataPreparationInvalidInput(
+                        "'"+field+"' values in '"+table+"' table are not correct, "
+                        "empty value found in row {})".format(row[1]))
+                    return None
 
 ###############
+
     def _get_soilveg_attribs(self, sfield, intersect):
         """
         Get numpy arrays of selected attributes.
