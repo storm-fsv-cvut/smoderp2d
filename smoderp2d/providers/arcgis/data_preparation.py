@@ -261,7 +261,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         :param intersect: vector intersect name
         """
         for field in self.soilveg_fields.keys():
-            output = os.path.join(self.data['outdir'], self._data['sfield_dir'], "r{}".format(field))
+            output = self.storage.output_filepath("soilveg_{}".format(field))
             arcpy.conversion.PolygonToRaster(intersect, field, output, "MAXIMUM_AREA", "", self.data['dy'])
             self.soilveg_fields[field] = self._rst2np(output)
             if self.soilveg_fields[field].shape[0] != self.data['r'] or \

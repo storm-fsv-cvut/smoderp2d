@@ -54,6 +54,8 @@ class PrepareDataBase(object):
             "k": None, "s": None, "n": None, "pi": None, "ppl": None,
             "ret": None, "b": None, "x": None, "y": None, "tau": None, "v": None
         }
+        for sv in self.soilveg_fields.keys():
+            self._data["soilveg_{}".format(sv)] = 'temp'
         self.storage.set_data_target(self._data)
 
     def run(self):
