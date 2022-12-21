@@ -12,8 +12,7 @@ from smoderp2d.core.general import GridGlobals
 
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
-from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
-from smoderp2d.providers.base.exceptions import LicenceNotAvailable
+from smoderp2d.providers.base.exceptions import DataPreparationError, DataPreparationInvalidInput, LicenceNotAvailable
 
 from smoderp2d.providers.arcgis.terrain import compute_products
 from smoderp2d.providers.arcgis.manage_fields import ManageFields
@@ -219,11 +218,11 @@ class PrepareData(PrepareDataBase, ManageFields):
         arcpy.management.JoinField(
             soilveg_aoi_path, self._data['soil_veg_fieldname'],
             table_soil_vegetation,
-            self._data['soil_veg_fieldname'], self.soilveg_fields
+            self._data['soil_veg_fieldname'], list(self.soilveg_fields.keys())
         )
 
         # check for empty values
-        with arcpy.da.SearchCursor(soilveg_aoi_path, self.soilveg_fields) as cursor:
+        with arcpy.da.SearchCursor(soilveg_aoi_path, list(self.soilveg_fields.keys())) as cursor:
             row_id = 0
             for row in cursor:
                 row_id += 1
@@ -260,19 +259,18 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         :param sfield: list of attributes
         :param intersect: vector intersect name
-
-        :return all_atrib: list of numpy array
         """
-        all_attrib = self._init_attrib(intersect)
-        
-        idx = 0
-        for field in self.soilveg_fields:
+        for field in self.soilveg_fields.keys():
             output = os.path.join(self.data['outdir'], self._data['sfield_dir'], "r{}".format(field))
             arcpy.conversion.PolygonToRaster(intersect, field, output, "MAXIMUM_AREA", "", self.data['dy'])
-            all_attrib[idx] = self._rst2np(output)
-            idx += 1
-            
-        return all_attrib
+            self.soilveg_fields[field] = self._rst2np(output)
+            if self.soilveg_fields[field].shape[0] != self.data['r'] or \
+                    self.soilveg_fields[field].shape[0] != self.data['c']:
+                raise DataPreparationError(
+                    "Unexpected array {} dimension ({}): should be ({}, {})".format(
+                        field, self.soilveg_fields[field].shape,
+                        self.data['r'], self.data['c'])
+                )
 
     def _rst2np(self, raster):
         """

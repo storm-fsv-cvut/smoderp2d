@@ -50,10 +50,10 @@ class PrepareDataBase(object):
             'veg_fieldname': "veg_type",
         }
         self.noData_value = -9999
-        self.soilveg_fields = [
-            "k", "s", "n", "pi", "ppl",
-            "ret", "b", "x", "y", "tau", "v"
-        ]
+        self.soilveg_fields = {
+            "k": None, "s": None, "n": None, "pi": None, "ppl": None,
+            "ret": None, "b": None, "x": None, "y": None, "tau": None, "v": None
+        }
         self.storage.set_data_target(self._data)
 
     def run(self):
@@ -124,17 +124,17 @@ class PrepareDataBase(object):
             )
 
         # build numpy array from selected attributes
-        all_attrib = self._get_soilveg_attribs(soil_veg)
+        self._get_soilveg_attribs(soil_veg)
         self.data['mat_inf_index'], self.data['combinatIndex'] = \
             self._get_inf_combinat_index(self.data['r'], self.data['c'],
-                                         all_attrib[0], all_attrib[1])
+                                         self.soilveg_fields['k'], self.soilveg_fields['s'])
         #Logger.progress(30)
 
-        self.data['mat_n'] = all_attrib[2]
-        self.data['mat_pi'] = all_attrib[3]
-        self.data['mat_ppl'] = all_attrib[4]
-        self.data['mat_reten'] = all_attrib[5]
-        self.data['mat_b'] = all_attrib[6]
+        self.data['mat_n'] = self.soilveg_fields['n']
+        self.data['mat_pi'] = self.soilveg_fields['pi']
+        self.data['mat_ppl'] = self.soilveg_fields['ppl']
+        self.data['mat_reten'] = self.soilveg_fields['ret']
+        self.data['mat_b'] = self.soilveg_fields['b']
 
         self.data['mat_nan'], self.data['mat_slope'], self.data['mat_dem'] = \
             self._get_mat_nan(self.data['r'], self.data['c'],
@@ -147,14 +147,14 @@ class PrepareDataBase(object):
 
         # build a/aa arrays
         self.data['mat_a'], self.data['mat_aa'] = self._get_a(
-            all_attrib[2], all_attrib[7], all_attrib[8], self.data['r'],
+            self.soilveg_fields['n'], self.soilveg_fields['x'], self.soilveg_fields['y'], self.data['r'],
             self.data['c'], GridGlobals.NoDataValue, self.data['mat_slope']
         )
         #Logger.progress(40)
 
         Logger.info("Computing critical level...")
         self.data['mat_hcrit'] = self._get_crit_water(
-            self.data['mat_b'], all_attrib[9], all_attrib[10], self.data['r'],
+            self.data['mat_b'], self.soilveg_fields['tau'], self.soilveg_fields['v'], self.data['r'],
             self.data['c'], self.data['mat_slope'],
             GridGlobals.NoDataValue, self.data['mat_aa'])
 
@@ -296,13 +296,6 @@ class PrepareDataBase(object):
     #
     def _get_soilveg_attribs(self):
          raise NotImplemented("Not implemented for base provider")
-
-    def _init_attrib(self, intersect):
-        """Internal method. initialize attributes array.
-        Called by _get_soilveg_attribs().
-        """
-        dim = [self.data['r'], self.data['c']]
-        return [np.zeros(dim, float)] * len(self.soilveg_fields)
 
     @staticmethod
     def _get_inf_combinat_index(r, c, mat_k, mat_s):

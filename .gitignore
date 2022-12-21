@@ -12,3 +12,4 @@ tests/data/output*
 .envrc
 .direnv
 bin/arcgis/log
+tests/data/log
