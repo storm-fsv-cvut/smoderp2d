@@ -28,12 +28,16 @@ class ArcGisWritter(BaseWritter):
         arcpy.management.CreateFileGDB(outdir, "data.gdb")
 
         # create temporary ArcGIS File Geodatabase
-        arcpy.management.CreateFileGDB( os.path.join(outdir, 'temp'), "data.gdb")
+        arcpy.management.CreateFileGDB(os.path.join(outdir, 'temp'), "data.gdb")
 
         # create control ArcGIS File Geodatabase
         arcpy.management.CreateFileGDB(os.path.join(outdir, 'control'), "data.gdb")
 
     def set_data_target(self, data):
+        """Set target data dictionary.
+
+        :param data: data dictionary to be set
+        """
         self._data_target = data
 
     def output_filepath(self, name):
