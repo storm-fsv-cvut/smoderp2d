@@ -126,7 +126,7 @@ class PrepareDataBase(object):
             )
 
         # build numpy array from selected attributes
-        self._get_soilveg_attribs(soil_veg, dem_clip)
+        self._get_soilveg_attribs(soil_veg)
         self.data['mat_inf_index'], self.data['combinatIndex'] = \
             self._get_inf_combinat_index(self.data['r'], self.data['c'],
                                          self.soilveg_fields['k'], self.soilveg_fields['s'])

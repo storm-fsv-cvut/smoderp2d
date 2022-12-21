@@ -253,20 +253,18 @@ class PrepareData(PrepareDataBase, ManageFields):
                         "empty value found in row {})".format(field, table, row[1])
                     )
 
-    def _get_soilveg_attribs(self, intersect, snap_raster):
+    def _get_soilveg_attribs(self, intersect):
         """
         Get numpy arrays of selected attributes.
 
         :param intersect: vector intersect name
-        :param snap_raster: snap to raster
         """
-        arcpy.env.snapRaster = snap_raster
         for field in self.soilveg_fields.keys():
             output = self.storage.output_filepath("soilveg_aoi_{}".format(field))
             arcpy.conversion.PolygonToRaster(intersect, field, output, "MAXIMUM_AREA", "", self.data['dy'])
             self.soilveg_fields[field] = self._rst2np(output)
             if self.soilveg_fields[field].shape[0] != self.data['r'] or \
-                    self.soilveg_fields[field].shape[0] != self.data['c']:
+                    self.soilveg_fields[field].shape[1] != self.data['c']:
                 raise DataPreparationError(
                     "Unexpected array {} dimension {}: should be ({}, {})".format(
                         field, self.soilveg_fields[field].shape,
@@ -304,6 +302,10 @@ class PrepareData(PrepareDataBase, ManageFields):
         # size of the raster [0] = number of rows; [1] = number of columns
         self.data['r'] = self.data['mat_dem'].shape[0]
         self.data['c'] = self.data['mat_dem'].shape[1]
+
+        # set arcpy environment (needed for rasterization)
+        arcpy.env.extent = dem_clip
+        arcpy.env.snapRaster = dem_clip
 
     def _get_array_points(self):
         """Get array of points. Points near AOI border are skipped.
