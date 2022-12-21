@@ -3,8 +3,6 @@
 import arcpy
 import sys
 import os
-import locale
-import numpy
 
 py3 = sys.version_info[0] == 3
 if py3:
@@ -15,7 +13,6 @@ from smoderp2d import ArcGisRunner
 from smoderp2d.providers.base import CompType
 from smoderp2d.exceptions import ProviderError
 
-
 # input parameters constants
 PARAMETER_DEM = 0
 PARAMETER_SOIL = 1
@@ -23,14 +20,11 @@ PARAMETER_SOIL_TYPE = 2
 PARAMETER_VEGETATION = 3
 PARAMETER_VEGETATION_TYPE = 4
 PARAMETER_PATH_TO_RAINFALL_FILE = 5
-
 PARAMETER_MAX_DELTA_T = 6
-
 PARAMETER_END_TIME = 7
 #PARAMETER_SURFACE_RETENTION = 6  # nula jen docasne, typ vypoctu se resi jinak
 PARAMETER_POINTS = 8
 PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 9
-
 PARAMETER_SOILVEGTABLE = 10
 PARAMETER_SOILVEGTABLE_CODE = 11
 PARAMETER_STREAM = 12
@@ -43,35 +37,20 @@ class Toolbox(object):
         """Set of tools for preparation and executing the SMODERP2D soil erosion model"""
         self.label = "SMODERP2D tools"
         self.alias = ""
-        self.description = "Set of tools for executing the SMODERP2D soil erosion model\nDepartment of Irrigation, Drainage and Landscape Water Management\nFaculty of Civil " \
-                           "Engineering, Czech Technical University. 2022"
+        self.description = "Set of tools for executing the SMODERP2D soil erosion model\n" \
+            "Department of Irrigation, Drainage and Landscape Water Management\nFaculty of Civil " \
+            "Engineering, Czech Technical University. 2022"
 
         # List of tool classes associated with this toolbox
         self.tools = [SMODERP2D]
 
-
 class SMODERP2D(object):
-
     def __init__(self):
         """The tool to execute the SMODERP model"""
         self.label = "SMODERP2D"
         self.description = ""
         self.canRunInBackground = False
         self.category = ""
-
-        self.processignGDBname = "processing.gdb"
-        self.AIO_outline = None
-
-        self.dem_slope = None
-        self.dem_fill = None
-        self.dem_flowdir = None
-        self.dem_flowacc = None
-        self.dem_aspect = None
-
-        self.dem_aoi = None
-        self.dem_slope_aoi = None
-        self.dem_flowacc_aoi = None
-        self.dem_aspect_aoi = None
 
     def getParameterInfo(self):
         """Define parameter definitions"""
@@ -207,12 +186,18 @@ class SMODERP2D(object):
         )
         dataprepOnly.value = True
 
-        params = [inputSurfaceRaster, inputSoilPolygons, soilTypefieldName, inputLUPolygons, LUtypeFieldName, inputRainfall, maxTimeStep, totalRunTime, inputPoints, outDir,
-                 soilvegPropertiesTable, soilvegIDfieldName, reachFeatures, reachTable, reachIDfieldName, dataprepOnly]
-        return params
+        return [
+            inputSurfaceRaster, inputSoilPolygons, soilTypefieldName,
+            inputLUPolygons, LUtypeFieldName, inputRainfall,
+            maxTimeStep, totalRunTime, inputPoints, outDir,
+            soilvegPropertiesTable, soilvegIDfieldName, reachFeatures,
+            reachTable, reachIDfieldName, dataprepOnly
+        ]
 
     def updateParameters(self, parameters):
-        """Values and properties of parameters before internal validation is performed.  This method is called whenever a parameter has been changed.#"""
+        """Values and properties of parameters before internal validation is performed.
+        This method is called whenever a parameter has been changed."""
+        # ONLY FOR TESTING
         arcpy.env.workspace = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "data")
         parameters[PARAMETER_DEM].value = "dem10m"
         parameters[PARAMETER_SOIL].value = "soils.shp"
@@ -231,19 +216,18 @@ class SMODERP2D(object):
         # parameters[PARAMETER_STREAMTABLE_CODE].value =
 
     def updateMessages(self, parameters):
-        """Messages created by internal validation for each tool parameter.  This method is called after internal validation."""
+        """Messages created by internal validation for each tool
+        parameter. This method is called after internal validation."""
         return
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-        import smoderp2d
-        reload(smoderp2d) # remove when finished ...
-
         try:
-            runner = smoderp2d.ArcGisRunner()
+            runner = ArcGisRunner()
 
-            runner.set_options(self._get_input_params(parameters))
+            runner.set_options(
+                self._get_input_params(parameters)
+            )
             # if flags['d']:
             #     runner.set_comptype(
             #         comp_type=CompType.dpre,
@@ -252,13 +236,7 @@ class SMODERP2D(object):
 
             runner.run()
         except ProviderError as e:
-            # gs.fatal(e)
-            # arcpy....
-            pass
-
-        #self.calculate_AOI_outline()
-        #self.calculate_DEM_products()
-        #self.clip_DEM_products()
+            arcpy.AddError(e)
 
         return
 
@@ -267,7 +245,6 @@ class SMODERP2D(object):
         """Get input parameters from ArcGIS toolbox.
         """
         return {
-            # parameter indexes from the bin/arcgis/SMODERP2D.pyt tool for ArcGIS
             'elevation': parameters[PARAMETER_DEM].valueAsText,
             'soil': parameters[PARAMETER_SOIL].valueAsText,
             'soil_type': parameters[PARAMETER_SOIL_TYPE].valueAsText,
@@ -284,4 +261,3 @@ class SMODERP2D(object):
             'table_stream_shape': parameters[PARAMETER_STREAMTABLE].valueAsText,
             'table_stream_shape_code': parameters[PARAMETER_STREAMTABLE_CODE].valueAsText
         }
-
