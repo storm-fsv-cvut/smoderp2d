@@ -13,7 +13,7 @@ from smoderp2d.core.general import GridGlobals
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
-#from smoderp2d.providers.base.exceptions import LicenceNotAvailable
+from smoderp2d.providers.base.exceptions import LicenceNotAvailable
 
 from smoderp2d.providers.arcgis.terrain import compute_products
 from smoderp2d.providers.arcgis.manage_fields import ManageFields
@@ -22,16 +22,11 @@ class PrepareData(PrepareDataBase, ManageFields):
     def __init__(self, options, writter):
         super(PrepareData, self).__init__(writter)
 
-        # setting the workspace environment
-        arcpy.env.workspace = arcpy.GetParameterAsText(9)
-
         # checking if ArcGIS Spatial extension is available
         if arcpy.CheckExtension("Spatial") == "Available":
             arcpy.CheckOutExtension("Spatial")
         else:
-            self._add_message(self, "Spatial extension for ArcGIS not available - can not continue.")
-            #raise LicenceNotAvailable("Spatial Analysis extension for ArcGIS is not available")
-
+            raise LicenceNotAvailable("Spatial Analysis extension for ArcGIS is not available")
 
         # get input parameters
         self._get_input_params(options)
@@ -61,7 +56,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         super(PrepareData, self)._set_output()
         self.storage.create_storage(self._input_params['output'])
 
-    def _create_AoI_outline(self):
+    def _create_AoI_outline(self, elevation, soil, vegetation):
         """
         Creates geometric intersection of input DEM, slope raster*, soil definition and landuse definition that will be used as Area of Interest outline
         *slope is not created yet, but generally the edge pixels have nonsense values so "one pixel shrinked DEM" extent is used instead
@@ -69,44 +64,39 @@ class PrepareData(PrepareDataBase, ManageFields):
         :return: string path to AIO polygon feature class
         """
         dem_slope_mask_path = self.storage.output_filepath('dem_slope_mask')
-        dem_mask = arcpy.sa.Reclassify( self._input_params['elevation'], "VALUE", "-100000 100000 1", "DATA")
+        dem_mask = arcpy.sa.Reclassify(elevation, "VALUE", "-100000 100000 1", "DATA")
         dem_slope_mask = arcpy.sa.Shrink(dem_mask, 1, 1)
         # the slope raster extent will be used in further intersections as it is always smaller then the DEM extent ...
         dem_slope_mask.save(dem_slope_mask_path)
 
         dem_polygon = self.storage.output_filepath('dem_polygon')
         arcpy.conversion.RasterToPolygon(dem_slope_mask, dem_polygon, "NO_SIMPLIFY", "VALUE")
-        #self.storage.output_filepath('soil_boundary')
         dem_soil_veg_intersection = self.storage.output_filepath('AoI')
-        arcpy.analysis.Intersect([dem_polygon, self._input_params['soil'], self._input_params['vegetation']], dem_soil_veg_intersection, "NO_FID")
+        arcpy.analysis.Intersect([dem_polygon, soil, vegetation], dem_soil_veg_intersection, "NO_FID")
 
         AoI_outline = self.storage.output_filepath('AoI_polygon')
         arcpy.management.Dissolve(dem_soil_veg_intersection, AoI_outline)
 
-        if (int(arcpy.management.GetCount(AoI_outline).getOutput(0)) == 0):
+        if int(arcpy.management.GetCount(AoI_outline).getOutput(0)) == 0:
             raise DataPreparationInvalidInput(
-                "The input layers are not correct!"
+                "The input layers are not correct! "
                 "The geometrical intersection of input datasets is empty.")
-            return None
-        else:
-            self.AoI_outline = AoI_outline
-            return AoI_outline
 
+        return AoI_outline
 
-    def _create_DEM_derivatives(self):
+    def _create_DEM_derivatives(self, dem):
         """
         Creates all the needed DEM derivatives in the DEM's original extent to avoid raster edge effects.
         # the clipping extent could be replaced be AOI border buffered by 1 cell to prevent time consuming operations on DEM if the DEM is much larger then the AOI
         """
-        inputDEM = self._input_params['elevation']
         # calculate the depressionless DEM
         dem_filled_path = self.storage.output_filepath('dem_filled')
-        dem_filled = arcpy.sa.Fill(inputDEM)
+        dem_filled = arcpy.sa.Fill(dem)
         dem_filled.save(dem_filled_path)
 
         # calculate the flow direction
         dem_flowdir_path = self.storage.output_filepath('dem_flowdir')
-        flowdir = arcpy.sa.FlowDirection(inputDEM)
+        flowdir = arcpy.sa.FlowDirection(dem)
         flowdir.save(dem_flowdir_path)
 
         dem_flowacc_path = self.storage.output_filepath('dem_flowacc')
@@ -125,7 +115,6 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         return dem_filled_path, dem_flowdir_path, dem_flowacc_path, dem_slope_path, dem_aspect_path
 
-
     def _clip_raster_layer(self, dataset, outline, noDataValue, name):
         """
         Clips raster dataset to given polygon.
@@ -137,7 +126,6 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         :return: full path to clipped raster
         """
-
         output_path = self.storage.output_filepath(name)
         arcpy.management.Clip(dataset, "", output_path, outline, noDataValue, "ClippingGeometry")
         return output_path
@@ -157,7 +145,8 @@ class PrepareData(PrepareDataBase, ManageFields):
         # select points inside the AIO
         arcpy.management.SelectLayerByLocation(points_layer, "WITHIN", outline, "", "NEW_SELECTION")
         # save them as a new dataset
-        arcpy.management.CopyFeatures(points_layer, self.storage.output_filepath(name))
+        points_clipped = self.storage.output_filepath(name)
+        arcpy.management.CopyFeatures(points_layer, points_clipped)
 
         # select points outside the AoI
         # TODO: shouldn't be the point to close the border removed here as well?
@@ -175,11 +164,13 @@ class PrepareData(PrepareDataBase, ManageFields):
                 else:
                     outsideListString += ", "+str(row[0])
         # report them to the user
-        self._add_message("     "+str(numOutside)+" record points outside of the area of interest ("+pointsOID+": "+outsideListString+")")
+        self._add_message("     {} record points outside of the area of interest ({}: {})".format(
+            numOutside, pointsOID, outsideListString)
+        )
 
-        return self.storage.output_filepath(name)
+        return points_clipped
 
-    def _prepare_soilveg(self):
+    def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type, AoI_outline, table_soil_vegetation):
         """
         Prepares the combination of soils and vegetation input layers.
         Gets the spatial intersection of both and checks the consistency of attribute table.
@@ -187,47 +178,52 @@ class PrepareData(PrepareDataBase, ManageFields):
         :return: full path to soil and vegetation dataset
         """
 
-        self._check_empty_values(self._input_params['vegetation'], self._input_params['vegetation_type'])
-        self._check_empty_values(self._input_params['soil'], self._input_params['soil_type'])
+        self._check_empty_values(vegetation, vegetation_type)
+        self._check_empty_values(soil, soil_type)
 
         soilveg_aoi_path = self.storage.output_filepath("soilveg_aoi")
 
         # check if the soil_type and vegetation_type field names are equal and deal with it if not
-        if (self._input_params['soil_type'] == self._input_params['vegetation_type']):
-            Logger.info("The vegetation type attribute field name ('"+self._input_params['vegetation_type']+"') is equal to the soil type attribute field name.("
-                "'"+self._input_params['soil_type']+"')! '"+self._input_params['vegetation_type']+"' will be renamed to '"+self.veg_fieldname+"'.")
+        if soil_type == vegetation_type:
+            Logger.info("The vegetation type attribute field name ('{}') is equal to the soil type attribute field name. ({}"
+                "'{}')! '{}' will be renamed to '{}.".format(vegatation_type, soil_type, vegetation_type, self.veg_fieldname)
+            )
             # add the new field
-            arcpy.management.AddField(self._input_params['vegetation'], self._data['veg_type'], "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED", "")
+            arcpy.management.AddField(vegetation, vegetation_type, "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED", "")
             # copy the values
-            with arcpy.da.UpdateCursor(self._input_params['vegetation'], [self._input_params['vegetation_type'], self.veg_fieldname]) as table:
+            with arcpy.da.UpdateCursor(vegetation, [vegetation_type, self.veg_fieldname]) as table:
                 for row in table:
                     row[1] = row[0]
                     table.updateRow(row)
             # and remove the original field
-            arcpy.management.DeleteField(self._input_params['vegetation'], self._input_params['vegetation_type'])
+            arcpy.management.DeleteField(vegetation, vegetation_type)
         else:
-            self.veg_fieldname = self._input_params['vegetation_type']
+            self.veg_fieldname = vegetation_type
 
         # create the geometric intersection of soil and vegetation layers
-        arcpy.analysis.Intersect([self._input_params['soil'], self._input_params['vegetation'], self.AoI_outline], soilveg_aoi_path, "NO_FID")
+        arcpy.analysis.Intersect([soil, vegetation, AoI_outline], soilveg_aoi_path, "NO_FID")
 
         if self._data['soil_veg_fieldname'] in arcpy.ListFields(soilveg_aoi_path):
             arcpy.management.DeleteField(soilveg_aoi_path, self._data['soil_veg_fieldname'])
-            Logger.info("'"+self._data['soil_veg_fieldname']+"' attribute field already in the table and will be replaced.")
+            Logger.info("'{}' attribute field already in the table and will be replaced.".format(self._data['soil_veg_fieldname']))
 
         arcpy.management.AddField(soilveg_aoi_path, self._data['soil_veg_fieldname'], "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED","")
 
         # calculate "soil_veg" values (soil_type + vegetation_type)
-        with arcpy.da.UpdateCursor(soilveg_aoi_path, [self._input_params['soil_type'], self.veg_fieldname, self._data['soil_veg_fieldname']]) as table:
+        with arcpy.da.UpdateCursor(soilveg_aoi_path, [soil_type, self.veg_fieldname, self._data['soil_veg_fieldname']]) as table:
             for row in table:
                 row[2] = row[0] + row[1]
                 table.updateRow(row)
 
         # join soil and vegetation model parameters from input table
-        arcpy.management.JoinField(soilveg_aoi_path, self._data['soil_veg_fieldname'], self._input_params['table_soil_vegetation'], self._data['soil_veg_fieldname'], self._data['sfield'])
+        arcpy.management.JoinField(
+            soilveg_aoi_path, self._data['soil_veg_fieldname'],
+            table_soil_vegetation,
+            self._data['soil_veg_fieldname'], self.soilveg_fields
+        )
 
         # check for empty values
-        with arcpy.da.SearchCursor(soilveg_aoi_path, self._data['sfield']) as cursor:
+        with arcpy.da.SearchCursor(soilveg_aoi_path, self.soilveg_fields) as cursor:
             row_id = 0
             for row in cursor:
                 row_id += 1
@@ -235,7 +231,9 @@ class PrepareData(PrepareDataBase, ManageFields):
                     if row[i] in ("", " ", None):
                         raise DataPreparationInvalidInput(
                             "Values in soilveg table are not correct "
-                            "(field '{}': empty value found in row {})".format(self._data['sfield'][i], row_id))
+                            "(field '{}': empty value found in row {})".format(self.sfield[i], row_id)
+                        )
+
         return soilveg_aoi_path
 
     def _check_empty_values(self, table, field):
@@ -251,13 +249,12 @@ class PrepareData(PrepareDataBase, ManageFields):
         with arcpy.da.SearchCursor(table, [field, oidfn]) as cursor:
             for row in cursor:
                 if row[0] in (None, ""):
-                    self._add_message("'"+field+"' values in '"+table+"' table are not correct, empty value found in row {})".format(row[1]))
                     raise DataPreparationInvalidInput(
-                        "'"+field+"' values in '"+table+"' table are not correct, "
-                        "empty value found in row {})".format(row[1]))
-                    return None
+                        "'{}' values in '{}' table are not correct, "
+                        "empty value found in row {})".format(field, table, row[1])
+                    )
 
-    def _get_soilveg_attribs(self, sfield, intersect):
+    def _get_soilveg_attribs(self, intersect):
         """
         Get numpy arrays of selected attributes.
 
@@ -266,10 +263,10 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         :return all_atrib: list of numpy array
         """
-        all_attrib = self._init_attrib(sfield, intersect)
+        all_attrib = self._init_attrib(intersect)
         
         idx = 0
-        for field in sfield:
+        for field in self.soilveg_fields:
             output = os.path.join(self.data['outdir'], self._data['sfield_dir'], "r{}".format(field))
             arcpy.conversion.PolygonToRaster(intersect, field, output, "MAXIMUM_AREA", "", self.data['dy'])
             all_attrib[idx] = self._rst2np(output)

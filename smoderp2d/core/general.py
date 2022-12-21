@@ -59,7 +59,7 @@ class GridGlobals(object):
     # left bottom corner y coordinate of raster
     yllcorner = None
     # no data value for raster
-    NoDataValue = None
+    NoDataValue = -9999
     # no data integer value for raster
     NoDataInt = None
     # size of raster cell

@@ -2,8 +2,8 @@ import os
 import shutil
 import numpy as np
 
-import smoderp2d.processes.rainfall as rainfall
-
+from smoderp2d.processes import rainfall
+from smoderp2d.core.general import GridGlobals
 from smoderp2d.providers.base import Logger
 
 class PrepareDataBase(object):
@@ -48,10 +48,12 @@ class PrepareDataBase(object):
 
             'soil_veg_fieldname': 'soilveg',
             'veg_fieldname': "veg_type",
-            'sfield': ["k", "s", "n", "pi", "ppl",
-                       "ret", "b", "x", "y", "tau", "v"],
-            'noData_value': -9999
         }
+        self.noData_value = -9999
+        self.soilveg_fields = [
+            "k", "s", "n", "pi", "ppl",
+            "ret", "b", "x", "y", "tau", "v"
+        ]
         self.storage.set_data_target(self._data)
 
     def run(self):
@@ -66,35 +68,43 @@ class PrepareDataBase(object):
 
         # create output folder, where temporary data are stored
         self._set_output()
-        # dem_copy, dem_mask = self._set_mask()
 
         # intersect the input datasest to define the area of interest
         Logger.info("Creating intersect of input datasets ...")
-        AoI_outline = self._create_AoI_outline()
-        #Logger.progress(10)
+        AoI_outline = self._create_AoI_outline(
+            self._input_params['elevation'],
+            self._input_params['soil'],
+            self._input_params['vegetation']
+        )
+        # Logger.progress(10)
 
         # calculate DEM derivatives
         # intentionally done on non-clipped DEM to avoid edge effects
         Logger.info("Creating DEM-derived layers ...")
-        dem_filled, dem_flowdir, dem_flowacc, dem_slope, dem_aspect = self._create_DEM_derivatives()
+        dem_filled, dem_flowdir, dem_flowacc, dem_slope, dem_aspect = self._create_DEM_derivatives(
+            self._input_params['elevation']
+        )
 
         # prepare all needed layers for further processing
         #   clip the input layers to AIO outline including the record points
         Logger.info("Clipping input layers to AoI outline ...")
         # NoData value to be used in the output rasters
-        NoDataValue = self._data['noData_value']
 
-        dem_clip = self._clip_raster_layer(dem_filled, AoI_outline, NoDataValue, 'dem_aoi')
-        flowdir_clip = self._clip_raster_layer(dem_flowdir, AoI_outline, NoDataValue, 'dem_flowdir_aoi')
-        self._clip_raster_layer(dem_flowacc, AoI_outline, NoDataValue, 'dem_flowacc_aoi')
-        slope_clip = self._clip_raster_layer(dem_slope, AoI_outline, NoDataValue, 'dem_slope_aoi')
-        self._clip_raster_layer(dem_aspect, AoI_outline, NoDataValue, 'dem_aspect_aoi')
+        dem_clip = self._clip_raster_layer(dem_filled, AoI_outline, GridGlobals.NoDataValue, 'dem_aoi')
+        flowdir_clip = self._clip_raster_layer(dem_flowdir, AoI_outline, GridGlobals.NoDataValue, 'dem_flowdir_aoi')
+        self._clip_raster_layer(dem_flowacc, AoI_outline, GridGlobals.NoDataValue, 'dem_flowacc_aoi')
+        slope_clip = self._clip_raster_layer(dem_slope, AoI_outline, GridGlobals.NoDataValue, 'dem_slope_aoi')
+        self._clip_raster_layer(dem_aspect, AoI_outline, GridGlobals.NoDataValue, 'dem_aspect_aoi')
 
-        self._clip_record_points(self._input_params['points'], AoI_outline, 'points_AoI')
+        points_AoI = self._clip_record_points(self._input_params['points'], AoI_outline, 'points_AoI')
 
         #   join the attributes to soil_veg intersect and check the table consistency
         Logger.info("Preparing soil and vegetation properties table ...")
-        soil_veg = self._prepare_soilveg()
+        soil_veg = self._prepare_soilveg(
+            self._input_params['soil'], self._input_params['soil_type'],
+            self._input_params['vegetation'], self._input_params['vegetation_type'],
+            AoI_outline, self._input_params['table_soil_vegetation']
+        )
 
         # raster to numpy array conversion
         Logger.info("Computing parameters of DEM...")
@@ -114,7 +124,7 @@ class PrepareDataBase(object):
             )
 
         # build numpy array from selected attributes
-        all_attrib = self._get_soilveg_attribs(self._data['sfield'], soil_veg)
+        all_attrib = self._get_soilveg_attribs(soil_veg)
         self.data['mat_inf_index'], self.data['combinatIndex'] = \
             self._get_inf_combinat_index(self.data['r'], self.data['c'],
                                          all_attrib[0], all_attrib[1])
@@ -128,7 +138,7 @@ class PrepareDataBase(object):
 
         self.data['mat_nan'], self.data['mat_slope'], self.data['mat_dem'] = \
             self._get_mat_nan(self.data['r'], self.data['c'],
-                              self.data['NoDataValue'], self.data['mat_slope'],
+                              GridGlobals.NoDataValue, self.data['mat_slope'],
                               self.data['mat_dem'])
 
         # build points array
@@ -138,7 +148,7 @@ class PrepareDataBase(object):
         # build a/aa arrays
         self.data['mat_a'], self.data['mat_aa'] = self._get_a(
             all_attrib[2], all_attrib[7], all_attrib[8], self.data['r'],
-            self.data['c'], self.data['NoDataValue'], self.data['mat_slope']
+            self.data['c'], GridGlobals.NoDataValue, self.data['mat_slope']
         )
         #Logger.progress(40)
 
@@ -146,7 +156,7 @@ class PrepareDataBase(object):
         self.data['mat_hcrit'] = self._get_crit_water(
             self.data['mat_b'], all_attrib[9], all_attrib[10], self.data['r'],
             self.data['c'], self.data['mat_slope'],
-            self.data['NoDataValue'], self.data['mat_aa'])
+            GridGlobals.NoDataValue, self.data['mat_aa'])
 
         # load precipitation input file
         self.data['sr'], self.data['itera'] = \
@@ -161,7 +171,7 @@ class PrepareDataBase(object):
 
         # define mask (rc/rc variables)
         self.data['mat_boundary'] = self._find_boundary_cells(
-            self.data['r'], self.data['c'], self.data['NoDataValue'],
+            self.data['r'], self.data['c'], GridGlobals.NoDataValue,
             self.data['mat_nan'])
 
         self.data['rr'], self.data['rc'] = self._get_rr_rc(
@@ -190,7 +200,6 @@ class PrepareDataBase(object):
             'outletCells': None,
             'xllcorner': None,
             'yllcorner': None,
-            'NoDataValue': None,
             'array_points': None,
             'c': None,
             'r': None,
@@ -288,12 +297,12 @@ class PrepareDataBase(object):
     def _get_soilveg_attribs(self):
          raise NotImplemented("Not implemented for base provider")
 
-    def _init_attrib(self, sfield, intersect):
+    def _init_attrib(self, intersect):
         """Internal method. initialize attributes array.
         Called by _get_soilveg_attribs().
         """
         dim = [self.data['r'], self.data['c']]
-        return [np.zeros(dim, float)] * len(sfield)
+        return [np.zeros(dim, float)] * len(self.soilveg_fields)
 
     @staticmethod
     def _get_inf_combinat_index(r, c, mat_k, mat_s):
@@ -347,7 +356,7 @@ class PrepareDataBase(object):
         # if point is not on the edge of raster or its
         # neighbours are not "NoDataValue", it will be saved
         # into array_points array
-        nv = self.data['NoDataValue']
+        nv = GridGlobals.NoDataValue
         if r != 0 and r != self.data['r'] \
            and c != 0 and c != self.data['c'] and \
            self.data['mat_dem'][r][c]   != nv and \
@@ -629,7 +638,7 @@ class PrepareDataBase(object):
         """
         for i in range(self.data['mat_slope'].shape[0]):
             for j in range(self.data['mat_slope'].shape[1]):
-                nv = self.data['NoDataValue']
+                nv = GridGlobals.NoDataValue
                 if self.data['mat_slope'][i][j] != nv:
                     self.data['mat_slope'][i][j] = self.data['mat_slope'][i][j]/100.
 
