@@ -42,9 +42,9 @@ class Runner(object):
         elif isinstance(self, GrassGisRunner):
             from smoderp2d.providers.grass import GrassGisProvider
             provider_class = GrassGisProvider
-        elif os.getenv('NOGIS'):
-            from smoderp2d.providers.nogis import NoGisProvider
-            provider_class = NoGisProvider
+        elif os.getenv('PROFILE1D'):
+            from smoderp2d.providers.profile1d import Profile1DProvider
+            provider_class = Profile1DProvider
         else:
             from smoderp2d.providers.cmd import CmdProvider
             provider_class = CmdProvider
