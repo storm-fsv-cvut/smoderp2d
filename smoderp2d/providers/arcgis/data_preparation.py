@@ -267,7 +267,7 @@ class PrepareData(PrepareDataBase, ManageFields):
             if self.soilveg_fields[field].shape[0] != self.data['r'] or \
                     self.soilveg_fields[field].shape[0] != self.data['c']:
                 raise DataPreparationError(
-                    "Unexpected array {} dimension ({}): should be ({}, {})".format(
+                    "Unexpected array {} dimension {}: should be ({}, {})".format(
                         field, self.soilveg_fields[field].shape,
                         self.data['r'], self.data['c'])
                 )
