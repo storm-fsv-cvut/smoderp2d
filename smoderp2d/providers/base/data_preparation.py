@@ -119,13 +119,9 @@ class PrepareDataBase(object):
         self._get_raster_dim(dem_clip)
         if flowdir_clip is not None:
             self.data['mat_fd'] = self._rst2np(flowdir_clip)
-            self.storage.write_raster(
-                self.data['mat_fd'],
-                'fl_dir',
-                'temp'
-            )
 
         # build numpy array from selected attributes
+        Logger.info("Computing soil and vegetation parameters...")
         self._get_soilveg_attribs(soil_veg)
         self.data['mat_inf_index'], self.data['combinatIndex'] = \
             self._get_inf_combinat_index(self.data['r'], self.data['c'],
@@ -169,15 +165,17 @@ class PrepareDataBase(object):
         #Logger.progress(50)
 
         Logger.info("Computing stream preparation...")
-        self._prepare_streams(mask_shp, dem_clip, intersect, flow_accumulation_clip)
+        self._prepare_streams(AoI_outline, dem_clip, intersect, flow_accumulation_clip)
 
         # define mask (rc/rc variables)
         self.data['mat_boundary'] = self._find_boundary_cells(
             self.data['r'], self.data['c'], GridGlobals.NoDataValue,
-            self.data['mat_nan'])
+            self.data['mat_nan']
+        )
 
         self.data['rr'], self.data['rc'] = self._get_rr_rc(
-            self.data['r'], self.data['c'], self.data['mat_boundary'])
+            self.data['r'], self.data['c'], self.data['mat_boundary']
+        )
 
         self.data['mfda'] = False
         self.data['mat_boundary'] = None

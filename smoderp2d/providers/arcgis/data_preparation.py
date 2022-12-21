@@ -310,34 +310,25 @@ class PrepareData(PrepareDataBase, ManageFields):
     def _get_array_points(self):
         """Get array of points. Points near AOI border are skipped.
         """
-        if (self.data['points'] not in("", "#", None)):
+        self.data['array_points'] = None
+        if self.data['points'] not in ("", "#", None):
             # get number of points
-            count = arcpy.management.GetCount(self.data['points']).getOutput(0)
-            
+            count = int(arcpy.management.GetCount(self.data['points']).getOutput(0))
             if count > 0:
-                # identify the geometry field
-                desc = arcpy.Describe(self.data['points'])
-                shapefieldname = desc.ShapeFieldName
-
                 # empty array
                 self.data['array_points'] = np.zeros([int(count), 5], float)
 
                 # get the points geometry and IDs into array
-                with arcpy.da.SearchCursor(self.data['points'], [self.storage.primary_key, shapefieldname]) as table:
+                desc = arcpy.Describe(self.data['points'])
+                with arcpy.da.SearchCursor(self.data['points'], [desc.OIDFieldName, desc.ShapeFieldName]) as table:
                     i = 0
                     for row in table:
                         fid = row[0]
-                        # geometry
-                        feature = row[1]
-                        pnt = feature.getPart()
+                        x, y = row[1]
 
-                        i = self._get_array_points_(pnt.X, pnt.Y, fid, i) # tak tomuhle nerozumim
+                        i = self._get_array_points_(x, y, fid, i) # tak tomuhle nerozumim
                         # self.data['array_points'].append([pnt.X, pnt.Y, fid, i]) # nemelo to bejt neco jako tohle?
                         i += 1
-            else:
-                self.data['array_points'] = None
-        else:
-            self.data['array_points'] = None
 
     def _get_slope_dir(self, dem_clip):
         """
