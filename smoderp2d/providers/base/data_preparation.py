@@ -55,7 +55,7 @@ class PrepareDataBase(object):
             "ret": None, "b": None, "x": None, "y": None, "tau": None, "v": None
         }
         for sv in self.soilveg_fields.keys():
-            self._data["soilveg_{}".format(sv)] = 'temp'
+            self._data["soilveg_aoi_{}".format(sv)] = 'temp'
         self.storage.set_data_target(self._data)
 
     def run(self):
@@ -126,7 +126,7 @@ class PrepareDataBase(object):
             )
 
         # build numpy array from selected attributes
-        self._get_soilveg_attribs(soil_veg)
+        self._get_soilveg_attribs(soil_veg, dem_clip)
         self.data['mat_inf_index'], self.data['combinatIndex'] = \
             self._get_inf_combinat_index(self.data['r'], self.data['c'],
                                          self.soilveg_fields['k'], self.soilveg_fields['s'])

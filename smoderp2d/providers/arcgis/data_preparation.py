@@ -253,15 +253,16 @@ class PrepareData(PrepareDataBase, ManageFields):
                         "empty value found in row {})".format(field, table, row[1])
                     )
 
-    def _get_soilveg_attribs(self, intersect):
+    def _get_soilveg_attribs(self, intersect, snap_raster):
         """
         Get numpy arrays of selected attributes.
 
-        :param sfield: list of attributes
         :param intersect: vector intersect name
+        :param snap_raster: snap to raster
         """
+        arcpy.env.snapRaster = snap_raster
         for field in self.soilveg_fields.keys():
-            output = self.storage.output_filepath("soilveg_{}".format(field))
+            output = self.storage.output_filepath("soilveg_aoi_{}".format(field))
             arcpy.conversion.PolygonToRaster(intersect, field, output, "MAXIMUM_AREA", "", self.data['dy'])
             self.soilveg_fields[field] = self._rst2np(output)
             if self.soilveg_fields[field].shape[0] != self.data['r'] or \
