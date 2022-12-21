@@ -273,10 +273,10 @@ class BaseProvider(object):
         Globals.prtTimes = data.get('prtTimes', None)
         Globals.extraOut = self._hidden_config.getboolean('outputs','extraout')
 
-        # If nogis provider is used the values 
+        # If profile1d provider is used the values 
         # should be set in the loop at the beginning
         # of this method since it is part of the 
-        # data dict (only in nogis provider).
+        # data dict (only in profile1d provider).
         # Otherwise is has to be set to 1.
         if (Globals.slope_width is None):
             Globals.slope_width = 1

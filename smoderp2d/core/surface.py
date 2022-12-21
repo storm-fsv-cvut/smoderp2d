@@ -122,7 +122,7 @@ class Surface(GridGlobals, Stream, Kinematic):
             else :
                 velocity = arr.vol_runoff / dt / (arr.h_sheet*GridGlobals.dx)
 
-            # if nogis provider - the data in extra output are the unit width data
+            # if profile1d provider - the data in extra output are the unit width data
             #                     if you need runoff from non-unit slope and
             #                     with extra output calculate it yourself
             line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}{sep}'\
