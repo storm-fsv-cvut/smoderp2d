@@ -35,10 +35,10 @@ class Runner(object):
 
     def _provider_factory(self):
         # initialize provider
-        if os.getenv('ESRIACTIVEINSTALLATION') or os.getenv('ESRI_OS_DIR_DONOTUSE'):
+        if isinstance(self, ArcGisRunner):
             from smoderp2d.providers.arcgis import ArcGisProvider
             provider_class = ArcGisProvider
-        elif os.getenv('GISRC'):
+        elif isinstance(self, GrassRunner):
             from smoderp2d.providers.grass import GrassGisProvider
             provider_class = GrassGisProvider
         elif os.getenv('NOGIS'):
@@ -105,23 +105,19 @@ class Runner(object):
 
         return 0
 
+    def set_options(self, options):
+        self._provider.set_options(options)
+
 class ArcGisRunner(Runner):
     def __init__(self):
-        os.environ['ESRIACTIVEINSTALLATION'] = 'dummy'
+        os.environ['ESRIACTIVEINSTALLATION'] = '1'
         super(ArcGisRunner, self).__init__()
 
-    def set_options(self, options):
-        self._provider.set_options(options)
-
-
 class GrassRunner(Runner):
-    def set_options(self, options):
-        self._provider.set_options(options)
-
+    pass
 
 class QGISRunner(GrassRunner):
     def __init__(self):
-
         # create temp GRASS location
         import tempfile
         import binascii
