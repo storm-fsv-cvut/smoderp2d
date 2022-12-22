@@ -49,7 +49,7 @@ class ArcGisWritter(BaseWritter):
         """
         item = self._data_target.get(name)
         if item is None or item not in ("temp", "control", "core"):
-            raise ProviderError("Invalid item for output_filepath: {}".format(item))
+            raise ProviderError("Unable to define target in output_filepath: {}".format(name))
 
         path = Globals.get_outdir()
         # 'core' datasets don't have directory, only the geodatabase

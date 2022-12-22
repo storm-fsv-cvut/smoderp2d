@@ -70,18 +70,18 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         dem_polygon = self.storage.output_filepath('dem_polygon')
         arcpy.conversion.RasterToPolygon(dem_slope_mask, dem_polygon, "NO_SIMPLIFY", "VALUE")
-        dem_soil_veg_intersection = self.storage.output_filepath('AoI')
-        arcpy.analysis.Intersect([dem_polygon, soil, vegetation], dem_soil_veg_intersection, "NO_FID")
+        aoi = self.storage.output_filepath('aoi')
+        arcpy.analysis.Intersect([dem_polygon, soil, vegetation], aoi, "NO_FID")
 
-        AoI_outline = self.storage.output_filepath('AoI_polygon')
-        arcpy.management.Dissolve(dem_soil_veg_intersection, AoI_outline)
+        aoi_polygon = self.storage.output_filepath('aoi_polygon')
+        arcpy.management.Dissolve(aoi, aoi_polygon)
 
-        if int(arcpy.management.GetCount(AoI_outline).getOutput(0)) == 0:
+        if int(arcpy.management.GetCount(aoi_polygon).getOutput(0)) == 0:
             raise DataPreparationInvalidInput(
                 "The input layers are not correct! "
                 "The geometrical intersection of input datasets is empty.")
 
-        return AoI_outline
+        return aoi_polygon
 
     def _create_DEM_derivatives(self, dem):
         """
@@ -253,7 +253,7 @@ class PrepareData(PrepareDataBase, ManageFields):
                         "empty value found in row {})".format(field, table, row[1])
                     )
 
-    def _get_soilveg_attribs(self, intersect):
+    def _compute_soilveg_attribs(self, intersect):
         """
         Get numpy arrays of selected attributes.
 
@@ -281,7 +281,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         """
         return arcpy.RasterToNumPyArray(raster)
 
-    def _get_raster_dim(self, dem_clip):
+    def _update_raster_dim(self, dem_clip):
         """
         Get raster spatial reference info.
 
@@ -330,7 +330,7 @@ class PrepareData(PrepareDataBase, ManageFields):
                         # self.data['array_points'].append([pnt.X, pnt.Y, fid, i]) # nemelo to bejt neco jako tohle?
                         i += 1
 
-    def _get_slope_dir(self, dem_clip):
+    def _compute_efect_cont(self, dem_clip):
         """
         ?
 
@@ -351,7 +351,7 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         efect_cont = arcpy.sa.Times(times1, self.data['dx'])
         efect_cont.save(self.storage.output_filepath('efect_cont'))
-        self.data['mat_efect_cont'] = self._rst2np(efect_cont)
+        return self._rst2np(efect_cont)
 
     def _streamPreparation(self, args):
         from smoderp2d.providers.arcgis.stream_preparation import StreamPreparation
