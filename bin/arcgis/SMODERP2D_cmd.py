@@ -23,7 +23,6 @@ def run_smoderp2d(parameters):
 
 if __name__ == "__main__":
     arcpy.env.workspace = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "data")
-
     output_dir = os.path.join(arcpy.env.workspace, "output")
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -42,9 +41,9 @@ if __name__ == "__main__":
         'output': output_dir,
         'table_soil_vegetation': os.path.join(arcpy.env.workspace, "soil_veg_tab_mean.dbf"),
         'table_soil_vegetation_code': "soilveg",
-        'stream': None,
-        'table_stream_shape': None,
-        'table_stream_shape_code': None
+        'stream': os.path.join(arcpy.env.workspace, "stream.shp"),
+        'table_stream_shape': os.path.join(arcpy.env.workspace, "stream_shape.dbf"),
+        'table_stream_shape_code': "shapetype"
     }
 
     run_smoderp2d(parameters)

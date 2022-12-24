@@ -3,7 +3,7 @@ import shutil
 import numpy as np
 
 from smoderp2d.processes import rainfall
-from smoderp2d.core.general import GridGlobals
+from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
 
 class PrepareDataBase(object):
@@ -29,6 +29,11 @@ class PrepareDataBase(object):
             'points_aoi': 'temp',
             'soil_veg': 'temp',
             'soilveg_aoi': 'temp',
+            'aoi_buffer': 'temp',
+            'stream_aoi': 'temp',
+            'stream_start': 'temp',
+            'stream_end': 'temp',
+            'stream_seg': 'temp',
 
             'ratio_cell' : 'control',
             'efect_cont' : 'control',
@@ -89,12 +94,12 @@ class PrepareDataBase(object):
 
         # prepare all needed layers for further processing
         #   clip the input layers to AIO outline including the record points
-        Logger.info("Clipping DEM-derived to AoI outline ...")
-        dem_aoi = self._clip_raster_layer(dem_filled, aoi_polygon, GridGlobals.NoDataValue, 'dem_aoi')
-        dem_flowdir_aoi = self._clip_raster_layer(dem_flowdir, aoi_polygon, GridGlobals.NoDataValue, 'dem_flowdir_aoi')
-        self._clip_raster_layer(dem_flowacc, aoi_polygon, GridGlobals.NoDataValue, 'dem_flowacc_aoi')
-        dem_slope_aoi = self._clip_raster_layer(dem_slope, aoi_polygon, GridGlobals.NoDataValue, 'dem_slope_aoi')
-        self._clip_raster_layer(dem_aspect, aoi_polygon, GridGlobals.NoDataValue, 'dem_aspect_aoi')
+        Logger.info("Clipping layers to AoI outline ...")
+        dem_aoi = self._clip_raster_layer(dem_filled, aoi_polygon, 'dem_aoi')
+        dem_flowdir_aoi = self._clip_raster_layer(dem_flowdir, aoi_polygon, 'dem_flowdir_aoi')
+        self._clip_raster_layer(dem_flowacc, aoi_polygon, 'dem_flowacc_aoi')
+        dem_slope_aoi = self._clip_raster_layer(dem_slope, aoi_polygon, 'dem_slope_aoi')
+        self._clip_raster_layer(dem_aspect, aoi_polygon, 'dem_aspect_aoi')
         points_aoi = self._clip_record_points(self._input_params['points'], aoi_polygon, 'points_aoi')
 
         # convert to numpy arrays
@@ -156,7 +161,13 @@ class PrepareDataBase(object):
         #Logger.progress(50)
 
         Logger.info("Computing stream preparation...")
-        self._prepare_streams(aoi_polygon, dem_clip, intersect, flow_accumulation_clip)
+        # self._prepare_streams(aoi_polygon, dem_clip, intersect, flow_accumulation_clip)
+        if self._input_params['stream'] and self._input_params['table_stream_shape'] and self._input_params['table_stream_shape_code']:
+            self._prepare_stream(self._input_params['stream'],
+                                 self._input_params['table_stream_shape'],
+                                 self._input_params['table_stream_shape_code'],
+                                 dem_aoi, aoi_polygon
+            )
 
         # define mask (rc/rc variables)
         self.data['mat_boundary'] = self._find_boundary_cells(
@@ -168,8 +179,8 @@ class PrepareDataBase(object):
             self.data['r'], self.data['c'], self.data['mat_boundary']
         )
 
-        self.data['mfda'] = False
-        self.data['mat_boundary'] = None
+        self.data['mfda'] = False ### ML: ???
+        self.data['mat_boundary'] = None ## ML: ???
         #Logger.progress(100)
 
         Logger.info("Data preparation has been finished")
@@ -494,13 +505,7 @@ class PrepareDataBase(object):
     def _get_slope_dir(self, dem_clip):
         raise NotImplemented("Not implemented for base provider")
 
-    def _prepare_streams(self, mask_shp, dem_clip, intersect, flow_accumulation_clip):
-        """
-
-        :param mask_shp:
-        :param dem_clip:
-        :param intersect:
-        """
+    def _prepare_stream(self, stream, stream_shape_tab, stream_shape_code, dem_aoi, aoi_polygon):
         self.data['type_of_computing'] = 1
 
         # pocitam vzdy s ryhama pokud jsou zadane vsechny vstupy pro
@@ -514,30 +519,22 @@ class PrepareDataBase(object):
             self.data['type_of_computing'] = 3
 
         if self.data['type_of_computing'] in (3, 5):
-            args = [
-                self._input_params['stream'],
-                self._input_params['table_stream_shape'],
-                self._input_params['table_stream_shape_code'],
-                self._input_params['elevation'],
-                mask_shp,
-                self.data['dx'],
-                self.data['r'],
-                self.data['c'],
-                (self.data['xllcorner'], self.data['yllcorner']),
-                self.data['outdir'],
-                dem_clip,
-                intersect,
-                self.storage.primary_key,
-                flow_accumulation_clip
-            ]
+            Logger.info("Clipping stream to AoI outline ...")
+            stream_aoi = self._stream_clip(stream, aoi_polygon)
 
-            self.data['streams'], self.data['mat_stream_reach'], \
-                self.data['streams_loc'] = \
-                self._streamPreparation(args)
+            Logger.info("Computing stream direction and elevation...")
+            self._stream_direction(stream_aoi, dem_aoi)
+
+            Logger.info("Computing stream segments...")
+            self.data['mat_stream_seg'] = self._stream_segments(stream_aoi)
+
+            Logger.info("Computing stream hydraulics...")
+            #self._stream_hydraulics(stream_aoi) # ML: is it used?
+            #self._stream_slope(stream_aoi) # ML: is it used?
+            self.data['streams'] = self._stream_shape(stream_aoi, stream_shape_code, stream_shape_tab)
         else:
             self.data['streams'] = None
             self.data['mat_stream_reach'] = None
-            self.data['streams_loc'] = None
 
     @staticmethod
     def _find_boundary_cells(r, c, no_data_value, mat_nan):
@@ -641,6 +638,15 @@ class PrepareDataBase(object):
     @staticmethod
     def _streamPreparation(args):
         raise NotImplemented("Not implemented for base provider")
+
+    def _get_mat_stream_seg_(self, mat_stream_seg):
+        # each element of stream has a number assigned from 0 to
+        # no. of stream parts
+        for i in range(self.data['r']):
+            for j in range(self.data['c']):
+                if mat_stream_seg[i][j] > 0: # FID starts at 1
+                    # state 0|1|2 (> Globals.streams_flow_inc -> stream flow)
+                    mat_stream_seg[i][j] += Globals.streams_flow_inc
 
     def _check_input_data(self):
         """Check input data.

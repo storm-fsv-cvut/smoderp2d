@@ -114,7 +114,7 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         return dem_filled_path, dem_flowdir_path, dem_flowacc_path, dem_slope_path, dem_aspect_path
 
-    def _clip_raster_layer(self, dataset, outline, noDataValue, name):
+    def _clip_raster_layer(self, dataset, outline, name):
         """
         Clips raster dataset to given polygon.
 
@@ -126,7 +126,8 @@ class PrepareData(PrepareDataBase, ManageFields):
         :return: full path to clipped raster
         """
         output_path = self.storage.output_filepath(name)
-        arcpy.management.Clip(dataset, "", output_path, outline, noDataValue, "ClippingGeometry")
+        arcpy.management.Clip(dataset, out_raster=output_path, in_template_dataset=outline,
+                              nodata_value=GridGlobals.NoDataValue, clipping_geometry="ClippingGeometry")
         return output_path
 
     def _clip_record_points(self, dataset, outline, name):
@@ -353,10 +354,132 @@ class PrepareData(PrepareDataBase, ManageFields):
         efect_cont.save(self.storage.output_filepath('efect_cont'))
         return self._rst2np(efect_cont)
 
-    def _streamPreparation(self, args):
-        from smoderp2d.providers.arcgis.stream_preparation import StreamPreparation
+    def _stream_clip(self, stream, aoi_polygon):
+        """Clip stream with intersect of input data."""
+        aoi_buffer = arcpy.analysis.Buffer(aoi_polygon,
+            self.storage.output_filepath('aoi_buffer'),
+            -self.data['dx'] / 3, # ML: ? + clip ?
+            "FULL", "ROUND",
+        )
 
-        return StreamPreparation(args, writter=self.storage).prepare()
+        stream_aoi = self.storage.output_filepath('stream_aoi')
+        arcpy.analysis.Clip(stream, aoi_buffer, stream_aoi)
+
+        return stream_aoi
+    def _stream_direction(self, stream, dem_aoi):
+        """
+        Compute elevation of start/end point of stream parts.
+        Add code of ascending stream part into attribute table.
+
+        :param stream: vector stream features
+        """
+        # extract elevation for start/end stream nodes
+        stream_start = arcpy.management.FeatureVerticesToPoints(
+            stream, self.storage.output_filepath("stream_start"), "START"
+        )
+        stream_end = arcpy.management.FeatureVerticesToPoints(
+            stream, self.storage.output_filepath("stream_end"), "END"
+        )
+
+        arcpy.sa.ExtractMultiValuesToPoints(
+            stream_start, [[dem_aoi, "elev_start"]]
+        )
+        arcpy.sa.ExtractMultiValuesToPoints(
+            stream_end, [[dem_aoi, "elev_end"]]
+        )
+        arcpy.management.AddXY(stream_start)
+        arcpy.management.AddXY(stream_end)
+
+        oid_field = arcpy.Describe(stream).OIDFieldName
+        arcpy.management.JoinField(
+            stream, oid_field,
+            stream_start, arcpy.Describe(stream_start).OIDFieldName, ["elev_start", "POINT_X", "POINT_Y"]
+        )
+        arcpy.management.AlterField(stream_end, "POINT_X", "POINT_X_END")
+        arcpy.management.AlterField(stream_end, "POINT_Y", "POINT_Y_END")
+        arcpy.management.JoinField(
+            stream, oid_field,
+            stream_end, arcpy.Describe(stream_end).OIDFieldName, ["elev_end", "POINT_X_END", "POINT_Y_END"]
+        )
+
+        # flip stream
+        with arcpy.da.SearchCursor(stream, [oid_field, "elev_start", "elev_end"]) as cursor:
+            for row in cursor:
+                if row[1] < row[2]:
+                    arcpy.edit.FlipLine(stream) # ML: all streams vs one stream?
+
+        # add to_node attribute
+        arcpy.management.AddField(stream, "to_node", "DOUBLE")
+        with arcpy.da.SearchCursor(stream, [oid_field, "POINT_X", "POINT_Y"]) as cursor_start:
+            for row in cursor_start:
+                start_pnt = (row[1], row[2])
+                fid = row[0]
+
+                with arcpy.da.UpdateCursor(stream, ["POINT_X_END", "POINT_Y_END", "to_node"]) as cursor_end:
+                    for row in cursor_end:
+                        end_pnt = (row[0], row[1])
+                        if start_pnt == end_pnt:
+                            row[2] = fid
+                        else:
+                            row[2] = GridGlobals.NoDataValue
+                        cursor_end.updateRow(row)
+
+    def _stream_segments(self, stream):
+        """Get numpy array of integers detecting whether there is a stream on
+        corresponding pixel of raster (number equal or greater than
+        1000 in return numpy array) or not (number 0 in return numpy
+        array).
+
+        :param stream: Polyline with stream in the area.
+        :return mat_stream_seg: Numpy array
+        """
+        stream_seg = self.storage.output_filepath('stream_seg')
+        arcpy.conversion.PolylineToRaster(
+            stream, arcpy.Describe(stream).OIDFieldName, stream_seg,
+            "MAXIMUM_LENGTH", cellsize=self.data['dx']
+        )
+
+        mat_stream_seg = self._rst2np(stream_seg)
+        # ML: is no_of_streams needed (-> mat_stream_seg.max())
+        self._get_mat_stream_seg_(mat_stream_seg)
+
+        return mat_stream_seg.astype('int16')
+
+    def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
+        """Compute shape of stream.
+
+        :param stream:
+        """
+        arcpy.management.JoinField(
+            stream, stream_shape_code,
+            stream_shape_tab, stream_shape_code,
+            ["number", "smoderp", "shapetype", "b", "m", "roughness", "q365"]
+        )
+
+        primary_key = arcpy.Describe(stream).OIDFieldName
+        fields = [primary_key, 'point_x', 'point_y', 'point_x_end', 'point_y_end', 'to_node',
+                'length', 'slope', 'smoderp', 'number', 'shapetype', 'b', 'm', 'roughness', 'q365']
+        stream_attr = {}
+        for f in fields:
+            stream_attr[f] = []
+        with arcpy.da.SearchCursor(stream, fields) as cursor:
+            try:
+                for row in cursor:
+                    i = 0
+                    for i in range(len(row)):
+                        if row[i] == " " or row[i] is None:
+                            raise DataPreparationError(
+                                "Empty value in tab_stream_shape ({}) found.".format(fields[i])
+                            )
+                        stream_attr[fields[i]].append(row[i])
+                        i += 1
+
+            except RuntimeError:
+                raise DataPreparationError(
+                        "Check if fields code in tab_stream_shape are correct. Columns are hardcoded. Proper columns codes are: {}".format(fields)
+                )
+
+        return stream_attr
 
     def _check_input_data(self):
         """Check input data.
