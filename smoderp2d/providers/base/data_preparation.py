@@ -61,6 +61,9 @@ class PrepareDataBase(object):
         }
         for sv in self.soilveg_fields.keys():
             self._data["soilveg_aoi_{}".format(sv)] = 'temp'
+
+        self.stream_shape_fields = ["number", self._input_params['table_stream_shape_code'], "shapetype", "b", "m", "roughness", "q365"]
+
         self.storage.set_data_target(self._data)
 
     def run(self):
@@ -530,7 +533,7 @@ class PrepareDataBase(object):
 
             Logger.info("Computing stream hydraulics...")
             #self._stream_hydraulics(stream_aoi) # ML: is it used?
-            #self._stream_slope(stream_aoi) # ML: is it used?
+            self._stream_slope(stream_aoi)
             self.data['streams'] = self._stream_shape(stream_aoi, stream_shape_code, stream_shape_tab)
         else:
             self.data['streams'] = None

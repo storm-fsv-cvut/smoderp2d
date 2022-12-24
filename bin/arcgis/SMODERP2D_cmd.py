@@ -43,7 +43,7 @@ if __name__ == "__main__":
         'table_soil_vegetation_code': "soilveg",
         'stream': os.path.join(arcpy.env.workspace, "stream.shp"),
         'table_stream_shape': os.path.join(arcpy.env.workspace, "stream_shape.dbf"),
-        'table_stream_shape_code': "shapetype"
+        'table_stream_shape_code': "smoderp"
     }
 
     run_smoderp2d(parameters)

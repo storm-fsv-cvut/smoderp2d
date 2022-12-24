@@ -19,7 +19,8 @@ from smoderp2d.providers.arcgis.manage_fields import ManageFields
 
 class PrepareData(PrepareDataBase, ManageFields):
     def __init__(self, options, writter):
-        super(PrepareData, self).__init__(writter)
+        # get input parameters
+        self._get_input_params(options)
 
         # checking if ArcGIS Spatial extension is available
         if arcpy.CheckExtension("Spatial") == "Available":
@@ -27,8 +28,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         else:
             raise LicenceNotAvailable("Spatial Analysis extension for ArcGIS is not available")
 
-        # get input parameters
-        self._get_input_params(options)
+        super(PrepareData, self).__init__(writter)
 
     def _get_input_params(self, options):
         """Get input parameters from ArcGIS toolbox.
@@ -445,20 +445,38 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         return mat_stream_seg.astype('int16')
 
+    def _stream_slope(self, stream):
+        """Compute slope of stream
+
+        :param stream: stream layer
+        """
+        arcpy.management.AddField(stream, "slope", "DOUBLE")
+        fields = [arcpy.Describe(stream).OIDFieldName,
+                  "elev_start", "elev_end", "slope", "shape_length"]
+        with arcpy.da.UpdateCursor(stream, fields) as cursor:
+            for row in cursor:
+                slope = (row[1] - row[2]) / row[4]
+                if slope == 0:
+                    raise DataPreparationError('Reach FID: {} has zero slope'.format(row[0]))
+                row[3] = slope
+                cursor.updateRow(row)
+
     def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
         """Compute shape of stream.
 
-        :param stream:
+        :param stream: stream layer
+        :param stream_shape_code: shape code column
+        :param stream_shape_tab: table with stream shapes
         """
         arcpy.management.JoinField(
             stream, stream_shape_code,
             stream_shape_tab, stream_shape_code,
-            ["number", "smoderp", "shapetype", "b", "m", "roughness", "q365"]
+            self.stream_shape_fields
         )
 
-        primary_key = arcpy.Describe(stream).OIDFieldName
-        fields = [primary_key, 'point_x', 'point_y', 'point_x_end', 'point_y_end', 'to_node',
-                'length', 'slope', 'smoderp', 'number', 'shapetype', 'b', 'm', 'roughness', 'q365']
+        fid = arcpy.Describe(stream).OIDFieldName
+        fields = [fid, 'point_x', 'point_y', 'point_x_end', 'point_y_end', 'to_node',
+                'shape_length', 'slope', stream_shape_code, 'number', 'shapetype', 'b', 'm', 'roughness', 'q365']
         stream_attr = {}
         for f in fields:
             stream_attr[f] = []
@@ -474,15 +492,28 @@ class PrepareData(PrepareDataBase, ManageFields):
                         stream_attr[fields[i]].append(row[i])
                         i += 1
 
-            except RuntimeError:
+            except RuntimeError as e:
                 raise DataPreparationError(
-                        "Check if fields code in tab_stream_shape are correct. Columns are hardcoded. Proper columns codes are: {}".format(fields)
+                        "Error: {}\n" 
+                        "Check if fields code in table_stream_shape are correct. "
+                        "Proper columns codes are: {}".format(e, self.stream_shape_fields)
                 )
+
+        stream_attr['fid'] = stream_attr.pop(fid)
 
         return stream_attr
 
     def _check_input_data(self):
         """Check input data.
+
+        Raise DataPreparationInvalidInput on error.
         """
-        # TODO: not imlemented yet...
-        pass
+        # ML: what else?
+        if self._input_params['table_stream_shape']:
+            fields = [f.name for f in arcpy.Describe(self._input_params['table_stream_shape']).fields]
+            for f in self.stream_shape_fields:
+                if f not in fields:
+                    raise DataPreparationInvalidInput(
+                        "Field '{}' not found in '{}'\nProper columns codes are: {}".format(
+                            f, self._input_params['table_stream_shape'], self.stream_shape_fields)
+                    )
