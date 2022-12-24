@@ -529,7 +529,7 @@ class PrepareDataBase(object):
             self._stream_direction(stream_aoi, dem_aoi)
 
             Logger.info("Computing stream segments...")
-            self.data['mat_stream_seg'] = self._stream_segments(stream_aoi)
+            self.data['mat_stream_reach'] = self._stream_reach(stream_aoi)
 
             Logger.info("Computing stream hydraulics...")
             #self._stream_hydraulics(stream_aoi) # ML: is it used?

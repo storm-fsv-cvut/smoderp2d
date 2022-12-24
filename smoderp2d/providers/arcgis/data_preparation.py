@@ -424,7 +424,7 @@ class PrepareData(PrepareDataBase, ManageFields):
                             row[2] = GridGlobals.NoDataValue
                         cursor_end.updateRow(row)
 
-    def _stream_segments(self, stream):
+    def _stream_reach(self, stream):
         """Get numpy array of integers detecting whether there is a stream on
         corresponding pixel of raster (number equal or greater than
         1000 in return numpy array) or not (number 0 in return numpy
