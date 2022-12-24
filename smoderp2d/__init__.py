@@ -110,6 +110,12 @@ class GrassRunner(Runner):
     def set_options(self, options):
         self._provider.set_options(options)
 
+class ArcGisRunner(Runner):
+    def __init__(self):
+        os.environ['ESRIACTIVEINSTALLATION'] = '1'
+        super(ArcGisRunner, self).__init__()
+    def set_options(self, options):
+        self._provider.set_options(options)
 
 class QGISRunner(GrassRunner):
     def __init__(self):

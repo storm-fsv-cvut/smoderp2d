@@ -102,19 +102,8 @@ class ArcGisProvider(BaseProvider):
 
         self._print_fn = self._print_logo_fn = arcpy.AddMessage
 
-        # output directory must be defined for _cleanup() method
-        Globals.outdir = self._get_argv(
-            constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY
-        )
-
-        # computation type
-        if self._get_argv(constants.PARAMETER_DPRE_ONLY).lower() == 'true':
-            self.args.typecomp = CompType.dpre
-            self.args.data_file = os.path.join(
-                Globals.outdir, 'save.pickle'
-            )
-        else:
-            self.args.typecomp = CompType.full
+        # type of computation (default)
+        self.args.typecomp = CompType.full
 
         # logger
         self.add_logging_handler(
@@ -125,13 +114,15 @@ class ArcGisProvider(BaseProvider):
         # define storage writter
         self.storage = ArcGisWritter()
 
-    @staticmethod
-    def _get_argv(idx):
-        """Get argument by index.
+        # options must be defined by set_options()
+        self._options = None
 
-        :param int idx: index
-        """
-        return sys.argv[idx+1]
+    def set_options(self, options):
+        """Set input paramaters."""
+        self._options = options
+
+        # set output directory
+        Globals.outdir = options['output']
 
     def _load_dpre(self):
         """Run data preparation procedure.
@@ -140,5 +131,5 @@ class ArcGisProvider(BaseProvider):
         """
         from smoderp2d.providers.arcgis.data_preparation import PrepareData
        
-        prep = PrepareData(self.storage)
+        prep = PrepareData(self._options, self.storage)
         return prep.run()

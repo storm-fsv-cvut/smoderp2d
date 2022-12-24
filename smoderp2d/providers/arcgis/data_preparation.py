@@ -23,7 +23,10 @@ import arcgisscripting
 from arcpy.sa import *
 
 class PrepareData(PrepareDataBase, ManageFields):
-    def __init__(self, writter):
+    def __init__(self, options, writter):
+        # get input parameters
+        self._get_input_params(options)
+
         super(PrepareData, self).__init__(writter)
 
         # creating the geoprocessor object
@@ -36,46 +39,14 @@ class PrepareData(PrepareDataBase, ManageFields):
 
         # checking arcgis if ArcGIS Spatial extension is available
         arcpy.CheckOutExtension("Spatial")
-
-        # get input parameters
-        self._get_input_params()
-
-    def _get_input_params(self):
+        
+    def _get_input_params(self, options):
         """Get input parameters from ArcGIS toolbox.
         """
-        self._input_params = {
-            'elevation': self.gp.GetParameterAsText(
-                constants.PARAMETER_DEM),
-            'soil': self.gp.GetParameterAsText(
-                constants.PARAMETER_SOIL),
-            'soil_type': self.gp.GetParameterAsText(
-                constants.PARAMETER_SOIL_TYPE),
-            'vegetation': self.gp.GetParameterAsText(
-                constants.PARAMETER_VEGETATION),
-            'vegetation_type': self.gp.GetParameterAsText(
-                constants.PARAMETER_VEGETATION_TYPE),
-            'rainfall_file': self.gp.GetParameterAsText(
-                constants.PARAMETER_PATH_TO_RAINFALL_FILE),
-            'maxdt': float(self.gp.GetParameterAsText(
-                constants.PARAMETER_MAX_DELTA_T)),
-            'end_time': float(self.gp.GetParameterAsText(
-                constants.PARAMETER_END_TIME)) * 60.0,  # prevod na s
-            'points': self.gp.GetParameterAsText(
-                constants.PARAMETER_POINTS),
-            'output': self.gp.GetParameterAsText(
-                constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY),
-            'table_soil_vegetation': self.gp.GetParameterAsText(
-                constants.PARAMETER_SOILVEGTABLE),
-            'table_soil_vegetation_code': self.gp.GetParameterAsText(
-                constants.PARAMETER_SOILVEGTABLE_CODE),
-            'stream': self.gp.GetParameterAsText(
-                constants.PARAMETER_STREAM),
-            'table_stream_shape': self.gp.GetParameterAsText(
-                constants.PARAMETER_STREAMTABLE),
-            'table_stream_shape_code': self.gp.GetParameterAsText(
-                constants.PARAMETER_STREAMTABLE_CODE)
-        }
-
+        self._input_params = options
+        # cast some options to float
+        for opt in ('maxdt', 'end_time'):
+            self._input_params[opt] = float(self._input_params[opt])
     def _add_message(self, message):
         """
         Pops up a message into arcgis and saves it into log file.
