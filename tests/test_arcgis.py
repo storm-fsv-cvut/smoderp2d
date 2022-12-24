@@ -22,7 +22,7 @@ def run_smoderp2d(parameters):
         sys.exit(e)
 
 if __name__ == "__main__":
-    arcpy.env.workspace = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "data")
+    arcpy.env.workspace = os.path.join(os.path.dirname(__file__), "data")
     output_dir = os.path.join(arcpy.env.workspace, "output")
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
