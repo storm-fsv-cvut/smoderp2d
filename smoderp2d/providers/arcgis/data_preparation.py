@@ -6,18 +6,13 @@ import math
 import csv
 import arcpy
 
-import smoderp2d.processes.rainfall as rainfall
-
 from smoderp2d.core.general import GridGlobals
-
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.base.exceptions import DataPreparationError, DataPreparationInvalidInput, LicenceNotAvailable
+import smoderp2d.processes.rainfall as rainfall
 
-from smoderp2d.providers.arcgis.terrain import compute_products
-from smoderp2d.providers.arcgis.manage_fields import ManageFields
-
-class PrepareData(PrepareDataBase, ManageFields):
+class PrepareData(PrepareDataBase):
     def __init__(self, options, writter):
         # get input parameters
         self._get_input_params(options)

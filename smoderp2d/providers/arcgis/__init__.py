@@ -72,13 +72,10 @@ class ArcGisWritter(BaseWritter):
         file_output = self._raster_output_path(output_name, directory)
         
         # prevent call globals before values assigned
-        if (GridGlobals.xllcorner == None):
-            raise GlobalsNotSet()
-        if (GridGlobals.yllcorner == None):
-            raise GlobalsNotSet()
-        if (GridGlobals.dx == None):
-            raise GlobalsNotSet()
-        if (GridGlobals.dy == None):
+        if GridGlobals.xllcorner is None or \
+            GridGlobals.yllcorner is None or \
+            GridGlobals.dx is None or \
+            GridGlobals.dy is None:
             raise GlobalsNotSet()
 
         lower_left = arcpy.Point(
