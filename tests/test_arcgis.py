@@ -36,7 +36,7 @@ if __name__ == "__main__":
         'vegetation_type': "LandUse",
         'rainfall_file': os.path.join(arcpy.env.workspace, "rainfall.txt"),
         'maxdt': 30,
-        'end_time': 40 * 60.0,  # convert input to seconds
+        'end_time': 40,  # convert input to seconds
         'points': os.path.join(arcpy.env.workspace, "points.shp"),
         'output': output_dir,
         'table_soil_vegetation': os.path.join(arcpy.env.workspace, "soil_veg_tab_mean.dbf"),
