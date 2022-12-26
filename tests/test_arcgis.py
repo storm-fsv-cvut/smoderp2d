@@ -1,5 +1,6 @@
 import os
 import sys
+import filecmp
 
 import arcpy
 
@@ -7,7 +8,7 @@ from smoderp2d import ArcGisRunner, Logger
 from smoderp2d.exceptions import ProviderError
 from smoderp2d.providers.base import CompType
 
-def run_smoderp2d(parameters):
+def run_smoderp2d_dpre(parameters):
     try:
         runner = ArcGisRunner()
 
@@ -47,4 +48,9 @@ if __name__ == "__main__":
         'pickle_file': os.path.join(output_dir, 'dpre.save')
     }
 
-    run_smoderp2d(parameters)
+    run_smoderp2d_dpre(parameters)
+
+    assert filecmp.cmp(
+        parameters['pickle_file'],
+        os.path.join(output_dir, '..', 'reference', 'dpre.save')
+    ) == True
