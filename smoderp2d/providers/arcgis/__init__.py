@@ -33,8 +33,8 @@ class ArcGisWritter(BaseWritter):
         # create control ArcGIS File Geodatabase
         arcpy.management.CreateFileGDB(os.path.join(outdir, 'control'), "data.gdb")
 
-    def set_data_target(self, data):
-        """Set target data dictionary.
+    def set_data_layers(self, data):
+        """Set data layers dictionary.
 
         :param data: data dictionary to be set
         """
