@@ -15,11 +15,6 @@ class ArcGisWritter(BaseWritter):
     def __init__(self):
         super(ArcGisWritter, self).__init__()
 
-        # primary key depends of storage format
-        # * Shapefile -> FID
-        # * FileGDB -> OBJECTID
-        self.primary_key = "OBJECTID"
-
         # Overwriting output
         arcpy.env.overwriteOutput = 1
 
@@ -32,13 +27,6 @@ class ArcGisWritter(BaseWritter):
 
         # create control ArcGIS File Geodatabase
         arcpy.management.CreateFileGDB(os.path.join(outdir, 'control'), "data.gdb")
-
-    def set_data_layers(self, data):
-        """Set data layers dictionary.
-
-        :param data: data dictionary to be set
-        """
-        self._data_target = data
 
     def output_filepath(self, name):
         """

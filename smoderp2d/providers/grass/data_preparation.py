@@ -22,10 +22,13 @@ from grass.exceptions import CalledModuleError, OpenError
 
 class PrepareData(PrepareDataBase, ManageFields):
     def __init__(self, options, writter):
-        super(PrepareData, self).__init__(writter)
+        # defile input parameters
+        self._set_input_params(options)
+        # TODO: output directory not defined by GRASS (data are written into
+        # current mapset by default)
+        self._input_params['output'] = None # os.path.join(Location().path(), "output")
 
-        # get input parameters
-        self._get_input_params(options)
+        super(PrepareData, self).__init__(writter)
 
     def __del__(self):
         # remove mask
@@ -35,17 +38,6 @@ class PrepareData(PrepareDataBase, ManageFields):
             )
         except CalledModuleError:
             pass # mask not exists
-
-    def _get_input_params(self, options):
-        """Get input parameters from ArcGIS toolbox.
-        """
-        self._input_params = options
-        # cast some options to float
-        for opt in ('maxdt', 'end_time'):
-            self._input_params[opt] = float(self._input_params[opt])
-        # TODO: output directory not defined by GRASS (data are written into
-        # current mapset by default)
-        self._input_params['output'] = None # os.path.join(Location().path(), "output")
 
     def _set_mask(self):
         """Set mask from elevation map.

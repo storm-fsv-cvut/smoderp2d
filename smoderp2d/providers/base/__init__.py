@@ -44,7 +44,14 @@ class CompType:
 
 class BaseWritter(object):
     def __init__(self):
-        self.primary_key = None
+        self._data_target = None
+
+    def set_data_layers(self, data):
+        """Set data layers dictionary.
+
+        :param data: data dictionary to be set
+        """
+        self._data_target = data
 
     @staticmethod
     def _raster_output_path(output, directory=''):
