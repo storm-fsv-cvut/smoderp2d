@@ -29,10 +29,10 @@ def _dpre_params():
         'table_stream_shape': os.path.join(data_dir, "stream_shape.dbf"),
         'table_stream_shape_code': "smoderp",
         'pickle_file': os.path.join(output_dir, 'dpre.save')
-    }
+    }, output_dir
 
 def perform_dpre_ref_test(runner):
-    params = _dpre_params()
+    params, output_dir = _dpre_params()
 
     try:
         runner = runner()
