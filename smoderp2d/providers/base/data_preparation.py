@@ -40,14 +40,14 @@ class PrepareDataBase(object):
 
             'veg_fieldname': "veg_type",
         }
-        for sv in self.soilveg_fields.keys():
-            self._data_layers["soilveg_aoi_{}".format(sv)] = 'temp'
-        self.storage.set_data_layers(self._data_layers)
-
         self.soilveg_fields = {
             "k": None, "s": None, "n": None, "pi": None, "ppl": None,
             "ret": None, "b": None, "x": None, "y": None, "tau": None, "v": None
         }
+        for sv in self.soilveg_fields.keys():
+            self._data_layers["soilveg_aoi_{}".format(sv)] = 'temp'
+        self.storage.set_data_layers(self._data_layers)
+
         self.stream_shape_fields = [
             "number", self._input_params['table_stream_shape_code'],
             "shapetype", "b", "m", "roughness", "q365"
@@ -158,7 +158,7 @@ class PrepareDataBase(object):
     def _get_array_points(self):
         pass
 
-    @astractmethod
+    @abstractmethod
     def _compute_efect_cont(self):
         """Compute efect contour array.
         """
@@ -255,7 +255,7 @@ class PrepareDataBase(object):
 
         self.data['mat_nan'], self.data['mat_slope'], self.data['mat_dem'] = \
             self._get_mat_nan(self.data['r'], self.data['c'],
-                              Gri//dGlobals.NoDataValue, self.data['mat_slope'],
+                              GridGlobals.NoDataValue, self.data['mat_slope'],
                               self.data['mat_dem'])
 
         # build points array
@@ -320,7 +320,7 @@ class PrepareDataBase(object):
         for opt in ('maxdt', 'end_time'):
             self._input_params[opt] = float(self._input_params[opt])
             
-    def _create_output_dirs(self):
+    def _create_output_dir(self):
         """Creates empty output and temporary directories to which created
         files are saved.
         """
@@ -395,7 +395,7 @@ class PrepareDataBase(object):
 
         return mat_inf_index, combinatIndex
 
-    def _get_array_points_(self, x, y, fid, i):
+    def _get_array_points_(self, array_points, x, y, fid, i):
         """Internal method called by _get_array_points().
         """
         # position i,j in raster (starts at 0)
@@ -414,12 +414,12 @@ class PrepareDataBase(object):
            self.data['mat_dem'][r][c-1] != nv and \
            self.data['mat_dem'][r][c+1] != nv:
 
-            self.data['array_points'][i][0] = fid
-            self.data['array_points'][i][1] = r
-            self.data['array_points'][i][2] = c
+            array_points[i][0] = fid
+            array_points[i][1] = r
+            array_points[i][2] = c
             # x,y coordinates of current point stored in an array
-            self.data['array_points'][i][3] = x
-            self.data['array_points'][i][4] = y
+            array_points[i][3] = x
+            array_points[i][4] = y
         else:
             Logger.info(
                 "Point FID = {} is at the edge of the raster. "

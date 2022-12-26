@@ -215,7 +215,7 @@ class PrepareData(PrepareDataBase):
         # Generate numpy array of soil and vegetation attributes.
         for field in self.soilveg_fields.keys():
             output = self.storage.output_filepath("soilveg_aoi_{}".format(field))
-            arcpy.conversion.PolygonToRaster(soilveg_aoi, field, output, "MAXIMUM_AREA", "", self.data['dy'])
+            arcpy.conversion.PolygonToRaster(soilveg_aoi_path, field, output, "MAXIMUM_AREA", "", self.data['dy'])
             self.soilveg_fields[field] = self._rst2np(output)
             if self.soilveg_fields[field].shape[0] != self.data['r'] or \
                     self.soilveg_fields[field].shape[1] != self.data['c']:
@@ -281,7 +281,7 @@ class PrepareData(PrepareDataBase):
                         fid = row[0]
                         x, y = row[1]
 
-                        self._get_array_points_(x, y, fid, i)
+                        self._get_array_points_(array_points, x, y, fid, i)
                         i += 1
 
         return array_points
@@ -475,8 +475,8 @@ class PrepareData(PrepareDataBase):
                         )
 
         
-        _check_empty_values(vegetation, vegetation_type)
-        _check_empty_values(soil, soil_type)
+        _check_empty_values(self._input_params['vegetation'], self._input_params['vegetation_type'])
+        _check_empty_values(self._input_params['soil'], self._input_params['soil_type'])
 
         if self._input_params['table_stream_shape']:
             fields = [f.name for f in arcpy.Describe(self._input_params['table_stream_shape']).fields]
