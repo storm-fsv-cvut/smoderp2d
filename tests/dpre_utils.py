@@ -11,7 +11,7 @@ def _dpre_params():
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    parameters = {
+    return {
         # parameter indexes from the bin/arcgis/SMODERP2D.pyt tool for ArcGIS
         'elevation': os.path.join(data_dir, "dem10m"),
         'soil': os.path.join(data_dir, "soils.shp"),
@@ -36,12 +36,11 @@ def perform_dpre_ref_test(runner):
 
     try:
         runner = runner()
-
-        runner.set_options(parameters)
+        runner.set_options(params)
         # run only data preparation
         runner.set_comptype(
             comp_type=CompType.dpre,
-            data_file=parameters['pickle_file']
+            data_file=params['pickle_file']
         )
         runner.run()
     except ProviderError as e:
