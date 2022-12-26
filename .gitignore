@@ -12,3 +12,4 @@ tests/data/output*
 .envrc
 .direnv
 tests/log
+tests/data/log
