@@ -11,7 +11,7 @@ import smoderp2d.processes.rainfall as rainfall
 
 class PrepareData(PrepareDataBase):
     def __init__(self, options, writter):
-        # get input parameters
+        # define input parameters
         self._set_input_params(options)
 
         # checking if ArcGIS Spatial extension is available
