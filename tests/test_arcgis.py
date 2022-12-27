@@ -1,5 +1,26 @@
 from smoderp2d import ArcGisRunner
-from dpre_utils import perform_dpre_ref_test
+from dpre_utils import perform_dpre_ref_test, data_dir, output_dir
+
+def dpre_params():
+    return {
+        # parameter indexes from the bin/arcgis/SMODERP2D.pyt tool for ArcGIS
+        'elevation': os.path.join(data_dir, "dem10m"),
+        'soil': os.path.join(data_dir, "soils.shp"),
+        'soil_type': "SID",
+        'vegetation': os.path.join(data_dir, "landuse.shp"),
+        'vegetation_type': "LandUse",
+        'rainfall_file': os.path.join(data_dir, "rainfall.txt"),
+        'maxdt': 30,
+        'end_time': 40,  # convert input to seconds #ML: why?
+        'points': os.path.join(data_dir, "points.shp"),
+        'output': output_dir,
+        'table_soil_vegetation': os.path.join(data_dir, "soil_veg_tab_mean.dbf"),
+        'table_soil_vegetation_code': "soilveg",
+        'stream': os.path.join(data_dir, "stream.shp"),
+        'table_stream_shape': os.path.join(data_dir, "stream_shape.dbf"),
+        'table_stream_shape_code': "smoderp",
+        'pickle_file': os.path.join(output_dir, 'dpre.save')
+    }
 
 if __name__ == "__main__":
-    perform_dpre_ref_test(ArcGisRunner)
+    perform_dpre_ref_test(ArcGisRunner, dpre_params)

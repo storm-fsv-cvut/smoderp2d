@@ -110,7 +110,7 @@ class GrassGisProvider(BaseProvider):
         """
         if not self._options:
             raise ProviderError("No options given")
-        from smoderp2d.providers.grass.data_preparation import PrepareData
 
+        from smoderp2d.providers.grass.data_preparation import PrepareData
         prep = PrepareData(self._options, self.storage)
         return prep.run()

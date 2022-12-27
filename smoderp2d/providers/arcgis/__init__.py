@@ -118,7 +118,9 @@ class ArcGisProvider(BaseProvider):
 
         :return dict: loaded data
         """
+        if not self._options:
+            raise ProviderError("No options given")
+
         from smoderp2d.providers.arcgis.data_preparation import PrepareData
-       
         prep = PrepareData(self._options, self.storage)
         return prep.run()
