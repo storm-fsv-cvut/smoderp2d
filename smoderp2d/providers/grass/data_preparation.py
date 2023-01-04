@@ -3,6 +3,7 @@ import math
 from subprocess import PIPE
 
 import numpy as np
+import sqlite3
 
 from smoderp2d.core.general import GridGlobals
 
@@ -16,6 +17,7 @@ from smoderp2d.providers.base.data_preparation import PrepareDataBase
 
 from grass.pygrass.modules import Module
 from grass.pygrass.vector import VectorTopo, Vector
+from grass.pygrass.vector.table import Table, get_path
 from grass.pygrass.raster import RasterRow, raster2numpy
 from grass.pygrass.gis import Region
 from grass.exceptions import CalledModuleError, OpenError
@@ -39,6 +41,24 @@ class PrepareData(PrepareDataBase, ManageFields):
         except CalledModuleError:
             pass # mask not exists
 
+    @staticmethod
+    def __qualified_name(name, mtype='vector'):
+        """Get qualified map name as dict used by Vector class.
+
+        :param name: map name
+        """
+        if '@' in name:
+            part1, part2 = name.split('@', 1)
+            if mtype == 'vector': 
+                return { 'name': part1, 'mapset': part2 }
+            elif mtype == 'table':
+                path = '$GISDBASE/$LOCATION_NAME/{}/sqlite/sqlite.db'.format(part2)
+                return { 'name': part1, 'connection': sqlite3.connect(get_path(path)) }
+            else:
+                raise DataPreparationError("Unexpected mtype {} in __qualified_name".format(mtype))
+
+        return { 'name': name }
+    
     def _set_mask(self):
         """Set mask from elevation map.
 
@@ -378,24 +398,44 @@ class PrepareData(PrepareDataBase, ManageFields):
     def _check_input_data(self):
         """Check input data.
 
+        Raise DataPreparationInvalidInput on error.
         """
-        # check if input data exists
-        for map_name in ('soil',
-                         'vegetation'):
+        def _check_empty_values(table, field):
             try:
-                with Vector(self._input_params[map_name]) as fd:
-                    # check if type column exists
-                    column_name = self._input_params['{}_type'.format(map_name)]
-                    if column_name not in fd.table.columns.names():
-                        raise DataPreparationInvalidInput(
-                            'Column <{}> does not exist'.format(column_name)
-                        )
+                with Vector(**table) as vmap:
+                    vmap.table.filters.select(field, 'cat')
+                    for row in vmap.table:
+                        if row[0] in (None, ""):
+                            raise DataPreparationInvalidInput(
+                                "'{}' values in '{}' table are not correct, "
+                                "empty value found in row {})".format(field, table, row[1])
+                            )
             except OpenError as e:
                 raise DataPreparationInvalidInput(e)
 
-        # soil vector (check for overlaping polygons)
+        _check_empty_values(
+            self.__qualified_name(self._input_params['vegetation']),
+            self._input_params['vegetation_type']
+        )
+        _check_empty_values(
+            self.__qualified_name(self._input_params['soil']),
+            self._input_params['soil_type']
+        )
+
+        
+        if self._input_params['table_stream_shape']:
+            table = Table(**self.__qualified_name(self._input_params['table_stream_shape'], mtype='table'))
+            fields = table.columns.names()
+            for f in self.stream_shape_fields:
+                if f not in fields:
+                    raise DataPreparationInvalidInput(
+                        "Field '{}' not found in '{}'\nProper columns codes are: {}".format(
+                            f, self._input_params['table_stream_shape'], self.stream_shape_fields)
+                    )
+
+        # overlapping polygons (soils)
         try:
-            with VectorTopo(self._input_params['soil']) as fd:
+            with VectorTopo(**self.__qualified_name(self._input_params['soil'])) as fd:
                 for area in fd.viter('areas'):
                     cats = list(area.cats().get_list())
                     if len(cats) > 1:

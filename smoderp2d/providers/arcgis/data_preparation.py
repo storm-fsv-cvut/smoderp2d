@@ -473,10 +473,15 @@ class PrepareData(PrepareDataBase):
                             "'{}' values in '{}' table are not correct, "
                             "empty value found in row {})".format(field, table, row[1])
                         )
-
         
-        _check_empty_values(self._input_params['vegetation'], self._input_params['vegetation_type'])
-        _check_empty_values(self._input_params['soil'], self._input_params['soil_type'])
+        _check_empty_values(
+            self._input_params['vegetation'],
+            self._input_params['vegetation_type']
+        )
+        _check_empty_values(
+            self._input_params['soil'],
+            self._input_params['soil_type']
+        )
 
         if self._input_params['table_stream_shape']:
             fields = [f.name for f in arcpy.Describe(self._input_params['table_stream_shape']).fields]
