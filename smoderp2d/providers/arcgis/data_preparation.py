@@ -130,21 +130,16 @@ class PrepareData(PrepareDataBase):
         # select points outside the AoI
         # TODO: shouldn't be the point to close the border removed here as well?
         arcpy.management.SelectLayerByLocation(points_layer, "WITHIN", outline, "", "NEW_SELECTION", "INVERT")
-        numOutside = int(arcpy.management.GetCount(points_layer).getOutput(0))
         pointsOID = arcpy.Describe(dataset).OIDFieldName
         outsideList = []
-        outsideListString = ""
         # get their IDs
         with arcpy.da.SearchCursor(points_layer, [pointsOID]) as table:
             for row in table:
                 outsideList.append(row[0])
-                if (len(outsideListString) == 0):
-                    outsideListString = str(row[0])
-                else:
-                    outsideListString += ", "+str(row[0])
+
         # report them to the user
         Logger.info("\t{} record points outside of the area of interest ({}: {})".format(
-            numOutside, pointsOID, outsideListString)
+            len(outsideList), pointsOID, ",".join(map(str, outsideList)))
         )
 
         return points_clipped
