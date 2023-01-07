@@ -129,7 +129,7 @@ class PrepareDataBase(ABC):
         pass
 
     @abstractmethod
-    def _update_raster_dim(self, reference):
+    def _update_grid_globals(self, reference):
         """Update raster spatial reference info.
 
         This function must be called before _rst2np() is used first
@@ -219,7 +219,9 @@ class PrepareDataBase(ABC):
         # convert to numpy arrays
         self.data['mat_dem'] = self._rst2np(dem_aoi)
         # update data dict for spatial ref info
-        self._update_raster_dim(dem_aoi)
+        GridGlobals.r = self.data['mat_dem'].shape[0]
+        GridGlobals.c = self.data['mat_dem'].shape[1]
+        self._update_grid_globals(dem_aoi)
         self.data['mat_slope'] = self._rst2np(dem_slope_aoi)
         # unit conversion % -> 0-1
         self._convert_slope_units()

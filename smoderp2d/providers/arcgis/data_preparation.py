@@ -153,7 +153,7 @@ class PrepareData(PrepareDataBase):
         """
         return arcpy.RasterToNumPyArray(raster)
 
-    def _update_raster_dim(self, reference):
+    def _update_grid_globals(self, reference):
         """Update raster spatial reference info.
 
         This function must be called before _rst2np() is used first
@@ -161,10 +161,6 @@ class PrepareData(PrepareDataBase):
 
         :param reference: reference raster layer
         """
-        # size of the raster [0] = number of rows; [1] = number of columns
-        GridGlobals.r = self.data['mat_dem'].shape[0]
-        GridGlobals.c = self.data['mat_dem'].shape[1]
-
         desc = arcpy.Describe(reference)
 
         # check data consistency

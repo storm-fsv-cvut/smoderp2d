@@ -248,21 +248,17 @@ class PrepareData(PrepareDataBase, ManageFields):
         Region().from_rast(raster)
         return raster2numpy(raster)
 
-    def _update_raster_dim(self, reference):
+    def _update_grid_globals(self, reference):
         """Update raster spatial reference info.
 
         This function must be called before _rst2np() is used first
         time.
         """
-        # size of the raster [0] = number of rows; [1] = number of columns
-        GridGlobals.r = self.data['mat_dem'].shape[0]
-        GridGlobals.c = self.data['mat_dem'].shape[1]
-
         # lower left corner coordinates        
-        with RasterRow(dem_clip) as data:
+        with RasterRow(reference) as data:
             # check data consistency
             # see https://github.com/storm-fsv-cvut/smoderp2d/issues/42
-            if data.info.rows != GridGlobals.r] or \
+            if data.info.rows != GridGlobals.r or \
                data.info.cols != GridGlobals.c:
                 raise DataPreparationError(
                     "Data inconsistency ({},{}) vs ({},{})".format(
