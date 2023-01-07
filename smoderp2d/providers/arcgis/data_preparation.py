@@ -161,8 +161,21 @@ class PrepareData(PrepareDataBase):
 
         :param reference: reference raster layer
         """
+        # size of the raster [0] = number of rows; [1] = number of columns
+        self.data['r'] = self.data['mat_dem'].shape[0]
+        self.data['c'] = self.data['mat_dem'].shape[1]
+
         desc = arcpy.Describe(reference)
-        
+
+        # check data consistency
+        if desc.height != self.data['r'] or \
+                desc.width != self.data['c']:
+            raise DataPreparationError(
+                "Data inconsistency ({},{}) vs ({},{})".format(
+                    desc.height, desc.width,
+                    self.data['r'], self.data['c'])
+            )
+
         # lower left corner coordinates
         GridGlobals.set_llcorner((desc.Extent.XMin, desc.Extent.YMin))
         self.data['xllcorner'] = desc.Extent.XMin
@@ -172,10 +185,6 @@ class PrepareData(PrepareDataBase):
         self.data['dx'] = desc.MeanCellWidth
         GridGlobals.set_pixel_area(self.data['dx'] * self.data['dy'])
         self.data['pixel_area'] = self.data['dx'] * self.data['dy']
-
-        # size of the raster [0] = number of rows; [1] = number of columns
-        self.data['r'] = self.data['mat_dem'].shape[0]
-        self.data['c'] = self.data['mat_dem'].shape[1]
 
         # set arcpy environment (needed for rasterization)
         arcpy.env.extent = reference

@@ -110,6 +110,7 @@ class GridGlobals(object):
     def set_size(cls, dxdy):
         cls.dx = dxdy[0]
         cls.dy = dxdy[1]
+        cls.pixel_area = cls.dx * cls.dy
 
     @classmethod
     def get_no_data(cls):
