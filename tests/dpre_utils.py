@@ -72,6 +72,6 @@ def perform_dpre_ref_test(runner, params_fn):
         params['pickle_file'],
         os.path.join(output_dir, '..', 'reference', 'dpre.save')
     ), report_pickle_difference(
-        '/tmp/dpre.save',
+        params['pickle_file'],
         os.path.join(output_dir, '..', 'reference', 'dpre.save')
     )
