@@ -109,8 +109,18 @@ class PrepareData(PrepareDataBase, ManageFields):
         self.__remove_temp_data({'name': aoi+'1', 'type': 'vector'})
 
         aoi_polygon = self.storage.output_filepath('aoi_polygon')
+        # Module('v.category',
+        #        input=aoi, option='add', layer=2,
+        #        output=aoi+'1', cat=1, step=0)
+        # Module('v.dissolve',
+        #        input=aoi+'1', layer=2, output=aoi_polygon)
+        # self.__remove_temp_data({'name': aoi+'1', 'type': 'vector'})
+        Module('v.db.addcolumn',
+               map=aoi, columns="dissolve int")
+        Module('v.db.update',
+               map=aoi, column='dissolve', value=1)
         Module('v.dissolve',
-               input=aoi, output=aoi_polygon)
+               input=aoi, column='dissolve', output=aoi_polygon)
 
         with VectorTopo(aoi_polygon) as vmap:
             count = vmap.number_of('areas')
