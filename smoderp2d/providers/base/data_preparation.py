@@ -289,7 +289,7 @@ class PrepareDataBase(ABC):
             self.data['mat_nan']
         )
 
-        self.GridGlobals.rr, GridGlobals.rc = self._get_rr_rc(
+        GridGlobals.rr, GridGlobals.rc = self._get_rr_rc(
             GridGlobals.r, GridGlobals.c, self.data['mat_boundary']
         )
 
@@ -391,7 +391,7 @@ class PrepareDataBase(ABC):
         """Internal method called by _get_array_points().
         """
         # position i,j in raster (starts at 0)
-        r = int(GridGlobals.r - ((y - GridGlobals.yllcorner) // Grid.Globals.dy) - 1)
+        r = int(GridGlobals.r - ((y - GridGlobals.yllcorner) // GridGlobals.dy) - 1)
         c = int((x - GridGlobals.xllcorner) // GridGlobals.dx)
 
         # if point is not on the edge of raster or its

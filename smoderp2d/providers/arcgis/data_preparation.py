@@ -394,7 +394,7 @@ class PrepareData(PrepareDataBase):
         stream_seg = self.storage.output_filepath('stream_seg')
         arcpy.conversion.PolylineToRaster(
             stream, arcpy.Describe(stream).OIDFieldName, stream_seg,
-            "MAXIMUM_LENGTH", cellsize=GridGlobals.dx]
+            "MAXIMUM_LENGTH", cellsize=GridGlobals.dx
         )
 
         mat_stream_seg = self._rst2np(stream_seg)
