@@ -268,18 +268,46 @@ class PrepareData(PrepareDataBase, ManageFields):
             GridGlobals.set_llcorner((data.info.west, data.info.south)) 
             GridGlobals.set_size((data.info.ewres, data.info.nsres))
 
-    def _compute_efect_cont(self, dem_clip):
-        """Compute efect contour array.
+    def _compute_efect_cont(self, dem, asp):
         """
-        pass
+        Compute efect contour array.
+        ML: improve description
+        
+        :param dem: string to dem clipped by area of interest
+        :param asp: sting to aspect clipped by area of interest
+        :return: numpy array
+        """
+        # conversion to radias not needed, GRASS's sin() assumes degrees
+        ratio_cell = self.storage.output_filepath('ratio_cell')
+        Module('r.mapcalc',
+               expression='{o} = abs(sin({a})) + abs(cos({a}))'.format(
+                   o=ratio_cell, a=asp)
+        )
+
+        efect_cont = self.storage.output_filepath('efect_cont')        
+        Module('r.mapcalc',
+               expression='{} = {} * {}'.format(
+                   efect_cont, ratio_cell, GridGlobals.dx
+        ))
+
+        return self._rst2np(efect_cont)
 
     def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
                          aoi_outline, table_soil_vegetation):
         """Prepares the combination of soils and vegetation input
         layers. Gets the spatial intersection of both and checks the
         consistency of attribute table.
+
+        :param soil: string path to soil layer
+        :param soil_type: soil type attribute
+        :param vegetation: string path to vegetation layer
+        :param vegetation_type: vegetation type attribute
+        :param aoi_outline: string path to polygon layer defining area of interest
+        :param table_soil_vegetation: string path to table with soil and vegetation attributes
+        
+        :return: full path to soil and vegetation dataset
         """
-        pass
+        soilveg_aoi_path = self.storage.output_filepath("soilveg_aoi")
 
     def _get_array_points(self):
         pass

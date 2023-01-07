@@ -237,16 +237,17 @@ class PrepareDataBase(ABC):
             aoi_polygon, self._input_params['table_soil_vegetation']
         )
 
-        self.data['mat_inf_index'], self.data['combinatIndex'] = \
-            self._get_inf_combinat_index(GridGlobals.r, GridGlobals.c,
-                                         self.soilveg_fields['k'],
-                                         self.soilveg_fields['s'])
         self.data['mat_n'] = self.soilveg_fields['n']
         self.data['mat_pi'] = self.soilveg_fields['pi']
         self.data['mat_ppl'] = self.soilveg_fields['ppl']
         self.data['mat_reten'] = self.soilveg_fields['ret']
         self.data['mat_b'] = self.soilveg_fields['b']
 
+        self.data['mat_inf_index'], self.data['combinatIndex'] = \
+            self._get_inf_combinat_index(GridGlobals.r, GridGlobals.c,
+                                         self.soilveg_fields['k'],
+                                         self.soilveg_fields['s'])
+        
         self.data['mat_nan'], self.data['mat_slope'], self.data['mat_dem'] = \
             self._get_mat_nan(GridGlobals.r, GridGlobals.c,
                               GridGlobals.NoDataValue, self.data['mat_slope'],
