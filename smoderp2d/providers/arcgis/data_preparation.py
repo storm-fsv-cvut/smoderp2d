@@ -72,22 +72,25 @@ class PrepareData(PrepareDataBase):
         dem_filled.save(dem_filled_path)
 
         # calculate the flow direction
+        # ML: calculted from original DEM ?
+        # ML: where is flowdir and flowacc / slope and aspect used?
         dem_flowdir_path = self.storage.output_filepath('dem_flowdir')
         flowdir = arcpy.sa.FlowDirection(dem)
         flowdir.save(dem_flowdir_path)
 
+        # calculate flow accumulation
         dem_flowacc_path = self.storage.output_filepath('dem_flowacc')
         flowacc = arcpy.sa.FlowAccumulation(flowdir)
         flowacc.save(dem_flowacc_path)
 
         # calculate slope
         dem_slope_path = self.storage.output_filepath('dem_slope')
-        dem_slope = arcpy.sa.Slope(dem_filled, "PERCENT_RISE", 1)
+        dem_slope = arcpy.sa.Slope(dem_filled, "PERCENT_RISE")
         dem_slope.save(dem_slope_path)
 
         # calculate aspect
         dem_aspect_path = self.storage.output_filepath('dem_aspect')
-        dem_aspect = arcpy.sa.Aspect(dem_filled, "", "")
+        dem_aspect = arcpy.sa.Aspect(dem_filled)
         dem_aspect.save(dem_aspect_path)
 
         return dem_filled_path, dem_flowdir_path, dem_flowacc_path, dem_slope_path, dem_aspect_path

@@ -66,9 +66,9 @@ def compute_products(elev, fldir=None):
     # computing slope from original DEM seems to be closer to ArcGIS
     # results
     Module('r.slope.aspect',
-           elevation=elev,
-           format='percent',
-           slope=slope
+           elevation=dem_filled,
+           format='percent', slope=slope,
+           aspect=aspect
     )
     
     return flow_direction, flow_accumulation, slope

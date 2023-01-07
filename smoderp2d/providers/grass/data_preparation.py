@@ -130,8 +130,52 @@ class PrepareData(PrepareDataBase, ManageFields):
         prevent time consuming operations on DEM if the DEM is much
         larger then the AOI.
         """
-        pass
+        Module('g.region',
+               raster=dem)
+        dem_filled = self.storage.output_filepath('dem_filled')
+        dem_flowdir = self.storage.output_filepath('dem_flowdir')
+        # calculate the depressionless DEM
+        Module('r.fill.dir',
+               input=dem, output=dem_filled,
+               format='agnps',
+               direction=dem_flowdir+'2')
 
+        # calculate the flow direction
+        # calculate flow accumulation        
+        dem_flowacc = self.storage.output_filepath('dem_flowacc')
+        Module('r.watershed',
+               flags='as', elevation=dem,
+               drainage=dem_flowdir+'1', accumulation=dem_flowacc)
+        # recalculate flow dir to ArcGIS notation
+        # https://idea.isnew.info/how-to-import-arcgis-flow-direction-into-grass-gis.html
+        # ML: flowdir is slightly different compared to ArcGIS
+        # ML: flowacc is slightly different compared to ArcGIS        
+        reclass = """
+-1 1 = 128
+-2 2 = 64
+-3 3 = 32
+-4 4 = 16
+-5 5 = 8
+-6 6 = 4
+-7 7 = 2
+-8 8 = 1
+"""
+        Module('r.reclass',
+               input=dem_flowdir+'1', output=dem_flowdir,
+               rules='-', stdin_=reclass)
+        self.__remove_temp_data({'name': '{r}1,{r}2'.format(r=dem_flowdir), 'type': 'raster'})
+
+        # calculate slope
+        dem_slope = self.storage.output_filepath('dem_slope')
+        dem_aspect = self.storage.output_filepath('dem_aspect')        
+        Module('r.slope.aspect',
+               elevation=dem_filled,
+               format='percent', slope=dem_slope,
+               aspect=dem_aspect)
+
+        return dem_filled, dem_flowdir, dem_flowacc, dem_slope, dem_aspect
+
+    
     def _clip_raster_layer(self, dataset, outline, name):
         """Clips raster dataset to given polygon."""
         pass
