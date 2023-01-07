@@ -7,7 +7,6 @@ import sqlite3
 
 from smoderp2d.core.general import GridGlobals
 
-from smoderp2d.providers.grass.terrain import compute_products
 from smoderp2d.providers.grass.manage_fields import ManageFields
 
 from smoderp2d.providers.base import Logger
@@ -19,7 +18,7 @@ from grass.pygrass.modules import Module
 from grass.pygrass.vector import VectorTopo, Vector
 from grass.pygrass.vector.table import Table, get_path
 from grass.pygrass.raster import RasterRow, raster2numpy
-from grass.pygrass.gis import Region
+from grass.pygrass.gis import Region, Mapset
 from grass.exceptions import CalledModuleError, OpenError
 
 class PrepareData(PrepareDataBase, ManageFields):
@@ -129,6 +128,8 @@ class PrepareData(PrepareDataBase, ManageFields):
         extent could be replaced be AOI border buffered by 1 cell to
         prevent time consuming operations on DEM if the DEM is much
         larger then the AOI.
+
+        :param dem: string path to DEM layer
         """
         Module('g.region',
                raster=dem)
@@ -177,14 +178,62 @@ class PrepareData(PrepareDataBase, ManageFields):
 
     
     def _clip_raster_layer(self, dataset, outline, name):
-        """Clips raster dataset to given polygon."""
-        pass
+        """Clips raster dataset to given polygon.
 
+        :param dataset: raster dataset to be clipped
+        :param outline: feature class to be used as the clipping geometry
+        :param name: dataset name in the _data dictionary
+
+        :return: full path to clipped raster
+        """
+        output = self.storage.output_filepath(name)
+        if outline not in Mapset().glist(type='raster'):
+            Module('v.to.rast',
+                   input=outline, type='area', use='cat',
+                   output=outline)
+        Module('r.mapcalc',
+               expression='{o} = if(isnull({m}), null(), {i})'.format(
+                   o=output, m=outline, i=dataset))
+
+        return output
+    
     def _clip_record_points(self, dataset, outline, name):
         """Makes a copy of record points inside the AOI as new
         feature layer and logs those outside AOI.
+
+        :param dataset: points dataset to be clipped
+        :param outline: polygon feature class of the AoI
+        :param name: output dataset name in the _data dictionary
+
+        :return: full path to clipped points dataset
         """
-        pass
+        # select points inside the AIO        
+        points_clipped = self.storage.output_filepath(name)
+        Module('v.select',
+               ainput=dataset, binput=outline,
+               operator='within',
+               output=points_clipped)
+
+        # select points outside the AoI
+        Module('v.select',
+               flags='r',
+               ainput=dataset, binput=outline,
+               operator='within',
+               output=points_clipped+'1')
+        outsideList = []
+        # get their IDs
+        with Vector(points_clipped+'1') as vmap:
+            vmap.table.filters.select(self.storage.primary_key)
+            for row in vmap.table:
+                outsideList.append(row[0])
+        self.__remove_temp_data({'name': points_clipped+'1', 'type': 'vector'})
+
+        # report them to the user
+        Logger.info("\t{} record points outside of the area of interest ({}: {})".format(
+            len(outsideList), "FID", ",".join(map(str, outsideList)))
+        )
+                
+        return points_clipped
 
     def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
                          aoi_outline, table_soil_vegetation):
@@ -196,7 +245,11 @@ class PrepareData(PrepareDataBase, ManageFields):
 
     def _rst2np(self, raster):
         """Convert raster data into numpy array."""
-        pass
+        # raster is read from current computation region
+        # g.region cannot be called here,
+        # see https://github.com/storm-fsv-cvut/smoderp2d/issues/42
+        Region().from_rast(raster)
+        return raster2numpy(raster)
 
     def _update_raster_dim(self, reference):
         """Update raster spatial reference info.
@@ -487,20 +540,6 @@ class PrepareData(PrepareDataBase, ManageFields):
         self._diff_npoints(npoints, npoints_clipped)
 
         self.data['points'] = 'points_mask'
-
-    def _rst2np(self, raster):
-        """
-        Convert raster data into numpy array
-
-        :param raster: raster name
-
-        :return: numpy array
-        """
-        # raster is read from current computation region
-        # g.region cannot be called here,
-        # see https://github.com/storm-fsv-cvut/smoderp2d/issues/42
-        Region().from_rast(raster)
-        return raster2numpy(raster)
 
     def _get_raster_dim(self, dem_clip):
         """
