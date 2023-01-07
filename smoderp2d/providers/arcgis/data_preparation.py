@@ -162,29 +162,23 @@ class PrepareData(PrepareDataBase):
         :param reference: reference raster layer
         """
         # size of the raster [0] = number of rows; [1] = number of columns
-        self.data['r'] = self.data['mat_dem'].shape[0]
-        self.data['c'] = self.data['mat_dem'].shape[1]
+        GridGlobals.r = self.data['mat_dem'].shape[0]
+        GridGlobals.c = self.data['mat_dem'].shape[1]
 
         desc = arcpy.Describe(reference)
 
         # check data consistency
-        if desc.height != self.data['r'] or \
-                desc.width != self.data['c']:
+        if desc.height != GridGlobals.r or \
+                desc.width != GridGlobals.c:
             raise DataPreparationError(
                 "Data inconsistency ({},{}) vs ({},{})".format(
                     desc.height, desc.width,
-                    self.data['r'], self.data['c'])
+                    GridGlobals.r, GridGlobals.c)
             )
 
         # lower left corner coordinates
         GridGlobals.set_llcorner((desc.Extent.XMin, desc.Extent.YMin))
-        self.data['xllcorner'] = desc.Extent.XMin
-        self.data['yllcorner'] = desc.Extent.YMin
-        GridGlobals.set_size((desc.MeanCellHeight, desc.MeanCellWidth))
-        self.data['dy'] = desc.MeanCellHeight
-        self.data['dx'] = desc.MeanCellWidth
-        GridGlobals.set_pixel_area(self.data['dx'] * self.data['dy'])
-        self.data['pixel_area'] = self.data['dx'] * self.data['dy']
+        GridGlobals.set_size((desc.MeanCellWidth, desc.MeanCellHeight))
 
         # set arcpy environment (needed for rasterization)
         arcpy.env.extent = reference
@@ -209,7 +203,7 @@ class PrepareData(PrepareDataBase):
         times1 = arcpy.sa.Plus(cosslope, sinslope)
         times1.save(self.storage.output_filepath('ratio_cell'))
 
-        efect_cont = arcpy.sa.Times(times1, self.data['dx'])
+        efect_cont = arcpy.sa.Times(times1, GridGlobals.dx)
         efect_cont.save(self.storage.output_filepath('efect_cont'))
         
         return self._rst2np(efect_cont)
@@ -283,14 +277,14 @@ class PrepareData(PrepareDataBase):
         # Generate numpy array of soil and vegetation attributes.
         for field in self.soilveg_fields.keys():
             output = self.storage.output_filepath("soilveg_aoi_{}".format(field))
-            arcpy.conversion.PolygonToRaster(soilveg_aoi_path, field, output, "MAXIMUM_AREA", "", self.data['dy'])
+            arcpy.conversion.PolygonToRaster(soilveg_aoi_path, field, output, "MAXIMUM_AREA", "", GridGlobals.dy)
             self.soilveg_fields[field] = self._rst2np(output)
-            if self.soilveg_fields[field].shape[0] != self.data['r'] or \
-                    self.soilveg_fields[field].shape[1] != self.data['c']:
+            if self.soilveg_fields[field].shape[0] != GridGlobals.r or \
+                    self.soilveg_fields[field].shape[1] != GridGlobals.c:
                 raise DataPreparationError(
                     "Unexpected array {} dimension {}: should be ({}, {})".format(
                         field, self.soilveg_fields[field].shape,
-                        self.data['r'], self.data['c'])
+                        GridGlobals.r, GridGlobals.c)
                 )
 
     def _get_array_points(self):
@@ -321,7 +315,7 @@ class PrepareData(PrepareDataBase):
         """Clip stream with intersect of input data."""
         aoi_buffer = arcpy.analysis.Buffer(aoi_polygon,
             self.storage.output_filepath('aoi_buffer'),
-            -self.data['dx'] / 3, # ML: ? + clip ?
+            -GridGlobals.dx / 3, # ML: ? + clip ?
             "FULL", "ROUND",
         )
 
@@ -400,7 +394,7 @@ class PrepareData(PrepareDataBase):
         stream_seg = self.storage.output_filepath('stream_seg')
         arcpy.conversion.PolylineToRaster(
             stream, arcpy.Describe(stream).OIDFieldName, stream_seg,
-            "MAXIMUM_LENGTH", cellsize=self.data['dx']
+            "MAXIMUM_LENGTH", cellsize=GridGlobals.dx]
         )
 
         mat_stream_seg = self._rst2np(stream_seg)

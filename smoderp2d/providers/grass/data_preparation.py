@@ -254,7 +254,23 @@ class PrepareData(PrepareDataBase, ManageFields):
         This function must be called before _rst2np() is used first
         time.
         """
-        pass
+        # size of the raster [0] = number of rows; [1] = number of columns
+        GridGlobals.r = self.data['mat_dem'].shape[0]
+        GridGlobals.c = self.data['mat_dem'].shape[1]
+
+        # lower left corner coordinates        
+        with RasterRow(dem_clip) as data:
+            # check data consistency
+            # see https://github.com/storm-fsv-cvut/smoderp2d/issues/42
+            if data.info.rows != GridGlobals.r] or \
+               data.info.cols != GridGlobals.c:
+                raise DataPreparationError(
+                    "Data inconsistency ({},{}) vs ({},{})".format(
+                        data.info.rows, data.info.cols,
+                        GridGlobals.r, GridGlobals.c)
+                )
+            GridGlobals.set_llcorner((data.info.west, data.info.south)) 
+            GridGlobals.set_size((data.info.ewres, data.info.nsres))
 
     def _compute_efect_cont(self, dem_clip):
         """Compute efect contour array.
@@ -520,61 +536,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         ))
 
         return 'dem_clip'
-
-    @staticmethod
-    def get_num_points(vector):
-        with VectorTopo(vector) as data:
-            np = data.number_of("points")
-        return np
     
-    def _clip_points(self, intersect):
-        """
-        Clip input points data.
-
-        :param intersect: vector intersect feature class
-        """
-        Module('v.clip',
-               input=self.data['points'],
-               clip=intersect,
-               output='points_mask'
-        )
-        # count number of features
-        npoints = self.get_num_points(self.data['points'])
-        npoints_clipped = self.get_num_points('points_mask')
-
-        self._diff_npoints(npoints, npoints_clipped)
-
-        self.data['points'] = 'points_mask'
-
-    def _get_raster_dim(self, dem_clip):
-        """
-        Get raster spatial reference info.
-
-        :param dem_clip: clipped dem raster map
-        """
-        # size of the raster [0] = number of rows; [1] = number of columns
-        self.data['r'] = self.data['mat_dem'].shape[0]
-        self.data['c'] = self.data['mat_dem'].shape[1]
-
-        with RasterRow(dem_clip) as data:
-            # lower left corner coordinates
-            self.data['xllcorner'] = data.info.west
-            self.data['yllcorner'] = data.info.south
-            # x/y resolution
-            self.data['dy'] = data.info.nsres
-            self.data['dx'] = data.info.ewres
-            # check data consistency
-            # see https://github.com/storm-fsv-cvut/smoderp2d/issues/42
-            if data.info.rows != self.data['r'] or \
-               data.info.cols != self.data['c']:
-                raise DataPreparationError(
-                    "Data inconsistency ({},{}) vs ({},{})".format(
-                        data.info.rows, data.info.cols, self.data['r'], self.data['c']
-                ))
-
-        self.data['NoDataValue'] = None
-        self.data['pixel_area'] = self.data['dx'] * self.data['dy']
-
     def _get_attrib(self, sfield, intersect):
         """
         Get numpy arrays of selected attributes.
@@ -654,7 +616,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         efect_cont = 'efect_cont'
         Module('r.mapcalc',
                expression='{} = {} * {}'.format(
-                   efect_cont, ratio, self.data['dx']
+                   efect_cont, ratio, GridGlobals.dx
         ))
         self.data['mat_efect_cont'] = self._rst2np(efect_cont)
 

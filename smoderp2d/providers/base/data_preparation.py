@@ -54,17 +54,9 @@ class PrepareDataBase(ABC):
         ]
 
         self.data = {
-            'br': None,
-            'bc': None,
             'mat_boundary': None,
-            'rr': None,
-            'rc': None,
             'outletCells': None,
-            'xllcorner': None,
-            'yllcorner': None,
             'array_points': None,
-            'c': None,
-            'r': None,
             'combinatIndex': None,
             'maxdt': self._input_params['maxdt'],
             'mat_pi': None,
@@ -83,7 +75,6 @@ class PrepareDataBase(ABC):
             'mat_a': None,
             'mat_n': None,
             'outdir': self._input_params['output'],
-            'pixel_area': None,
             'points': self._input_params['points'], # TODO: needs to be replaced by the clipped points dataset
             'poradi': None,
             'end_time': self._input_params['end_time'],
@@ -245,7 +236,7 @@ class PrepareDataBase(ABC):
         )
 
         self.data['mat_inf_index'], self.data['combinatIndex'] = \
-            self._get_inf_combinat_index(self.data['r'], self.data['c'],
+            self._get_inf_combinat_index(GridGlobals.r, GridGlobals.c,
                                          self.soilveg_fields['k'],
                                          self.soilveg_fields['s'])
         self.data['mat_n'] = self.soilveg_fields['n']
@@ -255,7 +246,7 @@ class PrepareDataBase(ABC):
         self.data['mat_b'] = self.soilveg_fields['b']
 
         self.data['mat_nan'], self.data['mat_slope'], self.data['mat_dem'] = \
-            self._get_mat_nan(self.data['r'], self.data['c'],
+            self._get_mat_nan(GridGlobals.r, GridGlobals.c,
                               GridGlobals.NoDataValue, self.data['mat_slope'],
                               self.data['mat_dem'])
 
@@ -266,15 +257,15 @@ class PrepareDataBase(ABC):
         # build a/aa arrays
         self.data['mat_a'], self.data['mat_aa'] = self._get_a(
             self.soilveg_fields['n'], self.soilveg_fields['x'],
-            self.soilveg_fields['y'], self.data['r'],
-            self.data['c'], GridGlobals.NoDataValue, self.data['mat_slope']
+            self.soilveg_fields['y'], GridGlobals.r,
+            GridGlobals.c, GridGlobals.NoDataValue, self.data['mat_slope']
         )
         #Logger.progress(40)
 
         Logger.info("Computing critical level...")
         self.data['mat_hcrit'] = self._get_crit_water(
-            self.data['mat_b'], self.soilveg_fields['tau'], self.soilveg_fields['v'], self.data['r'],
-            self.data['c'], self.data['mat_slope'],
+            self.data['mat_b'], self.soilveg_fields['tau'], self.soilveg_fields['v'], GridGlobals.r,
+            GridGlobals.c, self.data['mat_slope'],
             GridGlobals.NoDataValue, self.data['mat_aa'])
 
         # load precipitation input file
@@ -294,12 +285,12 @@ class PrepareDataBase(ABC):
 
         # define mask (rc/rc variables)
         self.data['mat_boundary'] = self._find_boundary_cells(
-            self.data['r'], self.data['c'], GridGlobals.NoDataValue,
+            GridGlobals.r, GridGlobals.c, GridGlobals.NoDataValue,
             self.data['mat_nan']
         )
 
-        self.data['rr'], self.data['rc'] = self._get_rr_rc(
-            self.data['r'], self.data['c'], self.data['mat_boundary']
+        self.GridGlobals.rr, GridGlobals.rc = self._get_rr_rc(
+            GridGlobals.r, GridGlobals.c, self.data['mat_boundary']
         )
 
         self.data['mfda'] = False ### ML: ???
@@ -400,15 +391,15 @@ class PrepareDataBase(ABC):
         """Internal method called by _get_array_points().
         """
         # position i,j in raster (starts at 0)
-        r = int(self.data['r'] - ((y - self.data['yllcorner']) // self.data['dy']) - 1)
-        c = int((x - self.data['xllcorner']) // self.data['dx'])
+        r = int(GridGlobals.r - ((y - GridGlobals.yllcorner) // Grid.Globals.dy) - 1)
+        c = int((x - GridGlobals.xllcorner) // GridGlobals.dx)
 
         # if point is not on the edge of raster or its
         # neighbours are not "NoDataValue", it will be saved
         # into array_points array
         nv = GridGlobals.NoDataValue
-        if r != 0 and r != self.data['r'] \
-           and c != 0 and c != self.data['c'] and \
+        if r != 0 and r != GridGlobals.r \
+           and c != 0 and c != GridGlobals.c and \
            self.data['mat_dem'][r][c]   != nv and \
            self.data['mat_dem'][r-1][c] != nv and \
            self.data['mat_dem'][r+1][c] != nv and \
@@ -676,8 +667,8 @@ class PrepareDataBase(ABC):
     def _get_mat_stream_seg(self, mat_stream_seg):
         # each element of stream has a number assigned from 0 to
         # no. of stream parts
-        for i in range(self.data['r']):
-            for j in range(self.data['c']):
+        for i in range(GridGlobals.r):
+            for j in range(GridGlobals.c):
                 if mat_stream_seg[i][j] > 0: # FID starts at 1
                     # state 0|1|2 (> Globals.streams_flow_inc -> stream flow)
                     mat_stream_seg[i][j] += Globals.streams_flow_inc
