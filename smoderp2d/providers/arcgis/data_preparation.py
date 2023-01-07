@@ -218,8 +218,6 @@ class PrepareData(PrepareDataBase):
         
         :return: full path to soil and vegetation dataset
         """
-        soilveg_aoi_path = self.storage.output_filepath("soilveg_aoi")
-
         # check if the soil_type and vegetation_type field names are
         # equal and deal with it if not
         if soil_type == vegetation_type:
@@ -236,11 +234,15 @@ class PrepareData(PrepareDataBase):
             veg_fieldname = vegetation_type
 
         # create the geometric intersection of soil and vegetation layers
+        soilveg_aoi_path = self.storage.output_filepath("soilveg_aoi")
         arcpy.analysis.Intersect([soil, vegetation, aoi_outline], soilveg_aoi_path, "NO_FID")
 
+        soilveg_code = self._input_params['table_soil_vegetation_code']
         if self._input_params['table_soil_vegetation_code'] in arcpy.ListFields(soilveg_aoi_path):
             arcpy.management.DeleteField(soilveg_aoi_path, self._input_params['table_soil_vegetation_code'])
-            Logger.info("'{}' attribute field already in the table and will be replaced.".format(self._input_params['table_soil_vegetation_code']))
+            Logger.info(
+                "'{}' attribute field already in the table and will be replaced.".format(self._input_params['table_soil_vegetation_code'])
+            )
 
         arcpy.management.AddField(soilveg_aoi_path, self._input_params['table_soil_vegetation_code'], "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED","")
 

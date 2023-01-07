@@ -307,8 +307,51 @@ class PrepareData(PrepareDataBase, ManageFields):
         
         :return: full path to soil and vegetation dataset
         """
-        soilveg_aoi_path = self.storage.output_filepath("soilveg_aoi")
+        # check if the soil_type and vegetation_type field names are
+        # equal and deal with it if not
+        if soil_type == vegetation_type:
+            veg_fieldname = 'veg_type'
+            Logger.info(
+                "The vegetation type attribute field name ('{}') is equal to "
+                "the soil type attribute field name. Vegetation type attribute "
+                "will be renamed to '{}'.".format(vegatation_type, veg_type)
+            )
+            # add the new field
+            Module('v.db.renamecolumn',
+                   map=vegetation,
+                   column=[vegetation_type, veg_fieldname]
+            )
+        else:
+            veg_fieldname = vegetation_type
 
+        # create the geometric intersection of soil and vegetation layers
+        soilveg_aoi = self.storage.output_filepath("soilveg_aoi")
+        soil_aoi = self.__qualified_name(soil)['name']+'1'
+        Module('v.clip',
+               input=soil, clip=aoi_outline,
+               output=soil_aoi)
+        Module('v.overlay',
+               ainput=soil_aoi,
+               binput=vegetation,
+               operator='and',
+               output=soilveg_aoi)
+        self.__remove_temp_data({'name': soil_aoi, 'type': 'vector'})
+
+        soilveg_code = self._input_params['table_soil_vegetation_code']            
+        with Vector(soilveg_aoi) as vmap:
+            fields = vmap.table.columns.names()
+        if soilveg_code in fields:
+            Module('v.db.dropcolumn',
+                   map=soilveg_aoi,
+                   columns=[soilveg_code])
+            Logger.info(
+                "'{}' attribute field already in the table and will be replaced.".format(soilveg_code)
+            )
+
+        Module('v.db.addcolumn',
+               map=soilveg_aoi,
+               columns=["soilveg_code varchar(15)"])
+        
     def _get_array_points(self):
         pass
     
