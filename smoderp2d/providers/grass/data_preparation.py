@@ -234,17 +234,14 @@ class PrepareData(PrepareDataBase, ManageFields):
         )
                 
         return points_clipped
-
-    def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
-                         aoi_outline, table_soil_vegetation):
-        """Prepares the combination of soils and vegetation input
-        layers. Gets the spatial intersection of both and checks the
-        consistency of attribute table.
-        """
-        pass
-
+ 
     def _rst2np(self, raster):
-        """Convert raster data into numpy array."""
+        """Convert raster data into numpy array.
+
+        :param raster: raster name
+
+        :return: numpy array
+        """
         # raster is read from current computation region
         # g.region cannot be called here,
         # see https://github.com/storm-fsv-cvut/smoderp2d/issues/42
@@ -259,14 +256,22 @@ class PrepareData(PrepareDataBase, ManageFields):
         """
         pass
 
-    def _get_array_points(self):
-        pass
-
     def _compute_efect_cont(self, dem_clip):
         """Compute efect contour array.
         """
         pass
 
+    def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
+                         aoi_outline, table_soil_vegetation):
+        """Prepares the combination of soils and vegetation input
+        layers. Gets the spatial intersection of both and checks the
+        consistency of attribute table.
+        """
+        pass
+
+    def _get_array_points(self):
+        pass
+    
     def _stream_clip(self, stream, aoi_polygon):
         pass
 

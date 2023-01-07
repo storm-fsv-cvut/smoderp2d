@@ -144,6 +144,67 @@ class PrepareData(PrepareDataBase):
 
         return points_clipped
 
+    def _rst2np(self, raster):
+        """Convert raster data into numpy array.
+
+        :param raster: raster name
+
+        :return: numpy array
+        """
+        return arcpy.RasterToNumPyArray(raster)
+
+    def _update_raster_dim(self, reference):
+        """Update raster spatial reference info.
+
+        This function must be called before _rst2np() is used first
+        time.
+
+        :param reference: reference raster layer
+        """
+        desc = arcpy.Describe(reference)
+        
+        # lower left corner coordinates
+        GridGlobals.set_llcorner((desc.Extent.XMin, desc.Extent.YMin))
+        self.data['xllcorner'] = desc.Extent.XMin
+        self.data['yllcorner'] = desc.Extent.YMin
+        GridGlobals.set_size((desc.MeanCellHeight, desc.MeanCellWidth))
+        self.data['dy'] = desc.MeanCellHeight
+        self.data['dx'] = desc.MeanCellWidth
+        GridGlobals.set_pixel_area(self.data['dx'] * self.data['dy'])
+        self.data['pixel_area'] = self.data['dx'] * self.data['dy']
+
+        # size of the raster [0] = number of rows; [1] = number of columns
+        self.data['r'] = self.data['mat_dem'].shape[0]
+        self.data['c'] = self.data['mat_dem'].shape[1]
+
+        # set arcpy environment (needed for rasterization)
+        arcpy.env.extent = reference
+        arcpy.env.snapRaster = reference
+
+    def _compute_efect_cont(self, dem_clip):
+        """
+        Compute efect contour array.
+        ML: improve description
+        
+        :param dem_clip: string to dem clipped by area of interest
+
+        :return: numpy array
+        """
+        pii = math.pi / 180.0
+        asp = arcpy.sa.Aspect(dem_clip)
+        asppii = arcpy.sa.Times(asp, pii)
+        sinasp = arcpy.sa.Sin(asppii)
+        cosasp = arcpy.sa.Cos(asppii)
+        sinslope = arcpy.sa.Abs(sinasp)
+        cosslope = arcpy.sa.Abs(cosasp)
+        times1 = arcpy.sa.Plus(cosslope, sinslope)
+        times1.save(self.storage.output_filepath('ratio_cell'))
+
+        efect_cont = arcpy.sa.Times(times1, self.data['dx'])
+        efect_cont.save(self.storage.output_filepath('efect_cont'))
+        
+        return self._rst2np(efect_cont)
+
     def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
                          aoi_outline, table_soil_vegetation):
         """Prepares the combination of soils and vegetation input
@@ -223,43 +284,6 @@ class PrepareData(PrepareDataBase):
                         self.data['r'], self.data['c'])
                 )
 
-    def _rst2np(self, raster):
-        """Convert raster data into numpy array.
-
-        :param raster: raster name
-
-        :return: numpy array
-        """
-        return arcpy.RasterToNumPyArray(raster)
-
-    def _update_raster_dim(self, reference):
-        """Update raster spatial reference info.
-
-        This function must be called before _rst2np() is used first
-        time.
-
-        :param reference: reference raster layer
-        """
-        desc = arcpy.Describe(reference)
-        
-        # lower left corner coordinates
-        GridGlobals.set_llcorner((desc.Extent.XMin, desc.Extent.YMin))
-        self.data['xllcorner'] = desc.Extent.XMin
-        self.data['yllcorner'] = desc.Extent.YMin
-        GridGlobals.set_size((desc.MeanCellHeight, desc.MeanCellWidth))
-        self.data['dy'] = desc.MeanCellHeight
-        self.data['dx'] = desc.MeanCellWidth
-        GridGlobals.set_pixel_area(self.data['dx'] * self.data['dy'])
-        self.data['pixel_area'] = self.data['dx'] * self.data['dy']
-
-        # size of the raster [0] = number of rows; [1] = number of columns
-        self.data['r'] = self.data['mat_dem'].shape[0]
-        self.data['c'] = self.data['mat_dem'].shape[1]
-
-        # set arcpy environment (needed for rasterization)
-        arcpy.env.extent = reference
-        arcpy.env.snapRaster = reference
-
     def _get_array_points(self):
         """Get array of points. Points near AOI border are skipped.
         """
@@ -284,30 +308,6 @@ class PrepareData(PrepareDataBase):
 
         return array_points
     
-    def _compute_efect_cont(self, dem_clip):
-        """
-        Compute efect contour array.
-        ML: improve description
-        
-        :param dem_clip: string to dem clipped by area of interest
-
-        :return: numpy array
-        """
-        pii = math.pi / 180.0
-        asp = arcpy.sa.Aspect(dem_clip)
-        asppii = arcpy.sa.Times(asp, pii)
-        sinasp = arcpy.sa.Sin(asppii)
-        cosasp = arcpy.sa.Cos(asppii)
-        sinslope = arcpy.sa.Abs(sinasp)
-        cosslope = arcpy.sa.Abs(cosasp)
-        times1 = arcpy.sa.Plus(cosslope, sinslope)
-        times1.save(self.storage.output_filepath('ratio_cell'))
-
-        efect_cont = arcpy.sa.Times(times1, self.data['dx'])
-        efect_cont.save(self.storage.output_filepath('efect_cont'))
-        
-        return self._rst2np(efect_cont)
-
     def _stream_clip(self, stream, aoi_polygon):
         """Clip stream with intersect of input data."""
         aoi_buffer = arcpy.analysis.Buffer(aoi_polygon,

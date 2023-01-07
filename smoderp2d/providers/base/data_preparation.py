@@ -132,15 +132,6 @@ class PrepareDataBase(ABC):
         """
         pass
 
-    @abstractmethod    
-    def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
-                         aoi_outline, table_soil_vegetation):
-        """Prepares the combination of soils and vegetation input
-        layers. Gets the spatial intersection of both and checks the
-        consistency of attribute table.
-        """
-        pass
-
     @abstractmethod
     def _rst2np(self, raster):
         """Convert raster data into numpy array."""
@@ -156,13 +147,22 @@ class PrepareDataBase(ABC):
         pass
 
     @abstractmethod
-    def _get_array_points(self):
-        pass
-
-    @abstractmethod
     def _compute_efect_cont(self, dem_clip):
         """Compute efect contour array.
         """
+        pass
+
+    @abstractmethod    
+    def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
+                         aoi_outline, table_soil_vegetation):
+        """Prepares the combination of soils and vegetation input
+        layers. Gets the spatial intersection of both and checks the
+        consistency of attribute table.
+        """
+        pass
+
+    @abstractmethod
+    def _get_array_points(self):
         pass
 
     @abstractmethod
