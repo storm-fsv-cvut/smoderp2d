@@ -109,12 +109,6 @@ class PrepareData(PrepareDataBase, ManageFields):
         self.__remove_temp_data({'name': aoi+'1', 'type': 'vector'})
 
         aoi_polygon = self.storage.output_filepath('aoi_polygon')
-        # Module('v.category',
-        #        input=aoi, option='add', layer=2,
-        #        output=aoi+'1', cat=1, step=0)
-        # Module('v.dissolve',
-        #        input=aoi+'1', layer=2, output=aoi_polygon)
-        # self.__remove_temp_data({'name': aoi+'1', 'type': 'vector'})
         Module('v.db.addcolumn',
                map=aoi, columns="dissolve int")
         Module('v.db.update',
@@ -128,7 +122,123 @@ class PrepareData(PrepareDataBase, ManageFields):
             raise DataPreparationNoIntersection()
 
         return aoi_polygon
-    
+
+    def _create_DEM_derivatives(self, dem):
+        """Creates all the needed DEM derivatives in the DEM's
+        original extent to avoid raster edge effects. The clipping
+        extent could be replaced be AOI border buffered by 1 cell to
+        prevent time consuming operations on DEM if the DEM is much
+        larger then the AOI.
+        """
+        pass
+
+    def _clip_raster_layer(self, dataset, outline, name):
+        """Clips raster dataset to given polygon."""
+        pass
+
+    def _clip_record_points(self, dataset, outline, name):
+        """Makes a copy of record points inside the AOI as new
+        feature layer and logs those outside AOI.
+        """
+        pass
+
+    def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
+                         aoi_outline, table_soil_vegetation):
+        """Prepares the combination of soils and vegetation input
+        layers. Gets the spatial intersection of both and checks the
+        consistency of attribute table.
+        """
+        pass
+
+    def _rst2np(self, raster):
+        """Convert raster data into numpy array."""
+        pass
+
+    def _update_raster_dim(self, reference):
+        """Update raster spatial reference info.
+
+        This function must be called before _rst2np() is used first
+        time.
+        """
+        pass
+
+    def _get_array_points(self):
+        pass
+
+    def _compute_efect_cont(self, dem_clip):
+        """Compute efect contour array.
+        """
+        pass
+
+    def _stream_clip(self, stream, aoi_polygon):
+        pass
+
+    def _stream_direction(self, stream, dem_aoi):
+        pass
+
+    def _stream_reach(self, stream):
+        pass
+
+    def _stream_slope(self, stream):
+        pass
+
+    def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
+        pass
+
+    def _check_input_data(self):
+        """Check input data.
+
+        Raise DataPreparationInvalidInput on error.
+        """
+        def _check_empty_values(table, field):
+            try:
+                with Vector(**table) as vmap:
+                    vmap.table.filters.select(field, self.storage.primary_key)
+                    for row in vmap.table:
+                        if row[0] in (None, ""):
+                            raise DataPreparationInvalidInput(
+                                "'{}' values in '{}' table are not correct, "
+                                "empty value found in row {})".format(field, table, row[1])
+                            )
+            except OpenError as e:
+                raise DataPreparationInvalidInput(e)
+
+        _check_empty_values(
+            self.__qualified_name(self._input_params['vegetation']),
+            self._input_params['vegetation_type']
+        )
+        _check_empty_values(
+            self.__qualified_name(self._input_params['soil']),
+            self._input_params['soil_type']
+        )
+
+        
+        if self._input_params['table_stream_shape']:
+            table = Table(**self.__qualified_name(self._input_params['table_stream_shape'], mtype='table'))
+            fields = table.columns.names()
+            for f in self.stream_shape_fields:
+                if f not in fields:
+                    raise DataPreparationInvalidInput(
+                        "Field '{}' not found in '{}'\nProper columns codes are: {}".format(
+                            f, self._input_params['table_stream_shape'], self.stream_shape_fields)
+                    )
+
+        # overlapping polygons (soils)
+        try:
+            with VectorTopo(**self.__qualified_name(self._input_params['soil'])) as fd:
+                for area in fd.viter('areas'):
+                    cats = list(area.cats().get_list())
+                    if len(cats) > 1:
+                        raise DataPreparationInvalidInput(
+                            "overlapping soil polygons detected"
+                        )
+        except OpenError as e:
+            raise DataPreparationInvalidInput(e)
+
+#
+################################################################################
+#
+
     def _set_mask(self):
         """Set mask from elevation map.
 
@@ -464,53 +574,3 @@ class PrepareData(PrepareDataBase, ManageFields):
         from smoderp2d.providers.grass.stream_preparation import StreamPreparation
 
         return StreamPreparation(args, writter=self.storage).prepare()
-
-    def _check_input_data(self):
-        """Check input data.
-
-        Raise DataPreparationInvalidInput on error.
-        """
-        def _check_empty_values(table, field):
-            try:
-                with Vector(**table) as vmap:
-                    vmap.table.filters.select(field, self.storage.primary_key)
-                    for row in vmap.table:
-                        if row[0] in (None, ""):
-                            raise DataPreparationInvalidInput(
-                                "'{}' values in '{}' table are not correct, "
-                                "empty value found in row {})".format(field, table, row[1])
-                            )
-            except OpenError as e:
-                raise DataPreparationInvalidInput(e)
-
-        _check_empty_values(
-            self.__qualified_name(self._input_params['vegetation']),
-            self._input_params['vegetation_type']
-        )
-        _check_empty_values(
-            self.__qualified_name(self._input_params['soil']),
-            self._input_params['soil_type']
-        )
-
-        
-        if self._input_params['table_stream_shape']:
-            table = Table(**self.__qualified_name(self._input_params['table_stream_shape'], mtype='table'))
-            fields = table.columns.names()
-            for f in self.stream_shape_fields:
-                if f not in fields:
-                    raise DataPreparationInvalidInput(
-                        "Field '{}' not found in '{}'\nProper columns codes are: {}".format(
-                            f, self._input_params['table_stream_shape'], self.stream_shape_fields)
-                    )
-
-        # overlapping polygons (soils)
-        try:
-            with VectorTopo(**self.__qualified_name(self._input_params['soil'])) as fd:
-                for area in fd.viter('areas'):
-                    cats = list(area.cats().get_list())
-                    if len(cats) > 1:
-                        raise DataPreparationInvalidInput(
-                            "overlapping soil polygons detected"
-                        )
-        except OpenError as e:
-            raise DataPreparationInvalidInput(e)
