@@ -322,6 +322,7 @@ class PrepareData(PrepareDataBase):
         arcpy.analysis.Clip(stream, aoi_buffer, stream_aoi)
 
         return stream_aoi
+
     def _stream_direction(self, stream, dem_aoi):
         """
         Compute elevation of start/end point of stream parts.
