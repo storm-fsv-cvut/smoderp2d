@@ -10,14 +10,15 @@ class GrassGisLogHandler(logging.Handler):
     """
     def __init__(self):
         super(GrassGisLogHandler, self).__init__()
-        # TODO: use Messenger
-        # self._msg = Messenger()
 
     def emit(self, record):
         """ Write the log message.
 
         :param record: record to emit
         """
+        if not record.msg:
+            return
+
         os.environ['GRASS_VERBOSE'] = '1' # show message
 
         if record.levelno >= PROGRESS:

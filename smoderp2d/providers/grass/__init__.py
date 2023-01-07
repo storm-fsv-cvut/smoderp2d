@@ -21,6 +21,16 @@ class GrassGisWritter(BaseWritter):
         # primary key
         self.primary_key = "cat"
 
+    def output_filepath(self, name):
+        """
+        Get correct path to store dataset 'name'.
+
+        :param name: layer name to be saved
+        :return: full path to the dataset
+        """
+        # TODO: how to deal with temp/core...?
+        return name
+
     def write_raster(self, array, output_name, directory='core'):
         """Write raster to ASCII file.
 
@@ -64,9 +74,6 @@ class GrassGisWritter(BaseWritter):
 class GrassGisProvider(BaseProvider):
     def __init__(self):
         super(GrassGisProvider, self).__init__()
-
-        msgr = Messenger()
-        self._print_fn = msgr.message
 
         # type of computation (default)
         self.args.typecomp = CompType.full

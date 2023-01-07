@@ -12,7 +12,7 @@ from smoderp2d.providers.grass.manage_fields import ManageFields
 
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput, \
-    DataPreparationError
+    DataPreparationError, DataPreparationNoIntersection
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 
 from grass.pygrass.modules import Module
@@ -58,6 +58,66 @@ class PrepareData(PrepareDataBase, ManageFields):
                 raise DataPreparationError("Unexpected mtype {} in __qualified_name".format(mtype))
 
         return { 'name': name }
+
+    @staticmethod
+    def __remove_temp_data(kwargs):
+        Module('g.remove', flags="f", **kwargs)
+
+    def _create_AoI_outline(self, elevation, soil, vegetation):
+        """Creates geometric intersection of input DEM, soil
+        definition and landuse definition that will be used as Area of
+        Interest outline. Slope is not created yet, but generally the
+        edge pixels have nonsense values so "one pixel shrinked DEM"
+        extent is used instead.
+
+        :param elevation: string path to DEM layer
+        :param soil: string path to soil definition layer
+        :param vegetation: string path to vegenatation definition layer
+
+        :return: string path to AIO polygon layer
+
+        """
+        Module('g.region',
+               raster=elevation)
+        dem_slope_mask_path = self.storage.output_filepath('dem_slope_mask')
+        Module('r.recode',
+               input=elevation, output=dem_slope_mask_path+'1',
+               rules="-", stdin_="-100000:100000:1")
+        # r.grow requires computation region to be larger
+        with RasterRow(elevation) as rmap:
+            nsres = rmap.info.nsres
+            ewres = rmap.info.ewres
+        Module('g.region',
+               n='n+{}'.format(nsres), s='s-{}'.format(nsres),
+               e='e+{}'.format(ewres), w='w-{}'.format(ewres))
+        Module('r.grow',
+               input=dem_slope_mask_path+'1', output=dem_slope_mask_path,
+               radius=-1.01, metric="maximum")
+        self.__remove_temp_data({'name': dem_slope_mask_path+'1', 'type': 'raster'})
+        
+        dem_polygon = self.storage.output_filepath('dem_polygon')
+        Module('r.to.vect',
+               input=dem_slope_mask_path, output=dem_polygon,
+               flags="v", type="area")
+        aoi = self.storage.output_filepath('aoi')
+        Module('v.clip',
+               input=soil, clip=dem_polygon,
+               output=aoi+'1')
+        Module('v.overlay',
+               ainput=aoi+'1', binput=vegetation,
+               operator='and', output=aoi)
+        self.__remove_temp_data({'name': aoi+'1', 'type': 'vector'})
+
+        aoi_polygon = self.storage.output_filepath('aoi_polygon')
+        Module('v.dissolve',
+               input=aoi, output=aoi_polygon)
+
+        with VectorTopo(aoi_polygon) as vmap:
+            count = vmap.number_of('areas')
+        if count == 0:
+            raise DataPreparationNoIntersection()
+
+        return aoi_polygon
     
     def _set_mask(self):
         """Set mask from elevation map.
@@ -403,7 +463,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         def _check_empty_values(table, field):
             try:
                 with Vector(**table) as vmap:
-                    vmap.table.filters.select(field, 'cat')
+                    vmap.table.filters.select(field, self.storage.primary_key)
                     for row in vmap.table:
                         if row[0] in (None, ""):
                             raise DataPreparationInvalidInput(
