@@ -180,17 +180,16 @@ class PrepareData(PrepareDataBase):
         arcpy.env.extent = reference
         arcpy.env.snapRaster = reference
 
-    def _compute_efect_cont(self, dem_clip):
+    def _compute_efect_cont(self, dem, asp):
         """
         Compute efect contour array.
         ML: improve description
         
-        :param dem_clip: string to dem clipped by area of interest
-
+        :param dem: string to dem clipped by area of interest
+        :param asp: sting to aspect clipped by area of interest
         :return: numpy array
         """
         pii = math.pi / 180.0
-        asp = arcpy.sa.Aspect(dem_clip)
         asppii = arcpy.sa.Times(asp, pii)
         sinasp = arcpy.sa.Sin(asppii)
         cosasp = arcpy.sa.Cos(asppii)

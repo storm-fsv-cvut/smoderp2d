@@ -213,7 +213,7 @@ class PrepareDataBase(ABC):
         dem_flowdir_aoi = self._clip_raster_layer(dem_flowdir, aoi_polygon, 'dem_flowdir_aoi')
         self._clip_raster_layer(dem_flowacc, aoi_polygon, 'dem_flowacc_aoi')
         dem_slope_aoi = self._clip_raster_layer(dem_slope, aoi_polygon, 'dem_slope_aoi')
-        self._clip_raster_layer(dem_aspect, aoi_polygon, 'dem_aspect_aoi')
+        dem_aspect_aoi = self._clip_raster_layer(dem_aspect, aoi_polygon, 'dem_aspect_aoi')
         points_aoi = self._clip_record_points(self._input_params['points'], aoi_polygon, 'points_aoi')
 
         # convert to numpy arrays
@@ -227,7 +227,7 @@ class PrepareDataBase(ABC):
         self._convert_slope_units()
         if dem_flowdir_aoi is not None:
             self.data['mat_fd'] = self._rst2np(dem_flowdir_aoi)
-        self.data['mat_efect_cont'] = self._compute_efect_cont(dem_aoi)
+        self.data['mat_efect_cont'] = self._compute_efect_cont(dem_aoi, dem_aspect_aoi)
 
         #   join the attributes to soil_veg intersect and check the table consistency
         Logger.info("Preparing soil and vegetation properties...")
