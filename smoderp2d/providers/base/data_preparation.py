@@ -1,13 +1,13 @@
 import os
 import shutil
 import numpy as np
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 from smoderp2d.processes import rainfall
 from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
 
-class PrepareDataBase(object):
+class PrepareDataBase(ABC):
     def __init__(self, writter):
         self.storage = writter
 
@@ -101,7 +101,7 @@ class PrepareDataBase(object):
             }
 
     @abstractmethod
-    def _create_AoI_outline(self):
+    def _create_AoI_outline(self, elevation, soil, vegetation):
         """Creates geometric intersection of input DEM, soil
         definition and landuse definition that will be used as Area of
         Interest outline. Slope is not created yet, but generally the
@@ -111,7 +111,7 @@ class PrepareDataBase(object):
         pass
 
     @abstractmethod    
-    def _create_DEM_derivatives(self):
+    def _create_DEM_derivatives(self, dem):
         """Creates all the needed DEM derivatives in the DEM's
         original extent to avoid raster edge effects. The clipping
         extent could be replaced be AOI border buffered by 1 cell to
@@ -121,19 +121,20 @@ class PrepareDataBase(object):
         pass
 
     @abstractmethod
-    def _clip_raster_layer(self):
+    def _clip_raster_layer(self, dataset, outline, name):
         """Clips raster dataset to given polygon."""
         pass
 
     @abstractmethod
-    def _clip_record_points(self):
+    def _clip_record_points(self, dataset, outline, name):
         """Makes a copy of record points inside the AOI as new
         feature layer and logs those outside AOI.
         """
         pass
 
     @abstractmethod    
-    def _prepare_soilveg(self):
+    def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
+                         aoi_outline, table_soil_vegetation):
         """Prepares the combination of soils and vegetation input
         layers. Gets the spatial intersection of both and checks the
         consistency of attribute table.
@@ -141,12 +142,12 @@ class PrepareDataBase(object):
         pass
 
     @abstractmethod
-    def _rst2np(self):
+    def _rst2np(self, raster):
         """Convert raster data into numpy array."""
         pass
 
     @abstractmethod
-    def _update_raster_dim(self):
+    def _update_raster_dim(self, reference):
         """Update raster spatial reference info.
 
         This function must be called before _rst2np() is used first
@@ -159,29 +160,29 @@ class PrepareDataBase(object):
         pass
 
     @abstractmethod
-    def _compute_efect_cont(self):
+    def _compute_efect_cont(self, dem_clip):
         """Compute efect contour array.
         """
         pass
 
     @abstractmethod
-    def _stream_clip(self):
+    def _stream_clip(self, stream, aoi_polygon):
         pass
 
     @abstractmethod
-    def _stream_direction(self):
+    def _stream_direction(self, stream, dem_aoi):
         pass
 
     @abstractmethod
-    def _stream_reach(self):
+    def _stream_reach(self, stream):
         pass
 
     @abstractmethod
-    def _stream_slope(self):
+    def _stream_slope(self, stream):
         pass
 
     @abstractmethod
-    def _stream_shape(self):
+    def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
         pass
 
     @abstractmethod
