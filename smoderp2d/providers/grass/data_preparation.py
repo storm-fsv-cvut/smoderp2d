@@ -60,7 +60,10 @@ class PrepareData(PrepareDataBase, ManageFields):
 
     @staticmethod
     def __remove_temp_data(kwargs):
-        Module('g.remove', flags="f", **kwargs)
+        if kwargs['type'] != 'table':
+            Module('g.remove', flags="f", **kwargs)
+        else:
+            Module('db.droptable', table=kwargs['name'])
 
     def _create_AoI_outline(self, elevation, soil, vegetation):
         """Creates geometric intersection of input DEM, soil
@@ -347,14 +350,76 @@ class PrepareData(PrepareDataBase, ManageFields):
             Logger.info(
                 "'{}' attribute field already in the table and will be replaced.".format(soilveg_code)
             )
-
         Module('v.db.addcolumn',
                map=soilveg_aoi,
-               columns=["soilveg_code varchar(15)"])
+               columns=["{} varchar(15)".format(soilveg_code)])
+
+        # calculate "soil_veg" values (soil_type + vegetation_type)        
+        Module('v.db.update',
+               map=soilveg_aoi, column=soilveg_code,
+               query_column='a_{} || b_{}'.format(
+                   soil_type, vegetation_type))
+
+        # join soil and vegetation model parameters from input table
+        # v.db.join doesn't support to access tables from other mapsets
+        soilveg_table = self.__qualified_name(table_soil_vegetation, mtype='table')['name']
+        Module('db.copy',
+               from_table=soilveg_table,
+               to_table=soilveg_table,
+               from_database='$GISDBASE/$LOCATION_NAME/PERMANENT/sqlite/sqlite.db'
+        )        
+        Module('v.db.join',
+               map=soilveg_aoi, column=soilveg_code,
+               other_table=soilveg_table,
+               other_column=soilveg_code,
+               subset_columns=list(self.soilveg_fields.keys()))
+        self.__remove_temp_data({'name': soilveg_table, 'type': 'table'})
         
+        # check for empty values
+        with Vector(soilveg_aoi) as vmap:
+            vmap.table.filters.select(*list(self.soilveg_fields.keys()))
+            for row in vmap.table:
+                for i in range(len(row)):
+                    if row[i] in ("", " ", None):
+                        raise DataPreparationInvalidInput(
+                            "Values in soilveg table are not correct "
+                            "(field '{}': empty value found in row {})".format(self.sfield[i], row_id)
+                        )
+
+        # generate numpy array of soil and vegetation attributes
+        for field in self.soilveg_fields.keys():
+            output = self.storage.output_filepath("soilveg_aoi_{}".format(field))
+            Module('v.to.rast',
+                   input=soilveg_aoi, type='area',
+                   use='attr', attribute_column=field,
+                   output=output)
+            self.soilveg_fields[field] = self._rst2np(output)            
+            self._check_soilveg_dim(field)
+
     def _get_array_points(self):
-        pass
-    
+        """Get array of points. Points near AOI border are skipped.
+        """
+        array_points = None
+        if self.data['points'] not in ("", "#", None):
+            points_map = self.__qualified_name(self._input_params['points'])
+            # get number of points
+            with VectorTopo(**points_map) as vmap:
+                count = vmap.number_of('points')
+            if count > 0:
+                # empty array
+                array_points = np.zeros([count, 5], float)
+
+                # get the points geometry and IDs into array
+                with Vector(**points_map) as vmap:
+                    i = 0
+                    for p in vmap:
+                        self._get_array_points_(
+                            array_points, p.x, p.y, p.cat, i
+                        )
+                        i += 1
+
+        return array_points
+
     def _stream_clip(self, stream, aoi_polygon):
         pass
 
@@ -629,26 +694,6 @@ class PrepareData(PrepareDataBase, ManageFields):
             idx += 1
 
         return all_attrib
-
-    def _get_array_points(self):
-        """Get array of points. Points near AOI border are skipped.
-        """
-        if self.data['points'] and \
-           (self.data['points'] != "#") and (self.data['points'] != ""):
-            # get number of points
-            count = self.get_num_points(self.data['points'])
-
-            # empty array
-            self.data['array_points'] = np.zeros([int(count), 5], float)
-
-            i = 0
-            with VectorTopo(self.data['points']) as data:
-                for p in data:
-                    i = self._get_array_points_(
-                        float(p.x), float(p.y), int(p.cat), i
-                    )
-        else:
-            self.data['array_points'] = None
 
     def _get_slope_dir(self, dem_clip):
         """

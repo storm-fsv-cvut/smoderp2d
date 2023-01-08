@@ -238,25 +238,25 @@ class PrepareData(PrepareDataBase):
         arcpy.analysis.Intersect([soil, vegetation, aoi_outline], soilveg_aoi_path, "NO_FID")
 
         soilveg_code = self._input_params['table_soil_vegetation_code']
-        if self._input_params['table_soil_vegetation_code'] in arcpy.ListFields(soilveg_aoi_path):
-            arcpy.management.DeleteField(soilveg_aoi_path, self._input_params['table_soil_vegetation_code'])
+        if soilveg_code in arcpy.ListFields(soilveg_aoi_path):
+            arcpy.management.DeleteField(soilveg_aoi_path, soilveg_code)
             Logger.info(
-                "'{}' attribute field already in the table and will be replaced.".format(self._input_params['table_soil_vegetation_code'])
+                "'{}' attribute field already in the table and will be replaced.".format(soilveg_code)
             )
 
-        arcpy.management.AddField(soilveg_aoi_path, self._input_params['table_soil_vegetation_code'], "TEXT", "", "", "15", "", "NULLABLE", "NON_REQUIRED","")
+        arcpy.management.AddField(soilveg_aoi_path, soilveg_code, "TEXT", field_leght=15)
 
         # calculate "soil_veg" values (soil_type + vegetation_type)
-        with arcpy.da.UpdateCursor(soilveg_aoi_path, [soil_type, veg_fieldname, self._input_params['table_soil_vegetation_code']]) as table:
+        with arcpy.da.UpdateCursor(soilveg_aoi_path, [soil_type, veg_fieldname, soilveg_code]) as table:
             for row in table:
                 row[2] = row[0] + row[1]
                 table.updateRow(row)
 
         # join soil and vegetation model parameters from input table
         arcpy.management.JoinField(
-            soilveg_aoi_path, self._input_params['table_soil_vegetation_code'],
+            soilveg_aoi_path, soilveg_code,
             table_soil_vegetation,
-            self._input_params['table_soil_vegetation_code'], list(self.soilveg_fields.keys())
+            soilveg_code, list(self.soilveg_fields.keys())
         )
 
         # check for empty values
@@ -271,18 +271,12 @@ class PrepareData(PrepareDataBase):
                             "(field '{}': empty value found in row {})".format(self.sfield[i], row_id)
                         )
 
-        # Generate numpy array of soil and vegetation attributes.
+        # generate numpy array of soil and vegetation attributes
         for field in self.soilveg_fields.keys():
             output = self.storage.output_filepath("soilveg_aoi_{}".format(field))
             arcpy.conversion.PolygonToRaster(soilveg_aoi_path, field, output, "MAXIMUM_AREA", "", GridGlobals.dy)
             self.soilveg_fields[field] = self._rst2np(output)
-            if self.soilveg_fields[field].shape[0] != GridGlobals.r or \
-                    self.soilveg_fields[field].shape[1] != GridGlobals.c:
-                raise DataPreparationError(
-                    "Unexpected array {} dimension {}: should be ({}, {})".format(
-                        field, self.soilveg_fields[field].shape,
-                        GridGlobals.r, GridGlobals.c)
-                )
+            self._check_soilveg_dim(field)            
 
     def _get_array_points(self):
         """Get array of points. Points near AOI border are skipped.
@@ -293,7 +287,7 @@ class PrepareData(PrepareDataBase):
             count = int(arcpy.management.GetCount(self.data['points']).getOutput(0))
             if count > 0:
                 # empty array
-                array_points = np.zeros([int(count), 5], float)
+                array_points = np.zeros([count, 5], float)
 
                 # get the points geometry and IDs into array
                 desc = arcpy.Describe(self.data['points'])

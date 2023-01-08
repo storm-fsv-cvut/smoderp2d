@@ -675,3 +675,12 @@ class PrepareDataBase(ABC):
                 if mat_stream_seg[i][j] > 0: # FID starts at 1
                     # state 0|1|2 (> Globals.streams_flow_inc -> stream flow)
                     mat_stream_seg[i][j] += Globals.streams_flow_inc
+
+    def _check_soilveg_dim(self, field):
+        if self.soilveg_fields[field].shape[0] != GridGlobals.r or \
+           self.soilveg_fields[field].shape[1] != GridGlobals.c:
+            raise DataPreparationError(
+                "Unexpected array {} dimension {}: should be ({}, {})".format(
+                    field, self.soilveg_fields[field].shape,
+                    GridGlobals.r, GridGlobals.c)
+            )
