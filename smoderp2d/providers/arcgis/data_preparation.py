@@ -299,7 +299,7 @@ class PrepareData(PrepareDataBase):
                     arcpy.edit.FlipLine(stream) # ML: all streams vs one stream?
 
         # add to_node attribute
-        arcpy.management.AddField(stream, "to_node", "DOUBLE")
+        arcpy.management.AddField(stream, "to_node", "INTEGER")
         with arcpy.da.SearchCursor(stream, [oid_field, "POINT_X", "POINT_Y"]) as cursor_start:
             for row in cursor_start:
                 start_pnt = (row[1], row[2])
