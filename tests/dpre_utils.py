@@ -21,10 +21,9 @@ def report_pickle_difference(new_output, reference):
     :param reference: path to the reference file
     :return: string message reporting the content of the new output
     """
-    sys.stdout.write('{} not consistent with '
-                     'the stored results. The diff is as '
-                     'follows:\n\n'.format(new_output))
-
+    diff_fn = new_output + '.diff'
+    diff_fd = open(diff_fn, 'w')
+    
     with open(new_output, 'rb') as left:
         with open(reference, 'rb') as right:
             if sys.version_info > (3, 0):
@@ -45,10 +44,12 @@ def report_pickle_difference(new_output, reference):
                 )
             ]
 
-            sys.stdout.writelines(unified_diff(new_output_str, reference_str))
+            diff_fd.writelines(unified_diff(new_output_str, reference_str))
 
-    return 'Inconsistency in {}'.format(new_output)
-
+    diff_fd.close()
+    
+    return 'Inconsistency in {}. The diff is stored in {}'.format(
+        new_output, diff_fn)
 
 def perform_dpre_ref_test(runner, params_fn):
     if not os.path.exists(output_dir):
