@@ -500,8 +500,34 @@ class PrepareData(PrepareDataBase, ManageFields):
     def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
         """See base method for description.
         """
-        pass
+        stream_shape_tab = self.__qualified_name(
+            stream_shape_tab, mtype='table')['name']
+        Module('db.copy',
+               from_table=stream_shape_tab,
+               from_database='$GISDBASE/$LOCATION_NAME/PERMANENT/sqlite/sqlite.db',
+               to_table=stream_shape_tab)
+        Module('v.db.join',
+               map=stream, column=stream_shape_code,
+               other_table=stream_shape_tab,
+               other_column=stream_shape_code,
+               subset_columns=self.stream_shape_fields)
 
+        stream_attr = self._stream_attr_(self.storage.primary_key)
+        with Vector(stream) as vmap:
+            vmap.table.filters.select(*stream_attr.keys())
+            for row in vmap.table:
+                for i in range(len(row)):
+                    if row[i] == " " or row[i] is None:
+                        raise DataPreparationError(
+                            "Empty value in tab_stream_shape ({}) found.".format(fields[i])
+                        )
+                    stream_attr[fields[i]].append(row[i])
+                    i += 1
+
+        stream_attr['fid'] = stream_attr.pop(self.storage.primary_key)
+
+        return stream_attr
+                    
     def _check_input_data(self):
         """See base method for description.
         """

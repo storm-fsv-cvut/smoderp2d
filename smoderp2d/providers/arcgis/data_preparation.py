@@ -339,7 +339,8 @@ class PrepareData(PrepareDataBase):
             for row in cursor:
                 slope = (row[1] - row[2]) / row[4]
                 if slope == 0:
-                    raise DataPreparationError('Reach FID: {} has zero slope'.format(row[0]))
+                    raise DataPreparationError(
+                        'Reach FID: {} has zero slope'.format(row[0]))
                 row[3] = slope
                 cursor.updateRow(row)
 
@@ -353,11 +354,7 @@ class PrepareData(PrepareDataBase):
         )
 
         fid = arcpy.Describe(stream).OIDFieldName
-        fields = [fid, 'point_x', 'point_y', 'point_x_end', 'point_y_end', 'to_node',
-                'shape_length', 'slope', stream_shape_code, 'number', 'shapetype', 'b', 'm', 'roughness', 'q365']
-        stream_attr = {}
-        for f in fields:
-            stream_attr[f] = []
+        stream_attr = self._stream_attr_(fid)
         with arcpy.da.SearchCursor(stream, fields) as cursor:
             try:
                 for row in cursor:

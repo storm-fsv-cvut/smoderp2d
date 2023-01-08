@@ -773,3 +773,13 @@ class PrepareDataBase(ABC):
                     field, self.soilveg_fields[field].shape,
                     GridGlobals.r, GridGlobals.c)
             )
+
+    def _stream_attr_(self, fid):
+        fields = [fid, 'point_x', 'point_y', 'point_x_end', 'point_y_end',
+                  'to_node', 'shape_length', 'slope'] + self.stream_shape_fields
+        
+        stream_attr = {}
+        for f in fields:
+            stream_attr[f] = []
+
+        return stream_attr
