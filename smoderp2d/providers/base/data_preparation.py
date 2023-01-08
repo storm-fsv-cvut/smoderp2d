@@ -98,6 +98,12 @@ class PrepareDataBase(ABC):
         Interest outline. Slope is not created yet, but generally the
         edge pixels have nonsense values so "one pixel shrinked DEM"
         extent is used instead.
+
+        :param elevation: string path to DEM layer
+        :param soil: string path to soil definition layer
+        :param vegetation: string path to vegenatation definition layer
+        
+        :return: string path to AIO polygon layer
         """
         pass
 
@@ -108,24 +114,46 @@ class PrepareDataBase(ABC):
         extent could be replaced be AOI border buffered by 1 cell to
         prevent time consuming operations on DEM if the DEM is much
         larger then the AOI.
+
+        :param dem: string path to DEM layer
+
+        :return: string paths to DEM derivates
         """
         pass
 
     @abstractmethod
     def _clip_raster_layer(self, dataset, outline, name):
-        """Clips raster dataset to given polygon."""
+        """Clips raster dataset to given polygon.
+
+        :param dataset: raster dataset to be clipped
+        :param aoi_polygon: feature class to be used as the clipping geometry
+        :param name: dataset name in the _data dictionary
+
+        :return: full path to clipped raster
+        """
         pass
 
     @abstractmethod
     def _clip_record_points(self, dataset, outline, name):
         """Makes a copy of record points inside the AOI as new
         feature layer and logs those outside AOI.
+
+        :param dataset: points dataset to be clipped
+        :param aoi_polygon: polygon feature class of the AoI
+        :param name: output dataset name in the _data dictionary
+
+        :return: full path to clipped points dataset
         """
         pass
 
     @abstractmethod
     def _rst2np(self, raster):
-        """Convert raster data into numpy array."""
+        """Convert raster data into numpy array.
+
+        :param raster: raster name
+
+        :return: numpy array
+        """
         pass
 
     @abstractmethod
@@ -134,12 +162,19 @@ class PrepareDataBase(ABC):
 
         This function must be called before _rst2np() is used first
         time.
+
+        :param reference: reference raster layer
         """
         pass
 
     @abstractmethod
     def _compute_efect_cont(self, dem_clip):
         """Compute efect contour array.
+        ML: improve description
+        
+        :param dem: string to dem clipped by area of interest
+        :param asp: sting to aspect clipped by area of interest
+        :return: numpy array
         """
         pass
 
@@ -149,38 +184,90 @@ class PrepareDataBase(ABC):
         """Prepares the combination of soils and vegetation input
         layers. Gets the spatial intersection of both and checks the
         consistency of attribute table.
+
+        :param soil: string path to soil layer
+        :param soil_type: soil type attribute
+        :param vegetation: string path to vegetation layer
+        :param vegetation_type: vegetation type attribute
+        :param aoi_polygon: string path to polygon layer defining area of interest
+        :param table_soil_vegetation: string path to table with soil and vegetation attributes
+        
+        :return: full path to soil and vegetation dataset
         """
         pass
 
     @abstractmethod
     def _get_array_points(self):
+        """Get array of points. Points near AOI border are skipped.
+
+        :return: generated numpy array
+        """
         pass
 
     @abstractmethod
     def _stream_clip(self, stream, aoi_polygon):
+        """Clip stream layer to the given polygon.
+
+        :param stream: path to stream layer
+        :param outline: path to polygon layer of the AoI
+
+        :return: full path to clipped stream dataset
+        """
         pass
 
     @abstractmethod
     def _stream_direction(self, stream, dem_aoi):
+        """Compute elevation of start/end point of stream parts.
+        Add code of ascending stream part into attribute table.
+
+        :param stream: vector stream features
+        """
         pass
 
     @abstractmethod
     def _stream_reach(self, stream):
+        """Get numpy array of integers detecting whether there is a stream on
+        corresponding pixel of raster (number equal or greater than
+        1000 in return numpy array) or not (number 0 in return numpy
+        array).
+
+        :param stream: Polyline with stream in the area.
+        
+        :return mat_stream_seg: Numpy array
+        """
         pass
 
     @abstractmethod
     def _stream_slope(self, stream):
+        """Compute slope of stream
+
+        :param stream: stream layer
+        """
         pass
 
     @abstractmethod
     def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
+        """Compute shape of stream.
+
+        :param stream: stream layer
+        :param stream_shape_code: shape code column
+        :param stream_shape_tab: table with stream shapes
+        """
         pass
 
     @abstractmethod
     def _check_input_data(self):
+        """Check input data.
+
+        Raise DataPreparationInvalidInput on error.
+        """
         pass
             
     def run(self):
+        """Perform data preparation steps.
+
+        :return dict: prepared data as dictionary
+        """
         Logger.info('-' * 80)
         Logger.info("DATA PREPARATION")
 

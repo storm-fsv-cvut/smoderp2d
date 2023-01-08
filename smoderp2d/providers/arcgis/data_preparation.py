@@ -23,18 +23,7 @@ class PrepareData(PrepareDataBase):
         super(PrepareData, self).__init__(writter)
 
     def _create_AoI_outline(self, elevation, soil, vegetation):
-        """Creates geometric intersection of input DEM, soil
-        definition and landuse definition that will be used as Area of
-        Interest outline. Slope is not created yet, but generally the
-        edge pixels have nonsense values so "one pixel shrinked DEM"
-        extent is used instead.
-
-        :param elevation: string path to DEM layer
-        :param soil: string path to soil definition layer
-        :param vegetation: string path to vegenatation definition layer
-        
-        :return: string path to AIO polygon layer
-
+        """See base method for description.
         """
         dem_slope_mask_path = self.storage.output_filepath('dem_slope_mask')
         dem_mask = arcpy.sa.Reclassify(elevation, "VALUE", "-100000 100000 1", "DATA")
@@ -58,13 +47,7 @@ class PrepareData(PrepareDataBase):
         return aoi_polygon
 
     def _create_DEM_derivatives(self, dem):
-        """Creates all the needed DEM derivatives in the DEM's
-        original extent to avoid raster edge effects. The clipping
-        extent could be replaced be AOI border buffered by 1 cell to
-        prevent time consuming operations on DEM if the DEM is much
-        larger then the AOI.
-
-        :param dem: string path to DEM layer
+        """See base method for description.
         """
         # calculate the depressionless DEM
         dem_filled_path = self.storage.output_filepath('dem_filled')
@@ -95,41 +78,28 @@ class PrepareData(PrepareDataBase):
 
         return dem_filled_path, dem_flowdir_path, dem_flowacc_path, dem_slope_path, dem_aspect_path
 
-    def _clip_raster_layer(self, dataset, outline, name):
-        """Clips raster dataset to given polygon.
-
-        :param dataset: raster dataset to be clipped
-        :param outline: feature class to be used as the clipping geometry
-        :param name: dataset name in the _data dictionary
-
-        :return: full path to clipped raster
+    def _clip_raster_layer(self, dataset, aoi_polygon, name):
+        """See base method for description.
         """
         output_path = self.storage.output_filepath(name)
-        arcpy.management.Clip(dataset, out_raster=output_path, in_template_dataset=outline,
+        arcpy.management.Clip(dataset, out_raster=output_path, in_template_dataset=aoi_polygon,
                               nodata_value=GridGlobals.NoDataValue, clipping_geometry="ClippingGeometry")
         return output_path
 
-    def _clip_record_points(self, dataset, outline, name):
-        """Makes a copy of record points inside the AOI as new
-        feature layer and logs those outside AOI.
-
-        :param dataset: points dataset to be clipped
-        :param outline: polygon feature class of the AoI
-        :param name: output dataset name in the _data dictionary
-
-        :return: full path to clipped points dataset
+    def _clip_record_points(self, dataset, aoi_polygon, name):
+        """See base method for description.
         """
         # create a feature layer for the selections
         points_layer = arcpy.management.MakeFeatureLayer(dataset, "points_layer")
         # select points inside the AIO
-        arcpy.management.SelectLayerByLocation(points_layer, "WITHIN", outline, "", "NEW_SELECTION")
+        arcpy.management.SelectLayerByLocation(points_layer, "WITHIN", aoi_polygon, "", "NEW_SELECTION")
         # save them as a new dataset
         points_clipped = self.storage.output_filepath(name)
         arcpy.management.CopyFeatures(points_layer, points_clipped)
 
         # select points outside the AoI
         # TODO: shouldn't be the point to close the border removed here as well?
-        arcpy.management.SelectLayerByLocation(points_layer, "WITHIN", outline, "", "NEW_SELECTION", "INVERT")
+        arcpy.management.SelectLayerByLocation(points_layer, "WITHIN", aoi_polygon, "", "NEW_SELECTION", "INVERT")
         pointsOID = arcpy.Describe(dataset).OIDFieldName
         outsideList = []
         # get their IDs
@@ -145,21 +115,12 @@ class PrepareData(PrepareDataBase):
         return points_clipped
 
     def _rst2np(self, raster):
-        """Convert raster data into numpy array.
-
-        :param raster: raster name
-
-        :return: numpy array
+        """See base method for description.
         """
         return arcpy.RasterToNumPyArray(raster)
 
     def _update_grid_globals(self, reference):
-        """Update raster spatial reference info.
-
-        This function must be called before _rst2np() is used first
-        time.
-
-        :param reference: reference raster layer
+        """See base method for description.
         """
         desc = arcpy.Describe(reference)
 
@@ -181,13 +142,7 @@ class PrepareData(PrepareDataBase):
         arcpy.env.snapRaster = reference
 
     def _compute_efect_cont(self, dem, asp):
-        """
-        Compute efect contour array.
-        ML: improve description
-        
-        :param dem: string to dem clipped by area of interest
-        :param asp: sting to aspect clipped by area of interest
-        :return: numpy array
+        """See base method for description.
         """
         pii = math.pi / 180.0
         asppii = arcpy.sa.Times(asp, pii)
@@ -204,19 +159,8 @@ class PrepareData(PrepareDataBase):
         return self._rst2np(efect_cont)
 
     def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
-                         aoi_outline, table_soil_vegetation):
-        """Prepares the combination of soils and vegetation input
-        layers. Gets the spatial intersection of both and checks the
-        consistency of attribute table.
-
-        :param soil: string path to soil layer
-        :param soil_type: soil type attribute
-        :param vegetation: string path to vegetation layer
-        :param vegetation_type: vegetation type attribute
-        :param aoi_outline: string path to polygon layer defining area of interest
-        :param table_soil_vegetation: string path to table with soil and vegetation attributes
-        
-        :return: full path to soil and vegetation dataset
+                         aoi_polygon, table_soil_vegetation):
+        """See base method for description.
         """
         # check if the soil_type and vegetation_type field names are
         # equal and deal with it if not
@@ -235,7 +179,7 @@ class PrepareData(PrepareDataBase):
 
         # create the geometric intersection of soil and vegetation layers
         soilveg_aoi_path = self.storage.output_filepath("soilveg_aoi")
-        arcpy.analysis.Intersect([soil, vegetation, aoi_outline], soilveg_aoi_path, "NO_FID")
+        arcpy.analysis.Intersect([soil, vegetation, aoi_polygon], soilveg_aoi_path, "NO_FID")
 
         soilveg_code = self._input_params['table_soil_vegetation_code']
         if soilveg_code in arcpy.ListFields(soilveg_aoi_path):
@@ -279,7 +223,7 @@ class PrepareData(PrepareDataBase):
             self._check_soilveg_dim(field)            
 
     def _get_array_points(self):
-        """Get array of points. Points near AOI border are skipped.
+        """See base method for description.
         """
         array_points = None
         if self.data['points'] not in ("", "#", None):
@@ -303,7 +247,8 @@ class PrepareData(PrepareDataBase):
         return array_points
     
     def _stream_clip(self, stream, aoi_polygon):
-        """Clip stream with intersect of input data."""
+        """See base method for description.
+        """
         aoi_buffer = arcpy.analysis.Buffer(aoi_polygon,
             self.storage.output_filepath('aoi_buffer'),
             -GridGlobals.dx / 3, # ML: ? + clip ?
@@ -316,11 +261,7 @@ class PrepareData(PrepareDataBase):
         return stream_aoi
 
     def _stream_direction(self, stream, dem_aoi):
-        """
-        Compute elevation of start/end point of stream parts.
-        Add code of ascending stream part into attribute table.
-
-        :param stream: vector stream features
+        """See base method for description.
         """
         # extract elevation for start/end stream nodes
         stream_start = arcpy.management.FeatureVerticesToPoints(
@@ -374,13 +315,7 @@ class PrepareData(PrepareDataBase):
                         cursor_end.updateRow(row)
 
     def _stream_reach(self, stream):
-        """Get numpy array of integers detecting whether there is a stream on
-        corresponding pixel of raster (number equal or greater than
-        1000 in return numpy array) or not (number 0 in return numpy
-        array).
-
-        :param stream: Polyline with stream in the area.
-        :return mat_stream_seg: Numpy array
+        """See base method for description.
         """
         stream_seg = self.storage.output_filepath('stream_seg')
         arcpy.conversion.PolylineToRaster(
@@ -395,9 +330,7 @@ class PrepareData(PrepareDataBase):
         return mat_stream_seg.astype('int16')
 
     def _stream_slope(self, stream):
-        """Compute slope of stream
-
-        :param stream: stream layer
+        """See base method for description.
         """
         arcpy.management.AddField(stream, "slope", "DOUBLE")
         fields = [arcpy.Describe(stream).OIDFieldName,
@@ -411,11 +344,7 @@ class PrepareData(PrepareDataBase):
                 cursor.updateRow(row)
 
     def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
-        """Compute shape of stream.
-
-        :param stream: stream layer
-        :param stream_shape_code: shape code column
-        :param stream_shape_tab: table with stream shapes
+        """See base method for description.
         """
         arcpy.management.JoinField(
             stream, stream_shape_code,
@@ -453,9 +382,7 @@ class PrepareData(PrepareDataBase):
         return stream_attr
 
     def _check_input_data(self):
-        """Check input data.
-
-        Raise DataPreparationInvalidInput on error.
+        """See base method for description.
         """
         def _check_empty_values(table, field):
             oidfn = arcpy.Describe(table).OIDFieldName

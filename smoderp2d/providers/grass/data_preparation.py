@@ -66,18 +66,7 @@ class PrepareData(PrepareDataBase, ManageFields):
             Module('db.droptable', table=kwargs['name'])
 
     def _create_AoI_outline(self, elevation, soil, vegetation):
-        """Creates geometric intersection of input DEM, soil
-        definition and landuse definition that will be used as Area of
-        Interest outline. Slope is not created yet, but generally the
-        edge pixels have nonsense values so "one pixel shrinked DEM"
-        extent is used instead.
-
-        :param elevation: string path to DEM layer
-        :param soil: string path to soil definition layer
-        :param vegetation: string path to vegenatation definition layer
-
-        :return: string path to AIO polygon layer
-
+        """See base method for description.
         """
         Module('g.region',
                raster=elevation)
@@ -126,13 +115,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         return aoi_polygon
 
     def _create_DEM_derivatives(self, dem):
-        """Creates all the needed DEM derivatives in the DEM's
-        original extent to avoid raster edge effects. The clipping
-        extent could be replaced be AOI border buffered by 1 cell to
-        prevent time consuming operations on DEM if the DEM is much
-        larger then the AOI.
-
-        :param dem: string path to DEM layer
+        """See base method for description.
         """
         Module('g.region',
                raster=dem)
@@ -180,47 +163,34 @@ class PrepareData(PrepareDataBase, ManageFields):
         return dem_filled, dem_flowdir, dem_flowacc, dem_slope, dem_aspect
 
     
-    def _clip_raster_layer(self, dataset, outline, name):
-        """Clips raster dataset to given polygon.
-
-        :param dataset: raster dataset to be clipped
-        :param outline: feature class to be used as the clipping geometry
-        :param name: dataset name in the _data dictionary
-
-        :return: full path to clipped raster
+    def _clip_raster_layer(self, dataset, aoi_polygon, name):
+        """See base method for description.
         """
         output = self.storage.output_filepath(name)
-        if outline not in Mapset().glist(type='raster'):
+        if aoi_polygon not in Mapset().glist(type='raster'):
             Module('v.to.rast',
-                   input=outline, type='area', use='cat',
-                   output=outline)
+                   input=aoi_polygon, type='area', use='cat',
+                   output=aoi_polygon)
         Module('r.mapcalc',
                expression='{o} = if(isnull({m}), null(), {i})'.format(
-                   o=output, m=outline, i=dataset))
+                   o=output, m=aoi_polygon, i=dataset))
 
         return output
     
-    def _clip_record_points(self, dataset, outline, name):
-        """Makes a copy of record points inside the AOI as new
-        feature layer and logs those outside AOI.
-
-        :param dataset: points dataset to be clipped
-        :param outline: polygon feature class of the AoI
-        :param name: output dataset name in the _data dictionary
-
-        :return: full path to clipped points dataset
+    def _clip_record_points(self, dataset, aoi_polygon, name):
+        """See base method for description.
         """
         # select points inside the AIO        
         points_clipped = self.storage.output_filepath(name)
         Module('v.select',
-               ainput=dataset, binput=outline,
+               ainput=dataset, binput=aoi_polygon,
                operator='within',
                output=points_clipped)
 
         # select points outside the AoI
         Module('v.select',
                flags='r',
-               ainput=dataset, binput=outline,
+               ainput=dataset, binput=aoi_polygon,
                operator='within',
                output=points_clipped+'1')
         outsideList = []
@@ -239,11 +209,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         return points_clipped
  
     def _rst2np(self, raster):
-        """Convert raster data into numpy array.
-
-        :param raster: raster name
-
-        :return: numpy array
+        """See base method for description.
         """
         # raster is read from current computation region
         # g.region cannot be called here,
@@ -252,10 +218,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         return raster2numpy(raster)
 
     def _update_grid_globals(self, reference):
-        """Update raster spatial reference info.
-
-        This function must be called before _rst2np() is used first
-        time.
+        """See base method for description.
         """
         # lower left corner coordinates        
         with RasterRow(reference) as data:
@@ -272,13 +235,7 @@ class PrepareData(PrepareDataBase, ManageFields):
             GridGlobals.set_size((data.info.ewres, data.info.nsres))
 
     def _compute_efect_cont(self, dem, asp):
-        """
-        Compute efect contour array.
-        ML: improve description
-        
-        :param dem: string to dem clipped by area of interest
-        :param asp: sting to aspect clipped by area of interest
-        :return: numpy array
+        """See base method for description.
         """
         # conversion to radias not needed, GRASS's sin() assumes degrees
         ratio_cell = self.storage.output_filepath('ratio_cell')
@@ -296,19 +253,8 @@ class PrepareData(PrepareDataBase, ManageFields):
         return self._rst2np(efect_cont)
 
     def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
-                         aoi_outline, table_soil_vegetation):
-        """Prepares the combination of soils and vegetation input
-        layers. Gets the spatial intersection of both and checks the
-        consistency of attribute table.
-
-        :param soil: string path to soil layer
-        :param soil_type: soil type attribute
-        :param vegetation: string path to vegetation layer
-        :param vegetation_type: vegetation type attribute
-        :param aoi_outline: string path to polygon layer defining area of interest
-        :param table_soil_vegetation: string path to table with soil and vegetation attributes
-        
-        :return: full path to soil and vegetation dataset
+                         aoi_polygon, table_soil_vegetation):
+        """See base method for description.
         """
         # check if the soil_type and vegetation_type field names are
         # equal and deal with it if not
@@ -331,7 +277,7 @@ class PrepareData(PrepareDataBase, ManageFields):
         soilveg_aoi = self.storage.output_filepath("soilveg_aoi")
         soil_aoi = self.__qualified_name(soil)['name']+'1'
         Module('v.clip',
-               input=soil, clip=aoi_outline,
+               input=soil, clip=aoi_polygon,
                output=soil_aoi)
         Module('v.overlay',
                ainput=soil_aoi,
@@ -397,7 +343,7 @@ class PrepareData(PrepareDataBase, ManageFields):
             self._check_soilveg_dim(field)
 
     def _get_array_points(self):
-        """Get array of points. Points near AOI border are skipped.
+        """See base method for description.
         """
         array_points = None
         if self.data['points'] not in ("", "#", None):
@@ -421,24 +367,32 @@ class PrepareData(PrepareDataBase, ManageFields):
         return array_points
 
     def _stream_clip(self, stream, aoi_polygon):
+        """See base method for description.
+        """
         pass
 
     def _stream_direction(self, stream, dem_aoi):
+        """See base method for description.
+        """
         pass
 
     def _stream_reach(self, stream):
+        """See base method for description.
+        """
         pass
 
     def _stream_slope(self, stream):
+        """See base method for description.
+        """
         pass
 
     def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
+        """See base method for description.
+        """
         pass
 
     def _check_input_data(self):
-        """Check input data.
-
-        Raise DataPreparationInvalidInput on error.
+        """See base method for description.
         """
         def _check_empty_values(table, field):
             try:
