@@ -14,6 +14,7 @@ from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput, \
     DataPreparationError, DataPreparationNoIntersection
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 
+from grass.script.core import tempfile
 from grass.pygrass.modules import Module
 from grass.pygrass.vector import VectorTopo, Vector
 from grass.pygrass.vector.table import Table, get_path
@@ -369,22 +370,130 @@ class PrepareData(PrepareDataBase, ManageFields):
     def _stream_clip(self, stream, aoi_polygon):
         """See base method for description.
         """
-        pass
+        aoi_buffer = self.storage.output_filepath('aoi_buffer')
+        Module('v.buffer',
+               input=aoi_polygon, output='aoi_buffer',
+               distance=-GridGlobals.dx / 3)
 
-    def _stream_direction(self, stream, dem_aoi):
+        stream_aoi = self.storage.output_filepath('stream_aoi')
+        Module('v.clip',
+               input=stream, clip=aoi_buffer,
+               output=stream_aoi)
+
+        return stream_aoi
+
+    def _stream_direction(self, stream, dem):
         """See base method for description.
         """
-        pass
+        # extract elevation for start/end stream nodes
+        Module('g.region', raster=dem)
+        columns = ['point_x', 'point_y']
+        for what in ('start', 'end'):
+            Module('v.to.points',
+                   input=stream, use=what,
+                   output=what)
+            column = 'elev_{}'.format(what)
+            Module('v.what.rast',
+                   map=what, raster=dem,
+                   column=column)
+            Module('v.db.join',
+                   map=stream, column=self.storage.primary_key,
+                   other_table=what+'_1', # v.what produces two tables
+                   other_column=self.storage.primary_key,
+                   subset_columns=[column]
+            )
+
+            if what == 'end':
+                columns = list(map(lambda x: x + '_end', columns))
+            Module('v.to.db',
+                   map=stream, option=what,
+                   columns=columns
+            )
+            
+            self.__remove_temp_data({'name': what, 'type': 'vector'})
+
+        # flip stream
+        stream_flip = []
+        with Vector(stream) as vmap:
+            vmap.table.filters.select(self.storage.primary_key, 'elev_start', 'elev_end')
+            for row in vmap.table:
+                if row[1] < row[2]:
+                    stream_flip.append(row[0])
+        if stream_flip:
+            Module('v.edit',
+                   map=stream,
+                   tool='flip',
+                   cats=','.join(stream_flip))
+
+        # add to_node attribute
+        Module('v.db.addcolumn',
+               map=stream,
+               columns=['to_node integer'])
+        to_node = {}
+        with VectorTopo(stream) as vmap:
+            for line in vmap:
+                start, end = line.nodes()
+                cat = line.cat
+                for start_line in start.lines():
+                    if start_line.cat != cat:
+                        to_node[cat] = start_line.cat
+
+        if to_node:
+            # TODO: rewrite using pygrass
+            # ML: compare with ArcGIS
+            tmpfile = tempfile(create=False)
+            with open(tmpfile, 'w') as fd:
+                for c, n in to_node.items():
+                    fd.write('UPDATE {} SET to_node = {} WHERE {} = {};\n'.format(
+                        stream, n, self.storage.primary_key, c
+                    ))
+            Module('db.execute',
+                   input=tmpfile)
 
     def _stream_reach(self, stream):
         """See base method for description.
         """
-        pass
+        Module('g.region', flags='p',
+               vector=stream,
+               s=GridGlobals.yllcorner, w=GridGlobals.xllcorner,
+               n=GridGlobals.yllcorner+(GridGlobals.r * GridGlobals.dy),
+               e=GridGlobals.xllcorner+(GridGlobals.c * GridGlobals.dx),
+               ewres=GridGlobals.dx, nsres=GridGlobals.dy)
 
+        stream_seg = self.storage.output_filepath('stream_seg')
+        Module('v.to.rast',
+               input=stream, type='line', use='cat',
+               output=stream_seg)
+
+        mat_stream_seg = self._rst2np(stream_seg)
+        # ML: is no_of_streams needed (-> mat_stream_seg.max())
+        self._get_mat_stream_seg(mat_stream_seg)
+
+        return mat_stream_seg.astype('int16')
+        
     def _stream_slope(self, stream):
         """See base method for description.
         """
-        pass
+        Module('v.db.addcolumn',
+               map=stream,
+               columns=['slope double precision'])
+
+        Module('v.to.db',
+               map=stream,
+               columns='shape_length',
+               option='length')
+        Module('v.db.update',
+               map=stream,column='slope',
+               query_column='(elev_start - elev_end) / shape_length')
+
+        # ML: compare with AcrGIS
+        with Vector(stream) as vmap:
+            vmap.table.filters.select(
+                self.storage.primary_key, 'slope')
+            for row in vmap.table:
+                if row[1] == 0:
+                    raise DataPreparationError(
+                        'Reach FID: {} has zero slope'.format(row[0]))
 
     def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
         """See base method for description.

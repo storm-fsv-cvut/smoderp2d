@@ -216,11 +216,12 @@ class PrepareDataBase(ABC):
         pass
 
     @abstractmethod
-    def _stream_direction(self, stream, dem_aoi):
+    def _stream_direction(self, stream, dem):
         """Compute elevation of start/end point of stream parts.
         Add code of ascending stream part into attribute table.
 
-        :param stream: vector stream features
+        :param stream: string path to stream dataset
+        :param dem: string path to DEM dataset
         """
         pass
 
@@ -231,7 +232,7 @@ class PrepareDataBase(ABC):
         1000 in return numpy array) or not (number 0 in return numpy
         array).
 
-        :param stream: Polyline with stream in the area.
+        :param stream: string path to stream dataset
         
         :return mat_stream_seg: Numpy array
         """
@@ -241,7 +242,7 @@ class PrepareDataBase(ABC):
     def _stream_slope(self, stream):
         """Compute slope of stream
 
-        :param stream: stream layer
+        :param stream: string path to stream dataset
         """
         pass
 
@@ -249,9 +250,11 @@ class PrepareDataBase(ABC):
     def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
         """Compute shape of stream.
 
-        :param stream: stream layer
+        :param stream: string path to stream dataset
         :param stream_shape_code: shape code column
         :param stream_shape_tab: table with stream shapes
+
+        :return list: stream shape attributes as list
         """
         pass
 
@@ -365,7 +368,6 @@ class PrepareDataBase(ABC):
         #Logger.progress(50)
 
         Logger.info("Computing stream preparation...")
-        # self._prepare_streams(aoi_polygon, dem_clip, intersect, flow_accumulation_clip)
         if self._input_params['stream'] and self._input_params['table_stream_shape'] and self._input_params['table_stream_shape_code']:
             self._prepare_stream(self._input_params['stream'],
                                  self._input_params['table_stream_shape'],
