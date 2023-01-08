@@ -188,7 +188,7 @@ class PrepareData(PrepareDataBase):
                 "'{}' attribute field already in the table and will be replaced.".format(soilveg_code)
             )
 
-        arcpy.management.AddField(soilveg_aoi_path, soilveg_code, "TEXT", field_leght=15)
+        arcpy.management.AddField(soilveg_aoi_path, soilveg_code, "TEXT", field_length=15)
 
         # calculate "soil_veg" values (soil_type + vegetation_type)
         with arcpy.da.UpdateCursor(soilveg_aoi_path, [soil_type, veg_fieldname, soilveg_code]) as table:
