@@ -455,7 +455,7 @@ class PrepareData(PrepareDataBase, ManageFields):
     def _stream_reach(self, stream):
         """See base method for description.
         """
-        Module('g.region', flags='p',
+        Module('g.region',
                vector=stream,
                s=GridGlobals.yllcorner, w=GridGlobals.xllcorner,
                n=GridGlobals.yllcorner+(GridGlobals.r * GridGlobals.dy),
