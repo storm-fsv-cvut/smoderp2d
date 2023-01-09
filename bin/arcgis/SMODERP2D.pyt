@@ -197,23 +197,23 @@ class SMODERP2D(object):
     def updateParameters(self, parameters):
         """Values and properties of parameters before internal validation is performed.
         This method is called whenever a parameter has been changed."""
-        # ONLY FOR TESTING
-        arcpy.env.workspace = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "data")
-        parameters[PARAMETER_DEM].value = "dem10m"
-        parameters[PARAMETER_SOIL].value = "soils.shp"
-        parameters[PARAMETER_SOIL_TYPE].value = "SID"
-        parameters[PARAMETER_VEGETATION].value = "landuse.shp"
-        parameters[PARAMETER_VEGETATION_TYPE].value = "LandUse"
-        parameters[PARAMETER_PATH_TO_RAINFALL_FILE].value = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "data", "rainfall.txt")
-        parameters[PARAMETER_MAX_DELTA_T].value = 30
-        parameters[PARAMETER_END_TIME].value = 40
-        parameters[PARAMETER_POINTS].value = "points.shp"
-        # parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].value = "output"
-        parameters[PARAMETER_SOILVEGTABLE].value = "soil_veg_tab_mean.dbf"
-        parameters[PARAMETER_SOILVEGTABLE_CODE].value = "soilveg"
-        # parameters[PARAMETER_STREAM].value =
-        # parameters[PARAMETER_STREAMTABLE].value =
-        # parameters[PARAMETER_STREAMTABLE_CODE].value =
+        # # ONLY FOR TESTING
+        # arcpy.env.workspace = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "data")
+        # parameters[PARAMETER_DEM].value = "dem10m"
+        # parameters[PARAMETER_SOIL].value = "soils.shp"
+        # parameters[PARAMETER_SOIL_TYPE].value = "SID"
+        # parameters[PARAMETER_VEGETATION].value = "landuse.shp"
+        # parameters[PARAMETER_VEGETATION_TYPE].value = "LandUse"
+        # parameters[PARAMETER_PATH_TO_RAINFALL_FILE].value = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "data", "rainfall.txt")
+        # parameters[PARAMETER_MAX_DELTA_T].value = 30
+        # parameters[PARAMETER_END_TIME].value = 40
+        # parameters[PARAMETER_POINTS].value = "points.shp"
+        # # parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].value = "output"
+        # parameters[PARAMETER_SOILVEGTABLE].value = "soil_veg_tab_mean.dbf"
+        # parameters[PARAMETER_SOILVEGTABLE_CODE].value = "soilveg"
+        # # parameters[PARAMETER_STREAM].value =
+        # # parameters[PARAMETER_STREAMTABLE].value =
+        # # parameters[PARAMETER_STREAMTABLE_CODE].value =
 
     def updateMessages(self, parameters):
         """Messages created by internal validation for each tool
