@@ -355,11 +355,11 @@ class PrepareData(PrepareDataBase):
 
         fid = arcpy.Describe(stream).OIDFieldName
         stream_attr = self._stream_attr_(fid)
+        fields = list(stream_attr.keys())
         with arcpy.da.SearchCursor(stream, fields) as cursor:
             try:
                 for row in cursor:
                     i = 0
-                    fields = list(stream_attr.keys())
                     for i in range(len(row)):
                         if row[i] in (" ", None):
                             raise DataPreparationError(
