@@ -215,7 +215,9 @@ class PrepareData(PrepareDataBase, ManageFields):
         # raster is read from current computation region
         # g.region cannot be called here,
         # see https://github.com/storm-fsv-cvut/smoderp2d/issues/42
-        Region().from_rast(raster)
+        region = Region()
+        region.from_rast(raster)
+        region.set_raster_region()
         return raster2numpy(raster)
 
     def _update_grid_globals(self, reference):
