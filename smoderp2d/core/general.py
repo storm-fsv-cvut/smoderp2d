@@ -59,7 +59,7 @@ class GridGlobals(object):
     # left bottom corner y coordinate of raster
     yllcorner = None
     # no data value for raster
-    NoDataValue = None
+    NoDataValue = -9999
     # no data integer value for raster
     NoDataInt = None
     # size of raster cell
@@ -110,6 +110,7 @@ class GridGlobals(object):
     def set_size(cls, dxdy):
         cls.dx = dxdy[0]
         cls.dy = dxdy[1]
+        cls.pixel_area = cls.dx * cls.dy
 
     @classmethod
     def get_no_data(cls):

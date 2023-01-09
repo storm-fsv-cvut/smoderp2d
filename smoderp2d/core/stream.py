@@ -4,18 +4,18 @@ from smoderp2d.providers import Logger
 from smoderp2d.exceptions import ProviderError
 
 class Reach(object):
-    def __init__(self, fid, point_x, point_y, point_x_1, point_y_1,
-                 to_node, length, slope, smoderp, number, shapetype, b, m, roughness, q365):
+    def __init__(self, fid, point_x, point_y, point_x_end, point_y_end,
+                 to_node, shape_length, slope, smoderp, number, shapetype, b, m, roughness, q365):
 
         self.fid = fid
         self.pointsFrom = [point_x, point_y]
-        self.pointsTo = [point_x_1, point_y_1]
+        self.pointsTo = [point_x_end, point_y_end]
         self.to_node = to_node
-        self.length = length
+        self.length = shape_length
         if slope < 0:
             Logger.info(
-                "Slope in reach part {} indicated minus slope in stream".format(fid
-                ))
+                "Slope in reach part {} indicated minus slope in stream".format(fid)
+            )
         self.slope = abs(slope)
         self.smoderp = smoderp
         self.no = number
@@ -76,7 +76,6 @@ class Stream(object):
             args = {k:v[i] for k,v in self.streams.items()}
             self.reach[int(self.streams['fid'][i])] = Reach(**args)
 
-        self.streams_loc = Gl.streams_loc
         self.mat_stream_reach = Gl.mat_stream_reach
 
         for i in self.rr:

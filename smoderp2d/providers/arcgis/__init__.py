@@ -15,11 +15,6 @@ class ArcGisWritter(BaseWritter):
     def __init__(self):
         super(ArcGisWritter, self).__init__()
 
-        # primary key depends of storage format
-        # * Shapefile -> FID
-        # * FileGDB -> OBJECTID
-        self.primary_key = "OBJECTID"
-
         # Overwriting output
         arcpy.env.overwriteOutput = 1
 
@@ -33,13 +28,6 @@ class ArcGisWritter(BaseWritter):
         # create control ArcGIS File Geodatabase
         arcpy.management.CreateFileGDB(os.path.join(outdir, 'control'), "data.gdb")
 
-    def set_data_target(self, data):
-        """Set target data dictionary.
-
-        :param data: data dictionary to be set
-        """
-        self._data_target = data
-
     def output_filepath(self, name):
         """
         Get correct path to store dataset 'name'.
@@ -49,7 +37,7 @@ class ArcGisWritter(BaseWritter):
         """
         item = self._data_target.get(name)
         if item is None or item not in ("temp", "control", "core"):
-            raise ProviderError("Invalid item for output_filepath: {}".format(item))
+            raise ProviderError("Unable to define target in output_filepath: {}".format(name))
 
         path = Globals.get_outdir()
         # 'core' datasets don't have directory, only the geodatabase
@@ -72,13 +60,10 @@ class ArcGisWritter(BaseWritter):
         file_output = self._raster_output_path(output_name, directory)
         
         # prevent call globals before values assigned
-        if (GridGlobals.xllcorner == None):
-            raise GlobalsNotSet()
-        if (GridGlobals.yllcorner == None):
-            raise GlobalsNotSet()
-        if (GridGlobals.dx == None):
-            raise GlobalsNotSet()
-        if (GridGlobals.dy == None):
+        if GridGlobals.xllcorner is None or \
+            GridGlobals.yllcorner is None or \
+            GridGlobals.dx is None or \
+            GridGlobals.dy is None:
             raise GlobalsNotSet()
 
         lower_left = arcpy.Point(
@@ -133,7 +118,9 @@ class ArcGisProvider(BaseProvider):
 
         :return dict: loaded data
         """
+        if not self._options:
+            raise ProviderError("No options given")
+
         from smoderp2d.providers.arcgis.data_preparation import PrepareData
-       
         prep = PrepareData(self._options, self.storage)
         return prep.run()

@@ -38,7 +38,7 @@ class Runner(object):
         if isinstance(self, ArcGisRunner):
             from smoderp2d.providers.arcgis import ArcGisProvider
             provider_class = ArcGisProvider
-        elif isinstance(self, GrassRunner):
+        elif isinstance(self, GrassGisRunner):
             from smoderp2d.providers.grass import GrassGisProvider
             provider_class = GrassGisProvider
         elif os.getenv('NOGIS'):
@@ -113,10 +113,10 @@ class ArcGisRunner(Runner):
         os.environ['ESRIACTIVEINSTALLATION'] = '1'
         super(ArcGisRunner, self).__init__()
 
-class GrassRunner(Runner):
+class GrassGisRunner(Runner):
     pass
 
-class QGISRunner(GrassRunner):
+class QGISRunner(GrassGisRunner):
     def __init__(self):
         # create temp GRASS location
         import tempfile

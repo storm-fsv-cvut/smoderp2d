@@ -1,21 +1,22 @@
 import os
 import shutil
 import numpy as np
+from abc import ABC, abstractmethod
 
-import smoderp2d.processes.rainfall as rainfall
-
+from smoderp2d.processes import rainfall
+from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
 
-class PrepareDataBase(object):
+class PrepareDataBase(ABC):
     def __init__(self, writter):
         self.storage = writter
 
         # complete dictionary of datasets and their type
-        self._data = {
+        self._data_layers = {
             'dem_slope_mask' : 'temp',
             'dem_polygon': 'temp',
-            'AoI': 'temp',
-            'AoI_polygon': 'core',
+            'aoi': 'temp',
+            'aoi_polygon': 'core',
             'dem_filled': 'temp',
             'dem_flowdir': 'temp',
             'dem_flowacc': 'temp',
@@ -26,174 +27,36 @@ class PrepareDataBase(object):
             'dem_flowdir_aoi': 'temp',
             'dem_flowacc_aoi': 'temp',
             'dem_aspect_aoi': 'temp',
-            'points_AoI': 'temp',
+            'points_aoi': 'temp',
             'soil_veg': 'temp',
             'soilveg_aoi': 'temp',
+            'aoi_buffer': 'temp',
+            'stream_aoi': 'temp',
+            'stream_start': 'temp',
+            'stream_end': 'temp',
+            'stream_seg': 'temp',
+            'ratio_cell' : 'temp',
+            'efect_cont' : 'temp',
 
-            'ratio_cell' : 'control',
-            'efect_cont' : 'control',
-
-            # TODO: needed?
-            'vegetation_mask': 'control',
-            # TODO: needed?
-            'soil_mask': 'control',
-            'vs_intersect': 'control',
-            'soil_veg_table': 'control',
-            'points_mask' : 'core',
-            'inter_mask' : 'control',
-            'dem_clip' : 'control',
-            'slope_clip' : 'control',
-            'flow_clip' : 'control',
-            'sfield_dir' : 'control',
-
-            'soil_veg_fieldname': 'soilveg',
             'veg_fieldname': "veg_type",
-            'sfield': ["k", "s", "n", "pi", "ppl",
-                       "ret", "b", "x", "y", "tau", "v"],
-            'noData_value': -9999
         }
-        self.storage.set_data_target(self._data)
+        self.soilveg_fields = {
+            "k": None, "s": None, "n": None, "pi": None, "ppl": None,
+            "ret": None, "b": None, "x": None, "y": None, "tau": None, "v": None
+        }
+        for sv in self.soilveg_fields.keys():
+            self._data_layers["soilveg_aoi_{}".format(sv)] = 'temp'
+        self.storage.set_data_layers(self._data_layers)
 
-    def run(self):
-        Logger.info('-' * 80)
-        Logger.info("DATA PREPARATION")
+        self.stream_shape_fields = [
+            "number", self._input_params['table_stream_shape_code'],
+            "shapetype", "b", "m", "roughness", "q365"
+        ]
 
-        # check input data (overlaps)
-        self._check_input_data()
-
-        # set output data directory
-        self._set_output_data()
-
-        # create output folder, where temporary data are stored
-        self._set_output()
-        # dem_copy, dem_mask = self._set_mask()
-
-        # intersect the input datasest to define the area of interest
-        Logger.info("Creating intersect of input datasets ...")
-        AoI_outline = self._create_AoI_outline()
-        #Logger.progress(10)
-
-        # calculate DEM derivatives
-        # intentionally done on non-clipped DEM to avoid edge effects
-        Logger.info("Creating DEM-derived layers ...")
-        dem_filled, dem_flowdir, dem_flowacc, dem_slope, dem_aspect = self._create_DEM_derivatives()
-
-        # prepare all needed layers for further processing
-        #   clip the input layers to AIO outline including the record points
-        Logger.info("Clipping input layers to AoI outline ...")
-        # NoData value to be used in the output rasters
-        NoDataValue = self._data['noData_value']
-
-        dem_clip = self._clip_raster_layer(dem_filled, AoI_outline, NoDataValue, 'dem_aoi')
-        flowdir_clip = self._clip_raster_layer(dem_flowdir, AoI_outline, NoDataValue, 'dem_flowdir_aoi')
-        self._clip_raster_layer(dem_flowacc, AoI_outline, NoDataValue, 'dem_flowacc_aoi')
-        slope_clip = self._clip_raster_layer(dem_slope, AoI_outline, NoDataValue, 'dem_slope_aoi')
-        self._clip_raster_layer(dem_aspect, AoI_outline, NoDataValue, 'dem_aspect_aoi')
-
-        self._clip_record_points(self._input_params['points'], AoI_outline, 'points_AoI')
-
-        #   join the attributes to soil_veg intersect and check the table consistency
-        Logger.info("Preparing soil and vegetation properties table ...")
-        soil_veg = self._prepare_soilveg()
-
-        # raster to numpy array conversion
-        Logger.info("Computing parameters of DEM...")
-        self.data['mat_dem'] = self._rst2np(dem_clip)
-        self.data['mat_slope'] = self._rst2np(slope_clip)
-        # unit conversion % -> 0-1
-        self._convert_slope_units()
-
-        # update data dict for spatial ref info
-        self._get_raster_dim(dem_clip)
-        if flowdir_clip is not None:
-            self.data['mat_fd'] = self._rst2np(flowdir_clip)
-            self.storage.write_raster(
-                self.data['mat_fd'],
-                'fl_dir',
-                'temp'
-            )
-
-        # build numpy array from selected attributes
-        all_attrib = self._get_soilveg_attribs(self._data['sfield'], soil_veg)
-        self.data['mat_inf_index'], self.data['combinatIndex'] = \
-            self._get_inf_combinat_index(self.data['r'], self.data['c'],
-                                         all_attrib[0], all_attrib[1])
-        #Logger.progress(30)
-
-        self.data['mat_n'] = all_attrib[2]
-        self.data['mat_pi'] = all_attrib[3]
-        self.data['mat_ppl'] = all_attrib[4]
-        self.data['mat_reten'] = all_attrib[5]
-        self.data['mat_b'] = all_attrib[6]
-
-        self.data['mat_nan'], self.data['mat_slope'], self.data['mat_dem'] = \
-            self._get_mat_nan(self.data['r'], self.data['c'],
-                              self.data['NoDataValue'], self.data['mat_slope'],
-                              self.data['mat_dem'])
-
-        # build points array
-        Logger.info("Prepare points for hydrographs...")
-        self._get_array_points()
-
-        # build a/aa arrays
-        self.data['mat_a'], self.data['mat_aa'] = self._get_a(
-            all_attrib[2], all_attrib[7], all_attrib[8], self.data['r'],
-            self.data['c'], self.data['NoDataValue'], self.data['mat_slope']
-        )
-        #Logger.progress(40)
-
-        Logger.info("Computing critical level...")
-        self.data['mat_hcrit'] = self._get_crit_water(
-            self.data['mat_b'], all_attrib[9], all_attrib[10], self.data['r'],
-            self.data['c'], self.data['mat_slope'],
-            self.data['NoDataValue'], self.data['mat_aa'])
-
-        # load precipitation input file
-        self.data['sr'], self.data['itera'] = \
-            rainfall.load_precipitation(self._input_params['rainfall_file'])
-
-        # compute aspect
-        self._get_slope_dir(dem_clip)
-        #Logger.progress(50)
-
-        Logger.info("Computing stream preparation...")
-        self._prepare_streams(mask_shp, dem_clip, intersect, flow_accumulation_clip)
-
-        # define mask (rc/rc variables)
-        self.data['mat_boundary'] = self._find_boundary_cells(
-            self.data['r'], self.data['c'], self.data['NoDataValue'],
-            self.data['mat_nan'])
-
-        self.data['rr'], self.data['rc'] = self._get_rr_rc(
-            self.data['r'], self.data['c'], self.data['mat_boundary'])
-
-        self.data['mfda'] = False
-        self.data['mat_boundary'] = None
-        #Logger.progress(100)
-
-        Logger.info("Data preparation has been finished")
-        Logger.info('-' * 80)
-
-        return self.data
-
-    def _set_output_data(self):
-        """
-        Creates dictionary to which model parameters are computed.
-        """
-        # output data
         self.data = {
-            'br': None,
-            'bc': None,
             'mat_boundary': None,
-            'rr': None,
-            'rc': None,
             'outletCells': None,
-            'xllcorner': None,
-            'yllcorner': None,
-            'NoDataValue': None,
             'array_points': None,
-            'c': None,
-            'r': None,
             'combinatIndex': None,
             'maxdt': self._input_params['maxdt'],
             'mat_pi': None,
@@ -212,7 +75,6 @@ class PrepareDataBase(object):
             'mat_a': None,
             'mat_n': None,
             'outdir': self._input_params['output'],
-            'pixel_area': None,
             'points': self._input_params['points'], # TODO: needs to be replaced by the clipped points dataset
             'poradi': None,
             'end_time': self._input_params['end_time'],
@@ -229,7 +91,320 @@ class PrepareDataBase(object):
             'streams_loc': None
             }
 
-    def _set_output(self):
+    @abstractmethod
+    def _create_AoI_outline(self, elevation, soil, vegetation):
+        """Creates geometric intersection of input DEM, soil
+        definition and landuse definition that will be used as Area of
+        Interest outline. Slope is not created yet, but generally the
+        edge pixels have nonsense values so "one pixel shrinked DEM"
+        extent is used instead.
+
+        :param elevation: string path to DEM layer
+        :param soil: string path to soil definition layer
+        :param vegetation: string path to vegenatation definition layer
+        
+        :return: string path to AIO polygon layer
+        """
+        pass
+
+    @abstractmethod    
+    def _create_DEM_derivatives(self, dem):
+        """Creates all the needed DEM derivatives in the DEM's
+        original extent to avoid raster edge effects. The clipping
+        extent could be replaced be AOI border buffered by 1 cell to
+        prevent time consuming operations on DEM if the DEM is much
+        larger then the AOI.
+
+        :param dem: string path to DEM layer
+
+        :return: string paths to DEM derivates
+        """
+        pass
+
+    @abstractmethod
+    def _clip_raster_layer(self, dataset, outline, name):
+        """Clips raster dataset to given polygon.
+
+        :param dataset: raster dataset to be clipped
+        :param aoi_polygon: feature class to be used as the clipping geometry
+        :param name: dataset name in the _data dictionary
+
+        :return: full path to clipped raster
+        """
+        pass
+
+    @abstractmethod
+    def _clip_record_points(self, dataset, outline, name):
+        """Makes a copy of record points inside the AOI as new
+        feature layer and logs those outside AOI.
+
+        :param dataset: points dataset to be clipped
+        :param aoi_polygon: polygon feature class of the AoI
+        :param name: output dataset name in the _data dictionary
+
+        :return: full path to clipped points dataset
+        """
+        pass
+
+    @abstractmethod
+    def _rst2np(self, raster):
+        """Convert raster data into numpy array.
+
+        :param raster: raster name
+
+        :return: numpy array
+        """
+        pass
+
+    @abstractmethod
+    def _update_grid_globals(self, reference):
+        """Update raster spatial reference info.
+
+        This function must be called before _rst2np() is used first
+        time.
+
+        :param reference: reference raster layer
+        """
+        pass
+
+    @abstractmethod
+    def _compute_efect_cont(self, dem_clip):
+        """Compute efect contour array.
+        ML: improve description
+        
+        :param dem: string to dem clipped by area of interest
+        :param asp: sting to aspect clipped by area of interest
+        :return: numpy array
+        """
+        pass
+
+    @abstractmethod    
+    def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
+                         aoi_outline, table_soil_vegetation):
+        """Prepares the combination of soils and vegetation input
+        layers. Gets the spatial intersection of both and checks the
+        consistency of attribute table.
+
+        :param soil: string path to soil layer
+        :param soil_type: soil type attribute
+        :param vegetation: string path to vegetation layer
+        :param vegetation_type: vegetation type attribute
+        :param aoi_polygon: string path to polygon layer defining area of interest
+        :param table_soil_vegetation: string path to table with soil and vegetation attributes
+        
+        :return: full path to soil and vegetation dataset
+        """
+        pass
+
+    @abstractmethod
+    def _get_array_points(self):
+        """Get array of points. Points near AOI border are skipped.
+
+        :return: generated numpy array
+        """
+        pass
+
+    @abstractmethod
+    def _stream_clip(self, stream, aoi_polygon):
+        """Clip stream layer to the given polygon.
+
+        :param stream: path to stream layer
+        :param outline: path to polygon layer of the AoI
+
+        :return: full path to clipped stream dataset
+        """
+        pass
+
+    @abstractmethod
+    def _stream_direction(self, stream, dem):
+        """Compute elevation of start/end point of stream parts.
+        Add code of ascending stream part into attribute table.
+
+        :param stream: string path to stream dataset
+        :param dem: string path to DEM dataset
+        """
+        pass
+
+    @abstractmethod
+    def _stream_reach(self, stream):
+        """Get numpy array of integers detecting whether there is a stream on
+        corresponding pixel of raster (number equal or greater than
+        1000 in return numpy array) or not (number 0 in return numpy
+        array).
+
+        :param stream: string path to stream dataset
+        
+        :return mat_stream_seg: Numpy array
+        """
+        pass
+
+    @abstractmethod
+    def _stream_slope(self, stream):
+        """Compute slope of stream
+
+        :param stream: string path to stream dataset
+        """
+        pass
+
+    @abstractmethod
+    def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
+        """Compute shape of stream.
+
+        :param stream: string path to stream dataset
+        :param stream_shape_code: shape code column
+        :param stream_shape_tab: table with stream shapes
+
+        :return list: stream shape attributes as list
+        """
+        pass
+
+    @abstractmethod
+    def _check_input_data(self):
+        """Check input data.
+
+        Raise DataPreparationInvalidInput on error.
+        """
+        pass
+            
+    def run(self):
+        """Perform data preparation steps.
+
+        :return dict: prepared data as dictionary
+        """
+        Logger.info('-' * 80)
+        Logger.info("DATA PREPARATION")
+
+        # check input data (overlaps)
+        self._check_input_data()
+
+        # create output folder, where temporary data are stored
+        self._create_output_dir()
+
+        # intersect the input datasest to define the area of interest
+        Logger.info("Creating intersect of input datasets ...")
+        aoi_polygon = self._create_AoI_outline(
+            self._input_params['elevation'],
+            self._input_params['soil'],
+            self._input_params['vegetation']
+        )
+        # Logger.progress(10)
+
+        # calculate DEM derivatives
+        # intentionally done on non-clipped DEM to avoid edge effects
+        Logger.info("Creating DEM-derived layers ...")
+        dem_filled, dem_flowdir, dem_flowacc, dem_slope, dem_aspect = self._create_DEM_derivatives(
+            self._input_params['elevation']
+        )
+
+        # prepare all needed layers for further processing
+        #   clip the input layers to AIO outline including the record points
+        Logger.info("Clipping layers to AoI outline ...")
+        dem_aoi = self._clip_raster_layer(dem_filled, aoi_polygon, 'dem_aoi')
+        dem_flowdir_aoi = self._clip_raster_layer(dem_flowdir, aoi_polygon, 'dem_flowdir_aoi')
+        self._clip_raster_layer(dem_flowacc, aoi_polygon, 'dem_flowacc_aoi')
+        dem_slope_aoi = self._clip_raster_layer(dem_slope, aoi_polygon, 'dem_slope_aoi')
+        dem_aspect_aoi = self._clip_raster_layer(dem_aspect, aoi_polygon, 'dem_aspect_aoi')
+        points_aoi = self._clip_record_points(self._input_params['points'], aoi_polygon, 'points_aoi')
+
+        # convert to numpy arrays
+        self.data['mat_dem'] = self._rst2np(dem_aoi)
+        # update data dict for spatial ref info
+        GridGlobals.r = self.data['mat_dem'].shape[0]
+        GridGlobals.c = self.data['mat_dem'].shape[1]
+        self._update_grid_globals(dem_aoi)
+        self.data['mat_slope'] = self._rst2np(dem_slope_aoi)
+        # unit conversion % -> 0-1
+        self._convert_slope_units()
+        if dem_flowdir_aoi is not None:
+            self.data['mat_fd'] = self._rst2np(dem_flowdir_aoi)
+        self.data['mat_efect_cont'] = self._compute_efect_cont(dem_aoi, dem_aspect_aoi)
+
+        #   join the attributes to soil_veg intersect and check the table consistency
+        Logger.info("Preparing soil and vegetation properties...")
+        self._prepare_soilveg(
+            self._input_params['soil'], self._input_params['soil_type'],
+            self._input_params['vegetation'], self._input_params['vegetation_type'],
+            aoi_polygon, self._input_params['table_soil_vegetation']
+        )
+
+        self.data['mat_n'] = self.soilveg_fields['n']
+        self.data['mat_pi'] = self.soilveg_fields['pi']
+        self.data['mat_ppl'] = self.soilveg_fields['ppl']
+        self.data['mat_reten'] = self.soilveg_fields['ret']
+        self.data['mat_b'] = self.soilveg_fields['b']
+
+        self.data['mat_inf_index'], self.data['combinatIndex'] = \
+            self._get_inf_combinat_index(GridGlobals.r, GridGlobals.c,
+                                         self.soilveg_fields['k'],
+                                         self.soilveg_fields['s'])
+        
+        self.data['mat_nan'], self.data['mat_slope'], self.data['mat_dem'] = \
+            self._get_mat_nan(GridGlobals.r, GridGlobals.c,
+                              GridGlobals.NoDataValue, self.data['mat_slope'],
+                              self.data['mat_dem'])
+
+        # build points array
+        Logger.info("Prepare points for hydrographs...")
+        self.data['array_points'] = self._get_array_points()
+
+        # build a/aa arrays
+        self.data['mat_a'], self.data['mat_aa'] = self._get_a(
+            self.soilveg_fields['n'], self.soilveg_fields['x'],
+            self.soilveg_fields['y'], GridGlobals.r,
+            GridGlobals.c, GridGlobals.NoDataValue, self.data['mat_slope']
+        )
+        #Logger.progress(40)
+
+        Logger.info("Computing critical level...")
+        self.data['mat_hcrit'] = self._get_crit_water(
+            self.data['mat_b'], self.soilveg_fields['tau'], self.soilveg_fields['v'], GridGlobals.r,
+            GridGlobals.c, self.data['mat_slope'],
+            GridGlobals.NoDataValue, self.data['mat_aa'])
+
+        # load precipitation input file
+        self.data['sr'], self.data['itera'] = \
+            rainfall.load_precipitation(self._input_params['rainfall_file'])
+
+        #Logger.progress(50)
+
+        Logger.info("Computing stream preparation...")
+        if self._input_params['stream'] and self._input_params['table_stream_shape'] and self._input_params['table_stream_shape_code']:
+            self._prepare_stream(self._input_params['stream'],
+                                 self._input_params['table_stream_shape'],
+                                 self._input_params['table_stream_shape_code'],
+                                 dem_aoi, aoi_polygon
+            )
+
+        # define mask (rc/rc variables)
+        self.data['mat_boundary'] = self._find_boundary_cells(
+            GridGlobals.r, GridGlobals.c, GridGlobals.NoDataValue,
+            self.data['mat_nan']
+        )
+
+        GridGlobals.rr, GridGlobals.rc = self._get_rr_rc(
+            GridGlobals.r, GridGlobals.c, self.data['mat_boundary']
+        )
+
+        self.data['mfda'] = False ### ML: ???
+        self.data['mat_boundary'] = None ## ML: ???
+        #Logger.progress(100)
+
+        Logger.info("Data preparation has been finished")
+        Logger.info('-' * 80)
+
+        return self.data
+
+    def _set_input_params(self, options):
+        """Set input parameters from user-given options.
+
+        :param options: directory with user-given options 
+        """
+        self._input_params = options
+        # cast some options to float
+        for opt in ('maxdt', 'end_time'):
+            self._input_params[opt] = float(self._input_params[opt])
+            
+    def _create_output_dir(self):
         """Creates empty output and temporary directories to which created
         files are saved.
         """
@@ -263,37 +438,7 @@ class PrepareDataBase(object):
         )
         os.makedirs(control)
 
-
-    def _create_AoI_outline(self):
-        raise NotImplemented("Not implemented for base provider")
-
-    def _create_DEM_derivatives(self, dem):
-        raise NotImplemented("Not implemented for base provider")
-
-    def _clip_raster_layer(self, dataset, outline, noDataValue, name):
-        raise NotImplemented("Not implemented for base provider")
-
-    def _clip_record_points(self, dataset, outline, name):
-        raise NotImplemented("Not implemented for base provider")
-
-    def _prepare_soilveg(self):
-        raise NotImplemented("Not implemented for base provider")
-
-    # def _get_input_params(self):
-    #     raise NotImplemented("Not implemented for base provider")
-    #
-    # def _rst2np(self, raster):
-    #     raise NotImplemented("Not implemented for base provider")
-    #
-    def _get_soilveg_attribs(self):
-         raise NotImplemented("Not implemented for base provider")
-
-    def _init_attrib(self, sfield, intersect):
-        """Internal method. initialize attributes array.
-        Called by _get_soilveg_attribs().
-        """
-        dim = [self.data['r'], self.data['c']]
-        return [np.zeros(dim, float)] * len(sfield)
+        self.storage.create_storage(self._input_params['output'])
 
     @staticmethod
     def _get_inf_combinat_index(r, c, mat_k, mat_s):
@@ -334,40 +479,35 @@ class PrepareDataBase(object):
 
         return mat_inf_index, combinatIndex
 
-    def _get_array_points(self):
-        raise NotImplemented("Not implemented for base provider")
-
-    def _get_array_points_(self, x, y, fid, i):
+    def _get_array_points_(self, array_points, x, y, fid, i):
         """Internal method called by _get_array_points().
         """
         # position i,j in raster (starts at 0)
-        r = int(self.data['r'] - ((y - self.data['yllcorner']) // self.data['dy']) - 1)
-        c = int((x - self.data['xllcorner']) // self.data['dx'])
+        r = int(GridGlobals.r - ((y - GridGlobals.yllcorner) // GridGlobals.dy) - 1)
+        c = int((x - GridGlobals.xllcorner) // GridGlobals.dx)
 
         # if point is not on the edge of raster or its
         # neighbours are not "NoDataValue", it will be saved
         # into array_points array
-        nv = self.data['NoDataValue']
-        if r != 0 and r != self.data['r'] \
-           and c != 0 and c != self.data['c'] and \
+        nv = GridGlobals.NoDataValue
+        if r != 0 and r != GridGlobals.r \
+           and c != 0 and c != GridGlobals.c and \
            self.data['mat_dem'][r][c]   != nv and \
            self.data['mat_dem'][r-1][c] != nv and \
            self.data['mat_dem'][r+1][c] != nv and \
            self.data['mat_dem'][r][c-1] != nv and \
            self.data['mat_dem'][r][c+1] != nv:
 
-            self.data['array_points'][i][0] = fid
-            self.data['array_points'][i][1] = r
-            self.data['array_points'][i][2] = c
+            array_points[i][0] = fid
+            array_points[i][1] = r
+            array_points[i][2] = c
             # x,y coordinates of current point stored in an array
-            self.data['array_points'][i][3] = x
-            self.data['array_points'][i][4] = y
+            array_points[i][3] = x
+            array_points[i][4] = y
         else:
             Logger.info(
                 "Point FID = {} is at the edge of the raster. "
                 "This point will not be included in results.".format(fid))
-
-        return i
 
     @staticmethod
     def _get_a(mat_n, mat_x, mat_y, r, c, no_data, mat_slope):
@@ -498,16 +638,7 @@ class PrepareDataBase(object):
 
         return mat_nan, mat_slope, mat_dem
 
-    def _get_slope_dir(self, dem_clip):
-        raise NotImplemented("Not implemented for base provider")
-
-    def _prepare_streams(self, mask_shp, dem_clip, intersect, flow_accumulation_clip):
-        """
-
-        :param mask_shp:
-        :param dem_clip:
-        :param intersect:
-        """
+    def _prepare_stream(self, stream, stream_shape_tab, stream_shape_code, dem_aoi, aoi_polygon):
         self.data['type_of_computing'] = 1
 
         # pocitam vzdy s ryhama pokud jsou zadane vsechny vstupy pro
@@ -521,30 +652,22 @@ class PrepareDataBase(object):
             self.data['type_of_computing'] = 3
 
         if self.data['type_of_computing'] in (3, 5):
-            args = [
-                self._input_params['stream'],
-                self._input_params['table_stream_shape'],
-                self._input_params['table_stream_shape_code'],
-                self._input_params['elevation'],
-                mask_shp,
-                self.data['dx'],
-                self.data['r'],
-                self.data['c'],
-                (self.data['xllcorner'], self.data['yllcorner']),
-                self.data['outdir'],
-                dem_clip,
-                intersect,
-                self.storage.primary_key,
-                flow_accumulation_clip
-            ]
+            Logger.info("Clipping stream to AoI outline ...")
+            stream_aoi = self._stream_clip(stream, aoi_polygon)
 
-            self.data['streams'], self.data['mat_stream_reach'], \
-                self.data['streams_loc'] = \
-                self._streamPreparation(args)
+            Logger.info("Computing stream direction and elevation...")
+            self._stream_direction(stream_aoi, dem_aoi)
+
+            Logger.info("Computing stream segments...")
+            self.data['mat_stream_reach'] = self._stream_reach(stream_aoi)
+
+            Logger.info("Computing stream hydraulics...")
+            #self._stream_hydraulics(stream_aoi) # ML: is it used?
+            self._stream_slope(stream_aoi)
+            self.data['streams'] = self._stream_shape(stream_aoi, stream_shape_code, stream_shape_tab)
         else:
             self.data['streams'] = None
             self.data['mat_stream_reach'] = None
-            self.data['streams_loc'] = None
 
     @staticmethod
     def _find_boundary_cells(r, c, no_data_value, mat_nan):
@@ -629,27 +752,24 @@ class PrepareDataBase(object):
         """
         for i in range(self.data['mat_slope'].shape[0]):
             for j in range(self.data['mat_slope'].shape[1]):
-                nv = self.data['NoDataValue']
+                nv = GridGlobals.NoDataValue
                 if self.data['mat_slope'][i][j] != nv:
                     self.data['mat_slope'][i][j] = self.data['mat_slope'][i][j]/100.
 
-    def _clip_data(self, dem, intersect):
-        raise NotImplemented("Not implemented for base provider")
+    def _get_mat_stream_seg(self, mat_stream_seg):
+        # each element of stream has a number assigned from 0 to
+        # no. of stream parts
+        for i in range(GridGlobals.r):
+            for j in range(GridGlobals.c):
+                if mat_stream_seg[i][j] > 0: # FID starts at 1
+                    # state 0|1|2 (> Globals.streams_flow_inc -> stream flow)
+                    mat_stream_seg[i][j] += Globals.streams_flow_inc
 
-    @staticmethod
-    def _diff_npoints(npoints1, npoints2):
-        diffpts = npoints1 - npoints2
-        if diffpts > 0:
-            Logger.warning(
-                "{} points outside of computation domain "
-                "will be ignored".format(diffpts)
+    def _check_soilveg_dim(self, field):
+        if self.soilveg_fields[field].shape[0] != GridGlobals.r or \
+           self.soilveg_fields[field].shape[1] != GridGlobals.c:
+            raise DataPreparationError(
+                "Unexpected array {} dimension {}: should be ({}, {})".format(
+                    field, self.soilveg_fields[field].shape,
+                    GridGlobals.r, GridGlobals.c)
             )
-
-    @staticmethod
-    def _streamPreparation(args):
-        raise NotImplemented("Not implemented for base provider")
-
-    def _check_input_data(self):
-        """Check input data.
-        """
-        raise NotImplemented("Not implemented for base provider")

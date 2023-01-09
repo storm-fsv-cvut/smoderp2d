@@ -14,3 +14,10 @@ class LicenceNotAvailable(DataPreparationError):
         Logger.fatal(
             "Essential software licence missing: {}".format(msg)
         )
+
+class DataPreparationNoIntersection(DataPreparationError):
+    def __init__(self):
+        Logger.fatal(
+            "The input layers are not correct! "
+            "The geometrical intersection of input datasets is empty."
+        )
