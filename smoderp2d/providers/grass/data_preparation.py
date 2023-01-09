@@ -436,6 +436,7 @@ class PrepareData(PrepareDataBase, ManageFields):
             for line in vmap:
                 start, end = line.nodes()
                 cat = line.cat
+                to_node[cat] = GridGlobals.NoDataValue
                 for start_line in start.lines():
                     if start_line.cat != cat:
                         to_node[cat] = start_line.cat
@@ -516,8 +517,10 @@ class PrepareData(PrepareDataBase, ManageFields):
         with Vector(stream) as vmap:
             vmap.table.filters.select(*stream_attr.keys())
             for row in vmap.table:
+                i = 0
+                fields = list(stream_attr.keys())
                 for i in range(len(row)):
-                    if row[i] == " " or row[i] is None:
+                    if row[i] in (" ", None):
                         raise DataPreparationError(
                             "Empty value in tab_stream_shape ({}) found.".format(fields[i])
                         )

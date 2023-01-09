@@ -359,8 +359,9 @@ class PrepareData(PrepareDataBase):
             try:
                 for row in cursor:
                     i = 0
+                    fields = list(stream_attr.keys())
                     for i in range(len(row)):
-                        if row[i] == " " or row[i] is None:
+                        if row[i] in (" ", None):
                             raise DataPreparationError(
                                 "Empty value in tab_stream_shape ({}) found.".format(fields[i])
                             )
