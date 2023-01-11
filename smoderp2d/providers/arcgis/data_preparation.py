@@ -55,10 +55,8 @@ class PrepareData(PrepareDataBase):
         dem_filled.save(dem_filled_path)
 
         # calculate the flow direction
-        # ML: calculted from original DEM ?
-        # ML: where is flowdir and flowacc / slope and aspect used?
         dem_flowdir_path = self.storage.output_filepath('dem_flowdir')
-        flowdir = arcpy.sa.FlowDirection(dem)
+        flowdir = arcpy.sa.FlowDirection(dem_filled)
         flowdir.save(dem_flowdir_path)
 
         # calculate flow accumulation
@@ -68,12 +66,12 @@ class PrepareData(PrepareDataBase):
 
         # calculate slope
         dem_slope_path = self.storage.output_filepath('dem_slope')
-        dem_slope = arcpy.sa.Slope(dem_filled, "PERCENT_RISE")
+        dem_slope = arcpy.sa.Slope(dem, "PERCENT_RISE")
         dem_slope.save(dem_slope_path)
 
         # calculate aspect
         dem_aspect_path = self.storage.output_filepath('dem_aspect')
-        dem_aspect = arcpy.sa.Aspect(dem_filled)
+        dem_aspect = arcpy.sa.Aspect(dem)
         dem_aspect.save(dem_aspect_path)
 
         return dem_filled_path, dem_flowdir_path, dem_flowacc_path, dem_slope_path, dem_aspect_path
@@ -249,9 +247,10 @@ class PrepareData(PrepareDataBase):
     def _stream_clip(self, stream, aoi_polygon):
         """See base method for description.
         """
+        # AoI slighty smaller due to start/end elevation extraction
         aoi_buffer = arcpy.analysis.Buffer(aoi_polygon,
             self.storage.output_filepath('aoi_buffer'),
-            -GridGlobals.dx / 3, # ML: ? + clip ?
+            -GridGlobals.dx / 3, 
             "FULL", "ROUND",
         )
 
@@ -296,7 +295,7 @@ class PrepareData(PrepareDataBase):
         with arcpy.da.SearchCursor(stream, [oid_field, "elev_start", "elev_end"]) as cursor:
             for row in cursor:
                 if row[1] < row[2]:
-                    arcpy.edit.FlipLine(stream) # ML: all streams vs one stream?
+                    arcpy.edit.FlipLine(stream) # ML: all streams vs one stream? + JH
 
         # add to_node attribute
         arcpy.management.AddField(stream, "to_node", "INTEGER")

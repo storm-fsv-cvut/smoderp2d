@@ -386,7 +386,7 @@ class PrepareDataBase(ABC):
         )
 
         self.data['mfda'] = False ### ML: ???
-        self.data['mat_boundary'] = None ## ML: ???
+        self.data['mat_boundary'] = None ## ML: -> JJ ???
         #Logger.progress(100)
 
         Logger.info("Data preparation has been finished")
@@ -662,7 +662,7 @@ class PrepareDataBase(ABC):
             self.data['mat_stream_reach'] = self._stream_reach(stream_aoi)
 
             Logger.info("Computing stream hydraulics...")
-            #self._stream_hydraulics(stream_aoi) # ML: is it used?
+            #self._stream_hydraulics(stream_aoi) # ML: is it used -> output ?
             self._stream_slope(stream_aoi)
             self.data['streams'] = self._stream_shape(stream_aoi, stream_shape_code, stream_shape_tab)
         else:
