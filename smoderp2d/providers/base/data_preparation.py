@@ -790,5 +790,10 @@ class PrepareDataBase(ABC):
 
         return stream_attr
     def _check_input_data_(self):
-        if self._input_params['table_stream_shape'] and not self._input_params['table_stream_shape_code']:
-            raise DataPreparationInvalidInput("Option 'Field with the reach feature identifier' must be defined")
+        if self._input_params['stream'] or self._input_params['table_stream_shape'] or self._input_params['table_stream_shape_code']:
+            if not self._input_params['stream']:
+                raise DataPreparationInvalidInput("Option 'Reach feature layer' must be defined")
+            if not self._input_params['table_stream_shape']:
+                raise DataPreparationInvalidInput("Option 'Reach shape table' must be defined")
+            if not self._input_params['table_stream_shape_code']:
+                raise DataPreparationInvalidInput("Option 'Field with the reach feature identifier' must be defined")
