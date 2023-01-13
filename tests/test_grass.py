@@ -21,9 +21,8 @@ def dpre_params():
         'table_soil_vegetation_code': "soilveg",
         'stream': "stream@PERMANENT",
         'table_stream_shape': "stream_shape@PERMANENT",
-        'table_stream_shape_code': "smoderp",
-        'pickle_file': os.path.join(output_dir, 'dpre.save')
+        'table_stream_shape_code': "smoderp"
     }
 
 if __name__ == "__main__":
-    perform_dpre_ref_test(GrassGisRunner, dpre_params)
+    perform_dpre_ref_test(GrassGisRunner, dpre_params, dataprep_only=True)

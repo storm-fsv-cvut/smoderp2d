@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from smoderp2d.processes import rainfall
 from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
+from smoderp2d.providers.base.exceptions import DataPreparationError
 
 class PrepareDataBase(ABC):
     def __init__(self, writter):
@@ -774,7 +775,7 @@ class PrepareDataBase(ABC):
         if self.soilveg_fields[field].shape[0] != GridGlobals.r or \
            self.soilveg_fields[field].shape[1] != GridGlobals.c:
             raise DataPreparationError(
-                "Unexpected array {} dimension {}: should be ({}, {})".format(
+                "Unexpected soilveg {} attribute array dimension {}: should be ({}, {})".format(
                     field, self.soilveg_fields[field].shape,
                     GridGlobals.r, GridGlobals.c)
             )

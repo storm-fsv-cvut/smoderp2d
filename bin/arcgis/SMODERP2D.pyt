@@ -24,13 +24,13 @@ PARAMETER_MAX_DELTA_T = 6
 PARAMETER_END_TIME = 7
 #PARAMETER_SURFACE_RETENTION = 6  # nula jen docasne, typ vypoctu se resi jinak
 PARAMETER_POINTS = 8
-PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 9
-PARAMETER_SOILVEGTABLE = 10
-PARAMETER_SOILVEGTABLE_CODE = 11
-PARAMETER_STREAM = 12
-PARAMETER_STREAMTABLE = 13
-PARAMETER_STREAMTABLE_CODE = 14
-PARAMETER_DPRE_ONLY = 15
+PARAMETER_SOILVEGTABLE = 9
+PARAMETER_SOILVEGTABLE_CODE = 10
+PARAMETER_STREAM = 11
+PARAMETER_STREAMTABLE = 12
+PARAMETER_STREAMTABLE_CODE = 13
+PARAMETER_DATAPREP_ONLY = 14
+PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 15
 
 class Toolbox(object):
     def __init__(self):
@@ -129,14 +129,6 @@ class SMODERP2D(object):
            parameterType="Optional",
            direction="Input"
         )
-        outDir = arcpy.Parameter(
-           displayName="Output folder",
-           name="outDir",
-           datatype="DEWorkspace",
-           parameterType="Required",
-           direction="Input"
-        )
-        outDir.filter.list = ["File System"]
 
         soilvegPropertiesTable = arcpy.Parameter(
            displayName="Soils and Landuse parameters table",
@@ -175,7 +167,7 @@ class SMODERP2D(object):
            parameterType="Optional",
            direction="Input",
         )
-        reachTable.parameterDependencies = [reachTable.name]
+        reachIDfieldName.parameterDependencies = [reachTable.name]
 
         dataprepOnly = arcpy.Parameter(
            displayName="Do the data preparation only",
@@ -183,37 +175,31 @@ class SMODERP2D(object):
            datatype="GPBoolean",
            parameterType="Optional",
            direction="Input",
+           category="Settings"
         )
-        dataprepOnly.value = True
+        dataprepOnly.value = False
+
+        outDir = arcpy.Parameter(
+           displayName="Output folder",
+           name="outDir",
+           datatype="DEWorkspace",
+           parameterType="Required",
+           direction="Output"
+        )
+        outDir.filter.list = ["File System"]
 
         return [
             inputSurfaceRaster, inputSoilPolygons, soilTypefieldName,
             inputLUPolygons, LUtypeFieldName, inputRainfall,
-            maxTimeStep, totalRunTime, inputPoints, outDir,
+            maxTimeStep, totalRunTime, inputPoints,
             soilvegPropertiesTable, soilvegIDfieldName, reachFeatures,
-            reachTable, reachIDfieldName, dataprepOnly
+            reachTable, reachIDfieldName, dataprepOnly, outDir,
         ]
 
     def updateParameters(self, parameters):
         """Values and properties of parameters before internal validation is performed.
         This method is called whenever a parameter has been changed."""
-        # # ONLY FOR TESTING
-        # arcpy.env.workspace = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "data")
-        # parameters[PARAMETER_DEM].value = "dem10m"
-        # parameters[PARAMETER_SOIL].value = "soils.shp"
-        # parameters[PARAMETER_SOIL_TYPE].value = "SID"
-        # parameters[PARAMETER_VEGETATION].value = "landuse.shp"
-        # parameters[PARAMETER_VEGETATION_TYPE].value = "LandUse"
-        # parameters[PARAMETER_PATH_TO_RAINFALL_FILE].value = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "data", "rainfall.txt")
-        # parameters[PARAMETER_MAX_DELTA_T].value = 30
-        # parameters[PARAMETER_END_TIME].value = 40
-        # parameters[PARAMETER_POINTS].value = "points.shp"
-        # # parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].value = "output"
-        # parameters[PARAMETER_SOILVEGTABLE].value = "soil_veg_tab_mean.dbf"
-        # parameters[PARAMETER_SOILVEGTABLE_CODE].value = "soilveg"
-        # # parameters[PARAMETER_STREAM].value =
-        # # parameters[PARAMETER_STREAMTABLE].value =
-        # # parameters[PARAMETER_STREAMTABLE_CODE].value =
+        return
 
     def updateMessages(self, parameters):
         """Messages created by internal validation for each tool
@@ -228,11 +214,8 @@ class SMODERP2D(object):
             runner.set_options(
                 self._get_input_params(parameters)
             )
-            # if flags['d']:
-            #     runner.set_comptype(
-            #         comp_type=CompType.dpre,
-            #         data_file=options['pickle_file']
-            # )
+            if parameters[PARAMETER_DATAPREP_ONLY].value:
+                runner.set_comptype(comp_type=CompType.dpre)
 
             runner.run()
         except ProviderError as e:
@@ -254,10 +237,10 @@ class SMODERP2D(object):
             'maxdt': float(parameters[PARAMETER_MAX_DELTA_T].valueAsText),
             'end_time': float(parameters[PARAMETER_END_TIME].valueAsText),
             'points': parameters[PARAMETER_POINTS].valueAsText,
-            'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
             'table_soil_vegetation': parameters[PARAMETER_SOILVEGTABLE].valueAsText,
             'table_soil_vegetation_code': parameters[PARAMETER_SOILVEGTABLE_CODE].valueAsText,
             'stream': parameters[PARAMETER_STREAM].valueAsText,
             'table_stream_shape': parameters[PARAMETER_STREAMTABLE].valueAsText,
-            'table_stream_shape_code': parameters[PARAMETER_STREAMTABLE_CODE].valueAsText
+            'table_stream_shape_code': parameters[PARAMETER_STREAMTABLE_CODE].valueAsText,
+            'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
         }

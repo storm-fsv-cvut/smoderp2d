@@ -27,6 +27,7 @@ from smoderp2d.providers.base import CompType
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
 from smoderp2d.exceptions import SmoderpError
+from smoderp2d.core.general import Globals
 
 class Runner(object):
     def __init__(self):
@@ -50,16 +51,14 @@ class Runner(object):
 
         return provider_class
 
-    def set_comptype(self, comp_type, data_file=None):
+    def set_comptype(self, comp_type):
         """Set computation type.
 
         :param CompType comp_type: computation type
-        :param str data_file: data file (input/output)
         """
-        if comp_type in (CompType.dpre, CompType.roff) and not data_file:
-            raise SmoderpError("Data file not defined")
         self._provider.args.typecomp = comp_type
-        self._provider.args.data_file = data_file
+        if comp_type in (CompType.dpre, CompType.roff):
+            self._provider.args.data_file = os.path.join(Globals.outdir, "dpre.save")
 
     def run(self):
         # print logo

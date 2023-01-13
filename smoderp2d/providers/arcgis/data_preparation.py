@@ -136,7 +136,7 @@ class PrepareData(PrepareDataBase):
         GridGlobals.set_size((desc.MeanCellWidth, desc.MeanCellHeight))
 
         # set arcpy environment (needed for rasterization)
-        arcpy.env.extent = reference
+        arcpy.env.extent = desc.Extent
         arcpy.env.snapRaster = reference
 
     def _compute_efect_cont(self, dem, asp):

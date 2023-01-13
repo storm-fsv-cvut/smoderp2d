@@ -365,7 +365,7 @@ class BaseProvider(object):
 
         with open(filename, 'wb') as fd:
             pickle.dump(data, fd, protocol=2)
-        Logger.info('Pickle file created in <{}> ({} bytes)'.format(
+        Logger.info('Data preparation results stored in <{}> ({} bytes)'.format(
             filename, sys.getsizeof(data)
         ))
 
