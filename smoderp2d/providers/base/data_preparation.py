@@ -288,7 +288,7 @@ class PrepareDataBase(ABC):
             self._input_params['soil'],
             self._input_params['vegetation']
         )
-        # Logger.progress(10)
+        Logger.progress(10)
 
         # calculate DEM derivatives
         # intentionally done on non-clipped DEM to avoid edge effects
@@ -359,7 +359,7 @@ class PrepareDataBase(ABC):
             self.soilveg_fields['y'], GridGlobals.r,
             GridGlobals.c, GridGlobals.NoDataValue, self.data['mat_slope']
         )
-        #Logger.progress(40)
+        Logger.progress(40)
 
         Logger.info("Computing critical level...")
         self.data['mat_hcrit'] = self._get_crit_water(
@@ -371,7 +371,7 @@ class PrepareDataBase(ABC):
         self.data['sr'], self.data['itera'] = \
             rainfall.load_precipitation(self._input_params['rainfall_file'])
 
-        #Logger.progress(50)
+        Logger.progress(50)
 
         Logger.info("Computing stream preparation...")
         if self._input_params['stream'] and self._input_params['table_stream_shape'] and self._input_params['table_stream_shape_code']:
@@ -393,10 +393,10 @@ class PrepareDataBase(ABC):
 
         self.data['mfda'] = False ### ML: ???
         self.data['mat_boundary'] = None ## ML: -> JJ ???
-        #Logger.progress(100)
 
         Logger.info("Data preparation has been finished")
         Logger.info('-' * 80)
+        Logger.progress(100)
 
         return self.data
 
