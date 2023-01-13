@@ -148,7 +148,7 @@ class NoGisProvider(BaseProvider, PrepareDataBase):
 
         # time settings
         try:
-            data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
+            data['end_time'] = self._config.getfloat('time', 'endtime')
             data['maxdt'] = self._config.getfloat('time', 'maxdt')
         except NoSectionError as e:
             raise ConfigError(e)

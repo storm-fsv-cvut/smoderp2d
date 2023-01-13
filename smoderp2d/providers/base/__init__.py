@@ -194,8 +194,7 @@ class BaseProvider(object):
         # pickle.dump such as end time of simulation
 
         if self._config.get('time', 'endtime'):
-            data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
-
+            data['end_time'] = self._config.getfloat('time', 'endtime')
         #  time of flow algorithm
         data['mfda'] = self._config.getboolean('processes', 'mfda', fallback=False)
 
@@ -272,6 +271,7 @@ class BaseProvider(object):
         Globals.isStream = self._comp_type(data['type_of_computing'])['stream']
         Globals.prtTimes = data.get('prtTimes', None)
         Globals.extraOut = self._hidden_config.getboolean('outputs','extraout')
+        Globals.end_time *= 60 # convert min to sec
 
         # If nogis provider is used the values 
         # should be set in the loop at the beginning

@@ -252,7 +252,7 @@ class SMODERP2D(object):
             'vegetation_type': parameters[PARAMETER_VEGETATION_TYPE].valueAsText,
             'rainfall_file': parameters[PARAMETER_PATH_TO_RAINFALL_FILE].valueAsText,
             'maxdt': float(parameters[PARAMETER_MAX_DELTA_T].valueAsText),
-            'end_time': float(parameters[PARAMETER_END_TIME].valueAsText) * 60.0,  # convert input to seconds ML: why?
+            'end_time': float(parameters[PARAMETER_END_TIME].valueAsText),
             'points': parameters[PARAMETER_POINTS].valueAsText,
             'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
             'table_soil_vegetation': parameters[PARAMETER_SOILVEGTABLE].valueAsText,
