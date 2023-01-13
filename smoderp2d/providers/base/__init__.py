@@ -180,7 +180,6 @@ class BaseProvider(object):
 
         # the data are loaded from a pickle file
         try:
-            print(self.args.data_file)
             data = self._load_data(self.args.data_file)
             if isinstance(data, list):
                 raise ProviderError(
@@ -224,6 +223,9 @@ class BaseProvider(object):
         data['prtTimes'] = self._config.get('output', 'printtimes', fallback=None)
 
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
+
+        # ensure that dx and dy are defined
+        data['dx'] = data['dy'] = math.sqrt(data['pixel_area'])
 
         return data
 
