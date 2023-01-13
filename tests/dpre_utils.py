@@ -51,7 +51,7 @@ def report_pickle_difference(new_output, reference):
     return 'Inconsistency in {}. The diff is stored in {}'.format(
         new_output, diff_fn)
 
-def perform_dpre_ref_test(runner, params_fn):
+def perform_dpre_ref_test(runner, params_fn, dpreOnly=True):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -60,11 +60,12 @@ def perform_dpre_ref_test(runner, params_fn):
     try:
         runner = runner()
         runner.set_options(params)
-        # run only data preparation
-        runner.set_comptype(
-            comp_type=CompType.dpre,
-            data_file=params['pickle_file']
-        )
+        if dpreOnly:
+            # run only data preparation
+            runner.set_comptype(
+               comp_type=CompType.dpre,
+               data_file=params['pickle_file']
+            )
         runner.run()
     except ProviderError as e:
         sys.exit(e)

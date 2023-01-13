@@ -291,14 +291,14 @@ class PrepareDataBase(ABC):
 
         # calculate DEM derivatives
         # intentionally done on non-clipped DEM to avoid edge effects
-        Logger.info("Creating DEM-derived layers ...")
+        Logger.info("Creating DEM-derived layers...")
         dem_filled, dem_flowdir, dem_flowacc, dem_slope, dem_aspect = self._create_DEM_derivatives(
             self._input_params['elevation']
         )
 
         # prepare all needed layers for further processing
         #   clip the input layers to AIO outline including the record points
-        Logger.info("Clipping layers to AoI outline ...")
+        Logger.info("Clipping layers to AoI outline...")
         dem_aoi = self._clip_raster_layer(dem_filled, aoi_polygon, 'dem_aoi')
         dem_flowdir_aoi = self._clip_raster_layer(dem_flowdir, aoi_polygon, 'dem_flowdir_aoi')
         self._clip_raster_layer(dem_flowacc, aoi_polygon, 'dem_flowacc_aoi')
@@ -312,6 +312,11 @@ class PrepareDataBase(ABC):
         GridGlobals.r = self.data['mat_dem'].shape[0]
         GridGlobals.c = self.data['mat_dem'].shape[1]
         self._update_grid_globals(dem_aoi)
+        if GridGlobals.dx != GridGlobals.dy:
+            raise DataPreparationInvalidInput(
+                "Input DEM spatial x resolution ({}) differs from y resolution ({}). "
+                "Resample input data to set the same x and y spatial resolution before "
+                "running SMODERP2D.".format(GridGlobals.dx, GridGlobals.dy))
         self.data['mat_slope'] = self._rst2np(dem_slope_aoi)
         # unit conversion % -> 0-1
         self._convert_slope_units()

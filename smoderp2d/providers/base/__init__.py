@@ -264,16 +264,9 @@ class BaseProvider(object):
             elif hasattr(DataGlobals, item):
                 setattr(DataGlobals, item, data[item])
 
-        GridGlobals.NoDataInt = int(-9999)
         Globals.mat_reten = -1.0 * data['mat_reten'] / 1000 # converts mm to m
         Globals.diffuse = self._comp_type(data['type_of_computing'])['diffuse']
         Globals.subflow = self._comp_type(data['type_of_computing'])['subflow']
-        # TODO: 2 lines bellow are duplicated for arcgis provider. fist
-        # definition of dx dy is in
-        # (provider.arcgis.data_prepraration._get_raster_dim) where is is
-        # defined for write_raster which is used before _set_globals
-        GridGlobals.dx = math.sqrt(data['pixel_area'])
-        GridGlobals.dy = GridGlobals.dx
         # TODO: lines below are part only of linux method
         Globals.isRill = self._comp_type(data['type_of_computing'])['rill']
         Globals.isStream = self._comp_type(data['type_of_computing'])['stream']
@@ -285,7 +278,7 @@ class BaseProvider(object):
         # of this method since it is part of the 
         # data dict (only in nogis provider).
         # Otherwise is has to be set to 1.
-        if (Globals.slope_width is None):
+        if Globals.slope_width is None:
             Globals.slope_width = 1
 
     @staticmethod
@@ -451,7 +444,7 @@ class BaseProvider(object):
             )
 
         finState = np.zeros(np.shape(surface_array), int)
-        finState.fill(GridGlobals.NoDataInt)
+        finState.fill(GridGlobals.NoDataValue)
         vRest = np.zeros(np.shape(surface_array), float)
         vRest.fill(GridGlobals.NoDataValue)
         totalBil = cumulative.infiltration.copy()
@@ -476,8 +469,7 @@ class BaseProvider(object):
 
         self.storage.write_raster(self._make_mask(totalBil), 'massBalance')
         self.storage.write_raster(self._make_mask(vRest), 'volRest_m3')
-        self.storage.write_raster(self._make_mask(finState, int_=True),
-                'reachFid')
+        self.storage.write_raster(self._make_mask(finState),  'reachFid')
 
         # store stream reaches results to a table
         # if stream is calculated
@@ -502,7 +494,7 @@ class BaseProvider(object):
             np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
                        header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}q365_m3_s{sep}V_out_cum_m3{sep}Q_max_m3_s'.format(sep=';'))
 
-    def _make_mask(self, arr, int_=False):
+    def _make_mask(self, arr):
         """ Assure that the no data value is outside the
         computation region.
         Works only for type float.
@@ -514,10 +506,7 @@ class BaseProvider(object):
         rcols = GridGlobals.rc
 
         copy_arr = arr.copy()
-        if (int_) :
-            arr.fill(GridGlobals.NoDataInt)
-        else:
-            arr.fill(GridGlobals.NoDataValue)
+        arr.fill(GridGlobals.NoDataValue)
 
         for i in rrows:
             for j in rcols[i]:
