@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from smoderp2d.processes import rainfall
 from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
-from smoderp2d.providers.base.exceptions import DataPreparationError
+from smoderp2d.providers.base.exceptions import DataPreparationError, DataPreparationInvalidInput
 
 class PrepareDataBase(ABC):
     def __init__(self, writter):
@@ -789,3 +789,6 @@ class PrepareDataBase(ABC):
             stream_attr[f] = []
 
         return stream_attr
+    def _check_input_data_(self):
+        if self._input_params['table_stream_shape'] and not self._input_params['table_stream_shape_code']:
+            raise DataPreparationInvalidInput("Option 'Field with the reach feature identifier' must be defined")

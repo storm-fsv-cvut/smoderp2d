@@ -390,7 +390,9 @@ class PrepareData(PrepareDataBase):
                             "'{}' values in '{}' table are not correct, "
                             "empty value found in row {})".format(field, table, row[1])
                         )
-        
+
+        self._check_input_data_()
+
         _check_empty_values(
             self._input_params['vegetation'],
             self._input_params['vegetation_type']
@@ -405,8 +407,8 @@ class PrepareData(PrepareDataBase):
             for f in self.stream_shape_fields:
                 if f not in fields:
                     raise DataPreparationInvalidInput(
-                        "Field '{}' not found in '{}'\nProper columns codes are: {}".format(
-                            f, self._input_params['table_stream_shape'], self.stream_shape_fields)
+                        "Field '{}' not found in <{}>\nProper fields name are: {}".format(
+                            f, self._input_params['table_stream_shape'], ', '.join(map(lambda x: "'{}'".format(x), self.stream_shape_fields)))
                     )
 
 
