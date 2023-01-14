@@ -604,16 +604,6 @@ class PrepareDataBase(ABC):
                     mat_hcrit_flux[i][j] = no_data_value
                     mat_hcrit[i][j] = no_data_value
 
-        for out, arr in (("hcrit_tau", mat_hcrit_tau),
-                         ("hcrit_flux", mat_hcrit_flux),
-                         ("hcrit_v", mat_hcrit_v)):
-            self.storage.write_raster(
-                arr, out, 'temp'
-            )
-        self.storage.write_raster(
-            mat_hcrit, 'mat_hcrit', ''
-        )
-
         return mat_hcrit
 
     def _get_mat_nan(self, r, c, no_data_value, mat_slope, mat_dem):
@@ -638,12 +628,6 @@ class PrepareDataBase(ABC):
                     mat_dem[i][j] = nv
                 else:
                     mat_nan[i][j] = 0
-
-        self.storage.write_raster(
-            mat_nan,
-            'mat_nan',
-            'temp'
-        )
 
         return mat_nan, mat_slope, mat_dem
 
