@@ -76,8 +76,9 @@ class BaseWritter(object):
         Logger.info("Raster ASCII output file {} saved".format(
             file_output
         ))
+        na_arr = arr[arr != GridGlobals.NoDataValue]
         Logger.info("\tArray stats: min={} max={} mean={}".format(
-            np.min(arr), np.max(arr), np.mean(arr)
+            na_arr.min(), na_arr.max(), na_arr.mean()
         ))
 
     # todo: abstractmethod
