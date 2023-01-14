@@ -296,6 +296,7 @@ class PrepareDataBase(ABC):
         dem_filled, dem_flowdir, dem_flowacc, dem_slope, dem_aspect = self._create_DEM_derivatives(
             self._input_params['elevation']
         )
+        Logger.progress(20)
 
         # prepare all needed layers for further processing
         #   clip the input layers to AIO outline including the record points
@@ -306,6 +307,7 @@ class PrepareDataBase(ABC):
         dem_slope_aoi = self._clip_raster_layer(dem_slope, aoi_polygon, 'dem_slope_aoi')
         dem_aspect_aoi = self._clip_raster_layer(dem_aspect, aoi_polygon, 'dem_aspect_aoi')
         points_aoi = self._clip_record_points(self._input_params['points'], aoi_polygon, 'points_aoi')
+        Logger.progress(30)
 
         # convert to numpy arrays
         self.data['mat_dem'] = self._rst2np(dem_aoi)
@@ -332,6 +334,7 @@ class PrepareDataBase(ABC):
             self._input_params['vegetation'], self._input_params['vegetation_type'],
             aoi_polygon, self._input_params['table_soil_vegetation']
         )
+        Logger.progress(40)
 
         self.data['mat_n'] = self.soilveg_fields['n']
         self.data['mat_pi'] = self.soilveg_fields['pi']
@@ -359,7 +362,7 @@ class PrepareDataBase(ABC):
             self.soilveg_fields['y'], GridGlobals.r,
             GridGlobals.c, GridGlobals.NoDataValue, self.data['mat_slope']
         )
-        Logger.progress(40)
+        Logger.progress(50)
 
         Logger.info("Computing critical level...")
         self.data['mat_hcrit'] = self._get_crit_water(
@@ -370,8 +373,7 @@ class PrepareDataBase(ABC):
         # load precipitation input file
         self.data['sr'], self.data['itera'] = \
             rainfall.load_precipitation(self._input_params['rainfall_file'])
-
-        Logger.progress(50)
+        Logger.progress(60)
 
         Logger.info("Computing stream preparation...")
         if self._input_params['stream'] and self._input_params['table_stream_shape'] and self._input_params['table_stream_shape_code']:
@@ -380,6 +382,7 @@ class PrepareDataBase(ABC):
                                  self._input_params['table_stream_shape_code'],
                                  dem_aoi, aoi_polygon
             )
+        Logger.progress(90)
 
         # define mask (rc/rc variables)
         self.data['mat_boundary'] = self._find_boundary_cells(
@@ -660,12 +663,15 @@ class PrepareDataBase(ABC):
         if self.data['type_of_computing'] in (3, 5):
             Logger.info("Clipping stream to AoI outline ...")
             stream_aoi = self._stream_clip(stream, aoi_polygon)
+            Logger.progress(70)
 
             Logger.info("Computing stream direction and elevation...")
             self._stream_direction(stream_aoi, dem_aoi)
+            Logger.progress(75)
 
             Logger.info("Computing stream segments...")
             self.data['mat_stream_reach'] = self._stream_reach(stream_aoi)
+            Logger.progress(80)
 
             Logger.info("Computing stream hydraulics...")
             #self._stream_hydraulics(stream_aoi) # ML: is it used -> output ?
