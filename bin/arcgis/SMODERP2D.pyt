@@ -55,134 +55,136 @@ class SMODERP2D(object):
     def getParameterInfo(self):
         """Define parameter definitions"""
         inputSurfaceRaster = arcpy.Parameter(
-           displayName="Input surface raster",
-           name="inputSurfaceRaster",
-           datatype="GPRasterLayer",
-           parameterType="Required",
-           direction="Input"
+            displayName="Input surface raster",
+            name="inputSurfaceRaster",
+            datatype="GPRasterLayer",
+            parameterType="Required",
+            direction="Input"
         )
         inputSoilPolygons = arcpy.Parameter(
-           displayName="Soil polygons feature layer",
-           name="inputSoilPolygons",
-           datatype="GPFeatureLayer",
-           parameterType="Required",
-           direction="Input"
+            displayName="Soil polygons feature layer",
+            name="inputSoilPolygons",
+            datatype="GPFeatureLayer",
+            parameterType="Required",
+            direction="Input"
         )
         soilTypefieldName = arcpy.Parameter(
-           displayName="Field with the soil type identifier",
-           name="soilTypefieldName",
-           datatype="Field",
-           parameterType="Required",
-           direction="Input",
+            displayName="Field with the soil type identifier",
+            name="soilTypefieldName",
+            datatype="Field",
+            parameterType="Required",
+            direction="Input"
         )
         soilTypefieldName.parameterDependencies = [inputSoilPolygons.name]
 
         inputLUPolygons = arcpy.Parameter(
-           displayName="Landuse polygons feature layer",
-           name="inputLUPolygons",
-           datatype="GPFeatureLayer",
-           parameterType="Required",
-           direction="Input"
+            displayName="Landuse polygons feature layer",
+            name="inputLUPolygons",
+            datatype="GPFeatureLayer",
+            parameterType="Required",
+            direction="Input"
         )
         LUtypeFieldName = arcpy.Parameter(
-           displayName="Field with the landuse type identifier",
-           name="LUtypeFieldName",
-           datatype="Field",
-           parameterType="Optional",
-           direction="Input",
+            displayName="Field with the landuse type identifier",
+            name="LUtypeFieldName",
+            datatype="Field",
+            parameterType="Optional",
+            direction="Input",
         )
         LUtypeFieldName.parameterDependencies = [inputLUPolygons.name]
 
         inputRainfall = arcpy.Parameter(
-           displayName="Definition of the rainfall event",
-           name="inputRainfall",
-           datatype="DEFile",
-           parameterType="Required",
-           direction="Input"
+            displayName="Definition of the rainfall event",
+            name="inputRainfall",
+            datatype="DEFile",
+            parameterType="Required",
+            direction="Input"
         )
         inputRainfall.filter.list = ["txt"]
 
         maxTimeStep = arcpy.Parameter(
-           displayName="Maximum time step [s]",
-           name="maxTimeStep",
-           datatype="GPDouble",
-           parameterType="Optional",
-           direction="Input",
-           category="Settings"
+            displayName="Maximum time step [s]",
+            name="maxTimeStep",
+            datatype="GPDouble",
+            parameterType="Optional",
+            direction="Input",
+            category="Settings"
         )
         maxTimeStep.value = 30
 
         totalRunTime = arcpy.Parameter(
-           displayName="Total running time [min]",
-           name="totalRunTime",
-           datatype="GPDouble",
-           parameterType="Optional",
-           direction="Input",
-           category="Settings"
+            displayName="Total running time [min]",
+            name="totalRunTime",
+            datatype="GPDouble",
+            parameterType="Optional",
+            direction="Input",
+            category="Settings"
         )
         totalRunTime.value = 40
 
         inputPoints = arcpy.Parameter(
-           displayName="Input points feature layer",
-           name="inputPoints",
-           datatype="GPFeatureLayer",
-           parameterType="Optional",
-           direction="Input"
+            displayName="Input points feature layer",
+            name="inputPoints",
+            datatype="GPFeatureLayer",
+            parameterType="Optional",
+            direction="Input"
         )
         outDir = arcpy.Parameter(
-           displayName="Output folder",
-           name="outDir",
-           datatype="DEWorkspace",
-           parameterType="Required",
-           direction="Input"
+            displayName="Output folder",
+            name="outDir",
+            datatype="DEWorkspace",
+            parameterType="Required",
+            direction="Input"
         )
         outDir.filter.list = ["File System"]
 
         soilvegPropertiesTable = arcpy.Parameter(
-           displayName="Soils and Landuse parameters table",
-           name="soilvegPropertiesTable",
-           datatype="GPTableView",
-           parameterType="Required",
-           direction="Input"
+            displayName="Soils and Landuse parameters table",
+            name="soilvegPropertiesTable",
+            datatype="GPTableView",
+            parameterType="Required",
+            direction="Input"
         )
         soilvegIDfieldName = arcpy.Parameter(
-           displayName="Field with the landuse type identifier",
-           name="soilvegIDfieldName",
-           datatype="Field",
-           parameterType="Required",
-           direction="Input",
+            displayName="Field with the landuse type identifier",
+            name="soilvegIDfieldName",
+            datatype="Field",
+            parameterType="Required",
+            direction="Input"
         )
         soilvegIDfieldName.parameterDependencies = [soilvegPropertiesTable.name]
 
         reachFeatures = arcpy.Parameter(
-           displayName="Reach feature layer",
-           name="reachFeatures",
-           datatype="GPFeatureLayer",
-           parameterType="Optional",
-           direction="Input"
+            displayName="Reach feature layer",
+            name="reachFeatures",
+            datatype="GPFeatureLayer",
+            parameterType="Optional",
+            direction="Input"
         )
         reachTable = arcpy.Parameter(
-           displayName="Reach shapes table",
-           name="reachTable",
-           datatype="GPTableView",
-           parameterType="Optional",
-           direction="Input"
+            displayName="Reach shapes table",
+            name="reachTable",
+            datatype="GPTableView",
+            parameterType="Optional",
+            direction="Input",
+            enabled = False
         )
         reachIDfieldName = arcpy.Parameter(
-           displayName="Field with the reach feature identifier",
-           name="reachIDfieldName",
-           datatype="Field",
-           parameterType="Optional",
-           direction="Input",
+            displayName="Field with the reach feature identifier",
+            name="reachIDfieldName",
+            datatype="Field",
+            parameterType="Optional",
+            direction="Input",
+            enabled = False
         )
         reachTable.parameterDependencies = [reachTable.name]
 
         dataprepOnly = arcpy.Parameter(
-           displayName="Do the data preparation only",
-           name="dataprepOnly",
-           datatype="GPBoolean",
-           parameterType="Optional",
-           direction="Input",
+            displayName="Do the data preparation only",
+            name="dataprepOnly",
+            datatype="GPBoolean",
+            parameterType="Optional",
+            direction="Input",
         )
         dataprepOnly.value = True
 
@@ -197,6 +199,24 @@ class SMODERP2D(object):
     def updateParameters(self, parameters):
         """Values and properties of parameters before internal validation is performed.
         This method is called whenever a parameter has been changed."""
+
+        if parameters[12].altered:
+            if parameters[12].value != "":
+                parameters[13].enabled = 1
+                parameters[13].parameterType = "Required"
+            else:
+                parameters[13].enabled = 0
+                parameters[13].parameterType = "Optional"
+
+        if parameters[13].altered:
+            if parameters[13].value != "":
+                parameters[14].enabled = 1
+                parameters[14].parameterType = "Required"
+            else:
+                parameters[14].enabled = 0
+                parameters[14].parameterType = "Optional"
+
+
         # # ONLY FOR TESTING
         # arcpy.env.workspace = os.path.join(os.path.dirname(__file__), "..", "..", "tests", "data")
         # parameters[PARAMETER_DEM].value = "dem10m"
