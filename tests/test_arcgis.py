@@ -15,14 +15,13 @@ def dpre_params():
         'maxdt': 30,
         'end_time': 40,  # convert input to seconds #ML: why?
         'points': os.path.join(data_dir, "points.shp"),
-        'output': output_dir,
         'table_soil_vegetation': os.path.join(data_dir, "soil_veg_tab_mean.dbf"),
         'table_soil_vegetation_code': "soilveg",
         'stream': os.path.join(data_dir, "stream.shp"),
         'table_stream_shape': os.path.join(data_dir, "stream_shape.dbf"),
         'table_stream_shape_code': "smoderp",
-        'pickle_file': os.path.join(output_dir, 'dpre.save')
+        'output': output_dir,
     }
 
 if __name__ == "__main__":
-    perform_dpre_ref_test(ArcGisRunner, dpre_params)
+    perform_dpre_ref_test(ArcGisRunner, dpre_params, dataprep_only=True)

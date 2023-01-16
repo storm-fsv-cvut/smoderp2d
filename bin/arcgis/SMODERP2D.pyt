@@ -130,61 +130,60 @@ class SMODERP2D(object):
             direction="Input"
         )
         outDir = arcpy.Parameter(
-            displayName="Output folder",
-            name="outDir",
-            datatype="DEWorkspace",
-            parameterType="Required",
-            direction="Input"
+           displayName="Output folder",
+           name="outDir",
+           datatype="DEWorkspace",
+           parameterType="Required",
+           direction="Input"
         )
         outDir.filter.list = ["File System"]
 
         soilvegPropertiesTable = arcpy.Parameter(
-            displayName="Soils and Landuse parameters table",
-            name="soilvegPropertiesTable",
-            datatype="GPTableView",
-            parameterType="Required",
-            direction="Input"
+           displayName="Soils and Landuse parameters table",
+           name="soilvegPropertiesTable",
+           datatype="GPTableView",
+           parameterType="Required",
+           direction="Input"
         )
         soilvegIDfieldName = arcpy.Parameter(
-            displayName="Field with the landuse type identifier",
-            name="soilvegIDfieldName",
-            datatype="Field",
-            parameterType="Required",
-            direction="Input"
+           displayName="Field with the landuse type identifier",
+           name="soilvegIDfieldName",
+           datatype="Field",
+           parameterType="Required",
+           direction="Input",
         )
         soilvegIDfieldName.parameterDependencies = [soilvegPropertiesTable.name]
 
         reachFeatures = arcpy.Parameter(
-            displayName="Reach feature layer",
-            name="reachFeatures",
-            datatype="GPFeatureLayer",
-            parameterType="Optional",
-            direction="Input"
+           displayName="Reach feature layer",
+           name="reachFeatures",
+           datatype="GPFeatureLayer",
+           parameterType="Optional",
+           direction="Input"
         )
         reachTable = arcpy.Parameter(
-            displayName="Reach shapes table",
-            name="reachTable",
-            datatype="GPTableView",
-            parameterType="Optional",
-            direction="Input",
-            enabled = False
+           displayName="Reach shapes table",
+           name="reachTable",
+           datatype="GPTableView",
+           parameterType="Optional",
+           direction="Input"
         )
         reachIDfieldName = arcpy.Parameter(
-            displayName="Field with the reach feature identifier",
-            name="reachIDfieldName",
-            datatype="Field",
-            parameterType="Optional",
-            direction="Input",
-            enabled = False
+           displayName="Field with the reach feature identifier",
+           name="reachIDfieldName",
+           datatype="Field",
+           parameterType="Optional",
+           direction="Input",
         )
         reachTable.parameterDependencies = [reachTable.name]
 
         dataprepOnly = arcpy.Parameter(
-            displayName="Do the data preparation only",
-            name="dataprepOnly",
-            datatype="GPBoolean",
-            parameterType="Optional",
-            direction="Input",
+           displayName="Do the data preparation only",
+           name="dataprepOnly",
+           datatype="GPBoolean",
+           parameterType="Optional",
+           direction="Input",
+           category="Settings"
         )
         dataprepOnly.value = True
 
@@ -199,6 +198,7 @@ class SMODERP2D(object):
     def updateParameters(self, parameters):
         """Values and properties of parameters before internal validation is performed.
         This method is called whenever a parameter has been changed."""
+        return
 
         if parameters[12].altered:
             if parameters[12].value != "":
@@ -248,11 +248,8 @@ class SMODERP2D(object):
             runner.set_options(
                 self._get_input_params(parameters)
             )
-            # if flags['d']:
-            #     runner.set_comptype(
-            #         comp_type=CompType.dpre,
-            #         data_file=options['pickle_file']
-            # )
+            if parameters[PARAMETER_DATAPREP_ONLY].value:
+                runner.set_comptype(comp_type=CompType.dpre)
 
             runner.run()
         except ProviderError as e:
@@ -272,12 +269,12 @@ class SMODERP2D(object):
             'vegetation_type': parameters[PARAMETER_VEGETATION_TYPE].valueAsText,
             'rainfall_file': parameters[PARAMETER_PATH_TO_RAINFALL_FILE].valueAsText,
             'maxdt': float(parameters[PARAMETER_MAX_DELTA_T].valueAsText),
-            'end_time': float(parameters[PARAMETER_END_TIME].valueAsText) * 60.0,  # convert input to seconds ML: why?
+            'end_time': float(parameters[PARAMETER_END_TIME].valueAsText),
             'points': parameters[PARAMETER_POINTS].valueAsText,
-            'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
             'table_soil_vegetation': parameters[PARAMETER_SOILVEGTABLE].valueAsText,
             'table_soil_vegetation_code': parameters[PARAMETER_SOILVEGTABLE_CODE].valueAsText,
             'stream': parameters[PARAMETER_STREAM].valueAsText,
             'table_stream_shape': parameters[PARAMETER_STREAMTABLE].valueAsText,
-            'table_stream_shape_code': parameters[PARAMETER_STREAMTABLE_CODE].valueAsText
+            'table_stream_shape_code': parameters[PARAMETER_STREAMTABLE_CODE].valueAsText,
+            'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
         }

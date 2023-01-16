@@ -215,7 +215,9 @@ class PrepareData(PrepareDataBase, ManageFields):
         # raster is read from current computation region
         # g.region cannot be called here,
         # see https://github.com/storm-fsv-cvut/smoderp2d/issues/42
-        Region().from_rast(raster)
+        region = Region()
+        region.from_rast(raster)
+        region.set_raster_region()
         return raster2numpy(raster)
 
     def _update_grid_globals(self, reference):
@@ -434,6 +436,7 @@ class PrepareData(PrepareDataBase, ManageFields):
             for line in vmap:
                 start, end = line.nodes()
                 cat = line.cat
+                to_node[cat] = GridGlobals.NoDataValue
                 for start_line in start.lines():
                     if start_line.cat != cat:
                         to_node[cat] = start_line.cat
@@ -453,7 +456,7 @@ class PrepareData(PrepareDataBase, ManageFields):
     def _stream_reach(self, stream):
         """See base method for description.
         """
-        Module('g.region', flags='p',
+        Module('g.region',
                vector=stream,
                s=GridGlobals.yllcorner, w=GridGlobals.xllcorner,
                n=GridGlobals.yllcorner+(GridGlobals.r * GridGlobals.dy),
@@ -498,8 +501,36 @@ class PrepareData(PrepareDataBase, ManageFields):
     def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
         """See base method for description.
         """
-        pass
+        stream_shape_tab = self.__qualified_name(
+            stream_shape_tab, mtype='table')['name']
+        Module('db.copy',
+               from_table=stream_shape_tab,
+               from_database='$GISDBASE/$LOCATION_NAME/PERMANENT/sqlite/sqlite.db',
+               to_table=stream_shape_tab)
+        Module('v.db.join',
+               map=stream, column=stream_shape_code,
+               other_table=stream_shape_tab,
+               other_column=stream_shape_code,
+               subset_columns=self.stream_shape_fields)
 
+        stream_attr = self._stream_attr_(self.storage.primary_key)
+        with Vector(stream) as vmap:
+            vmap.table.filters.select(*stream_attr.keys())
+            for row in vmap.table:
+                i = 0
+                fields = list(stream_attr.keys())
+                for i in range(len(row)):
+                    if row[i] in (" ", None):
+                        raise DataPreparationError(
+                            "Empty value in tab_stream_shape ({}) found.".format(fields[i])
+                        )
+                    stream_attr[fields[i]].append(row[i])
+                    i += 1
+
+        stream_attr['fid'] = stream_attr.pop(self.storage.primary_key)
+
+        return stream_attr
+                    
     def _check_input_data(self):
         """See base method for description.
         """

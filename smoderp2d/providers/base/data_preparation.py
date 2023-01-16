@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from smoderp2d.processes import rainfall
 from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
+from smoderp2d.providers.base.exceptions import DataPreparationError, DataPreparationInvalidInput
 
 class PrepareDataBase(ABC):
     def __init__(self, writter):
@@ -287,24 +288,26 @@ class PrepareDataBase(ABC):
             self._input_params['soil'],
             self._input_params['vegetation']
         )
-        # Logger.progress(10)
+        Logger.progress(10)
 
         # calculate DEM derivatives
         # intentionally done on non-clipped DEM to avoid edge effects
-        Logger.info("Creating DEM-derived layers ...")
+        Logger.info("Creating DEM-derived layers...")
         dem_filled, dem_flowdir, dem_flowacc, dem_slope, dem_aspect = self._create_DEM_derivatives(
             self._input_params['elevation']
         )
+        Logger.progress(20)
 
         # prepare all needed layers for further processing
         #   clip the input layers to AIO outline including the record points
-        Logger.info("Clipping layers to AoI outline ...")
+        Logger.info("Clipping layers to AoI outline...")
         dem_aoi = self._clip_raster_layer(dem_filled, aoi_polygon, 'dem_aoi')
         dem_flowdir_aoi = self._clip_raster_layer(dem_flowdir, aoi_polygon, 'dem_flowdir_aoi')
         self._clip_raster_layer(dem_flowacc, aoi_polygon, 'dem_flowacc_aoi')
         dem_slope_aoi = self._clip_raster_layer(dem_slope, aoi_polygon, 'dem_slope_aoi')
         dem_aspect_aoi = self._clip_raster_layer(dem_aspect, aoi_polygon, 'dem_aspect_aoi')
         points_aoi = self._clip_record_points(self._input_params['points'], aoi_polygon, 'points_aoi')
+        Logger.progress(30)
 
         # convert to numpy arrays
         self.data['mat_dem'] = self._rst2np(dem_aoi)
@@ -312,6 +315,11 @@ class PrepareDataBase(ABC):
         GridGlobals.r = self.data['mat_dem'].shape[0]
         GridGlobals.c = self.data['mat_dem'].shape[1]
         self._update_grid_globals(dem_aoi)
+        if GridGlobals.dx != GridGlobals.dy:
+            raise DataPreparationInvalidInput(
+                "Input DEM spatial x resolution ({}) differs from y resolution ({}). "
+                "Resample input data to set the same x and y spatial resolution before "
+                "running SMODERP2D.".format(GridGlobals.dx, GridGlobals.dy))
         self.data['mat_slope'] = self._rst2np(dem_slope_aoi)
         # unit conversion % -> 0-1
         self._convert_slope_units()
@@ -326,6 +334,7 @@ class PrepareDataBase(ABC):
             self._input_params['vegetation'], self._input_params['vegetation_type'],
             aoi_polygon, self._input_params['table_soil_vegetation']
         )
+        Logger.progress(40)
 
         self.data['mat_n'] = self.soilveg_fields['n']
         self.data['mat_pi'] = self.soilveg_fields['pi']
@@ -353,7 +362,7 @@ class PrepareDataBase(ABC):
             self.soilveg_fields['y'], GridGlobals.r,
             GridGlobals.c, GridGlobals.NoDataValue, self.data['mat_slope']
         )
-        #Logger.progress(40)
+        Logger.progress(50)
 
         Logger.info("Computing critical level...")
         self.data['mat_hcrit'] = self._get_crit_water(
@@ -364,8 +373,7 @@ class PrepareDataBase(ABC):
         # load precipitation input file
         self.data['sr'], self.data['itera'] = \
             rainfall.load_precipitation(self._input_params['rainfall_file'])
-
-        #Logger.progress(50)
+        Logger.progress(60)
 
         Logger.info("Computing stream preparation...")
         if self._input_params['stream'] and self._input_params['table_stream_shape'] and self._input_params['table_stream_shape_code']:
@@ -374,6 +382,7 @@ class PrepareDataBase(ABC):
                                  self._input_params['table_stream_shape_code'],
                                  dem_aoi, aoi_polygon
             )
+        Logger.progress(90)
 
         # define mask (rc/rc variables)
         self.data['mat_boundary'] = self._find_boundary_cells(
@@ -386,11 +395,11 @@ class PrepareDataBase(ABC):
         )
 
         self.data['mfda'] = False ### ML: ???
-        self.data['mat_boundary'] = None ## ML: ???
-        #Logger.progress(100)
+        self.data['mat_boundary'] = None ## ML: -> JJ ???
 
         Logger.info("Data preparation has been finished")
         Logger.info('-' * 80)
+        Logger.progress(100)
 
         return self.data
 
@@ -595,16 +604,6 @@ class PrepareDataBase(ABC):
                     mat_hcrit_flux[i][j] = no_data_value
                     mat_hcrit[i][j] = no_data_value
 
-        for out, arr in (("hcrit_tau", mat_hcrit_tau),
-                         ("hcrit_flux", mat_hcrit_flux),
-                         ("hcrit_v", mat_hcrit_v)):
-            self.storage.write_raster(
-                arr, out, 'temp'
-            )
-        self.storage.write_raster(
-            mat_hcrit, 'mat_hcrit', ''
-        )
-
         return mat_hcrit
 
     def _get_mat_nan(self, r, c, no_data_value, mat_slope, mat_dem):
@@ -630,12 +629,6 @@ class PrepareDataBase(ABC):
                 else:
                     mat_nan[i][j] = 0
 
-        self.storage.write_raster(
-            mat_nan,
-            'mat_nan',
-            'temp'
-        )
-
         return mat_nan, mat_slope, mat_dem
 
     def _prepare_stream(self, stream, stream_shape_tab, stream_shape_code, dem_aoi, aoi_polygon):
@@ -654,15 +647,18 @@ class PrepareDataBase(ABC):
         if self.data['type_of_computing'] in (3, 5):
             Logger.info("Clipping stream to AoI outline ...")
             stream_aoi = self._stream_clip(stream, aoi_polygon)
+            Logger.progress(70)
 
             Logger.info("Computing stream direction and elevation...")
             self._stream_direction(stream_aoi, dem_aoi)
+            Logger.progress(75)
 
             Logger.info("Computing stream segments...")
             self.data['mat_stream_reach'] = self._stream_reach(stream_aoi)
+            Logger.progress(80)
 
             Logger.info("Computing stream hydraulics...")
-            #self._stream_hydraulics(stream_aoi) # ML: is it used?
+            #self._stream_hydraulics(stream_aoi) # ML: is it used -> output ?
             self._stream_slope(stream_aoi)
             self.data['streams'] = self._stream_shape(stream_aoi, stream_shape_code, stream_shape_tab)
         else:
@@ -769,7 +765,25 @@ class PrepareDataBase(ABC):
         if self.soilveg_fields[field].shape[0] != GridGlobals.r or \
            self.soilveg_fields[field].shape[1] != GridGlobals.c:
             raise DataPreparationError(
-                "Unexpected array {} dimension {}: should be ({}, {})".format(
+                "Unexpected soilveg {} attribute array dimension {}: should be ({}, {})".format(
                     field, self.soilveg_fields[field].shape,
                     GridGlobals.r, GridGlobals.c)
             )
+
+    def _stream_attr_(self, fid):
+        fields = [fid, 'point_x', 'point_y', 'point_x_end', 'point_y_end',
+                  'to_node', 'shape_length', 'slope'] + self.stream_shape_fields
+        
+        stream_attr = {}
+        for f in fields:
+            stream_attr[f] = []
+
+        return stream_attr
+    def _check_input_data_(self):
+        if self._input_params['stream'] or self._input_params['table_stream_shape'] or self._input_params['table_stream_shape_code']:
+            if not self._input_params['stream']:
+                raise DataPreparationInvalidInput("Option 'Reach feature layer' must be defined")
+            if not self._input_params['table_stream_shape']:
+                raise DataPreparationInvalidInput("Option 'Reach shape table' must be defined")
+            if not self._input_params['table_stream_shape_code']:
+                raise DataPreparationInvalidInput("Option 'Field with the reach feature identifier' must be defined")

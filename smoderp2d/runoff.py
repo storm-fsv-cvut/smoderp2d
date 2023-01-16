@@ -247,6 +247,7 @@ class Runoff(object):
 
         # main loop: until the end time
         i = j = 0 # TODO: rename vars (variable overlap)
+        timeperc_last = 0
         while self.flow_control.compare_time(Globals.end_time):
 
             self.flow_control.save_vars()
@@ -387,12 +388,15 @@ class Runoff(object):
                     self.surface.arr.get_item([i, j]).h_total_pre = self.surface.arr.get_item([i, j]).h_total_new
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
-            Logger.progress(
-                timeperc,
-                self.delta_t,
-                self.flow_control.iter_,
-                self.flow_control.total_time + self.delta_t
-            )
+            if timeperc > 99.9 or timeperc - timeperc_last > 5:
+                # print progress with 5% step
+                Logger.progress(
+                    timeperc,
+                    self.delta_t,
+                    self.flow_control.iter_,
+                    self.flow_control.total_time + self.delta_t
+                )
+                timeperc_last = timeperc
 
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)

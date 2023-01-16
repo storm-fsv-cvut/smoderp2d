@@ -122,7 +122,7 @@ class Surface(GridGlobals, Stream, Kinematic):
             else :
                 velocity = arr.vol_runoff / dt / (arr.h_sheet*GridGlobals.dx)
 
-            # if nogis provider - the data in extra output are the unit width data
+            # if profile1d provider - the data in extra output are the unit width data
             #                     if you need runoff from non-unit slope and
             #                     with extra output calculate it yourself
             line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}{sep}'\
@@ -295,7 +295,7 @@ def sheet_runoff(sur, dt):
     :return: TODO
     """
     q_sheet = surfacefce.shallowSurfaceKinematic(sur)
-    sur.vol_runoff = dt * q_sheet * GridGlobals.get_size()[0]
+    sur.vol_runoff = dt * q_sheet * GridGlobals.dx
     sur.vol_rest = sur.h_sheet * GridGlobals.get_pixel_area() - sur.vol_runoff
 
     return q_sheet

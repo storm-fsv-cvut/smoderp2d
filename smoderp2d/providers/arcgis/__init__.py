@@ -86,8 +86,6 @@ class ArcGisProvider(BaseProvider):
     def __init__(self):
         super(ArcGisProvider, self).__init__()
 
-        self._print_fn = self._print_logo_fn = arcpy.AddMessage
-
         # type of computation (default)
         self.args.typecomp = CompType.full
 

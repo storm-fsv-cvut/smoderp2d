@@ -55,10 +55,8 @@ class PrepareData(PrepareDataBase):
         dem_filled.save(dem_filled_path)
 
         # calculate the flow direction
-        # ML: calculted from original DEM ?
-        # ML: where is flowdir and flowacc / slope and aspect used?
         dem_flowdir_path = self.storage.output_filepath('dem_flowdir')
-        flowdir = arcpy.sa.FlowDirection(dem)
+        flowdir = arcpy.sa.FlowDirection(dem_filled)
         flowdir.save(dem_flowdir_path)
 
         # calculate flow accumulation
@@ -68,12 +66,12 @@ class PrepareData(PrepareDataBase):
 
         # calculate slope
         dem_slope_path = self.storage.output_filepath('dem_slope')
-        dem_slope = arcpy.sa.Slope(dem_filled, "PERCENT_RISE")
+        dem_slope = arcpy.sa.Slope(dem, "PERCENT_RISE")
         dem_slope.save(dem_slope_path)
 
         # calculate aspect
         dem_aspect_path = self.storage.output_filepath('dem_aspect')
-        dem_aspect = arcpy.sa.Aspect(dem_filled)
+        dem_aspect = arcpy.sa.Aspect(dem)
         dem_aspect.save(dem_aspect_path)
 
         return dem_filled_path, dem_flowdir_path, dem_flowacc_path, dem_slope_path, dem_aspect_path
@@ -138,7 +136,7 @@ class PrepareData(PrepareDataBase):
         GridGlobals.set_size((desc.MeanCellWidth, desc.MeanCellHeight))
 
         # set arcpy environment (needed for rasterization)
-        arcpy.env.extent = reference
+        arcpy.env.extent = desc.Extent
         arcpy.env.snapRaster = reference
 
     def _compute_efect_cont(self, dem, asp):
@@ -249,9 +247,10 @@ class PrepareData(PrepareDataBase):
     def _stream_clip(self, stream, aoi_polygon):
         """See base method for description.
         """
+        # AoI slighty smaller due to start/end elevation extraction
         aoi_buffer = arcpy.analysis.Buffer(aoi_polygon,
             self.storage.output_filepath('aoi_buffer'),
-            -GridGlobals.dx / 3, # ML: ? + clip ?
+            -GridGlobals.dx / 3, 
             "FULL", "ROUND",
         )
 
@@ -296,7 +295,7 @@ class PrepareData(PrepareDataBase):
         with arcpy.da.SearchCursor(stream, [oid_field, "elev_start", "elev_end"]) as cursor:
             for row in cursor:
                 if row[1] < row[2]:
-                    arcpy.edit.FlipLine(stream) # ML: all streams vs one stream?
+                    arcpy.edit.FlipLine(stream) # ML: all streams vs one stream? + JH
 
         # add to_node attribute
         arcpy.management.AddField(stream, "to_node", "INTEGER")
@@ -339,7 +338,8 @@ class PrepareData(PrepareDataBase):
             for row in cursor:
                 slope = (row[1] - row[2]) / row[4]
                 if slope == 0:
-                    raise DataPreparationError('Reach FID: {} has zero slope'.format(row[0]))
+                    raise DataPreparationError(
+                        'Reach FID: {} has zero slope'.format(row[0]))
                 row[3] = slope
                 cursor.updateRow(row)
 
@@ -353,17 +353,14 @@ class PrepareData(PrepareDataBase):
         )
 
         fid = arcpy.Describe(stream).OIDFieldName
-        fields = [fid, 'point_x', 'point_y', 'point_x_end', 'point_y_end', 'to_node',
-                'shape_length', 'slope', stream_shape_code, 'number', 'shapetype', 'b', 'm', 'roughness', 'q365']
-        stream_attr = {}
-        for f in fields:
-            stream_attr[f] = []
+        stream_attr = self._stream_attr_(fid)
+        fields = list(stream_attr.keys())
         with arcpy.da.SearchCursor(stream, fields) as cursor:
             try:
                 for row in cursor:
                     i = 0
                     for i in range(len(row)):
-                        if row[i] == " " or row[i] is None:
+                        if row[i] in (" ", None):
                             raise DataPreparationError(
                                 "Empty value in tab_stream_shape ({}) found.".format(fields[i])
                             )
@@ -393,7 +390,9 @@ class PrepareData(PrepareDataBase):
                             "'{}' values in '{}' table are not correct, "
                             "empty value found in row {})".format(field, table, row[1])
                         )
-        
+
+        self._check_input_data_()
+
         _check_empty_values(
             self._input_params['vegetation'],
             self._input_params['vegetation_type']
@@ -408,8 +407,8 @@ class PrepareData(PrepareDataBase):
             for f in self.stream_shape_fields:
                 if f not in fields:
                     raise DataPreparationInvalidInput(
-                        "Field '{}' not found in '{}'\nProper columns codes are: {}".format(
-                            f, self._input_params['table_stream_shape'], self.stream_shape_fields)
+                        "Field '{}' not found in <{}>\nProper fields name are: {}".format(
+                            f, self._input_params['table_stream_shape'], ', '.join(map(lambda x: "'{}'".format(x), self.stream_shape_fields)))
                     )
 
 

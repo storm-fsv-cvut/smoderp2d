@@ -34,12 +34,12 @@ def report_pickle_difference(new_output, reference):
                 reference_dict = pickle.load(right)
 
             new_output_str = [
-                '%s:%s\n' % (key, value) for (key,  value) in sorted(
+                '{}:{}\n'.format(key, value) for (key,  value) in sorted(
                     new_output_dict.items()
                 )
             ]
             reference_str = [
-                '%s:%s\n' % (key, value) for (key, value) in sorted(
+                '{}:{}\n'.format(key, value) for (key, value) in sorted(
                     reference_dict.items()
                 )
             ]
@@ -48,10 +48,10 @@ def report_pickle_difference(new_output, reference):
 
     diff_fd.close()
     
-    return 'Inconsistency in {}. The diff is stored in {}'.format(
+    return 'Inconsistency in {} compared to the reference data. The diff is stored in {}'.format(
         new_output, diff_fn)
 
-def perform_dpre_ref_test(runner, params_fn):
+def perform_dpre_ref_test(runner, params_fn, dataprep_only=True):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -60,19 +60,14 @@ def perform_dpre_ref_test(runner, params_fn):
     try:
         runner = runner()
         runner.set_options(params)
-        # run only data preparation
-        runner.set_comptype(
-            comp_type=CompType.dpre,
-            data_file=params['pickle_file']
-        )
+        if dataprep_only:
+            # run only data preparation
+            runner.set_comptype(CompType.dpre)
         runner.run()
     except ProviderError as e:
         sys.exit(e)
 
-    assert filecmp.cmp(
-        params['pickle_file'],
-        os.path.join(output_dir, '..', 'reference', 'dpre.save')
-    ), report_pickle_difference(
-        params['pickle_file'],
-        os.path.join(output_dir, '..', 'reference', 'dpre.save')
-    )
+    dataprep_filepath = os.path.join(output_dir, 'dpre.save')
+    reference_filepath = os.path.join(output_dir, '..', 'reference', 'dpre.save')
+    assert filecmp.cmp(dataprep_filepath, reference_filepath),\
+        report_pickle_difference(dataprep_filepath, reference_filepath)
