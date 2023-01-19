@@ -184,7 +184,7 @@ class SMODERP2D(object):
            name="outDir",
            datatype="DEWorkspace",
            parameterType="Required",
-           direction="Output"
+           direction="Input"
         )
         outDir.filter.list = ["File System"]
 
