@@ -75,7 +75,6 @@ class PrepareDataBase(ABC):
             'mat_nan': None,
             'mat_a': None,
             'mat_n': None,
-            'outdir': self._input_params['output'],
             'poradi': None,
             'end_time': self._input_params['end_time'],
             'state_cell': None,
@@ -415,21 +414,21 @@ class PrepareDataBase(ABC):
         """Creates empty output and temporary directories to which created
         files are saved.
         """
-        if not self.data['outdir']:
+        if not Globals.outdir:
             # no output directory defined, nothing to do
             return
 
         # delete output directory if exists and create new one
         Logger.info(
-            "Creating output directories <{}>".format(self.data['outdir'])
+            "Creating output directories <{}>".format(Globals.outdir)
         )
-        if os.path.exists(self.data['outdir']):
-            shutil.rmtree(self.data['outdir'])
-        os.makedirs(self.data['outdir'])
+        if os.path.exists(Globals.outdir):
+            shutil.rmtree(Globals.outdir)
+        os.makedirs(Globals.outdir)
 
         # create temporary dir
         self.data['temp'] = os.path.join(
-            self.data['outdir'], "temp"
+            Globals.outdir, "temp"
         )
         Logger.debug(
             "Creating temp directory <{}>".format(self.data['temp'])
@@ -438,7 +437,7 @@ class PrepareDataBase(ABC):
 
         # create control dir
         control = os.path.join(
-            self.data['outdir'], "control"
+            Globals.outdir, "control"
         )
         Logger.debug(
             "Creating control directory <{}>".format(control)

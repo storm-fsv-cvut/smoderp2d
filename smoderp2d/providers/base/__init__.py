@@ -206,10 +206,6 @@ class BaseProvider(object):
         #    3 sheet, rill and reach flow
         data['type_of_computing'] = self._config.get('processes', 'typecomp', fallback=3)
 
-        #  output directory is always set
-        if data['outdir'] is None:
-            data['outdir'] = self._config.get('output', 'outdir')
-
         #  rainfall data can be saved
         if self._config.get('data', 'rainfall'):
             try:
