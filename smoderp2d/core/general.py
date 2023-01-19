@@ -197,8 +197,6 @@ class Globals:
     mat_stream_reach = None
     # ???
     STREAM_RATIO = None
-    # ???
-    streams_loc = None
     # maximum allowed time step during compuation
     maxdt = None
     # if true extra data are stores in the point*.dat files
@@ -340,7 +338,3 @@ class Globals:
     @classmethod
     def get_STREAM_RATIO(cls):
         return cls.STREAM_RATIO
-
-    @classmethod
-    def get_streams_loc(cls):
-        return cls.streams_loc

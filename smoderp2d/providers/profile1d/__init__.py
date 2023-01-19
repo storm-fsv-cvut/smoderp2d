@@ -368,7 +368,6 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['STREAM_RATIO'] = None
         data['bc'] = None
         data['br'] = None
-        data['streams_loc'] = None
         data['streams'] = None
         data['poradi'] = None
 
