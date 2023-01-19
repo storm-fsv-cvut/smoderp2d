@@ -244,6 +244,10 @@ class BaseProvider(object):
                 raise ProviderError('{}'.format(e))
             if self.args.typecomp == CompType.dpre:
                 # data preparation requested only
+                # add also related information from GridGlobals
+                for k in ('NoDataValue', 'bc', 'br', 'c', 'dx', 'dy',
+                          'pixel_area', 'r', 'rc', 'rr', 'xllcorner', 'yllcorner'):
+                    data[k] = getattr(GridGlobals, k)
                 self._save_data(data, self.args.data_file)
                 return
 
