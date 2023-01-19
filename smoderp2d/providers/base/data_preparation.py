@@ -76,7 +76,6 @@ class PrepareDataBase(ABC):
             'mat_a': None,
             'mat_n': None,
             'outdir': self._input_params['output'],
-            'points': self._input_params['points'], # TODO: needs to be replaced by the clipped points dataset
             'poradi': None,
             'end_time': self._input_params['end_time'],
             'state_cell': None,

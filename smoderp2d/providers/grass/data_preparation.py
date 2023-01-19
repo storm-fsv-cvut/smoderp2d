@@ -349,8 +349,9 @@ class PrepareData(PrepareDataBase, ManageFields):
         """See base method for description.
         """
         array_points = None
-        if self.data['points'] not in ("", "#", None):
-            points_map = self.__qualified_name(self._input_params['points'])
+        points_layer = self._input_params['points']
+        if points_layer:
+            points_map = self.__qualified_name(points_layer)
             # get number of points
             with VectorTopo(**points_map) as vmap:
                 count = vmap.number_of('points')

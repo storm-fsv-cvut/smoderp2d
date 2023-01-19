@@ -245,7 +245,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             self._get_mat_nan(data['r'], data['c'], data['NoDataValue'],
                               data['mat_slope'], data['mat_dem'])
 
-        data['array_points'], data['points'] = self._set_hydrographs(data['r'] - 1)
+        data['array_points'] = self._set_hydrographs(data['r'] - 1)
         # and other unused variables
         self._set_unused(data)
         data['rr'], data['rc'] = self._get_rr_rc(data['r'], data['c'],
@@ -380,9 +380,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         :param max_row: index of the last cell
         """
         array_points = np.array([1, max_row, 0, 0, 0]).reshape((1, 5))
-        points = 'test'
 
-        return array_points, points
+        return array_points
 
     def postprocessing(self, cumulative, surface_array, stream):
         super().postprocessing(cumulative, surface_array, stream)
