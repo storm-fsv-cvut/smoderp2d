@@ -89,7 +89,6 @@ class PrepareDataBase(ABC):
             'cell_stream': None,
             'mat_stream_reach': None,
             'STREAM_RATIO': None,
-            'streams_loc': None
             }
 
     @abstractmethod
