@@ -2,6 +2,8 @@ import os
 import sys
 import pickle
 import filecmp
+import shutil
+import numpy
 
 from difflib import unified_diff
 
@@ -11,7 +13,20 @@ from smoderp2d.providers.base import CompType
 data_dir = os.path.join(os.path.dirname(__file__), "data")
 output_dir = os.path.join(data_dir, "output")
 
+def extract_pickle_data(data_dict, target_dir):
+    if os.path.exists(target_dir):
+        shutil.rmtree(target_dir)
+    os.makedirs(target_dir)
+    for k, v in data_dict.items():
+        with open(os.path.join(target_dir, k), 'w') as fd:
+            if isinstance(v, numpy.ndarray):
+                numpy.savetxt(fd, v)
+            else:
+                fd.write(str(v))
 
+def _extract_target_dir(path):
+    return os.path.join(os.path.dirname(path),
+                        os.path.splitext(os.path.basename(path))[0] + '.extracted')
 def report_pickle_difference(new_output, reference):
     """Report the inconsistency of two files.
 
@@ -32,6 +47,9 @@ def report_pickle_difference(new_output, reference):
             else:
                 new_output_dict = pickle.load(left)
                 reference_dict = pickle.load(right)
+
+            extract_pickle_data(new_output_dict, _extract_target_dir(new_output))
+            extract_pickle_data(reference_dict, _extract_target_dir(reference))
 
             new_output_str = [
                 '{}:{}\n'.format(key, value) for (key,  value) in sorted(

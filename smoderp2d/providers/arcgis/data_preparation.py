@@ -224,16 +224,17 @@ class PrepareData(PrepareDataBase):
         """See base method for description.
         """
         array_points = None
-        if self.data['points'] not in ("", "#", None):
+        points_layer = self._input_params['points']
+        if points_layer:
             # get number of points
-            count = int(arcpy.management.GetCount(self.data['points']).getOutput(0))
+            count = int(arcpy.management.GetCount(points_layer).getOutput(0))
             if count > 0:
                 # empty array
                 array_points = np.zeros([count, 5], float)
 
                 # get the points geometry and IDs into array
-                desc = arcpy.Describe(self.data['points'])
-                with arcpy.da.SearchCursor(self.data['points'], [desc.OIDFieldName, desc.ShapeFieldName]) as table:
+                desc = arcpy.Describe(points_layer)
+                with arcpy.da.SearchCursor(points_layer, [desc.OIDFieldName, desc.ShapeFieldName]) as table:
                     i = 0
                     for row in table:
                         fid = row[0]
