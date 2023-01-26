@@ -20,6 +20,7 @@ class PrepareData(PrepareDataBase):
         else:
             raise LicenceNotAvailable("Spatial Analysis extension for ArcGIS is not available")
 
+        arcpy.env.XYTolerance = "0.001 Meters"
         super(PrepareData, self).__init__(writter)
 
     def _create_AoI_outline(self, elevation, soil, vegetation):
@@ -263,56 +264,92 @@ class PrepareData(PrepareDataBase):
     def _stream_direction(self, stream, dem_aoi):
         """See base method for description.
         """
-        # extract elevation for start/end stream nodes
-        stream_start = arcpy.management.FeatureVerticesToPoints(
-            stream, self.storage.output_filepath("stream_start"), "START"
-        )
-        stream_end = arcpy.management.FeatureVerticesToPoints(
-            stream, self.storage.output_filepath("stream_end"), "END"
-        )
+        streamIDfieldName = "streamID"
+        # add the streamID for later use
+        arcpy.management.AddField(stream, streamIDfieldName, "SHORT")
+        sID = 1
+        with arcpy.da.UpdateCursor(stream, [streamIDfieldName]) as segments:
+            for row in segments:
+                row[0] = sID
+                segments.updateRow(row)
+                sID += 1
 
-        arcpy.sa.ExtractMultiValuesToPoints(
-            stream_start, [[dem_aoi, "elev_start"]]
-        )
-        arcpy.sa.ExtractMultiValuesToPoints(
-            stream_end, [[dem_aoi, "elev_end"]]
-        )
-        arcpy.management.AddXY(stream_start)
-        arcpy.management.AddXY(stream_end)
+        # extract elevation for the stream segment vertices
+        arcpy.ddd.InterpolateShape(dem_aoi, stream, self.storage.output_filepath("stream_Z"), "", "", "LINEAR", "VERTICES_ONLY")
+        desc = arcpy.Describe(self.storage.output_filepath("stream_Z"))
+        shapeFieldName = "SHAPE@"
+        lengthFieldName = desc.LengthFieldName
 
-        oid_field = arcpy.Describe(stream).OIDFieldName
-        arcpy.management.JoinField(
-            stream, oid_field,
-            stream_start, arcpy.Describe(stream_start).OIDFieldName, ["elev_start", "POINT_X", "POINT_Y"]
-        )
-        arcpy.management.AlterField(stream_end, "POINT_X", "POINT_X_END")
-        arcpy.management.AlterField(stream_end, "POINT_Y", "POINT_Y_END")
-        arcpy.management.JoinField(
-            stream, oid_field,
-            stream_end, arcpy.Describe(stream_end).OIDFieldName, ["elev_end", "POINT_X_END", "POINT_Y_END"]
-        )
+        # segments properties
+        segmentProps = {}
+        # first points of segments to find the nextDownID
+        firstPoints = {}
+        with arcpy.da.SearchCursor(self.storage.output_filepath("stream_Z"), [shapeFieldName, streamIDfieldName, lengthFieldName]) as segments:
+            for row in segments:
+                startpt = row[0].firstPoint
+                endpt = row[0].lastPoint
+                # negative elevation change is the correct direction for stream segments
+                elevchange = endpt.Z - startpt.Z
 
-        # flip stream
-        with arcpy.da.SearchCursor(stream, [oid_field, "elev_start", "elev_end"]) as cursor:
-            for row in cursor:
-                if row[1] < row[2]:
-                    arcpy.edit.FlipLine(stream) # ML: all streams vs one stream? + JH
+                if elevchange == 0:
+                    raise DataPreparationError(
+                        'Stream segment streamID: {} has zero slope'.format(row[1]))
+                if elevchange < 0:
+                    firstPoints.update({row[1]: startpt})
+                else:
+                    firstPoints.update({row[1]: endpt})
 
-        # add to_node attribute
-        arcpy.management.AddField(stream, "to_node", "INTEGER")
-        with arcpy.da.SearchCursor(stream, [oid_field, "POINT_X", "POINT_Y"]) as cursor_start:
-            for row in cursor_start:
-                start_pnt = (row[1], row[2])
-                fid = row[0]
+                inclination = elevchange/row[2]
+                segmentProps.update({row[1]:{"startZ": startpt.Z, "endZ": endpt.Z, "inclination": inclination}})
 
-                with arcpy.da.UpdateCursor(stream, ["POINT_X_END", "POINT_Y_END", "to_node"]) as cursor_end:
-                    for row in cursor_end:
-                        end_pnt = (row[0], row[1])
-                        if start_pnt == end_pnt:
-                            row[2] = fid
-                        else:
-                            row[2] = GridGlobals.NoDataValue
-                        cursor_end.updateRow(row)
+        # add new fields to the stream segments feature class
+        arcpy.management.AddField(stream, streamIDfieldName, "SHORT")
+        arcpy.management.AddField(stream, "startElev", "DOUBLE")
+        arcpy.management.AddField(stream, "endElev", "DOUBLE")
+        arcpy.management.AddField(stream, "inclination", "DOUBLE")
+        arcpy.management.AddField(stream, "nextDownID", "DOUBLE")
+
+        XYtolerance = 0.01 # don't know why the arcpy.env.XYtolerance does not work (otherwise would use the arcpy.Point.equals() method)
+        with arcpy.da.UpdateCursor(stream, [streamIDfieldName, shapeFieldName, "startElev", "endElev", "inclination", "nextDownID"]) as table:
+            for row in table:
+                segmentInclination = segmentProps.get(row[0]).get("inclination")
+                row[1] = row[1] if segmentInclination < 0 else self._reverse_line_direction(row[1])
+                row[2] = segmentProps.get(row[0]).get("startZ")
+                row[3] = segmentProps.get(row[0]).get("endZ")
+                row[4] = -segmentInclination if segmentInclination < 0 else segmentInclination
+
+                # find the next down segment by comparing the points distance
+                nextDownID = -1
+                matched = []
+                for segID in firstPoints.keys():
+                    arcpy.AddMessage("  " + str(firstPoints.get(segID)))
+                    dist = pow(pow(row[1].lastPoint.X-firstPoints.get(segID).X, 2)+pow(row[1].lastPoint.Y-firstPoints.get(segID).Y, 2), 0.5)
+                    if (dist < XYtolerance):
+                        nextDownID = segID
+                        matched.append(segID)
+                if len(matched) > 1:
+                    row[5] = None
+                    raise DataPreparationError(
+                        'Incorrect stream network topology downstream segment streamID: {}'.format(row[0])+". The network can not bifurcate.")
+                else:
+                    row[5] = nextDownID
+                table.updateRow(row)
+
+
+    def _reverse_line_direction(self, line):
+        """Flips the order of points if a line to change its direction
+        If the geometry is multipart the parts are dissolved into single part line
+
+        :param line: line geometry to be flipped
+        :return: the line geometry with flipped point order
+        """
+        newpart = []
+        for part in line:
+            for point in part:
+                newpart.append(point)
+
+        newline = arcpy.Polyline(arcpy.Array(reversed(newpart)))
+        return newline
 
     def _stream_reach(self, stream):
         """See base method for description.
@@ -328,21 +365,6 @@ class PrepareData(PrepareDataBase):
         self._get_mat_stream_seg(mat_stream_seg)
 
         return mat_stream_seg.astype('int16')
-
-    def _stream_slope(self, stream):
-        """See base method for description.
-        """
-        arcpy.management.AddField(stream, "slope", "DOUBLE")
-        fields = [arcpy.Describe(stream).OIDFieldName,
-                  "elev_start", "elev_end", "slope", "shape_length"]
-        with arcpy.da.UpdateCursor(stream, fields) as cursor:
-            for row in cursor:
-                slope = (row[1] - row[2]) / row[4]
-                if slope == 0:
-                    raise DataPreparationError(
-                        'Reach FID: {} has zero slope'.format(row[0]))
-                row[3] = slope
-                cursor.updateRow(row)
 
     def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
         """See base method for description.

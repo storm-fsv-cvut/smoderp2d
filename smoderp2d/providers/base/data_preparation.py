@@ -33,6 +33,7 @@ class PrepareDataBase(ABC):
             'soilveg_aoi': 'temp',
             'aoi_buffer': 'temp',
             'stream_aoi': 'temp',
+            "stream_Z": 'temp',
             'stream_start': 'temp',
             'stream_end': 'temp',
             'stream_seg': 'temp',
@@ -235,14 +236,14 @@ class PrepareDataBase(ABC):
         :return mat_stream_seg: Numpy array
         """
         pass
-
-    @abstractmethod
-    def _stream_slope(self, stream):
-        """Compute slope of stream
-
-        :param stream: string path to stream dataset
-        """
-        pass
+    #
+    # @abstractmethod
+    # def _stream_slope(self, stream):
+    #     """Compute slope of stream
+    #
+    #     :param stream: string path to stream dataset
+    #     """
+    #     pass
 
     @abstractmethod
     def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
@@ -646,7 +647,7 @@ class PrepareDataBase(ABC):
             stream_aoi = self._stream_clip(stream, aoi_polygon)
             Logger.progress(70)
 
-            Logger.info("Computing stream direction and elevation...")
+            Logger.info("Computing stream direction and inclinations...")
             self._stream_direction(stream_aoi, dem_aoi)
             Logger.progress(75)
 
@@ -656,7 +657,6 @@ class PrepareDataBase(ABC):
 
             Logger.info("Computing stream hydraulics...")
             #self._stream_hydraulics(stream_aoi) # ML: is it used -> output ?
-            self._stream_slope(stream_aoi)
             self.data['streams'] = self._stream_shape(stream_aoi, stream_shape_code, stream_shape_tab)
         else:
             self.data['streams'] = None
