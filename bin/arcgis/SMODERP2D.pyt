@@ -146,28 +146,30 @@ class SMODERP2D(object):
         )
         soilvegIDfieldName.parameterDependencies = [soilvegPropertiesTable.name]
 
-        reachFeatures = arcpy.Parameter(
-           displayName="Reach feature layer",
-           name="reachFeatures",
+        streamNetwork = arcpy.Parameter(
+           displayName="Stream network feature layer",
+           name="streamNetwork",
            datatype="GPFeatureLayer",
            parameterType="Optional",
            direction="Input"
         )
-        reachTable = arcpy.Parameter(
-           displayName="Reach shapes table",
-           name="reachTable",
+        streamNetwork.filter.list = ["Polyline"]
+
+        channelTypesTable = arcpy.Parameter(
+           displayName="Channel properties table",
+           name="channelTypesTable",
            datatype="GPTableView",
            parameterType="Optional",
            direction="Input"
         )
-        reachIDfieldName = arcpy.Parameter(
-           displayName="Field with the reach feature identifier",
-           name="reachIDfieldName",
+        channelIDfieldName = arcpy.Parameter(
+           displayName="Field with the channel type identifier",
+           name="channelIDfieldName",
            datatype="Field",
            parameterType="Optional",
            direction="Input",
         )
-        reachIDfieldName.parameterDependencies = [reachTable.name]
+        channelIDfieldName.parameterDependencies = [channelTypesTable.name]
 
         dataprepOnly = arcpy.Parameter(
            displayName="Do the data preparation only",
@@ -192,8 +194,8 @@ class SMODERP2D(object):
             inputSurfaceRaster, inputSoilPolygons, soilTypefieldName,
             inputLUPolygons, LUtypeFieldName, inputRainfall,
             maxTimeStep, totalRunTime, inputPoints,
-            soilvegPropertiesTable, soilvegIDfieldName, reachFeatures,
-            reachTable, reachIDfieldName, dataprepOnly, outDir,
+            soilvegPropertiesTable, soilvegIDfieldName, streamNetwork,
+            channelTypesTable, channelIDfieldName, dataprepOnly, outDir,
         ]
 
     def updateParameters(self, parameters):

@@ -373,7 +373,7 @@ class PrepareDataBase(ABC):
             rainfall.load_precipitation(self._input_params['rainfall_file'])
         Logger.progress(60)
 
-        Logger.info("Computing stream preparation...")
+        Logger.info("Processing stream network:")
         if self._input_params['stream'] and self._input_params['table_stream_shape'] and self._input_params['table_stream_shape_code']:
             self._prepare_stream(self._input_params['stream'],
                                  self._input_params['table_stream_shape'],

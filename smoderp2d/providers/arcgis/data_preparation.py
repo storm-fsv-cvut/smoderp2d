@@ -20,7 +20,7 @@ class PrepareData(PrepareDataBase):
         else:
             raise LicenceNotAvailable("Spatial Analysis extension for ArcGIS is not available")
 
-        arcpy.env.XYTolerance = "0.001 Meters"
+        arcpy.env.XYTolerance = "0.01 Meters"
         super(PrepareData, self).__init__(writter)
 
     def _create_AoI_outline(self, elevation, soil, vegetation):
@@ -168,7 +168,7 @@ class PrepareData(PrepareDataBase):
             Logger.info(
                 "The vegetation type attribute field name ('{}') is equal to "
                 "the soil type attribute field name. Vegetation type attribute "
-                "will be renamed to '{}'.".format(vegatation_type, veg_type)
+                "will be renamed to '{}'.".format(vegetation_type, veg_fieldname)
             )
             # add the new field
             arcpy.management.AlterField(vegetation,
@@ -264,7 +264,7 @@ class PrepareData(PrepareDataBase):
     def _stream_direction(self, stream, dem_aoi):
         """See base method for description.
         """
-        streamIDfieldName = "streamID"
+        streamIDfieldName = "stream_id"
         # add the streamID for later use
         arcpy.management.AddField(stream, streamIDfieldName, "SHORT")
         sID = 1
@@ -293,7 +293,7 @@ class PrepareData(PrepareDataBase):
 
                 if elevchange == 0:
                     raise DataPreparationError(
-                        'Stream segment streamID: {} has zero slope'.format(row[1]))
+                        'Stream segment '+streamIDfieldName+': {} has zero slope'.format(row[1]))
                 if elevchange < 0:
                     firstPoints.update({row[1]: startpt})
                 else:
@@ -304,13 +304,13 @@ class PrepareData(PrepareDataBase):
 
         # add new fields to the stream segments feature class
         arcpy.management.AddField(stream, streamIDfieldName, "SHORT")
-        arcpy.management.AddField(stream, "startElev", "DOUBLE")
-        arcpy.management.AddField(stream, "endElev", "DOUBLE")
+        arcpy.management.AddField(stream, "start_elev", "DOUBLE")
+        arcpy.management.AddField(stream, "end_elev", "DOUBLE")
         arcpy.management.AddField(stream, "inclination", "DOUBLE")
-        arcpy.management.AddField(stream, "nextDownID", "DOUBLE")
+        arcpy.management.AddField(stream, "next_down_id", "DOUBLE")
 
         XYtolerance = 0.01 # don't know why the arcpy.env.XYtolerance does not work (otherwise would use the arcpy.Point.equals() method)
-        with arcpy.da.UpdateCursor(stream, [streamIDfieldName, shapeFieldName, "startElev", "endElev", "inclination", "nextDownID"]) as table:
+        with arcpy.da.UpdateCursor(stream, [streamIDfieldName, shapeFieldName, "start_elev", "end_elev", "inclination", "next_down_id"]) as table:
             for row in table:
                 segmentInclination = segmentProps.get(row[0]).get("inclination")
                 row[1] = row[1] if segmentInclination < 0 else self._reverse_line_direction(row[1])
@@ -368,6 +368,13 @@ class PrepareData(PrepareDataBase):
     def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
         """See base method for description.
         """
+        if (stream_shape_code) not in self._get_field_names(stream):
+            raise DataPreparationError(
+                "Error joining channel shape properties to stream network segments!\n"
+                "Check fields names in stream network feature class. "
+                "Needed field is: '{}'".format(self._input_params['table_stream_shape_code'])
+            )
+
         arcpy.management.JoinField(
             stream, stream_shape_code,
             stream_shape_tab, stream_shape_code,
@@ -384,7 +391,7 @@ class PrepareData(PrepareDataBase):
                     for i in range(len(row)):
                         if row[i] in (" ", None):
                             raise DataPreparationError(
-                                "Empty value in tab_stream_shape ({}) found.".format(fields[i])
+                                "Empty value in {} ({}) found.".format(self._input_params["table_stream_shape"], fields[i])
                             )
                         stream_attr[fields[i]].append(row[i])
                         i += 1
@@ -392,8 +399,8 @@ class PrepareData(PrepareDataBase):
             except RuntimeError as e:
                 raise DataPreparationError(
                         "Error: {}\n" 
-                        "Check if fields code in table_stream_shape are correct. "
-                        "Proper columns codes are: {}".format(e, self.stream_shape_fields)
+                        "Check fields names in {}. "
+                        "Proper columns codes are: {}".format(e, self._input_params["table_stream_shape"], self.stream_shape_fields)
                 )
 
         stream_attr['fid'] = stream_attr.pop(fid)
@@ -433,6 +440,7 @@ class PrepareData(PrepareDataBase):
                             f, self._input_params['table_stream_shape'], ', '.join(map(lambda x: "'{}'".format(x), self.stream_shape_fields)))
                     )
 
-
+    def _get_field_names(self, fc):
+        return [field.name for field in arcpy.ListFields(fc)]
         # ML: what else?
                 
