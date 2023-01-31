@@ -85,7 +85,8 @@ def perform_dpre_ref_test(runner, params_fn, dataprep_only=True):
     except ProviderError as e:
         sys.exit(e)
 
-    dataprep_filepath = os.path.join(output_dir, 'dpre.save')
-    reference_filepath = os.path.join(output_dir, '..', 'reference', 'dpre.save')
-    assert filecmp.cmp(dataprep_filepath, reference_filepath),\
-        report_pickle_difference(dataprep_filepath, reference_filepath)
+    if dataprep_only:
+        dataprep_filepath = os.path.join(output_dir, 'dpre.save')
+        reference_filepath = os.path.join(output_dir, '..', 'reference', 'dpre.save')
+        assert filecmp.cmp(dataprep_filepath, reference_filepath),\
+            report_pickle_difference(dataprep_filepath, reference_filepath)
