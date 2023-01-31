@@ -768,8 +768,7 @@ class PrepareDataBase(ABC):
             )
 
     def _stream_attr_(self, fid):
-        fields = [fid, 'point_x', 'point_y', 'point_x_end', 'point_y_end',
-                  'to_node', 'shape_length', 'slope'] + self.stream_shape_fields
+        fields = [fid, 'nextDownID', 'shape_length', 'inclination'] + self.stream_shape_fields
         
         stream_attr = {}
         for f in fields:

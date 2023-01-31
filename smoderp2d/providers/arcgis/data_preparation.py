@@ -322,7 +322,6 @@ class PrepareData(PrepareDataBase):
                 nextDownID = -1
                 matched = []
                 for segID in firstPoints.keys():
-                    arcpy.AddMessage("  " + str(firstPoints.get(segID)))
                     dist = pow(pow(row[1].lastPoint.X-firstPoints.get(segID).X, 2)+pow(row[1].lastPoint.Y-firstPoints.get(segID).Y, 2), 0.5)
                     if (dist < XYtolerance):
                         nextDownID = segID
