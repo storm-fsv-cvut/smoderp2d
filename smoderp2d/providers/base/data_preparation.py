@@ -196,10 +196,11 @@ class PrepareDataBase(ABC):
         pass
 
     @abstractmethod
-    def _get_array_points(self):
-        """Get array of points. Points near AOI border are skipped.
+    def _get_points_location(self):
+        """Get array of points locations. X and Y coordinates are obtained from the input points geometry
+        points' row and column index in the dem_aoi is calculated
 
-        :return: generated numpy array
+        :return: array with point fids, dem row and column indexes and x, y coordinates
         """
         pass
 
@@ -352,7 +353,7 @@ class PrepareDataBase(ABC):
 
         # build points array
         Logger.info("Prepare points for hydrographs...")
-        self.data['array_points'] = self._get_array_points()
+        self.data['array_points'] = self._get_points_location(points_aoi)
 
         # build a/aa arrays
         self.data['mat_a'], self.data['mat_aa'] = self._get_a(
@@ -486,35 +487,31 @@ class PrepareDataBase(ABC):
 
         return mat_inf_index, combinatIndex
 
-    def _get_array_points_(self, array_points, x, y, fid, i):
-        """Internal method called by _get_array_points().
+    def _get_points_dem_coords(self, x, y):
+        """ Finds the raster row and column index for input x, y coordinates
+        :param x: X coordinate of the point
+        :param y: Y coordinate of the point
+
+        :return: r, c - row and column index of the input point if point within the DEM, else None
         """
         # position i,j in raster (starts at 0)
         r = int(GridGlobals.r - ((y - GridGlobals.yllcorner) // GridGlobals.dy) - 1)
         c = int((x - GridGlobals.xllcorner) // GridGlobals.dx)
 
         # if point is not on the edge of raster or its
-        # neighbours are not "NoDataValue", it will be saved
-        # into array_points array
+        # neighbours are not "NoDataValue", it will be returned
         nv = GridGlobals.NoDataValue
         if r != 0 and r != GridGlobals.r \
-           and c != 0 and c != GridGlobals.c and \
-           self.data['mat_dem'][r][c]   != nv and \
-           self.data['mat_dem'][r-1][c] != nv and \
-           self.data['mat_dem'][r+1][c] != nv and \
-           self.data['mat_dem'][r][c-1] != nv and \
-           self.data['mat_dem'][r][c+1] != nv:
+            and c != 0 and c != GridGlobals.c and \
+            self.data['mat_dem'][r][c]   != nv and \
+            self.data['mat_dem'][r-1][c] != nv and \
+            self.data['mat_dem'][r+1][c] != nv and \
+            self.data['mat_dem'][r][c-1] != nv and \
+            self.data['mat_dem'][r][c+1] != nv:
 
-            array_points[i][0] = fid
-            array_points[i][1] = r
-            array_points[i][2] = c
-            # x,y coordinates of current point stored in an array
-            array_points[i][3] = x
-            array_points[i][4] = y
+            return r, c
         else:
-            Logger.info(
-                "Point FID = {} is at the edge of the raster. "
-                "This point will not be included in results.".format(fid))
+            return None
 
     @staticmethod
     def _get_a(mat_n, mat_x, mat_y, r, c, no_data, mat_slope):
