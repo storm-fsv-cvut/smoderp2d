@@ -16,6 +16,7 @@
 #  package smoderp2d.core.kinematic_diffuse
 #
 
+import numpy as np
 
 from smoderp2d.core.general import Globals
 
@@ -59,7 +60,7 @@ class D8(object):
     #
     #  @return inflow_from_cells inflow volume from the adjacent cells
     #
-    def cell_runoff(self, i, j):
+    def cell_runoff(self, i, j, vol_runoff_np, vol_runoff_rill_np):
         inflow_from_cells = 0.0
         for z in range(len(self.inflows[i][j])):
             ax = self.inflows[i][j][z][0]
@@ -67,11 +68,11 @@ class D8(object):
             iax = i + ax
             jbx = j + bx
             try:
-                insurfflow_from_cell = self.arr.get_item([iax, jbx]).vol_runoff
+                insurfflow_from_cell = vol_runoff_np[iax][jbx]
             except:
                 insurfflow_from_cell = 0.0
             try:
-                inrillflow_from_cell = self.arr.get_item([iax, jbx]).vol_runoff_rill
+                inrillflow_from_cell = vol_runoff_rill_np[iax][jbx]
             except:
                 inrillflow_from_cell = 0.0
             inflow_from_cells = inflow_from_cells + \
@@ -132,11 +133,11 @@ class Mfda(object):
                 bx = self.inflowsRill[i][j][z][1]
                 iax = i + ax
                 jbx = j + bx
-                if self.arr.get_item([i, j]).state == 1 or self.arr.get_item([i, j]).state == 2: # rill
-                    try:
-                        inflow_from_cells += \
-                            self.vol_runoff_rill_pre[iax][jbx]  # toto jeste predelat u ryh
-                    except:
-                        inflow_from_cells += 0.0
+
+                inflow_from_cells += np.where(
+                    np.equal(self.state[i, j], 1) or np.equal(self.state[i, j], 2),
+                    self.vol_runoff_rill_pre,
+                    0
+                )
 
         return inflow_from_cells
