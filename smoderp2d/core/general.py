@@ -71,7 +71,8 @@ class GridGlobals(object):
         if self.r is None or self.c is None:
             raise SmoderpError("Global variables are not assigned")
 
-        self.arr = GridGlobalsArray((self.r, self.c), dtype=object)
+        # in TF, was [[[0] * self.dims] * self.c] * self.r,
+        self.arr = np.zeros((self.r, self.c))
 
     @classmethod
     def get_dim(cls):
@@ -204,7 +205,7 @@ class Globals:
     extraOut = None
     # stream magic number
     streams_flow_inc = 1000
-    # slope width 
+    # slope width
     slope_width = None
 
     @classmethod
@@ -249,20 +250,40 @@ class Globals:
         return cls.mat_inf_index[i][j]
 
     @classmethod
+    def get_mat_inf_index_np(cls):
+        return cls.mat_inf_index
+
+    @classmethod
     def get_mat_hcrit(cls, i, j):
         return cls.mat_hcrit[i][j]
+
+    @classmethod
+    def get_mat_hcrit_np(cls):
+        return cls.mat_hcrit
 
     @classmethod
     def get_mat_aa(cls, i, j):
         return cls.mat_aa[i][j]
 
     @classmethod
+    def get_mat_aa_np(cls):
+        return cls.mat_aa
+
+    @classmethod
     def get_mat_b(cls, i, j):
         return cls.mat_b[i][j]
 
     @classmethod
+    def get_mat_b_np(cls):
+        return cls.mat_b
+
+    @classmethod
     def get_mat_reten(cls, i, j):
         return cls.mat_reten[i][j]
+
+    @classmethod
+    def get_mat_reten_np(cls):
+        return cls.mat_reten
 
     @classmethod
     def get_mat_fd(cls):
