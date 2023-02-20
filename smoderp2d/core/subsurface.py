@@ -20,21 +20,21 @@ class SubArrs:
         :param z: TODO
         :param ele: TODO
         """
-        self.L_sub = L_sub
-        self.h = 0.
-        self.H = ele
-        self.z = z
-        self.slope = 0.
-        self.exfiltration = 0.
-        self.vol_runoff = 0.
-        self.vol_runoff_pre = 0.
-        self.vol_rest = 0.
-        self.Ks = Ks
-        self.cum_percolation = 0.
-        self.percolation = 0.
-        self.vg_n = vg_n
-        self.vg_m = 1.0 - 1.0 / vg_n
-        self.vg_l = vg_l
+        self.L_sub = np.ones((GridGlobals.c, GridGlobals.r)) * L_sub
+        self.h = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.H = np.ones((GridGlobals.c, GridGlobals.r)) * ele
+        self.z = np.ones((GridGlobals.c, GridGlobals.r)) * z
+        self.slope = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.exfiltration = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.vol_runoff = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.vol_runoff_pre = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.vol_rest = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.Ks = np.ones((GridGlobals.c, GridGlobals.r)) * Ks
+        self.cum_percolation = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.percolation = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.vg_n = np.ones((GridGlobals.c, GridGlobals.r)) * vg_n
+        self.vg_m = 1 - (1 / (np.ones((GridGlobals.c, GridGlobals.r)) * vg_n))
+        self.vg_l = np.ones((GridGlobals.c, GridGlobals.r)) * vg_l
 
 
 class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
@@ -188,8 +188,8 @@ class SubsurfacePass(GridGlobals):
     def fill_slope(self):
         pass
 
-    def get_exfiltration(self, i, j):
-        return 0.0
+    def get_exfiltration(self):
+        return np.zeros((GridGlobals.c, GridGlobals.r))
 
     def bilance(self, i, j, infilt, inflow, dt):
         pass
