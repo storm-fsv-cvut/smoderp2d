@@ -26,7 +26,7 @@ class CumulativeSubsurfacePass(object):
     def __init__(self):
         self.data = {}
 
-    def update_cumulative_sur(self, i, j, sub, q_subsur):
+    def update_cumulative_sur(self, subsurface):
         pass
 
 
@@ -128,51 +128,128 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
                     np.zeros([GridGlobals.r, GridGlobals.c], float)
             )
 
-    def update_cumulative(self, i, j, sur_arr_el, subsur_arr_el, delta_t):
+    # def update_cumulative(self, i, j, sur_arr_el, subsur_arr_el, delta_t):
+    def update_cumulative(self, surface, subsurface, delta_t):
         """Update arrays with cumulative and maximum
         values of key computation results.
 
-        :param int i:
-        :param int j:
-        :param float sur_arr_el: single element in surface.arr
-        :param float subsur_arr_el: single element in subsurface.arr (to be
-            implemented)
+        :param float surface: surface.arr
+        :param float subsurface: subsurface.arr (to be implemented)
         :param floet delta_t: length of time step
         """
-        self.infiltration[i][j] += sur_arr_el.infiltration * GridGlobals.pixel_area
-        self.precipitation[i][j] += sur_arr_el.cur_rain * GridGlobals.pixel_area
-        self.vol_sheet[i][j] += sur_arr_el.vol_runoff
-        self.vol_rill[i][j] += sur_arr_el.vol_runoff_rill
-        self.vol_sur_tot[i][j] += sur_arr_el.vol_runoff_rill + sur_arr_el.vol_runoff
-        self.inflow_sur[i][j] += sur_arr_el.inflow_tm
-        self.sur_ret[i][j] += sur_arr_el.cur_sur_ret * GridGlobals.pixel_area
+        # originally GridGlobals.pixel_area
+        # in TF, not +=
+        self.infiltration += surface.infiltration * self.pixel_area
+        self.precipitation += surface.cur_rain * self.pixel_area
+        # in TF, was vol_sheet +=
+        self.vol_sheet += surface.vol_runoff
+        # did not exist in TF
+        self.vol_rill += surface.vol_runoff_rill
+        # not exist in original
+        # self.v_sur_r += surface.vol_rest
+        # in TF, was += surface.vol_rest
+        self.v_sur_tot += surface.vol_runoff_rill + surface.vol_runoff
+        self.inflow_sur += surface.inflow_tm
+        # originally GridGlobals.pixel_area
+        self.sur_ret += surface.cur_sur_ret * self.pixel_area
 
-        q_sheet_tot = sur_arr_el.vol_runoff / delta_t
-        q_rill_tot = sur_arr_el.vol_runoff_rill / delta_t
+        # in TF, was q_sheet =
+        q_sheet_tot = surface.vol_runoff / delta_t
+        # in TF, was q_rill =
+        q_rill_tot = surface.vol_runoff_rill / delta_t
+        # in TF, was q_tot = q_sheet + q_rill
         q_sur_tot = q_sheet_tot + q_rill_tot
-        if q_sur_tot > self.q_sur_tot[i][j]:
-            self.q_sur_tot[i][j] = q_sur_tot
-        if sur_arr_el.h_total_new > self.h_sur_tot[i][j]:
-            self.h_sur_tot[i][j] = sur_arr_el.h_total_new
-        if (q_sheet_tot > self.q_sheet_tot[i][j]):
-            self.q_sheet_tot[i][j] = q_sheet_tot
-        if sur_arr_el.h_rill > self.h_rill[i][j]:
-            self.h_rill[i][j] = sur_arr_el.h_rill
-            self.b_rill[i][j] = sur_arr_el.rillWidth
-            self.q_rill_tot[i][j] = q_rill_tot
+        # in TF, self.q_sur_tot = tf.where(q_tot > self.q_sur_tot,
+        self.q_sur_tot = np.where(q_sur_tot > self.q_sur_tot,
+                                  q_sur_tot, self.q_sur_tot)
+        # new
+        self.h_sur_tot = np.wehere(surface.h_total_new > self.h_sur_tot,
+                                   surface.h_total_new,
+                                   self.h_sur_tot)
+        # new
+        self.q_sheet_tot = np.where(q_sheet_tot > self.q_sheet_tot,
+                                    q_sheet_tot,
+                                    self.q_sheet_tot)
+        # new
+        cond_h_rill = np.greater(surface.h_rill, self.h_rill)
+        # new
+        self.h_rill = np.where(cond_h_rill, surface.h_rill, self.h_rill)
+        # new
+        self.b_rill = np.where(cond_h_rill, surface.rillWidth, self.b_rill)
+        # new
+        self.q_rill_tot = np.where(cond_h_rill, q_rill_tot, self.q_rill_tot)
 
-        if sur_arr_el.state == 0:
-            if (sur_arr_el.h_total_new > self.h_sheet_tot[i][j]):
-                self.h_sheet_tot[i][j] = sur_arr_el.h_total_new
-
-        elif (sur_arr_el.state == 1) or (sur_arr_el.state == 2):
-            self.h_sheet_tot[i][j] = sur_arr_el.h_crit
-
-        self.update_cumulative_sur(
-            i, j,
-            subsur_arr_el,
-            subsur_arr_el
+        # new
+        cond_sur_state0 = surface.state == 0
+        # in TF, was h_sur instead of h_sheet_tot
+        self.h_sheet_tot  = np.where(
+            cond_sur_state0,
+            np.maximum(self.h_sheet_tot, surface.h_total_new),
+            self.h_sheet_tot
         )
+        cond_sur_state1 = surface.state == 1
+        cond_sur_state2 = surface.state == 2
+        self.h_sheet_tot  = np.where(
+            cond_sur_state1 | cond_sur_state2,
+            surface.h_crit,
+            self.h_sheet_tot
+        )
+
+#         #####################
+#
+#         cond = tf.equal(surface.state, 0)
+#         cond_in_true = surface.h_total_new > self.h_sur
+#         cond_in_false_1 = tf.equal(surface.state, 1)
+#         cond_in_false_2 = tf.equal(surface.state, 2)
+#         cond_in_false = tf.cast(tf.cast(cond_in_false_1, tf.int8) +
+#                                 tf.cast(cond_in_false_2, tf.int8),
+#                                 tf.bool)
+#         cond_in_false_true = surface.h_total_new > self.h_sur
+#         cond_in_false_false = surface.h_rill > self.h_rill
+#
+#         h_sur_in_true = tf.where(cond_in_true, surface.h_total_new, self.h_sur)
+#         h_sur_in_false = tf.where(cond_in_false_true,
+#                                   surface.h_total_new, self.h_sur)
+#         h_sur_in_false = tf.where(cond_in_false, h_sur_in_false, self.h_sur)
+#         self.h_sur = tf.where(cond, h_sur_in_true, h_sur_in_false)
+#
+#         q_sur_in_true = tf.where(cond_in_true, q_sheet, self.q_sur)
+#         q_sur_in_false = tf.where(cond_in_false_true, q_sheet, self.q_sur)
+#         q_sur_in_false = tf.where(cond_in_false, q_sur_in_false, self.q_sur)
+#         self.q_sur = tf.where(cond, q_sur_in_true, q_sur_in_false)
+#
+#         self.v_rill = tf.where(cond_in_false, surface.vol_runoff_rill, self.v_rill)
+#         self.v_rill_r = tf.where(cond_in_false,
+#                                  surface.v_rill_rest, self.v_rill_r)
+#
+#         q_rill_in_false_false = tf.where(cond_in_false_false,
+#                                          q_rill, self.q_rill)
+#         q_rill_in_false_true = tf.where(cond_in_false_true,
+#                                         self.q_rill, q_rill_in_false_false)
+#         q_rill_in_false = tf.where(cond_in_false,
+#                                    q_rill_in_false_true, self.q_rill)
+#         self.q_rill = tf.where(cond, self.q_rill, q_rill_in_false)
+#
+#         h_rill_in_false_false = tf.where(cond_in_false_false,
+#                                          surface.h_rill, self.h_rill)
+#         h_rill_in_false_true = tf.where(cond_in_false_true,
+#                                         self.h_rill, h_rill_in_false_false)
+#         h_rill_in_false = tf.where(cond_in_false,
+#                                    h_rill_in_false_true, self.h_rill)
+#         self.h_rill = tf.where(cond, self.h_rill, h_rill_in_false)
+#
+#         b_rill_in_false_false = tf.where(cond_in_false_false,
+#                                          surface.rillWidth, self.b_rill)
+#         b_rill_in_false_true = tf.where(cond_in_false_true,
+#                                         self.b_rill, b_rill_in_false_false)
+#         b_rill_in_false = tf.where(cond_in_false,
+#                                    b_rill_in_false_true, self.b_rill)
+#         self.b_rill = tf.where(cond, self.b_rill, b_rill_in_false)
+#
+#         # TODO TF: Really?
+#         i = j = 0
+# >>>>>>> 095f262 (surface in multiple 2-D arrays instead of one 3-D)
+        self.update_cumulative_sur(subsurface)
 
     def calculate_vsheet_sheerstress(self):
         """Compute maximum shear stress and velocity."""
@@ -190,7 +267,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
                     self.h_sheet_tot[i][j] * 9807 * Globals.mat_slope[i][j]
 
     def return_str_val(self, i, j):
-        """ returns the cumulative precipitation in mm and cumulative runoff 
+        """ returns the cumulative precipitation in mm and cumulative runoff
         at a given cell"""
         sw = Globals.slope_width
         return '{:.4e}'.format(self.precipitation[i][j]/GridGlobals.pixel_area), \
