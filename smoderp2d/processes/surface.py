@@ -7,4 +7,4 @@ def shallowSurfaceKinematic(sur):
     b = sur.b
     h = sur.h_sheet
 
-    return np.pow(h, b) * a
+    return np.power(h, b) * a
