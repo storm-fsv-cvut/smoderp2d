@@ -220,6 +220,89 @@ class Runoff(object):
 
         Logger.info('-' * 80)
 
+    def run_as_matrices(self):
+        """ The computation of the water level development
+        is performed here.
+
+        The *main loop* which goes through time steps
+        has *nested loop* for iterations (in case the
+        computation does not converge).
+
+        The computation has been divided in two parts
+        First, in iteration (*nested*) loop is calculated
+        the surface runoff (to which is the time step
+        sensitive) in a function time_step.do_flow()
+
+        Next water balance is performed at each cell of the
+        raster. Water level in next time step is calculated by
+        a function time_step.do_next_h().
+
+        Selected values are stored in at the end of each loop.
+        """
+
+
+        # saves time before the main loop
+        Logger.info('Start of computing...')
+        Logger.start_time = time.time()
+
+        # main loop: until the end time
+        i = j = 0  # TODO: rename vars (variable overlap)
+        while self.flow_control.compare_time(Globals.end_time):
+
+            self.flow_control.save_vars()
+            self.flow_control.refresh_iter()
+
+            # iteration loop
+            while self.flow_control.max_iter_reached():
+
+                self.flow_control.update_iter()
+                self.flow_control.restore_vars()
+
+                # reset of the courant condition
+                self.courant.reset()
+                self.flow_control.save_ratio()
+
+            potRain, h_sheet, vol_runoff, vol_rest, h_rill, h_rill_pre, vol_runoff_rill, v_rill_rest, rillWidth, v_to_rill \
+                = self.time_step.do_flow(
+                self.surface,
+                self.subsurface,
+                self.delta_t,
+                self.flow_control,
+                self.courant
+            )
+
+            # TODO: Move out of the loop?
+            self.surface.h_sheet = h_sheet
+            self.surface.vol_runoff = vol_runoff
+            self.surface.vol_rest = vol_rest
+            self.surface.h_rill = h_rill
+            self.surface.h_rillPre = h_rill_pre
+            self.surface.vol_runoff_rill = vol_runoff_rill
+            self.surface.v_rill_rest = v_rill_rest
+            self.surface.rillWidth = rillWidth
+            self.surface.v_to_rill = v_to_rill
+
+            # stores current time step
+            delta_t_tmp = self.delta_t
+
+            # update time step size if necessary (based on the courant
+            # condition)
+            self.delta_t, self.flow_control.ratio = self.courant.courant(
+                potRain, self.delta_t, self.flow_control.ratio
+            )
+
+            # courant conditions is satisfied (time step did
+            # change) the iteration loop breaks
+            if tf.equal(delta_t_tmp, self.delta_t) and self.flow_control.compare_ratio():
+                tf.print('************ BREAK ***************')
+                tf.print('delta_t_tmp, self.delta_t, '
+                         'self.flow_control.compare_ratio()')
+                tf.print(delta_t_tmp, self.delta_t,
+                         self.flow_control.compare_ratio())
+                break
+
+        return potRain
+
     def run(self):
         """ The computation of the water level development
         is performed here.
@@ -311,19 +394,17 @@ class Runoff(object):
             # last results are stored in hydrographs
             # and error is raised
             if not self.flow_control.max_iter_reached():
-                for i in GridGlobals.rr:
-                    for j in GridGlobals.rc[i]:
-                        self.hydrographs.write_hydrographs_record(
-                            i,
-                            j,
-                            self.flow_control,
-                            self.courant,
-                            self.delta_t,
-                            self.surface,
-                            self.subsurface,
-                            self.cumulative,
-                            actRain
-                        )
+                self.hydrographs.write_hydrographs_record(
+                    i,
+                    j,
+                    self.flow_control,
+                    self.courant,
+                    self.delta_t,
+                    self.surface,
+                    self.subsurface,
+                    self.cumulative,
+                    actRain
+                )
                 # TODO
                 # post_proc.do(self.cumulative, Globals.mat_slope, Gl, surface.arr)
                 raise MaxIterationExceeded(
