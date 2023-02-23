@@ -31,35 +31,36 @@ class SurArrs(object):
         :a: TODO
         :b: TODO
         """
-        self.state = 0
-        self.sur_ret = sur_ret
-        self.cur_sur_ret = 0.
-        self.cur_rain = 0.
-        self.h_sheet = 0.
-        self.h_total_new = 0.
-        self.h_total_pre = 0.
-        self.vol_runoff = 0.
-        # self.vol_runoff_pre = float(0)
-        self.vol_rest = 0.
-        # self.vol_rest_pre =   float(0)
-        self.inflow_tm = 0.
-        self.soil_type = inf_index
-        self.infiltration = 0.
-        self.h_crit = hcrit
-        self.a = a
-        self.b = b
-        self.h_rill = 0.
-        self.h_rillPre = 0.
-        self.vol_runoff_rill = 0.
-        self.vel_rill = 0.
-        # self.vol_runoff_rill_pre= float(0)
-        self.v_rill_rest = 0.
-        # self.v_rill_rest_pre =  float(0)
-        self.rillWidth = 0.
-        self.vol_to_rill = 0.
-        self.h_last_state1 = 0.
+        self.state = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.sur_rate = np.ones((GridGlobals.c, GridGlobals.r)) * sur_ret
+        self.cur_sur_ret = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.cur_rain = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.h_sheet = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.h_total_new = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.h_total_pre = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.vol_runoff = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.vol_rest = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.inflow_tm = np.zeros((GridGlobals.c, GridGlobals.r))
+        # in TF, Globals.get_mat_inf_index_tf()
+        self.soil_type = np.ones((GridGlobals.c, GridGlobals.r)) * inf_index
+        self.infiltration = np.zeros((GridGlobals.c, GridGlobals.r))
+        # in TF, Globals.get_mat_hcrit_tf()
+        self.h_crit = np.ones((GridGlobals.c, GridGlobals.r)) * hcrit
+        # in TF, a = Globals.get_mat_aa_tf()
+        self.a = np.ones((GridGlobals.c, GridGlobals.r)) * a
+        # in TF, Globals.get_mat_b_tf()
+        self.b = np.ones((GridGlobals.c, GridGlobals.r)) * b
+        self.h_rill = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.h_rillPre = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.vol_runoff_rill = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.vel_rill = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.v_rill_rest = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.rillWidth = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.vol_to_rill = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.h_last_state1 = np.zeros((GridGlobals.c, GridGlobals.r))
 
 
+# in TF, class Surface(GridGlobals, Size, Stream, Kinematic, SurArrs):
 class Surface(GridGlobals, Stream, Kinematic):
     """Contains data and methods to calculate the surface and rill runoff.
     """
@@ -79,15 +80,13 @@ class Surface(GridGlobals, Stream, Kinematic):
         self.arr.set_outsides(SurArrs)
 
         # assign array objects
-        for i in range(self.r):
-            for j in range(self.c):
-                self.arr[i, j] = SurArrs(
-                    Globals.get_mat_reten(i, j),
-                    Globals.get_mat_inf_index(i, j),
-                    Globals.get_mat_hcrit(i, j),
-                    Globals.get_mat_aa(i, j),
-                    Globals.get_mat_b(i, j)
-                )
+        self.arr = SurArrs(
+            Globals.get_mat_reten_np(),
+            Globals.get_mat_inf_index_np(),
+            Globals.get_mat_hcrit_np(),
+            Globals.get_mat_aa_np(),
+            Globals.get_mat_b_np()
+        )
 
         Stream.__init__(self)
 
@@ -109,58 +108,57 @@ class Surface(GridGlobals, Stream, Kinematic):
 
         # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
         if not extra_out:
-
             line = '{0:.4e}{sep}{1:.4e}'.format(
-                arr.h_total_new,
-                (arr.vol_runoff / dt + arr.vol_runoff_rill / dt) * sw,
+                arr.h_total_new[i, j],
+                (arr.vol_runoff[i, j] / dt + arr.vol_runoff_rill[i, j] / dt) * sw,
                 sep=sep
             )
             bil_ = ''
         else:
-            if arr.h_sheet == 0:
-                velocity = 0
-            else :
-                velocity = arr.vol_runoff / dt / (arr.h_sheet*GridGlobals.dx)
-
+            velocity = np.where(
+                arr.h_sheet == 0,
+                0,
+                arr.vol_runoff / dt / (arr.h_sheet*GridGlobals.dx)
+            )
             # if profile1d provider - the data in extra output are the unit width data
             #                     if you need runoff from non-unit slope and
             #                     with extra output calculate it yourself
             line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}{sep}'\
             '{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
-                arr.h_sheet,
-                arr.vol_runoff / dt,
-                arr.vol_runoff,
-                velocity,
-                arr.vol_rest,
-                arr.infiltration,
-                arr.cur_sur_ret,
-                arr.state,
-                arr.inflow_tm,
-                arr.h_total_new,
+                arr.h_sheet[i, j],
+                arr.vol_runoff[i, j] / dt,
+                arr.vol_runoff[i, j],
+                velocity[i, j],
+                arr.vol_rest[i, j],
+                arr.infiltration[i, j],
+                arr.cur_sur_ret[i, j],
+                arr.state[i, j],
+                arr.inflow_tm[i, j],
+                arr.h_total_new[i, j],
                 sep=sep
             )
 
             if Globals.isRill:
                 line += '{sep}{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}'\
                 '{sep}{5:.4e}{sep}{6:.4e}{sep}{7:.4e}'.format(
-                    arr.h_rill,
-                    arr.rillWidth,
-                    arr.vol_runoff_rill / dt,
-                    arr.vol_runoff_rill,
-                    arr.vel_rill,
-                    arr.v_rill_rest,
-                    arr.vol_runoff / dt + arr.vol_runoff_rill / dt,
-                    arr.vol_runoff + arr.vol_runoff_rill,
+                    arr.h_rill[i, j],
+                    arr.rillWidth[i, j],
+                    arr.vol_runoff_rill[i, j] / dt,
+                    arr.vol_runoff_rill[i, j],
+                    arr.vel_rill[i, j],
+                    arr.v_rill_rest[i, j],
+                    arr.vol_runoff[i, j] / dt + arr.vol_runoff_rill[i, j] / dt,
+                    arr.vol_runoff[i, j] + arr.vol_runoff_rill[i, j],
                     sep=sep
                 )
 
-            bil_ = arr.h_total_pre * self.pixel_area + \
-                   arr.cur_rain * self.pixel_area + \
-                   arr.inflow_tm - \
-                   (arr.vol_runoff + arr.vol_runoff_rill + \
-                    arr.infiltration * self.pixel_area) - \
-                    (arr.cur_sur_ret * self.pixel_area) - \
-                    arr.h_total_new * self.pixel_area
+            bil_ = arr.h_total_pre[i, j] * self.pixel_area + \
+                   arr.cur_rain[i, j] * self.pixel_area + \
+                   arr.inflow_tm[i, j] - \
+                   (arr.vol_runoff[i, j] + arr.vol_runoff_rill[i, j] + \
+                    arr.infiltration[i, j] * self.pixel_area) - \
+                    (arr.cur_sur_ret[i, j] * self.pixel_area) - \
+                    arr.h_total_new[i, j] * self.pixel_area
             # << + arr.vol_rest + arr.v_rill_rest) + (arr.vol_rest_pre + arr.v_rill_rest_pre)
 
         return line, bil_
@@ -182,22 +180,20 @@ def __runoff(i, j, sur, dt, efect_vrst, ratio):
     state = sur.state  # da se tady podivat v jakym jsem casovym kroku a jak se a
 
     # sur.state               = update_state1(h_total_pre,h_crit,state)
+    # in TF, rillWidth not passed to the function
     sur.h_sheet, sur.h_rill, sur.h_rillPre = compute_h_hrill(
         h_total_pre, h_crit, state, sur.rillWidth, sur.h_rillPre)
 
-    q_sheet = sheet_runoff(sur, dt)
+    q_sheet, sur.vol_runoff, sur.vol_rest = sheet_runoff(sur, dt)
 
-    if sur.h_sheet > 0.0:
-        v_sheet = q_sheet / sur.h_sheet
-    else:
-        v_sheet = 0.0
+    v_sheet = np.where(sur.h_sheet > 0, q_sheet / sur.h_sheet, 0)
 
-    if sur.state > 0:
-        q_rill, v_rill, ratio, rill_courant = rill_runoff(
-            i, j, sur, dt, efect_vrst, ratio
-        )
-    else:
-        q_rill, v_rill, ratio, rill_courant = 0, 0, ratio, 0.0
+    rill_runoff_results = np.where(
+        sur.state > 0,
+        rill_runoff(i, j, sur, dt, efect_vrst, ratio),
+        (0, 0, sur.v_rill_rest, sur.vol_runoff_rill, ratio, 0)
+    )
+    q_rill, v_rill, sur.v_rill_rest, sur.vol_runoff_rill, ratio, rill_courant = rill_runoff_results
 
     sur.vel_rill = v_rill
     return q_sheet, v_sheet, q_rill, v_rill, ratio, rill_courant
@@ -263,6 +259,34 @@ def compute_h_hrill(h_total_pre, h_crit, state, rill_width, h_rill_pre):
 
     :return: TODO
     """
+    h_sheet = np.where(
+        state == 0,
+        h_total_pre,
+        np.where(
+            state == 1,
+            np.minimum(h_crit, h_total_pre),
+            np.where(h_total_pre > h_rill_pre, h_total_pre - h_rill_pre, 0)
+        )
+    )
+    h_rill = np.where(
+        state == 0,
+        0,
+        np.where(
+            state == 1,
+            np.maximum(h_total_pre - h_crit, 0),
+            np.where(h_total_pre > h_rill_pre, h_rill_pre, h_total_pre)
+        )
+    )
+    h_rill_pre = np.where(
+        state == 0,
+        0,
+        np.where(
+            state == 1,
+            h_rill,
+            h_rill_pre
+        )
+    )
+
     if state == 0:
         h_sheet = h_total_pre
         h_rill = 0
@@ -295,10 +319,11 @@ def sheet_runoff(sur, dt):
     :return: TODO
     """
     q_sheet = surfacefce.shallowSurfaceKinematic(sur)
-    sur.vol_runoff = dt * q_sheet * GridGlobals.get_size()[0]
-    sur.vol_rest = sur.h_sheet * GridGlobals.get_pixel_area() - sur.vol_runoff
+    vol_runoff = dt * q_sheet * GridGlobals.get_size()[0]
+    # in TF, was h_sheet * GridGlobals.get_pixel_area() - sur.vol_runoff
+    vol_rest = sur.h_sheet * GridGlobals.get_pixel_area() - vol_runoff
 
-    return q_sheet
+    return q_sheet, vol_runoff, vol_rest
 
 def rill_runoff(i, j, sur, dt, efect_vrst, ratio):
     """TODO.
@@ -324,8 +349,7 @@ def rill_runoff(i, j, sur, dt, efect_vrst, ratio):
     )
     r_rill = (h * b) / (b + 2 * h)
 
-    v_rill = math.pow(r_rill, (2.0 / 3.0)) * \
-        1. / n * math.pow(slope, 0.5)
+    v_rill = np.power(r_rill, (2.0 / 3.0)) * 1. / n * np.power(slope, 0.5)
 
     q_rill = v_rill * h * b
 
@@ -339,18 +363,18 @@ def rill_runoff(i, j, sur, dt, efect_vrst, ratio):
 
     sur.vol_to_rill = vol_to_rill
     sur.rillWidth = b
-    if courant <= courantMax:
-        if vol_rill > vol_to_rill:
-            sur.v_rill_rest = 0
-            sur.vol_runoff_rill = vol_to_rill
-        else:
-            sur.v_rill_rest = vol_to_rill - vol_rill
-            sur.vol_runoff_rill = vol_rill
+    v_rill_rest = np.where(
+        courant <= courantMax,
+        np.where(vol_rill > vol_to_rill, 0, vol_to_rill - vol_rill),
+        sur.v_rill_rest
+    )
+    vol_runoff_rill = np.where(
+        courant <= courantMax,
+        np.where(vol_rill > vol_to_rill, vol_to_rill, vol_rill),
+        sur.vol_runoff_rill
+    )
 
-    else:
-        return q_rill, v_rill, ratio, courant
-
-    return q_rill, v_rill, ratio, courant
+    return q_rill, v_rill, v_rill_rest, vol_runoff_rill, ratio, courant
 
 
 def surface_retention(bil, sur):
@@ -361,15 +385,16 @@ def surface_retention(bil, sur):
     """
     reten = sur.sur_ret
     pre_reten = reten
-    if reten < 0:
-        tempBIL = bil + reten
-
-        if tempBIL > 0:
-            bil = tempBIL
-            reten = 0
-        else:
-            reten = tempBIL
-            bil = 0
+    bil = np.where(
+        reten < 0,
+        np.where(bil + reten > 0, bil + reten, 0),
+        bil
+    )
+    reten = np.where(
+        reten < 0,
+        np.where(bil + reten > 0, 0, bil + reten),
+        reten
+    )
 
     sur.sur_ret = reten
     sur.cur_sur_ret = reten - pre_reten
