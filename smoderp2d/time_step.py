@@ -39,10 +39,10 @@ class TimeStep:
         h_total_pre = surface.arr.h_total_pre
 
         runoff_return = runoff(
-            i, j, surface.arr, delta_t, mat_efect_cont, fc.ratio
+            surface.arr, delta_t, mat_efect_cont, fc.ratio
         )
         subrunoff_return = subsurface.runoff(
-            i, j, delta_t, mat_efect_cont
+            delta_t, mat_efect_cont
         )
 
         cond_state_flow = surface_state > Globals.streams_flow_inc
@@ -58,8 +58,6 @@ class TimeStep:
         co = 'sheet'
 
         courant.CFL(
-            i,
-            j,
             surface.arr.h_total_pre,
             v,
             delta_t,

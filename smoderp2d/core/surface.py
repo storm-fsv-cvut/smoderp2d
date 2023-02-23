@@ -164,11 +164,9 @@ class Surface(GridGlobals, Stream, Kinematic):
         return line, bil_
 
 
-def __runoff(i, j, sur, dt, efect_vrst, ratio):
+def __runoff(sur, dt, efect_vrst, ratio):
     """Calculates the sheet and rill flow.
 
-    :param i: row index
-    :param j: col index
     :param dt: TODO
     :param efect_vrst: TODO
     :param ratio: TODO
