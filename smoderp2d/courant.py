@@ -1,7 +1,7 @@
 # @package smoderp2d.courant defines Class Courant which handels the time step adjustement
 
 
-import math
+import numpy as np
 from smoderp2d.providers import Logger
 
 from smoderp2d.core.general import Globals as Gl
@@ -133,41 +133,38 @@ class Courant():
         # mensi nez cour_least a vetsi nez cour_crit
         # explicitne se dopocita dt na nejvetsi mozne
         #                                      xor
-        if ((self.cour_most < self.cour_least) != (self.cour_crit <= self.cour_most)):
-
+        cond_cour = (self.cour_most < self.cour_least) != (self.cour_crit <= self.cour_most)
         # pokud se na povrchu nic nedeje
         # nema se zmena dt cim ridit
         # a zmeni se podle maxima nasobeneho max_delta_t_mult
         # max_delta_t_mult se meni podle ryh, vyse v teto funkci
         #
-            if (self.cour_speed == 0.0):
-                return self.max_delta_t * self.max_delta_t_mult, ratio
+        delta_t = np.where(
+            cond_cour,
+            np.where(
+                self.cour_speed == 0,
+                self.max_delta_t * self.max_delta_t_mult,
 
-            dt = round(
-                (Gl.mat_efect_cont[self.i, self.j] * self.cour_crit * self.cour_coef) /
-                 self.cour_speed,
-                8)
+                # nove dt nesmi byt vetsi nez je maxdt * max_delta_t_mult
+                # max_delta_t_mult se meni podle ryh, vyse v teto funkci
 
-            # nove dt nesmi byt vetsi nez je maxdt * max_delta_t_mult
+                # return dt*self.max_delta_t_mult, ratio
+                # return min(dt,self.max_delta_t*self.max_delta_t_mult), ratio
+                # print 'asdf', self.cour_speed, dt, self.max_delta_t_mult
+                # originally, round(() / self.cour_speed, 8)
+                np.minimum(
+                    (Gl.mat_efect_cont * self.cour_crit * self.cour_coef) / self.cour_speed * self.max_delta_t_mult,
+                    self.max_delta_t * self.max_delta_t_mult
+                )
+            ),
+            # pokud je courant v povolenem rozmezi
+            # skontrolje se pouze pokud neni vetsi nez maxdt * max_delta_t_mult
             # max_delta_t_mult se meni podle ryh, vyse v teto funkci
-
-            # return dt*self.max_delta_t_mult, ratio
-            # return min(dt,self.max_delta_t*self.max_delta_t_mult), ratio
-            # print 'asdf', self.cour_speed, dt, self.max_delta_t_mult
-            return min(dt * self.max_delta_t_mult, self.max_delta_t * self.max_delta_t_mult), ratio
-
-        # pokud je courant v povolenem rozmezi
-        # skontrolje se pouze pokud neni vetsi nez maxdt * max_delta_t_mult
-        # max_delta_t_mult se meni podle ryh, vyse v teto funkci
-        else:
-            # print 'fdafdsfasdfadsfadsfadsfaf'
-            # return delta_t, ratio
-            # print 'asdf', dt, dt*self.max_delta_t_mult, ratio
-            if ((ratio <= self.maxratio) and (self.cour_most_rill < 0.5)):
-                return delta_t, ratio
-            else:
-                return delta_t * self.max_delta_t_mult, ratio
-
-        Logger.critical(
-            'courant.cour() missed all its time step conditions\n no rule to preserve or change the time step!'
+            np.where(
+                (ratio <= self.maxratio) and (self.cour_most_rill < 0.5),
+                delta_t,
+                delta_t * self.max_delta_t_mult
+            )
         )
+
+        return delta_t, ratio
