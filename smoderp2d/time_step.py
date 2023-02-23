@@ -36,7 +36,7 @@ class TimeStep:
         )
 
         surface_state = surface.arr.state
-        h_total_pre = surface.h_total_pre
+        h_total_pre = surface.arr.h_total_pre
 
         runoff_return = runoff(
             i, j, surface.arr, delta_t, mat_efect_cont, fc.ratio

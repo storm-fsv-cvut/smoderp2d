@@ -163,8 +163,8 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         self.q_sur_tot = np.where(q_sur_tot > self.q_sur_tot,
                                   q_sur_tot, self.q_sur_tot)
         # new
-        self.h_sur_tot = np.wehere(surface.h_total_new > self.h_sur_tot,
-                                   surface.h_total_new,
+        self.h_sur_tot = np.wehere(surface.arr.h_total_new > self.h_sur_tot,
+                                   surface.arr.h_total_new,
                                    self.h_sur_tot)
         # new
         self.q_sheet_tot = np.where(q_sheet_tot > self.q_sheet_tot,
@@ -184,7 +184,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         # in TF, was h_sur instead of h_sheet_tot
         self.h_sheet_tot  = np.where(
             cond_sur_state0,
-            np.maximum(self.h_sheet_tot, surface.h_total_new),
+            np.maximum(self.h_sheet_tot, surface.arr.h_total_new),
             self.h_sheet_tot
         )
         cond_sur_state1 = surface.arr.state == 1
