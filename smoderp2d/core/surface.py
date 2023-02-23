@@ -286,28 +286,7 @@ def compute_h_hrill(h_total_pre, h_crit, state, rill_width, h_rill_pre):
         )
     )
 
-    if state == 0:
-        h_sheet = h_total_pre
-        h_rill = 0
-
-        return h_sheet, h_rill, 0
-
-    elif state == 1:
-        h_sheet = min(h_crit, h_total_pre)
-        h_rill = max(h_total_pre - h_crit, 0)
-        h_rill_pre = h_rill
-
-        return h_sheet, h_rill, h_rill_pre
-
-    else: # elif state == 2:
-        if h_total_pre > h_rill_pre:
-            h_rill = h_rill_pre
-            h_sheet = h_total_pre - h_rill_pre
-        else:
-            h_rill = h_total_pre
-            h_sheet = 0
-
-        return h_sheet, h_rill, h_rill_pre
+    return h_sheet, h_rill, h_rill_pre
 
 def sheet_runoff(sur, dt):
     """TODO.
