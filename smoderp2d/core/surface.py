@@ -175,7 +175,7 @@ def __runoff(sur, dt, efect_vrst, ratio):
     """
     h_total_pre = sur.h_total_pre
     h_crit = sur.h_crit
-    state = sur.arr.state  # da se tady podivat v jakym jsem casovym kroku a jak
+    state = sur.state  # da se tady podivat v jakym jsem casovym kroku a jak
     # se a
 
     # sur.arr.state               = update_state1(h_total_pre,h_crit,state)
