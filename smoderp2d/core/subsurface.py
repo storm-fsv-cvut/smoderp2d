@@ -154,7 +154,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
                 self.arr[i, j].vol_runoff_pre = self.arr[i, j].vol_runoff
 
     def return_str_vals(self, i, j, sep, dt):
-        arr = self.arr[i, j])
+        arr = self.arr[i, j]
          #';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[],exfiltration[];'
         line = str(
             arr.h) + sep + str(
