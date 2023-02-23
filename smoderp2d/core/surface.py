@@ -31,33 +31,33 @@ class SurArrs(object):
         :a: TODO
         :b: TODO
         """
-        self.state = np.zeros((GridGlobals.c, GridGlobals.r))
-        self.sur_rate = np.ones((GridGlobals.c, GridGlobals.r)) * sur_ret
-        self.cur_sur_ret = np.zeros((GridGlobals.c, GridGlobals.r))
-        self.cur_rain = np.zeros((GridGlobals.c, GridGlobals.r))
-        self.h_sheet = np.zeros((GridGlobals.c, GridGlobals.r))
-        self.h_total_new = np.zeros((GridGlobals.c, GridGlobals.r))
-        self.h_total_pre = np.zeros((GridGlobals.c, GridGlobals.r))
-        self.vol_runoff = np.zeros((GridGlobals.c, GridGlobals.r))
-        self.vol_rest = np.zeros((GridGlobals.c, GridGlobals.r))
-        self.inflow_tm = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.state = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.sur_rate = np.ones((GridGlobals.r, GridGlobals.c)) * sur_ret
+        self.cur_sur_ret = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.cur_rain = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.h_sheet = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.h_total_new = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.h_total_pre = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.vol_runoff = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.vol_rest = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.inflow_tm = np.zeros((GridGlobals.r, GridGlobals.c))
         # in TF, Globals.get_mat_inf_index_tf()
-        self.soil_type = np.ones((GridGlobals.c, GridGlobals.r)) * inf_index
-        self.infiltration = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.soil_type = np.ones((GridGlobals.r, GridGlobals.c)) * inf_index
+        self.infiltration = np.zeros((GridGlobals.r, GridGlobals.c))
         # in TF, Globals.get_mat_hcrit_tf()
-        self.h_crit = np.ones((GridGlobals.c, GridGlobals.r)) * hcrit
+        self.h_crit = np.ones((GridGlobals.r, GridGlobals.c)) * hcrit
         # in TF, a = Globals.get_mat_aa_tf()
-        self.a = np.ones((GridGlobals.c, GridGlobals.r)) * a
+        self.a = np.ones((GridGlobals.r, GridGlobals.c)) * a
         # in TF, Globals.get_mat_b_tf()
-        self.b = np.ones((GridGlobals.c, GridGlobals.r)) * b
-        self.h_rill = np.zeros((GridGlobals.c, GridGlobals.r))
-        self.h_rillPre = np.zeros((GridGlobals.c, GridGlobals.r))
-        self.vol_runoff_rill = np.zeros((GridGlobals.c, GridGlobals.r))
-        self.vel_rill = np.zeros((GridGlobals.c, GridGlobals.r))
-        self.v_rill_rest = np.zeros((GridGlobals.c, GridGlobals.r))
-        self.rillWidth = np.zeros((GridGlobals.c, GridGlobals.r))
-        self.vol_to_rill = np.zeros((GridGlobals.c, GridGlobals.r))
-        self.h_last_state1 = np.zeros((GridGlobals.c, GridGlobals.r))
+        self.b = np.ones((GridGlobals.r, GridGlobals.c)) * b
+        self.h_rill = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.h_rillPre = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.vol_runoff_rill = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.vel_rill = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.v_rill_rest = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.rillWidth = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.vol_to_rill = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.h_last_state1 = np.zeros((GridGlobals.r, GridGlobals.c))
 
 
 # in TF, class Surface(GridGlobals, Size, Stream, Kinematic, SurArrs):
