@@ -35,7 +35,7 @@ class TimeStep:
             itera, fc.total_time, delta_t, fc.tz, sr
         )
 
-        surface_state = surface.state
+        surface_state = surface.arr.state
         h_total_pre = surface.h_total_pre
 
         runoff_return = runoff(

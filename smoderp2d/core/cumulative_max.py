@@ -180,15 +180,15 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         self.q_rill_tot = np.where(cond_h_rill, q_rill_tot, self.q_rill_tot)
 
         # new
-        cond_sur_state0 = surface.state == 0
+        cond_sur_state0 = surface.arr.state == 0
         # in TF, was h_sur instead of h_sheet_tot
         self.h_sheet_tot  = np.where(
             cond_sur_state0,
             np.maximum(self.h_sheet_tot, surface.h_total_new),
             self.h_sheet_tot
         )
-        cond_sur_state1 = surface.state == 1
-        cond_sur_state2 = surface.state == 2
+        cond_sur_state1 = surface.arr.state == 1
+        cond_sur_state2 = surface.arr.state == 2
         self.h_sheet_tot  = np.where(
             cond_sur_state1 | cond_sur_state2,
             surface.h_crit,
@@ -197,10 +197,10 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
 
 #         #####################
 #
-#         cond = tf.equal(surface.state, 0)
+#         cond = tf.equal(surface.arr.state, 0)
 #         cond_in_true = surface.h_total_new > self.h_sur
-#         cond_in_false_1 = tf.equal(surface.state, 1)
-#         cond_in_false_2 = tf.equal(surface.state, 2)
+#         cond_in_false_1 = tf.equal(surface.arr.state, 1)
+#         cond_in_false_2 = tf.equal(surface.arr.state, 2)
 #         cond_in_false = tf.cast(tf.cast(cond_in_false_1, tf.int8) +
 #                                 tf.cast(cond_in_false_2, tf.int8),
 #                                 tf.bool)

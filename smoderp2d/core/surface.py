@@ -177,9 +177,10 @@ def __runoff(i, j, sur, dt, efect_vrst, ratio):
     """
     h_total_pre = sur.h_total_pre
     h_crit = sur.h_crit
-    state = sur.state  # da se tady podivat v jakym jsem casovym kroku a jak se a
+    state = sur.arr.state  # da se tady podivat v jakym jsem casovym kroku a jak
+    # se a
 
-    # sur.state               = update_state1(h_total_pre,h_crit,state)
+    # sur.arr.state               = update_state1(h_total_pre,h_crit,state)
     # in TF, rillWidth not passed to the function
     sur.h_sheet, sur.h_rill, sur.h_rillPre = compute_h_hrill(
         h_total_pre, h_crit, state, sur.rillWidth, sur.h_rillPre)
@@ -189,7 +190,7 @@ def __runoff(i, j, sur, dt, efect_vrst, ratio):
     v_sheet = np.where(sur.h_sheet > 0, q_sheet / sur.h_sheet, 0)
 
     rill_runoff_results = np.where(
-        sur.state > 0,
+        sur.arr.state > 0,
         rill_runoff(i, j, sur, dt, efect_vrst, ratio),
         (0, 0, sur.v_rill_rest, sur.vol_runoff_rill, ratio, 0)
     )
@@ -213,10 +214,10 @@ def __runoff_zero_comp_type(i, j, sur, dt, efect_vrst, ratio):
     """
     h_total_pre = sur.h_total_pre
     h_crit = sur.h_crit
-    state = sur.state
+    state = sur.arr.state
 
 
-    # sur.state               = update_state1(h_total_pre,h_crit,state)
+    # sur.arr.state               = update_state1(h_total_pre,h_crit,state)
     sur.h_sheet = sur.h_total_pre
 
     q_sheet = sheet_runoff(sur, dt)
