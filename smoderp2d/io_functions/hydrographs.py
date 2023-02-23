@@ -194,9 +194,9 @@ class Hydrographs:
                                '{sep}{3}{sep}{4:.4e}'\
                                '{sep}{5:.4e}'\
                                '{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
-                            total_time, dt, currRain, 
+                            total_time, dt, currRain,
                             linebil[0],linebil[1],
-                            surface.arr.get_item([l, m]).vol_to_rill,
+                            surface.arr.vol_to_rill[l, m],
                             ratio, courantMost, courantRill, iter_,
                             sep=sep)
                     line += os.linesep
