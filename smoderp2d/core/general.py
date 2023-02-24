@@ -72,7 +72,7 @@ class GridGlobals(object):
             raise SmoderpError("Global variables are not assigned")
 
         # in TF, was [[[0] * self.dims] * self.c] * self.r,
-        self.arr = np.zeros((self.r, self.c))
+        self.arr = GridGlobalsArray((self.r, self.c), dtype=object)
 
     @classmethod
     def get_dim(cls):
@@ -124,6 +124,10 @@ class DataGlobals:
     @classmethod
     def get_mat_ppl(cls, i, j):
         return cls.mat_ppl[i][j]
+
+    @classmethod
+    def get_mat_ppl_np(cls):
+        return cls.mat_ppl
 
 class Globals:
     """Globals contains global variables from data_preparation, in
@@ -302,6 +306,10 @@ class Globals:
         return cls.mat_slope[i][j]
 
     @classmethod
+    def get_mat_slope_np(cls):
+        return cls.mat_slope
+
+    @classmethod
     def get_mat_nan(cls):
         return cls.mat_nan
 
@@ -312,6 +320,10 @@ class Globals:
     @classmethod
     def get_mat_n(cls, i, j):
         return cls.mat_n[i][j]
+
+    @classmethod
+    def get_mat_n_np(cls):
+        return cls.mat_n
 
     @classmethod
     def get_points(cls):

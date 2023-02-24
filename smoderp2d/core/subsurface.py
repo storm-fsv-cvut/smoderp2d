@@ -134,9 +134,9 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
 
         return bil, exfilt
 
-    def runoff(self, i, j, delta_t, efect_vrst):
+    def runoff(self, delta_t, efect_vrst):
 
-        arr = self.arr[i, j]
+        arr = self.arr
         # print arr .Ks
         self.q_subsurface = self.darcy(arr, efect_vrst)
         # print arr.h
@@ -194,7 +194,7 @@ class SubsurfacePass(GridGlobals):
     def bilance(self, i, j, infilt, inflow, dt):
         pass
 
-    def runoff(self, i, j, delta_t, efect_vrst):
+    def runoff(self, delta_t, efect_vrst):
         pass
 
     def runoff_stream_cell(self, i, j):

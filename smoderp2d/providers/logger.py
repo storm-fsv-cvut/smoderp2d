@@ -1,6 +1,8 @@
 import time
 import logging
 
+import numpy as np
+
 # custom logging level
 PROGRESS = 101
 logging.addLevelName(PROGRESS, "PROGRESS")
@@ -44,25 +46,25 @@ class BaseLogger(logging.Logger):
 
     def _progress(self, perc, delta_t, t_iter, total_time):
         self.info('-' * 80)
-        self.info("Total time      [secs]: {0:.2f}".format(total_time)) # TODO: ms ???
-        self.info("Time step       [secs]: {0:.2e}".format(delta_t))
+        self.info("Total time      [secs]: {0:.2f}".format(total_time[0, 0])) # TODO: ms ???
+        self.info("Time step       [secs]: {0:.2e}".format(delta_t[0, 0]))
         self.info("Time iterations       : {0:d}".format(t_iter))
-        self.info("Percentage done    [%]: {0:.2f}".format(perc))
+        self.info("Percentage done    [%]: {0:.2f}".format(perc[0, 0]))
         units = ' [secs]'
-        if perc > 0:
+        if np.any(perc > 0):
             diff_time = time.time() - self.start_time
             remaining = (100.0 * diff_time) / perc - diff_time
         else:
             remaining = '[??]'
-        if remaining > 60:
+        if np.any(remaining > 60):
             remaining /= float(60)
             units = ' [mins]'
-        elif remaining > 60*60:
-            remaining /= float(60*60)
+        elif np.any(remaining > 60 * 60):
+            remaining /= float(60 * 60)
             units = '[hours]'
-        elif remaining > 60*60*24.:
-            remaining /= float(60*60*24)
+        elif np.any(remaining > 60 * 60 * 24):
+            remaining /= float(60 * 60 * 24)
             units = ' [days]'
 
-        self.info("Time to end    {0}: {1:.2f}".format(units, remaining))
+        self.info("Time to end    {0}: {1:.2f}".format(units, remaining[0, 0]))
         self.info('-' * 80)

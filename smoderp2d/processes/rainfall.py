@@ -46,8 +46,8 @@ class ErrorInRainfallRecord(Error):
 
     def __str__(self):
         return repr(self.msg)
-    
-    
+
+
 def load_precipitation(fh):
     y2 = 0
     try:
@@ -67,7 +67,7 @@ def load_precipitation(fh):
                 elif ((float(z[0])==0) & (float(z[1])==0)) : # if the record start with zero minutes and rainfall the line is ignored
                     continue
                 else:
-                    y0 = float(z[0]) * 60.0  # convert minutes to seconds 
+                    y0 = float(z[0]) * 60.0  # convert minutes to seconds
                     y1 = float(z[1]) / 1000.0  # convert mm to m
                     if y1 < y2:
                         raise NonCumulativeRainData()
@@ -133,7 +133,7 @@ def timestepRainfall(iterace, total_time, delta_t, tz, sr):
         # skontroluje jestli casovy krok, ktery prave resi, je stale vramci
         # srazkoveho zaznamu z
 
-        if sr[z][0] >= (total_time + delta_t):
+        if np.all(sr[z][0] >= (total_time + delta_t)):
             rainfall = sr[z][1] * delta_t
         # kdyz je mimo tak
         else:
@@ -172,18 +172,20 @@ def current_rain(rain, rainfallm, sum_interception):
     rain_ppl = rain.ppl
     rain_pi = rain.pi
     sum_interception_pre = sum_interception
-    if not rain_veg:
+    if not np.all(rain_veg):
         interc = rain_ppl * rainfallm  # interception is konstant
         sum_interception += interc  # sum of intercepcion
 
-        if sum_interception >= rain_pi:
-            # rest of intercetpion
-            interc_rest = rain_pi - sum_interception_pre
-            NS = rainfallm - interc_rest  # netto rainfallm
-            rain_veg = True # as vegetatio interception is full
-        else:
-            NS = rainfallm - interc  # netto rainfallm
-    
+        NS = np.where(
+            sum_interception >= rain_pi,
+            rainfallm - (rain_pi - sum_interception_pre),  # rest of intercetpion, netto rainfallm
+            rainfallm - interc  # netto rainfallm
+        )
+        rain_veg = np.where(
+            sum_interception >= rain_pi,
+            True,  # as vegetatio interception is full
+            rain_veg
+        )
     else:
         NS = rainfallm
 

@@ -183,7 +183,7 @@ class Hydrographs:
                     linebil = surface.return_str_vals(l, m, SEP, dt, Globals.extraOut)
                     cumulativelines = cumulative.return_str_val(l,m)
                     line = '{0:.4e}{sep}{1}{sep}{2}{sep}{3}'.format(
-                        total_time, cumulativelines[0],
+                        total_time[l, m], cumulativelines[0],
                         linebil[0], cumulativelines[1],
                         sep=sep
                     )
@@ -194,10 +194,10 @@ class Hydrographs:
                                '{sep}{3}{sep}{4:.4e}'\
                                '{sep}{5:.4e}'\
                                '{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
-                            total_time, dt, currRain,
+                            total_time[l, m], dt[l, m], currRain[l, m],
                             linebil[0],linebil[1],
                             surface.arr.vol_to_rill[l, m],
-                            ratio, courantMost, courantRill, iter_,
+                            ratio, courantMost[l, m], courantRill, iter_,
                             sep=sep)
                     line += os.linesep
                     self.files[ip].writelines(line)

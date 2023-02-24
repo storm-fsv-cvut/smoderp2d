@@ -32,7 +32,7 @@ class SurArrs(object):
         :b: TODO
         """
         self.state = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.sur_rate = np.ones((GridGlobals.r, GridGlobals.c)) * sur_ret
+        self.sur_ret = np.ones((GridGlobals.r, GridGlobals.c)) * sur_ret
         self.cur_sur_ret = np.zeros((GridGlobals.r, GridGlobals.c))
         self.cur_rain = np.zeros((GridGlobals.r, GridGlobals.c))
         self.h_sheet = np.zeros((GridGlobals.r, GridGlobals.c))
@@ -123,18 +123,24 @@ class Surface(GridGlobals, Stream, Kinematic):
             # if profile1d provider - the data in extra output are the unit width data
             #                     if you need runoff from non-unit slope and
             #                     with extra output calculate it yourself
-            line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}{sep}'\
-            '{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
+            # line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}{sep}'\
+            # '{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
+            #     arr.h_sheet[i, j],
+            #     arr.vol_runoff[i, j] / dt,
+            #     arr.vol_runoff[i, j],
+            #     velocity[i, j],
+            #     arr.vol_rest[i, j],
+            #     arr.infiltration[i, j],
+            #     arr.cur_sur_ret[i, j],
+            #     arr.state[i, j],
+            #     arr.inflow_tm[i, j],
+            #     arr.h_total_new[i, j],
+            #     sep=sep
+            # )
+            line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}'.format(
                 arr.h_sheet[i, j],
-                arr.vol_runoff[i, j] / dt,
+                arr.vol_runoff[i, j] / dt[i, j],
                 arr.vol_runoff[i, j],
-                velocity[i, j],
-                arr.vol_rest[i, j],
-                arr.infiltration[i, j],
-                arr.cur_sur_ret[i, j],
-                arr.state[i, j],
-                arr.inflow_tm[i, j],
-                arr.h_total_new[i, j],
                 sep=sep
             )
 
@@ -143,11 +149,12 @@ class Surface(GridGlobals, Stream, Kinematic):
                 '{sep}{5:.4e}{sep}{6:.4e}{sep}{7:.4e}'.format(
                     arr.h_rill[i, j],
                     arr.rillWidth[i, j],
-                    arr.vol_runoff_rill[i, j] / dt,
+                    arr.vol_runoff_rill[i, j] / dt[i, j],
                     arr.vol_runoff_rill[i, j],
                     arr.vel_rill[i, j],
                     arr.v_rill_rest[i, j],
-                    arr.vol_runoff[i, j] / dt + arr.vol_runoff_rill[i, j] / dt,
+                    arr.vol_runoff[i, j] / dt[i, j] + \
+                        arr.vol_runoff_rill[i, j] / dt[i, j],
                     arr.vol_runoff[i, j] + arr.vol_runoff_rill[i, j],
                     sep=sep
                 )
@@ -187,14 +194,19 @@ def __runoff(sur, dt, efect_vrst, ratio):
 
     v_sheet = np.where(sur.h_sheet > 0, q_sheet / sur.h_sheet, 0)
 
-    rill_runoff_results = np.where(
-        sur.arr.state > 0,
-        rill_runoff(i, j, sur, dt, efect_vrst, ratio),
-        (0, 0, sur.v_rill_rest, sur.vol_runoff_rill, ratio, 0)
-    )
-    q_rill, v_rill, sur.v_rill_rest, sur.vol_runoff_rill, ratio, rill_courant = rill_runoff_results
+    # rill runoff
+    rill_runoff_results = rill_runoff(sur, dt, efect_vrst, ratio)
+    q_rill = np.where(sur.state > 0, rill_runoff_results[0], 0)
+    v_rill = np.where(sur.state > 0, rill_runoff_results[1], 0)
+    sur.v_rill_rest = np.where(sur.state > 0, rill_runoff_results[2],
+                               sur.v_rill_rest)
+    sur.vol_runoff_rill = np.where(sur.state > 0, rill_runoff_results[0],
+                                   sur.vol_runoff_rill)
+    ratio = np.where(sur.state > 0, rill_runoff_results[0], ratio)
+    rill_courant = np.where(sur.state > 0, rill_runoff_results[0], 0)
 
     sur.vel_rill = v_rill
+
     return q_sheet, v_sheet, q_rill, v_rill, ratio, rill_courant
 
 
@@ -303,7 +315,7 @@ def sheet_runoff(sur, dt):
 
     return q_sheet, vol_runoff, vol_rest
 
-def rill_runoff(i, j, sur, dt, efect_vrst, ratio):
+def rill_runoff(sur, dt, efect_vrst, ratio):
     """TODO.
 
     :param i: row index
@@ -318,8 +330,8 @@ def rill_runoff(i, j, sur, dt, efect_vrst, ratio):
 
     ppp = False
 
-    n = Globals.get_mat_n(i, j)
-    slope = Globals.get_mat_slope(i, j)
+    n = Globals.get_mat_n_np()
+    slope = Globals.get_mat_slope_np()
 
     vol_to_rill = sur.h_rill * GridGlobals.get_pixel_area()
     h, b = rill.update_hb(

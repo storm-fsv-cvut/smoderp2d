@@ -49,7 +49,7 @@ class FlowControl(object):
         self.infiltration_type = 0
 
         # actual time in calculation
-        self.total_time = 0.0
+        self.total_time = np.zeros((r, c), float)
 
         # keep order of a current rainfall interval
         self.tz = 0
@@ -202,21 +202,21 @@ class Runoff(object):
                     self.surface,
                     self.subsurface,
                     self.cumulative,
-                    0.0
+                    np.zeros((GridGlobals.r, GridGlobals.c))
                 )
-        # record values into stream hydrographs at time zero
-        self.hydrographs.write_hydrographs_record(
-            i,
-            j,
-            self.flow_control,
-            self.courant,
-            self.delta_t,
-            self.surface,
-            self.subsurface,
-            self.cumulative,
-            0.0,
-            True
-        )
+                # record values into stream hydrographs at time zero
+                self.hydrographs.write_hydrographs_record(
+                    i,
+                    j,
+                    self.flow_control,
+                    self.courant,
+                    self.delta_t,
+                    self.surface,
+                    self.subsurface,
+                    self.cumulative,
+                    0.0,
+                    True
+                )
 
         Logger.info('-' * 80)
 
@@ -330,7 +330,7 @@ class Runoff(object):
 
         # main loop: until the end time
         i = j = 0 # TODO: rename vars (variable overlap)
-        while self.flow_control.compare_time(Globals.end_time):
+        while np.any(self.flow_control.compare_time(Globals.end_time)):
 
             self.flow_control.save_vars()
             self.flow_control.refresh_iter()
@@ -368,12 +368,13 @@ class Runoff(object):
                 # coputed time is exactli at the top of each minute
                 oldtime_minut = self.flow_control.total_time/60
                 newtime_minut = (self.flow_control.total_time+self.delta_t)/60
-                if (math.floor(newtime_minut) > math.floor(oldtime_minut)):
-                    self.delta_t = (math.floor(newtime_minut) - oldtime_minut)*60.
+                if np.any(np.floor(newtime_minut) > np.floor(oldtime_minut)):
+                    self.delta_t = (np.floor(newtime_minut) - oldtime_minut)*60.
 
                 # courant conditions is satisfied (time step did
                 # change) the iteration loop breaks
-                if delta_t_tmp == self.delta_t and self.flow_control.compare_ratio():
+                if np.all(np.logical_and(delta_t_tmp == self.delta_t,
+                          self.flow_control.compare_ratio())):
                     break
 
             # Calculate actual rainfall and adds up interception todo:
@@ -413,12 +414,14 @@ class Runoff(object):
                 )
 
             # adjusts the last time step size
-            if (Globals.end_time - self.flow_control.total_time) < self.delta_t and \
-               (Globals.end_time - self.flow_control.total_time) > 0:
+            if np.all(np.logical_and(
+                    Globals.end_time - self.flow_control.total_time < self.delta_t,
+                    Globals.end_time - self.flow_control.total_time > 0
+            )):
                 self.delta_t = Globals.end_time - self.flow_control.total_time
 
             # if end time reached the main loop breaks
-            if self.flow_control.total_time == Globals.end_time:
+            if np.all(self.flow_control.total_time == Globals.end_time):
                 break
 
             # calculate outflow from each reach of the stream network
@@ -450,22 +453,40 @@ class Runoff(object):
 
             # set current time results to previous time step
             # check if rill flow occur
-            for i in self.surface.rr:
-                for j in self.surface.rc[i]:
-                    if self.surface.arr.get_item([i, j]).state == 0:
-                        if self.surface.arr.get_item([i, j]).h_total_new > self.surface.arr.get_item([i, j]).h_crit:
-                            self.surface.arr.get_item([i, j]).state = 1
+            self.surface.arr.state = np.where(
+                np.logical_and(
+                    self.surface.arr.state == 0, self
+                        .surface.arr.h_total_new > self.surface.arr.h_crit
+                ),
+                1,
+                self.surface.arr.state
+            )
+            self.surface.arr.state = np.where(
+                np.logical_and(
+                    self.surface.arr.state == 1,
+                    self.surface.arr.h_total_new < self.surface.arr.h_total_pre,
+                ),
+                2,
+                self.surface.arr.state
+            )
+            self.surface.arr.h_last_state1 = np.where(
+                np.logical_and(
+                    self.surface.arr.state == 1,
+                    self.surface.arr.h_total_new < self.surface.arr.h_total_pre,
+                ),
+                self.surface.arr.h_total_pre,
+                self.surface.arr.state
+            )
+            self.surface.arr.state = np.where(
+                np.logical_and(
+                    self.surface.arr.state == 2,
+                    self.surface.arr.h_total_new > self.surface.arr.h_last_state1,
+                ),
+                1,
+                self.surface.arr.state
+            )
 
-                    if self.surface.arr.get_item([i, j]).state == 1:
-                        if self.surface.arr.get_item([i, j]).h_total_new < self.surface.arr.get_item([i, j]).h_total_pre:
-                            self.surface.arr.get_item([i, j]).h_last_state1 = self.surface.arr.get_item([i, j]).h_total_pre
-                            self.surface.arr.get_item([i, j]).state = 2
-
-                    if self.surface.arr.get_item([i, j]).state == 2:
-                        if self.surface.arr.get_item([i, j]).h_total_new > self.surface.arr.get_item([i, j]).h_last_state1:
-                            self.surface.arr.get_item([i, j]).state = 1
-
-                    self.surface.arr.get_item([i, j]).h_total_pre = self.surface.arr.get_item([i, j]).h_total_new
+            self.surface.arr.h_total_pre = self.surface.arr.h_total_new
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
             Logger.progress(

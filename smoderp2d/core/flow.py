@@ -60,7 +60,7 @@ class D8(object):
     #
     #  @return inflow_from_cells inflow volume from the adjacent cells
     #
-    def cell_runoff(self, i, j, vol_runoff_np, vol_runoff_rill_np):
+    def cell_runoff(self, i, j):
         inflow_from_cells = 0.0
         for z in range(len(self.inflows[i][j])):
             ax = self.inflows[i][j][z][0]
@@ -68,11 +68,11 @@ class D8(object):
             iax = i + ax
             jbx = j + bx
             try:
-                insurfflow_from_cell = vol_runoff_np[iax][jbx]
+                insurfflow_from_cell = self.arr.vol_runoff_np[iax][jbx]
             except:
                 insurfflow_from_cell = 0.0
             try:
-                inrillflow_from_cell = vol_runoff_rill_np[iax][jbx]
+                inrillflow_from_cell = self.arr.vol_runoff_rill_np[iax][jbx]
             except:
                 inrillflow_from_cell = 0.0
             inflow_from_cells = inflow_from_cells + \

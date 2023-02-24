@@ -50,7 +50,11 @@ class TimeStep:
         v_sheet = np.where(cond_state_flow, 0, runoff_return[1])
         q_rill = np.where(cond_state_flow, 0, runoff_return[2])
         v_rill = np.where(cond_state_flow, 0, runoff_return[3])
-        fc.ratio = np.where(cond_state_flow, 0, runoff_return[4])
+        if np.any(cond_state_flow):
+            fc.ratio = 0
+        else:
+            # TODO: Better way to make it just a number
+            fc.ratio = runoff_return[4][0, 0]
         rill_courant = np.where(cond_state_flow, 0, runoff_return[5])
 
         q_surface = q_sheet + q_rill
@@ -95,11 +99,10 @@ class TimeStep:
         NoDataValue = GridGlobals.get_no_data()
 
         infilt_capa += potRain
-        if (infilt_capa < max_infilt_capa):
+        if np.all(infilt_capa < max_infilt_capa):
             infilt_time += delta_t
-            actRain = 0.0
-            # TODO: variable not used. Should we delete it?
-            potRain = 0.0
+            actRain = np.zeros((GridGlobals.r, GridGlobals.c))
+            potRain = np.zeros((GridGlobals.r, GridGlobals.c))
             for i in rr:
                 for j in rc[i]:
                     hydrographs.write_hydrographs_record(
@@ -142,13 +145,15 @@ class TimeStep:
         # current cell precipitation
         #
         actRain, fc.sum_interception, rain_arr.arr.veg = \
-            rain_f.current_rain(rain_arr, potRain, fc.sum_interception)
+            rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
         surface.arr.cur_rain = actRain
 
         #
         # Inflows from surroundings cells
         #
-        surface.arr.inflow_tm = surface.cell_runoff()
+        for i in rr:
+            for j in rc[i]:
+                surface.arr.inflow_tm[i, j] = surface.cell_runoff(i, j)
 
         #
         # Surface BILANCE
@@ -207,20 +212,20 @@ class TimeStep:
         """
 
         cumulative.update_cumulative(
-            i,
-            j,
             surface.arr,
             subsurface.arr,
             delta_t)
-        hydrographs.write_hydrographs_record(
-            i,
-            j,
-            flow_control,
-            courant,
-            delta_t,
-            surface,
-            subsurface,
-            cumulative,
-            actRain)
+        for i in rr:
+            for j in rc[i]:
+                hydrographs.write_hydrographs_record(
+                    i,
+                    j,
+                    flow_control,
+                    courant,
+                    delta_t,
+                    surface,
+                    subsurface.arr,
+                    cumulative,
+                    actRain)
 
         return actRain

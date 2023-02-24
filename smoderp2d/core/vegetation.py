@@ -31,9 +31,4 @@ class Vegetation(GridGlobals):
         # TODO move this conversion into data preparation
         mat_pi = Globals.get_mat_pi() / 1000.0 # convert unit mm -> m
 
-        for i in range(self.r):
-            for j in range(self.c):
-                self.arr[i, j] = VegArrs(False,
-                                         DataGlobals.get_mat_ppl(i, j),
-                                         mat_pi[i][j]
-                )
+        self.arr = VegArrs(False, DataGlobals.get_mat_ppl_np(), mat_pi)

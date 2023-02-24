@@ -17,15 +17,13 @@ def set_combinatIndex(newCombinatIndex):
 def philip_infiltration(soil, bil):
     # print 'bil v infiltraci', bil
     for z in combinatIndex:
-        if soil == z[0]:
-            infiltration = z[3]
-            if bil < 0:
+        if np.any(soil == z[0]):
+            if np.all(bil < 0):
                 raise NegativeWaterLevel()
-            if infiltration > bil:
-                infiltration = bil
-                bil = 0
-            else:
-                bil = bil - infiltration
+            infiltration = z[3]
+
+            bil = np.where(infiltration > bil, 0, bil - infiltration)
+            infiltration = np.minimum(infiltration, bil)
     # print 'bil a inf v infiltraci\n', bil, infiltration
     return bil, infiltration
 
@@ -39,7 +37,7 @@ def phlilip(k, s, deltaT, totalT, NoDataValue):
         # try:
     else:
 
-        infiltration = (0.5 * s / math.sqrt(totalT + deltaT) + k) * deltaT
+        infiltration = (0.5 * s / np.sqrt(totalT + deltaT) + k) * deltaT
         # except ValueError:
     # print k, s
     return infiltration
