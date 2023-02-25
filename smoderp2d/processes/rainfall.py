@@ -5,8 +5,10 @@
 
 import sys
 import numpy as np
+import numpy.ma as ma
 
 from smoderp2d.providers import Logger
+from smoderp2d.core.general import GridGlobals
 
 # definice erroru  na urovni modulu
 #
@@ -128,7 +130,7 @@ def timestepRainfall(iterace, total_time, delta_t, tz, sr):
     z = tz
     # skontroluje jestli neni mimo srazkovy zaznam
     if z > (iterace - 1):
-        rainfall = 0
+        rainfall = ma.zeros((GridGlobals.r, GridGlobals.c))
     else:
         # skontroluje jestli casovy krok, ktery prave resi, je stale vramci
         # srazkoveho zaznamu z
@@ -176,17 +178,20 @@ def current_rain(rain, rainfallm, sum_interception):
         interc = rain_ppl * rainfallm  # interception is konstant
         sum_interception += interc  # sum of intercepcion
 
-        NS = np.where(
+        NS = ma.where(
             sum_interception >= rain_pi,
             rainfallm - (rain_pi - sum_interception_pre),  # rest of intercetpion, netto rainfallm
             rainfallm - interc  # netto rainfallm
         )
-        rain_veg = np.where(
+        rain_veg = ma.where(
             sum_interception >= rain_pi,
             True,  # as vegetatio interception is full
             rain_veg
         )
     else:
         NS = rainfallm
+
+    if isinstance(NS, int):
+        pass
 
     return NS, sum_interception, rain_veg

@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.ma as ma
 
 from smoderp2d.exceptions import SmoderpError
 from smoderp2d.providers import Logger
@@ -12,7 +13,7 @@ def update_hb(loc_V_to_rill, rillRatio, l, b, ratio, ppp=False):
         raise SmoderpError()
     newb = np.sqrt(V / (rillRatio * l))
     # if ppp :  print 'zvetsuje', newb, b, V
-    b = np.where(
+    b = ma.where(
         V > 0,
         np.maximum(b, newb),
         b

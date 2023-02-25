@@ -1,5 +1,5 @@
 import numpy as np
-import math
+import numpy.ma as ma
 from smoderp2d.exceptions import NegativeWaterLevel
 
 # combinatIndex muze byt tady jako globalni
@@ -22,7 +22,7 @@ def philip_infiltration(soil, bil):
                 raise NegativeWaterLevel()
             infiltration = z[3]
 
-            bil = np.where(infiltration > bil, 0, bil - infiltration)
+            bil = ma.where(infiltration > bil, 0, bil - infiltration)
             infiltration = np.minimum(infiltration, bil)
     # print 'bil a inf v infiltraci\n', bil, infiltration
     return bil, infiltration

@@ -14,6 +14,7 @@ Classes:
 import time
 import os
 import numpy as np
+import numpy.ma as ma
 import math
 
 from smoderp2d.core.general import Globals, GridGlobals
@@ -39,6 +40,13 @@ class FlowControl(object):
     def __init__(self):
         """ Set iteration criteria variables. """
 
+        # create masked arrays
+        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
+        rr, rc = GridGlobals.get_region_dim()
+        for r_c_index in range(len(rr)):
+            for c in rc[r_c_index]:
+                masks[rr[r_c_index]][c] = False
+
         # number of rows and columns in numpy array
         r, c = GridGlobals.get_dim()
 
@@ -49,17 +57,23 @@ class FlowControl(object):
         self.infiltration_type = 0
 
         # actual time in calculation
-        self.total_time = np.zeros((r, c), float)
+        self.total_time = ma.masked_array(
+            np.zeros((r, c), float), mask=masks
+        )
 
         # keep order of a current rainfall interval
         self.tz = 0
 
         # stores cumulative interception
-        self.sum_interception = np.zeros((r, c), float)
+        self.sum_interception = ma.masked_array(
+            np.zeros((r, c), float), mask=masks
+        )
 
         # factor deviding the time step for rill calculation
         # currently inactive
-        self.ratio = 1
+        self.ratio = ma.masked_array(
+            np.ones((r, c), float), mask=masks
+        )
 
         # maximum amount of iterations
         self.max_iter = 40
@@ -191,6 +205,12 @@ class Runoff(object):
 
         # record values into hydrographs at time zero
         rr, rc = GridGlobals.get_region_dim()
+        # create masked arrays
+        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
+        rr, rc = GridGlobals.get_region_dim()
+        for r_c_index in range(len(rr)):
+            for c in rc[r_c_index]:
+                masks[rr[r_c_index]][c] = False
         for i in rr:
             for j in rc[i]:
                 self.hydrographs.write_hydrographs_record(
@@ -202,7 +222,9 @@ class Runoff(object):
                     self.surface,
                     self.subsurface,
                     self.cumulative,
-                    np.zeros((GridGlobals.r, GridGlobals.c))
+                    ma.masked_array(
+                        np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+                    )
                 )
                 # record values into stream hydrographs at time zero
                 self.hydrographs.write_hydrographs_record(
@@ -219,89 +241,6 @@ class Runoff(object):
                 )
 
         Logger.info('-' * 80)
-
-    def run_as_matrices(self):
-        """ The computation of the water level development
-        is performed here.
-
-        The *main loop* which goes through time steps
-        has *nested loop* for iterations (in case the
-        computation does not converge).
-
-        The computation has been divided in two parts
-        First, in iteration (*nested*) loop is calculated
-        the surface runoff (to which is the time step
-        sensitive) in a function time_step.do_flow()
-
-        Next water balance is performed at each cell of the
-        raster. Water level in next time step is calculated by
-        a function time_step.do_next_h().
-
-        Selected values are stored in at the end of each loop.
-        """
-
-
-        # saves time before the main loop
-        Logger.info('Start of computing...')
-        Logger.start_time = time.time()
-
-        # main loop: until the end time
-        i = j = 0  # TODO: rename vars (variable overlap)
-        while self.flow_control.compare_time(Globals.end_time):
-
-            self.flow_control.save_vars()
-            self.flow_control.refresh_iter()
-
-            # iteration loop
-            while self.flow_control.max_iter_reached():
-
-                self.flow_control.update_iter()
-                self.flow_control.restore_vars()
-
-                # reset of the courant condition
-                self.courant.reset()
-                self.flow_control.save_ratio()
-
-            potRain, h_sheet, vol_runoff, vol_rest, h_rill, h_rill_pre, vol_runoff_rill, v_rill_rest, rillWidth, v_to_rill \
-                = self.time_step.do_flow(
-                self.surface,
-                self.subsurface,
-                self.delta_t,
-                self.flow_control,
-                self.courant
-            )
-
-            # TODO: Move out of the loop?
-            self.surface.h_sheet = h_sheet
-            self.surface.vol_runoff = vol_runoff
-            self.surface.vol_rest = vol_rest
-            self.surface.h_rill = h_rill
-            self.surface.h_rillPre = h_rill_pre
-            self.surface.vol_runoff_rill = vol_runoff_rill
-            self.surface.v_rill_rest = v_rill_rest
-            self.surface.rillWidth = rillWidth
-            self.surface.v_to_rill = v_to_rill
-
-            # stores current time step
-            delta_t_tmp = self.delta_t
-
-            # update time step size if necessary (based on the courant
-            # condition)
-            self.delta_t, self.flow_control.ratio = self.courant.courant(
-                potRain, self.delta_t, self.flow_control.ratio
-            )
-
-            # courant conditions is satisfied (time step did
-            # change) the iteration loop breaks
-            if tf.equal(delta_t_tmp, self.delta_t) and self.flow_control.compare_ratio():
-                tf.print('************ BREAK ***************')
-                tf.print('delta_t_tmp, self.delta_t, '
-                         'self.flow_control.compare_ratio()')
-                tf.print(delta_t_tmp, self.delta_t,
-                         self.flow_control.compare_ratio())
-                break
-
-        return potRain
 
     def run(self):
         """ The computation of the water level development
@@ -330,6 +269,18 @@ class Runoff(object):
 
         # main loop: until the end time
         i = j = 0 # TODO: rename vars (variable overlap)
+
+        # create masked arrays
+        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
+        rr, rc = GridGlobals.get_region_dim()
+        for r_c_index in range(len(rr)):
+            for c in rc[r_c_index]:
+                masks[rr[r_c_index]][c] = False
+
+        self.delta_t = ma.masked_array(
+            self.delta_t, mask=masks
+        )
+
         while np.any(self.flow_control.compare_time(Globals.end_time)):
 
             self.flow_control.save_vars()
@@ -373,8 +324,10 @@ class Runoff(object):
 
                 # courant conditions is satisfied (time step did
                 # change) the iteration loop breaks
-                if np.all(np.logical_and(delta_t_tmp == self.delta_t,
-                          self.flow_control.compare_ratio())):
+                if np.all(
+                    np.logical_and(delta_t_tmp == self.delta_t,
+                                   self.flow_control.compare_ratio())
+                ):
                     break
 
             # Calculate actual rainfall and adds up interception todo:
@@ -453,7 +406,7 @@ class Runoff(object):
 
             # set current time results to previous time step
             # check if rill flow occur
-            self.surface.arr.state = np.where(
+            self.surface.arr.state = ma.where(
                 np.logical_and(
                     self.surface.arr.state == 0, self
                         .surface.arr.h_total_new > self.surface.arr.h_crit
@@ -461,7 +414,7 @@ class Runoff(object):
                 1,
                 self.surface.arr.state
             )
-            self.surface.arr.state = np.where(
+            self.surface.arr.state = ma.where(
                 np.logical_and(
                     self.surface.arr.state == 1,
                     self.surface.arr.h_total_new < self.surface.arr.h_total_pre,
@@ -469,7 +422,7 @@ class Runoff(object):
                 2,
                 self.surface.arr.state
             )
-            self.surface.arr.h_last_state1 = np.where(
+            self.surface.arr.h_last_state1 = ma.where(
                 np.logical_and(
                     self.surface.arr.state == 1,
                     self.surface.arr.h_total_new < self.surface.arr.h_total_pre,
@@ -477,7 +430,7 @@ class Runoff(object):
                 self.surface.arr.h_total_pre,
                 self.surface.arr.state
             )
-            self.surface.arr.state = np.where(
+            self.surface.arr.state = ma.where(
                 np.logical_and(
                     self.surface.arr.state == 2,
                     self.surface.arr.h_total_new > self.surface.arr.h_last_state1,
@@ -491,7 +444,7 @@ class Runoff(object):
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
             Logger.progress(
                 timeperc,
-                self.delta_t,
+                self.delta_t[i, j],
                 self.flow_control.iter_,
                 self.flow_control.total_time + self.delta_t
             )

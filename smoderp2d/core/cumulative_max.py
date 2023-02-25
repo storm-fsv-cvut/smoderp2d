@@ -6,6 +6,7 @@
 #
 
 import numpy as np
+import numpy.ma as ma
 
 from smoderp2d.providers import Logger
 from smoderp2d.core.general import GridGlobals, Globals
@@ -122,10 +123,19 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             'vol_sur_tot'  : CumulativeData('core',    'cVsur_m3'),       # 16
         })
         # define arrays class attributes
+        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
+        rr, rc = GridGlobals.get_region_dim()
+        for r_c_index in range(len(rr)):
+            for c in rc[r_c_index]:
+                masks[rr[r_c_index]][c] = False
+
         for item in self.data.keys():
             setattr(self,
                     item,
-                    np.zeros([GridGlobals.r, GridGlobals.c], float)
+                    ma.masked_array(
+                        np.zeros([GridGlobals.r, GridGlobals.c], float),
+                        mask=masks
+                    )
             )
 
     # def update_cumulative(self, i, j, sur_arr_el, subsur_arr_el, delta_t):
@@ -159,36 +169,36 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         # in TF, was q_tot = q_sheet + q_rill
         q_sur_tot = q_sheet_tot + q_rill_tot
         # in TF, self.q_sur_tot = tf.where(q_tot > self.q_sur_tot,
-        self.q_sur_tot = np.where(q_sur_tot > self.q_sur_tot,
+        self.q_sur_tot = ma.where(q_sur_tot > self.q_sur_tot,
                                   q_sur_tot, self.q_sur_tot)
         # new
-        self.h_sur_tot = np.where(surface.h_total_new > self.h_sur_tot,
+        self.h_sur_tot = ma.where(surface.h_total_new > self.h_sur_tot,
                                   surface.h_total_new,
                                   self.h_sur_tot)
         # new
-        self.q_sheet_tot = np.where(q_sheet_tot > self.q_sheet_tot,
+        self.q_sheet_tot = ma.where(q_sheet_tot > self.q_sheet_tot,
                                     q_sheet_tot,
                                     self.q_sheet_tot)
         # new
         cond_h_rill = np.greater(surface.h_rill, self.h_rill)
         # new
-        self.h_rill = np.where(cond_h_rill, surface.h_rill, self.h_rill)
+        self.h_rill = ma.where(cond_h_rill, surface.h_rill, self.h_rill)
         # new
-        self.b_rill = np.where(cond_h_rill, surface.rillWidth, self.b_rill)
+        self.b_rill = ma.where(cond_h_rill, surface.rillWidth, self.b_rill)
         # new
-        self.q_rill_tot = np.where(cond_h_rill, q_rill_tot, self.q_rill_tot)
+        self.q_rill_tot = ma.where(cond_h_rill, q_rill_tot, self.q_rill_tot)
 
         # new
         cond_sur_state0 = surface.state == 0
         # in TF, was h_sur instead of h_sheet_tot
-        self.h_sheet_tot  = np.where(
+        self.h_sheet_tot  = ma.where(
             cond_sur_state0,
             np.maximum(self.h_sheet_tot, surface.h_total_new),
             self.h_sheet_tot
         )
         cond_sur_state1 = surface.state == 1
         cond_sur_state2 = surface.state == 2
-        self.h_sheet_tot  = np.where(
+        self.h_sheet_tot  = ma.where(
             cond_sur_state1 | cond_sur_state2,
             surface.h_crit,
             self.h_sheet_tot

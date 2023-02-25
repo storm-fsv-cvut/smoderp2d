@@ -1,4 +1,6 @@
-from smoderp2d.core.general import Globals
+import numpy.ma as ma
+
+from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.flow import *
 from smoderp2d.providers import Logger
 
@@ -23,10 +25,17 @@ class Diffuse(Mfda if Globals.mfda else D8):
         Logger.info("Diffuse approach")
         if (Globals.r is None or Globals.r is None):
             exit("Global variables are not assigned")
+
+        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
+        rr, rc = GridGlobals.get_region_dim()
+        for r_c_index in range(len(rr)):
+            for c in rc[r_c_index]:
+                masks[rr[r_c_index]][c] = False
+
         r = Globals.r
         c = Globals.c
 
-        self.H = np.zeros([r, c], float)
+        self.H = ma.masked_array(np.zeros([r, c], float), mask=masks)
 
     def new_inflows(self):
         fd = flow_direction.flow_direction(

@@ -17,6 +17,7 @@
 #
 
 import numpy as np
+import numpy.ma as ma
 
 from smoderp2d.core.general import Globals
 
@@ -134,7 +135,7 @@ class Mfda(object):
                 iax = i + ax
                 jbx = j + bx
 
-                inflow_from_cells += np.where(
+                inflow_from_cells += ma.where(
                     np.equal(self.state[i, j], 1) or np.equal(self.state[i, j], 2),
                     self.vol_runoff_rill_pre,
                     0

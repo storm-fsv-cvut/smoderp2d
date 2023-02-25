@@ -8,6 +8,7 @@ import smoderp2d.processes.infiltration as infilt
 
 import copy
 import numpy as np
+import numpy.ma as ma
 
 
 from smoderp2d.core.surface import runoff
@@ -46,16 +47,16 @@ class TimeStep:
         )
 
         cond_state_flow = surface_state > Globals.streams_flow_inc
-        q_sheet = np.where(cond_state_flow, 0, runoff_return[0])
-        v_sheet = np.where(cond_state_flow, 0, runoff_return[1])
-        q_rill = np.where(cond_state_flow, 0, runoff_return[2])
-        v_rill = np.where(cond_state_flow, 0, runoff_return[3])
+        q_sheet = ma.where(cond_state_flow, 0, runoff_return[0])
+        v_sheet = ma.where(cond_state_flow, 0, runoff_return[1])
+        q_rill = ma.where(cond_state_flow, 0, runoff_return[2])
+        v_rill = ma.where(cond_state_flow, 0, runoff_return[3])
         if np.any(cond_state_flow):
             fc.ratio = 0
         else:
             # TODO: Better way to make it just a number
-            fc.ratio = runoff_return[4][0, 0]
-        rill_courant = np.where(cond_state_flow, 0, runoff_return[5])
+            fc.ratio = runoff_return[4]
+        rill_courant = ma.where(cond_state_flow, 0, runoff_return[5])
 
         q_surface = q_sheet + q_rill
         v = np.maximum(v_sheet, v_rill)
@@ -98,11 +99,21 @@ class TimeStep:
         combinatIndex = Globals.get_combinatIndex()
         NoDataValue = GridGlobals.get_no_data()
 
+        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
+        rr, rc = GridGlobals.get_region_dim()
+        for r_c_index in range(len(rr)):
+            for c in rc[r_c_index]:
+                masks[rr[r_c_index]][c] = False
+
         infilt_capa += potRain
         if np.all(infilt_capa < max_infilt_capa):
             infilt_time += delta_t
-            actRain = np.zeros((GridGlobals.r, GridGlobals.c))
-            potRain = np.zeros((GridGlobals.r, GridGlobals.c))
+            actRain = ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            )
+            potRain = ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            )
             for i in rr:
                 for j in rc[i]:
                     hydrographs.write_hydrographs_record(
@@ -168,12 +179,12 @@ class TimeStep:
         philip_infiltration = infilt.philip_infiltration(
             surface.arr.soil_type, surBIL
         )
-        surBIL = np.where(
+        surBIL = ma.where(
             subsurface.get_exfiltration() > 0,
             surBIL,
             philip_infiltration[0]
         )
-        surface.infiltration = np.where(
+        surface.infiltration = ma.where(
             subsurface.get_exfiltration() > 0,
             0,
             philip_infiltration[1]
@@ -189,7 +200,7 @@ class TimeStep:
 
         surface_state = surface.arr.state
 
-        surface.arr.h_total_new = np.where(
+        surface.arr.h_total_new = ma.where(
             surface_state > Globals.streams_flow_inc,  # stream flow in the cell
             0,
             surBIL

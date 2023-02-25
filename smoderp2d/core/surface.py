@@ -2,6 +2,7 @@
 """
 
 import numpy as np
+import numpy.ma as ma
 import math
 
 from smoderp2d.core.general import Globals, GridGlobals
@@ -31,33 +32,85 @@ class SurArrs(object):
         :a: TODO
         :b: TODO
         """
-        self.state = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.sur_ret = np.ones((GridGlobals.r, GridGlobals.c)) * sur_ret
-        self.cur_sur_ret = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.cur_rain = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.h_sheet = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.h_total_new = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.h_total_pre = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.vol_runoff = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.vol_rest = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.inflow_tm = np.zeros((GridGlobals.r, GridGlobals.c))
+        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
+        rr, rc = GridGlobals.get_region_dim()
+        for r_c_index in range(len(rr)):
+            for c in rc[r_c_index]:
+                masks[rr[r_c_index]][c] = False
+
+        self.state = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
+        self.sur_ret = ma.masked_array(
+            np.ones((GridGlobals.r, GridGlobals.c)) * sur_ret, mask=masks
+        )
+        self.cur_sur_ret = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
+        self.cur_rain = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
+        self.h_sheet = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
+        self.h_total_new = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
+        self.h_total_pre = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
+        self.vol_runoff = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
+        self.vol_rest = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
+        self.inflow_tm = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
         # in TF, Globals.get_mat_inf_index_tf()
-        self.soil_type = np.ones((GridGlobals.r, GridGlobals.c)) * inf_index
-        self.infiltration = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.soil_type= ma.masked_array(
+            np.ones((GridGlobals.r, GridGlobals.c)) * inf_index, mask=masks
+        )
+        self.infiltration = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
         # in TF, Globals.get_mat_hcrit_tf()
-        self.h_crit = np.ones((GridGlobals.r, GridGlobals.c)) * hcrit
+        self.h_crit = ma.masked_array(
+            np.ones((GridGlobals.r, GridGlobals.c)) * hcrit, mask=masks
+        )
         # in TF, a = Globals.get_mat_aa_tf()
-        self.a = np.ones((GridGlobals.r, GridGlobals.c)) * a
+        self.a = ma.masked_array(
+            np.ones((GridGlobals.r, GridGlobals.c)) * a, mask=masks
+        )
         # in TF, Globals.get_mat_b_tf()
-        self.b = np.ones((GridGlobals.r, GridGlobals.c)) * b
-        self.h_rill = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.h_rillPre = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.vol_runoff_rill = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.vel_rill = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.v_rill_rest = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.rillWidth = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.vol_to_rill = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.h_last_state1 = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.b = ma.masked_array(
+            np.ones((GridGlobals.r, GridGlobals.c)) * b, mask=masks
+        )
+        self.h_rill = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
+        self.h_rillPre = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
+        self.vol_runoff_rill = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
+        self.vel_rill = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
+        self.v_rill_rest = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
+        self.rillWidth = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
+        self.vol_to_rill = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
+        self.h_last_state1 = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
 
 
 # in TF, class Surface(GridGlobals, Size, Stream, Kinematic, SurArrs):
@@ -115,7 +168,7 @@ class Surface(GridGlobals, Stream, Kinematic):
             )
             bil_ = ''
         else:
-            velocity = np.where(
+            velocity = ma.where(
                 arr.h_sheet == 0,
                 0,
                 arr.vol_runoff / dt / (arr.h_sheet*GridGlobals.dx)
@@ -192,18 +245,18 @@ def __runoff(sur, dt, efect_vrst, ratio):
 
     q_sheet, sur.vol_runoff, sur.vol_rest = sheet_runoff(sur, dt)
 
-    v_sheet = np.where(sur.h_sheet > 0, q_sheet / sur.h_sheet, 0)
+    v_sheet = ma.where(sur.h_sheet > 0, q_sheet / sur.h_sheet, 0)
 
     # rill runoff
     rill_runoff_results = rill_runoff(sur, dt, efect_vrst, ratio)
-    q_rill = np.where(sur.state > 0, rill_runoff_results[0], 0)
-    v_rill = np.where(sur.state > 0, rill_runoff_results[1], 0)
-    sur.v_rill_rest = np.where(sur.state > 0, rill_runoff_results[2],
+    q_rill = ma.where(sur.state > 0, rill_runoff_results[0], 0)
+    v_rill = ma.where(sur.state > 0, rill_runoff_results[1], 0)
+    sur.v_rill_rest = ma.where(sur.state > 0, rill_runoff_results[2],
                                sur.v_rill_rest)
-    sur.vol_runoff_rill = np.where(sur.state > 0, rill_runoff_results[0],
+    sur.vol_runoff_rill = ma.where(sur.state > 0, rill_runoff_results[0],
                                    sur.vol_runoff_rill)
-    ratio = np.where(sur.state > 0, rill_runoff_results[0], ratio)
-    rill_courant = np.where(sur.state > 0, rill_runoff_results[0], 0)
+    ratio = ma.where(sur.state > 0, rill_runoff_results[0], ratio)
+    rill_courant = ma.where(sur.state > 0, rill_runoff_results[0], 0)
 
     sur.vel_rill = v_rill
 
@@ -270,28 +323,28 @@ def compute_h_hrill(h_total_pre, h_crit, state, rill_width, h_rill_pre):
 
     :return: TODO
     """
-    h_sheet = np.where(
+    h_sheet = ma.where(
         state == 0,
         h_total_pre,
-        np.where(
+        ma.where(
             state == 1,
             np.minimum(h_crit, h_total_pre),
-            np.where(h_total_pre > h_rill_pre, h_total_pre - h_rill_pre, 0)
+            ma.where(h_total_pre > h_rill_pre, h_total_pre - h_rill_pre, 0)
         )
     )
-    h_rill = np.where(
+    h_rill = ma.where(
         state == 0,
         0,
-        np.where(
+        ma.where(
             state == 1,
             np.maximum(h_total_pre - h_crit, 0),
-            np.where(h_total_pre > h_rill_pre, h_rill_pre, h_total_pre)
+            ma.where(h_total_pre > h_rill_pre, h_rill_pre, h_total_pre)
         )
     )
-    h_rill_pre = np.where(
+    h_rill_pre = ma.where(
         state == 0,
         0,
-        np.where(
+        ma.where(
             state == 1,
             h_rill,
             h_rill_pre
@@ -353,14 +406,14 @@ def rill_runoff(sur, dt, efect_vrst, ratio):
 
     sur.vol_to_rill = vol_to_rill
     sur.rillWidth = b
-    v_rill_rest = np.where(
+    v_rill_rest = ma.where(
         courant <= courantMax,
-        np.where(vol_rill > vol_to_rill, 0, vol_to_rill - vol_rill),
+        ma.where(vol_rill > vol_to_rill, 0, vol_to_rill - vol_rill),
         sur.v_rill_rest
     )
-    vol_runoff_rill = np.where(
+    vol_runoff_rill = ma.where(
         courant <= courantMax,
-        np.where(vol_rill > vol_to_rill, vol_to_rill, vol_rill),
+        ma.where(vol_rill > vol_to_rill, vol_to_rill, vol_rill),
         sur.vol_runoff_rill
     )
 
@@ -375,14 +428,14 @@ def surface_retention(bil, sur):
     """
     reten = sur.sur_ret
     pre_reten = reten
-    bil = np.where(
+    bil = ma.where(
         reten < 0,
-        np.where(bil + reten > 0, bil + reten, 0),
+        ma.where(bil + reten > 0, bil + reten, 0),
         bil
     )
-    reten = np.where(
+    reten = ma.where(
         reten < 0,
-        np.where(bil + reten > 0, 0, bil + reten),
+        ma.where(bil + reten > 0, 0, bil + reten),
         reten
     )
 

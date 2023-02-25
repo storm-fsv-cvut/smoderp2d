@@ -197,7 +197,7 @@ class Hydrographs:
                             total_time[l, m], dt[l, m], currRain[l, m],
                             linebil[0],linebil[1],
                             surface.arr.vol_to_rill[l, m],
-                            ratio, courantMost[l, m], courantRill, iter_,
+                            ratio[l, m], courantMost[l, m], courantRill, iter_,
                             sep=sep)
                     line += os.linesep
                     self.files[ip].writelines(line)

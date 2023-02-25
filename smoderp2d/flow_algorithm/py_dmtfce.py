@@ -146,8 +146,8 @@ def removeCellsWithSameHeightNeighborhood(mat_dem, mat_nan, rows, cols):  # func
                     bc_j = bad_cells[0][1]
 
                     if bc_i == i and bc_j == j:
-                        mat_dem[i][j] = -3.40282346639e+038
-                        mat_nan[i][j] = -3.40282346639e+038
+                        mat_dem[i][j] = np.nan
+                        mat_nan[i][j] = np.nan
                         bad_cells.pop(0)
                         if len(bad_cells) == 0:
                             bc = 0

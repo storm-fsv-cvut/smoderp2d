@@ -47,7 +47,7 @@ class BaseLogger(logging.Logger):
     def _progress(self, perc, delta_t, t_iter, total_time):
         self.info('-' * 80)
         self.info("Total time      [secs]: {0:.2f}".format(total_time[0, 0])) # TODO: ms ???
-        self.info("Time step       [secs]: {0:.2e}".format(delta_t[0, 0]))
+        self.info("Time step       [secs]: {0:.2e}".format(delta_t))
         self.info("Time iterations       : {0:d}".format(t_iter))
         self.info("Percentage done    [%]: {0:.2f}".format(perc[0, 0]))
         units = ' [secs]'

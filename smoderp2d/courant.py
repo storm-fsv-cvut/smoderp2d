@@ -2,6 +2,8 @@
 
 
 import numpy as np
+import numpy.ma as ma
+
 from smoderp2d.providers import Logger
 
 from smoderp2d.core.general import Globals as Gl, GridGlobals
@@ -17,12 +19,22 @@ class Courant():
     #
 
     def __init__(self):
+        # create masked arrays
+        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
+        rr, rc = GridGlobals.get_region_dim()
+        for r_c_index in range(len(rr)):
+            for c in rc[r_c_index]:
+                masks[rr[r_c_index]][c] = False
+
         # self.orig_dt = dt
         self.maxh = 0
         self.cour_speed = 0
         # citical courant value
         self.cour_crit = 0.95
-        self.cour_most = np.ones((GridGlobals.r, GridGlobals.c)) * self.cour_crit
+        self.cour_most = ma.masked_array(
+            np.ones((GridGlobals.r, GridGlobals.c)) * self.cour_crit + 1,
+            mask=masks
+        )
         self.cour_most_rill = self.cour_crit + 1.0
         self.cour_coef = 0.5601
         self.cour_least = self.cour_crit * 0.85
@@ -31,7 +43,10 @@ class Courant():
         self.co = 'sheet'
         self.co_pre = 'sheet'
         self.maxratio = 10
-        self.max_delta_t = np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt
+        self.max_delta_t = ma.masked_array(
+            np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt,
+            mask=masks
+        )
         self.max_delta_t_mult = 1.0
 
     # Store the original guess time step
@@ -44,7 +59,15 @@ class Courant():
         """Resets the cour_most and cour_speed after each time stop
         computation is successfully completed.
         """
-        self.cour_most = np.zeros((GridGlobals.r, GridGlobals.c))
+        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
+        rr, rc = GridGlobals.get_region_dim()
+        for r_c_index in range(len(rr)):
+            for c in rc[r_c_index]:
+                masks[rr[r_c_index]][c] = False
+
+        self.cour_most = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+        )
         self.cour_speed = 0
         self.cour_most_rill = 0
 
@@ -77,7 +100,15 @@ class Courant():
         # (math.sqrt(sur.pixel_area)*self.cour_least*self.cour_coef)/velGuess
 
         # return self.initGuess
-        return np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt
+        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
+        rr, rc = GridGlobals.get_region_dim()
+        for r_c_index in range(len(rr)):
+            for c in rc[r_c_index]:
+                masks[rr[r_c_index]][c] = False
+
+        return ma.masked_array(
+            np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt, mask=masks
+        )
 
     #
     def CFL(self, h0, v, delta_t, efect_cont, co, rill_courant):
