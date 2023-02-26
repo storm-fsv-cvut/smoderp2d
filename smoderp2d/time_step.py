@@ -184,7 +184,7 @@ class TimeStep:
             surBIL,
             philip_infiltration[0]
         )
-        surface.infiltration = ma.where(
+        surface.arr.infiltration = ma.where(
             subsurface.get_exfiltration() > 0,
             0,
             philip_infiltration[1]
