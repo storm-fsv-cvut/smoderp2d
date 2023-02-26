@@ -176,24 +176,18 @@ class Surface(GridGlobals, Stream, Kinematic):
             # if profile1d provider - the data in extra output are the unit width data
             #                     if you need runoff from non-unit slope and
             #                     with extra output calculate it yourself
-            # line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}{sep}'\
-            # '{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
-            #     arr.h_sheet[i, j],
-            #     arr.vol_runoff[i, j] / dt,
-            #     arr.vol_runoff[i, j],
-            #     velocity[i, j],
-            #     arr.vol_rest[i, j],
-            #     arr.infiltration[i, j],
-            #     arr.cur_sur_ret[i, j],
-            #     arr.state[i, j],
-            #     arr.inflow_tm[i, j],
-            #     arr.h_total_new[i, j],
-            #     sep=sep
-            # )
-            line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}'.format(
+            line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}{sep}'\
+            '{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
                 arr.h_sheet[i, j],
                 arr.vol_runoff[i, j] / dt[i, j],
                 arr.vol_runoff[i, j],
+                velocity[i, j],
+                arr.vol_rest[i, j],
+                arr.infiltration[i, j],
+                arr.cur_sur_ret[i, j],
+                arr.state[i, j],
+                arr.inflow_tm[i, j],
+                arr.h_total_new[i, j],
                 sep=sep
             )
 
