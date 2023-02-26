@@ -422,21 +422,21 @@ def surface_retention(bil, sur):
     """
     reten = sur.sur_ret
     pre_reten = reten
-    bil = ma.where(
+    bil_new = ma.where(
         reten < 0,
         ma.where(bil + reten > 0, bil + reten, 0),
         bil
     )
-    reten = ma.where(
+    reten_new = ma.where(
         reten < 0,
         ma.where(bil + reten > 0, 0, bil + reten),
         reten
     )
 
-    sur.sur_ret = reten
-    sur.cur_sur_ret = reten - pre_reten
+    sur.sur_ret = reten_new
+    sur.cur_sur_ret = reten_new - pre_reten
 
-    return bil
+    return bil_new
 
 if Globals.isRill:
     runoff = __runoff
