@@ -42,26 +42,50 @@ class TimeStep:
         runoff_return = runoff(
             surface.arr, delta_t, mat_efect_cont, fc.ratio
         )
-        subrunoff_return = subsurface.runoff(
-            delta_t, mat_efect_cont
-        )
 
         cond_state_flow = surface_state > Globals.streams_flow_inc
         q_sheet = ma.where(cond_state_flow, 0, runoff_return[0])
         v_sheet = ma.where(cond_state_flow, 0, runoff_return[1])
         q_rill = ma.where(cond_state_flow, 0, runoff_return[2])
         v_rill = ma.where(cond_state_flow, 0, runoff_return[3])
-        if np.any(cond_state_flow):
+        if ma.all(cond_state_flow):
+            subrunoff_return = subsurface.runoff(
+                delta_t, mat_efect_cont
+            )
+        if ma.any(cond_state_flow):
             fc.ratio = 0
         else:
             # TODO: Better way to make it just a number
             fc.ratio = runoff_return[4]
         rill_courant = ma.where(cond_state_flow, 0, runoff_return[5])
+        surface.arr.h_sheet = ma.where(
+            cond_state_flow, surface.arr.h_sheet, runoff_return[6]
+        )
+        surface.arr.h_rill = ma.where(
+            cond_state_flow, surface.arr.h_rill, runoff_return[7]
+        )
+        surface.arr.h_rillPre = ma.where(
+            cond_state_flow, surface.arr.h_rillPre, runoff_return[8]
+        )
+        surface.arr.vol_runoff = ma.where(
+            cond_state_flow, surface.arr.vol_runoff, runoff_return[9]
+        )
+        surface.arr.vol_rest = ma.where(
+            cond_state_flow, surface.arr.vol_rest, runoff_return[10]
+        )
+        surface.arr.v_rill_rest = ma.where(
+            cond_state_flow, surface.arr.v_rill_rest, runoff_return[11]
+        )
+        surface.arr.vol_runoff_rill = ma.where(
+            cond_state_flow, surface.arr.vol_runoff_rill, runoff_return[12]
+        )
+        surface.arr.vel_rill = ma.where(
+            cond_state_flow, surface.arr.vel_rill, runoff_return[13]
+        )
 
         q_surface = q_sheet + q_rill
-        v = np.maximum(v_sheet, v_rill)
+        v = ma.maximum(v_sheet, v_rill)
         co = 'sheet'
-
         courant.CFL(
             surface.arr.h_total_pre,
             v,
@@ -101,12 +125,12 @@ class TimeStep:
 
         masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
         rr, rc = GridGlobals.get_region_dim()
-        for r_c_index in range(len(rr)):
-            for c in rc[r_c_index]:
-                masks[rr[r_c_index]][c] = False
+        for r in rr:
+            for c in rc[r]:
+                masks[r][c] = False
 
         infilt_capa += potRain
-        if np.all(infilt_capa < max_infilt_capa):
+        if ma.all(infilt_capa < max_infilt_capa):
             infilt_time += delta_t
             actRain = ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
@@ -205,13 +229,12 @@ class TimeStep:
             0,
             surBIL
         )
-        # h_sub = subsurface.runoff_stream_cell(i, j)
-        #
-        #                     inflowToReach = h_sub * pixel_area + surBIL * pixel_area
-        #
-        #                     surface.reach_inflows(
-        #                         surface_state - Globals.streams_flow_inc,
-        #                         inflowToReach)
+        if ma.any(surface_state > Globals.streams_flow_inc):
+            h_sub = subsurface.runoff_stream_cell()
+            inflowToReach = h_sub * pixel_area + surBIL * pixel_area
+            surface.reach_inflows(
+                surface_state - Globals.streams_flow_inc, inflowToReach
+            )
 
         surface_state = surface.arr.state
 

@@ -6,18 +6,26 @@
 # importing system moduls
 import math
 import numpy as np
+import numpy.ma as ma
 
 from smoderp2d.flow_algorithm.py_dmtfce import removeCellsWithSameHeightNeighborhood, \
     neighbors, dirSlope, boolToInt, FB, VE
+from smoderp2d.core.general import GridGlobals
 from smoderp2d.providers import Logger
 
 def new_mfda(mat_dem, mat_nan, mat_fd, dy, dx, rows, cols):
     state = 0
     state2 = 0
 
-    val_array = np.zeros([rows, cols, 8], float)
-    val_array2 = np.zeros([rows, cols], float)
-    fd_rill = np.zeros([rows, cols], float)
+    masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
+    rr, rc = GridGlobals.get_region_dim()
+    for r in rr:
+        for c in rc[r]:
+            masks[r][c] = False
+
+    val_array = ma.masked_array(np.zeros([rows, cols, 8], float), mask=masks)
+    val_array2 = ma.masked_array(np.zeros([rows, cols], float), mask=masks)
+    fd_rill = ma.masked_array(np.zeros([rows, cols], float), mask=masks)
 
     Logger.info("Computing multiple flow direction algorithm...")
 

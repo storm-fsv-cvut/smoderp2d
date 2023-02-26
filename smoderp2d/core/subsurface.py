@@ -23,9 +23,9 @@ class SubArrs:
         """
         masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
         rr, rc = GridGlobals.get_region_dim()
-        for r_c_index in range(len(rr)):
-            for c in rc[r_c_index]:
-                masks[rr[r_c_index]][c] = False
+        for r in rr:
+            for c in rc[r]:
+                masks[r][c] = False
 
         self.L_sub = ma.masked_array(
             np.ones((GridGlobals.r, GridGlobals.c)) * L_sub, mask=masks
@@ -226,9 +226,9 @@ class SubsurfacePass(GridGlobals):
     def get_exfiltration(self):
         masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
         rr, rc = GridGlobals.get_region_dim()
-        for r_c_index in range(len(rr)):
-            for c in rc[r_c_index]:
-                masks[rr[r_c_index]][c] = False
+        for r in rr:
+            for c in rc[r]:
+                masks[r][c] = False
 
         return ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks

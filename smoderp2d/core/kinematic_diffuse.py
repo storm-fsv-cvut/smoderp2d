@@ -28,9 +28,9 @@ class Diffuse(Mfda if Globals.mfda else D8):
 
         masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
         rr, rc = GridGlobals.get_region_dim()
-        for r_c_index in range(len(rr)):
-            for c in rc[r_c_index]:
-                masks[rr[r_c_index]][c] = False
+        for r in rr:
+            for c in rc[r]:
+                masks[r][c] = False
 
         r = Globals.r
         c = Globals.c

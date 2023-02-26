@@ -17,9 +17,9 @@ class VegArrs(object):
         # define arrays class attributes
         masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
         rr, rc = GridGlobals.get_region_dim()
-        for r_c_index in range(len(rr)):
-            for c in rc[r_c_index]:
-                masks[rr[r_c_index]][c] = False
+        for r in rr:
+            for c in rc[r]:
+                masks[r][c] = False
 
         # in TF, veg = tf.Variable([[False] * GridGlobals.c] * GridGlobals.r, dtype=tf.int32)
         self.veg = veg

@@ -43,9 +43,9 @@ class FlowControl(object):
         # create masked arrays
         masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
         rr, rc = GridGlobals.get_region_dim()
-        for r_c_index in range(len(rr)):
-            for c in rc[r_c_index]:
-                masks[rr[r_c_index]][c] = False
+        for r in rr:
+            for c in rc[r]:
+                masks[r][c] = False
 
         # number of rows and columns in numpy array
         r, c = GridGlobals.get_dim()
@@ -83,7 +83,7 @@ class FlowControl(object):
 
         # defined by save_vars()
         self.tz_tmp = None
-        self.sum_interception_tmp = np.copy(self.sum_interception)
+        self.sum_interception_tmp = ma.copy(self.sum_interception)
 
         # defined by save_ratio()
         self.ratio_tmp = None
@@ -93,14 +93,14 @@ class FlowControl(object):
         in case of repeating time time stem iteration.
         """
         self.tz_tmp = self.tz
-        self.sum_interception_tmp = np.copy(self.sum_interception)
+        self.sum_interception_tmp = ma.copy(self.sum_interception)
 
     def restore_vars(self):
         """Restore tz and sum of interception
         in case of repeating time time stem iteration.
         """
         self.tz = self.tz_tmp
-        self.sum_interception = np.copy(self.sum_interception_tmp)
+        self.sum_interception = ma.copy(self.sum_interception_tmp)
 
     def refresh_iter(self):
         """Set current number of iteration to
@@ -208,9 +208,9 @@ class Runoff(object):
         # create masked arrays
         masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
         rr, rc = GridGlobals.get_region_dim()
-        for r_c_index in range(len(rr)):
-            for c in rc[r_c_index]:
-                masks[rr[r_c_index]][c] = False
+        for r in rr:
+            for c in rc[r]:
+                masks[r][c] = False
         for i in rr:
             for j in rc[i]:
                 self.hydrographs.write_hydrographs_record(
@@ -273,15 +273,15 @@ class Runoff(object):
         # create masked arrays
         masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
         rr, rc = GridGlobals.get_region_dim()
-        for r_c_index in range(len(rr)):
-            for c in rc[r_c_index]:
-                masks[rr[r_c_index]][c] = False
+        for r in rr:
+            for c in rc[r]:
+                masks[r][c] = False
 
         self.delta_t = ma.masked_array(
             self.delta_t, mask=masks
         )
 
-        while np.any(self.flow_control.compare_time(Globals.end_time)):
+        while ma.any(self.flow_control.compare_time(Globals.end_time)):
 
             self.flow_control.save_vars()
             self.flow_control.refresh_iter()
@@ -319,13 +319,13 @@ class Runoff(object):
                 # coputed time is exactli at the top of each minute
                 oldtime_minut = self.flow_control.total_time/60
                 newtime_minut = (self.flow_control.total_time+self.delta_t)/60
-                if np.any(np.floor(newtime_minut) > np.floor(oldtime_minut)):
-                    self.delta_t = (np.floor(newtime_minut) - oldtime_minut)*60.
+                if ma.any(ma.floor(newtime_minut) > ma.floor(oldtime_minut)):
+                    self.delta_t = (ma.floor(newtime_minut) - oldtime_minut)*60.
 
                 # courant conditions is satisfied (time step did
                 # change) the iteration loop breaks
-                if np.all(
-                    np.logical_and(delta_t_tmp == self.delta_t,
+                if ma.all(
+                    ma.logical_and(delta_t_tmp == self.delta_t,
                                    self.flow_control.compare_ratio())
                 ):
                     break
@@ -367,14 +367,14 @@ class Runoff(object):
                 )
 
             # adjusts the last time step size
-            if np.all(np.logical_and(
+            if ma.all(ma.logical_and(
                     Globals.end_time - self.flow_control.total_time < self.delta_t,
                     Globals.end_time - self.flow_control.total_time > 0
             )):
                 self.delta_t = Globals.end_time - self.flow_control.total_time
 
             # if end time reached the main loop breaks
-            if np.all(self.flow_control.total_time == Globals.end_time):
+            if ma.all(self.flow_control.total_time == Globals.end_time):
                 break
 
             # calculate outflow from each reach of the stream network
@@ -407,15 +407,14 @@ class Runoff(object):
             # set current time results to previous time step
             # check if rill flow occur
             self.surface.arr.state = ma.where(
-                np.logical_and(
-                    self.surface.arr.state == 0, self
-                        .surface.arr.h_total_new > self.surface.arr.h_crit
+                ma.logical_and(
+                    self.surface.arr.state == 0, self.surface.arr.h_total_new > self.surface.arr.h_crit
                 ),
                 1,
                 self.surface.arr.state
             )
             self.surface.arr.state = ma.where(
-                np.logical_and(
+                ma.logical_and(
                     self.surface.arr.state == 1,
                     self.surface.arr.h_total_new < self.surface.arr.h_total_pre,
                 ),
@@ -423,7 +422,7 @@ class Runoff(object):
                 self.surface.arr.state
             )
             self.surface.arr.h_last_state1 = ma.where(
-                np.logical_and(
+                ma.logical_and(
                     self.surface.arr.state == 1,
                     self.surface.arr.h_total_new < self.surface.arr.h_total_pre,
                 ),
@@ -431,7 +430,7 @@ class Runoff(object):
                 self.surface.arr.state
             )
             self.surface.arr.state = ma.where(
-                np.logical_and(
+                ma.logical_and(
                     self.surface.arr.state == 2,
                     self.surface.arr.h_total_new > self.surface.arr.h_last_state1,
                 ),

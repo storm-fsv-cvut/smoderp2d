@@ -125,9 +125,9 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         # define arrays class attributes
         masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
         rr, rc = GridGlobals.get_region_dim()
-        for r_c_index in range(len(rr)):
-            for c in rc[r_c_index]:
-                masks[rr[r_c_index]][c] = False
+        for r in rr:
+            for c in rc[r]:
+                masks[r][c] = False
 
         for item in self.data.keys():
             setattr(self,
@@ -180,7 +180,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
                                     q_sheet_tot,
                                     self.q_sheet_tot)
         # new
-        cond_h_rill = np.greater(surface.h_rill, self.h_rill)
+        cond_h_rill = ma.greater(surface.h_rill, self.h_rill)
         # new
         self.h_rill = ma.where(cond_h_rill, surface.h_rill, self.h_rill)
         # new
@@ -193,7 +193,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         # in TF, was h_sur instead of h_sheet_tot
         self.h_sheet_tot  = ma.where(
             cond_sur_state0,
-            np.maximum(self.h_sheet_tot, surface.h_total_new),
+            ma.maximum(self.h_sheet_tot, surface.h_total_new),
             self.h_sheet_tot
         )
         cond_sur_state1 = surface.state == 1

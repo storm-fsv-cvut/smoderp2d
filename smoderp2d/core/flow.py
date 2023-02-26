@@ -69,11 +69,11 @@ class D8(object):
             iax = i + ax
             jbx = j + bx
             try:
-                insurfflow_from_cell = self.arr.vol_runoff_np[iax][jbx]
+                insurfflow_from_cell = self.arr.vol_runoff.data[iax][jbx]
             except:
                 insurfflow_from_cell = 0.0
             try:
-                inrillflow_from_cell = self.arr.vol_runoff_rill_np[iax][jbx]
+                inrillflow_from_cell = self.arr.vol_runoff_rill.data[iax][jbx]
             except:
                 inrillflow_from_cell = 0.0
             inflow_from_cells = inflow_from_cells + \
@@ -136,7 +136,7 @@ class Mfda(object):
                 jbx = j + bx
 
                 inflow_from_cells += ma.where(
-                    np.equal(self.state[i, j], 1) or np.equal(self.state[i, j], 2),
+                    ma.equal(self.state[i, j], 1) or ma.equal(self.state[i, j], 2),
                     self.vol_runoff_rill_pre,
                     0
                 )

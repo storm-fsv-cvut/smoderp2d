@@ -135,7 +135,7 @@ def timestepRainfall(iterace, total_time, delta_t, tz, sr):
         # skontroluje jestli casovy krok, ktery prave resi, je stale vramci
         # srazkoveho zaznamu z
 
-        if np.all(sr[z][0] >= (total_time + delta_t)):
+        if ma.all(sr[z][0] >= (total_time + delta_t)):
             rainfall = sr[z][1] * delta_t
         # kdyz je mimo tak
         else:
@@ -174,7 +174,7 @@ def current_rain(rain, rainfallm, sum_interception):
     rain_ppl = rain.ppl
     rain_pi = rain.pi
     sum_interception_pre = sum_interception
-    if not np.all(rain_veg):
+    if not ma.all(rain_veg):
         interc = rain_ppl * rainfallm  # interception is konstant
         sum_interception += interc  # sum of intercepcion
 

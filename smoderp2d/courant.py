@@ -22,9 +22,9 @@ class Courant():
         # create masked arrays
         masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
         rr, rc = GridGlobals.get_region_dim()
-        for r_c_index in range(len(rr)):
-            for c in rc[r_c_index]:
-                masks[rr[r_c_index]][c] = False
+        for r in rr:
+            for c in rc[r]:
+                masks[r][c] = False
 
         # self.orig_dt = dt
         self.maxh = 0
@@ -61,9 +61,9 @@ class Courant():
         """
         masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
         rr, rc = GridGlobals.get_region_dim()
-        for r_c_index in range(len(rr)):
-            for c in rc[r_c_index]:
-                masks[rr[r_c_index]][c] = False
+        for r in rr:
+            for c in rc[r]:
+                masks[r][c] = False
 
         self.cour_most = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
@@ -102,9 +102,9 @@ class Courant():
         # return self.initGuess
         masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
         rr, rc = GridGlobals.get_region_dim()
-        for r_c_index in range(len(rr)):
-            for c in rc[r_c_index]:
-                masks[rr[r_c_index]][c] = False
+        for r in rr:
+            for c in rc[r]:
+                masks[r][c] = False
 
         return ma.masked_array(
             np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt, mask=masks
@@ -116,14 +116,21 @@ class Courant():
         and maximum Courant coefficient.
         """
         cour = v / self.cour_coef * delta_t / efect_cont
-        cour = np.maximum(cour, rill_courant)
+        cour = ma.maximum(cour, rill_courant)
         # print cour
-
-        if np.any(cour > self.cour_most):
+        if ma.any(cour > self.cour_most):
+            self.i = np.unravel_index(ma.argmax(cour), cour.shape)[0]
+            self.j = np.unravel_index(ma.argmax(cour), cour.shape)[1]
             self.co = co
-            self.cour_most = cour
-            self.maxh = h0
-            self.cour_speed = v
+            self.cour_most = ma.masked_array(
+                np.ones(cour.shape) * cour[self.i, self.j], mask=cour.mask
+            )
+            self.maxh = ma.masked_array(
+                np.ones(cour.shape) * h0[self.i, self.j], mask=cour.mask
+            )
+            self.cour_speed = ma.masked_array(
+                np.ones(cour.shape) * v[self.i, self.j], mask=cour.mask
+            )
         # if rill_courant > self.cour_most_rill:
             # self.cour_most_rill = rill_courant
 
@@ -162,17 +169,18 @@ class Courant():
         # mensi nez cour_least a vetsi nez cour_crit
         # explicitne se dopocita dt na nejvetsi mozne
         #                                      xor
-        if np.any((self.cour_most < self.cour_least) != (self.cour_crit <= self.cour_most)):
+        if ma.any((self.cour_most < self.cour_least) != (self.cour_crit <=
+                                                        self.cour_most)):
 
         # pokud se na povrchu nic nedeje
         # nema se zmena dt cim ridit
         # a zmeni se podle maxima nasobeneho max_delta_t_mult
         # max_delta_t_mult se meni podle ryh, vyse v teto funkci
         #
-            if np.any(self.cour_speed == 0.0):
+            if ma.any(self.cour_speed == 0.0):
                 return self.max_delta_t * self.max_delta_t_mult, ratio
 
-            dt = np.round(
+            dt = ma.round(
                 (Gl.mat_efect_cont[self.i, self.j] * self.cour_crit * self.cour_coef) /
                 self.cour_speed,
                 8)
@@ -183,8 +191,8 @@ class Courant():
             # return dt*self.max_delta_t_mult, ratio
             # return min(dt,self.max_delta_t*self.max_delta_t_mult), ratio
             # print 'asdf', self.cour_speed, dt, self.max_delta_t_mult
-            dt_min = np.minimum(
-                dt * self.max_delta_t_mult,
+            dt_min = ma.minimum(
+                self.max_delta_t_mult * dt,
                 self.max_delta_t * self.max_delta_t_mult
             )
             return dt_min, ratio
@@ -199,7 +207,7 @@ class Courant():
             # print 'asdf', dt, dt*self.max_delta_t_mult, ratio
             # TODO: ratio is sometimes array, but maybe it should be just a
             #  number?
-            if (np.all(ratio <= self.maxratio) and (self.cour_most_rill < 0.5)):
+            if (ma.all(ratio <= self.maxratio) and (self.cour_most_rill < 0.5)):
                 return delta_t, ratio
             else:
                 return delta_t * self.max_delta_t_mult, ratio

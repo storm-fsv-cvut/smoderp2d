@@ -9,13 +9,13 @@ courantMin = 0.2
 
 def update_hb(loc_V_to_rill, rillRatio, l, b, ratio, ppp=False):
     V = loc_V_to_rill
-    if np.any(V < 0):
+    if ma.any(V < 0):
         raise SmoderpError()
-    newb = np.sqrt(V / (rillRatio * l))
+    newb = ma.sqrt(V / (rillRatio * l))
     # if ppp :  print 'zvetsuje', newb, b, V
     b = ma.where(
         V > 0,
-        np.maximum(b, newb),
+        ma.maximum(b, newb),
         b
     )
     h = V / (b * l)
