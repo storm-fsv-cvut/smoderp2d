@@ -42,7 +42,7 @@ class SurArrs(object):
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
         )
         self.sur_ret = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * sur_ret, mask=masks
+            np.full((GridGlobals.r, GridGlobals.c), sur_ret), mask=masks
         )
         self.cur_sur_ret = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
@@ -70,22 +70,22 @@ class SurArrs(object):
         )
         # in TF, Globals.get_mat_inf_index_tf()
         self.soil_type= ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * inf_index, mask=masks
+            np.full((GridGlobals.r, GridGlobals.c), inf_index), mask=masks
         )
         self.infiltration = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
         )
         # in TF, Globals.get_mat_hcrit_tf()
         self.h_crit = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * hcrit, mask=masks
+            np.full((GridGlobals.r, GridGlobals.c), hcrit), mask=masks
         )
         # in TF, a = Globals.get_mat_aa_tf()
         self.a = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * a, mask=masks
+            np.full((GridGlobals.r, GridGlobals.c), a), mask=masks
         )
         # in TF, Globals.get_mat_b_tf()
         self.b = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * b, mask=masks
+            np.full((GridGlobals.r, GridGlobals.c), b), mask=masks
         )
         self.h_rill = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks

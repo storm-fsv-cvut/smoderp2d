@@ -31,10 +31,7 @@ class Courant():
         self.cour_speed = 0
         # citical courant value
         self.cour_crit = 0.95
-        self.cour_most = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * self.cour_crit + 1,
-            mask=masks
-        )
+        self.cour_most = self.cour_crit + 1
         self.cour_most_rill = self.cour_crit + 1.0
         self.cour_coef = 0.5601
         self.cour_least = self.cour_crit * 0.85
@@ -65,9 +62,7 @@ class Courant():
             for c in rc[r]:
                 masks[r][c] = False
 
-        self.cour_most = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
-        )
+        self.cour_most = 0
         self.cour_speed = 0
         self.cour_most_rill = 0
 
@@ -122,15 +117,9 @@ class Courant():
             self.i = np.unravel_index(ma.argmax(cour), cour.shape)[0]
             self.j = np.unravel_index(ma.argmax(cour), cour.shape)[1]
             self.co = co
-            self.cour_most = ma.masked_array(
-                np.ones(cour.shape) * cour[self.i, self.j], mask=cour.mask
-            )
-            self.maxh = ma.masked_array(
-                np.ones(cour.shape) * h0[self.i, self.j], mask=cour.mask
-            )
-            self.cour_speed = ma.masked_array(
-                np.ones(cour.shape) * v[self.i, self.j], mask=cour.mask
-            )
+            self.cour_most = cour[self.i, self.j]
+            self.maxh = h0[self.i, self.j]
+            self.cour_speed = v[self.i, self.j]
         # if rill_courant > self.cour_most_rill:
             # self.cour_most_rill = rill_courant
 
