@@ -83,19 +83,15 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
         """
         GridGlobals.__init__()
 
-        for i in range(self.r):
-            for j in range(self.c):
-                self.arr[i, j] = SubArrs(
-                    L_sub,
-                    Ks,
-                    vg_n,
-                    vg_l,
-                    mat_dem[i][j] - L_sub,
-                    mat_dem[i][j])
+        self.arr = SubArrs(
+            L_sub,
+            Ks,
+            vg_n,
+            vg_l,
+            mat_dem - L_sub,
+            mat_dem)
 
-        for i in self.rr:
-            for j in self.rc[i]:
-                self.arr[i, j].slope = mat_slope[i][j]
+        self.arr.slope = mat_slope
 
         self.Kr = darcy.relative_unsat_conductivity
         self.darcy = darcy.darcy
