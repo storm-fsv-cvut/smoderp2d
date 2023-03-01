@@ -51,9 +51,7 @@ class Diffuse(Mfda if Globals.mfda else D8):
 
         arr = self.arr
 
-        for i in self.rr:
-            for j in self.rc[i]:
-                arr.H[i][j] = arr.h[i][j] + arr.z[i][j]
+        arr.H = arr.h + arr.z
 
         for i in self.rr:
             for j in self.rc[i]:
