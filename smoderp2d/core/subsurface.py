@@ -184,9 +184,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
         return self.arr[i, j].h
 
     def curr_to_pre(self):
-        for i in self.rr:
-            for j in self.rc[i]:
-                self.arr[i, j].vol_runoff_pre = self.arr[i, j].vol_runoff
+        self.arr.vol_runoff_pre = self.arr.vol_runoff
 
     def return_str_vals(self, i, j, sep, dt):
         arr = self.arr[i, j]
