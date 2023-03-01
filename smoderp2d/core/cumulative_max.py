@@ -211,15 +211,12 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
         dx = GridGlobals.get_size()[0]
-        for i in rrows:
-            for j in rcols[i]:
-                if self.h_sur_tot[i][j] == 0.:
-                    self.v_sheet[i][j] = 0.
-                else:
-                    self.v_sheet[i][j] = \
-                        self.q_sheet_tot[i][j] / (self.h_sheet_tot[i][j] * dx)
-                self.shear_sheet[i][j] = \
-                    self.h_sheet_tot[i][j] * 9807 * Globals.mat_slope[i][j]
+
+        self.v_sheet = ma.where(
+            self.h_sur_tot == 0, 0, self.q_sheet_tot / (self.h_sheet_tot * dx)
+        )
+
+        self.shear_sheet = self.h_sheet_tot * 9807 * Globals.mat_slope
 
     def return_str_val(self, i, j):
         """ returns the cumulative precipitation in mm and cumulative runoff
