@@ -39,9 +39,12 @@ class PrepareDataBase(ABC):
             'stream_seg': 'temp',
             'ratio_cell' : 'temp',
             'efect_cont' : 'temp',
-
+        }
+        # complete list of field names that are supposed not to be changed, eg. in properties tables
+        self.fieldnames = {
             'veg_fieldname': "veg_type",
         }
+
         self.soilveg_fields = {
             "k": None, "s": None, "n": None, "pi": None, "ppl": None,
             "ret": None, "b": None, "x": None, "y": None, "tau": None, "v": None
@@ -50,10 +53,7 @@ class PrepareDataBase(ABC):
             self._data_layers["soilveg_aoi_{}".format(sv)] = 'temp'
         self.storage.set_data_layers(self._data_layers)
 
-        self.stream_shape_fields = [
-            "number", self._input_params['table_stream_shape_code'],
-            "shapetype", "b", "m", "roughness", "q365"
-        ]
+        self.stream_shape_fields = ["profile", "shapetype", "b", "m", "roughness", "q365"]
 
         self.data = {
             'mat_boundary': None,
@@ -247,10 +247,10 @@ class PrepareDataBase(ABC):
     #     pass
 
     @abstractmethod
-    def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
+    def _stream_shape(self, streams, channel_shape_code, channel_properties_table):
         """Compute shape of stream.
 
-        :param stream: string path to stream dataset
+        :param stream: string path to streams dataset
         :param stream_shape_code: shape code column
         :param stream_shape_tab: table with stream shapes
 
@@ -375,10 +375,10 @@ class PrepareDataBase(ABC):
         Logger.progress(60)
 
         Logger.info("Processing stream network:")
-        if self._input_params['stream'] and self._input_params['table_stream_shape'] and self._input_params['table_stream_shape_code']:
-            self._prepare_stream(self._input_params['stream'],
-                                 self._input_params['table_stream_shape'],
-                                 self._input_params['table_stream_shape_code'],
+        if self._input_params['streams'] and self._input_params['channel_properties_table'] and self._input_params['streams_channel_shape_code']:
+            self._prepare_streams(self._input_params['streams'],
+                                 self._input_params['channel_properties_table'],
+                                 self._input_params['streams_channel_shape_code'],
                                  dem_aoi, aoi_polygon
             )
         Logger.progress(90)
@@ -626,14 +626,14 @@ class PrepareDataBase(ABC):
 
         return mat_nan, mat_slope, mat_dem
 
-    def _prepare_stream(self, stream, stream_shape_tab, stream_shape_code, dem_aoi, aoi_polygon):
+    def _prepare_streams(self, stream, stream_shape_tab, stream_shape_code, dem_aoi, aoi_polygon):
         self.data['type_of_computing'] = 1
 
         # pocitam vzdy s ryhama pokud jsou zadane vsechny vstupy pro
         # vypocet toku, streams se pocitaji a type_of_computing je 3
-        listin = [self._input_params['stream'],
-                  self._input_params['table_stream_shape'],
-                  self._input_params['table_stream_shape_code']]
+        listin = [self._input_params['streams'],
+                  self._input_params['channel_properties_table'],
+                  self._input_params['streams_channel_shape_code']]
         tflistin = [len(i) > 1 for i in listin] ### TODO: ???
 
         if all(tflistin):
@@ -772,11 +772,12 @@ class PrepareDataBase(ABC):
             stream_attr[f] = []
 
         return stream_attr
+
     def _check_input_data_(self):
-        if self._input_params['stream'] or self._input_params['table_stream_shape'] or self._input_params['table_stream_shape_code']:
-            if not self._input_params['stream']:
-                raise DataPreparationInvalidInput("Option 'Reach feature layer' must be defined")
-            if not self._input_params['table_stream_shape']:
-                raise DataPreparationInvalidInput("Option 'Reach shape table' must be defined")
-            if not self._input_params['table_stream_shape_code']:
-                raise DataPreparationInvalidInput("Option 'Field with the reach feature identifier' must be defined")
+        if self._input_params['streams'] or self._input_params['channel_properties_table'] or self._input_params['streams_channel_shape_code']:
+            if not self._input_params['streams']:
+                raise DataPreparationInvalidInput("Input parameter 'Stream network feature layer' must be defined!")
+            if not self._input_params['channel_properties_table']:
+                raise DataPreparationInvalidInput("Input parameter 'Channel properties table' must be defined!")
+            if not self._input_params['streams_channel_shape_code']:
+                raise DataPreparationInvalidInput("Field containing the channel shape identifier must be set!")

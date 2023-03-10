@@ -370,33 +370,30 @@ class PrepareData(PrepareDataBase):
 
         return mat_stream_seg.astype('int16')
 
-    def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
+    def _stream_shape(self, streams, channel_shape_code, channel_properties_table):
         """See base method for description.
         """
-        if (stream_shape_code) not in self._get_field_names(stream):
+        if (channel_shape_code) not in self._get_field_names(streams):
             raise DataPreparationError(
                 "Error joining channel shape properties to stream network segments!\n"
                 "Check fields names in stream network feature class. "
-                "Needed field is: '{}'".format(self._input_params['table_stream_shape_code'])
+                "Needed field name is: '{}'".format(self._input_params['streams_channel_shape_code'])
             )
 
-        arcpy.management.JoinField(
-            stream, stream_shape_code,
-            stream_shape_tab, stream_shape_code,
-            self.stream_shape_fields
-        )
+        arcpy.management.JoinField(streams, channel_shape_code, channel_properties_table, channel_shape_code,
+            self.stream_shape_fields)
 
-        fid = arcpy.Describe(stream).OIDFieldName
+        fid = arcpy.Describe(streams).OIDFieldName
         stream_attr = self._stream_attr_(fid)
         fields = list(stream_attr.keys())
-        with arcpy.da.SearchCursor(stream, fields) as cursor:
+        with arcpy.da.SearchCursor(streams, fields) as cursor:
             try:
                 for row in cursor:
                     i = 0
                     for i in range(len(row)):
                         if row[i] in (" ", None):
                             raise DataPreparationError(
-                                "Empty value in {} ({}) found.".format(self._input_params["table_stream_shape"], fields[i])
+                                "Empty value in {} ({}) found.".format(self._input_params["channel_properties_table"], fields[i])
                             )
                         stream_attr[fields[i]].append(row[i])
                         i += 1
@@ -405,7 +402,7 @@ class PrepareData(PrepareDataBase):
                 raise DataPreparationError(
                         "Error: {}\n" 
                         "Check fields names in {}. "
-                        "Proper columns codes are: {}".format(e, self._input_params["table_stream_shape"], self.stream_shape_fields)
+                        "Proper columns codes are: {}".format(e, self._input_params["channel_properties_table"], self.stream_shape_fields)
                 )
 
         stream_attr['fid'] = stream_attr.pop(fid)
@@ -436,13 +433,14 @@ class PrepareData(PrepareDataBase):
             self._input_params['soil_type']
         )
 
-        if self._input_params['table_stream_shape']:
-            fields = [f.name for f in arcpy.Describe(self._input_params['table_stream_shape']).fields]
+        # check presence of needed fields in stream shape properties table
+        if self._input_params['channel_properties_table']:
+            fields = self._get_field_names(self._input_params['channel_properties_table'])
             for f in self.stream_shape_fields:
                 if f not in fields:
                     raise DataPreparationInvalidInput(
-                        "Field '{}' not found in <{}>\nProper fields name are: {}".format(
-                            f, self._input_params['table_stream_shape'], ', '.join(map(lambda x: "'{}'".format(x), self.stream_shape_fields)))
+                        "Field '{}' not found in <{}>\nNeeded fields are: {}".format(
+                            f, self._input_params['channel_properties_table'], ', '.join(map(lambda x: "'{}'".format(x), self.stream_shape_fields)))
                     )
 
     def _get_field_names(self, fc):

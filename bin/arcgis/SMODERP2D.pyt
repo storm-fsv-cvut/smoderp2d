@@ -27,8 +27,8 @@ PARAMETER_POINTS = 8
 PARAMETER_SOILVEGTABLE = 9
 PARAMETER_SOILVEGTABLE_CODE = 10
 PARAMETER_STREAM = 11
-PARAMETER_STREAMTABLE = 12
-PARAMETER_STREAMTABLE_CODE = 13
+PARAMETER_CHANNEL_PROPS_CODE = 12
+PARAMETER_CHANNEL_PROPS_TABLE = 13
 PARAMETER_DATAPREP_ONLY = 14
 PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 15
 
@@ -155,21 +155,22 @@ class SMODERP2D(object):
         )
         streamNetwork.filter.list = ["Polyline"]
 
-        channelTypesTable = arcpy.Parameter(
+        streamChannelShapeIDfieldName = arcpy.Parameter(
+           displayName="Field with the channel type identifier",
+           name="streamChannelShapeIDfieldName",
+           datatype="Field",
+           parameterType="Optional",
+           direction="Input",
+        )
+        streamChannelShapeIDfieldName.parameterDependencies = [streamNetwork.name]
+
+        channelPropertiesTable = arcpy.Parameter(
            displayName="Channel properties table",
            name="channelTypesTable",
            datatype="GPTableView",
            parameterType="Optional",
            direction="Input"
         )
-        channelIDfieldName = arcpy.Parameter(
-           displayName="Field with the channel type identifier",
-           name="channelIDfieldName",
-           datatype="Field",
-           parameterType="Optional",
-           direction="Input",
-        )
-        channelIDfieldName.parameterDependencies = [channelTypesTable.name]
 
         dataprepOnly = arcpy.Parameter(
            displayName="Do the data preparation only",
@@ -194,8 +195,8 @@ class SMODERP2D(object):
             inputSurfaceRaster, inputSoilPolygons, soilTypefieldName,
             inputLUPolygons, LUtypeFieldName, inputRainfall,
             maxTimeStep, totalRunTime, inputPoints,
-            soilvegPropertiesTable, soilvegIDfieldName, streamNetwork,
-            channelTypesTable, channelIDfieldName, dataprepOnly, outDir,
+            soilvegPropertiesTable, soilvegIDfieldName, streamNetwork, streamChannelShapeIDfieldName,
+            channelPropertiesTable, dataprepOnly, outDir,
         ]
 
     def updateParameters(self, parameters):
@@ -241,8 +242,8 @@ class SMODERP2D(object):
             'points': parameters[PARAMETER_POINTS].valueAsText,
             'table_soil_vegetation': parameters[PARAMETER_SOILVEGTABLE].valueAsText,
             'table_soil_vegetation_code': parameters[PARAMETER_SOILVEGTABLE_CODE].valueAsText,
-            'stream': parameters[PARAMETER_STREAM].valueAsText,
-            'table_stream_shape': parameters[PARAMETER_STREAMTABLE].valueAsText,
-            'table_stream_shape_code': parameters[PARAMETER_STREAMTABLE_CODE].valueAsText,
+            'streams': parameters[PARAMETER_STREAM].valueAsText,
+            'streams_channel_shape_code': parameters[PARAMETER_CHANNEL_PROPS_CODE].valueAsText,
+            'channel_properties_table': parameters[PARAMETER_CHANNEL_PROPS_TABLE].valueAsText,
             'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
         }
