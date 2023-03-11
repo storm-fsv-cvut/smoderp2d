@@ -211,34 +211,32 @@ class Runoff(object):
         for r in rr:
             for c in rc[r]:
                 masks[r][c] = False
-        for i in rr:
-            for j in rc[i]:
-                self.hydrographs.write_hydrographs_record(
-                    i,
-                    j,
-                    self.flow_control,
-                    self.courant,
-                    self.delta_t,
-                    self.surface,
-                    self.subsurface,
-                    self.cumulative,
-                    ma.masked_array(
-                        np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
-                    )
-                )
-                # record values into stream hydrographs at time zero
-                self.hydrographs.write_hydrographs_record(
-                    i,
-                    j,
-                    self.flow_control,
-                    self.courant,
-                    self.delta_t,
-                    self.surface,
-                    self.subsurface,
-                    self.cumulative,
-                    0.0,
-                    True
-                )
+        self.hydrographs.write_hydrographs_record(
+            None,
+            None,
+            self.flow_control,
+            self.courant,
+            self.delta_t,
+            self.surface,
+            self.subsurface,
+            self.cumulative,
+            ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            )
+        )
+        # record values into stream hydrographs at time zero
+        self.hydrographs.write_hydrographs_record(
+            None,
+            None,
+            self.flow_control,
+            self.courant,
+            self.delta_t,
+            self.surface,
+            self.subsurface,
+            self.cumulative,
+            0.0,
+            True
+        )
 
         Logger.info('-' * 80)
 
@@ -268,7 +266,6 @@ class Runoff(object):
         Logger.start_time = time.time()
 
         # main loop: until the end time
-        i = j = 0 # TODO: rename vars (variable overlap)
 
         # create masked arrays
         masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
@@ -349,8 +346,8 @@ class Runoff(object):
             # and error is raised
             if not self.flow_control.max_iter_reached():
                 self.hydrographs.write_hydrographs_record(
-                    i,
-                    j,
+                    0,
+                    0,
                     self.flow_control,
                     self.courant,
                     self.delta_t,
@@ -389,8 +386,8 @@ class Runoff(object):
 
             # write hydrographs of reaches
             self.hydrographs.write_hydrographs_record(
-                i,
-                j,
+                0,
+                0,
                 self.flow_control,
                 self.courant,
                 self.delta_t,
@@ -443,7 +440,7 @@ class Runoff(object):
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
             Logger.progress(
                 timeperc,
-                self.delta_t[i, j],
+                self.delta_t.max(),
                 self.flow_control.iter_,
                 self.flow_control.total_time + self.delta_t
             )

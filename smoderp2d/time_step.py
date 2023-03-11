@@ -138,18 +138,16 @@ class TimeStep:
             potRain = ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
             )
-            for i in rr:
-                for j in rc[i]:
-                    hydrographs.write_hydrographs_record(
-                        i,
-                        j,
-                        flow_control,
-                        courant,
-                        delta_t,
-                        surface,
-                        subsurface,
-                        cumulative,
-                        actRain)
+            hydrographs.write_hydrographs_record(
+                None,
+                None,
+                flow_control,
+                courant,
+                delta_t,
+                surface,
+                subsurface,
+                cumulative,
+                actRain)
             return actRain
 
         for iii in combinatIndex:
@@ -249,17 +247,15 @@ class TimeStep:
             surface.arr,
             subsurface.arr,
             delta_t)
-        for i in rr:
-            for j in rc[i]:
-                hydrographs.write_hydrographs_record(
-                    i,
-                    j,
-                    flow_control,
-                    courant,
-                    delta_t,
-                    surface,
-                    subsurface.arr,
-                    cumulative,
-                    actRain)
+        hydrographs.write_hydrographs_record(
+            None,
+            None,
+            flow_control,
+            courant,
+            delta_t,
+            surface,
+            subsurface.arr,
+            cumulative,
+            actRain)
 
         return actRain
