@@ -16,14 +16,23 @@ def set_combinatIndex(newCombinatIndex):
 
 def philip_infiltration(soil, bil):
     # print 'bil v infiltraci', bil
+    infiltration = combinatIndex[0][3]
     for z in combinatIndex:
-        if ma.any(soil == z[0]):
-            if ma.all(bil < 0):
-                raise NegativeWaterLevel()
-            infiltration = z[3]
+        if ma.all(bil < 0):
+            raise NegativeWaterLevel()
 
-            bil = ma.where(infiltration > bil, 0, bil - infiltration)
-            infiltration = ma.minimum(infiltration, bil)
+        infilt_bil_cond = z[3] > bil
+
+        infiltration = ma.where(
+            soil == z[0],
+            ma.where(infilt_bil_cond, bil, z[3]),
+            infiltration
+        )
+        bil = ma.where(
+            soil == z[0],
+            ma.where(infilt_bil_cond, 0, bil - z[3]),
+            bil
+        )
     # print 'bil a inf v infiltraci\n', bil, infiltration
     return bil, infiltration
 
