@@ -173,7 +173,7 @@ def current_rain(rain, rainfallm, sum_interception):
     rain_veg = rain.veg
     rain_ppl = rain.ppl
     rain_pi = rain.pi
-    sum_interception_pre = sum_interception
+    sum_interception_pre = ma.copy(sum_interception)
     if not ma.all(rain_veg):
         interc = rain_ppl * rainfallm  # interception is konstant
         sum_interception += interc  # sum of intercepcion
