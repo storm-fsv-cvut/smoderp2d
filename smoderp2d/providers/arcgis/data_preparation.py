@@ -164,7 +164,7 @@ class PrepareData(PrepareDataBase):
         # check if the soil_type and vegetation_type field names are
         # equal and deal with it if not
         if soil_type == vegetation_type:
-            veg_fieldname = 'veg_type'
+            veg_fieldname = self.fieldnames['soilveg_type']
             Logger.info(
                 "The vegetation type attribute field name ('{}') is equal to "
                 "the soil type attribute field name. Vegetation type attribute "
@@ -269,11 +269,16 @@ class PrepareData(PrepareDataBase):
     def _stream_direction(self, stream, dem_aoi):
         """See base method for description.
         """
-        streamIDfieldName = "stream_id"
+        segmentIDfieldName = self.fieldnames['stream_segment_id']
+        startElevFieldName = self.fieldnames['stream_segment_start_elevation']
+        endElevFieldName = self.fieldnames['stream_segment_end_elevation']
+        inclinationFieldName = self.fieldnames['stream_segment_inclination']
+        nextDownFieldName = self.fieldnames['stream_segment_next_down_id']
+
         # add the streamID for later use
-        arcpy.management.AddField(stream, streamIDfieldName, "SHORT")
+        arcpy.management.AddField(stream, segmentIDfieldName, "SHORT")
         sID = 1
-        with arcpy.da.UpdateCursor(stream, [streamIDfieldName]) as segments:
+        with arcpy.da.UpdateCursor(stream, [segmentIDfieldName]) as segments:
             for row in segments:
                 row[0] = sID
                 segments.updateRow(row)
@@ -289,7 +294,7 @@ class PrepareData(PrepareDataBase):
         segmentProps = {}
         # first points of segments to find the nextDownID
         firstPoints = {}
-        with arcpy.da.SearchCursor(self.storage.output_filepath("stream_Z"), [shapeFieldName, streamIDfieldName, lengthFieldName]) as segments:
+        with arcpy.da.SearchCursor(self.storage.output_filepath("stream_Z"), [shapeFieldName, segmentIDfieldName, lengthFieldName]) as segments:
             for row in segments:
                 startpt = row[0].firstPoint
                 endpt = row[0].lastPoint
@@ -298,7 +303,7 @@ class PrepareData(PrepareDataBase):
 
                 if elevchange == 0:
                     raise DataPreparationError(
-                        'Stream segment '+streamIDfieldName+': {} has zero slope'.format(row[1]))
+                        'Stream segment '+segmentIDfieldName+': {} has zero slope'.format(row[1]))
                 if elevchange < 0:
                     firstPoints.update({row[1]: startpt})
                 else:
@@ -308,14 +313,14 @@ class PrepareData(PrepareDataBase):
                 segmentProps.update({row[1]:{"startZ": startpt.Z, "endZ": endpt.Z, "inclination": inclination}})
 
         # add new fields to the stream segments feature class
-        arcpy.management.AddField(stream, streamIDfieldName, "SHORT")
+        arcpy.management.AddField(stream, segmentIDfieldName, "SHORT")
         arcpy.management.AddField(stream, "start_elev", "DOUBLE")
         arcpy.management.AddField(stream, "end_elev", "DOUBLE")
         arcpy.management.AddField(stream, "inclination", "DOUBLE")
         arcpy.management.AddField(stream, "next_down_id", "DOUBLE")
 
         XYtolerance = 0.01 # don't know why the arcpy.env.XYtolerance does not work (otherwise would use the arcpy.Point.equals() method)
-        with arcpy.da.UpdateCursor(stream, [streamIDfieldName, shapeFieldName, "start_elev", "end_elev", "inclination", "next_down_id"]) as table:
+        with arcpy.da.UpdateCursor(stream, [segmentIDfieldName, shapeFieldName, startElevFieldName, endElevFieldName, inclinationFieldName, nextDownFieldName]) as table:
             for row in table:
                 segmentInclination = segmentProps.get(row[0]).get("inclination")
                 row[1] = row[1] if segmentInclination < 0 else self._reverse_line_direction(row[1])

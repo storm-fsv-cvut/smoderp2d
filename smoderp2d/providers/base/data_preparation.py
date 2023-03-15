@@ -42,7 +42,13 @@ class PrepareDataBase(ABC):
         }
         # complete list of field names that are supposed not to be changed, eg. in properties tables
         self.fieldnames = {
-            'veg_fieldname': "veg_type",
+            'soilveg_type': 'veg_type',
+            'stream_segment_id': 'segment_id',
+            'stream_segment_start_elevation': 'start_elev',
+            'stream_segment_end_elevation': 'end_elev',
+            'stream_segment_inclination': 'inclination',
+            'stream_segment_next_down_id': 'next_down_id'
+
         }
 
         self.soilveg_fields = {
