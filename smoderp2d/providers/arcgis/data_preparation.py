@@ -274,6 +274,7 @@ class PrepareData(PrepareDataBase):
         endElevFieldName = self.fieldnames['stream_segment_end_elevation']
         inclinationFieldName = self.fieldnames['stream_segment_inclination']
         nextDownFieldName = self.fieldnames['stream_segment_next_down_id']
+        segmentLengthFieldName = self.fieldnames['stream_segment_length']
 
         # add the streamID for later use
         arcpy.management.AddField(stream, segmentIDfieldName, "SHORT")
@@ -314,19 +315,22 @@ class PrepareData(PrepareDataBase):
 
         # add new fields to the stream segments feature class
         arcpy.management.AddField(stream, segmentIDfieldName, "SHORT")
-        arcpy.management.AddField(stream, "start_elev", "DOUBLE")
-        arcpy.management.AddField(stream, "end_elev", "DOUBLE")
-        arcpy.management.AddField(stream, "inclination", "DOUBLE")
-        arcpy.management.AddField(stream, "next_down_id", "DOUBLE")
+        arcpy.management.AddField(stream, startElevFieldName, "DOUBLE")
+        arcpy.management.AddField(stream, endElevFieldName, "DOUBLE")
+        arcpy.management.AddField(stream, inclinationFieldName, "DOUBLE")
+        arcpy.management.AddField(stream, nextDownFieldName, "DOUBLE")
+        arcpy.management.AddField(stream, segmentLengthFieldName, "DOUBLE")
 
         XYtolerance = 0.01 # don't know why the arcpy.env.XYtolerance does not work (otherwise would use the arcpy.Point.equals() method)
-        with arcpy.da.UpdateCursor(stream, [segmentIDfieldName, shapeFieldName, startElevFieldName, endElevFieldName, inclinationFieldName, nextDownFieldName]) as table:
+        with arcpy.da.UpdateCursor(stream, [segmentIDfieldName, shapeFieldName, startElevFieldName, endElevFieldName, inclinationFieldName, nextDownFieldName,
+                                            segmentLengthFieldName, lengthFieldName]) as table:
             for row in table:
                 segmentInclination = segmentProps.get(row[0]).get("inclination")
                 row[1] = row[1] if segmentInclination < 0 else self._reverse_line_direction(row[1])
                 row[2] = segmentProps.get(row[0]).get("startZ")
                 row[3] = segmentProps.get(row[0]).get("endZ")
                 row[4] = -segmentInclination if segmentInclination < 0 else segmentInclination
+                row[6] = row[7]
 
                 # find the next down segment by comparing the points distance
                 nextDownID = -1
@@ -364,8 +368,7 @@ class PrepareData(PrepareDataBase):
         """See base method for description.
         """
         stream_seg = self.storage.output_filepath('stream_seg')
-        arcpy.conversion.PolylineToRaster(
-            stream, arcpy.Describe(stream).OIDFieldName, stream_seg,
+        arcpy.conversion.PolylineToRaster(stream, self.fieldnames['stream_segment_id'], stream_seg,
             "MAXIMUM_LENGTH", cellsize=GridGlobals.dx
         )
 
@@ -388,8 +391,7 @@ class PrepareData(PrepareDataBase):
         arcpy.management.JoinField(streams, channel_shape_code, channel_properties_table, channel_shape_code,
             self.stream_shape_fields)
 
-        fid = arcpy.Describe(streams).OIDFieldName
-        stream_attr = self._stream_attr_(fid)
+        stream_attr = self._get_streams_attr_()
         fields = list(stream_attr.keys())
         with arcpy.da.SearchCursor(streams, fields) as cursor:
             try:
@@ -410,9 +412,7 @@ class PrepareData(PrepareDataBase):
                         "Proper columns codes are: {}".format(e, self._input_params["channel_properties_table"], self.stream_shape_fields)
                 )
 
-        stream_attr['fid'] = stream_attr.pop(fid)
-
-        return stream_attr
+        return self._decode_stream_attr(stream_attr)
 
     def _check_input_data(self):
         """See base method for description.

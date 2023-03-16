@@ -96,6 +96,7 @@ def trapezoid(reach, dt):
     :param reach: ?
     :param dt: ?
     """
+
     Vp = reach.q365 * dt
     hp = compute_h(A=Vp / reach.length, m=reach.m, b=reach.b)
     B = reach.b + 2.0 * hp * reach.m  # b pro pocatecni stav (q365)
@@ -111,7 +112,7 @@ def trapezoid(reach, dt):
     dS = S - reach.b * hp + reach.m * hp * hp
     dV = dS * reach.length
     R = S / O
-    reach.vs = math.pow(R, 0.6666) * math.pow(reach.slope, 0.5) / (reach.roughness)  # v
+    reach.vs = math.pow(R, 0.6666) * math.pow(reach.inclination, 0.5) / (reach.roughness)  # v
     reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
     if reach.V_out > dV:
@@ -136,32 +137,21 @@ def trapezoid(reach, dt):
 #
 #
 def triangle(reach, dt):
-    pass
-    Vp = reach.q365 * \
-        dt                             # objem           : baseflow
-    hp = math.pow(
-        Vp / (reach.length * reach.m),
-        0.5)   # vyska hladiny   : baseflow __
-    B = 2.0 * hp * \
-        reach.m                             # sirka zakladny  : baseflow \/
+
+    Vp = reach.q365 * dt                                # objem           : baseflow
+    hp = math.pow(Vp / (reach.length * reach.m), 0.5)   # vyska hladiny   : baseflow __
+    B = 2.0 * hp *  reach.m                             # sirka zakladny  : baseflow \/
     # Bb = B + reach.h*reach.m                                                                # tohle nechapu, takze jsem to zakomantoval...
     # h  = (reach.V_in_from_field + reach.vol_rest + reach.V_in_from_reach)/(Bb
     # * reach.length) # tohle nechapu...
 
-    Ve = (
-        reach.V_in_from_field +
-        reach.vol_rest +
-     reach.V_in_from_reach)     # objem z epizody
+    Ve = (reach.V_in_from_field + reach.vol_rest + reach.V_in_from_reach)     # objem z epizody
     #
     # vyska z epizody co pribude na trouhelnik z baseflow (takze lichobeznik)
     #                       ____                                          __
-    # zahlacna lichobezniku \__/ je spodni 'horni'  zakladna trojuhelniku \/
-    he = compute_h(
-        A=Ve / reach.length,
-        m=reach.m,
-     b=B)  # funkce pouzita pro lichobeznik  ____
-    H = hp + \
-        he                                     # vyska vysledneho trouhelniku    \  /
+    # zakladna lichobezniku \__/ je spodni 'horni'  zakladna trojuhelniku \/
+    he = compute_h(A=Ve / reach.length, m=reach.m, b=B)  # funkce pouzita pro lichobeznik  ____
+    H = hp + he                                     # vyska vysledneho trouhelniku    \  /
     O = 2.0 * H * math.pow(
         1.0 + reach.m * reach.m,
         0.5)  # \/
@@ -191,8 +181,7 @@ def triangle(reach, dt):
 #
 #
 def parabola(reach, dt):
-    raise NotImplementedError('Parabola shaped stream reach has not \
-            been implemented yet')
+    raise NotImplementedError('Parabola shaped stream reach has not been implemented yet')
     # a = reach.b   #vzd ohniska od vrcholu
     # u = 3.0 #(h=B/u  B=f(a))
     # Vp = reach.q365*dt

@@ -47,8 +47,15 @@ class PrepareDataBase(ABC):
             'stream_segment_start_elevation': 'start_elev',
             'stream_segment_end_elevation': 'end_elev',
             'stream_segment_inclination': 'inclination',
-            'stream_segment_next_down_id': 'next_down_id'
-
+            'stream_segment_next_down_id': 'next_down_id',
+            'stream_segment_length': 'segment_length',
+            'channel_shape_id':  self._input_params['streams_channel_shape_code'],
+            'channel_profile': 'profile',
+            'channel_shapetype': 'shapetype',
+            'channel_bottom_width': 'b',
+            'channel_bank_steepness': 'm',
+            'channel_bed_roughness': 'roughness',
+            'channel_q365': 'q365'
         }
 
         self.soilveg_fields = {
@@ -59,7 +66,9 @@ class PrepareDataBase(ABC):
             self._data_layers["soilveg_aoi_{}".format(sv)] = 'temp'
         self.storage.set_data_layers(self._data_layers)
 
-        self.stream_shape_fields = ["profile", "shapetype", "b", "m", "roughness", "q365"]
+        self.stream_shape_fields = [self.fieldnames['channel_profile'], self.fieldnames['channel_shapetype'], self.fieldnames['channel_bed_width'],
+                                    self.fieldnames['channel_bank_steepness'], self.fieldnames['channel_bank_steepness'],
+                                    self.fieldnames['channel_bed_roughness'], self.fieldnames['channel_q365']]
 
         self.data = {
             'mat_boundary': None,
@@ -770,8 +779,9 @@ class PrepareDataBase(ABC):
                     GridGlobals.r, GridGlobals.c)
             )
 
-    def _stream_attr_(self, fid):
-        fields = [fid, 'next_down_id', 'shape_length', 'inclination'] + self.stream_shape_fields
+    def _get_streams_attr_(self):
+        fields = [ self.fieldnames['stream_segment_id'],  self._input_params['streams_channel_shape_code'], self.fieldnames['stream_segment_next_down_id'], self.fieldnames['stream_segment_length'], \
+                  self.fieldnames['stream_segment_inclination']] + self.stream_shape_fields
         
         stream_attr = {}
         for f in fields:
@@ -787,3 +797,13 @@ class PrepareDataBase(ABC):
                 raise DataPreparationInvalidInput("Input parameter 'Channel properties table' must be defined!")
             if not self._input_params['streams_channel_shape_code']:
                 raise DataPreparationInvalidInput("Field containing the channel shape identifier must be set!")
+
+    def _decode_stream_attr(self, attr):
+        """Decode attribute names to fieldnames keys"""
+        attr_decoded = {}
+        print(attr)
+        for k, v in attr.items():
+            key_decoded = list(self.fieldnames.keys())[list(self.fieldnames.values()).index(k)]
+            attr_decoded[key_decoded] = v
+
+        return attr_decoded
