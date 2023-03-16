@@ -378,7 +378,7 @@ class PrepareData(PrepareDataBase):
     def _stream_shape(self, streams, channel_shape_code, channel_properties_table):
         """See base method for description.
         """
-        if (channel_shape_code) not in self._get_field_names(streams):
+        if channel_shape_code not in self._get_field_names(streams):
             raise DataPreparationError(
                 "Error joining channel shape properties to stream network segments!\n"
                 "Check fields names in stream network feature class. "
