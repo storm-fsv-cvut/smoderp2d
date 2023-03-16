@@ -17,9 +17,9 @@ def dpre_params():
         'points': os.path.join(data_dir, "points.shp"),
         'table_soil_vegetation': os.path.join(data_dir, "soil_veg_tab_mean.dbf"),
         'table_soil_vegetation_code': "soilveg",
-        'stream': os.path.join(data_dir, "stream.shp"),
-        'table_stream_shape': os.path.join(data_dir, "stream_shape.dbf"),
-        'table_stream_shape_code': "smoderp",
+        'streams': os.path.join(data_dir, "stream.shp"),
+        'channel_properties_table': os.path.join(data_dir, "stream_shape.dbf"),
+        'streams_channel_shape_code': "smoderp",
         'output': output_dir,
     }
 
