@@ -66,7 +66,7 @@ class PrepareDataBase(ABC):
             self._data_layers["soilveg_aoi_{}".format(sv)] = 'temp'
         self.storage.set_data_layers(self._data_layers)
 
-        self.stream_shape_fields = [self.fieldnames['channel_profile'], self.fieldnames['channel_shapetype'], self.fieldnames['channel_bed_width'],
+        self.stream_shape_fields = [self.fieldnames['channel_profile'], self.fieldnames['channel_shapetype'], self.fieldnames['channel_bottom_width'],
                                     self.fieldnames['channel_bank_steepness'], self.fieldnames['channel_bank_steepness'],
                                     self.fieldnames['channel_bed_roughness'], self.fieldnames['channel_q365']]
 
