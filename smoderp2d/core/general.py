@@ -123,11 +123,7 @@ class DataGlobals:
     mat_ppl = None
 
     @classmethod
-    def get_mat_ppl(cls, i, j):
-        return cls.mat_ppl[i][j]
-
-    @classmethod
-    def get_mat_ppl_np(cls):
+    def get_mat_ppl(cls):
         return cls.mat_ppl
 
 class Globals:
@@ -251,43 +247,23 @@ class Globals:
         return cls.surface_retention
 
     @classmethod
-    def get_mat_inf_index(cls, i, j):
-        return cls.mat_inf_index[i][j]
-
-    @classmethod
-    def get_mat_inf_index_np(cls):
+    def get_mat_inf_index(cls):
         return cls.mat_inf_index
 
     @classmethod
-    def get_mat_hcrit(cls, i, j):
-        return cls.mat_hcrit[i][j]
-
-    @classmethod
-    def get_mat_hcrit_np(cls):
+    def get_mat_hcrit(cls):
         return cls.mat_hcrit
 
     @classmethod
-    def get_mat_aa(cls, i, j):
-        return cls.mat_aa[i][j]
-
-    @classmethod
-    def get_mat_aa_np(cls):
+    def get_mat_aa(cls):
         return cls.mat_aa
 
     @classmethod
-    def get_mat_b(cls, i, j):
-        return cls.mat_b[i][j]
-
-    @classmethod
-    def get_mat_b_np(cls):
+    def get_mat_b(cls):
         return cls.mat_b
 
     @classmethod
-    def get_mat_reten(cls, i, j):
-        return cls.mat_reten[i][j]
-
-    @classmethod
-    def get_mat_reten_np(cls):
+    def get_mat_reten(cls):
         return cls.mat_reten
 
     @classmethod
@@ -303,11 +279,7 @@ class Globals:
         return cls.mat_efect_cont
 
     @classmethod
-    def get_mat_slope(cls, i, j):
-        return cls.mat_slope[i][j]
-
-    @classmethod
-    def get_mat_slope_np(cls):
+    def get_mat_slope(cls):
         return cls.mat_slope
 
     @classmethod
@@ -319,11 +291,7 @@ class Globals:
         return cls.mat_a
 
     @classmethod
-    def get_mat_n(cls, i, j):
-        return cls.mat_n[i][j]
-
-    @classmethod
-    def get_mat_n_np(cls):
+    def get_mat_n(cls):
         return cls.mat_n
 
     @classmethod

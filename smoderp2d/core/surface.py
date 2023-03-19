@@ -123,11 +123,11 @@ class Surface(GridGlobals, Stream, Kinematic):
 
         # assign array objects
         self.arr = SurArrs(
-            Globals.get_mat_reten_np(),
-            Globals.get_mat_inf_index_np(),
-            Globals.get_mat_hcrit_np(),
-            Globals.get_mat_aa_np(),
-            Globals.get_mat_b_np()
+            Globals.get_mat_reten(),
+            Globals.get_mat_inf_index(),
+            Globals.get_mat_hcrit(),
+            Globals.get_mat_aa(),
+            Globals.get_mat_b()
         )
 
         Stream.__init__(self)
@@ -370,8 +370,8 @@ def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest, vol_runof
 
     ppp = False
 
-    n = Globals.get_mat_n_np()
-    slope = Globals.get_mat_slope_np()
+    n = Globals.get_mat_n()
+    slope = Globals.get_mat_slope()
 
     vol_to_rill = h_rill * GridGlobals.get_pixel_area()
     h, b = rill.update_hb(
