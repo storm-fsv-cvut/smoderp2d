@@ -73,7 +73,6 @@ class GridGlobals(object):
         if self.r is None or self.c is None:
             raise SmoderpError("Global variables are not assigned")
 
-        # in TF, was [[[0] * self.dims] * self.c] * self.r,
         self.arr = GridGlobalsArray((self.r, self.c), dtype=object)
 
     @classmethod

@@ -141,50 +141,31 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         :param float subsurface: subsurface.arr (to be implemented)
         :param floet delta_t: length of time step
         """
-        # in TF, not +=
         self.infiltration += surface.infiltration * GridGlobals.pixel_area
         self.precipitation += surface.cur_rain * GridGlobals.pixel_area
-        # in TF, was vol_sheet +=
         self.vol_sheet += surface.vol_runoff
-        # did not exist in TF
         self.vol_rill += surface.vol_runoff_rill
-        # not exist in original
-        # self.v_sur_r += surface.vol_rest
-        # in TF, was += surface.vol_rest
         self.vol_sur_tot += surface.vol_runoff_rill + surface.vol_runoff
         self.inflow_sur += surface.inflow_tm
-        # originally GridGlobals.pixel_area
         self.sur_ret += surface.cur_sur_ret * GridGlobals.pixel_area
 
-        # in TF, was q_sheet =
         q_sheet_tot = surface.vol_runoff / delta_t
-        # in TF, was q_rill =
         q_rill_tot = surface.vol_runoff_rill / delta_t
-        # in TF, was q_tot = q_sheet + q_rill
         q_sur_tot = q_sheet_tot + q_rill_tot
-        # in TF, self.q_sur_tot = tf.where(q_tot > self.q_sur_tot,
         self.q_sur_tot = ma.where(q_sur_tot > self.q_sur_tot,
                                   q_sur_tot, self.q_sur_tot)
-        # new
         self.h_sur_tot = ma.where(surface.h_total_new > self.h_sur_tot,
                                   surface.h_total_new,
                                   self.h_sur_tot)
-        # new
         self.q_sheet_tot = ma.where(q_sheet_tot > self.q_sheet_tot,
                                     q_sheet_tot,
                                     self.q_sheet_tot)
-        # new
         cond_h_rill = ma.greater(surface.h_rill, self.h_rill)
-        # new
         self.h_rill = ma.where(cond_h_rill, surface.h_rill, self.h_rill)
-        # new
         self.b_rill = ma.where(cond_h_rill, surface.rillWidth, self.b_rill)
-        # new
         self.q_rill_tot = ma.where(cond_h_rill, q_rill_tot, self.q_rill_tot)
 
-        # new
         cond_sur_state0 = surface.state == 0
-        # in TF, was h_sur instead of h_sheet_tot
         self.h_sheet_tot  = ma.where(
             cond_sur_state0,
             ma.maximum(self.h_sheet_tot, surface.h_total_new),

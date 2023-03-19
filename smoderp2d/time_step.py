@@ -98,13 +98,7 @@ class TimeStep:
                 # w1 = surface.arr.get_item([i, j]).vol_runoff_rill
                 # w2 = surface.arr.get_item([i, j]).v_rill_rest
 
-        # in TF, return potRain, surface.h_sheet, surface.vol_runoff, surface.vol_rest, surface.h_rill, surface.h_rillPre, \
-        #                surface.vol_runoff_rill, surface.v_rill_rest, surface.rillWidth, surface.v_to_rill
         return potRain
-
-        # in TF,         if subsurface.n != 0:
-        #             subsurface.sub_vol_runoff = sub_vol_runoff
-        #             subsurface.sub_vol_rest = sub_vol_rest
 
 
 # self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,

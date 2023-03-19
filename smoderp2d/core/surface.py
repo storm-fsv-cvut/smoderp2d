@@ -62,22 +62,18 @@ class SurArrs(object):
         self.inflow_tm = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
-        # in TF, Globals.get_mat_inf_index_tf()
         self.soil_type= ma.masked_array(
             np.full((GridGlobals.r, GridGlobals.c), inf_index), mask=GridGlobals.masks
         )
         self.infiltration = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
-        # in TF, Globals.get_mat_hcrit_tf()
         self.h_crit = ma.masked_array(
             np.full((GridGlobals.r, GridGlobals.c), hcrit), mask=GridGlobals.masks
         )
-        # in TF, a = Globals.get_mat_aa_tf()
         self.a = ma.masked_array(
             np.full((GridGlobals.r, GridGlobals.c), a), mask=GridGlobals.masks
         )
-        # in TF, Globals.get_mat_b_tf()
         self.b = ma.masked_array(
             np.full((GridGlobals.r, GridGlobals.c), b), mask=GridGlobals.masks
         )
@@ -107,7 +103,6 @@ class SurArrs(object):
         )
 
 
-# in TF, class Surface(GridGlobals, Size, Stream, Kinematic, SurArrs):
 class Surface(GridGlobals, Stream, Kinematic):
     """Contains data and methods to calculate the surface and rill runoff.
     """
@@ -227,7 +222,6 @@ def __runoff(sur, dt, efect_vrst, ratio):
     # se a
 
     # sur.arr.state               = update_state1(h_total_pre,h_crit,state)
-    # in TF, rillWidth not passed to the function
     h_sheet, h_rill, h_rillPre = compute_h_hrill(
         h_total_pre, h_crit, state, sur.rillWidth, sur.h_rillPre)
 
@@ -355,7 +349,6 @@ def sheet_runoff(dt, a, b, h_sheet):
     :return: TODO
     """
     q_sheet = surfacefce.shallowSurfaceKinematic(a, b, h_sheet)
-    # in TF, was h_sheet * GridGlobals.get_pixel_area() - sur.vol_runoff
 
     vol_runoff = q_sheet * dt * GridGlobals.get_size()[0]
     vol_rest = h_sheet * GridGlobals.get_pixel_area() - vol_runoff
@@ -392,7 +385,6 @@ def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest, vol_runof
 
     vol_rill = q_rill * dt
 
-    # original based on speed
     courant = (v_rill * dt) / efect_vrst
 
     # celerita
