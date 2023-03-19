@@ -10,13 +10,7 @@ def flow_direction(dem, rr, rc, br, bc, pixel_size):
     dist = [math.sqrt(pixel_size),
             math.sqrt(pixel_size * pixel_size)]
 
-    masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
-    rr, rc = GridGlobals.get_region_dim()
-    for r in rr:
-        for c in rc[r]:
-            masks[r][c] = False
-
-    fd = ma.masked_array(np.zeros(dem.shape, int), mask=masks)
+    fd = ma.masked_array(np.zeros(dem.shape, int), mask=GridGlobals.masks)
 
     n = fd.shape
 

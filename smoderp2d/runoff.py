@@ -39,14 +39,6 @@ class FlowControl(object):
 
     def __init__(self):
         """ Set iteration criteria variables. """
-
-        # create masked arrays
-        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
-        rr, rc = GridGlobals.get_region_dim()
-        for r in rr:
-            for c in rc[r]:
-                masks[r][c] = False
-
         # number of rows and columns in numpy array
         r, c = GridGlobals.get_dim()
 
@@ -58,7 +50,7 @@ class FlowControl(object):
 
         # actual time in calculation
         self.total_time = ma.masked_array(
-            np.zeros((r, c), float), mask=masks
+            np.zeros((r, c), float), mask=GridGlobals.masks
         )
 
         # keep order of a current rainfall interval
@@ -66,13 +58,13 @@ class FlowControl(object):
 
         # stores cumulative interception
         self.sum_interception = ma.masked_array(
-            np.zeros((r, c), float), mask=masks
+            np.zeros((r, c), float), mask=GridGlobals.masks
         )
 
         # factor deviding the time step for rill calculation
         # currently inactive
         self.ratio = ma.masked_array(
-            np.ones((r, c), float), mask=masks
+            np.ones((r, c), float), mask=GridGlobals.masks
         )
 
         # maximum amount of iterations
@@ -205,12 +197,7 @@ class Runoff(object):
 
         # record values into hydrographs at time zero
         rr, rc = GridGlobals.get_region_dim()
-        # create masked arrays
-        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
-        rr, rc = GridGlobals.get_region_dim()
-        for r in rr:
-            for c in rc[r]:
-                masks[r][c] = False
+
         self.hydrographs.write_hydrographs_record(
             None,
             None,
@@ -221,7 +208,7 @@ class Runoff(object):
             self.subsurface,
             self.cumulative,
             ma.masked_array(
-                np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
             )
         )
         # record values into stream hydrographs at time zero
@@ -267,15 +254,8 @@ class Runoff(object):
 
         # main loop: until the end time
 
-        # create masked arrays
-        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
-        rr, rc = GridGlobals.get_region_dim()
-        for r in rr:
-            for c in rc[r]:
-                masks[r][c] = False
-
         self.delta_t = ma.masked_array(
-            self.delta_t, mask=masks
+            self.delta_t, mask=GridGlobals.masks
         )
 
         while ma.any(self.flow_control.compare_time(Globals.end_time)):

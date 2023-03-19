@@ -21,54 +21,48 @@ class SubArrs:
         :param z: TODO
         :param ele: TODO
         """
-        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
-        rr, rc = GridGlobals.get_region_dim()
-        for r in rr:
-            for c in rc[r]:
-                masks[r][c] = False
-
         self.L_sub = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * L_sub, mask=masks
+            np.ones((GridGlobals.r, GridGlobals.c)) * L_sub, mask=GridGlobals.masks
         )
         self.h = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.H = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * ele, mask=masks
+            np.ones((GridGlobals.r, GridGlobals.c)) * ele, mask=GridGlobals.masks
         )
         self.z = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * z, mask=masks
+            np.ones((GridGlobals.r, GridGlobals.c)) * z, mask=GridGlobals.masks
         )
         self.slope = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.exfiltration = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.vol_runoff = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.vol_runoff_pre = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.vol_rest = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.Ks = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * Ks, mask=masks
+            np.ones((GridGlobals.r, GridGlobals.c)) * Ks, mask=GridGlobals.masks
         )
         self.cum_percolation = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.percolation = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.vg_n = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * vg_n, mask=masks
+            np.ones((GridGlobals.r, GridGlobals.c)) * vg_n, mask=GridGlobals.masks
         )
         self.vg_m = 1 - (1 / self.vg_n)
         self.vg_l = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * vg_l, mask=masks
+            np.ones((GridGlobals.r, GridGlobals.c)) * vg_l, mask=GridGlobals.masks
         )
 
 
@@ -218,14 +212,8 @@ class SubsurfacePass(GridGlobals):
         pass
 
     def get_exfiltration(self):
-        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
-        rr, rc = GridGlobals.get_region_dim()
-        for r in rr:
-            for c in rc[r]:
-                masks[r][c] = False
-
         return ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
 
     def bilance(self, i, j, infilt, inflow, dt):

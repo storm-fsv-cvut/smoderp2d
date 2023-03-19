@@ -26,16 +26,12 @@ class Diffuse(Mfda if Globals.mfda else D8):
         if (Globals.r is None or Globals.r is None):
             exit("Global variables are not assigned")
 
-        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
-        rr, rc = GridGlobals.get_region_dim()
-        for r in rr:
-            for c in rc[r]:
-                masks[r][c] = False
-
         r = Globals.r
         c = Globals.c
 
-        self.H = ma.masked_array(np.zeros([r, c], float), mask=masks)
+        self.H = ma.masked_array(
+            np.zeros([r, c], float), mask=GridGlobals.masks
+        )
 
     def new_inflows(self):
         fd = flow_direction.flow_direction(

@@ -14,19 +14,12 @@ class VegArrs(object):
         :param ppl: pomerna plocha listova (leave area index)
         :param pi: potential interception
         """
-        # define arrays class attributes
-        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
-        rr, rc = GridGlobals.get_region_dim()
-        for r in rr:
-            for c in rc[r]:
-                masks[r][c] = False
-
         # in TF, veg = tf.Variable([[False] * GridGlobals.c] * GridGlobals.r, dtype=tf.int32)
         self.veg = veg
         # in TF, ppl = DataGlobals.get_mat_ppl_tf()
-        self.ppl = ma.masked_array(ppl, mask=masks)
+        self.ppl = ma.masked_array(ppl, mask=GridGlobals.masks)
         # in TF, pi = tf.Variable(Globals.get_mat_pi() / 1000.0, dtype=tf.float64)
-        self.pi = ma.masked_array(pi, mask=masks)
+        self.pi = ma.masked_array(pi, mask=GridGlobals.masks)
         # in TF, also veg_true = tf.Variable([[0] * GridGlobals.c] * GridGlobals.r)
 
 class Vegetation(GridGlobals):

@@ -17,15 +17,9 @@ def new_mfda(mat_dem, mat_nan, mat_fd, dy, dx, rows, cols):
     state = 0
     state2 = 0
 
-    masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
-    rr, rc = GridGlobals.get_region_dim()
-    for r in rr:
-        for c in rc[r]:
-            masks[r][c] = False
-
-    val_array = ma.masked_array(np.zeros([rows, cols, 8], float), mask=masks)
-    val_array2 = ma.masked_array(np.zeros([rows, cols], float), mask=masks)
-    fd_rill = ma.masked_array(np.zeros([rows, cols], float), mask=masks)
+    val_array = ma.masked_array(np.zeros([rows, cols, 8], float), mask=GridGlobals.masks)
+    val_array2 = ma.masked_array(np.zeros([rows, cols], float), mask=GridGlobals.masks)
+    fd_rill = ma.masked_array(np.zeros([rows, cols], float), mask=GridGlobals.masks)
 
     Logger.info("Computing multiple flow direction algorithm...")
 

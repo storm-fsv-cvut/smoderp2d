@@ -19,18 +19,12 @@ from smoderp2d.core.general import GridGlobals
 # \image html inflows.png "meaning of #inflows list elements" width=2cm
 #
 def new_inflows(mat_fd):
-    masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
-    rr, rc = GridGlobals.get_region_dim()
-    for r in rr:
-        for c in rc[r]:
-            masks[r][c] = False
-
     smer = [128, 64, 32, 16, 8, 4, 2, 1]
 
     r = mat_fd.shape[0]
     c = mat_fd.shape[1]
 
-    in_fldir = ma.masked_array(np.zeros([r, c], int), mask=masks)
+    in_fldir = ma.masked_array(np.zeros([r, c], int), mask=GridGlobals.masks)
 
     inflows = []  # np.zeros(mat_a[r,c],float)
 

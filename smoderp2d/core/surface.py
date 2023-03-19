@@ -32,84 +32,78 @@ class SurArrs(object):
         :a: TODO
         :b: TODO
         """
-        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
-        rr, rc = GridGlobals.get_region_dim()
-        for r in rr:
-            for c in rc[r]:
-                masks[r][c] = False
-
         self.state = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.sur_ret = ma.masked_array(
-            np.full((GridGlobals.r, GridGlobals.c), sur_ret), mask=masks
+            np.full((GridGlobals.r, GridGlobals.c), sur_ret), mask=GridGlobals.masks
         )
         self.cur_sur_ret = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.cur_rain = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.h_sheet = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.h_total_new = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.h_total_pre = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.vol_runoff = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.vol_rest = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.inflow_tm = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         # in TF, Globals.get_mat_inf_index_tf()
         self.soil_type= ma.masked_array(
-            np.full((GridGlobals.r, GridGlobals.c), inf_index), mask=masks
+            np.full((GridGlobals.r, GridGlobals.c), inf_index), mask=GridGlobals.masks
         )
         self.infiltration = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         # in TF, Globals.get_mat_hcrit_tf()
         self.h_crit = ma.masked_array(
-            np.full((GridGlobals.r, GridGlobals.c), hcrit), mask=masks
+            np.full((GridGlobals.r, GridGlobals.c), hcrit), mask=GridGlobals.masks
         )
         # in TF, a = Globals.get_mat_aa_tf()
         self.a = ma.masked_array(
-            np.full((GridGlobals.r, GridGlobals.c), a), mask=masks
+            np.full((GridGlobals.r, GridGlobals.c), a), mask=GridGlobals.masks
         )
         # in TF, Globals.get_mat_b_tf()
         self.b = ma.masked_array(
-            np.full((GridGlobals.r, GridGlobals.c), b), mask=masks
+            np.full((GridGlobals.r, GridGlobals.c), b), mask=GridGlobals.masks
         )
         self.h_rill = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.h_rillPre = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.vol_runoff_rill = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.vel_rill = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.v_rill_rest = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.rillWidth = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.vol_to_rill = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.h_last_state1 = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
 
 

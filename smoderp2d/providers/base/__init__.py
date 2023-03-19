@@ -282,6 +282,13 @@ class BaseProvider(object):
         if (Globals.slope_width is None):
             Globals.slope_width = 1
 
+        # set masks of the area of interest
+        GridGlobals.masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
+        rr, rc = GridGlobals.get_region_dim()
+        for r in rr:
+            for c in rc[r]:
+                GridGlobals.masks[r][c] = False
+
     @staticmethod
     def _cleanup():
         """Clean-up output directory.

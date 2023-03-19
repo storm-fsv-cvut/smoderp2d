@@ -66,6 +66,8 @@ class GridGlobals(object):
     dx = None
     # size of raster cell
     dy = None
+    # masks
+    masks = None
 
     def __init__(self):
         if self.r is None or self.c is None:

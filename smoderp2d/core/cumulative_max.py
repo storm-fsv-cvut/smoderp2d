@@ -122,19 +122,13 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             # cumulative total surface flow [m3/s]
             'vol_sur_tot'  : CumulativeData('core',    'cVsur_m3'),       # 16
         })
-        # define arrays class attributes
-        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
-        rr, rc = GridGlobals.get_region_dim()
-        for r in rr:
-            for c in rc[r]:
-                masks[r][c] = False
 
         for item in self.data.keys():
             setattr(self,
                     item,
                     ma.masked_array(
                         np.zeros([GridGlobals.r, GridGlobals.c], float),
-                        mask=masks
+                        mask=GridGlobals.masks
                     )
             )
 

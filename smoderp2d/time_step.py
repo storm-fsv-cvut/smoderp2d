@@ -123,20 +123,14 @@ class TimeStep:
         combinatIndex = Globals.get_combinatIndex()
         NoDataValue = GridGlobals.get_no_data()
 
-        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
-        rr, rc = GridGlobals.get_region_dim()
-        for r in rr:
-            for c in rc[r]:
-                masks[r][c] = False
-
         infilt_capa += potRain
         if ma.all(infilt_capa < max_infilt_capa):
             infilt_time += delta_t
             actRain = ma.masked_array(
-                np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
             )
             potRain = ma.masked_array(
-                np.zeros((GridGlobals.r, GridGlobals.c)), mask=masks
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
             )
             hydrographs.write_hydrographs_record(
                 None,

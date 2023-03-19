@@ -19,13 +19,6 @@ class Courant():
     #
 
     def __init__(self):
-        # create masked arrays
-        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
-        rr, rc = GridGlobals.get_region_dim()
-        for r in rr:
-            for c in rc[r]:
-                masks[r][c] = False
-
         # self.orig_dt = dt
         self.maxh = 0
         self.cour_speed = 0
@@ -42,7 +35,7 @@ class Courant():
         self.maxratio = 10
         self.max_delta_t = ma.masked_array(
             np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt,
-            mask=masks
+            mask=GridGlobals.masks
         )
         self.max_delta_t_mult = 1.0
 
@@ -56,12 +49,6 @@ class Courant():
         """Resets the cour_most and cour_speed after each time stop
         computation is successfully completed.
         """
-        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
-        rr, rc = GridGlobals.get_region_dim()
-        for r in rr:
-            for c in rc[r]:
-                masks[r][c] = False
-
         self.cour_most = 0
         self.cour_speed = 0
         self.cour_most_rill = 0
@@ -95,14 +82,9 @@ class Courant():
         # (math.sqrt(sur.pixel_area)*self.cour_least*self.cour_coef)/velGuess
 
         # return self.initGuess
-        masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
-        rr, rc = GridGlobals.get_region_dim()
-        for r in rr:
-            for c in rc[r]:
-                masks[r][c] = False
-
         return ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt, mask=masks
+            np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt,
+            mask=GridGlobals.masks
         )
 
     #
