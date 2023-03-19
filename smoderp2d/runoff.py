@@ -383,6 +383,7 @@ class Runoff(object):
 
             # set current time results to previous time step
             # check if rill flow occur
+            # update state == 0
             self.surface.arr.state = ma.where(
                 ma.logical_and(
                     self.surface.arr.state == 0, self.surface.arr.h_total_new > self.surface.arr.h_crit
@@ -390,22 +391,22 @@ class Runoff(object):
                 1,
                 self.surface.arr.state
             )
+            # update state == 1
+            state_1_cond = ma.logical_and(
+                self.surface.arr.state == 1,
+                self.surface.arr.h_total_new < self.surface.arr.h_total_pre,
+            )
             self.surface.arr.state = ma.where(
-                ma.logical_and(
-                    self.surface.arr.state == 1,
-                    self.surface.arr.h_total_new < self.surface.arr.h_total_pre,
-                ),
+                state_1_cond,
                 2,
                 self.surface.arr.state
             )
             self.surface.arr.h_last_state1 = ma.where(
-                ma.logical_and(
-                    self.surface.arr.state == 1,
-                    self.surface.arr.h_total_new < self.surface.arr.h_total_pre,
-                ),
+                state_1_cond,
                 self.surface.arr.h_total_pre,
-                self.surface.arr.state
+                self.surface.arr.h_last_state1
             )
+            # update state == 2
             self.surface.arr.state = ma.where(
                 ma.logical_and(
                     self.surface.arr.state == 2,
@@ -415,7 +416,7 @@ class Runoff(object):
                 self.surface.arr.state
             )
 
-            self.surface.arr.h_total_pre = self.surface.arr.h_total_new
+            self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
             Logger.progress(
