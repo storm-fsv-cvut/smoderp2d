@@ -17,7 +17,7 @@ jobs:
         python-version:
           - "2.7"
           - "3.8"
-          - "3.11.0-rc.2"
+          - "3.11.2"
       fail-fast: true
 
     runs-on: ${{ matrix.os }}
