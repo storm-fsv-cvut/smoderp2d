@@ -123,6 +123,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             'vol_sur_tot'  : CumulativeData('core',    'cVsur_m3'),       # 16
         })
 
+        # define arrays class attributes
         for item in self.data.keys():
             setattr(self,
                     item,
