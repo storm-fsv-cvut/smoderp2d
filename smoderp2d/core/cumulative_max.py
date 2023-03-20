@@ -133,7 +133,6 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
                     )
             )
 
-    # def update_cumulative(self, i, j, sur_arr_el, subsur_arr_el, delta_t):
     def update_cumulative(self, surface, subsurface, delta_t):
         """Update arrays with cumulative and maximum
         values of key computation results.
