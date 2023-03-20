@@ -139,7 +139,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
 
         :param float surface: surface.arr
         :param float subsurface: subsurface.arr (to be implemented)
-        :param floet delta_t: length of time step
+        :param float delta_t: length of time step
         """
         self.infiltration += surface.infiltration * GridGlobals.pixel_area
         self.precipitation += surface.cur_rain * GridGlobals.pixel_area
