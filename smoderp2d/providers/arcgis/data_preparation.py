@@ -135,6 +135,11 @@ class PrepareData(PrepareDataBase):
         # lower left corner coordinates
         GridGlobals.set_llcorner((desc.Extent.XMin, desc.Extent.YMin))
         GridGlobals.set_size((desc.MeanCellWidth, desc.MeanCellHeight))
+        inp = arcpy.Describe(self._input_params['elevation'])
+        if GridGlobals.dx != inp.meanCellWidth or GridGlobals.dy != inp.meanCellHeight:
+            raise DataPreparationInvalidInput(
+                "Input DEM spatial resolution ({}, {}) differs from processing "
+                "spatial resolution ({}, {})".format(GridGlobals.dx, GridGlobals.dy, inp.meanCellWidth, inp.meanCellHeight))
 
         # set arcpy environment (needed for rasterization)
         arcpy.env.extent = desc.Extent
