@@ -329,11 +329,12 @@ class PrepareDataBase(ABC):
         GridGlobals.r = self.data['mat_dem'].shape[0]
         GridGlobals.c = self.data['mat_dem'].shape[1]
         self._update_grid_globals(dem_aoi)
-        if GridGlobals.dx != GridGlobals.dy:
-            raise DataPreparationInvalidInput(
-                "Input DEM spatial x resolution ({}) differs from y resolution ({}). "
-                "Resample input data to set the same x and y spatial resolution before "
-                "running SMODERP2D.".format(GridGlobals.dx, GridGlobals.dy))
+# disabled by https://github.com/storm-fsv-cvut/smoderp2d/issues/150
+#        if GridGlobals.dx != GridGlobals.dy:
+#            raise DataPreparationInvalidInput(
+#                "Input DEM spatial x resolution ({}) differs from y resolution ({}). "
+#                "Resample input data to set the same x and y spatial resolution before "
+#                "running SMODERP2D.".format(GridGlobals.dx, GridGlobals.dy))
         self.data['mat_slope'] = self._rst2np(dem_slope_aoi)
         # unit conversion % -> 0-1
         self._convert_slope_units()
