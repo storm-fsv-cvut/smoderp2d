@@ -81,8 +81,12 @@ class PrepareData(PrepareDataBase):
         """See base method for description.
         """
         output_path = self.storage.output_filepath(name)
-        arcpy.management.Clip(dataset, out_raster=output_path, in_template_dataset=aoi_polygon,
-                              nodata_value=GridGlobals.NoDataValue, clipping_geometry="ClippingGeometry")
+
+        # arcpy.management.Clip(dataset, out_raster=output_path, in_template_dataset=aoi_polygon, nodata_value=GridGlobals.NoDataValue, clipping_geometry="ClippingGeometry")
+
+        output_raster = arcpy.sa.ExtractByMask(dataset, aoi_polygon, analysis_extent = arcpy.Describe(aoi_polygon).Extent)
+        output_raster.save(output_path)
+
         return output_path
 
     def _clip_record_points(self, dataset, aoi_polygon, name):
@@ -223,7 +227,7 @@ class PrepareData(PrepareDataBase):
         # generate numpy array of soil and vegetation attributes
         for field in self.soilveg_fields.keys():
             output = self.storage.output_filepath("soilveg_aoi_{}".format(field))
-            arcpy.conversion.PolygonToRaster(soilveg_aoi_path, field, output, "MAXIMUM_AREA", "", GridGlobals.dy)
+            arcpy.conversion.PolygonToRaster(soilveg_aoi_path, field, output, "CELL_CENTER", "", GridGlobals.dy)
             self.soilveg_fields[field] = self._rst2np(output)
             self._check_soilveg_dim(field)            
 
@@ -391,7 +395,7 @@ class PrepareData(PrepareDataBase):
             raise DataPreparationError(
                 "Error joining channel shape properties to stream network segments!\n"
                 "Check fields names in stream network feature class. "
-                "Needed field name is: '{}'".format(self._input_params['streams_channel_shape_code'])
+                "Missing field is: '{}'".format(self._input_params['streams_channel_shape_code'])
             )
 
         arcpy.management.JoinField(streams, channel_shape_code, channel_properties_table, channel_shape_code,
