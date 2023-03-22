@@ -136,7 +136,9 @@ class Mfda(object):
                 jbx = j + bx
 
                 inflow_from_cells += ma.where(
-                    ma.equal(self.state[i, j], 1) or ma.equal(self.state[i, j], 2),
+                    ma.logical_or(
+                        ma.equal(self.state[i, j], 1), ma.equal(self.state[i, j], 2)
+                    ),
                     self.vol_runoff_rill_pre,
                     0
                 )
