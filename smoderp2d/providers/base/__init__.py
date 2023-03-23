@@ -483,7 +483,7 @@ class BaseProvider(object):
             outputtable = np.zeros([n,m])
             fid = list(stream.keys())
             for i in range(n):
-                outputtable[i][0] = stream[fid[i]].fid
+                outputtable[i][0] = stream[fid[i]].segment_id
                 outputtable[i][1] = stream[fid[i]].b
                 outputtable[i][2] = stream[fid[i]].m
                 outputtable[i][3] = stream[fid[i]].roughness
