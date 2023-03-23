@@ -152,14 +152,17 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         q_sheet_tot = surface.vol_runoff / delta_t
         q_rill_tot = surface.vol_runoff_rill / delta_t
         q_sur_tot = q_sheet_tot + q_rill_tot
-        self.q_sur_tot = ma.where(q_sur_tot > self.q_sur_tot,
-                                  q_sur_tot, self.q_sur_tot)
-        self.h_sur_tot = ma.where(surface.h_total_new > self.h_sur_tot,
-                                  surface.h_total_new,
-                                  self.h_sur_tot)
-        self.q_sheet_tot = ma.where(q_sheet_tot > self.q_sheet_tot,
-                                    q_sheet_tot,
-                                    self.q_sheet_tot)
+        self.q_sur_tot = ma.where(
+            q_sur_tot > self.q_sur_tot, q_sur_tot, self.q_sur_tot
+        )
+        self.h_sur_tot = ma.where(
+            surface.h_total_new > self.h_sur_tot,
+            surface.h_total_new,
+            self.h_sur_tot
+        )
+        self.q_sheet_tot = ma.where(
+            q_sheet_tot > self.q_sheet_tot, q_sheet_tot, self.q_sheet_tot
+        )
         cond_h_rill = ma.greater(surface.h_rill, self.h_rill)
         self.h_rill = ma.where(cond_h_rill, surface.h_rill, self.h_rill)
         self.b_rill = ma.where(cond_h_rill, surface.rillWidth, self.b_rill)
