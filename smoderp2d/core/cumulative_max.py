@@ -137,9 +137,9 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         """Update arrays with cumulative and maximum
         values of key computation results.
 
-        :param float surface: surface.arr
-        :param float subsurface: subsurface.arr (to be implemented)
-        :param float delta_t: length of time step
+        :param surface: surface.arr
+        :param subsurface: subsurface.arr (to be implemented)
+        :param delta_t: length of time step
         """
         self.infiltration += surface.infiltration * GridGlobals.pixel_area
         self.precipitation += surface.cur_rain * GridGlobals.pixel_area
