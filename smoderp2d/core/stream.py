@@ -110,7 +110,7 @@ class Stream(object):
 
         for r in self.reach.values():
             fid_to_node = int(r.next_down_id)
-            if fid_to_node == -9999:
+            if fid_to_node == Gl.streamsNextDownIdNoSegment:
                 r.V_out_domain += r.V_out
             else:
                 self.reach[fid_to_node].V_in_from_reach += r.V_out

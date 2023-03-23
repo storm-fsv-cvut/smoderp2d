@@ -3,7 +3,7 @@ import math
 
 import arcpy
 
-from smoderp2d.core.general import GridGlobals
+from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.base.exceptions import DataPreparationError, DataPreparationInvalidInput, LicenceNotAvailable
@@ -82,10 +82,10 @@ class PrepareData(PrepareDataBase):
         """
         output_path = self.storage.output_filepath(name)
 
-        # arcpy.management.Clip(dataset, out_raster=output_path, in_template_dataset=aoi_polygon, nodata_value=GridGlobals.NoDataValue, clipping_geometry="ClippingGeometry")
+        arcpy.management.Clip(dataset, out_raster=output_path, in_template_dataset=aoi_polygon, nodata_value=GridGlobals.NoDataValue, clipping_geometry="ClippingGeometry")
 
-        output_raster = arcpy.sa.ExtractByMask(dataset, aoi_polygon, analysis_extent = arcpy.Describe(aoi_polygon).Extent)
-        output_raster.save(output_path)
+        #output_raster = arcpy.sa.ExtractByMask(dataset, aoi_polygon, analysis_extent = arcpy.Describe(aoi_polygon).Extent)
+        #output_raster.save(output_path)
 
         return output_path
 
@@ -343,7 +343,7 @@ class PrepareData(PrepareDataBase):
                 row[6] = row[7]
 
                 # find the next down segment by comparing the points distance
-                nextDownID = -1
+                nextDownID = Globals.streamsNextDownIdNoSegment
                 matched = []
                 for segID in firstPoints.keys():
                     dist = pow(pow(row[1].lastPoint.X-firstPoints.get(segID).X, 2)+pow(row[1].lastPoint.Y-firstPoints.get(segID).Y, 2), 0.5)
@@ -353,7 +353,8 @@ class PrepareData(PrepareDataBase):
                 if len(matched) > 1:
                     row[5] = None
                     raise DataPreparationError(
-                        'Incorrect stream network topology downstream segment streamID: {}'.format(row[0])+". The network can not bifurcate.")
+                        'Incorrect stream network topology downstream segment streamID: {}. The network can not bifurcate.'.format(row[0])
+                    )
                 else:
                     row[5] = nextDownID
                 table.updateRow(row)
