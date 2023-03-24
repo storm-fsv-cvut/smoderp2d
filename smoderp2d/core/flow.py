@@ -112,7 +112,7 @@ class Mfda(object):
             self.inflows[i - 1][j - 1][1] * \
             self.arr.get_item([i - 1, j - 1]).vol_runoff_pre + \
             self.inflows[i - 1][j][2] * \
-            self.arr.get_item([i - 1, j ]).vol_runoff_pre + \
+            self.arr.get_item([i - 1, j]).vol_runoff_pre + \
             self.inflows[i - 1][j + 1][3] * \
             self.arr.get_item([i - 1, j + 1]).vol_runoff_pre + \
             self.inflows[i][j - 1][0] * \
