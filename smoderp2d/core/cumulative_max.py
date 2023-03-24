@@ -170,14 +170,14 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         self.q_rill_tot = ma.where(cond_h_rill, q_rill_tot, self.q_rill_tot)
 
         cond_sur_state0 = surface.state == 0
-        self.h_sheet_tot  = ma.where(
+        self.h_sheet_tot = ma.where(
             cond_sur_state0,
             ma.maximum(self.h_sheet_tot, surface.h_total_new),
             self.h_sheet_tot
         )
         cond_sur_state1 = surface.state == 1
         cond_sur_state2 = surface.state == 2
-        self.h_sheet_tot  = ma.where(
+        self.h_sheet_tot = ma.where(
             cond_sur_state1 | cond_sur_state2,
             surface.h_crit,
             self.h_sheet_tot
