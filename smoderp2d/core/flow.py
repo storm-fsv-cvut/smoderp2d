@@ -15,8 +15,6 @@
 #  classes Kinematic or Diffuse in the
 #  package smoderp2d.core.kinematic_diffuse
 #
-
-import numpy as np
 import numpy.ma as ma
 
 from smoderp2d.core.general import Globals
