@@ -125,12 +125,13 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
 
         # define arrays class attributes
         for item in self.data.keys():
-            setattr(self,
-                    item,
-                    ma.masked_array(
-                        np.zeros([GridGlobals.r, GridGlobals.c], float),
-                        mask=GridGlobals.masks
-                    )
+            setattr(
+                self,
+                item,
+                ma.masked_array(
+                    np.zeros([GridGlobals.r, GridGlobals.c], float),
+                    mask=GridGlobals.masks
+                )
             )
 
     def update_cumulative(self, surface, subsurface, delta_t):
