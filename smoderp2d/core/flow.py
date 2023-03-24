@@ -127,19 +127,15 @@ class Mfda(object):
             self.arr.get_item([i + 1, j + 1]).vol_runoff_pre
 
         if Globals.isRill and sur:
+            state_ij = self.state[i, j]
             for z in range(len(self.inflowsRill[i][j])):
                 ax = self.inflowsRill[i][j][z][0]
                 bx = self.inflowsRill[i][j][z][1]
                 iax = i + ax
                 jbx = j + bx
 
-                inflow_from_cells += ma.where(
-                    ma.logical_or(
-                        ma.equal(self.state[i, j], 1),
-                        ma.equal(self.state[i, j], 2)
-                    ),
-                    self.vol_runoff_rill_pre,
-                    0
-                )
+                if ma.equal(state_ij, 1) or ma.equal(state_ij, 1):
+                    inflow_from_cells += self.vol_runoff_rill_pre[iax, jbx]
+                    # toto jeste predelat u ryh
 
         return inflow_from_cells
