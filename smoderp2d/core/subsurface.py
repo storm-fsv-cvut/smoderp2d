@@ -91,14 +91,14 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
         self.darcy = darcy.darcy
 
     def slope_(self, i, j):
-        a = self.arr[i - 1, j - 1].H
-        b = self.arr[i - 1, j].H
-        c = self.arr[i - 1, j + 1].H
-        d = self.arr[i, j - 1].H
-        f = self.arr[i, j + 1].H
-        g = self.arr[i + 1, j - 1].H
-        h = self.arr[i + 1, j].H
-        k = self.arr[i + 1, j + 1].H
+        a = self.arr.H[i - 1, j - 1]
+        b = self.arr.H[i - 1, j]
+        c = self.arr.H[i - 1, j + 1]
+        d = self.arr.H[i, j - 1]
+        f = self.arr.H[i, j + 1]
+        g = self.arr.H[i + 1, j - 1]
+        h = self.arr.H[i + 1, j]
+        k = self.arr.H[i + 1, j + 1]
         dzdx = ((c + 2.0 * f + k) - (a + 2.0 * d + g)) / \
             (8.0 * self.pixel_area)
         dzdy = ((g + 2.0 * h + k) - (a + 2.0 * b + c)) / \
@@ -113,11 +113,11 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
 
     def get_exfiltration(self, i, j):
 
-        return self.arr[i, j].exfiltration
+        return self.arr.exfiltration[i, j]
 
     def bilance(self, i, j, infilt, inflow, dt):
 
-        arr = self.arr[i, j]
+        arr = self.arr
         bil = infilt + arr.vol_rest / self.pixel_area + inflow
 
         # print bil, infilt , arr.vol_rest/self.pixel_area , inflow
@@ -132,7 +132,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
 
     def calc_percolation(self, i, j, bil, dt):
 
-        arr = self.arr[i, j]
+        arr = self.arr
 
         if (bil > arr.L_sub):
             S = 1.0
@@ -148,7 +148,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
 
     def calc_exfiltration(self, i, j, bil):
 
-        arr = self.arr[i, j]
+        arr = self.arr
         if (bil > arr.L_sub):
             # print bil
             exfilt = bil - arr.L_sub
@@ -169,15 +169,15 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
         arr.vol_rest = arr.h * self.pixel_area - delta_t * self.q_subsurface
 
     def runoff_stream_cell(self, i, j):
-        self.arr[i, j].vol_runoff = 0.0
-        self.arr[i, j].vol_rest = 0.0
-        return self.arr[i, j].h
+        self.arr.vol_runoff[i, j] = 0.0
+        self.arr.vol_rest[i, j] = 0.0
+        return self.arr.h[i, j]
 
     def curr_to_pre(self):
         self.arr.vol_runoff_pre = self.arr.vol_runoff
 
     def return_str_vals(self, i, j, sep, dt):
-        arr = self.arr[i, j]
+        arr = self.arr
          #';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[],exfiltration[];'
         line = str(
             arr.h) + sep + str(
