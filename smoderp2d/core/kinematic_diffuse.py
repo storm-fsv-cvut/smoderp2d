@@ -24,11 +24,12 @@ class Diffuse(Mfda if Globals.mfda else D8):
 
     def __init__(self):
         Logger.info("Diffuse approach")
-        if (Globals.r is None or Globals.r is None):
-            exit("Global variables are not assigned")
 
         r = Globals.r
         c = Globals.c
+
+        if r is None or c is None:
+            exit("Global variables are not assigned")
 
         self.H = ma.masked_array(
             np.zeros([r, c], float), mask=GridGlobals.masks
