@@ -176,8 +176,6 @@ class Courant():
             # print 'fdafdsfasdfadsfadsfadsfaf'
             # return delta_t, ratio
             # print 'asdf', dt, dt*self.max_delta_t_mult, ratio
-            # TODO: ratio is sometimes array, but maybe it should be just a
-            #  number?
             if (ma.all(ratio <= self.maxratio) and (self.cour_most_rill < 0.5)):
                 return delta_t, ratio
             else:
