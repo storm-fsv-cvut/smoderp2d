@@ -3,7 +3,6 @@
 
 import numpy as np
 import numpy.ma as ma
-import math
 
 from smoderp2d.core.general import Globals, GridGlobals
 if Globals.isStream:
