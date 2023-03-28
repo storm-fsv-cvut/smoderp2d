@@ -197,7 +197,7 @@ class Surface(GridGlobals, Stream, Kinematic):
             bil_ = arr.h_total_pre[i, j] * self.pixel_area + \
                    arr.cur_rain[i, j] * self.pixel_area + \
                    arr.inflow_tm[i, j] - \
-                   (arr.vol_runoff[i, j] + arr.vol_runoff_rill[i, j] + \
+                   (arr.vol_runoff[i, j] + arr.vol_runoff_rill[i, j] +
                     arr.infiltration[i, j] * self.pixel_area) - \
                     (arr.cur_sur_ret[i, j] * self.pixel_area) - \
                     arr.h_total_new[i, j] * self.pixel_area
