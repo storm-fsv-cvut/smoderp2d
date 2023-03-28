@@ -269,7 +269,7 @@ def __runoff_zero_comp_type(i, j, sur, dt, efect_vrst, ratio):
     # sur.arr.state               = update_state1(h_total_pre,h_crit,state)
     sur.h_sheet = sur.h_total_pre
 
-    q_sheet = sheet_runoff(sur, dt)
+    q_sheet = sheet_runoff(sur, dt, sur.b, sur.h_sheet)
 
     if sur.h_sheet > 0.0:
         v_sheet = q_sheet / sur.h_sheet
