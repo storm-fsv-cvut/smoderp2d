@@ -344,8 +344,10 @@ def compute_h_hrill(h_total_pre, h_crit, state, rill_width, h_rill_pre):
 def sheet_runoff(dt, a, b, h_sheet):
     """TODO.
 
-    :param sur: TODO
     :param dt: TODO
+    :param a: TODO
+    :param b: TODO
+    :param h_sheet: TODO
 
     :return: TODO
     """
@@ -359,9 +361,6 @@ def sheet_runoff(dt, a, b, h_sheet):
 def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest, vol_runoff_rill):
     """TODO.
 
-    :param i: row index
-    :param j: col index
-    :param sur: TODO
     :param dt: TODO
     :param efect_vrst: TODO
     :param ratio: TODO
