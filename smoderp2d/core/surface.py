@@ -35,7 +35,8 @@ class SurArrs(object):
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.sur_ret = ma.masked_array(
-            np.full((GridGlobals.r, GridGlobals.c), sur_ret), mask=GridGlobals.masks
+            np.full((GridGlobals.r, GridGlobals.c), sur_ret),
+            mask=GridGlobals.masks
         )
         self.cur_sur_ret = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
@@ -61,14 +62,16 @@ class SurArrs(object):
         self.inflow_tm = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
-        self.soil_type= ma.masked_array(
-            np.full((GridGlobals.r, GridGlobals.c), inf_index), mask=GridGlobals.masks
+        self.soil_type = ma.masked_array(
+            np.full((GridGlobals.r, GridGlobals.c), inf_index),
+            mask=GridGlobals.masks
         )
         self.infiltration = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.h_crit = ma.masked_array(
-            np.full((GridGlobals.r, GridGlobals.c), hcrit), mask=GridGlobals.masks
+            np.full((GridGlobals.r, GridGlobals.c), hcrit),
+            mask=GridGlobals.masks
         )
         self.a = ma.masked_array(
             np.full((GridGlobals.r, GridGlobals.c), a), mask=GridGlobals.masks
