@@ -18,6 +18,7 @@ class PrepareDataBase(ABC):
             'dem_polygon': 'temp',
             'aoi': 'temp',
             'aoi_polygon': 'core',
+            'aoi_mask': 'temp',
             'dem_filled': 'temp',
             'dem_flowdir': 'temp',
             'dem_flowacc': 'temp',
@@ -297,7 +298,7 @@ class PrepareDataBase(ABC):
 
         # intersect the input datasest to define the area of interest
         Logger.info("Creating intersect of input datasets ...")
-        aoi_polygon = self._create_AoI_outline(
+        aoi_polygon, aoi_mask = self._create_AoI_outline(
             self._input_params['elevation'],
             self._input_params['soil'],
             self._input_params['vegetation']
@@ -315,11 +316,11 @@ class PrepareDataBase(ABC):
         # prepare all needed layers for further processing
         #   clip the input layers to AIO outline including the record points
         Logger.info("Clipping layers to AoI outline...")
-        dem_aoi = self._clip_raster_layer(dem_filled, aoi_polygon, 'dem_aoi')
-        dem_flowdir_aoi = self._clip_raster_layer(dem_flowdir, aoi_polygon, 'dem_flowdir_aoi')
-        self._clip_raster_layer(dem_flowacc, aoi_polygon, 'dem_flowacc_aoi')
-        dem_slope_aoi = self._clip_raster_layer(dem_slope, aoi_polygon, 'dem_slope_aoi')
-        dem_aspect_aoi = self._clip_raster_layer(dem_aspect, aoi_polygon, 'dem_aspect_aoi')
+        dem_aoi = self._clip_raster_layer(dem_filled, aoi_mask, 'dem_aoi')
+        dem_flowdir_aoi = self._clip_raster_layer(dem_flowdir, aoi_mask, 'dem_flowdir_aoi')
+        self._clip_raster_layer(dem_flowacc, aoi_mask, 'dem_flowacc_aoi')
+        dem_slope_aoi = self._clip_raster_layer(dem_slope, aoi_mask, 'dem_slope_aoi')
+        dem_aspect_aoi = self._clip_raster_layer(dem_aspect, aoi_mask, 'dem_aspect_aoi')
         points_aoi = self._clip_record_points(self._input_params['points'], aoi_polygon, 'points_aoi')
         Logger.progress(30)
 
@@ -513,6 +514,7 @@ class PrepareDataBase(ABC):
         # position i,j in raster (starts at 0)
         r = int(GridGlobals.r - ((y - GridGlobals.yllcorner) // GridGlobals.dy) - 1)
         c = int((x - GridGlobals.xllcorner) // GridGlobals.dx)
+        # print("r = {}; c = {}".format(r,c))
 
         # if point is not on the edge of raster or its
         # neighbours are not "NoDataValue", it will be returned

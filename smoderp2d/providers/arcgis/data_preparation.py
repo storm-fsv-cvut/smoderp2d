@@ -45,7 +45,13 @@ class PrepareData(PrepareDataBase):
                 "The input layers are not correct! "
                 "The geometrical intersection of input datasets is empty.")
 
-        return aoi_polygon
+        aoi_mask = self.storage.output_filepath('aoi_mask')
+        with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=dem_mask, cellAlignment=dem_mask, snapRaster=dem_mask):
+            field = arcpy.Describe(aoi_polygon).OIDFieldName
+            arcpy.conversion.PolygonToRaster(aoi_polygon, field, aoi_mask, "MAXIMUM_AREA", "", GridGlobals.dy)
+
+        # return aoi_polygon
+        return aoi_polygon, aoi_mask
 
     def _create_DEM_derivatives(self, dem):
         """See base method for description.
@@ -227,7 +233,9 @@ class PrepareData(PrepareDataBase):
         # generate numpy array of soil and vegetation attributes
         for field in self.soilveg_fields.keys():
             output = self.storage.output_filepath("soilveg_aoi_{}".format(field))
-            arcpy.conversion.PolygonToRaster(soilveg_aoi_path, field, output, "CELL_CENTER", "", GridGlobals.dy)
+            aoi_mask = self.storage.output_filepath('aoi_mask')
+            with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=aoi_mask, cellAlignment=aoi_mask, snapRaster=aoi_mask):
+                arcpy.conversion.PolygonToRaster(soilveg_aoi_path, field, output, "MAXIMUM_AREA", "", GridGlobals.dy)
             self.soilveg_fields[field] = self._rst2np(output)
             self._check_soilveg_dim(field)            
 
