@@ -514,7 +514,6 @@ class PrepareDataBase(ABC):
         # position i,j in raster (starts at 0)
         r = int(GridGlobals.r - ((y - GridGlobals.yllcorner) // GridGlobals.dy) - 1)
         c = int((x - GridGlobals.xllcorner) // GridGlobals.dx)
-        # print("r = {}; c = {}".format(r,c))
 
         # if point is not on the edge of raster or its
         # neighbours are not "NoDataValue", it will be returned
@@ -804,7 +803,6 @@ class PrepareDataBase(ABC):
     def _decode_stream_attr(self, attr):
         """Decode attribute names to fieldnames keys"""
         attr_decoded = {}
-        print(attr)
         for k, v in attr.items():
             key_decoded = list(self.fieldnames.keys())[list(self.fieldnames.values()).index(k)]
             attr_decoded[key_decoded] = v
