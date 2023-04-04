@@ -2,14 +2,16 @@ import os
 import sys
 import logging
 
-import arcpy
-
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.providers.base import BaseProvider, CompType, BaseWritter
 from smoderp2d.providers.arcgis.logger import ArcPyLogHandler
 from smoderp2d.providers import Logger
 from smoderp2d.exceptions import GlobalsNotSet, ProviderError
 
+try:
+    import arcpy
+except RuntimeError as e:
+    raise ProviderError("ArcGIS provider: {}".format(e))
 
 class ArcGisWritter(BaseWritter):
     def __init__(self):
