@@ -80,3 +80,27 @@ def __smery(inflow, i, j, smer):
             y = y + 1
     y = 0
     return cellin
+
+def inflow_dir(mat_fd, i, j):
+    inflow_dirs = np.zeros(8, float)
+    
+    # inflow matrix stores the information about the inflow directions (0 if there is no inflow, 1 if there is inflow from the direction) 
+    # 32  64  128
+    # 16      1
+    # 8   4   2
+   
+
+    coco = [[-1, 1, 8], [-1, 0, 4], [-1, -1, 2], [0, -1, 1],
+            [1, -1, 128], [1, 0, 64], [1, 1, 32], [0, 1, 16]]
+    pocet = len(coco)
+    for k in range(pocet):
+        a = i + coco[k][0]
+        b = j + coco[k][1]
+        try:
+            value = mat_fd[a][b]
+        except:
+            value = -1
+        if value == coco[k][2]:
+            inflow_dirs[k] = 1.0
+
+    return inflow_dirs
