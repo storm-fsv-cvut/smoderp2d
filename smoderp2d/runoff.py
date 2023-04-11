@@ -34,6 +34,9 @@ from smoderp2d.providers import Logger
 
 from smoderp2d.exceptions import MaxIterationExceeded
 
+import smoderp2d.processes.rainfall as rain_f
+import smoderp2d.flow_algorithm.D8 as D8
+import smoderp2d.time_step_implicit as time_step_implicit
 class FlowControl(object):
     """ Manage variables related to main computational loop. """
 
@@ -270,53 +273,64 @@ class Runoff(object):
 
         while ma.any(self.flow_control.compare_time(Globals.end_time)):
 
-            self.flow_control.save_vars()
-            self.flow_control.refresh_iter()
+            # self.flow_control.save_vars()
+            # self.flow_control.refresh_iter()
 
-            # iteration loop
-            while self.flow_control.max_iter_reached():
+            # # iteration loop
+            # while self.flow_control.max_iter_reached():
 
-                self.flow_control.update_iter()
-                self.flow_control.restore_vars()
+            #     self.flow_control.update_iter()
+            #     self.flow_control.restore_vars()
 
-                # reset of the courant condition
-                self.courant.reset()
-                self.flow_control.save_ratio()
+            #     # reset of the courant condition
+            #     self.courant.reset()
+            #     self.flow_control.save_ratio()
 
-                # time step size
-                potRain = self.time_step.do_flow(
-                    self.surface,
-                    self.subsurface,
-                    self.delta_t,
-                    self.flow_control,
-                    self.courant
-                )
+                # # time step size
+                # potRain = self.time_step.do_flow(
+                #     self.surface,
+                #     self.subsurface,
+                #     self.delta_t,
+                #     self.flow_control,
+                #     self.courant
+                # )
 
-                # stores current time step
-                delta_t_tmp = self.delta_t
+                # # stores current time step
+                # delta_t_tmp = self.delta_t
 
-                # update time step size if necessary (based on the courant
-                # condition)
-                self.delta_t, self.flow_control.ratio = self.courant.courant(
-                    potRain, self.delta_t, self.flow_control.ratio
-                )
+                # # update time step size if necessary (based on the courant
+                # # condition)
+                # self.delta_t, self.flow_control.ratio = self.courant.courant(
+                #     potRain, self.delta_t, self.flow_control.ratio
+                # )
 
-                # if current time plus timestep is in next minute
-                # of computation the dt is reduced so the next
-                # coputed time is exactli at the top of each minute
-                oldtime_minut = self.flow_control.total_time/60
-                newtime_minut = (self.flow_control.total_time+self.delta_t)/60
-                if ma.any(ma.floor(newtime_minut) > ma.floor(oldtime_minut)):
-                    self.delta_t = (ma.floor(newtime_minut) - oldtime_minut)*60.
+                # # if current time plus timestep is in next minute
+                # # of computation the dt is reduced so the next
+                # # coputed time is exactly at the top of each minute
+                # oldtime_minut = self.flow_control.total_time/60
+                # newtime_minut = (self.flow_control.total_time+self.delta_t)/60
+                # if ma.any(ma.floor(newtime_minut) > ma.floor(oldtime_minut)):
+                #     self.delta_t = (ma.floor(newtime_minut) - oldtime_minut)*60.
 
-                # courant conditions is satisfied (time step did
-                # change) the iteration loop breaks
-                if ma.all(
-                    ma.logical_and(delta_t_tmp == self.delta_t,
-                                   self.flow_control.compare_ratio())
-                ):
-                    break
-
+                # # courant conditions is satisfied (time step did
+                # # change) the iteration loop breaks
+                # if ma.all(
+                #     ma.logical_and(delta_t_tmp == self.delta_t,
+                #                    self.flow_control.compare_ratio())
+                # ):
+                #     break
+            
+            # Very paskvil job 
+            #TODO: AP - probably this is not the best way to do it    
+            # ----------------------------------------------
+            fc = FlowControl()
+            sr = Globals.get_sr()
+            itera = Globals.get_itera()
+            potRain, fc.tz = rain_f.timestepRainfall(
+            itera, fc.total_time, self.delta_t, fc.tz, sr
+            )
+           
+            # ----------------------------------------------
             # Calculate actual rainfall and adds up interception todo:
             # AP - actual is not storred in hydrographs
             actRain = self.time_step.do_next_h(
@@ -330,49 +344,50 @@ class Runoff(object):
                 potRain,
                 self.delta_t
             )
+             
+            # actRain = self.time_step_implicit.do_next_h()
+            # # if the iteration exceed the maximal amount of iteration
+            # # last results are stored in hydrographs
+            # # and error is raised
+            # if not self.flow_control.max_iter_reached():
+            #     self.hydrographs.write_hydrographs_record(
+            #         0,
+            #         0,
+            #         self.flow_control,
+            #         self.courant,
+            #         self.delta_t,
+            #         self.surface,
+            #         self.subsurface,
+            #         self.cumulative,
+            #         actRain
+            #     )
+                # # TODO
+                # # post_proc.do(self.cumulative, Globals.mat_slope, Gl, surface.arr)
+                # raise MaxIterationExceeded(
+                #     self.flow_control.max_iter,
+                #     self.flow_control.total_time
+                # )
 
-            # if the iteration exceed the maximal amount of iteration
-            # last results are stored in hydrographs
-            # and error is raised
-            if not self.flow_control.max_iter_reached():
-                self.hydrographs.write_hydrographs_record(
-                    0,
-                    0,
-                    self.flow_control,
-                    self.courant,
-                    self.delta_t,
-                    self.surface,
-                    self.subsurface,
-                    self.cumulative,
-                    actRain
-                )
-                # TODO
-                # post_proc.do(self.cumulative, Globals.mat_slope, Gl, surface.arr)
-                raise MaxIterationExceeded(
-                    self.flow_control.max_iter,
-                    self.flow_control.total_time
-                )
+            # # adjusts the last time step size
+            # if ma.all(ma.logical_and(
+            #         Globals.end_time - self.flow_control.total_time < self.delta_t,
+            #         Globals.end_time - self.flow_control.total_time > 0
+            # )):
+            #     self.delta_t = Globals.end_time - self.flow_control.total_time
 
-            # adjusts the last time step size
-            if ma.all(ma.logical_and(
-                    Globals.end_time - self.flow_control.total_time < self.delta_t,
-                    Globals.end_time - self.flow_control.total_time > 0
-            )):
-                self.delta_t = Globals.end_time - self.flow_control.total_time
+            # # if end time reached the main loop breaks
+            # if ma.all(self.flow_control.total_time == Globals.end_time):
+            #     break
 
-            # if end time reached the main loop breaks
-            if ma.all(self.flow_control.total_time == Globals.end_time):
-                break
+            # # calculate outflow from each reach of the stream network
+            # self.surface.stream_reach_outflow(self.delta_t)
+            # # calculate inflow to reaches
+            # self.surface.stream_reach_inflow()
+            # # record cumulative and maximal results of a reach
+            # self.surface.stream_cumulative(self.flow_control.total_time + self.delta_t)
 
-            # calculate outflow from each reach of the stream network
-            self.surface.stream_reach_outflow(self.delta_t)
-            # calculate inflow to reaches
-            self.surface.stream_reach_inflow()
-            # record cumulative and maximal results of a reach
-            self.surface.stream_cumulative(self.flow_control.total_time + self.delta_t)
-
-            # set current times to previous time step
-            self.subsurface.curr_to_pre()
+            # # set current times to previous time step
+            # self.subsurface.curr_to_pre()
 
             # write hydrographs of reaches
             self.hydrographs.write_hydrographs_record(
