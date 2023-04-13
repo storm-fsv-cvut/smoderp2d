@@ -345,46 +345,6 @@ class Runoff(object):
                 self.delta_t
             )
              
-            # actRain = self.time_step_implicit.do_next_h()
-            # # if the iteration exceed the maximal amount of iteration
-            # # last results are stored in hydrographs
-            # # and error is raised
-            # if not self.flow_control.max_iter_reached():
-            #     self.hydrographs.write_hydrographs_record(
-            #         0,
-            #         0,
-            #         self.flow_control,
-            #         self.courant,
-            #         self.delta_t,
-            #         self.surface,
-            #         self.subsurface,
-            #         self.cumulative,
-            #         actRain
-            #     )
-                # # TODO
-                # # post_proc.do(self.cumulative, Globals.mat_slope, Gl, surface.arr)
-                # raise MaxIterationExceeded(
-                #     self.flow_control.max_iter,
-                #     self.flow_control.total_time
-                # )
-
-            # # adjusts the last time step size
-            # if ma.all(ma.logical_and(
-            #         Globals.end_time - self.flow_control.total_time < self.delta_t,
-            #         Globals.end_time - self.flow_control.total_time > 0
-            # )):
-            #     self.delta_t = Globals.end_time - self.flow_control.total_time
-
-            # # if end time reached the main loop breaks
-            # if ma.all(self.flow_control.total_time == Globals.end_time):
-            #     break
-
-            # # calculate outflow from each reach of the stream network
-            # self.surface.stream_reach_outflow(self.delta_t)
-            # # calculate inflow to reaches
-            # self.surface.stream_reach_inflow()
-            # # record cumulative and maximal results of a reach
-            # self.surface.stream_cumulative(self.flow_control.total_time + self.delta_t)
 
             # # set current times to previous time step
             # self.subsurface.curr_to_pre()
