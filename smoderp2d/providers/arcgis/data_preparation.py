@@ -87,11 +87,7 @@ class PrepareData(PrepareDataBase):
         """See base method for description.
         """
         output_path = self.storage.output_filepath(name)
-
-        arcpy.management.Clip(dataset, out_raster=output_path, in_template_dataset=aoi_polygon, nodata_value=GridGlobals.NoDataValue, clipping_geometry="ClippingGeometry")
-
-        #output_raster = arcpy.sa.ExtractByMask(dataset, aoi_polygon, analysis_extent = arcpy.Describe(aoi_polygon).Extent)
-        #output_raster.save(output_path)
+        arcpy.management.Clip(dataset, out_raster=output_path, in_template_dataset=aoi_polygon, nodata_value=GridGlobals.NoDataValue, clipping_geometry="NONE")
 
         return output_path
 
