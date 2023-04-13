@@ -26,6 +26,7 @@ frameinfo = getframeinfo(currentframe())
 #
 #   @return h water level in the trapezoid
 #
+# hurá
 def compute_h(A, m, b, err=0.0001, max_iter=20):
     def feval(h):
         return b * h + m * h * h - A
@@ -60,10 +61,17 @@ def compute_h(A, m, b, err=0.0001, max_iter=20):
 #
 #
 def rectangle(reach, dt):
-    Vp = reach.q365 * dt                # objem           : baseflow
-    hp = Vp / (reach.b * reach.length)    # vyska hladiny   : baseflow
+    if reach.q365 > 0:
+        Vp = reach.q365 * dt               # objem           : baseflow
+        hp = Vp / (reach.b * reach.length)  # vyska hladiny   : baseflow
+    else:
+        # Vp == 0.0
+        hp == 0.0
+
+
     dV = reach.V_in_from_field + reach.vol_rest + \
         reach.V_in_from_reach    # z okoli, predtim, odtok  : epizoda
+    # Question ToDo nevím co je V_in_from_field - odhaduji, že to je přítok z plošného odotku příslušných pixelů v daném časovém kroku pro daný
     h = dV / (reach.b * reach.length)  # vyska hladiny   : epizoda
     H = hp + h                        # total vyska hl. : epizoda
     O = reach.b + 2 * H  # omoceny obvod
@@ -96,9 +104,13 @@ def trapezoid(reach, dt):
     :param reach: ?
     :param dt: ?
     """
+    if reach.q365 > 0:
+        Vp = reach.q365 * dt               # objem           : baseflow
+        hp = compute_h(A=Vp / reach.length, m=reach.m, b=reach.b)  # vyska hladiny   : baseflow
+    else:
+        #Vp == 0.0
+        hp == 0.0
 
-    Vp = reach.q365 * dt
-    hp = compute_h(A=Vp / reach.length, m=reach.m, b=reach.b)
     B = reach.b + 2.0 * hp * reach.m  # b pro pocatecni stav (q365)
     Bb = B + hp * reach.m
     h = compute_h(
@@ -106,13 +118,15 @@ def trapezoid(reach, dt):
            reach.V_in_from_reach) / reach.length,
         m=reach.m,
      b=reach.b)
+    # tuhle iterační metodu nezná ToDo - nevím kdo ji kdy tvořil
     H = hp + h  # celkova vyska
     O = B + 2.0 * H * math.pow(1 + reach.m * reach.m, 0.5)
     S = B * H + reach.m * H * H
     dS = S - reach.b * hp + reach.m * hp * hp
     dV = dS * reach.length
     R = S / O
-    reach.vs = math.pow(R, 0.6666) * math.pow(reach.inclination, 0.5) / (reach.roughness)  # v
+    reach.vs = math.pow(R, 0.6666) * math.pow(reach.inclination, 0.5) / (reach.roughness)
+    # v ToDo and Question - proč tady máme 3/5 a 1/2 číslem a né zlomkem
     reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
     if reach.V_out > dV:
@@ -137,9 +151,14 @@ def trapezoid(reach, dt):
 #
 #
 def triangle(reach, dt):
+    if reach.q365 > 0:
+        Vp = reach.q365 * dt               # objem           : baseflow
+        hp = math.pow(Vp / (reach.length * reach.m), 0.5)  # vyska hladiny   : baseflow
+    else:
+        # Vp == 0.0
+        hp == 0.0
 
-    Vp = reach.q365 * dt                                # objem           : baseflow
-    hp = math.pow(Vp / (reach.length * reach.m), 0.5)   # vyska hladiny   : baseflow __
+
     B = 2.0 * hp *  reach.m                             # sirka zakladny  : baseflow \/
     # Bb = B + reach.h*reach.m                                                                # tohle nechapu, takze jsem to zakomantoval...
     # h  = (reach.V_in_from_field + reach.vol_rest + reach.V_in_from_reach)/(Bb
@@ -180,7 +199,7 @@ def triangle(reach, dt):
 # Function calculates the discharge in parabola shaped reach of a stream.
 #
 #
-def parabola(reach, dt):
+def parabola(reach, dt): # ToDo - podívat se proč parabola nefunguje, ale to nechme až rozchodíme vůbec toky a Qgis
     raise NotImplementedError('Parabola shaped stream reach has not been implemented yet')
     # a = reach.b   #vzd ohniska od vrcholu
     # u = 3.0 #(h=B/u  B=f(a))
@@ -205,7 +224,7 @@ def parabola(reach, dt):
     # reach.h = H
 
 
-# def stream_reach_max(toky):
+# def stream_reach_max(toky): ToDo - tohle asi zachovávalo maxima a přidávalo je to do output vrstvy toků, nevím jestli tuto funkcionalitu převzala nějaká jiná část kodu.
     # fc = toky
     # field2 = ["FID","V_infl_ce","total_Vic","V_infl","total_Vi","V_outfl","total_Vo","NS","total_NS","Q_outfl","max_Q","h","max_h","vs","max_vs","V_zbyt","total_Vz","V_infl_us", "total_Viu"]
     # with arcpy.da.UpdateCursor(fc, field2) as cursor:
