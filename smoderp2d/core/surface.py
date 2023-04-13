@@ -356,9 +356,9 @@ def sheet_runoff(dt, a, b, h_sheet):
     
     q_sheet = surfacefce.shallowSurfaceKinematic(a, b, h_sheet)
 
+    
     vol_runoff = q_sheet * dt * GridGlobals.get_size()[0]
     
-
     return vol_runoff
 
 def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest,

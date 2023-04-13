@@ -25,6 +25,7 @@ from smoderp2d.core.cumulative_max import Cumulative
 
 from smoderp2d.time_step import TimeStep
 from smoderp2d.courant import Courant
+from smoderp2d.time_step_implicit import TimeStepImplicit
 
 from smoderp2d.tools.times_prt import TimesPrt
 from smoderp2d.io_functions import post_proc
@@ -36,7 +37,7 @@ from smoderp2d.exceptions import MaxIterationExceeded
 
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.flow_algorithm.D8 as D8
-import smoderp2d.time_step_implicit as time_step_implicit
+
 class FlowControl(object):
     """ Manage variables related to main computational loop. """
 
@@ -197,6 +198,7 @@ class Runoff(object):
 
         # method for single time step calculation
         self.time_step = TimeStep()
+        self.time_step_implicit = TimeStepImplicit()
 
         # record values into hydrographs at time zero
         rr, rc = GridGlobals.get_region_dim()
@@ -256,7 +258,6 @@ class Runoff(object):
         # creates list of flow direction vectors (r*c vectors of length 8 coposed of 1 and 0) 
         
         for i in range(self.r):
-            
             for j in range(self.c):
                 vec_pos = i * self.c + j
                 self.list_fd[vec_pos] = D8.inflow_dir(Globals.get_mat_fd(),i,j)
@@ -270,55 +271,10 @@ class Runoff(object):
         self.delta_t = ma.masked_array(
             self.delta_t, mask=GridGlobals.masks
         )
-
+        #delta_t as float number not as array
+        delta_t_float = self.delta_t.argmin
         while ma.any(self.flow_control.compare_time(Globals.end_time)):
 
-            # self.flow_control.save_vars()
-            # self.flow_control.refresh_iter()
-
-            # # iteration loop
-            # while self.flow_control.max_iter_reached():
-
-            #     self.flow_control.update_iter()
-            #     self.flow_control.restore_vars()
-
-            #     # reset of the courant condition
-            #     self.courant.reset()
-            #     self.flow_control.save_ratio()
-
-                # # time step size
-                # potRain = self.time_step.do_flow(
-                #     self.surface,
-                #     self.subsurface,
-                #     self.delta_t,
-                #     self.flow_control,
-                #     self.courant
-                # )
-
-                # # stores current time step
-                # delta_t_tmp = self.delta_t
-
-                # # update time step size if necessary (based on the courant
-                # # condition)
-                # self.delta_t, self.flow_control.ratio = self.courant.courant(
-                #     potRain, self.delta_t, self.flow_control.ratio
-                # )
-
-                # # if current time plus timestep is in next minute
-                # # of computation the dt is reduced so the next
-                # # coputed time is exactly at the top of each minute
-                # oldtime_minut = self.flow_control.total_time/60
-                # newtime_minut = (self.flow_control.total_time+self.delta_t)/60
-                # if ma.any(ma.floor(newtime_minut) > ma.floor(oldtime_minut)):
-                #     self.delta_t = (ma.floor(newtime_minut) - oldtime_minut)*60.
-
-                # # courant conditions is satisfied (time step did
-                # # change) the iteration loop breaks
-                # if ma.all(
-                #     ma.logical_and(delta_t_tmp == self.delta_t,
-                #                    self.flow_control.compare_ratio())
-                # ):
-                #     break
             
             # Very paskvil job 
             #TODO: AP - probably this is not the best way to do it    
@@ -329,27 +285,30 @@ class Runoff(object):
             potRain, fc.tz = rain_f.timestepRainfall(
             itera, fc.total_time, self.delta_t, fc.tz, sr
             )
-           
             # ----------------------------------------------
             # Calculate actual rainfall and adds up interception todo:
             # AP - actual is not storred in hydrographs
-            actRain = self.time_step.do_next_h(
+            # actRain = self.time_step.do_next_h(
+            #     self.surface,
+            #     self.subsurface,
+            #     self.rain_arr,
+            #     self.cumulative,
+            #     self.hydrographs,
+            #     self.flow_control,
+            #     self.courant,
+            #     potRain,
+            #     self.delta_t,
+            # )
+            actRain = self.time_step_implicit.do_next_h(
                 self.surface,
-                self.subsurface,
                 self.rain_arr,
                 self.cumulative,
                 self.hydrographs,
                 self.flow_control,
-                self.courant,
                 potRain,
-                self.delta_t
+                self.delta_t,
+                self.list_fd    
             )
-             
-
-            # # set current times to previous time step
-            # self.subsurface.curr_to_pre()
-
-            # write hydrographs of reaches
             self.hydrographs.write_hydrographs_record(
                 0,
                 0,
