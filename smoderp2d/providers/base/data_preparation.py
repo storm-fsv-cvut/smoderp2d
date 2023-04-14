@@ -757,6 +757,7 @@ class PrepareDataBase(ABC):
         """
         Converts slope units from % to 0-1 range in the mask.
         """
+        # TODO convert to NumPy logic!!!
         for i in range(self.data['mat_slope'].shape[0]):
             for j in range(self.data['mat_slope'].shape[1]):
                 nv = GridGlobals.NoDataValue

@@ -83,12 +83,14 @@ class PrepareData(PrepareDataBase):
 
         return dem_filled_path, dem_flowdir_path, dem_flowacc_path, dem_slope_path, dem_aspect_path
 
-    def _clip_raster_layer(self, dataset, aoi_polygon, name):
+    def _clip_raster_layer(self, dataset, aoi_mask, name):
         """See base method for description.
         """
         output_path = self.storage.output_filepath(name)
-        arcpy.management.Clip(dataset, out_raster=output_path, in_template_dataset=aoi_polygon, nodata_value=GridGlobals.NoDataValue, clipping_geometry="NONE")
-
+        # arcpy.management.Clip(dataset, out_raster=output_path, in_template_dataset=aoi_polygon, nodata_value=GridGlobals.NoDataValue, clipping_geometry="ClippingGeometry")
+        with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=aoi_mask, cellAlignment=aoi_mask,snapRaster=aoi_mask):
+            output_raster = arcpy.sa.ExtractByMask(dataset, aoi_mask) # analysis_extent = arcpy.Describe(aoi_mask).Extent)
+            output_raster.save(output_path)
         return output_path
 
     def _clip_record_points(self, dataset, aoi_polygon, name):
@@ -122,7 +124,7 @@ class PrepareData(PrepareDataBase):
     def _rst2np(self, raster):
         """See base method for description.
         """
-        return arcpy.RasterToNumPyArray(raster)
+        return arcpy.RasterToNumPyArray(raster, nodata_to_value=GridGlobals.NoDataValue)
 
     def _update_grid_globals(self, reference):
         """See base method for description.

@@ -13,3 +13,5 @@ tests/data/output*
 .direnv
 tests/log
 tests/data/log
+/bin/arcgis/old/
+tests/data/reference/dpre.extracted
