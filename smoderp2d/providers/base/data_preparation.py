@@ -34,7 +34,7 @@ class PrepareDataBase(ABC):
             'soilveg_aoi': 'temp',
             'aoi_buffer': 'temp',
             'stream_aoi': 'temp',
-            "stream_Z": 'temp',
+            "stream_z": 'temp',
             'stream_start': 'temp',
             'stream_end': 'temp',
             'stream_seg': 'temp',

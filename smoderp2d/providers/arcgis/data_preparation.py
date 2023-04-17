@@ -284,87 +284,89 @@ class PrepareData(PrepareDataBase):
     def _stream_direction(self, stream, dem_aoi):
         """See base method for description.
         """
-        segmentIDfieldName = self.fieldnames['stream_segment_id']
-        startElevFieldName = self.fieldnames['stream_segment_start_elevation']
-        endElevFieldName = self.fieldnames['stream_segment_end_elevation']
-        inclinationFieldName = self.fieldnames['stream_segment_inclination']
-        nextDownFieldName = self.fieldnames['stream_segment_next_down_id']
-        segmentLengthFieldName = self.fieldnames['stream_segment_length']
-
-        # add the streamID for later use
-        arcpy.management.AddField(stream, segmentIDfieldName, "SHORT")
-        sID = 1
-        with arcpy.da.UpdateCursor(stream, [segmentIDfieldName]) as segments:
-            for row in segments:
-                row[0] = sID
-                segments.updateRow(row)
-                sID += 1
-
-        # extract elevation for the stream segment vertices
-        arcpy.ddd.InterpolateShape(dem_aoi, stream, self.storage.output_filepath("stream_Z"), "", "", "LINEAR", "VERTICES_ONLY")
-        desc = arcpy.Describe(self.storage.output_filepath("stream_Z"))
-        shapeFieldName = "SHAPE@"
-        lengthFieldName = desc.LengthFieldName
+        segment_id_fieldname = self.fieldnames['stream_segment_id']
+        start_elev_fieldname = self.fieldnames['stream_segment_start_elevation']
+        end_elev_fieldname = self.fieldnames['stream_segment_end_elevation']
+        inclination_fieldname = self.fieldnames['stream_segment_inclination']
+        next_down_id_fieldname = self.fieldnames['stream_segment_next_down_id']
+        segment_length_fieldname = self.fieldnames['stream_segment_length']
 
         # segments properties
-        segmentProps = {}
-        # first points of segments to find the nextDownID
-        firstPoints = {} # TODO: to be removed(?)
-        with arcpy.da.SearchCursor(self.storage.output_filepath("stream_Z"), [shapeFieldName, segmentIDfieldName, lengthFieldName]) as segments:
+        segment_props = {}
+
+        # add the streamID for later use, get the 2D length of the stream segments
+        length_fieldname = arcpy.Describe(stream).lengthFieldName
+        arcpy.management.AddField(stream, segment_id_fieldname, "SHORT")
+        segment_id = 1
+        with arcpy.da.UpdateCursor(stream, [segment_id_fieldname, length_fieldname]) as segments:
+            for row in segments:
+                row[0] = segment_id
+                segments.updateRow(row)
+                segment_props.update({segment_id:{'length': row[1]}})
+                segment_id += 1
+
+        # extract elevation for the stream segment vertices
+        arcpy.ddd.InterpolateShape(dem_aoi, stream, self.storage.output_filepath("stream_z"), "", "", "LINEAR", "VERTICES_ONLY")
+        desc = arcpy.Describe(self.storage.output_filepath("stream_z"))
+        shape_fieldname = "SHAPE@"
+        length_fieldname = desc.lengthFieldName
+
+        print(segment_props)
+        with arcpy.da.SearchCursor(self.storage.output_filepath("stream_z"), [shape_fieldname, segment_id_fieldname]) as segments:
             for row in segments:
                 startpt = row[0].firstPoint
                 endpt = row[0].lastPoint
                 # negative elevation change is the correct direction for stream segments
-                elevchange = endpt.Z - startpt.Z
+                elev_change = endpt.Z - startpt.Z
 
-                if elevchange == 0:
+                if elev_change == 0:
                     raise DataPreparationError(
-                        'Stream segment {}: {} has zero slope'.format(segmentIDfieldName, row[1])
-                    )
-                if elevchange < 0:
-                    firstPoints.update({row[1]: startpt})
+                        'Stream segment '+segment_id_fieldname+': {} has zero inclination'.format(row[1]))
+                if elev_change < 0:
+                    segment_props.get(row[1]).update({'start_point':startpt})
+                    segment_props.get(row[1]).update({'end_point': endpt})
                 else:
-                    firstPoints.update({row[1]: endpt})
+                    segment_props.get(row[1]).update({'start_point': endpt})
+                    segment_props.get(row[1]).update({'end_point': startpt})
 
-                inclination = elevchange/row[2]
-                segmentProps.update({
-                    row[1]: {"startZ": startpt.Z, "endZ": endpt.Z, "inclination": inclination} #TODO: abs
-                })
+                inclination = elev_change/segment_props.get(row[1]).get('length')
+                segment_props.get(row[1]).update({'inclination': inclination})
 
         # add new fields to the stream segments feature class
-        arcpy.management.AddField(stream, segmentIDfieldName, "SHORT")
-        arcpy.management.AddField(stream, startElevFieldName, "DOUBLE")
-        arcpy.management.AddField(stream, endElevFieldName, "DOUBLE")
-        arcpy.management.AddField(stream, inclinationFieldName, "DOUBLE")
-        arcpy.management.AddField(stream, nextDownFieldName, "DOUBLE")
-        arcpy.management.AddField(stream, segmentLengthFieldName, "DOUBLE")
+        arcpy.management.AddField(stream, segment_id_fieldname, "SHORT")
+        arcpy.management.AddField(stream, start_elev_fieldname, "DOUBLE")
+        arcpy.management.AddField(stream, end_elev_fieldname, "DOUBLE")
+        arcpy.management.AddField(stream, inclination_fieldname, "DOUBLE")
+        arcpy.management.AddField(stream, next_down_id_fieldname, "DOUBLE")
+        arcpy.management.AddField(stream, segment_length_fieldname, "DOUBLE")
 
-        XYtolerance = 0.01 # don't know why the arcpy.env.XYtolerance does not work (otherwise would use the arcpy.Point.equals() method)
-        with arcpy.da.UpdateCursor(stream, [segmentIDfieldName, shapeFieldName, startElevFieldName, endElevFieldName, inclinationFieldName, nextDownFieldName,
-                                            segmentLengthFieldName, lengthFieldName]) as table:
+        print(segment_props)
+        xy_tolerance = 0.01 # don't know why the arcpy.env.XYtolerance does not work (otherwise would use the arcpy.Point.equals() method)
+        with arcpy.da.UpdateCursor(stream, [segment_id_fieldname, shape_fieldname, start_elev_fieldname, end_elev_fieldname, inclination_fieldname, next_down_id_fieldname,
+                                            segment_length_fieldname, length_fieldname]) as table:
             for row in table:
-                segmentInclination = segmentProps.get(row[0]).get("inclination")
-                row[1] = row[1] if segmentInclination < 0 else self._reverse_line_direction(row[1]) # ??
-                row[2] = segmentProps.get(row[0]).get("startZ") ## TODO: reverse not applied?
-                row[3] = segmentProps.get(row[0]).get("endZ") ## TODO: reverse not applied?
-                row[4] = -segmentInclination if segmentInclination < 0 else segmentInclination ## why so complicated?
+                segment_inclination = segment_props.get(row[0]).get('inclination')
+                row[1] = row[1] if segment_inclination < 0 else self._reverse_line_direction(row[1])
+                row[2] = segment_props.get(row[0]).get('start_point').Z
+                row[3] = segment_props.get(row[0]).get('end_point').Z
+                row[4] = abs(segment_inclination)
                 row[6] = row[7]
 
                 # find the next down segment by comparing the points distance
-                nextDownID = Globals.streamsNextDownIdNoSegment
-                matched = []
-                for segID in firstPoints.keys():
-                    dist = pow(pow(row[1].lastPoint.X-firstPoints.get(segID).X, 2)+pow(row[1].lastPoint.Y-firstPoints.get(segID).Y, 2), 0.5)
-                    if (dist < XYtolerance):
-                        nextDownID = segID
-                        matched.append(segID)
-                if len(matched) > 1:
+                next_down_id = Globals.streamsNextDownIdNoSegment
+                matched = 0
+                for segment_id in segment_props.keys():
+                    dist = pow(pow(row[1].lastPoint.X-segment_props.get(segment_id).get('start_point').X, 2)+pow(row[1].lastPoint.Y-segment_props.get(segment_id).get('start_point').Y, 2), 0.5)
+                    if (dist < xy_tolerance):
+                        next_down_id = segment_id
+                        matched += 1
+                if matched > 1:
                     row[5] = None
                     raise DataPreparationError(
                         'Incorrect stream network topology downstream segment streamID: {}. The network can not bifurcate.'.format(row[0])
                     )
                 else:
-                    row[5] = nextDownID
+                    row[5] = next_down_id
                 table.updateRow(row)
 
 
