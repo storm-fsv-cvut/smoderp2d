@@ -13,7 +13,7 @@ def dpre_params():
         'vegetation_type': "LandUse",
         'rainfall_file': os.path.join(data_dir, "rainfall.txt"),
         'maxdt': 30,
-        'end_time': 40,  # convert input to seconds #ML: why?
+        'end_time': 40,
         'points': os.path.join(data_dir, "points.shp"),
         'table_soil_vegetation': os.path.join(data_dir, "soil_veg_tab_mean.dbf"),
         'table_soil_vegetation_code': "soilveg",

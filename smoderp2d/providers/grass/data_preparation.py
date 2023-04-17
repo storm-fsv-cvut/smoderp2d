@@ -5,9 +5,7 @@ from subprocess import PIPE
 import numpy as np
 import sqlite3
 
-from smoderp2d.core.general import GridGlobals
-
-from smoderp2d.providers.grass.manage_fields import ManageFields
+from smoderp2d.core.general import GridGlobals, Globals
 
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput, \
@@ -19,10 +17,11 @@ from grass.pygrass.modules import Module
 from grass.pygrass.vector import VectorTopo, Vector
 from grass.pygrass.vector.table import Table, get_path
 from grass.pygrass.raster import RasterRow, raster2numpy
-from grass.pygrass.gis import Region, Mapset
+from grass.pygrass.gis import Mapset
+from grass.pygrass.gis.region import Region
 from grass.exceptions import CalledModuleError, OpenError
 
-class PrepareData(PrepareDataBase, ManageFields):
+class PrepareData(PrepareDataBase):
     def __init__(self, options, writter):
         # defile input parameters
         self._set_input_params(options)
@@ -75,6 +74,9 @@ class PrepareData(PrepareDataBase, ManageFields):
         Module('r.recode',
                input=elevation, output=dem_slope_mask_path+'1',
                rules="-", stdin_="-100000:100000:1")
+        # the slope raster extent will be used in further
+        # intersections as it is always smaller then the DEM extent
+        # ...
         # r.grow requires computation region to be larger
         with RasterRow(elevation) as rmap:
             nsres = rmap.info.nsres
@@ -113,7 +115,12 @@ class PrepareData(PrepareDataBase, ManageFields):
         if count == 0:
             raise DataPreparationNoIntersection()
 
-        return aoi_polygon
+        aoi_mask = self.storage.output_filepath('aoi_mask')
+        Module('v.to.rast',
+               input=aoi_polygon, type='area', use='cat',
+               output=aoi_mask)
+
+        return aoi_polygon, aoi_mask
 
     def _create_DEM_derivatives(self, dem):
         """See base method for description.
@@ -164,17 +171,13 @@ class PrepareData(PrepareDataBase, ManageFields):
         return dem_filled, dem_flowdir, dem_flowacc, dem_slope, dem_aspect
 
     
-    def _clip_raster_layer(self, dataset, aoi_polygon, name):
+    def _clip_raster_layer(self, dataset, aoi_mask, name):
         """See base method for description.
         """
         output = self.storage.output_filepath(name)
-        if aoi_polygon not in Mapset().glist(type='raster'):
-            Module('v.to.rast',
-                   input=aoi_polygon, type='area', use='cat',
-                   output=aoi_polygon)
         Module('r.mapcalc',
                expression='{o} = if(isnull({m}), null(), {i})'.format(
-                   o=output, m=aoi_polygon, i=dataset))
+                   o=output, m=aoi_mask, i=dataset))
 
         return output
     
@@ -345,34 +348,40 @@ class PrepareData(PrepareDataBase, ManageFields):
             self.soilveg_fields[field] = self._rst2np(output)            
             self._check_soilveg_dim(field)
 
-    def _get_array_points(self):
+    def _get_points_location(self, points_layer):
         """See base method for description.
         """
-        array_points = None
-        points_layer = self._input_params['points']
+        points_array = []
         if points_layer:
-            points_map = self.__qualified_name(points_layer)
             # get number of points
+            points_map = self.__qualified_name(points_layer)
             with VectorTopo(**points_map) as vmap:
                 count = vmap.number_of('points')
             if count > 0:
-                # empty array
-                array_points = np.zeros([count, 5], float)
-
                 # get the points geometry and IDs into array
                 with Vector(**points_map) as vmap:
                     i = 0
                     for p in vmap:
-                        self._get_array_points_(
-                            array_points, p.x, p.y, p.cat, i
-                        )
+                        fid = p.cat
+                        x, y = p.x, p.y
+                        if self._get_points_dem_coords(x, y):
+                            r, c = self._get_points_dem_coords(x, y)
+                            points_array.append([fid, r, c, x, y])
+                        else:
+                            Logger.info(
+                            "Point FID = {} is at the edge of the raster. "
+                            "This point will not be included in results.".format(fid))
                         i += 1
-
-        return array_points
+            else:
+                raise DataPreparationInvalidInput(
+                    "None of the record points lays within the modeled area."
+                )
+        return points_array
 
     def _stream_clip(self, stream, aoi_polygon):
         """See base method for description.
         """
+        # AoI slighty smaller due to start/end elevation extraction
         aoi_buffer = self.storage.output_filepath('aoi_buffer')
         Module('v.buffer',
                input=aoi_polygon, output='aoi_buffer',
@@ -388,71 +397,120 @@ class PrepareData(PrepareDataBase, ManageFields):
     def _stream_direction(self, stream, dem):
         """See base method for description.
         """
-        # extract elevation for start/end stream nodes
-        Module('g.region', raster=dem)
-        columns = ['point_x', 'point_y']
-        for what in ('start', 'end'):
-            Module('v.to.points',
-                   input=stream, use=what,
-                   output=what)
-            column = 'elev_{}'.format(what)
-            Module('v.what.rast',
-                   map=what, raster=dem,
-                   column=column)
-            Module('v.db.join',
-                   map=stream, column=self.storage.primary_key,
-                   other_table=what+'_1', # v.what produces two tables
-                   other_column=self.storage.primary_key,
-                   subset_columns=[column]
-            )
+        segment_id_field_name = self.fieldnames['stream_segment_id']
+        start_elev_field_name = self.fieldnames['stream_segment_start_elevation']
+        end_elev_field_name = self.fieldnames['stream_segment_end_elevation']
+        inclination_field_name = self.fieldnames['stream_segment_inclination']
+        next_down_field_name = self.fieldnames['stream_segment_next_down_id']
+        segment_length_field_name = self.fieldnames['stream_segment_length']
 
-            if what == 'end':
-                columns = list(map(lambda x: x + '_end', columns))
-            Module('v.to.db',
-                   map=stream, option=what,
-                   columns=columns
-            )
-            
-            self.__remove_temp_data({'name': what, 'type': 'vector'})
-
-        # flip stream
-        stream_flip = []
-        with Vector(stream) as vmap:
-            vmap.table.filters.select(self.storage.primary_key, 'elev_start', 'elev_end')
-            for row in vmap.table:
-                if row[1] < row[2]:
-                    stream_flip.append(row[0])
-        if stream_flip:
-            Module('v.edit',
-                   map=stream,
-                   tool='flip',
-                   cats=','.join(stream_flip))
-
-        # add to_node attribute
+        # add the streamID for later use
         Module('v.db.addcolumn',
                map=stream,
-               columns=['to_node integer'])
-        to_node = {}
+               columns=['{} integer'.format(segment_id_field_name)])
         with VectorTopo(stream) as vmap:
-            for line in vmap:
-                start, end = line.nodes()
-                cat = line.cat
-                to_node[cat] = GridGlobals.NoDataValue
-                for start_line in start.lines():
-                    if start_line.cat != cat:
-                        to_node[cat] = start_line.cat
+            sid = 1
+            for f in vmap:
+                f.attrs[segment_id_field_name] = sid
+                sid += 1
+            vmap.table.conn.commit()
 
-        if to_node:
-            # TODO: rewrite using pygrass
-            # ML: compare with ArcGIS
-            tmpfile = tempfile(create=False)
-            with open(tmpfile, 'w') as fd:
-                for c, n in to_node.items():
-                    fd.write('UPDATE {} SET to_node = {} WHERE {} = {};\n'.format(
-                        stream, n, self.storage.primary_key, c
-                    ))
-            Module('db.execute',
-                   input=tmpfile)
+        # extract elevation for the stream segment vertices
+        Module('g.region', raster=dem)
+        Module('v.drape',
+               input=stream, elevation=dem,
+               output=stream+'3d')
+
+        # # segments properties
+        segment_props = {}
+        # # first points of segments to find the nextDownID
+        # first_points = {}
+        to_reverse = []
+        with Vector(stream+'3d') as vmap:
+            for seg in vmap:
+                startpt = seg[0]
+                endpt = seg[-1]
+                # negative elevation change is the correct direction for stream segments
+                elevchange = endpt.z - startpt.z
+
+                segment_id = seg.attrs[segment_id_field_name]
+                if elevchange == 0:
+                    raise DataPreparationError(
+                        'Stream segment {}: {} has zero slope'.format(segment_id_field_name, segment_id)
+                    )
+
+                inclination = elevchange/f.length() # TODO: 2D or 3D?
+
+                if elevchange < 0:
+                    # first_points.update({segment_id: startpt})
+                    segment_props.update({
+                        segment_id: {"start_z": startpt.z, "end_z": endpt.z}
+                    })
+                else:
+                    to_reverse.append(segment_id)
+                    segment_props.update({
+                        segment_id: {"start_z": endpt.z, "end_z": startpt.z}
+                    })
+                segment_props[segment_id]["inclination"] = abs(inclination)
+
+        self.__remove_temp_data({'name': stream+'3d', 'type': 'vector'})
+
+        # add new fields to the stream segments feature class
+        Module('v.db.addcolumn',
+               map=stream,
+               columns=[
+                   '{} integer'.format(segment_id_field_name),
+                   '{} double precision'.format(start_elev_field_name),
+                   '{} double precision'.format(end_elev_field_name),
+                   '{} double precision'.format(inclination_field_name),
+                   '{} double precision'.format(next_down_field_name),
+                   '{} double precision'.format(segment_length_field_name)
+               ]
+        )
+
+        Module('v.edit',
+               map=stream,
+               tool='flip',
+               where='{} in ({})'.format(segment_id_field_name, ','.join(to_reverse))
+        )
+        # Module('v.to.db',
+        #        map=stream,
+        #        option='start'
+        #        columns=[start_elev_field_name]
+        # )
+        # Module('v.to.db',
+        #        map=stream,
+        #        option='end'
+        #        columns=[end_elev_field_name]
+        # )
+        # Module('v.to.db',
+        #        map=stream,
+        #        option='length'
+        #        columns=[segment_length_field_name]
+        # )
+
+        with VectorTopo(stream) as vmap:
+            for seg in vmap:
+                segment_id = seg.attrs[segment_id_field_name]
+                segment_inclination = segment_props.get(segment_id).get("inclination")
+                seg.attrs[start_elev_field_name] = segment_props.get(segment_id).get("start_z")
+                seg.attrs[end_elev_field_name] = segment_props.get(segment_id).get("end_z")
+                seg.attrs[inclination_field_name] = segment_inclination
+                seg.attrs[segment_length_field_name] = seg.length()
+
+                # find the next down segment by comparing the points distance
+                start, end = seg.nodes()
+                seg.attrs[next_down_field_name] = Globals.streamsNextDownIdNoSegment
+                for start_seg in start.lines():
+                    if start_seg.id != seg.id:
+                        if seg.attrs[next_down_field_name] != Globals.streamsNextDownIdNoSegment:
+                            raise DataPreparationError(
+                                'Incorrect stream network topology downstream segment streamID: {}. '
+                                'The network can not bifurcate.'.format(segment_id)
+                            )
+                        seg.attrs[next_down_field_name] = vmap[start_seg.id].attrs[segment_id_field_name]
+            
+            vmap.table.conn.commit()
 
     def _stream_reach(self, stream):
         """See base method for description.
@@ -558,14 +616,14 @@ class PrepareData(PrepareDataBase, ManageFields):
         )
 
         
-        if self._input_params['table_stream_shape']:
-            table = Table(**self.__qualified_name(self._input_params['table_stream_shape'], mtype='table'))
+        if self._input_params['channel_properties_table']:
+            table = Table(**self.__qualified_name(self._input_params['channel_properties_table'], mtype='table'))
             fields = table.columns.names()
             for f in self.stream_shape_fields:
                 if f not in fields:
                     raise DataPreparationInvalidInput(
                         "Field '{}' not found in '{}'\nProper columns codes are: {}".format(
-                            f, self._input_params['table_stream_shape'], self.stream_shape_fields)
+                            f, self._input_params['channel_properties_table'], self.stream_shape_fields)
                     )
 
         # overlapping polygons (soils)

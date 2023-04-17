@@ -84,7 +84,9 @@ class BaseWritter(object):
     # todo: abstractmethod
     def write_raster(self, arr, output):
         pass
-    
+
+    def create_storage(self, outdir):
+        pass
 
 class BaseProvider(object):
     def __init__(self):

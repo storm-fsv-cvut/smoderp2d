@@ -14,14 +14,14 @@ def dpre_params():
         'vegetation_type': "LandUse",
         'rainfall_file': os.path.join(data_dir, "rainfall.txt"),
         'maxdt': 30,
-        'end_time': 40,  # convert input to seconds #ML: why?
+        'end_time': 40,
         'points': "points@PERMANENT",
-        'output': output_dir,
         'table_soil_vegetation': "soil_veg_tab_mean@PERMANENT",
         'table_soil_vegetation_code': "soilveg",
-        'stream': "stream@PERMANENT",
-        'table_stream_shape': "stream_shape@PERMANENT",
-        'table_stream_shape_code': "smoderp"
+        'streams': "stream@PERMANENT",
+        'channel_properties_table': "stream_shape@PERMANENT",
+        'streams_channel_shape_code': "channel_id",
+        'output': output_dir,
     }
 
 if __name__ == "__main__":

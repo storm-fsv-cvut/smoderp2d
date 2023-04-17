@@ -20,7 +20,7 @@ class ArcGisWritter(BaseWritter):
         # Overwriting output
         arcpy.env.overwriteOutput = 1
 
-    def create_storage(self,outdir):
+    def create_storage(self, outdir):
         # create core ArcGIS File Geodatabase
         arcpy.management.CreateFileGDB(outdir, "data.gdb")
 

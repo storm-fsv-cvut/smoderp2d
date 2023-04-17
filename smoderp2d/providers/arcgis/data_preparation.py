@@ -6,7 +6,7 @@ import arcpy
 from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
-from smoderp2d.providers.base.exceptions import DataPreparationError, DataPreparationInvalidInput, LicenceNotAvailable
+from smoderp2d.providers.base.exceptions import DataPreparationError, DataPreparationInvalidInput, LicenceNotAvailable, DataPreparationNoIntersection
 import smoderp2d.processes.rainfall as rainfall
 
 class PrepareData(PrepareDataBase):
@@ -29,7 +29,9 @@ class PrepareData(PrepareDataBase):
         dem_slope_mask_path = self.storage.output_filepath('dem_slope_mask')
         dem_mask = arcpy.sa.Reclassify(elevation, "VALUE", "-100000 100000 1", "DATA")
         dem_slope_mask = arcpy.sa.Shrink(dem_mask, 1, 1)
-        # the slope raster extent will be used in further intersections as it is always smaller then the DEM extent ...
+        # the slope raster extent will be used in further
+        # intersections as it is always smaller then the DEM extent
+        # ...
         dem_slope_mask.save(dem_slope_mask_path)
 
         dem_polygon = self.storage.output_filepath('dem_polygon')
@@ -41,9 +43,7 @@ class PrepareData(PrepareDataBase):
         arcpy.management.Dissolve(aoi, aoi_polygon)
 
         if int(arcpy.management.GetCount(aoi_polygon).getOutput(0)) == 0:
-            raise DataPreparationInvalidInput(
-                "The input layers are not correct! "
-                "The geometrical intersection of input datasets is empty.")
+            raise DataPreparationNoIntersection()
 
         aoi_mask = self.storage.output_filepath('aoi_mask')
         with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=dem_mask, cellAlignment=dem_mask, snapRaster=dem_mask):
@@ -252,14 +252,13 @@ class PrepareData(PrepareDataBase):
                     for row in table:
                         fid = row[0]
                         x, y = row[1]
-                        if (self._get_points_dem_coords(x, y)):
+                        if self._get_points_dem_coords(x, y):
                             r, c = self._get_points_dem_coords(x, y)
                             points_array.append([fid, r, c, x, y])
                         else:
                             Logger.info(
                             "Point FID = {} is at the edge of the raster. "
                             "This point will not be included in results.".format(fid))
-
                         i += 1
             else:
                 raise DataPreparationInvalidInput(
@@ -310,7 +309,7 @@ class PrepareData(PrepareDataBase):
         # segments properties
         segmentProps = {}
         # first points of segments to find the nextDownID
-        firstPoints = {}
+        firstPoints = {} # TODO: to be removed(?)
         with arcpy.da.SearchCursor(self.storage.output_filepath("stream_Z"), [shapeFieldName, segmentIDfieldName, lengthFieldName]) as segments:
             for row in segments:
                 startpt = row[0].firstPoint
@@ -320,14 +319,17 @@ class PrepareData(PrepareDataBase):
 
                 if elevchange == 0:
                     raise DataPreparationError(
-                        'Stream segment '+segmentIDfieldName+': {} has zero slope'.format(row[1]))
+                        'Stream segment {}: {} has zero slope'.format(segmentIDfieldName, row[1])
+                    )
                 if elevchange < 0:
                     firstPoints.update({row[1]: startpt})
                 else:
                     firstPoints.update({row[1]: endpt})
 
                 inclination = elevchange/row[2]
-                segmentProps.update({row[1]:{"startZ": startpt.Z, "endZ": endpt.Z, "inclination": inclination}})
+                segmentProps.update({
+                    row[1]: {"startZ": startpt.Z, "endZ": endpt.Z, "inclination": inclination} #TODO: abs
+                })
 
         # add new fields to the stream segments feature class
         arcpy.management.AddField(stream, segmentIDfieldName, "SHORT")
@@ -342,10 +344,10 @@ class PrepareData(PrepareDataBase):
                                             segmentLengthFieldName, lengthFieldName]) as table:
             for row in table:
                 segmentInclination = segmentProps.get(row[0]).get("inclination")
-                row[1] = row[1] if segmentInclination < 0 else self._reverse_line_direction(row[1])
-                row[2] = segmentProps.get(row[0]).get("startZ")
-                row[3] = segmentProps.get(row[0]).get("endZ")
-                row[4] = -segmentInclination if segmentInclination < 0 else segmentInclination
+                row[1] = row[1] if segmentInclination < 0 else self._reverse_line_direction(row[1]) # ??
+                row[2] = segmentProps.get(row[0]).get("startZ") ## TODO: reverse not applied?
+                row[3] = segmentProps.get(row[0]).get("endZ") ## TODO: reverse not applied?
+                row[4] = -segmentInclination if segmentInclination < 0 else segmentInclination ## why so complicated?
                 row[6] = row[7]
 
                 # find the next down segment by comparing the points distance
