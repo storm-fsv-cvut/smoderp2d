@@ -29,62 +29,6 @@ max_infilt_capa = 0.000  # [m]
 #  the class also contains methods to store the important arrays to reload that if the time step is adjusted
 #
 class TimeStepImplicit:
-    " The function do_flow will be probably not used for implicit method."
-    # def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
-    #     rr, rc = GridGlobals.get_region_dim()
-    #     mat_efect_cont = Globals.get_mat_efect_cont()
-    #     fc = flow_control
-    #     sr = Globals.get_sr()
-    #     itera = Globals.get_itera()
-
-    #     potRain, fc.tz = rain_f.timestepRainfall(
-    #         itera, fc.total_time, delta_t, fc.tz, sr
-    #     )
-
-    #     for i in rr:
-    #         for j in rc[i]:
-    #             # TODO: variable not used. Should we delete it?
-    #             h_total_pre = surface.arr.get_item([i, j]).h_total_pre
-
-    #             surface_state = surface.arr.get_item([i, j]).state
-
-    #             if surface_state > Globals.streams_flow_inc:
-    #                 q_sheet = 0.0
-    #                 v_sheet = 0.0
-    #                 q_rill = 0.0
-    #                 v_rill = 0.0
-    #                 rill_courant = 0.0
-    #             else:
-    #                 q_sheet, v_sheet, q_rill, v_rill, fc.ratio, rill_courant = runoff(
-    #                     i, j, surface.arr.get_item([i, j]), delta_t, mat_efect_cont[i][j], fc.ratio
-    #                 )
-    #                 subsurface.runoff(i, j, delta_t, mat_efect_cont[i][j])
-
-    #             # TODO: variable not used. Should we delete it?
-    #             q_surface = q_sheet + q_rill
-    #             v = max(v_sheet, v_rill)
-    #             co = 'sheet'
-    #             courant.CFL(
-    #                 i,
-    #                 j,
-    #                 surface.arr.get_item([i, j]).h_total_pre,
-    #                 v,
-    #                 delta_t,
-    #                 mat_efect_cont[i][j],
-    #                 co,
-    #                 rill_courant)
-    #             # TODO: variable not used. Should we delet it?
-    #             rill_courant = 0.
-
-    #             # w1 = surface.arr.get_item([i, j]).vol_runoff_rill
-    #             # w2 = surface.arr.get_item([i, j]).v_rill_rest
-
-    #     return potRain
-
-
-    
-
-
 
     # objective function  
     def model(self,h_new,dt,h_old,list_fd,r,c,a,b,act_rain,infilt):
@@ -92,9 +36,13 @@ class TimeStepImplicit:
         
         #calculating sheet runoff from all cells
         sheet_flow = np.zeros((r*c))
+        
         for i in range(r):
             for j in range(c):
                sheet_flow [j+i*c] = sheet_runoff(dt,a[j+i*c],b[j+i*c],h_new[j+i*c])
+        
+        
+        sheet_flow = np.nan_to_num(sheet_flow,posinf=0,neginf=0)
         
         # setting all residuals to zero
         res = np.zeros((r*c))
@@ -104,13 +52,17 @@ class TimeStepImplicit:
             for j in range(c):
                 # acumulation 
                 res[j+i*c] += - (h_new[j+i*c] - h_old[j+i*c])/dt
+                
                 # rain 
                 res[j+i*c] += act_rain[i][j] 
+                
                 # sheet runoff
                 res[j+i*c] += - sheet_flow[j+i*c]
+                
                 # sheet inflows from neigbouring cells (try is used to avoid out of range errors)
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][0]*sheet_flow[(i-1)*c+j+1] #NE
+
                 except:
                     pass   
                 try:
@@ -139,17 +91,17 @@ class TimeStepImplicit:
                     pass
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][7]*sheet_flow[(i)*c+j+1] #E
+                    
                 except:
                     pass
                 
                 # infiltration TODO: create function for this
-                print(infilt[i][j])
-                input()
                 res[j+i*c] += - infilt[i][j]
+                
         return res
 
     # Method to performe one time step
-    def do_next_h(self, surface,  rain_arr, cumulative, 
+    def do_next_h(self, surface, subsurface, rain_arr, cumulative, 
                   hydrographs, flow_control,  potRain, delta_t,list_fd):
         # global variables for infilitration
         global infilt_capa
@@ -172,6 +124,7 @@ class TimeStepImplicit:
             potRain = ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
             )
+            
             return actRain
 
         # After the max_infilt_capa is filled       
@@ -193,21 +146,39 @@ class TimeStepImplicit:
         # Calculating the actual rain
         actRain, fc.sum_interception, rain_arr.arr.veg = \
             rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
+        
         surface.arr.cur_rain = actRain
+
+        # Upacking the old water level
         h_old = np.ravel(surface.arr.h_total_pre.tolist(0))
         
-
+        # Upacking the actual rain
         act_rain = actRain.tolist(0)
         # Extracting the smallest time step  - float insted of ma
         dt = delta_t.argmin()
+
+        # Calculating the new water level
         soulution = sp.optimize.root(self.model, h_old, args=(dt,h_old,list_fd,r,c,
                             Globals.get_mat_aa().ravel(),Globals.get_mat_b().ravel(),
                             act_rain,inf),method='lm')
-        # self.model(h_old, dt,h_old,list_fd,
-        #                  r,c,Globals.get_mat_aa().ravel(),Globals.get_mat_b().ravel(),
-        #                  act_rain,inf)
+        
         h_new = soulution.x
-        surface.arr.h_total_new = h_new
+        
+        if soulution.success == False:
+            print("Error: Time step is too big")
+            print("Time step is: " + str(dt))
+            print("Try to decrease the time step")
+            sys.exit()
+        # Saving the new water level
+        surface.arr.h_total_new = h_new.reshape(r,c)
+
+
+        # Update the cumulative values
+        cumulative.update_cumulative(
+            surface.arr,
+            subsurface.arr,
+            delta_t)
+        
+
         return actRain
-        # surface.arr.h_total_pre = h_new
                     

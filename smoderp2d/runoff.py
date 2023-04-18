@@ -301,6 +301,7 @@ class Runoff(object):
             # )
             actRain = self.time_step_implicit.do_next_h(
                 self.surface,
+                self.subsurface,
                 self.rain_arr,
                 self.cumulative,
                 self.hydrographs,
@@ -309,6 +310,7 @@ class Runoff(object):
                 self.delta_t,
                 self.list_fd    
             )
+
             self.hydrographs.write_hydrographs_record(
                 0,
                 0,
@@ -361,7 +363,7 @@ class Runoff(object):
             )
 
             self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
-
+            
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
             Logger.progress(
                 timeperc,
@@ -372,7 +374,8 @@ class Runoff(object):
 
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
-
+        print(self.surface.arr.h_total_pre)
+        input()
     def save_output(self):
         Logger.info('Saving output data...')
         # perform postprocessing - store results
