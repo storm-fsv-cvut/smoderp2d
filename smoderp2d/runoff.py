@@ -181,7 +181,7 @@ class Runoff(object):
         self.courant.set_time_step(self.delta_t)
         Logger.info('Corrected time step is {} [s]'.format(self.delta_t))
 
-        # opens files for storing hydrographs
+        # opens files for storing hydrographs 
         if Globals.points and Globals.points != "#":
             self.hydrographs = wf.Hydrographs()
             ### TODO
@@ -195,6 +195,7 @@ class Runoff(object):
             #             ))
         else:
             self.hydrographs = wf.HydrographsPass()
+
 
         # method for single time step calculation
         self.time_step = TimeStep()
@@ -267,38 +268,31 @@ class Runoff(object):
         Logger.start_time = time.time()
 
         # main loop: until the end time
-
-        self.delta_t = ma.masked_array(
-            self.delta_t, mask=GridGlobals.masks
-        )
-        #delta_t as float number not as array
-        delta_t_float = self.delta_t.argmin
+        # self.delta_t = ma.masked_array(
+        #     self.delta_t, mask=GridGlobals.masks
+        # )
+        
         while ma.any(self.flow_control.compare_time(Globals.end_time)):
 
             
             # Very paskvil job 
             #TODO: AP - probably this is not the best way to do it    
             # ----------------------------------------------
-            fc = FlowControl()
             sr = Globals.get_sr()
             itera = Globals.get_itera()
-            potRain, fc.tz = rain_f.timestepRainfall(
-            itera, fc.total_time, self.delta_t, fc.tz, sr
+            potRain, self.flow_control.tz = rain_f.timestepRainfall(
+            itera, self.flow_control.total_time, self.delta_t, self.flow_control.tz, sr
             )
+            # print("total_time",self.flow_control.total_time)
+            # print("potRain",potRain)
+            # print("fc.tz",self.flow_control.tz)
+            # print("sr",sr)
+            # input("Press Enter to continue...")
+            # print("potRain",potRain)
+            # input("Press Enter to continue...")
             # ----------------------------------------------
             # Calculate actual rainfall and adds up interception todo:
-            # AP - actual is not storred in hydrographs
-            # actRain = self.time_step.do_next_h(
-            #     self.surface,
-            #     self.subsurface,
-            #     self.rain_arr,
-            #     self.cumulative,
-            #     self.hydrographs,
-            #     self.flow_control,
-            #     self.courant,
-            #     potRain,
-            #     self.delta_t,
-            # )
+           
             actRain = self.time_step_implicit.do_next_h(
                 self.surface,
                 self.subsurface,
@@ -311,18 +305,7 @@ class Runoff(object):
                 self.list_fd    
             )
 
-            self.hydrographs.write_hydrographs_record(
-                0,
-                0,
-                self.flow_control,
-                self.courant,
-                self.delta_t,
-                self.surface,
-                self.subsurface,
-                self.cumulative,
-                actRain,
-                True
-            )
+            
 
             # print raster results in given time steps
             self.times_prt.prt(self.flow_control.total_time, self.delta_t, self.surface)
@@ -374,8 +357,33 @@ class Runoff(object):
 
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
+            # record values into hydrographs
+            self.hydrographs.write_hydrographs_record(
+                None,
+                None,
+                self.flow_control,
+                self.courant,
+                self.delta_t,
+                self.surface,
+                self.subsurface,
+                self.cumulative,
+                actRain
+            )
+            # record values into stream hydrographs 
+            self.hydrographs.write_hydrographs_record(
+                None,
+                None,
+                self.flow_control,
+                self.courant,
+                self.delta_t,
+                self.surface,
+                self.subsurface,
+                self.cumulative,
+                0.0,
+                True
+            )
         print(self.surface.arr.h_total_pre)
-        input()
+
     def save_output(self):
         Logger.info('Saving output data...')
         # perform postprocessing - store results

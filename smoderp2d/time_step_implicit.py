@@ -165,9 +165,7 @@ class TimeStepImplicit:
         h_new = soulution.x
         
         if soulution.success == False:
-            print("Error: Time step is too big")
-            print("Time step is: " + str(dt))
-            print("Try to decrease the time step")
+            print("Error: The solver did not converge")
             sys.exit()
         # Saving the new water level
         surface.arr.h_total_new = h_new.reshape(r,c)
