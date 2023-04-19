@@ -4,7 +4,9 @@
 import math
 from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
-import smoderp2d.processes.infiltration as infilt
+import smoderp2d.processes.infiltration as infiltration
+
+
 
 import copy
 import numpy as np
@@ -29,9 +31,9 @@ max_infilt_capa = 0.000  # [m]
 #  the class also contains methods to store the important arrays to reload that if the time step is adjusted
 #
 class TimeStepImplicit:
-
+    
     # objective function  
-    def model(self,h_new,dt,h_old,list_fd,r,c,a,b,act_rain,infilt):
+    def model(self,h_new,dt,h_old,list_fd,r,c,a,b,act_rain,soil_type):
 
         
         #calculating sheet runoff from all cells
@@ -47,6 +49,10 @@ class TimeStepImplicit:
         # setting all residuals to zero
         res = np.zeros((r*c))
 
+        # Calculating infiltration  - function which does not allow negative levels
+        infilt_buf = infiltration.philip_infiltration(soil_type,h_new.reshape(r,c))
+        infilt = ma.filled(infilt_buf,fill_value=0)
+        
         # calculating residual for each cell
         for i in range(r):
             for j in range(c):
@@ -94,10 +100,10 @@ class TimeStepImplicit:
                     
                 except:
                     pass
-                
+                      
                 # infiltration TODO: create function for this
                 res[j+i*c] += - infilt[i][j]
-                
+                   
         return res
 
     # Method to performe one time step
@@ -134,14 +140,15 @@ class TimeStepImplicit:
             k = iii[1]
             s = iii[2]
             # jj * 100.0 !!! smazat
-            iii[3] = infilt.phlilip(
+            iii[3] = infiltration.phlilip(
                 k,
                 s,
                 delta_t,
                 fc.total_time - infilt_time,
                 NoDataValue)
         
-        inf = iii[3].tolist(0)    
+        infiltration.set_combinatIndex(combinatIndex)
+         
 
         # Calculating the actual rain
         actRain, fc.sum_interception, rain_arr.arr.veg = \
@@ -160,7 +167,7 @@ class TimeStepImplicit:
         # Calculating the new water level
         soulution = sp.optimize.root(self.model, h_old, args=(dt,h_old,list_fd,r,c,
                             Globals.get_mat_aa().ravel(),Globals.get_mat_b().ravel(),
-                            act_rain,inf),method='lm')
+                            act_rain,surface.arr.soil_type),method='lm')
         
         h_new = soulution.x
         

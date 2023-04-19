@@ -14,7 +14,7 @@ def set_combinatIndex(newCombinatIndex):
     combinatIndex = newCombinatIndex
 
 
-def philip_infiltration(soil, bil):
+def philip_infiltration(soil,bil):
     # print 'bil v infiltraci', bil
     infiltration = combinatIndex[0][3]
     for z in combinatIndex:
@@ -28,13 +28,8 @@ def philip_infiltration(soil, bil):
             ma.where(infilt_bil_cond, bil, z[3]),
             infiltration
         )
-        bil = ma.where(
-            soil == z[0],
-            ma.where(infilt_bil_cond, 0, bil - z[3]),
-            bil
-        )
-    # print 'bil a inf v infiltraci\n', bil, infiltration
-    return bil, infiltration
+        
+    return infiltration
 
 
 def phlilip(k, s, deltaT, totalT, NoDataValue):

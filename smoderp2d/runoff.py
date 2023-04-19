@@ -283,13 +283,7 @@ class Runoff(object):
             potRain, self.flow_control.tz = rain_f.timestepRainfall(
             itera, self.flow_control.total_time, self.delta_t, self.flow_control.tz, sr
             )
-            # print("total_time",self.flow_control.total_time)
-            # print("potRain",potRain)
-            # print("fc.tz",self.flow_control.tz)
-            # print("sr",sr)
-            # input("Press Enter to continue...")
-            # print("potRain",potRain)
-            # input("Press Enter to continue...")
+            
             # ----------------------------------------------
             # Calculate actual rainfall and adds up interception todo:
            
