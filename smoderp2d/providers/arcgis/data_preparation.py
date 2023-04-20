@@ -311,7 +311,6 @@ class PrepareData(PrepareDataBase):
         shape_fieldname = "SHAPE@"
         length_fieldname = desc.lengthFieldName
 
-        print(segment_props)
         with arcpy.da.SearchCursor(self.storage.output_filepath("stream_z"), [shape_fieldname, segment_id_fieldname]) as segments:
             for row in segments:
                 startpt = row[0].firstPoint
@@ -340,7 +339,6 @@ class PrepareData(PrepareDataBase):
         arcpy.management.AddField(stream, next_down_id_fieldname, "DOUBLE")
         arcpy.management.AddField(stream, segment_length_fieldname, "DOUBLE")
 
-        print(segment_props)
         xy_tolerance = 0.01 # don't know why the arcpy.env.XYtolerance does not work (otherwise would use the arcpy.Point.equals() method)
         with arcpy.da.UpdateCursor(stream, [segment_id_fieldname, shape_fieldname, start_elev_fieldname, end_elev_fieldname, inclination_fieldname, next_down_id_fieldname,
                                             segment_length_fieldname, length_fieldname]) as table:
