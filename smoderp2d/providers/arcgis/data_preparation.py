@@ -349,7 +349,7 @@ class PrepareData(PrepareDataBase):
                 row[2] = segment_props.get(row[0]).get('start_point').Z
                 row[3] = segment_props.get(row[0]).get('end_point').Z
                 row[4] = abs(segment_inclination)
-                row[6] = segment_props.get(segment_id).get("length")
+                row[6] = segment_props.get(row[0]).get("length")
 
                 # find the next down segment by comparing the points distance
                 next_down_id = Globals.streamsNextDownIdNoSegment
