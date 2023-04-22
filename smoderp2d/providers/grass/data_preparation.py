@@ -404,15 +404,19 @@ class PrepareData(PrepareDataBase):
         next_down_field_name = self.fieldnames['stream_segment_next_down_id']
         segment_length_field_name = self.fieldnames['stream_segment_length']
 
-        # add the streamID for later use
+        # segments properties
+        segment_props = {}
+
+        # add the streamID for later use, get the 2D length of the stream segments
         Module('v.db.addcolumn',
                map=stream,
                columns=['{} integer'.format(segment_id_field_name)])
         with VectorTopo(stream) as vmap:
-            sid = 1
+            segment_id = 1
             for f in vmap:
-                f.attrs[segment_id_field_name] = sid
-                sid += 1
+                f.attrs[segment_id_field_name] = segment_id
+                segment_props.update({segment_id:{'length': f.length()}})
+                segment_id += 1
             vmap.table.conn.commit()
 
         # extract elevation for the stream segment vertices
@@ -421,37 +425,29 @@ class PrepareData(PrepareDataBase):
                input=stream, elevation=dem,
                output=stream+'3d')
 
-        # # segments properties
-        segment_props = {}
-        # # first points of segments to find the nextDownID
-        # first_points = {}
         to_reverse = []
         with Vector(stream+'3d') as vmap:
             for seg in vmap:
                 startpt = seg[0]
                 endpt = seg[-1]
                 # negative elevation change is the correct direction for stream segments
-                elevchange = endpt.z - startpt.z
+                elev_change = endpt.z - startpt.z
 
                 segment_id = seg.attrs[segment_id_field_name]
-                if elevchange == 0:
+                if elev_change == 0:
                     raise DataPreparationError(
                         'Stream segment {}: {} has zero slope'.format(segment_id_field_name, segment_id)
                     )
-
-                inclination = elevchange/f.length() # TODO: 2D or 3D?
-
-                if elevchange < 0:
-                    # first_points.update({segment_id: startpt})
-                    segment_props.update({
-                        segment_id: {"start_z": startpt.z, "end_z": endpt.z}
-                    })
+                elif elev_change < 0:
+                    segment_props.get(segment_id).update({'start_point':startpt})
+                    segment_props.get(segment_id).update({'end_point': endpt})
                 else:
                     to_reverse.append(segment_id)
-                    segment_props.update({
-                        segment_id: {"start_z": endpt.z, "end_z": startpt.z}
-                    })
-                segment_props[segment_id]["inclination"] = abs(inclination)
+                    segment_props.get(segment_id).update({'start_point': endpt})
+                    segment_props.get(segment_id).update({'end_point': startpt})
+
+                inclination = elev_change/segment_props.get(segment_id).get('length')
+                segment_props.get(segment_id).update({'inclination': inclination})
 
         self.__remove_temp_data({'name': stream+'3d', 'type': 'vector'})
 
@@ -473,30 +469,15 @@ class PrepareData(PrepareDataBase):
                tool='flip',
                where='{} in ({})'.format(segment_id_field_name, ','.join(to_reverse))
         )
-        # Module('v.to.db',
-        #        map=stream,
-        #        option='start'
-        #        columns=[start_elev_field_name]
-        # )
-        # Module('v.to.db',
-        #        map=stream,
-        #        option='end'
-        #        columns=[end_elev_field_name]
-        # )
-        # Module('v.to.db',
-        #        map=stream,
-        #        option='length'
-        #        columns=[segment_length_field_name]
-        # )
 
         with VectorTopo(stream) as vmap:
             for seg in vmap:
                 segment_id = seg.attrs[segment_id_field_name]
                 segment_inclination = segment_props.get(segment_id).get("inclination")
-                seg.attrs[start_elev_field_name] = segment_props.get(segment_id).get("start_z")
-                seg.attrs[end_elev_field_name] = segment_props.get(segment_id).get("end_z")
-                seg.attrs[inclination_field_name] = segment_inclination
-                seg.attrs[segment_length_field_name] = seg.length()
+                seg.attrs[start_elev_field_name] = segment_props.get(segment_id).get("start_z").z
+                seg.attrs[end_elev_field_name] = segment_props.get(segment_id).get("end_z").z
+                seg.attrs[inclination_field_name] = abs(segment_inclination)
+                seg.attrs[segment_length_field_name] = segment_props.get(segment_id).get("length")
 
                 # find the next down segment by comparing the points distance
                 start, end = seg.nodes()

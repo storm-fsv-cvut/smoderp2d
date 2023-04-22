@@ -309,7 +309,6 @@ class PrepareData(PrepareDataBase):
         arcpy.ddd.InterpolateShape(dem_aoi, stream, self.storage.output_filepath("stream_z"), "", "", "LINEAR", "VERTICES_ONLY")
         desc = arcpy.Describe(self.storage.output_filepath("stream_z"))
         shape_fieldname = "SHAPE@"
-        length_fieldname = desc.lengthFieldName
 
         with arcpy.da.SearchCursor(self.storage.output_filepath("stream_z"), [shape_fieldname, segment_id_fieldname]) as segments:
             for row in segments:
@@ -320,8 +319,9 @@ class PrepareData(PrepareDataBase):
 
                 if elev_change == 0:
                     raise DataPreparationError(
-                        'Stream segment '+segment_id_fieldname+': {} has zero inclination'.format(row[1]))
-                if elev_change < 0:
+                        'Stream segment {}: {} has zero slope'.format(segment_id_field_name, row[1])
+                    )
+                elif elev_change < 0:
                     segment_props.get(row[1]).update({'start_point':startpt})
                     segment_props.get(row[1]).update({'end_point': endpt})
                 else:
@@ -340,7 +340,8 @@ class PrepareData(PrepareDataBase):
         arcpy.management.AddField(stream, segment_length_fieldname, "DOUBLE")
 
         xy_tolerance = 0.01 # don't know why the arcpy.env.XYtolerance does not work (otherwise would use the arcpy.Point.equals() method)
-        with arcpy.da.UpdateCursor(stream, [segment_id_fieldname, shape_fieldname, start_elev_fieldname, end_elev_fieldname, inclination_fieldname, next_down_id_fieldname,
+        with arcpy.da.UpdateCursor(stream, [segment_id_fieldname, shape_fieldname, start_elev_fieldname,
+                                            end_elev_fieldname, inclination_fieldname, next_down_id_fieldname,
                                             segment_length_fieldname, length_fieldname]) as table:
             for row in table:
                 segment_inclination = segment_props.get(row[0]).get('inclination')
@@ -348,25 +349,26 @@ class PrepareData(PrepareDataBase):
                 row[2] = segment_props.get(row[0]).get('start_point').Z
                 row[3] = segment_props.get(row[0]).get('end_point').Z
                 row[4] = abs(segment_inclination)
-                row[6] = row[7]
+                row[6] = segment_props.get(segment_id).get("length")
 
                 # find the next down segment by comparing the points distance
                 next_down_id = Globals.streamsNextDownIdNoSegment
                 matched = 0
                 for segment_id in segment_props.keys():
-                    dist = pow(pow(row[1].lastPoint.X-segment_props.get(segment_id).get('start_point').X, 2)+pow(row[1].lastPoint.Y-segment_props.get(segment_id).get('start_point').Y, 2), 0.5)
-                    if (dist < xy_tolerance):
+                    dist = pow(pow(row[1].lastPoint.X-segment_props.get(segment_id).get('start_point').X, 2)+
+                               pow(row[1].lastPoint.Y-segment_props.get(segment_id).get('start_point').Y, 2), 0.5)
+                    if dist < xy_tolerance:
                         next_down_id = segment_id
                         matched += 1
                 if matched > 1:
                     row[5] = None
                     raise DataPreparationError(
-                        'Incorrect stream network topology downstream segment streamID: {}. The network can not bifurcate.'.format(row[0])
+                        'Incorrect stream network topology downstream segment streamID: {}. '
+                        'The network can not bifurcate.'.format(row[0])
                     )
                 else:
                     row[5] = next_down_id
                 table.updateRow(row)
-
 
     def _reverse_line_direction(self, line):
         """Flips the order of points if a line to change its direction
