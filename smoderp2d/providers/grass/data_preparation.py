@@ -474,8 +474,8 @@ class PrepareData(PrepareDataBase):
             for seg in vmap:
                 segment_id = seg.attrs[segment_id_field_name]
                 segment_inclination = segment_props.get(segment_id).get("inclination")
-                seg.attrs[start_elev_field_name] = segment_props.get(segment_id).get("start_z").z
-                seg.attrs[end_elev_field_name] = segment_props.get(segment_id).get("end_z").z
+                seg.attrs[start_elev_field_name] = segment_props.get(segment_id).get("start_point").z
+                seg.attrs[end_elev_field_name] = segment_props.get(segment_id).get("end_point").z
                 seg.attrs[inclination_field_name] = abs(segment_inclination)
                 seg.attrs[segment_length_field_name] = segment_props.get(segment_id).get("length")
 
