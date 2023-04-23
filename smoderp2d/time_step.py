@@ -11,7 +11,7 @@ import numpy as np
 import numpy.ma as ma
 
 
-from smoderp2d.core.surface import runoff
+# from smoderp2d.core.surface import runoff
 from smoderp2d.core.surface import surface_retention
 
 infilt_capa = 0

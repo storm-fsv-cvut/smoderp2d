@@ -194,6 +194,7 @@ class Hydrographs:
                     linebil[0], cumulativelines[1],
                     sep=sep
                 )
+                
                 # line += subsurface.return_str_vals(l,m,SEP,dt) + sep   #
                 # prozatim
                 if Globals.extraOut:

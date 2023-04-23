@@ -20,10 +20,12 @@ import math
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
 from smoderp2d.core.surface import Surface
+from smoderp2d.core.surface import sheet_runoff
 from smoderp2d.core.subsurface import Subsurface
 from smoderp2d.core.cumulative_max import Cumulative
+import smoderp2d.processes.infiltration as infilt
 
-from smoderp2d.time_step import TimeStep
+# from smoderp2d.time_step import TimeStep
 from smoderp2d.courant import Courant
 from smoderp2d.time_step_implicit import TimeStepImplicit
 
@@ -198,7 +200,7 @@ class Runoff(object):
 
 
         # method for single time step calculation
-        self.time_step = TimeStep()
+        
         self.time_step_implicit = TimeStepImplicit()
 
         # record values into hydrographs at time zero
@@ -218,18 +220,18 @@ class Runoff(object):
             )
         )
         # record values into stream hydrographs at time zero
-        self.hydrographs.write_hydrographs_record(
-            None,
-            None,
-            self.flow_control,
-            self.courant,
-            self.delta_t,
-            self.surface,
-            self.subsurface,
-            self.cumulative,
-            0.0,
-            True
-        )
+        # self.hydrographs.write_hydrographs_record(
+        #     None,
+        #     None,
+        #     self.flow_control,
+        #     self.courant,
+        #     self.delta_t,
+        #     self.surface,
+        #     self.subsurface,
+        #     self.cumulative,
+        #     0.0,
+        #     True
+        # )
 
         Logger.info('-' * 80)
 
@@ -273,7 +275,6 @@ class Runoff(object):
         # )
         
         while ma.any(self.flow_control.compare_time(Globals.end_time)):
-
             
             # Very paskvil job 
             #TODO: AP - probably this is not the best way to do it    
@@ -285,7 +286,7 @@ class Runoff(object):
             )
             
             # ----------------------------------------------
-            # Calculate actual rainfall and adds up interception todo:
+            # Calculate 
            
             actRain = self.time_step_implicit.do_next_h(
                 self.surface,
@@ -300,7 +301,17 @@ class Runoff(object):
             )
 
             
-
+             # Saving results to surface structure - looks akward, but don't cost many time to compute
+            # self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
+            # self.surface.arr.h_sheet = ma.copy(self.surface.arr.h_total_pre)
+            # for i in range(self.r):
+            #     for j in range(self.c):
+            #         self.surface.arr.vol_runoff[i][j] = sheet_runoff(
+            #             Globals.get_mat_aa().ravel()[j+i*self.c], 
+            #             Globals.get_mat_b().ravel()[j+i*self.c],
+            #             self.surface.arr.h_sheet.ravel()[j+i*self.c])*self.delta_t.argmin()/pixel_area
+            # self.surface.arr.infiltration = infilt.philip_infiltration(self.surface.arr.soil_type, self.surface.arr.h_total_new)*self.delta_t
+            
             # print raster results in given time steps
             self.times_prt.prt(self.flow_control.total_time, self.delta_t, self.surface)
 
@@ -339,8 +350,8 @@ class Runoff(object):
                 self.surface.arr.state
             )
 
-            self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
             
+
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
             Logger.progress(
                 timeperc,
@@ -349,8 +360,8 @@ class Runoff(object):
                 self.flow_control.total_time + self.delta_t
             )
 
-            # proceed to next time
-            self.flow_control.update_total_time(self.delta_t)
+           
+
             # record values into hydrographs
             self.hydrographs.write_hydrographs_record(
                 None,
@@ -363,20 +374,12 @@ class Runoff(object):
                 self.cumulative,
                 actRain
             )
-            # record values into stream hydrographs 
-            self.hydrographs.write_hydrographs_record(
-                None,
-                None,
-                self.flow_control,
-                self.courant,
-                self.delta_t,
-                self.surface,
-                self.subsurface,
-                self.cumulative,
-                0.0,
-                True
-            )
-        print(self.surface.arr.h_total_pre)
+
+             # proceed to next time
+            self.flow_control.update_total_time(self.delta_t)
+            self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
+        
+
 
     def save_output(self):
         Logger.info('Saving output data...')

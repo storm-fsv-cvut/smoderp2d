@@ -28,7 +28,7 @@ def philip_infiltration(soil,bil):
             ma.where(infilt_bil_cond, bil, z[3]),
             infiltration
         )
-        
+    
     return infiltration
 
 
@@ -41,7 +41,8 @@ def phlilip(k, s, deltaT, totalT, NoDataValue):
         # try:
     else:
 
-        infiltration = (0.5 * s / ma.sqrt(totalT + deltaT) + k) * deltaT
+        infiltration = (0.5 * s / ma.sqrt(totalT + deltaT) + k) 
+        
         # except ValueError:
     # print k, s
     return infiltration

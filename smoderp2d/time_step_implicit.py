@@ -13,8 +13,8 @@ import numpy as np
 import numpy.ma as ma
 import scipy as sp
 
-from smoderp2d.core.surface import runoff
-from smoderp2d.core.surface import surface_retention
+# from smoderp2d.core.surface import runoff
+# from smoderp2d.core.surface import surface_retention
 
 from smoderp2d.core.general import Globals, GridGlobals
 
@@ -33,19 +33,29 @@ max_infilt_capa = 0.000  # [m]
 class TimeStepImplicit:
     
     # objective function  
-    def model(self,h_new,dt,h_old,list_fd,r,c,a,b,act_rain,soil_type):
+    def model(self,
+              h_new,
+              dt,
+              h_old,
+              list_fd,
+              r,c,
+              a,b,
+              act_rain,
+              soil_type,
+              pixel_area):
 
-        
         #calculating sheet runoff from all cells
         sheet_flow = np.zeros((r*c))
-        
+        # print(a)
+        # print(b)
+        # input()
         for i in range(r):
             for j in range(c):
-               sheet_flow [j+i*c] = sheet_runoff(dt,a[j+i*c],b[j+i*c],h_new[j+i*c])
+               sheet_flow [j+i*c] = sheet_runoff(a[i][j],b[i][j],h_new[j+i*c])/pixel_area # [m/s] 
         
-        
+        # qsheet is not used / 
+
         sheet_flow = np.nan_to_num(sheet_flow,posinf=0,neginf=0)
-        
         # setting all residuals to zero
         res = np.zeros((r*c))
 
@@ -57,52 +67,67 @@ class TimeStepImplicit:
         for i in range(r):
             for j in range(c):
                 # acumulation 
-                res[j+i*c] += - (h_new[j+i*c] - h_old[j+i*c])/dt
+                res[j+i*c] += - (h_new[j+i*c] - h_old[j+i*c])/dt #m/s
                 
                 # rain 
-                res[j+i*c] += act_rain[i][j] 
+                res[j+i*c] += act_rain[i][j] /dt #m/s
                 
                 # sheet runoff
-                res[j+i*c] += - sheet_flow[j+i*c]
+                res[j+i*c] += - sheet_flow[j+i*c] 
                 
                 # sheet inflows from neigbouring cells (try is used to avoid out of range errors)
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][0]*sheet_flow[(i-1)*c+j+1] #NE
-
+                    # print(i,j,list_fd[j+i*c][0],sheet_flow[(i-1)*c+j+1],"NE")
+                    # input()
                 except:
                     pass   
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][1]*sheet_flow[(i-1)*c+j] #N
+                    # print(i,j,list_fd[j+i*c][1],sheet_flow[(i-1)*c+j],"N")
+                    # input()
                 except:
                     pass 
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][2]*sheet_flow[(i-1)*c+j-1] #NW
+                    # print(i,j,list_fd[j+i*c][2],sheet_flow[(i-1)*c+j-1],"NW")
+                    # input()
                 except:
                     pass
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][3]*sheet_flow[(i)*c+j-1] #W
+                    # print(i,j,list_fd[j+i*c][3],sheet_flow[(i)*c+j-1],"W")
+                    # input()
                 except:
                     pass
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][4]*sheet_flow[(i+1)*c+j-1] #SW
+                    # print(i,j,list_fd[j+i*c][4],sheet_flow[(i+1)*c+j-1],"SW")
+                    # input()
                 except:
                     pass
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][5]*sheet_flow[(i+1)*c+j] #S
+                    # print(i,j,list_fd[j+i*c][5],sheet_flow[(i+1)*c+j],"S")
+                    # input()    
                 except:
                     pass
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][6]*sheet_flow[(i+1)*c+j+1] #SE
+                    # print(i,j,list_fd[j+i*c][6],sheet_flow[(i+1)*c+j+1],    "SE")
+                    # input()
                 except:
                     pass
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][7]*sheet_flow[(i)*c+j+1] #E
-                    
+                    # print(i,j,list_fd[j+i*c][7],sheet_flow[(i)*c+j+1],"E")
+                    # input()
                 except:
                     pass
+                    
                       
-                # infiltration TODO: create function for this
-                res[j+i*c] += - infilt[i][j]
+                # infiltration 
+                res[j+i*c] += - infilt[i][j] 
                    
         return res
 
@@ -165,20 +190,36 @@ class TimeStepImplicit:
         dt = delta_t.argmin()
 
         # Calculating the new water level
-        soulution = sp.optimize.root(self.model, h_old, args=(dt,h_old,list_fd,r,c,
-                            Globals.get_mat_aa().ravel(),Globals.get_mat_b().ravel(),
-                            act_rain,surface.arr.soil_type),method='lm')
+        soulution = sp.optimize.root(self.model, h_old, 
+                                     args=(dt,
+                                            h_old,
+                                            list_fd,
+                                            r,c,
+                                            Globals.get_mat_aa(),Globals.get_mat_b(),
+                                            act_rain,
+                                            surface.arr.soil_type,
+                                            pixel_area)
+                                        ,method='hybr')
         
         h_new = soulution.x
         
         if soulution.success == False:
             print("Error: The solver did not converge")
-            sys.exit()
+            input("Press Enter to continue...")
         # Saving the new water level
         surface.arr.h_total_new = h_new.reshape(r,c)
-
-
-        # Update the cumulative values
+        
+        # Saving results to surface structure (untidy solution) - looks akward, but don't cost much time to compute
+        surface.arr.h_sheet = ma.copy(surface.arr.h_total_pre) # [m] - previous time stap as in the explicit version
+        for i in range(r):
+            for j in range(c):
+                surface.arr.vol_runoff[i][j] = sheet_runoff(
+                    Globals.get_mat_aa()[i][j], 
+                    Globals.get_mat_b()[i][j],
+                    surface.arr.h_sheet.ravel()[j+i*c])*dt
+        surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type, surface.arr.h_total_new)*delta_t#[m]
+            
+         # Update the cumulative values
         cumulative.update_cumulative(
             surface.arr,
             subsurface.arr,
