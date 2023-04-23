@@ -78,9 +78,12 @@ class Hydrographs:
         iSurface = 0
 
         self.header = []
-
+        
+        # input('sep={sep}'.format(sep=SEP))
         for i in range(self.n):
-            header = '# Hydrograph at the point with coordinates: {:.8} {:.8}{}'.format(
+            # for correct opening in e.g. excel
+            header = 'sep={sep}{line}'.format(sep=SEP,line= os.linesep)
+            header += '#Hydrograph at the point with coordinates: {:.8} {:.8}{}'.format(
                 float(self.point_int[i][3]), float(self.point_int[i][4]), os.linesep)
             header += '# A pixel size is [m2]: {}{}'.format(
                     GridGlobals.pixel_area,os.linesep)
