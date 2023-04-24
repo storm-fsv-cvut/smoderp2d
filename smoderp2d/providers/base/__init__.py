@@ -118,8 +118,9 @@ class BaseProvider(object):
                 "%(asctime)s - %(name)s - %(levelname)s - %(message)s - [%(module)s:%(lineno)s]"
             )
         handler.setFormatter(formatter)
-        if not Logger.hasHandlers(): # avoid duplicated handlers (eg. in case of ArcGIS)
-            Logger.addHandler(handler)
+        if sys.version_info.major >= 3:
+            if not Logger.hasHandlers(): # avoid duplicated handlers (eg. in case of ArcGIS)
+                Logger.addHandler(handler)
 
     def __load_hidden_config(self):
         # load hidden configuration with advanced settings 
