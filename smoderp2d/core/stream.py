@@ -51,7 +51,7 @@ class Reach(object):
             #ToDO - ve stream_f-py - mame u paraboly napsano, ze nefunguje
         else:
             self.outflow_method = stream_f.rectangle
-            #ToDo - zahodit posledni else a místo toho dat hlasku, ze to je mimo rozsah
+            #ToDo - zahodit posledni else a misto toho dat hlasku, ze to je mimo rozsah
 
 
 # Documentation for a class.
