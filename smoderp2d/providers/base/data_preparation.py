@@ -783,8 +783,12 @@ class PrepareDataBase(ABC):
             )
 
     def _get_streams_attr_(self):
-        fields = [ self.fieldnames['stream_segment_id'],  self._input_params['streams_channel_shape_code'], self.fieldnames['stream_segment_next_down_id'], self.fieldnames['stream_segment_length'], \
-                  self.fieldnames['stream_segment_inclination']] + self.stream_shape_fields
+        fields = [
+            self.fieldnames['stream_segment_id'],
+            self._input_params['streams_channel_shape_code'],
+            self.fieldnames['stream_segment_next_down_id'],
+            self.fieldnames['stream_segment_length'], 
+            self.fieldnames['stream_segment_inclination']] + self.stream_shape_fields
         
         stream_attr = {}
         for f in fields:

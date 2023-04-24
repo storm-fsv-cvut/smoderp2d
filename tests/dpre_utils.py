@@ -48,14 +48,6 @@ def report_pickle_difference(new_output, reference):
                 new_output_dict = pickle.load(left)
                 reference_dict = pickle.load(right)
 
-            # TBD: to be removed on new reference data
-            reference_dict_m = {}
-            for k, v in reference_dict.items():
-                if isinstance(v, bytes):
-                    v = v.decode('utf-8')
-                reference_dict_m[k.decode('utf-8')] = v
-            reference_dict = reference_dict_m
-
             extract_pickle_data(new_output_dict, _extract_target_dir(new_output))
             extract_pickle_data(reference_dict, _extract_target_dir(reference))
 

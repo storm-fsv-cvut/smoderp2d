@@ -421,7 +421,8 @@ class PrepareData(PrepareDataBase):
                     for i in range(len(row)):
                         if row[i] in (" ", None):
                             raise DataPreparationError(
-                                "Empty value in {} ({}) found.".format(self._input_params["channel_properties_table"], fields[i])
+                                "Empty value in {} ({}) found.".format(
+                                    self._input_params["channel_properties_table"], fields[i])
                             )
                         stream_attr[fields[i]].append(row[i])
                         i += 1

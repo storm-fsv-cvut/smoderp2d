@@ -553,7 +553,7 @@ class PrepareData(PrepareDataBase):
                other_column=stream_shape_code,
                subset_columns=self.stream_shape_fields)
 
-        stream_attr = self._stream_attr_(self.storage.primary_key)
+        stream_attr = self._get_streams_attr_()
         with Vector(stream) as vmap:
             vmap.table.filters.select(*stream_attr.keys())
             for row in vmap.table:
@@ -562,12 +562,11 @@ class PrepareData(PrepareDataBase):
                 for i in range(len(row)):
                     if row[i] in (" ", None):
                         raise DataPreparationError(
-                            "Empty value in tab_stream_shape ({}) found.".format(fields[i])
+                            "Empty value in {} ({}) found.".format(
+                                self._input_params["channel_properties_table"], fields[i])
                         )
                     stream_attr[fields[i]].append(row[i])
                     i += 1
-
-        stream_attr['fid'] = stream_attr.pop(self.storage.primary_key)
 
         return stream_attr
                     
