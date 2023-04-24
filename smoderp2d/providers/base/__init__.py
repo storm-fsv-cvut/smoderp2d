@@ -450,9 +450,9 @@ class BaseProvider(object):
                 directory=cumulative.data[item].data_type
             )
 
-        finState = np.zeros(np.shape(surface_array), int)
+        finState = np.zeros(np.shape(surface_array), np.int32)
         finState.fill(GridGlobals.NoDataValue)
-        vRest = np.zeros(np.shape(surface_array), float)
+        vRest = np.zeros(np.shape(surface_array), np.float32)
         vRest.fill(GridGlobals.NoDataValue)
         totalBil = cumulative.infiltration.copy()
         totalBil.fill(0.0)
