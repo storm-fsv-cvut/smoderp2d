@@ -71,7 +71,7 @@ def rectangle(reach, dt):
 
     dV = reach.V_in_from_field + reach.vol_rest + \
         reach.V_in_from_reach    # z okoli, predtim, odtok  : epizoda
-    # Question ToDo nevim co je V_in_from_field - odhaduji, že to je pritok z plosneho odotku prislusnych pixelu v danem casovem kroku pro dany
+    # Question ToDo nevim co je V_in_from_field - odhaduji, ze to je pritok z plosneho odotku prislusnych pixelu v danem casovem kroku pro dany
     h = dV / (reach.b * reach.length)  # vyska hladiny   : epizoda
     H = hp + h                        # total vyska hl. : epizoda
     O = reach.b + 2 * H  # omoceny obvod
