@@ -48,10 +48,10 @@ class Reach(object):
             self.outflow_method = stream_f.triangle
         elif channel_shapetype == 3:  # parabola
             self.outflow_method = stream_f.parabola
-            #ToDO - ve stream_f-py - máme u paraboly napsáno, že nefunguje
+            #ToDO - ve stream_f-py - mame u paraboly napsano, ze nefunguje
         else:
             self.outflow_method = stream_f.rectangle
-            #ToDo - zahodit poslední else a místo toho dát hlášku, že to je mimo rozsah
+            #ToDo - zahodit posledni else a místo toho dat hlasku, ze to je mimo rozsah
 
 
 # Documentation for a class.
