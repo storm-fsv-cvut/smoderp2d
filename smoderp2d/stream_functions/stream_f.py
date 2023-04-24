@@ -66,7 +66,7 @@ def rectangle(reach, dt):
         hp = Vp / (reach.b * reach.length)  # vyska hladiny   : baseflow
     else:
         # Vp == 0.0
-        hp == 0.0
+        hp = 0.0
 
 
     dV = reach.V_in_from_field + reach.vol_rest + \
@@ -109,7 +109,7 @@ def trapezoid(reach, dt):
         hp = compute_h(A=Vp / reach.length, m=reach.m, b=reach.b)  # vyska hladiny   : baseflow
     else:
         #Vp == 0.0
-        hp == 0.0
+        hp = 0.0
 
     B = reach.b + 2.0 * hp * reach.m  # b pro pocatecni stav (q365)
     Bb = B + hp * reach.m
@@ -156,7 +156,7 @@ def triangle(reach, dt):
         hp = math.pow(Vp / (reach.length * reach.m), 0.5)  # vyska hladiny   : baseflow
     else:
         # Vp == 0.0
-        hp == 0.0
+        hp = 0.0
 
 
     B = 2.0 * hp *  reach.m                             # sirka zakladny  : baseflow \/
