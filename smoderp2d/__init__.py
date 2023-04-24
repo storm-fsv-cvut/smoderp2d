@@ -29,6 +29,8 @@ from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
 from smoderp2d.exceptions import SmoderpError
 from smoderp2d.core.general import Globals
 
+__version__ = "1.0.dev"
+
 class Runner(object):
     def __init__(self):
         provider_class = self._provider_factory()

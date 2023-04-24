@@ -7,7 +7,6 @@ tests/grassdata/smoderp2d-location/test
 tests/grassdata/smoderp2d-location/water
 tests/data/output*
 .idea/
-*.pyt.xml
 # direnv
 .envrc
 .direnv
