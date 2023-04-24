@@ -199,7 +199,7 @@ def triangle(reach, dt):
 # Function calculates the discharge in parabola shaped reach of a stream.
 #
 #
-def parabola(reach, dt): # ToDo - podívat se proč parabola nefunguje, ale to nechme až rozchodíme vůbec toky a Qgis
+def parabola(reach, dt): # ToDo - podívat se proc parabola nefunguje, ale to nechme až rozchodime vubec toky a Qgis
     raise NotImplementedError('Parabola shaped stream reach has not been implemented yet')
     # a = reach.b   #vzd ohniska od vrcholu
     # u = 3.0 #(h=B/u  B=f(a))
@@ -224,7 +224,7 @@ def parabola(reach, dt): # ToDo - podívat se proč parabola nefunguje, ale to n
     # reach.h = H
 
 
-# def stream_reach_max(toky): ToDo - tohle asi zachovávalo maxima a přidávalo je to do output vrstvy toků, nevím jestli tuto funkcionalitu převzala nějaká jiná část kodu.
+# def stream_reach_max(toky): ToDo - tohle asi zachovavalo maxima a pridavalo je to do output vrstvy toku, nevim jestli tuto funkcionalitu prevzala nejaka jina cast kodu.
     # fc = toky
     # field2 = ["FID","V_infl_ce","total_Vic","V_infl","total_Vi","V_outfl","total_Vo","NS","total_NS","Q_outfl","max_Q","h","max_h","vs","max_vs","V_zbyt","total_Vz","V_infl_us", "total_Viu"]
     # with arcpy.da.UpdateCursor(fc, field2) as cursor:
