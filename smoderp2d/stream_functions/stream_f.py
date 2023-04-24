@@ -199,7 +199,7 @@ def triangle(reach, dt):
 # Function calculates the discharge in parabola shaped reach of a stream.
 #
 #
-def parabola(reach, dt): # ToDo - podívat se proc parabola nefunguje, ale to nechme až rozchodime vubec toky a Qgis
+def parabola(reach, dt): # ToDo - podivat se proc parabola nefunguje, ale to nechme az rozchodime vubec toky a Qgis
     raise NotImplementedError('Parabola shaped stream reach has not been implemented yet')
     # a = reach.b   #vzd ohniska od vrcholu
     # u = 3.0 #(h=B/u  B=f(a))
