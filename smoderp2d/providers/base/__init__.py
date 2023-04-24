@@ -450,7 +450,7 @@ class BaseProvider(object):
                 directory=cumulative.data[item].data_type
             )
 
-        finState = np.zeros(np.shape(surface_array), np.int32)
+        finState = np.zeros(np.shape(surface_array), np.float32)
         finState.fill(GridGlobals.NoDataValue)
         vRest = np.zeros(np.shape(surface_array), np.float32)
         vRest.fill(GridGlobals.NoDataValue)
