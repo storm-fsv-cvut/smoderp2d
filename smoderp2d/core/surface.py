@@ -185,6 +185,7 @@ class Surface(GridGlobals, Stream, Kinematic):
                 arr.h_total_new[i, j],
                 sep=sep
             )
+            
 
             if Globals.isRill:
                 line += '{sep}{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}' \
@@ -201,6 +202,7 @@ class Surface(GridGlobals, Stream, Kinematic):
                     vol_runoff + arr.vol_runoff_rill[i, j],
                     sep=sep
                 )
+                
 
             bil_ = arr.h_total_pre[i, j] * self.pixel_area + \
                    arr.cur_rain[i, j] * self.pixel_area + \
@@ -211,7 +213,7 @@ class Surface(GridGlobals, Stream, Kinematic):
                     arr.h_total_new[i, j] * self.pixel_area
             # << + arr.vol_rest + arr.v_rill_rest) +
             # (arr.vol_rest_pre + arr.v_rill_rest_pre)
-
+        
         return line, bil_
 
 
@@ -295,20 +297,20 @@ class Surface(GridGlobals, Stream, Kinematic):
 #            sur.vol_runoff_rill, v_rill
 
 
-def update_state1(ht_1, hcrit, state, rill_width):
-    """TODO.
+# def update_state1(ht_1, hcrit, state, rill_width):
+#     """TODO.
 
-    :param ht_1: TODO
-    :param hcrit: TODO
-    :param state: TODO (not used)
-    :patam rill_width: TODO (not used)
+#     :param ht_1: TODO
+#     :param hcrit: TODO
+#     :param state: TODO (not used)
+#     :patam rill_width: TODO (not used)
 
-    :return: TODO
-    """
-    if ht_1 > hcrit:
-        if state == 0:
-            return 1
-    return state
+#     :return: TODO
+#     """
+#     if ht_1 > hcrit:
+#         if state == 0:
+#             return 1
+#     return state
 
 
 # def compute_h_hrill(h_total_pre, h_crit, state, rill_width, h_rill_pre):
@@ -358,6 +360,7 @@ def sheet_runoff( a, b, h_sheet):
 
     
     vol_runoff = q_sheet  * GridGlobals.get_size()[0]
+    
 
     
     

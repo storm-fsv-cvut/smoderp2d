@@ -235,9 +235,10 @@ class Runoff(object):
 
         Logger.info('-' * 80)
 
-        # list of flewdirection vectors¨
+        # list of flewdirection vectors - incialization
         self.r,self.c = GridGlobals.get_dim()
         self.list_fd = [[] for i in range(self.r*self.c)]
+        
 
     def run(self):
         """ The computation of the water level development
@@ -269,11 +270,11 @@ class Runoff(object):
         Logger.info('Start of computing...')
         Logger.start_time = time.time()
 
-        # main loop: until the end time
-        # self.delta_t = ma.masked_array(
-        #     self.delta_t, mask=GridGlobals.masks
-        # )
         
+        
+       
+        self.flow_control.save_vars()
+        # main loop: until the end time
         while ma.any(self.flow_control.compare_time(Globals.end_time)):
             
             # Very paskvil job 
@@ -282,7 +283,7 @@ class Runoff(object):
             sr = Globals.get_sr()
             itera = Globals.get_itera()
             potRain, self.flow_control.tz = rain_f.timestepRainfall(
-            itera, self.flow_control.total_time, self.delta_t, self.flow_control.tz, sr
+            itera, self.flow_control.total_time+self.delta_t, self.delta_t, self.flow_control.tz, sr
             )
             
             # ----------------------------------------------
@@ -372,7 +373,7 @@ class Runoff(object):
                 self.surface,
                 self.subsurface,
                 self.cumulative,
-                actRain
+                actRain,
             )
 
              # proceed to next time

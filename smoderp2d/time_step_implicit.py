@@ -34,7 +34,7 @@ class TimeStepImplicit:
     
     # objective function  
     def model(self,
-              h_new,
+                h_new,
               dt,
               h_old,
               list_fd,
@@ -49,20 +49,17 @@ class TimeStepImplicit:
         # print(a)
         # print(b)
         # input()
-        for i in range(r):
-            for j in range(c):
-               sheet_flow [j+i*c] = sheet_runoff(a[i][j],b[i][j],h_new[j+i*c])/pixel_area # [m/s] 
+       
+        sheet_flow =ma.filled(sheet_runoff(a,b,ma.array(h_new.reshape(r,c))),fill_value=0.0).ravel()/pixel_area # [m/s] 
         
-        # qsheet is not used / 
 
         sheet_flow = np.nan_to_num(sheet_flow,posinf=0,neginf=0)
         # setting all residuals to zero
         res = np.zeros((r*c))
 
         # Calculating infiltration  - function which does not allow negative levels
-        infilt_buf = infiltration.philip_infiltration(soil_type,h_new.reshape(r,c))
+        infilt_buf = infiltration.philip_infiltration(soil_type,h_new.reshape(r,c)/dt)
         infilt = ma.filled(infilt_buf,fill_value=0)
-        
         # calculating residual for each cell
         for i in range(r):
             for j in range(c):
@@ -70,7 +67,7 @@ class TimeStepImplicit:
                 res[j+i*c] += - (h_new[j+i*c] - h_old[j+i*c])/dt #m/s
                 
                 # rain 
-                res[j+i*c] += act_rain[i][j] /dt #m/s
+                res[j+i*c] += act_rain[i][j] #m/s
                 
                 # sheet runoff
                 res[j+i*c] += - sheet_flow[j+i*c] 
@@ -164,12 +161,12 @@ class TimeStepImplicit:
             index = iii[0]
             k = iii[1]
             s = iii[2]
-            # jj * 100.0 !!! smazat
+            
             iii[3] = infiltration.phlilip(
                 k,
                 s,
                 delta_t,
-                fc.total_time - infilt_time,
+                fc.total_time + delta_t -  infilt_time,
                 NoDataValue)
         
         infiltration.set_combinatIndex(combinatIndex)
@@ -184,13 +181,15 @@ class TimeStepImplicit:
         # Upacking the old water level
         h_old = np.ravel(surface.arr.h_total_pre.tolist(0))
         
-        # Upacking the actual rain
-        act_rain = actRain.tolist(0)
+        # Changing the actRain to a list - inserting 0 for the NoDataValues	
+        act_rain = (actRain/delta_t).tolist(0)
         # Extracting the smallest time step  - float insted of ma
         dt = delta_t.argmin()
-
+        # Setting the initial guess for the solver
+        
+        h_0 = h_old 
         # Calculating the new water level
-        soulution = sp.optimize.root(self.model, h_old, 
+        soulution = sp.optimize.root(self.model, h_0, 
                                      args=(dt,
                                             h_old,
                                             list_fd,
@@ -198,26 +197,31 @@ class TimeStepImplicit:
                                             Globals.get_mat_aa(),Globals.get_mat_b(),
                                             act_rain,
                                             surface.arr.soil_type,
-                                            pixel_area)
-                                        ,method='hybr')
+                                            pixel_area),
+                                        method='krylov')
         
         h_new = soulution.x
         
         if soulution.success == False:
             print("Error: The solver did not converge")
+            print("Objective function (vorst residual)= ", max(self.model(h_new,dt,
+                                            h_old,
+                                            list_fd,
+                                            r,c,
+                                            Globals.get_mat_aa(),Globals.get_mat_b(),
+                                            act_rain,
+                                            surface.arr.soil_type,
+                                            pixel_area)))
+            print("h_new = ",h_new)
             input("Press Enter to continue...")
         # Saving the new water level
-        surface.arr.h_total_new = h_new.reshape(r,c)
-        
+        surface.arr.h_total_new = ma.array(h_new.reshape(r,c),mask=GridGlobals.masks) 
+
         # Saving results to surface structure (untidy solution) - looks akward, but don't cost much time to compute
         surface.arr.h_sheet = ma.copy(surface.arr.h_total_pre) # [m] - previous time stap as in the explicit version
-        for i in range(r):
-            for j in range(c):
-                surface.arr.vol_runoff[i][j] = sheet_runoff(
-                    Globals.get_mat_aa()[i][j], 
-                    Globals.get_mat_b()[i][j],
-                    surface.arr.h_sheet.ravel()[j+i*c])*dt
-        surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type, surface.arr.h_total_new)*delta_t#[m]
+        
+        surface.arr.vol_runoff = sheet_runoff(Globals.get_mat_aa(), Globals.get_mat_b(), surface.arr.h_sheet)*dt #[m]        
+        surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type, surface.arr.h_total_new)*dt #[m]
             
          # Update the cumulative values
         cumulative.update_cumulative(
