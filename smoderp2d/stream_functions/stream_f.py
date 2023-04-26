@@ -6,11 +6,7 @@ from inspect import currentframe, getframeinfo
 
 from smoderp2d.providers import Logger
 
-# Jen na debug, umi to zjistit nazev souboru a radek odkud se\n
-#  <em>print frameinfo.filename, frameinfo.lineno</em>\n
-#  tiskne
 frameinfo = getframeinfo(currentframe())
-
 
 # Newton method to compute water level in trapezoidal reach,
 #
@@ -25,35 +21,28 @@ frameinfo = getframeinfo(currentframe())
 #   \f]
 #
 #   @return h water level in the trapezoid
-#
-# hura
 def compute_h(A, m, b, err=0.0001, max_iter=20):
     def feval(h):
         return b * h + m * h * h - A
 
     def dfdheval(h):
         return b + 2.0 * m * h
-    # prvni odhad vysky
+    # first height estimation
     h_pre = A / b
     h = h_pre
     iter_ = 1
-    while (feval(h_pre) > err):
+    while feval(h_pre) > err:
         h = h_pre - feval(h_pre) / dfdheval(h_pre)
         h_pre = h
         if iter_ >= max_iter:
             Logger.error(
-                "if file %s %s %s %s %s %s %s %s",
+                "if file {} near line {} \n\t newton solver didnt converge after {max_iter} iterations (max_iter={max_iter})",
                 frameinfo.filename,
-                "near line ",
                 frameinfo.lineno,
-                "\n\t newton solver didnt converge after",
-                max_iter,
-                'iterations (max_iter=',
-                max_iter,
-                ')')
+                max_iter=max_iter)
             break
         iter_ += 1
-    # print 'check', A, b*h+m*h*h
+
     return h
 
 
