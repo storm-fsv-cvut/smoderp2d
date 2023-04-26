@@ -184,9 +184,12 @@ class TimeStepImplicit:
         # Changing the actRain to a list - inserting 0 for the NoDataValues	
         act_rain = (actRain/delta_t).tolist(0)
         # Extracting the smallest time step  - float insted of ma
-        dt = delta_t.argmin()
+        dt = delta_t.mean()
+
+        # Preparing the matrixes of flow parameters
+        aa = ma.array(Globals.get_mat_aa(),mask=GridGlobals.masks)
+        b = ma.array(Globals.get_mat_b(),mask=GridGlobals.masks)
         # Setting the initial guess for the solver
-        
         h_0 = h_old 
         # Calculating the new water level
         soulution = sp.optimize.root(self.model, h_0, 
@@ -194,7 +197,7 @@ class TimeStepImplicit:
                                             h_old,
                                             list_fd,
                                             r,c,
-                                            Globals.get_mat_aa(),Globals.get_mat_b(),
+                                            aa,b,
                                             act_rain,
                                             surface.arr.soil_type,
                                             pixel_area),
@@ -208,19 +211,19 @@ class TimeStepImplicit:
                                             h_old,
                                             list_fd,
                                             r,c,
-                                            Globals.get_mat_aa(),Globals.get_mat_b(),
+                                            aa,b,
                                             act_rain,
                                             surface.arr.soil_type,
                                             pixel_area)))
             print("h_new = ",h_new)
-            input("Press Enter to continue...")
+            
         # Saving the new water level
         surface.arr.h_total_new = ma.array(h_new.reshape(r,c),mask=GridGlobals.masks) 
 
         # Saving results to surface structure (untidy solution) - looks akward, but don't cost much time to compute
         surface.arr.h_sheet = ma.copy(surface.arr.h_total_pre) # [m] - previous time stap as in the explicit version
         
-        surface.arr.vol_runoff = sheet_runoff(Globals.get_mat_aa(), Globals.get_mat_b(), surface.arr.h_sheet)*dt #[m]        
+        surface.arr.vol_runoff = sheet_runoff(aa, b, surface.arr.h_sheet)*dt #[m]        
         surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type, surface.arr.h_total_new)*dt #[m]
             
          # Update the cumulative values
