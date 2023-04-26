@@ -28,7 +28,10 @@ def compute_h(A, m, b, err=0.0001, max_iter=20):
     def dfdheval(h):
         return b + 2.0 * m * h
     # first height estimation
-    h_pre = A / b
+    try:
+        h_pre = A / b
+    except ZeroDivisionError:
+        h_pre = 0.0
     h = h_pre
     iter_ = 1
     while feval(h_pre) > err:
@@ -69,7 +72,7 @@ def rectangle(reach, dt):
     reach.vs = math.pow(
         R,
         0.6666) * math.pow(
-        reach.slope,
+        reach.inclination,
          0.5) / (
             reach.roughness)  # rychlost
     reach.Q_out = S * \
@@ -166,11 +169,14 @@ def triangle(reach, dt):
     S = reach.m * H * H
     # dS = B*reach.h + reach.m*reach.h*reach.h
     # dV = dS*reach.length
-    R = S / O
+    try:
+        R = S / O
+    except ZeroDivisionError:
+        R = 0.0
     reach.vs = math.pow(
         R,
         0.6666) * math.pow(
-        reach.slope,
+        reach.inclination,
          0.5) / (
             reach.roughness)  # v
     reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
