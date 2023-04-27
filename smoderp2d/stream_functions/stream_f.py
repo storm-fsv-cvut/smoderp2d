@@ -6,11 +6,7 @@ from inspect import currentframe, getframeinfo
 
 from smoderp2d.providers import Logger
 
-# Jen na debug, umi to zjistit nazev souboru a radek odkud se\n
-#  <em>print frameinfo.filename, frameinfo.lineno</em>\n
-#  tiskne
 frameinfo = getframeinfo(currentframe())
-
 
 # Newton method to compute water level in trapezoidal reach,
 #
@@ -25,34 +21,31 @@ frameinfo = getframeinfo(currentframe())
 #   \f]
 #
 #   @return h water level in the trapezoid
-#
 def compute_h(A, m, b, err=0.0001, max_iter=20):
     def feval(h):
         return b * h + m * h * h - A
 
     def dfdheval(h):
         return b + 2.0 * m * h
-    # prvni odhad vysky
-    h_pre = A / b
+    # first height estimation
+    try:
+        h_pre = A / b
+    except ZeroDivisionError:
+        h_pre = 0.0
     h = h_pre
     iter_ = 1
-    while (feval(h_pre) > err):
+    while feval(h_pre) > err:
         h = h_pre - feval(h_pre) / dfdheval(h_pre)
         h_pre = h
         if iter_ >= max_iter:
             Logger.error(
-                "if file %s %s %s %s %s %s %s %s",
+                "if file {} near line {} \n\t newton solver didnt converge after {max_iter} iterations (max_iter={max_iter})",
                 frameinfo.filename,
-                "near line ",
                 frameinfo.lineno,
-                "\n\t newton solver didnt converge after",
-                max_iter,
-                'iterations (max_iter=',
-                max_iter,
-                ')')
+                max_iter=max_iter)
             break
         iter_ += 1
-    # print 'check', A, b*h+m*h*h
+
     return h
 
 
@@ -60,10 +53,17 @@ def compute_h(A, m, b, err=0.0001, max_iter=20):
 #
 #
 def rectangle(reach, dt):
-    Vp = reach.q365 * dt                # objem           : baseflow
-    hp = Vp / (reach.b * reach.length)    # vyska hladiny   : baseflow
+    if reach.q365 > 0:
+        Vp = reach.q365 * dt               # objem           : baseflow
+        hp = Vp / (reach.b * reach.length)  # vyska hladiny   : baseflow
+    else:
+        # Vp == 0.0
+        hp = 0.0
+
+
     dV = reach.V_in_from_field + reach.vol_rest + \
         reach.V_in_from_reach    # z okoli, predtim, odtok  : epizoda
+    # Question ToDo nevim co je V_in_from_field - odhaduji, ze to je pritok z plosneho odotku prislusnych pixelu v danem casovem kroku pro dany
     h = dV / (reach.b * reach.length)  # vyska hladiny   : epizoda
     H = hp + h                        # total vyska hl. : epizoda
     O = reach.b + 2 * H  # omoceny obvod
@@ -72,7 +72,7 @@ def rectangle(reach, dt):
     reach.vs = math.pow(
         R,
         0.6666) * math.pow(
-        reach.slope,
+        reach.inclination,
          0.5) / (
             reach.roughness)  # rychlost
     reach.Q_out = S * \
@@ -96,8 +96,13 @@ def trapezoid(reach, dt):
     :param reach: ?
     :param dt: ?
     """
-    Vp = reach.q365 * dt
-    hp = compute_h(A=Vp / reach.length, m=reach.m, b=reach.b)
+    if reach.q365 > 0:
+        Vp = reach.q365 * dt               # objem           : baseflow
+        hp = compute_h(A=Vp / reach.length, m=reach.m, b=reach.b)  # vyska hladiny   : baseflow
+    else:
+        #Vp == 0.0
+        hp = 0.0
+
     B = reach.b + 2.0 * hp * reach.m  # b pro pocatecni stav (q365)
     Bb = B + hp * reach.m
     h = compute_h(
@@ -105,13 +110,15 @@ def trapezoid(reach, dt):
            reach.V_in_from_reach) / reach.length,
         m=reach.m,
      b=reach.b)
+    # tuhle iteracni metodu nezna ToDo - nevim kdo ji kdy tvoril
     H = hp + h  # celkova vyska
     O = B + 2.0 * H * math.pow(1 + reach.m * reach.m, 0.5)
     S = B * H + reach.m * H * H
     dS = S - reach.b * hp + reach.m * hp * hp
     dV = dS * reach.length
     R = S / O
-    reach.vs = math.pow(R, 0.6666) * math.pow(reach.slope, 0.5) / (reach.roughness)  # v
+    reach.vs = math.pow(R, 0.6666) * math.pow(reach.inclination, 0.5) / (reach.roughness)
+    # v ToDo and Question - proc tady mame 3/5 a 1/2 cislem a ne zlomkem
     reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
     if reach.V_out > dV:
@@ -136,43 +143,40 @@ def trapezoid(reach, dt):
 #
 #
 def triangle(reach, dt):
-    pass
-    Vp = reach.q365 * \
-        dt                             # objem           : baseflow
-    hp = math.pow(
-        Vp / (reach.length * reach.m),
-        0.5)   # vyska hladiny   : baseflow __
-    B = 2.0 * hp * \
-        reach.m                             # sirka zakladny  : baseflow \/
+    if reach.q365 > 0:
+        Vp = reach.q365 * dt               # objem           : baseflow
+        hp = math.pow(Vp / (reach.length * reach.m), 0.5)  # vyska hladiny   : baseflow
+    else:
+        # Vp == 0.0
+        hp = 0.0
+
+
+    B = 2.0 * hp *  reach.m                             # sirka zakladny  : baseflow \/
     # Bb = B + reach.h*reach.m                                                                # tohle nechapu, takze jsem to zakomantoval...
     # h  = (reach.V_in_from_field + reach.vol_rest + reach.V_in_from_reach)/(Bb
     # * reach.length) # tohle nechapu...
 
-    Ve = (
-        reach.V_in_from_field +
-        reach.vol_rest +
-     reach.V_in_from_reach)     # objem z epizody
+    Ve = (reach.V_in_from_field + reach.vol_rest + reach.V_in_from_reach)     # objem z epizody
     #
     # vyska z epizody co pribude na trouhelnik z baseflow (takze lichobeznik)
     #                       ____                                          __
-    # zahlacna lichobezniku \__/ je spodni 'horni'  zakladna trojuhelniku \/
-    he = compute_h(
-        A=Ve / reach.length,
-        m=reach.m,
-     b=B)  # funkce pouzita pro lichobeznik  ____
-    H = hp + \
-        he                                     # vyska vysledneho trouhelniku    \  /
+    # zakladna lichobezniku \__/ je spodni 'horni'  zakladna trojuhelniku \/
+    he = compute_h(A=Ve / reach.length, m=reach.m, b=B)  # funkce pouzita pro lichobeznik  ____
+    H = hp + he                                     # vyska vysledneho trouhelniku    \  /
     O = 2.0 * H * math.pow(
         1.0 + reach.m * reach.m,
         0.5)  # \/
     S = reach.m * H * H
     # dS = B*reach.h + reach.m*reach.h*reach.h
     # dV = dS*reach.length
-    R = S / O
+    try:
+        R = S / O
+    except ZeroDivisionError:
+        R = 0.0
     reach.vs = math.pow(
         R,
         0.6666) * math.pow(
-        reach.slope,
+        reach.inclination,
          0.5) / (
             reach.roughness)  # v
     reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
@@ -190,9 +194,8 @@ def triangle(reach, dt):
 # Function calculates the discharge in parabola shaped reach of a stream.
 #
 #
-def parabola(reach, dt):
-    raise NotImplementedError('Parabola shaped stream reach has not \
-            been implemented yet')
+def parabola(reach, dt): # ToDo - podivat se proc parabola nefunguje, ale to nechme az rozchodime vubec toky a Qgis
+    raise NotImplementedError('Parabola shaped stream reach has not been implemented yet')
     # a = reach.b   #vzd ohniska od vrcholu
     # u = 3.0 #(h=B/u  B=f(a))
     # Vp = reach.q365*dt
@@ -216,7 +219,7 @@ def parabola(reach, dt):
     # reach.h = H
 
 
-# def stream_reach_max(toky):
+# def stream_reach_max(toky): ToDo - tohle asi zachovavalo maxima a pridavalo je to do output vrstvy toku, nevim jestli tuto funkcionalitu prevzala nejaka jina cast kodu.
     # fc = toky
     # field2 = ["FID","V_infl_ce","total_Vic","V_infl","total_Vi","V_outfl","total_Vo","NS","total_NS","Q_outfl","max_Q","h","max_h","vs","max_vs","V_zbyt","total_Vz","V_infl_us", "total_Viu"]
     # with arcpy.da.UpdateCursor(fc, field2) as cursor:

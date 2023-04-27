@@ -44,7 +44,14 @@ class CompType:
 
 class BaseWritter(object):
     def __init__(self):
-        self.primary_key = None
+        self._data_target = None
+
+    def set_data_layers(self, data):
+        """Set data layers dictionary.
+
+        :param data: data dictionary to be set
+        """
+        self._data_target = data
 
     @staticmethod
     def _raster_output_path(output, directory=''):
@@ -69,14 +76,17 @@ class BaseWritter(object):
         Logger.info("Raster ASCII output file {} saved".format(
             file_output
         ))
+        na_arr = arr[arr != GridGlobals.NoDataValue]
         Logger.info("\tArray stats: min={} max={} mean={}".format(
-            np.min(arr), np.max(arr), np.mean(arr)
+            na_arr.min(), na_arr.max(), na_arr.mean()
         ))
 
     # todo: abstractmethod
     def write_raster(self, arr, output):
         pass
-    
+
+    def create_storage(self, outdir):
+        pass
 
 class BaseProvider(object):
     def __init__(self):
@@ -108,7 +118,9 @@ class BaseProvider(object):
                 "%(asctime)s - %(name)s - %(levelname)s - %(message)s - [%(module)s:%(lineno)s]"
             )
         handler.setFormatter(formatter)
-        Logger.addHandler(handler)
+        if sys.version_info.major >= 3:
+            if not Logger.hasHandlers(): # avoid duplicated handlers (eg. in case of ArcGIS)
+                Logger.addHandler(handler)
 
     def __load_hidden_config(self):
         # load hidden configuration with advanced settings 
@@ -173,7 +185,6 @@ class BaseProvider(object):
 
         # the data are loaded from a pickle file
         try:
-            print(self.args.data_file)
             data = self._load_data(self.args.data_file)
             if isinstance(data, list):
                 raise ProviderError(
@@ -187,8 +198,7 @@ class BaseProvider(object):
         # pickle.dump such as end time of simulation
 
         if self._config.get('time', 'endtime'):
-            data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
-
+            data['end_time'] = self._config.getfloat('time', 'endtime')
         #  time of flow algorithm
         data['mfda'] = self._config.getboolean('processes', 'mfda', fallback=False)
 
@@ -198,10 +208,6 @@ class BaseProvider(object):
         #    2 sheet and subsurface flow,
         #    3 sheet, rill and reach flow
         data['type_of_computing'] = self._config.get('processes', 'typecomp', fallback=3)
-
-        #  output directory is always set
-        if data['outdir'] is None:
-            data['outdir'] = self._config.get('output', 'outdir')
 
         #  rainfall data can be saved
         if self._config.get('data', 'rainfall'):
@@ -219,6 +225,9 @@ class BaseProvider(object):
 
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
 
+        # ensure that dx and dy are defined
+        data['dx'] = data['dy'] = math.sqrt(data['pixel_area'])
+
         return data
 
     def load(self):
@@ -234,6 +243,10 @@ class BaseProvider(object):
                 raise ProviderError('{}'.format(e))
             if self.args.typecomp == CompType.dpre:
                 # data preparation requested only
+                # add also related information from GridGlobals
+                for k in ('NoDataValue', 'bc', 'br', 'c', 'dx', 'dy',
+                          'pixel_area', 'r', 'rc', 'rr', 'xllcorner', 'yllcorner'):
+                    data[k] = getattr(GridGlobals, k)
                 self._save_data(data, self.args.data_file)
                 return
 
@@ -257,28 +270,22 @@ class BaseProvider(object):
             elif hasattr(DataGlobals, item):
                 setattr(DataGlobals, item, data[item])
 
-        GridGlobals.NoDataInt = int(-9999)
         Globals.mat_reten = -1.0 * data['mat_reten'] / 1000 # converts mm to m
         Globals.diffuse = self._comp_type(data['type_of_computing'])['diffuse']
         Globals.subflow = self._comp_type(data['type_of_computing'])['subflow']
-        # TODO: 2 lines bellow are duplicated for arcgis provider. fist
-        # definition of dx dy is in
-        # (provider.arcgis.data_prepraration._get_raster_dim) where is is
-        # defined for write_raster which is used before _set_globals
-        GridGlobals.dx = math.sqrt(data['pixel_area'])
-        GridGlobals.dy = GridGlobals.dx
         # TODO: lines below are part only of linux method
         Globals.isRill = self._comp_type(data['type_of_computing'])['rill']
         Globals.isStream = self._comp_type(data['type_of_computing'])['stream']
         Globals.prtTimes = data.get('prtTimes', None)
         Globals.extraOut = self._hidden_config.getboolean('outputs','extraout')
+        Globals.end_time *= 60 # convert min to sec
 
         # If profile1d provider is used the values 
         # should be set in the loop at the beginning
         # of this method since it is part of the 
         # data dict (only in profile1d provider).
         # Otherwise is has to be set to 1.
-        if (Globals.slope_width is None):
+        if Globals.slope_width is None:
             Globals.slope_width = 1
 
     @staticmethod
@@ -362,7 +369,7 @@ class BaseProvider(object):
 
         with open(filename, 'wb') as fd:
             pickle.dump(data, fd, protocol=2)
-        Logger.info('Pickle file created in <{}> ({} bytes)'.format(
+        Logger.info('Data preparation results stored in <{}> ({} bytes)'.format(
             filename, sys.getsizeof(data)
         ))
 
@@ -443,9 +450,9 @@ class BaseProvider(object):
                 directory=cumulative.data[item].data_type
             )
 
-        finState = np.zeros(np.shape(surface_array), int)
-        finState.fill(GridGlobals.NoDataInt)
-        vRest = np.zeros(np.shape(surface_array), float)
+        finState = np.zeros(np.shape(surface_array), np.float32)
+        finState.fill(GridGlobals.NoDataValue)
+        vRest = np.zeros(np.shape(surface_array), np.float32)
         vRest.fill(GridGlobals.NoDataValue)
         totalBil = cumulative.infiltration.copy()
         totalBil.fill(0.0)
@@ -469,8 +476,7 @@ class BaseProvider(object):
 
         self.storage.write_raster(self._make_mask(totalBil), 'massBalance')
         self.storage.write_raster(self._make_mask(vRest), 'volRest_m3')
-        self.storage.write_raster(self._make_mask(finState, int_=True),
-                'reachFid')
+        self.storage.write_raster(self._make_mask(finState),  'reachFid')
 
         # store stream reaches results to a table
         # if stream is calculated
@@ -480,7 +486,7 @@ class BaseProvider(object):
             outputtable = np.zeros([n,m])
             fid = list(stream.keys())
             for i in range(n):
-                outputtable[i][0] = stream[fid[i]].fid
+                outputtable[i][0] = stream[fid[i]].segment_id
                 outputtable[i][1] = stream[fid[i]].b
                 outputtable[i][2] = stream[fid[i]].m
                 outputtable[i][3] = stream[fid[i]].roughness
@@ -495,7 +501,7 @@ class BaseProvider(object):
             np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
                        header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}q365_m3_s{sep}V_out_cum_m3{sep}Q_max_m3_s'.format(sep=';'))
 
-    def _make_mask(self, arr, int_=False):
+    def _make_mask(self, arr):
         """ Assure that the no data value is outside the
         computation region.
         Works only for type float.
@@ -507,10 +513,7 @@ class BaseProvider(object):
         rcols = GridGlobals.rc
 
         copy_arr = arr.copy()
-        if (int_) :
-            arr.fill(GridGlobals.NoDataInt)
-        else:
-            arr.fill(GridGlobals.NoDataValue)
+        arr.fill(GridGlobals.NoDataValue)
 
         for i in rrows:
             for j in rcols[i]:

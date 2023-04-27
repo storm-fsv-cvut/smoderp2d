@@ -27,6 +27,7 @@ from smoderp2d.providers.base import CompType
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
 from smoderp2d.exceptions import SmoderpError
+from smoderp2d.core.general import Globals
 
 __version__ = "1.0.dev"
 
@@ -37,10 +38,10 @@ class Runner(object):
 
     def _provider_factory(self):
         # initialize provider
-        if os.getenv('ESRIACTIVEINSTALLATION'):
+        if isinstance(self, ArcGisRunner):
             from smoderp2d.providers.arcgis import ArcGisProvider
             provider_class = ArcGisProvider
-        elif os.getenv('GISRC'):
+        elif isinstance(self, GrassGisRunner):
             from smoderp2d.providers.grass import GrassGisProvider
             provider_class = GrassGisProvider
         elif os.getenv('PROFILE1D'):
@@ -52,16 +53,14 @@ class Runner(object):
 
         return provider_class
 
-    def set_comptype(self, comp_type, data_file=None):
+    def set_comptype(self, comp_type):
         """Set computation type.
 
         :param CompType comp_type: computation type
-        :param str data_file: data file (input/output)
         """
-        if comp_type in (CompType.dpre, CompType.roff) and not data_file:
-            raise SmoderpError("Data file not defined")
         self._provider.args.typecomp = comp_type
-        self._provider.args.data_file = data_file
+        if comp_type in (CompType.dpre, CompType.roff):
+            self._provider.args.data_file = os.path.join(Globals.outdir, "dpre.save")
 
     def run(self):
         # print logo
@@ -107,15 +106,19 @@ class Runner(object):
 
         return 0
 
-
-class GrassRunner(Runner):
     def set_options(self, options):
         self._provider.set_options(options)
 
-
-class QGISRunner(GrassRunner):
+class ArcGisRunner(Runner):
     def __init__(self):
+        os.environ['ESRIACTIVEINSTALLATION'] = '1'
+        super(ArcGisRunner, self).__init__()
 
+class GrassGisRunner(Runner):
+    pass
+
+class QGISRunner(GrassGisRunner):
+    def __init__(self):
         # create temp GRASS location
         import tempfile
         import binascii

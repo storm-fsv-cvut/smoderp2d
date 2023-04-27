@@ -59,7 +59,7 @@ class GridGlobals(object):
     # left bottom corner y coordinate of raster
     yllcorner = None
     # no data value for raster
-    NoDataValue = None
+    NoDataValue = -9999
     # no data integer value for raster
     NoDataInt = None
     # size of raster cell
@@ -110,6 +110,7 @@ class GridGlobals(object):
     def set_size(cls, dxdy):
         cls.dx = dxdy[0]
         cls.dy = dxdy[1]
+        cls.pixel_area = cls.dx * cls.dy
 
     @classmethod
     def get_no_data(cls):
@@ -196,14 +197,14 @@ class Globals:
     mat_stream_reach = None
     # ???
     STREAM_RATIO = None
-    # ???
-    streams_loc = None
     # maximum allowed time step during compuation
     maxdt = None
     # if true extra data are stores in the point*.dat files
     extraOut = None
     # stream magic number
     streams_flow_inc = 1000
+    # no segment downside
+    streamsNextDownIdNoSegment = -1
     # slope width 
     slope_width = None
 
@@ -339,7 +340,3 @@ class Globals:
     @classmethod
     def get_STREAM_RATIO(cls):
         return cls.STREAM_RATIO
-
-    @classmethod
-    def get_streams_loc(cls):
-        return cls.streams_loc
