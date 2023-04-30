@@ -34,7 +34,7 @@ class BaseLogger(logging.Logger):
         if args:
             self._progress(perc, *args)
         perc_int = int(
-            self._progress_info['start'] + (perc / 100.0) * self._progress_info['range']
+            self._progress_info['start'] + (perc.max() / 100.0) * self._progress_info['range']
         )
         if self.isEnabledFor(PROGRESS):
             self._log(PROGRESS, perc_int, None)
