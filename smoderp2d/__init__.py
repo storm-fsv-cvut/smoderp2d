@@ -29,7 +29,7 @@ from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
 from smoderp2d.exceptions import SmoderpError
 from smoderp2d.core.general import Globals
 
-__version__ = "1.0.dev"
+__version__ = "2.0.dev"
 
 class Runner(object):
     def __init__(self):
