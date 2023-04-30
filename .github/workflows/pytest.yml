@@ -13,12 +13,12 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-20.04
+          - ubuntu-22.04
         python-version:
           - "2.7"
           - "3.8"
-          - "3.11.0-rc.2"
-      fail-fast: true
+          - "3.11.2"
+      fail-fast: false
 
     runs-on: ${{ matrix.os }}
 
@@ -32,7 +32,7 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip install -r .github/workflows/requirements.txt
+          pip install -r .github/workflows/requirements${{ matrix.python-version }}.txt
 
       - name: Run test suite
         run: |

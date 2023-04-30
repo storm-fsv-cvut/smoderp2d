@@ -54,7 +54,7 @@ class Hydrographs:
                 l = point_int[ip][1]
                 m = point_int[ip][2]
 
-                if Globals.get_mat_stream_reach(l, m) >= \
+                if Globals.get_mat_stream_reach()[l, m] >= \
                         Globals.streams_flow_inc:
                     self.inStream.append(counter)
                     counter += 1
@@ -179,28 +179,32 @@ class Hydrographs:
             for ip in self.inSurface:
                 l = self.point_int[ip][1]
                 m = self.point_int[ip][2]
-                if i == l and j == m:
-                    linebil = surface.return_str_vals(l, m, SEP, dt, Globals.extraOut)
-                    cumulativelines = cumulative.return_str_val(l,m)
-                    line = '{0:.4e}{sep}{1}{sep}{2}{sep}{3}'.format(
-                        total_time, cumulativelines[0],
-                        linebil[0], cumulativelines[1],
-                        sep=sep
-                    )
-                    # line += subsurface.return_str_vals(l,m,SEP,dt) + sep   #
-                    # prozatim
-                    if Globals.extraOut:
-                        line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'\
-                               '{sep}{3}{sep}{4:.4e}'\
-                               '{sep}{5:.4e}'\
-                               '{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
-                            total_time, dt, currRain, 
-                            linebil[0],linebil[1],
-                            surface.arr.get_item([l, m]).vol_to_rill,
-                            ratio, courantMost, courantRill, iter_,
-                            sep=sep)
-                    line += os.linesep
-                    self.files[ip].writelines(line)
+
+                if i is not None and j is not None:
+                    if i != l or j != m:
+                        continue
+
+                linebil = surface.return_str_vals(l, m, SEP, dt, Globals.extraOut)
+                cumulativelines = cumulative.return_str_val(l,m)
+                line = '{0:.4e}{sep}{1}{sep}{2}{sep}{3}'.format(
+                    total_time[l, m], cumulativelines[0],
+                    linebil[0], cumulativelines[1],
+                    sep=sep
+                )
+                # line += subsurface.return_str_vals(l,m,SEP,dt) + sep   #
+                # prozatim
+                if Globals.extraOut:
+                    line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'\
+                           '{sep}{3}{sep}{4:.4e}'\
+                           '{sep}{5:.4e}'\
+                           '{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}{9:.4e}'.format(
+                        total_time[l, m], dt[l, m], currRain[l, m],
+                        linebil[0],linebil[1],
+                        surface.arr.vol_to_rill[l, m],
+                        ratio[l, m], courantMost, courantRill, iter_,
+                        sep=sep)
+                line += os.linesep
+                self.files[ip].writelines(line)
 
     def _output_path(self, output, directory='core'):
         dir_name = os.path.join(

@@ -8,6 +8,7 @@ import smoderp2d.processes.infiltration as infilt
 
 import copy
 import numpy as np
+import numpy.ma as ma
 
 
 from smoderp2d.core.surface import runoff
@@ -35,41 +36,65 @@ class TimeStep:
             itera, fc.total_time, delta_t, fc.tz, sr
         )
 
-        for i in rr:
-            for j in rc[i]:
-                # TODO: variable not used. Should we delete it?
-                h_total_pre = surface.arr.get_item([i, j]).h_total_pre
+        surface_state = surface.arr.state
+        h_total_pre = surface.arr.h_total_pre
 
-                surface_state = surface.arr.get_item([i, j]).state
+        runoff_return = runoff(
+            surface.arr, delta_t, mat_efect_cont, fc.ratio
+        )
 
-                if surface_state > Globals.streams_flow_inc:
-                    q_sheet = 0.0
-                    v_sheet = 0.0
-                    q_rill = 0.0
-                    v_rill = 0.0
-                    rill_courant = 0.0
-                else:
-                    q_sheet, v_sheet, q_rill, v_rill, fc.ratio, rill_courant = runoff(
-                        i, j, surface.arr.get_item([i, j]), delta_t, mat_efect_cont[i][j], fc.ratio
-                    )
-                    subsurface.runoff(i, j, delta_t, mat_efect_cont[i][j])
+        cond_state_flow = surface_state > Globals.streams_flow_inc
+        q_sheet = ma.where(cond_state_flow, 0, runoff_return[0])
+        v_sheet = ma.where(cond_state_flow, 0, runoff_return[1])
+        q_rill = ma.where(cond_state_flow, 0, runoff_return[2])
+        v_rill = ma.where(cond_state_flow, 0, runoff_return[3])
+        if ma.all(cond_state_flow):
+            subrunoff_return = subsurface.runoff(
+                delta_t, mat_efect_cont
+            )
+        if ma.any(cond_state_flow):
+            fc.ratio = 0
+        else:
+            # TODO: Better way to make it just a number
+            fc.ratio = runoff_return[4]
+        rill_courant = ma.where(cond_state_flow, 0, runoff_return[5])
+        surface.arr.h_sheet = ma.where(
+            cond_state_flow, surface.arr.h_sheet, runoff_return[6]
+        )
+        surface.arr.h_rill = ma.where(
+            cond_state_flow, surface.arr.h_rill, runoff_return[7]
+        )
+        surface.arr.h_rillPre = ma.where(
+            cond_state_flow, surface.arr.h_rillPre, runoff_return[8]
+        )
+        surface.arr.vol_runoff = ma.where(
+            cond_state_flow, surface.arr.vol_runoff, runoff_return[9]
+        )
+        surface.arr.vol_rest = ma.where(
+            cond_state_flow, surface.arr.vol_rest, runoff_return[10]
+        )
+        surface.arr.v_rill_rest = ma.where(
+            cond_state_flow, surface.arr.v_rill_rest, runoff_return[11]
+        )
+        surface.arr.vol_runoff_rill = ma.where(
+            cond_state_flow, surface.arr.vol_runoff_rill, runoff_return[12]
+        )
+        surface.arr.vel_rill = ma.where(
+            cond_state_flow, surface.arr.vel_rill, runoff_return[13]
+        )
 
-                # TODO: variable not used. Should we delete it?
-                q_surface = q_sheet + q_rill
-                v = max(v_sheet, v_rill)
-                co = 'sheet'
-                courant.CFL(
-                    i,
-                    j,
-                    surface.arr.get_item([i, j]).h_total_pre,
-                    v,
-                    delta_t,
-                    mat_efect_cont[i][j],
-                    co,
-                    rill_courant)
-                # TODO: variable not used. Should we delet it?
-                rill_courant = 0.
-
+        q_surface = q_sheet + q_rill
+        v = ma.maximum(v_sheet, v_rill)
+        co = 'sheet'
+        courant.CFL(
+            surface.arr.h_total_pre,
+            v,
+            delta_t,
+            mat_efect_cont,
+            co,
+            rill_courant
+        )
+        rill_courant = 0.
                 # w1 = surface.arr.get_item([i, j]).vol_runoff_rill
                 # w2 = surface.arr.get_item([i, j]).v_rill_rest
 
@@ -93,23 +118,24 @@ class TimeStep:
         NoDataValue = GridGlobals.get_no_data()
 
         infilt_capa += potRain
-        if (infilt_capa < max_infilt_capa):
+        if ma.all(infilt_capa < max_infilt_capa):
             infilt_time += delta_t
-            actRain = 0.0
-            # TODO: variable not used. Should we delete it?
-            potRain = 0.0
-            for i in rr:
-                for j in rc[i]:
-                    hydrographs.write_hydrographs_record(
-                        i,
-                        j,
-                        flow_control,
-                        courant,
-                        delta_t,
-                        surface,
-                        subsurface,
-                        cumulative,
-                        actRain)
+            actRain = ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+            )
+            potRain = ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+            )
+            hydrographs.write_hydrographs_record(
+                None,
+                None,
+                flow_control,
+                courant,
+                delta_t,
+                surface,
+                subsurface,
+                cumulative,
+                actRain)
             return actRain
 
         for iii in combinatIndex:
@@ -136,86 +162,88 @@ class TimeStep:
         subsurface.fill_slope()
         subsurface.new_inflows()
 
+        #
+        # current cell precipitation
+        #
+        actRain, fc.sum_interception, rain_arr.arr.veg = \
+            rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
+        surface.arr.cur_rain = actRain
+
+        #
+        # Inflows from surroundings cells
+        #
         for i in rr:
             for j in rc[i]:
-                #
-                # current cell precipitation
-                #
-                actRain, fc.sum_interception[i][j], rain_arr.arr.get_item([i, j]).veg = rain_f.current_rain(
-                    rain_arr.arr.get_item([i, j]), potRain, fc.sum_interception[i][j])
-                surface.arr.get_item([i, j]).cur_rain = actRain
+                surface.arr.inflow_tm[i, j] = surface.cell_runoff(i, j)
 
-                #
-                # Inflows from surroundings cells
-                #
-                surface.arr.get_item([i, j]).inflow_tm = surface.cell_runoff(i, j)
+        #
+        # Surface BILANCE
+        #
+        surBIL = surface.arr.h_total_pre + actRain + surface.arr.inflow_tm / \
+                 pixel_area - (surface.arr.vol_runoff / pixel_area +
+                               surface.arr.vol_runoff_rill / pixel_area)
 
-                #
-                # Surface BILANCE
-                #
-                surBIL = surface.arr.get_item([i, j]).h_total_pre + actRain + surface.arr.get_item([i, j]).inflow_tm / pixel_area - (
-                    surface.arr.get_item([i, j]).vol_runoff / pixel_area + surface.arr.get_item([i, j]).vol_runoff_rill / pixel_area)
+        #
+        # infiltration
+        #
+        philip_infiltration = infilt.philip_infiltration(
+            surface.arr.soil_type, surBIL
+        )
+        surBIL = ma.where(
+            subsurface.get_exfiltration() > 0,
+            surBIL,
+            philip_infiltration[0]
+        )
+        surface.arr.infiltration = ma.where(
+            subsurface.get_exfiltration() > 0,
+            0,
+            philip_infiltration[1]
+        )
 
-                #
-                # infiltration
-                #
-                if subsurface.get_exfiltration(i, j) > 0:
-                    surface.arr.get_item([i, j]).infiltration = 0.0
-                    infiltration = 0.0
-                else:
-                    surBIL, infiltration = infilt.philip_infiltration(
-                        surface.arr.get_item([i, j]).soil_type, surBIL)
-                    surface.arr.get_item([i, j]).infiltration = infiltration
+        #
+        # surface retention
+        #
+        surBIL = surface_retention(surBIL, surface.arr)
 
-                #
-                # surface retention
-                #
-                surBIL = surface_retention(surBIL, surface.arr.get_item([i, j]))
+        # add exfiltration
+        surBIL += subsurface.get_exfiltration()
 
-                # add exfiltration
-                surBIL += subsurface.get_exfiltration(i, j)
+        surface_state = surface.arr.state
 
+        surface.arr.h_total_new = ma.where(
+            surface_state > Globals.streams_flow_inc,  # stream flow in the cell
+            0,
+            surBIL
+        )
+        if ma.any(surface_state > Globals.streams_flow_inc):
+            h_sub = subsurface.runoff_stream_cell()
+            inflowToReach = h_sub * pixel_area + surBIL * pixel_area
+            surface.reach_inflows(
+                surface_state - Globals.streams_flow_inc, inflowToReach
+            )
 
-                surface_state = surface.arr.get_item([i, j]).state
+        surface_state = surface.arr.state
 
-                if surface_state > Globals.streams_flow_inc:
-                    # stream flow in the cell
-
-                    surface.arr.get_item([i, j]).h_total_new = 0.0
-
-                    h_sub = subsurface.runoff_stream_cell(i, j)
-
-                    inflowToReach = h_sub * pixel_area + surBIL * pixel_area
-
-                    surface.reach_inflows(
-                        surface_state - Globals.streams_flow_inc,
-                        inflowToReach)
-
-                else:
-                    surface.arr.get_item([i, j]).h_total_new = surBIL
-
-                surface_state = surface.arr.get_item([i, j]).state
-                # subsurface inflow
-                """
+        # subsurface inflow
+        """
         inflow_sub = subsurface.cell_runoff(i,j,False)
         subsurface.bilance(i,j,infiltration,inflow_sub/pixel_area,delta_t)
         subsurface.fill_slope()
         """
-                cumulative.update_cumulative(
-                    i,
-                    j,
-                    surface.arr.get_item([i, j]),
-                    subsurface.arr.get_item([i, j]),
-                    delta_t)
-                hydrographs.write_hydrographs_record(
-                    i,
-                    j,
-                    flow_control,
-                    courant,
-                    delta_t,
-                    surface,
-                    subsurface,
-                    cumulative,
-                    actRain)
+
+        cumulative.update_cumulative(
+            surface.arr,
+            subsurface.arr,
+            delta_t)
+        hydrographs.write_hydrographs_record(
+            None,
+            None,
+            flow_control,
+            courant,
+            delta_t,
+            surface,
+            subsurface.arr,
+            cumulative,
+            actRain)
 
         return actRain

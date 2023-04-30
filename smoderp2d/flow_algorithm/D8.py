@@ -1,4 +1,7 @@
 import numpy as np
+import numpy.ma as ma
+
+from smoderp2d.core.general import GridGlobals
 
 
 # defines inflows to the cell of raster based on the flow direction raster
@@ -21,7 +24,7 @@ def new_inflows(mat_fd):
     r = mat_fd.shape[0]
     c = mat_fd.shape[1]
 
-    in_fldir = np.zeros([r, c], int)
+    in_fldir = ma.masked_array(np.zeros([r, c], int), mask=GridGlobals.masks)
 
     inflows = []  # np.zeros(mat_a[r,c],float)
 

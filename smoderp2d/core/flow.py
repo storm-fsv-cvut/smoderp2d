@@ -15,7 +15,7 @@
 #  classes Kinematic or Diffuse in the
 #  package smoderp2d.core.kinematic_diffuse
 #
-
+import numpy.ma as ma
 
 from smoderp2d.core.general import Globals
 
@@ -67,11 +67,11 @@ class D8(object):
             iax = i + ax
             jbx = j + bx
             try:
-                insurfflow_from_cell = self.arr.get_item([iax, jbx]).vol_runoff
+                insurfflow_from_cell = self.arr.vol_runoff.data[iax][jbx]
             except:
                 insurfflow_from_cell = 0.0
             try:
-                inrillflow_from_cell = self.arr.get_item([iax, jbx]).vol_runoff_rill
+                inrillflow_from_cell = self.arr.vol_runoff_rill.data[iax][jbx]
             except:
                 inrillflow_from_cell = 0.0
             inflow_from_cells = inflow_from_cells + \
@@ -112,7 +112,7 @@ class Mfda(object):
             self.inflows[i - 1][j - 1][1] * \
             self.arr.get_item([i - 1, j - 1]).vol_runoff_pre + \
             self.inflows[i - 1][j][2] * \
-            self.arr.get_item([i - 1, j ]).vol_runoff_pre + \
+            self.arr.get_item([i - 1, j]).vol_runoff_pre + \
             self.inflows[i - 1][j + 1][3] * \
             self.arr.get_item([i - 1, j + 1]).vol_runoff_pre + \
             self.inflows[i][j - 1][0] * \
@@ -127,16 +127,15 @@ class Mfda(object):
             self.arr.get_item([i + 1, j + 1]).vol_runoff_pre
 
         if Globals.isRill and sur:
+            state_ij = self.state[i, j]
             for z in range(len(self.inflowsRill[i][j])):
                 ax = self.inflowsRill[i][j][z][0]
                 bx = self.inflowsRill[i][j][z][1]
                 iax = i + ax
                 jbx = j + bx
-                if self.arr.get_item([i, j]).state == 1 or self.arr.get_item([i, j]).state == 2: # rill
-                    try:
-                        inflow_from_cells += \
-                            self.vol_runoff_rill_pre[iax][jbx]  # toto jeste predelat u ryh
-                    except:
-                        inflow_from_cells += 0.0
+
+                if ma.equal(state_ij, 1) or ma.equal(state_ij, 1):
+                    inflow_from_cells += self.vol_runoff_rill_pre[iax, jbx]
+                    # toto jeste predelat u ryh
 
         return inflow_from_cells

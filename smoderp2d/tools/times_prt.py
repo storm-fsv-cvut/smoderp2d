@@ -46,11 +46,8 @@ class TimesPrt(object):
                                  self.outsubrid,
                                  'H' + str(cas).replace('.', '_') + '.asc')
             Logger.info("Printing total H into file {}".format(filein))
-            tmp = np.zeros([Globals.r, Globals.c], float)
 
-            for i in Globalsobals.rr:
-                for j in Globals.rc[i]:
-                    tmp[i][j] = sur.arr.get_item([i, j]).h_total_new
+            tmp = sur.arr.h_total_new
 
             make_ASC_raster(filen, tmp, Globals)
 

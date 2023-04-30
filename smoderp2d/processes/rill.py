@@ -1,4 +1,5 @@
-import math
+import numpy as np
+import numpy.ma as ma
 
 from smoderp2d.exceptions import SmoderpError
 from smoderp2d.providers import Logger
@@ -8,18 +9,16 @@ courantMin = 0.2
 
 def update_hb(loc_V_to_rill, rillRatio, l, b, ratio, ppp=False):
     V = loc_V_to_rill
-    if V < 0:
+    if ma.any(V < 0):
         raise SmoderpError()
-    newb = math.sqrt(V / (rillRatio * l))
+    newb = ma.sqrt(V / (rillRatio * l))
     # if ppp :  print 'zvetsuje', newb, b, V
-    if (V > 0):
-        if newb > b:
-            b = newb
-            h = V / (b * l)
-        else:
-            h = V / (b * l)
-    else:
-        h = V / (b * l)
+    b = ma.where(
+        V > 0,
+        ma.maximum(b, newb),
+        b
+    )
+    h = V / (b * l)
 
     return h, b
 

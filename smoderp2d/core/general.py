@@ -66,6 +66,8 @@ class GridGlobals(object):
     dx = None
     # size of raster cell
     dy = None
+    # masks
+    masks = None
 
     def __init__(self):
         if self.r is None or self.c is None:
@@ -122,8 +124,8 @@ class DataGlobals:
     mat_ppl = None
 
     @classmethod
-    def get_mat_ppl(cls, i, j):
-        return cls.mat_ppl[i][j]
+    def get_mat_ppl(cls):
+        return cls.mat_ppl
 
 class Globals:
     """Globals contains global variables from data_preparation, in
@@ -246,24 +248,24 @@ class Globals:
         return cls.surface_retention
 
     @classmethod
-    def get_mat_inf_index(cls, i, j):
-        return cls.mat_inf_index[i][j]
+    def get_mat_inf_index(cls):
+        return cls.mat_inf_index
 
     @classmethod
-    def get_mat_hcrit(cls, i, j):
-        return cls.mat_hcrit[i][j]
+    def get_mat_hcrit(cls):
+        return cls.mat_hcrit
 
     @classmethod
-    def get_mat_aa(cls, i, j):
-        return cls.mat_aa[i][j]
+    def get_mat_aa(cls):
+        return cls.mat_aa
 
     @classmethod
-    def get_mat_b(cls, i, j):
-        return cls.mat_b[i][j]
+    def get_mat_b(cls):
+        return cls.mat_b
 
     @classmethod
-    def get_mat_reten(cls, i, j):
-        return cls.mat_reten[i][j]
+    def get_mat_reten(cls):
+        return cls.mat_reten
 
     @classmethod
     def get_mat_fd(cls):
@@ -278,8 +280,8 @@ class Globals:
         return cls.mat_efect_cont
 
     @classmethod
-    def get_mat_slope(cls, i, j):
-        return cls.mat_slope[i][j]
+    def get_mat_slope(cls):
+        return cls.mat_slope
 
     @classmethod
     def get_mat_nan(cls):
@@ -290,8 +292,8 @@ class Globals:
         return cls.mat_a
 
     @classmethod
-    def get_mat_n(cls, i, j):
-        return cls.mat_n[i][j]
+    def get_mat_n(cls):
+        return cls.mat_n
 
     @classmethod
     def get_points(cls):

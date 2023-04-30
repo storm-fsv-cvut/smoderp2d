@@ -1,5 +1,5 @@
 import numpy as np
-import math
+import numpy.ma as ma
 from smoderp2d.exceptions import NegativeWaterLevel
 
 # combinatIndex muze byt tady jako globalni
@@ -16,16 +16,23 @@ def set_combinatIndex(newCombinatIndex):
 
 def philip_infiltration(soil, bil):
     # print 'bil v infiltraci', bil
+    infiltration = combinatIndex[0][3]
     for z in combinatIndex:
-        if soil == z[0]:
-            infiltration = z[3]
-            if bil < 0:
-                raise NegativeWaterLevel()
-            if infiltration > bil:
-                infiltration = bil
-                bil = 0
-            else:
-                bil = bil - infiltration
+        if ma.all(bil < 0):
+            raise NegativeWaterLevel()
+
+        infilt_bil_cond = z[3] > bil
+
+        infiltration = ma.where(
+            soil == z[0],
+            ma.where(infilt_bil_cond, bil, z[3]),
+            infiltration
+        )
+        bil = ma.where(
+            soil == z[0],
+            ma.where(infilt_bil_cond, 0, bil - z[3]),
+            bil
+        )
     # print 'bil a inf v infiltraci\n', bil, infiltration
     return bil, infiltration
 
@@ -39,7 +46,7 @@ def phlilip(k, s, deltaT, totalT, NoDataValue):
         # try:
     else:
 
-        infiltration = (0.5 * s / math.sqrt(totalT + deltaT) + k) * deltaT
+        infiltration = (0.5 * s / ma.sqrt(totalT + deltaT) + k) * deltaT
         # except ValueError:
     # print k, s
     return infiltration

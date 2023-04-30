@@ -8,6 +8,7 @@ import math
 import pickle
 import logging
 import numpy as np
+import numpy.ma as ma
 from configparser import ConfigParser, NoSectionError, NoOptionError
 
 from smoderp2d.providers import Logger
@@ -123,7 +124,7 @@ class BaseProvider(object):
                 Logger.addHandler(handler)
 
     def __load_hidden_config(self):
-        # load hidden configuration with advanced settings 
+        # load hidden configuration with advanced settings
         _path = os.path.join(os.path.dirname(__file__), '..', '..', '.config.ini')
         if not os.path.exists(_path):
             raise ConfigError("{} does not exist".format(
@@ -137,8 +138,8 @@ class BaseProvider(object):
             raise ConfigError('Section "outputs" or option "extraout" is not set properly in file {}'.format( _path))
 
         return config
-        
-        
+
+
     def _load_config(self):
         # load configuration
         if not os.path.exists(self.args.config_file):
@@ -165,8 +166,8 @@ class BaseProvider(object):
             ))
 
         return config
-        
-        
+
+
     def _load_dpre(self):
         """Run data preparation procedure.
 
@@ -280,13 +281,20 @@ class BaseProvider(object):
         Globals.extraOut = self._hidden_config.getboolean('outputs','extraout')
         Globals.end_time *= 60 # convert min to sec
 
-        # If profile1d provider is used the values 
+        # If profile1d provider is used the values
         # should be set in the loop at the beginning
-        # of this method since it is part of the 
+        # of this method since it is part of the
         # data dict (only in profile1d provider).
         # Otherwise is has to be set to 1.
         if Globals.slope_width is None:
             Globals.slope_width = 1
+
+        # set masks of the area of interest
+        GridGlobals.masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
+        rr, rc = GridGlobals.get_region_dim()
+        for r in rr:
+            for c in rc[r]:
+                GridGlobals.masks[r][c] = False
 
     @staticmethod
     def _cleanup():
@@ -450,20 +458,22 @@ class BaseProvider(object):
                 directory=cumulative.data[item].data_type
             )
 
-        finState = np.zeros(np.shape(surface_array), np.float32)
+        finState = np.zeros(np.shape(surface_array.state), np.float32)
+        # TODO: Maybe should be filled with NoDataInt
         finState.fill(GridGlobals.NoDataValue)
-        vRest = np.zeros(np.shape(surface_array), np.float32)
+        vRest = np.zeros(np.shape(surface_array.state), np.float32)
         vRest.fill(GridGlobals.NoDataValue)
         totalBil = cumulative.infiltration.copy()
         totalBil.fill(0.0)
 
         for i in rrows:
             for j in rcols[i]:
-                finState[i][j] = int(surface_array[i][j].state)
+                finState[i][j] = int(surface_array.state.data[i, j])
                 if finState[i][j] >= Globals.streams_flow_inc:
                     vRest[i][j] = GridGlobals.NoDataValue
                 else:
-                    vRest[i][j] = surface_array[i][j].h_total_new * GridGlobals.pixel_area
+                    vRest[i][j] = surface_array.h_total_new.data[i, j] * \
+                                  GridGlobals.pixel_area
 
         totalBil = (cumulative.precipitation + cumulative.inflow_sur) - \
             (cumulative.infiltration + cumulative.vol_sur_tot) - \
@@ -471,7 +481,8 @@ class BaseProvider(object):
 
         for i in rrows:
             for j in rcols[i]:
-                if  int(surface_array[i][j].state) >= Globals.streams_flow_inc :
+                if  int(surface_array.state.data[i, j]) >= \
+                        Globals.streams_flow_inc :
                     totalBil[i][j] = GridGlobals.NoDataValue
 
         self.storage.write_raster(self._make_mask(totalBil), 'massBalance')

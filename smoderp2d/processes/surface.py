@@ -1,10 +1,6 @@
-import math
+import numpy as np
+import numpy.ma as ma
 
 
-def shallowSurfaceKinematic(sur):
-
-    a = sur.a
-    b = sur.b
-    h = sur.h_sheet
-    
-    return math.pow(h, b) * a
+def shallowSurfaceKinematic(a, b, h_sheet):
+    return ma.power(h_sheet, b) * a

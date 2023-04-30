@@ -1,10 +1,12 @@
 # @package smoderp2d.courant defines Class Courant which handels the time step adjustement
 
 
-import math
+import numpy as np
+import numpy.ma as ma
+
 from smoderp2d.providers import Logger
 
-from smoderp2d.core.general import Globals as Gl
+from smoderp2d.core.general import Globals as Gl, GridGlobals
 
 # Contains variables and methods needed for time step size handling
 #
@@ -22,7 +24,7 @@ class Courant():
         self.cour_speed = 0
         # citical courant value
         self.cour_crit = 0.95
-        self.cour_most = self.cour_crit + 1.0
+        self.cour_most = self.cour_crit + 1
         self.cour_most_rill = self.cour_crit + 1.0
         self.cour_coef = 0.5601
         self.cour_least = self.cour_crit * 0.85
@@ -31,7 +33,10 @@ class Courant():
         self.co = 'sheet'
         self.co_pre = 'sheet'
         self.maxratio = 10
-        self.max_delta_t = Gl.maxdt
+        self.max_delta_t = ma.masked_array(
+            np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt,
+            mask=GridGlobals.masks
+        )
         self.max_delta_t_mult = 1.0
 
     # Store the original guess time step
@@ -77,24 +82,26 @@ class Courant():
         # (math.sqrt(sur.pixel_area)*self.cour_least*self.cour_coef)/velGuess
 
         # return self.initGuess
-        return Gl.maxdt
+        return ma.masked_array(
+            np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt,
+            mask=GridGlobals.masks
+        )
 
     #
-    def CFL(self, i, j, h0, v, delta_t, efect_cont, co, rill_courant):
+    def CFL(self, h0, v, delta_t, efect_cont, co, rill_courant):
         """Checks and store in each computational cell the maximum velocity
         and maximum Courant coefficient.
         """
         cour = v / self.cour_coef * delta_t / efect_cont
-        cour = max(cour, rill_courant)
+        cour = ma.maximum(cour, rill_courant)
         # print cour
-
-        if cour > self.cour_most:
-            self.i = i
-            self.j = j
+        if ma.any(cour > self.cour_most):
+            self.i = np.unravel_index(ma.argmax(cour), cour.shape)[0]
+            self.j = np.unravel_index(ma.argmax(cour), cour.shape)[1]
             self.co = co
-            self.cour_most = cour
-            self.maxh = h0
-            self.cour_speed = v
+            self.cour_most = cour[self.i, self.j]
+            self.maxh = h0[self.i, self.j]
+            self.cour_speed = v[self.i, self.j]
         # if rill_courant > self.cour_most_rill:
             # self.cour_most_rill = rill_courant
 
@@ -133,19 +140,20 @@ class Courant():
         # mensi nez cour_least a vetsi nez cour_crit
         # explicitne se dopocita dt na nejvetsi mozne
         #                                      xor
-        if ((self.cour_most < self.cour_least) != (self.cour_crit <= self.cour_most)):
+        if ma.any((self.cour_most < self.cour_least) != (self.cour_crit <=
+                                                        self.cour_most)):
 
         # pokud se na povrchu nic nedeje
         # nema se zmena dt cim ridit
         # a zmeni se podle maxima nasobeneho max_delta_t_mult
         # max_delta_t_mult se meni podle ryh, vyse v teto funkci
         #
-            if (self.cour_speed == 0.0):
+            if ma.any(self.cour_speed == 0.0):
                 return self.max_delta_t * self.max_delta_t_mult, ratio
 
-            dt = round(
+            dt = ma.round(
                 (Gl.mat_efect_cont[self.i, self.j] * self.cour_crit * self.cour_coef) /
-                 self.cour_speed,
+                self.cour_speed,
                 8)
 
             # nove dt nesmi byt vetsi nez je maxdt * max_delta_t_mult
@@ -154,20 +162,26 @@ class Courant():
             # return dt*self.max_delta_t_mult, ratio
             # return min(dt,self.max_delta_t*self.max_delta_t_mult), ratio
             # print 'asdf', self.cour_speed, dt, self.max_delta_t_mult
-            return min(dt * self.max_delta_t_mult, self.max_delta_t * self.max_delta_t_mult), ratio
+            dt_min = ma.minimum(
+                self.max_delta_t_mult * dt,
+                self.max_delta_t * self.max_delta_t_mult
+            )
+            return dt_min, ratio
 
-        # pokud je courant v povolenem rozmezi
-        # skontrolje se pouze pokud neni vetsi nez maxdt * max_delta_t_mult
-        # max_delta_t_mult se meni podle ryh, vyse v teto funkci
+            # pokud je courant v povolenem rozmezi
+            # skontrolje se pouze pokud neni vetsi nez maxdt * max_delta_t_mult
+            # max_delta_t_mult se meni podle ryh, vyse v teto funkci
+
         else:
             # print 'fdafdsfasdfadsfadsfadsfaf'
             # return delta_t, ratio
             # print 'asdf', dt, dt*self.max_delta_t_mult, ratio
-            if ((ratio <= self.maxratio) and (self.cour_most_rill < 0.5)):
+            if (ma.all(ratio <= self.maxratio) and (self.cour_most_rill < 0.5)):
                 return delta_t, ratio
             else:
                 return delta_t * self.max_delta_t_mult, ratio
 
-        Logger.critical(
-            'courant.cour() missed all its time step conditions\n no rule to preserve or change the time step!'
-        )
+
+    Logger.critical(
+        'courant.cour() missed all its time step conditions\n no rule to preserve or change the time step!'
+    )
