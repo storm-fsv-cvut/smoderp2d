@@ -6,7 +6,11 @@ tests/grassdata/smoderp2d-location/stream_prep/
 tests/grassdata/smoderp2d-location/test
 tests/grassdata/smoderp2d-location/water
 tests/data/output*
-
+.idea/
 # direnv
 .envrc
 .direnv
+tests/log
+tests/data/log
+/bin/arcgis/old/
+tests/data/reference/dpre.extracted

@@ -172,7 +172,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             'stream': "",
             'pickle': self.pickle_lineEdit.text().strip(),
             'rainfall_file': self.rainfall_lineEdit.text(),
-            'end_time': float(self.end_time_lineEdit.text()) * 60.0,  # to seconds
+            'end_time': float(self.end_time_lineEdit.text()),
             'maxdt': float(self.maxdt_lineEdit.text()),
             'table_soil_vegetation':
                 self.table_soil_vegetation_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],

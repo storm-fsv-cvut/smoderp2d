@@ -4,27 +4,26 @@ from smoderp2d.providers import Logger
 from smoderp2d.exceptions import ProviderError
 
 class Reach(object):
-    def __init__(self, fid, point_x, point_y, point_x_1, point_y_1,
-                 to_node, length, slope, smoderp, number, shapetype, b, m, roughness, q365):
+    def __init__(self, stream_segment_id,
+                 stream_segment_next_down_id, stream_segment_length, stream_segment_inclination,
+                 channel_profile, channel_shape_id, channel_shapetype, channel_bottom_width, channel_bank_steepness, channel_bed_roughness, channel_q365):
 
-        self.fid = fid
-        self.pointsFrom = [point_x, point_y]
-        self.pointsTo = [point_x_1, point_y_1]
-        self.to_node = to_node
-        self.length = length
-        if slope < 0:
+        self.segment_id = stream_segment_id
+        self.next_down_id = stream_segment_next_down_id
+        self.length = stream_segment_length
+        if stream_segment_inclination < 0:
             Logger.info(
-                "Slope in reach part {} indicated minus slope in stream".format(fid
-                ))
-        self.slope = abs(slope)
-        self.smoderp = smoderp
-        self.no = number
-        self.shapetype = shapetype
+                "Slope in reach part {} indicated minus slope in stream".format(stream_segment_id)
+            )
+        self.inclination = abs(stream_segment_inclination)
+        self.profile = channel_profile
+        self.shape_id = channel_shape_id
+        self.shapetype = channel_shapetype
 
-        self.b = b
-        self.m = m
-        self.roughness = roughness
-        self.q365 = q365
+        self.b = channel_bottom_width
+        self.m = channel_bank_steepness
+        self.roughness = channel_bed_roughness
+        self.q365 = channel_q365
         self.V_in_from_field = 0.0
         self.V_in_from_field_cum = 0.0
         self.V_in_from_reach = 0.0
@@ -41,16 +40,18 @@ class Reach(object):
         self.V_out_domain = 0.0
 
 
-        if shapetype == 0:  # obdelnik
+        if channel_shapetype == 0:  # obdelnik
             self.outflow_method = stream_f.rectangle
-        elif shapetype == 1:  # trapezoid
+        elif channel_shapetype == 1:  # trapezoid
             self.outflow_method = stream_f.trapezoid
-        elif shapetype == 2:  # triangle
+        elif channel_shapetype == 2:  # triangle
             self.outflow_method = stream_f.triangle
-        elif shapetype == 3:  # parabola
+        elif channel_shapetype == 3:  # parabola
             self.outflow_method = stream_f.parabola
+            #ToDO - ve stream_f-py - mame u paraboly napsano, ze nefunguje
         else:
             self.outflow_method = stream_f.rectangle
+            #ToDo - zahodit posledni else a misto toho dat hlasku, ze to je mimo rozsah
 
 
 # Documentation for a class.
@@ -66,7 +67,7 @@ class Stream(object):
         Logger.info('Stream: ON')
         self.streams = Gl.streams
 
-        self.nReaches = len(self.streams['fid'])
+        self.nReaches = len(self.streams['stream_segment_id'])
 
         self.cell_stream = Gl.cell_stream
 
@@ -74,9 +75,8 @@ class Stream(object):
 
         for i in range(self.nReaches):
             args = {k:v[i] for k,v in self.streams.items()}
-            self.reach[int(self.streams['fid'][i])] = Reach(**args)
+            self.reach[int(self.streams['stream_segment_id'][i])] = Reach(**args)
 
-        self.streams_loc = Gl.streams_loc
         self.mat_stream_reach = Gl.mat_stream_reach
 
         self.state = self.mat_stream_reach
@@ -109,8 +109,8 @@ class Stream(object):
             r.V_out_domain = 0
 
         for r in self.reach.values():
-            fid_to_node = int(r.to_node)
-            if fid_to_node == -9999:
+            fid_to_node = int(r.next_down_id)
+            if fid_to_node == Gl.streamsNextDownIdNoSegment:
                 r.V_out_domain += r.V_out
             else:
                 self.reach[fid_to_node].V_in_from_reach += r.V_out

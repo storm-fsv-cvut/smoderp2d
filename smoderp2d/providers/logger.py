@@ -30,23 +30,20 @@ class BaseLogger(logging.Logger):
         self._progress_info['range'] = \
             self._progress_info['end'] - self._progress_info['start']
 
-    def progress(self, perc, *args, **kwargs):
-        self._progress(perc, *args)
-        # The commented code bellow caused problems with arcgis.
-        #if args:
-        #    self._progress(perc, *args)
-        #    args = ()
-        #if self.isEnabledFor(PROGRESS):
-        #    perc_int = int(
-        #        self._progress_info['start'] + (perc/100.0) * self._progress_info['range']
-        #    )
-        #    self._log(PROGRESS, perc_int, args, **kwargs)
-        #else:
-        #    self.info("Progress value: {}%".format(perc_int))
+    def progress(self, perc, *args):
+        if args:
+            self._progress(perc, *args)
+        perc_int = int(
+            self._progress_info['start'] + (perc / 100.0) * self._progress_info['range']
+        )
+        if self.isEnabledFor(PROGRESS):
+            self._log(PROGRESS, perc_int, None)
+        else:
+            self.info("Progress value: {}%".format(perc_int))
 
     def _progress(self, perc, delta_t, t_iter, total_time):
         self.info('-' * 80)
-        self.info("Total time      [secs]: {0:.2f}".format(total_time.max())) # TODO: ms ???
+        self.info("Total time      [secs]: {0:.2f}".format(total_time.max()))
         self.info("Time step       [secs]: {0:.2e}".format(delta_t))
         self.info("Time iterations       : {0:d}".format(t_iter))
         self.info("Percentage done    [%]: {0:.2f}".format(perc.max()))

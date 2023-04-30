@@ -9,7 +9,7 @@ from smoderp2d.providers.grass.logger import GrassGisLogHandler
 from smoderp2d.providers import Logger
 
 import grass.script as gs
-from grass.pygrass.gis import Region
+from grass.pygrass.gis.region import Region
 from grass.pygrass.modules import Module
 from grass.pygrass.raster import numpy2raster
 from grass.pygrass.messages import Messenger
@@ -20,6 +20,16 @@ class GrassGisWritter(BaseWritter):
 
         # primary key
         self.primary_key = "cat"
+
+    def output_filepath(self, name):
+        """
+        Get correct path to store dataset 'name'.
+
+        :param name: layer name to be saved
+        :return: full path to the dataset
+        """
+        # TODO: how to deal with temp/core...?
+        return name
 
     def write_raster(self, array, output_name, directory='core'):
         """Write raster to ASCII file.
@@ -65,9 +75,6 @@ class GrassGisProvider(BaseProvider):
     def __init__(self):
         super(GrassGisProvider, self).__init__()
 
-        msgr = Messenger()
-        self._print_fn = msgr.message
-
         # type of computation (default)
         self.args.typecomp = CompType.full
 
@@ -82,8 +89,8 @@ class GrassGisProvider(BaseProvider):
 
         # check version
         # TBD: change to pygrass API
-        if list(map(int, gs.version()['version'].split('.')[:-1])) < [7, 7]:
-            raise ProviderError("GRASS GIS version 7.8+ required")
+        if list(map(int, gs.version()['version'].split('.')[:-1])) < [8, 3]:
+            raise ProviderError("GRASS GIS version 8.3+ required")
 
         # force overwrite
         os.environ['GRASS_OVERWRITE'] = '1'
@@ -101,7 +108,7 @@ class GrassGisProvider(BaseProvider):
         self._options = options
 
         # set output directory
-        Globals.outdir = options['output_dir']
+        Globals.outdir = options['output']
 
     def _load_dpre(self):
         """Load configuration data from data preparation procedure.
@@ -110,7 +117,7 @@ class GrassGisProvider(BaseProvider):
         """
         if not self._options:
             raise ProviderError("No options given")
-        from smoderp2d.providers.grass.data_preparation import PrepareData
 
+        from smoderp2d.providers.grass.data_preparation import PrepareData
         prep = PrepareData(self._options, self.storage)
         return prep.run()

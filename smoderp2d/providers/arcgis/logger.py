@@ -1,6 +1,12 @@
 import logging
 
-import arcpy
+from smoderp2d.providers.logger import PROGRESS
+from smoderp2d.exceptions import ProviderError
+
+try:
+    import arcpy
+except RuntimeError as e:
+    raise ProviderError("ArcGIS provider: {}".format(e))
 
 class ArcPyLogHandler(logging.Handler):
     """Custom logging class that bounces messages to the arcpy tool
@@ -17,7 +23,9 @@ class ArcPyLogHandler(logging.Handler):
 
         :param record: record to emit
         """
-        if record.levelno >= logging.ERROR:
+        if record.levelno >= PROGRESS:
+            arcpy.AddMessage("Progress value: {}%".format(record.msg))
+        elif record.levelno >= logging.ERROR:
             arcpy.AddError(record.msg)
         elif record.levelno >= logging.WARNING:
             arcpy.AddWarning(record.msg)

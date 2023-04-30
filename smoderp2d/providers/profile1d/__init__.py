@@ -148,7 +148,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
 
         # time settings
         try:
-            data['end_time'] = self._config.getfloat('time', 'endtime') * 60.0
+            data['end_time'] = self._config.getfloat('time', 'endtime')
             data['maxdt'] = self._config.getfloat('time', 'maxdt')
         except NoSectionError as e:
             raise ConfigError(e)
@@ -166,8 +166,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         # general settings
         # output directory is always set
         # TODO: isn't it already in globals?
-        data['outdir'] = self._config.get('output', 'outdir')
-        data['temp'] = os.path.join(data['outdir'], 'temp')
+        data['temp'] = os.path.join(Globals.outdir, 'temp')
         # some self._configs are not in pickle.dump
         data['extraOut'] = self._config.getboolean('output', 'extraout', fallback=False)
         # rainfall data can be saved
@@ -245,7 +244,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             self._get_mat_nan(data['r'], data['c'], data['NoDataValue'],
                               data['mat_slope'], data['mat_dem'])
 
-        data['array_points'], data['points'] = self._set_hydrographs(data['r'] - 1)
+        data['array_points'] = self._set_hydrographs(data['r'] - 1)
         # and other unused variables
         self._set_unused(data)
         data['rr'], data['rc'] = self._get_rr_rc(data['r'], data['c'],
@@ -368,7 +367,6 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['STREAM_RATIO'] = None
         data['bc'] = None
         data['br'] = None
-        data['streams_loc'] = None
         data['streams'] = None
         data['poradi'] = None
 
@@ -381,9 +379,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         :param max_row: index of the last cell
         """
         array_points = np.array([1, max_row, 0, 0, 0]).reshape((1, 5))
-        points = 'test'
 
-        return array_points, points
+        return array_points
 
     def postprocessing(self, cumulative, surface_array, stream):
         super().postprocessing(cumulative, surface_array, stream)
