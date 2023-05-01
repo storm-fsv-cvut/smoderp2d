@@ -39,6 +39,7 @@ sys.path.insert(0,
 )
 from smoderp2d import QGISRunner
 from smoderp2d.exceptions import ProviderError
+from bin.base import arguments, sections
 
 from .connect_grass import find_grass as fg
 
@@ -72,6 +73,24 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.setupButtons()
 
         self.setupCombos()
+
+        self.set_tabs()
+
+    def set_tabs(self):
+        for section in sections:
+            section_tab = QtWidgets.QWidget()
+            self.tabWidget.addTab(section_tab, section.label)
+
+            section_tab_layout = QtWidgets.QVBoxLayout()
+
+            for argument_id in section.arguments:
+                argument_label = QtWidgets.QLabel()
+                argument_label.setText(arguments[argument_id].label)
+                section_tab_layout.addWidget(argument_label)
+
+            section_tab_layout.addStretch()
+
+            section_tab.setLayout(section_tab_layout)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -148,7 +167,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             runner.import_data(self._input_params)
 
             # TODO: implement data preparation only
-            
+
             # runner.run()
 
             # TODO: to be implemented
