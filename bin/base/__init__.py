@@ -18,7 +18,7 @@ arguments = {
     'points': Argument('Input points feature layer'),
     'stream': Argument('Stream network feature layer'),
     'output': Argument('Output directory'),
-    'time_step': Argument('Maximum time step [s]'),
+    'max_time_step': Argument('Maximum time step [s]'),
     'total_time': Argument('Total running time [min]'),
     'computation_type': Argument('Computation type'),
     'soil_type_field': Argument('Field with the soil type identifier'),
@@ -39,7 +39,7 @@ sections = [
     ),
     Section(
         'Computation options',
-        ('output', 'time_step', 'total_time', 'computation_type')
+        ('output', 'max_time_step', 'total_time', 'computation_type')
     ),
     Section(
         'Control tables',

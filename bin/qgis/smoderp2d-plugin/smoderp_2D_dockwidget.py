@@ -69,12 +69,15 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.iface = iface
 
         self.settings = QSettings("CTU", "smoderp")
-
-        self.setupButtons()
-
-        self.setupCombos()
+        self.arguments = {}  # filled during self.set_tabs()
 
         self.set_tabs()
+
+        self.set_widgets()
+
+        self.setupButtonSlots()
+
+        self.setupCombos()
 
     def set_tabs(self):
         for section in sections:
@@ -84,19 +87,63 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             section_tab_layout = QtWidgets.QVBoxLayout()
 
             for argument_id in section.arguments:
+                # add label
                 argument_label = QtWidgets.QLabel()
                 argument_label.setText(arguments[argument_id].label)
                 section_tab_layout.addWidget(argument_label)
+
+                # create empty layout for the specific widget
+                argument_widget = QtWidgets.QWidget()
+                argument_widget_layout = QtWidgets.QHBoxLayout()
+                argument_widget.setLayout(argument_widget_layout)
+                section_tab_layout.addWidget(argument_widget)
+
+                self.arguments.update({argument_id: argument_widget_layout})
 
             section_tab_layout.addStretch()
 
             section_tab.setLayout(section_tab_layout)
 
+    def set_widgets(self):
+        self.arguments['elevation'].addWidget(self.elevation_comboBox)
+        self.arguments['elevation'].addWidget(self.elevation_toolButton)
+        self.arguments['soil'].addWidget(self.soil_comboBox)
+        self.arguments['soil'].addWidget(self.soil_toolButton)
+        self.arguments['landuse'].addWidget(self.vegetation_comboBox)
+        self.arguments['landuse'].addWidget(self.vegetation_toolButton)
+        self.arguments['points'].addWidget(self.points_comboBox)
+        self.arguments['points'].addWidget(self.points_toolButton)
+        self.arguments['stream'].addWidget(self.stream_comboBox)
+        self.arguments['stream'].addWidget(self.stream_toolButton)
+        self.arguments['output'].addWidget(self.main_output_lineEdit)
+        self.arguments['output'].addWidget(self.main_output_toolButton)
+        self.arguments['max_time_step'].addWidget(self.maxdt_lineEdit)
+        self.arguments['total_time'].addWidget(self.end_time_lineEdit)
+        self.arguments['soil_type_field'].addWidget(self.soil_type_comboBox)
+        self.arguments['landuse_type_field'].addWidget(
+            self.vegetation_type_comboBox
+        )
+        self.arguments['soil_landuse_table'].addWidget(
+            self.table_soil_vegetation_comboBox
+        )
+        self.arguments['soil_landuse_table'].addWidget(
+            self.table_soil_vegetation_toolButton
+        )
+        self.arguments['channel_type_identifier'].addWidget(
+            self.table_stream_shape_code_comboBox
+        )
+        self.arguments['channel_properties'].addWidget(
+            self.table_stream_shape_comboBox
+        )
+        self.arguments['channel_properties'].addWidget(
+            self.table_stream_shape_toolButton
+        )
+
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
 
-    def setupButtons(self):
+    def setupButtonSlots(self):
         """Setup buttons slots."""
 
         # TODO: what if tables are in format that cannot be added to map? (txt), currently works for dbf
