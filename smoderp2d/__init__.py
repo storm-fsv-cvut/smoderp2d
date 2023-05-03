@@ -120,6 +120,7 @@ class GrassGisRunner(Runner):
 class QGISRunner(GrassGisRunner):
     def __init__(self):
         # create temp GRASS location
+        import subprocess
         import tempfile
         import binascii
         import grass.script as gs
@@ -134,8 +135,12 @@ class QGISRunner(GrassGisRunner):
         string_length = 16
         location = binascii.hexlify(os.urandom(string_length)).decode("utf-8")
 
+        subprocess.call(
+            ['grass', '-e', '-c EPSG:5514', os.path.join(gisdb, location)]
+        )
+
         # initialize GRASS session
-        gsetup.init(os.environ['GISBASE'], gisdb, location, 'PERMANENT')
+        gsetup.init(gisdb, location, 'PERMANENT', os.environ['GISBASE'])
 
         # create location
         try:
