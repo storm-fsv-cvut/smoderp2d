@@ -17,6 +17,7 @@ arguments = {
     'landuse': Argument('Landuse polygons feature layer'),
     'points': Argument('Input points feature layer'),
     'stream': Argument('Stream network feature layer'),
+    'rainfall': Argument('Definition of the rainfall event'),
     'output': Argument('Output directory'),
     'max_time_step': Argument('Maximum time step [s]'),
     'total_time': Argument('Total running time [min]'),
@@ -28,14 +29,14 @@ arguments = {
         'Field with the channel type identifier'
     ),
     'channel_properties': Argument('Channel properties table'),
-    'preparation_only': Argument('Do the data preparation only'),
+    # TODO: 'preparation_only': Argument('Do the data preparation only'),
 }
 
 
 sections = [
     Section(
         'Spatial data and rainfall',
-        ('elevation', 'soil', 'landuse', 'points', 'stream')
+        ('elevation', 'soil', 'landuse', 'points', 'stream', 'rainfall')
     ),
     Section(
         'Computation options',
@@ -48,5 +49,5 @@ sections = [
             'channel_properties', 'channel_type_identifier'
         )
     ),
-    Section('Advanced', ('preparation_only',))
+    Section('Advanced', ())  # TODO: Add ('preparation_only',))
 ]

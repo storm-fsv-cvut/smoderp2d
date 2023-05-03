@@ -43,61 +43,62 @@ from bin.base import arguments, sections
 
 from .connect_grass import find_grass as fg
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'smoderp_2D_dockwidget_base.ui'))
-
 
 class InputError(Exception):
     def __init__(self):
         pass
 
 
-class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
+class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     closingPlugin = pyqtSignal()
 
     def __init__(self, parent=None):
         """Constructor."""
         super(Smoderp2DDockWidget, self).__init__(parent)
-        # Set up the user interface from Designer.
-        # After setupUI you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
-        self.setupUi(self)
 
         self.iface = iface
 
         self.settings = QSettings("CTU", "smoderp")
-        self.arguments = {}  # filled during self.set_tabs()
+        self.arguments = {}  # filled during self.retranslateUi()
+        # (could be set during something more reasonable later)
+
+        # master tabwwidget
+        self.dockWidgetContents = QtWidgets.QWidget()
+        self.tabWidget = QtWidgets.QTabWidget()
+        self.layout = QtWidgets.QVBoxLayout()
 
         # widgets
         self.elevation_comboBox = QgsMapLayerComboBox()
         self.elevation_toolButton = QtWidgets.QToolButton()
-        self.soil_type_comboBox = QgsFieldComboBox()
+        self.soil_comboBox = QgsMapLayerComboBox()
         self.soil_toolButton = QtWidgets.QToolButton()
+        self.soil_type_comboBox = QgsFieldComboBox()
         self.vegetation_comboBox = QgsMapLayerComboBox()
         self.vegetation_toolButton = QtWidgets.QToolButton()
         self.points_comboBox = QgsMapLayerComboBox()
         self.points_toolButton = QtWidgets.QToolButton()
         self.stream_comboBox = QgsMapLayerComboBox()
         self.stream_toolButton = QtWidgets.QToolButton()
-        # TODO: Srazka
+        self.rainfall_lineEdit = QtWidgets.QLineEdit()
+        self.rainfall_toolButton = QtWidgets.QToolButton()
         self.main_output_lineEdit = QtWidgets.QLineEdit()
         self.main_output_toolButton = QtWidgets.QToolButton()
         self.maxdt_lineEdit = QtWidgets.QSpinBox()
         self.end_time_lineEdit = QtWidgets.QSpinBox()
+        self.vegetation_type_comboBox = QgsFieldComboBox()
         self.table_soil_vegetation_comboBox = QgsMapLayerComboBox()
         self.table_soil_vegetation_toolButton = QtWidgets.QToolButton()
         self.table_stream_shape_code_comboBox = QgsFieldComboBox()
         self.table_stream_shape_comboBox = QgsMapLayerComboBox()
         self.table_stream_shape_toolButton = QtWidgets.QToolButton()
+        self.run_button = QtWidgets.QPushButton(self.dockWidgetContents)
 
         # set default values
         self.maxdt_lineEdit.setProperty("value", 5)
         self.end_time_lineEdit.setProperty("value", 30)
 
-        self.set_tabs()
+        self.retranslateUi()
 
         self.set_widgets()
 
@@ -108,7 +109,14 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         self.setupCombos()
 
-    def set_tabs(self):
+        self.run_button.setText('Run')
+
+        self.layout.addWidget(self.tabWidget)
+        self.layout.addWidget(self.run_button)
+        self.dockWidgetContents.setLayout(self.layout)
+        self.setWidget(self.dockWidgetContents)
+
+    def retranslateUi(self):
         for section in sections:
             section_tab = QtWidgets.QWidget()
             self.tabWidget.addTab(section_tab, section.label)
@@ -148,6 +156,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.arguments['points'].addWidget(self.points_toolButton)
         self.arguments['stream'].addWidget(self.stream_comboBox)
         self.arguments['stream'].addWidget(self.stream_toolButton)
+        self.arguments['rainfall'].addWidget(self.rainfall_lineEdit)
+        self.arguments['rainfall'].addWidget(self.rainfall_toolButton)
         self.arguments['output'].addWidget(self.main_output_lineEdit)
         self.arguments['output'].addWidget(self.main_output_toolButton)
         self.arguments['max_time_step'].addWidget(self.maxdt_lineEdit)
@@ -181,7 +191,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         # TODO: what if tables are in format that cannot be added to map? (txt), currently works for dbf
 
-        self.run_dataprep.clicked.connect(self.OnRunButton)
+        self.run_button.clicked.connect(self.OnRunButton)
 
         # 1st tab - Data preparation
         self.elevation_toolButton.clicked.connect(lambda: self.openFileDialog('raster', self.elevation_comboBox))
@@ -195,7 +205,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.vegetation_comboBox.layerChanged.connect(lambda: self.setFields('vegetation'))
 
         # 2nd tab - Computation
-        self.pickle_toolButton.clicked.connect(lambda: self.openFileDialog('file', self.pickle_lineEdit))
         self.rainfall_toolButton.clicked.connect(lambda: self.openFileDialog('file', self.rainfall_lineEdit))
 
         # 3rd tab - Settings
@@ -239,7 +248,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.vegetation_toolButton, self.points_toolButton,
             self.stream_toolButton, self.main_output_toolButton,
             self.table_soil_vegetation_toolButton,
-            self.table_stream_shape_toolButton)
+            self.table_stream_shape_toolButton, self.rainfall_toolButton
+        )
 
         for button in buttons:
             button.setText('...')
@@ -285,13 +295,12 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             'points': "",
 #            'output': self.output_lineEdit.text().strip(),
             'stream': "",
-            'pickle': self.pickle_lineEdit.text().strip(),
             'rainfall_file': self.rainfall_lineEdit.text(),
             'end_time': float(self.end_time_lineEdit.text()),
             'maxdt': float(self.maxdt_lineEdit.text()),
             'table_soil_vegetation':
                 self.table_soil_vegetation_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
-            'table_soil_vegetation_code': self.table_soil_vegetation_code_comboBox.currentText(),
+            # 'table_soil_vegetation_code': self.table_soil_vegetation_code_comboBox.currentText(),
             'table_stream_shape': "",
             'table_stream_shape_code': "",
             'output': self.main_output_lineEdit.text().strip()
@@ -312,7 +321,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self._input_params["table_stream_shape_code"] = self.table_stream_shape_code_comboBox.currentText()
 
     def _checkInputDataPrep(self):
-        """Check if all mandatory fields are filled correctly for data preparation (without pickle)."""
+        """Check if all mandatory fields are filled correctly for data preparation."""
 
         # Check if none of fields are empty
         if None not in (
@@ -322,7 +331,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 self.vegetation_comboBox.currentLayer(),
                 self.vegetation_type_comboBox.currentText(),
                 self.table_soil_vegetation_comboBox.currentLayer(),
-                self.table_soil_vegetation_code_comboBox.currentText(),
+                # self.table_soil_vegetation_code_comboBox.currentText(),
                 ) and "" not in (
 #                self.output_lineEdit.text().strip(),
                 self.maxdt_lineEdit.text().strip(),
@@ -338,13 +347,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 return False
         else:
             return False
-
-    def _checkInputComp(self):
-        """Check if pickle field is filled correctly for further computation."""
-        if self.pickle_lineEdit.text().strip() == "":
-            return False
-        else:
-            return True
 
     def openFileDialog(self, t, widget):
         """Open file dialog, load layer and set path/name to widget."""
@@ -429,10 +431,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.vegetation_type_comboBox.setLayer(self.vegetation_comboBox.currentLayer())
             self.vegetation_type_comboBox.setField(self.vegetation_comboBox.currentLayer().fields()[0].name())
 
-        elif self.table_soil_vegetation_comboBox.currentLayer() is not None and t == 'table_soil_veg':
-            self.table_soil_vegetation_code_comboBox.setLayer(self.table_soil_vegetation_comboBox.currentLayer())
-            self.table_soil_vegetation_code_comboBox.setField(
-                self.table_soil_vegetation_comboBox.currentLayer().fields()[0].name())
+        # elif self.table_soil_vegetation_comboBox.currentLayer() is not None and t == 'table_soil_veg':
+        #     self.table_soil_vegetation_code_comboBox.setLayer(self.table_soil_vegetation_comboBox.currentLayer())
+        #     self.table_soil_vegetation_code_comboBox.setField(
+        #         self.table_soil_vegetation_comboBox.currentLayer().fields()[0].name())
 
         elif t == 'table_stream_shape':
             if self.table_stream_shape_comboBox.currentLayer() is not None:
