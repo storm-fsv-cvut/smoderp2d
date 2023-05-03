@@ -240,6 +240,8 @@ class PrepareData(PrepareDataBase):
             GridGlobals.set_llcorner((data.info.west, data.info.south)) 
             GridGlobals.set_size((data.info.ewres, data.info.nsres))
 
+            self._check_resolution_consistency(data.info.ewres, data.info.nsres)
+
     def _compute_efect_cont(self, dem, asp):
         """See base method for description.
         """
