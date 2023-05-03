@@ -804,6 +804,16 @@ class PrepareDataBase(ABC):
             if not self._input_params['streams_channel_shape_code']:
                 raise DataPreparationInvalidInput("Field containing the channel shape identifier must be set!")
 
+    @staticmethod
+    def _check_resolution_consistency(ewres, nsres):
+        """Raise DataPreparationInvalidInput on different spatial resolution."""
+        if GridGlobals.dx != ewres or GridGlobals.dy != nsres:
+            raise DataPreparationInvalidInput(
+                "Input DEM spatial resolution ({}, {}) differs from processing "
+                "spatial resolution ({}, {})".format(
+                    GridGlobals.dx, GridGlobals.dy, ewres, nsres)
+            )
+
     def _decode_stream_attr(self, attr):
         """Decode attribute names to fieldnames keys"""
         attr_decoded = {}
