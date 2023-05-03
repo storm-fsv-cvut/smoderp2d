@@ -26,7 +26,7 @@ import os
 import sys
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings
+from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication
 
 from PyQt5.QtWidgets import QFileDialog
 from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, QgsVectorLayer, QgsRasterLayer
@@ -71,9 +71,38 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.settings = QSettings("CTU", "smoderp")
         self.arguments = {}  # filled during self.set_tabs()
 
+        # widgets
+        self.elevation_comboBox = QgsMapLayerComboBox()
+        self.elevation_toolButton = QtWidgets.QToolButton()
+        self.soil_type_comboBox = QgsFieldComboBox()
+        self.soil_toolButton = QtWidgets.QToolButton()
+        self.vegetation_comboBox = QgsMapLayerComboBox()
+        self.vegetation_toolButton = QtWidgets.QToolButton()
+        self.points_comboBox = QgsMapLayerComboBox()
+        self.points_toolButton = QtWidgets.QToolButton()
+        self.stream_comboBox = QgsMapLayerComboBox()
+        self.stream_toolButton = QtWidgets.QToolButton()
+        # TODO: Srazka
+        self.main_output_lineEdit = QtWidgets.QLineEdit()
+        self.main_output_toolButton = QtWidgets.QToolButton()
+        self.maxdt_lineEdit = QtWidgets.QSpinBox()
+        self.end_time_lineEdit = QtWidgets.QSpinBox()
+        self.table_soil_vegetation_comboBox = QgsMapLayerComboBox()
+        self.table_soil_vegetation_toolButton = QtWidgets.QToolButton()
+        self.table_stream_shape_code_comboBox = QgsFieldComboBox()
+        self.table_stream_shape_comboBox = QgsMapLayerComboBox()
+        self.table_stream_shape_toolButton = QtWidgets.QToolButton()
+
+        # set default values
+        self.maxdt_lineEdit.setProperty("value", 5)
+        self.end_time_lineEdit.setProperty("value", 30)
+
         self.set_tabs()
 
         self.set_widgets()
+
+        self.set_allow_empty()
+        self.set_button_texts()
 
         self.setupButtonSlots()
 
@@ -89,7 +118,11 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             for argument_id in section.arguments:
                 # add label
                 argument_label = QtWidgets.QLabel()
-                argument_label.setText(arguments[argument_id].label)
+                argument_label.setText(
+                    QCoreApplication.translate(
+                        self.__class__.__name__, arguments[argument_id].label
+                    )
+                )
                 section_tab_layout.addWidget(argument_label)
 
                 # create empty layout for the specific widget
@@ -194,6 +227,22 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         self.setFields('table_soil_veg')
         self.setFields('table_stream_shape')
+
+    def set_allow_empty(self):
+        self.points_comboBox.setAllowEmptyLayer(True)
+        self.stream_comboBox.setAllowEmptyLayer(True)
+        self.table_stream_shape_comboBox.setAllowEmptyLayer(True)
+
+    def set_button_texts(self):
+        buttons = (
+            self.elevation_toolButton, self.soil_toolButton,
+            self.vegetation_toolButton, self.points_toolButton,
+            self.stream_toolButton, self.main_output_toolButton,
+            self.table_soil_vegetation_toolButton,
+            self.table_stream_shape_toolButton)
+
+        for button in buttons:
+            button.setText('...')
 
     def OnRunButton(self):
 
