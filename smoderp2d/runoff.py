@@ -425,7 +425,7 @@ class Runoff(object):
             if ma.any(timeperc > 99.9) or ma.any(timeperc - timeperc_last > 5):
                 # print progress with 5% step
                 Logger.progress(
-                    timeperc,
+                    timeperc.max(),
                     self.delta_t.max(),
                     self.flow_control.iter_,
                     self.flow_control.total_time + self.delta_t
