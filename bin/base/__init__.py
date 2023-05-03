@@ -29,7 +29,7 @@ arguments = {
         'Field with the channel type identifier'
     ),
     'channel_properties': Argument('Channel properties table'),
-    # TODO: 'preparation_only': Argument('Do the data preparation only'),
+    'preparation_only': Argument('Do the data preparation only'),
 }
 
 
