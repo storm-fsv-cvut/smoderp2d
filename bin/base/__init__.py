@@ -45,7 +45,7 @@ sections = [
         'Control tables',
         (
             'soil_type_field', 'landuse_type_field', 'soil_landuse_table',
-            'channel_type_identifier', 'channel_properties'
+            'channel_properties', 'channel_type_identifier'
         )
     ),
     Section('Advanced', ('preparation_only',))
