@@ -39,7 +39,7 @@ sections = [
     ),
     Section(
         'Computation options',
-        ('output', 'max_time_step', 'total_time', 'computation_type')
+        ('output', 'max_time_step', 'total_time')
     ),
     Section(
         'Control tables',
