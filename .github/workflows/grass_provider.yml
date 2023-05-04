@@ -18,7 +18,8 @@ jobs:
           - mundialis/grass-py3-pdal:releasebranch_8_2-debian
       fail-fast: false
 
-    runs-on: ${{ matrix.container }}
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
 
     steps:
       - uses: actions/checkout@v3
