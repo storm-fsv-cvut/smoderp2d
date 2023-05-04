@@ -18,7 +18,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     container:
-      image: mundialis/grass-py3-pdal:releasebranch_8_0-debian
+      image: mundialis/grass-py3-pdal:releasebranch_7_8-debian
 
     steps:
       - uses: actions/checkout@v3
