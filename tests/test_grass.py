@@ -33,5 +33,3 @@ class TestGrass:
 
     def test_001_dpre(self):
         perform_dpre_ref_test(GrassGisRunner, dpre_params, dataprep_only=True)
-
-        assert False
