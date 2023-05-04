@@ -1,9 +1,12 @@
 import os
 import sys
+import pytest
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from dpre_utils import perform_dpre_ref_test, data_dir, output_dir
 from smoderp2d import GrassGisRunner
+
 
 def dpre_params():
     return {
@@ -24,5 +27,11 @@ def dpre_params():
         'output': output_dir,
     }
 
-if __name__ == "__main__":
-    perform_dpre_ref_test(GrassGisRunner, dpre_params, dataprep_only=True)
+
+class TestGrass:
+    config_file = os.path.join(os.path.dirname(__file__), "quicktest.ini")
+
+    def test_001_dpre(self):
+        perform_dpre_ref_test(GrassGisRunner, dpre_params, dataprep_only=True)
+
+        assert False
