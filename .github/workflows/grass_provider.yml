@@ -29,4 +29,4 @@ jobs:
 
       - name: Run GRASS test suite
         run: |
-          grass tests/grassdata/smoderp2d-location/PERMANENT/ --exec pytest tests/test_grass.py
+          grass -c tests/grassdata/smoderp2d-location/test/ --exec pytest tests/test_grass.py
