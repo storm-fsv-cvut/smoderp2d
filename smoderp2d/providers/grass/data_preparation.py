@@ -10,7 +10,7 @@ from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput, \
     DataPreparationError, DataPreparationNoIntersection
-from smoderp2d.providers.base.data_preparation import PrepareDataBase
+from smoderp2d.providers.base.data_preparation import PrepareDataGISBase
 
 from grass.script.core import tempfile
 from grass.pygrass.modules import Module
@@ -21,7 +21,7 @@ from grass.pygrass.gis import Mapset
 from grass.pygrass.gis.region import Region
 from grass.exceptions import CalledModuleError, OpenError
 
-class PrepareData(PrepareDataBase):
+class PrepareData(PrepareDataGISBase):
     def __init__(self, options, writter):
         # defile input parameters
         self._set_input_params(options)
