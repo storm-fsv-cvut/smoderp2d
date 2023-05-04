@@ -29,4 +29,4 @@ jobs:
 
       - name: Run GRASS test suite
         run: |
-          pytest tests/test_grass.py
+          grass -c EPSG:5514 /tmp/test_loc --exec pytest tests/test_grass.py
