@@ -20,7 +20,7 @@ jobs:
     container:
       image: mundialis/grass-py3-pdal:releasebranch_8_2-debian
       volumes:
-        - .:/src
+        - ./:/src
 
     steps:
       - uses: actions/checkout@v3
