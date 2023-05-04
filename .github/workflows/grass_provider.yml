@@ -19,15 +19,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     container:
       image: mundialis/grass-py3-pdal:releasebranch_8_2-debian
-      volumes:
-        - ./:/src
 
     steps:
       - uses: actions/checkout@v3
 
       - name: Install Python dependencies
         run: |
-          pip install -r .github/workflows/requirements3.11.2.txt
+          ls && pwd
+          # pip install -r .github/workflows/requirements3.11.2.txt
 
       - name: Run GRASS test suite
         run: |
