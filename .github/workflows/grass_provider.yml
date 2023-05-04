@@ -29,4 +29,4 @@ jobs:
 
       - name: Run GRASS test suite
         run: |
-          grass -c EPSG:5514 /tmp/test_loc --exec pytest tests/test_grass.py
+          grass tests/grassdata/smoderp2d-location/PERMANENT/ --exec pytest tests/test_grass.py
