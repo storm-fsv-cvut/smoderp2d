@@ -4,6 +4,7 @@ import csv
 import argparse
 import logging
 import numpy as np
+import numpy.ma as ma
 
 if sys.version_info.major >= 3:
     from configparser import ConfigParser, NoSectionError, NoOptionError
@@ -399,7 +400,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             cumulative.vol_sur_tot.flatten() * slope_width,
             cumulative.v_sheet.flatten(),
             cumulative.shear_sheet.flatten(),
-            [0 if i.state == 0 else 1 for i in surface_array.flatten()]
+            [0 if ma.any(ma.equal(surface_array.state, 0)) else 1 ]
         )
 
         profile_path = os.path.join(Globals.outdir, 'profile.csv')
