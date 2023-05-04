@@ -16,16 +16,17 @@ jobs:
           - ubuntu-22.04
         container:
           - mundialis/grass-py3-pdal:releasebranch_8_2-debian
+          - volumes:
+            - .
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
-    container: ${{ matrix.container }}
+    container: 
+      image: ${{ matrix.container }}
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
       - name: Install Python dependencies
         run: |
           pip install -r .github/workflows/requirements${{ matrix.python-version }}.txt
