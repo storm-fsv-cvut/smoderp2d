@@ -1,4 +1,4 @@
-name: pytest
+name: GRASS GIS provider consistency test
 
 on:
   push:
@@ -14,29 +14,20 @@ jobs:
       matrix:
         os:
           - ubuntu-22.04
-        python-version:
-          - "2.7"
-          - "3.8"
-          - "3.11.2"
+        container:
+          - mundialis/grass-py3-pdal:releasebranch_8_2-debian
       fail-fast: false
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.container }}
 
     steps:
       - uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - name: Install Python dependencies
         run: |
           pip install -r .github/workflows/requirements${{ matrix.python-version }}.txt
-
-      - name: Run command test suite
-        run: |
-          pytest tests/test_cmd.py
 
       - name: Run GRASS test suite
         run: |

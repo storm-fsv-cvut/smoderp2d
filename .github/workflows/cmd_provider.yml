@@ -1,0 +1,39 @@
+name: CMD provider consistency test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  pytest:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-22.04
+        python-version:
+          - "2.7"
+          - "3.8"
+          - "3.11.2"
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r .github/workflows/requirements${{ matrix.python-version }}.txt
+
+      - name: Run command test suite
+        run: |
+          pytest tests/test_cmd.py
