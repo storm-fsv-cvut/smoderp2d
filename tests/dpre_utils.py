@@ -37,8 +37,8 @@ def report_pickle_difference(new_output, reference):
     :return: string message reporting the content of the new output
     """
     diff_fn = new_output + '.diff'
-    diff_fd = open(diff_fn, 'w')
-    
+    # diff_fd = open(diff_fn, 'w')
+
     with open(new_output, 'rb') as left:
         with open(reference, 'rb') as right:
             if sys.version_info > (3, 0):
@@ -62,9 +62,9 @@ def report_pickle_difference(new_output, reference):
                 )
             ]
 
-            diff_fd.writelines(unified_diff(new_output_str, reference_str))
+            sys.stdout.writelines(unified_diff(new_output_str, reference_str))
 
-    diff_fd.close()
+    # diff_fd.close()
     
     return 'Inconsistency in {} compared to the reference data. The diff is stored in {}'.format(
         new_output, diff_fn)
