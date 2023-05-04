@@ -116,6 +116,9 @@ class PrepareData(PrepareDataBase):
             raise DataPreparationNoIntersection()
 
         aoi_mask = self.storage.output_filepath('aoi_mask')
+        Module('g.region',
+               vector=aoi_polygon,
+               align=elevation)
         Module('v.to.rast',
                input=aoi_polygon, type='area', use='cat',
                output=aoi_mask)
@@ -175,6 +178,8 @@ class PrepareData(PrepareDataBase):
         """See base method for description.
         """
         output = self.storage.output_filepath(name)
+        Module('g.region',
+               raster=aoi_mask)
         Module('r.mapcalc',
                expression='{o} = if(isnull({m}), null(), {i})'.format(
                    o=output, m=aoi_mask, i=dataset))
