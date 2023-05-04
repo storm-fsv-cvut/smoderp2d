@@ -14,15 +14,13 @@ jobs:
       matrix:
         os:
           - ubuntu-22.04
-        container:
-          image: mundialis/grass-py3-pdal:releasebranch_8_2-debian
-          volumes:
-            - .:/src
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
-    container: 
-      image: ${{ matrix.container }}
+    container:
+      image: mundialis/grass-py3-pdal:releasebranch_8_2-debian
+      volumes:
+        - .:/src
 
     steps:
       - uses: actions/checkout@v3
