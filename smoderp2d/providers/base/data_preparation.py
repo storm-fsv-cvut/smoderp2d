@@ -95,7 +95,6 @@ class PrepareDataBase(ABC):
             'poradi': None,
             'end_time': self._input_params['end_time'],
             'state_cell': None,
-            'temp': None,
             'type_of_computing': None,
             'mfda': None,
             'sr': None,
@@ -444,23 +443,13 @@ class PrepareDataBase(ABC):
             shutil.rmtree(Globals.outdir)
         os.makedirs(Globals.outdir)
 
-        # create temporary dir
-        self.data['temp'] = os.path.join(
-            Globals.outdir, "temp"
-        )
-        Logger.debug(
-            "Creating temp directory <{}>".format(self.data['temp'])
-        )
-        os.makedirs(self.data['temp'])
-
-        # create control dir
-        control = os.path.join(
-            Globals.outdir, "control"
-        )
-        Logger.debug(
-            "Creating control directory <{}>".format(control)
-        )
-        os.makedirs(control)
+        # create temporary/control dir
+        for dir_name in ("temp", "control"):
+            dir_path = os.path.join(Globals.outdir, dir_name)
+            Logger.debug(
+                "Creating {} directory <{}>".format(dir_name, dir_path)
+            )
+            os.makedirs(dir_path)
 
         self.storage.create_storage(self._input_params['output'])
 
