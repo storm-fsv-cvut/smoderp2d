@@ -11,12 +11,9 @@ on:
 jobs:
   pytest:
     strategy:
-      matrix:
-        os:
-          - ubuntu-22.04
       fail-fast: false
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-22.04
     container:
       image: mundialis/grass-py3-pdal:latest-debian
 
