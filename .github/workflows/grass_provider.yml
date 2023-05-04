@@ -25,7 +25,7 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          ls -a && pwd
+          ls -a .github/workflows && pwd
           # pip install -r .github/workflows/requirements3.11.2.txt
 
       - name: Run GRASS test suite
