@@ -15,7 +15,7 @@ jobs:
         os:
           - ubuntu-22.04
         container:
-          - mundialis/grass-py3-pdal:releasebranch_8_2-debian
+          - image: mundialis/grass-py3-pdal:releasebranch_8_2-debian
           - volumes:
             - .:/src
       fail-fast: false
