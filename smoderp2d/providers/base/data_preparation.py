@@ -92,7 +92,6 @@ class PrepareDataBase(ABC):
             'mat_nan': None,
             'mat_a': None,
             'mat_n': None,
-            'poradi': None,
             'end_time': self._input_params['end_time'],
             'state_cell': None,
             'type_of_computing': None,
