@@ -29,7 +29,7 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip install -r .github/workflows/requirements${{ matrix.python-version }}.txt
+          pip install -r .github/workflows/requirements3.11.2.txt
 
       - name: Run GRASS test suite
         run: |
