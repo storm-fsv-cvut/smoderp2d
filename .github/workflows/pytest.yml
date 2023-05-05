@@ -37,3 +37,4 @@ jobs:
       - name: Run test suite
         run: |
           pytest tests/test_cmd.py
+          pytest tests/test_profile1d.py
