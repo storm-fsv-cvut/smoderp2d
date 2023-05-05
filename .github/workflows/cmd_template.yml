@@ -7,10 +7,10 @@ on:
   pull_request:
     branches:
       - master
-#  workflow_call:
-#    inputs:
-#      python-version:
-#        required: true
+  workflow_call:
+    inputs:
+      python-version:
+        required: true
 
 jobs:
   test:
