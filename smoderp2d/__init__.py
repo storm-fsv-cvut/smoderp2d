@@ -44,7 +44,7 @@ class Runner(object):
         elif isinstance(self, GrassGisRunner):
             from smoderp2d.providers.grass import GrassGisProvider
             provider_class = GrassGisProvider
-        elif os.getenv('PROFILE1D'):
+        elif os.getenv('SMODERP2D_PROFILE1D'):
             from smoderp2d.providers.profile1d import Profile1DProvider
             provider_class = Profile1DProvider
         else:
