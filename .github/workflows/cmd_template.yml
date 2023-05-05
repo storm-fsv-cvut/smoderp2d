@@ -10,7 +10,7 @@ on:
   workflow_call:
     inputs:
       python-version:
-        required: true
+        required: false
 
 jobs:
   test:
