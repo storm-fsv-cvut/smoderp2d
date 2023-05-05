@@ -7,6 +7,10 @@ on:
   pull_request:
     branches:
       - master
+#  workflow_call:
+#    inputs:
+#      python-version:
+#        required: true
 
 jobs:
   test:
@@ -21,12 +25,10 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-#          python-version: ${{ inputs.python-version }}
           python-version: 3.8
 
       - name: Install Python dependencies
         run: |
-#          pip install -r .github/workflows/requirements${{ inputs.python-version }}.txt
           pip install -r .github/workflows/requirements3.8.txt
 
       - name: Run command test suite
