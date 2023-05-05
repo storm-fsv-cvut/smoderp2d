@@ -6,6 +6,9 @@ on:
       python-version:
         required: true
         type: string
+      pytest-suite:
+        required: true
+        type: string
 
 jobs:
   test:
@@ -28,5 +31,4 @@ jobs:
 
       - name: Run command test suite
         run: |
-          pytest tests/test_cmd.py
-          pytest tests/test_profile1d.py
+          pytest ${{ inputs.pytest-suite }}
