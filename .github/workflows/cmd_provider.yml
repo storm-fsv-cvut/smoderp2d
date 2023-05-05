@@ -17,6 +17,6 @@ jobs:
           - "3.8"
           - "3.11.2"
 
-    uses: storm-fsv-cvut/smoderp2d/tree/master/.github/workflows/cmd_template.yml@162-profile1d-fails
+    uses: storm-fsv-cvut/smoderp2d/.github/workflows/cmd_template.yml@162-profile1d-fails
     with:
       python-version: ${{ matrix.python-version }}
