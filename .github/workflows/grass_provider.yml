@@ -1,4 +1,4 @@
-name: GRASS GIS provider consistency test
+name: GRASS GIS provider
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - master
 
 jobs:
-  pytest:
+  consistency_test:
     strategy:
       fail-fast: false
 
