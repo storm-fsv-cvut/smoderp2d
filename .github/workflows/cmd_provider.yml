@@ -1,4 +1,4 @@
-name: pytest
+name: CMD provider consistency test
 
 on:
   push:
@@ -34,7 +34,7 @@ jobs:
         run: |
           pip install -r .github/workflows/requirements${{ matrix.python-version }}.txt
 
-      - name: Run test suite
+      - name: Run command test suite
         run: |
           pytest tests/test_cmd.py
           pytest tests/test_profile1d.py
