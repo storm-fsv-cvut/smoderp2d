@@ -43,7 +43,8 @@ class PrepareDataBase(ABC):
         }
         # complete list of field names that are supposed not to be changed, eg. in properties tables
         self.fieldnames = {
-            'soilveg_type': 'veg_type',
+            'veg_type_fieldname': 'veg_type',
+            'soilveg_type_fieldname': 'soilveg_type',
             'stream_segment_id': 'segment_id',
             'stream_segment_start_elevation': 'start_elev',
             'stream_segment_end_elevation': 'end_elev',
@@ -345,8 +346,8 @@ class PrepareDataBase(ABC):
         #   join the attributes to soil_veg intersect and check the table consistency
         Logger.info("Preparing soil and vegetation properties...")
         self._prepare_soilveg(
-            self._input_params['soil'], self._input_params['soil_type'],
-            self._input_params['vegetation'], self._input_params['vegetation_type'],
+            self._input_params['soil'], self._input_params['soil_type_fieldname'],
+            self._input_params['vegetation'], self._input_params['vegetation_type_fieldname'],
             aoi_polygon, self._input_params['table_soil_vegetation']
         )
         Logger.progress(40)

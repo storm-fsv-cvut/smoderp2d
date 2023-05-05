@@ -167,24 +167,31 @@ class PrepareData(PrepareDataBase):
         
         return self._rst2np(efect_cont)
 
-    def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
-                         aoi_polygon, table_soil_vegetation):
+    def _prepare_soilveg(self, soil, soil_type_fieldname, vegetation, vegetation_type_fieldname,
+                         aoi_polygon, soil_vegetation_table):
         """See base method for description.
         """
-        # check if the soil_type and vegetation_type field names are
+        # check if the soil_type_fieldname and vegetation_type_fieldname field names are
         # equal and deal with it if not
-        if soil_type == vegetation_type:
-            veg_fieldname = self.fieldnames['soilveg_type']
+        if soil_type_fieldname == vegetation_type_fieldname:
+            veg_fieldname = self.fieldnames['veg_type_fieldname']
             Logger.info(
                 "The vegetation type attribute field name ('{}') is equal to "
                 "the soil type attribute field name. Vegetation type attribute "
-                "will be renamed to '{}'.".format(vegetation_type, veg_fieldname)
+                "will be renamed to '{}'.".format(vegetation_type_fieldname, veg_fieldname)
             )
-            # add the new field
-            arcpy.management.AlterField(vegetation,
-                                        vegetation_type, veg_fieldname)
+
+            # arcpy.management.AlterField(vegetation,vegetation_type_fieldname, veg_fieldname) # - does not work correctly, better to add field -> copy values -> delete field
+            # add new field
+            arcpy.management.AddField(vegetation, veg_fieldname, "TEXT")
+            # copy the values and delete the old field
+            with arcpy.da.UpdateCursor(vegetation, [vegetation_type_fieldname, veg_fieldname]) as table:
+                for row in table:
+                    row[0] = row[1]
+                    table.updateRow(row)
+            arcpy.management.DeleteField(vegetation, vegetation_type_fieldname)
         else:
-            veg_fieldname = vegetation_type
+            veg_fieldname = vegetation_type_fieldname
 
         # create the geometric intersection of soil and vegetation layers
         soilveg_aoi_path = self.storage.output_filepath("soilveg_aoi")
@@ -197,10 +204,10 @@ class PrepareData(PrepareDataBase):
                 "'{}' attribute field already in the table and will be replaced.".format(soilveg_code)
             )
 
-        arcpy.management.AddField(soilveg_aoi_path, soilveg_code, "TEXT", field_length=15)
+        arcpy.management.AddField(soilveg_aoi_path, soilveg_code, "TEXT")
 
-        # calculate "soil_veg" values (soil_type + vegetation_type)
-        with arcpy.da.UpdateCursor(soilveg_aoi_path, [soil_type, veg_fieldname, soilveg_code]) as table:
+        # calculate "soil_veg" values (soil_type_fieldname + vegetation_type_fieldname)
+        with arcpy.da.UpdateCursor(soilveg_aoi_path, [soil_type_fieldname, veg_fieldname, soilveg_code]) as table:
             for row in table:
                 row[2] = row[0] + row[1]
                 table.updateRow(row)
@@ -208,7 +215,7 @@ class PrepareData(PrepareDataBase):
         # join soil and vegetation model parameters from input table
         arcpy.management.JoinField(
             soilveg_aoi_path, soilveg_code,
-            table_soil_vegetation,
+            soil_vegetation_table,
             soilveg_code, list(self.soilveg_fields.keys())
         )
 
@@ -449,11 +456,11 @@ class PrepareData(PrepareDataBase):
 
         _check_empty_values(
             self._input_params['vegetation'],
-            self._input_params['vegetation_type']
+            self._input_params['vegetation_type_fieldname']
         )
         _check_empty_values(
             self._input_params['soil'],
-            self._input_params['soil_type']
+            self._input_params['soil_type_fieldname']
         )
 
         # check presence of needed fields in stream shape properties table
