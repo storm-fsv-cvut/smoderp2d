@@ -1,4 +1,4 @@
-name: SMODERP2D GRASS GIS provider
+name: GRASS GIS provider
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: SMODERP2D CMD provider
+name: CMD provider
 
 on:
   push:
@@ -9,7 +9,20 @@ on:
       - master
 
 jobs:
-  consistency_test:
+  smoderp2d:
+    strategy:
+      matrix:
+        python-version:
+          - "2.7"
+          - "3.8"
+          - "3.11.2"
+
+    uses: storm-fsv-cvut/smoderp2d/.github/workflows/cmd_template.yml@162-profile1d-fails
+    with:
+      python-version: ${{ matrix.python-version }}
+      pytest-suite: tests/test_cmd.py
+
+  profile1d:
     strategy:
       matrix:
         python-version:
