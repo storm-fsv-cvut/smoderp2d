@@ -9,7 +9,8 @@ on:
       - master
   workflow_call:
     inputs:
-      python-version
+      python-version:
+        required: true
 
 jobs:
   consistency_test:
