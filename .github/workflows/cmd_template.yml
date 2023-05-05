@@ -1,0 +1,34 @@
+name: CMD provider consistency test reusable workflow
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        required: true
+        type: string
+      pytest-suite:
+        required: true
+        type: string
+
+jobs:
+  consistency_test:
+    strategy:
+      fail-fast: false
+
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r .github/workflows/requirements${{ inputs.python-version }}.txt
+
+      - name: Run command test suite
+        run: |
+          pytest ${{ inputs.pytest-suite }}
