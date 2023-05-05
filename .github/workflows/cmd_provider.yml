@@ -1,12 +1,12 @@
 name: SMODERP2D CMD provider
 
-#on:
-#  push:
-#    branches:
-#      - master
-#  pull_request:
-#    branches:
-#      - master
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   consistency_test:

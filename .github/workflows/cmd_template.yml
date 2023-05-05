@@ -1,12 +1,6 @@
 name: CMD provider consistency test
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
   workflow_call:
     inputs:
       python-version:
