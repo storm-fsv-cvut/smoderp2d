@@ -1,7 +1,7 @@
 # SMODERP2D
 
-[![cmd_provider_consistency_test](https://github.com/storm-fsv-cvut/smoderp2d/actions/workflows/cmd_provider.yml/badge.svg?branch=master)](https://github.com/storm-fsv-cvut/smoderp2d/actions/workflows/cmd_provider.yml)
-[![grass_provider_consistency_test](https://github.com/storm-fsv-cvut/smoderp2d/actions/workflows/grass_provider.yml/badge.svg?branch=master)](https://github.com/storm-fsv-cvut/smoderp2d/actions/workflows/grass_provider.yml)
+[![cmd_provider_consistency_test](https://github.com/storm-fsv-cvut/smoderp2d/actions/workflows/cmd_provider.yml/badge.svg?branch=release_1_0)](https://github.com/storm-fsv-cvut/smoderp2d/actions/workflows/cmd_provider.yml)
+[![grass_provider_consistency_test](https://github.com/storm-fsv-cvut/smoderp2d/actions/workflows/grass_provider.yml/badge.svg?branch=release_1_0)](https://github.com/storm-fsv-cvut/smoderp2d/actions/workflows/grass_provider.yml)
 
 Distributed event-based model for surface and subsurface runoff and erosion.
 
