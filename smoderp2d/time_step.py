@@ -246,4 +246,6 @@ class TimeStep:
             cumulative,
             actRain)
 
-        return actRain
+        # OP: I dont understand why we return only the last actRain, but it
+        # is written that way in smoderp 1.0.0
+        return actRain[-1, -1]
