@@ -34,4 +34,4 @@ jobs:
     uses: ./.github/workflows/cmd_template.yml
     with:
       python-version: ${{ matrix.python-version }}
-      pytest-suite: tests/test_cmd.py
+      pytest-suite: tests/test_profile1d.py
