@@ -68,6 +68,8 @@ class SMODERP2D(object):
            parameterType="Required",
            direction="Input"
         )
+        inputSoilPolygons.filter.list = ["Polygon"]
+
         soilTypefieldName = arcpy.Parameter(
            displayName="Field with the soil type identifier",
            name="soilTypefieldName",
@@ -84,6 +86,8 @@ class SMODERP2D(object):
            parameterType="Required",
            direction="Input"
         )
+        inputLUPolygons.filter.list = ["Polygon"]
+
         LUtypeFieldName = arcpy.Parameter(
            displayName="Field with the landuse type identifier",
            name="LUtypeFieldName",
@@ -129,6 +133,7 @@ class SMODERP2D(object):
            parameterType="Optional",
            direction="Input"
         )
+        inputPoints.filter.list = ["Point"]
 
         soilvegPropertiesTable = arcpy.Parameter(
            displayName="Soils and Landuse parameters table",
@@ -233,9 +238,9 @@ class SMODERP2D(object):
         return {
             'elevation': parameters[PARAMETER_DEM].valueAsText,
             'soil': parameters[PARAMETER_SOIL].valueAsText,
-            'soil_type': parameters[PARAMETER_SOIL_TYPE].valueAsText,
+            'soil_type_fieldname': parameters[PARAMETER_SOIL_TYPE].valueAsText,
             'vegetation': parameters[PARAMETER_VEGETATION].valueAsText,
-            'vegetation_type': parameters[PARAMETER_VEGETATION_TYPE].valueAsText,
+            'vegetation_type_fieldname': parameters[PARAMETER_VEGETATION_TYPE].valueAsText,
             'rainfall_file': parameters[PARAMETER_PATH_TO_RAINFALL_FILE].valueAsText,
             'maxdt': float(parameters[PARAMETER_MAX_DELTA_T].valueAsText),
             'end_time': float(parameters[PARAMETER_END_TIME].valueAsText),

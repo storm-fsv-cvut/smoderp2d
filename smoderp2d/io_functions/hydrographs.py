@@ -1,5 +1,7 @@
 import os
 
+import numpy.ma as ma
+
 from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers import Logger
 
@@ -159,7 +161,7 @@ class Hydrographs:
         # at the top of each minute
         # the function ends here ohterwise
         if not Globals.extraOut:
-            time_minutes = (total_time)/60.
+            time_minutes = (total_time.max())/60.
             if time_minutes - int(time_minutes) != 0: return
 
         courantMost = courant.cour_most
@@ -171,7 +173,7 @@ class Hydrographs:
                 m = self.point_int[ip][2]
                 self.files[ip].writelines(
                     '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3}{linesep}'.format(
-                    total_time, dt, currRain,
+                    total_time[l, m], dt, currRain,
                     surface.return_stream_str_vals(l, m, SEP, dt, Globals.extraOut),
                     sep=sep, linesep=os.linesep
                 ))

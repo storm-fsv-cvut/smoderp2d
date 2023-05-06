@@ -156,7 +156,8 @@ class Surface(GridGlobals, Stream, Kinematic):
         if not extra_out:
             line = '{0:.4e}{sep}{1:.4e}'.format(
                 arr.h_total_new[i, j],
-                (vol_runoff / dt + arr.vol_runoff_rill[i, j] / dt) * sw,
+                (vol_runoff / dt[i, j] + arr.vol_runoff_rill[i, j] / dt[i, j]) *
+                sw,
                 sep=sep
             )
             bil_ = ''
