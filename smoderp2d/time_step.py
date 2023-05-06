@@ -210,16 +210,23 @@ class TimeStep:
 
         surface_state = surface.arr.state
 
+        state_condition = surface_state > Globals.streams_flow_inc
         surface.arr.h_total_new = ma.where(
-            surface_state > Globals.streams_flow_inc,  # stream flow in the cell
+            state_condition,  # stream flow in the cell
             0,
             surBIL
         )
         if ma.any(surface_state > Globals.streams_flow_inc):
-            h_sub = subsurface.runoff_stream_cell()
-            inflowToReach = h_sub * pixel_area + surBIL * pixel_area
+            h_sub = subsurface.runoff_stream_cell(state_condition)
+            inflowToReach = ma.where(
+                state_condition,
+                h_sub * pixel_area + surBIL * pixel_area,
+                0
+            )
             surface.reach_inflows(
-                surface_state - Globals.streams_flow_inc, inflowToReach
+                surface_state - Globals.streams_flow_inc,
+                inflowToReach,
+                state_condition
             )
 
         surface_state = surface.arr.state

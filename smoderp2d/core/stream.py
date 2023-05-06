@@ -1,3 +1,5 @@
+import numpy.ma as ma
+
 from smoderp2d.stream_functions import stream_f
 from smoderp2d.core.general import GridGlobals, Globals as Gl
 from smoderp2d.providers import Logger
@@ -89,9 +91,9 @@ class Stream(object):
 
     # Documentation for a reach inflows.
     #  @param fid feature id
-    def reach_inflows(self, fid, inflows):
+    def reach_inflows(self, fid, inflows, indices):
         try:
-            self.reach[fid].V_in_from_field += inflows
+            self.reach[fid].V_in_from_field += ma.where(indices, inflows, 0)
         except KeyError:
             raise ProviderError(
                 "Unable to reach inflow. Feature id {} not found in {}".format(
@@ -155,7 +157,7 @@ class StreamPass(object):
     def reset_inflows(self):
         pass
 
-    def reach_inflows(self, fid, inflows):
+    def reach_inflows(self, fid, inflows, indices):
         pass
 
     def stream_reach_inflow(self):

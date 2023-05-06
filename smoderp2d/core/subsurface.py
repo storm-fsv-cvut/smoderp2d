@@ -168,10 +168,10 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
         arr.vol_runoff = delta_t * self.q_subsurface
         arr.vol_rest = arr.h * self.pixel_area - delta_t * self.q_subsurface
 
-    def runoff_stream_cell(self, i, j):
-        self.arr.vol_runoff[i, j] = 0.0
-        self.arr.vol_rest[i, j] = 0.0
-        return self.arr.h[i, j]
+    def runoff_stream_cell(self, indices):
+        self.arr.vol_runoff[indices] = 0.0
+        self.arr.vol_rest[indices] = 0.0
+        return ma.where(indices, self.arr.h, 0)
 
     def curr_to_pre(self):
         self.arr.vol_runoff_pre = self.arr.vol_runoff
@@ -222,7 +222,7 @@ class SubsurfacePass(GridGlobals):
     def runoff(self, delta_t, efect_vrst):
         pass
 
-    def runoff_stream_cell(self, i, j):
+    def runoff_stream_cell(self, indices):
         return 0.0
 
     def return_str_vals(self, i, j, sep, dt):
