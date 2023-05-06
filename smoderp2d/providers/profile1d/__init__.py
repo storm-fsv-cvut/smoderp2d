@@ -403,7 +403,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             cumulative.vol_sur_tot.flatten() * slope_width,
             cumulative.v_sheet.flatten(),
             cumulative.shear_sheet.flatten(),
-            [0 if ma.any(ma.equal(surface_array.state, 0)) else 1 ]
+            ma.where(ma.equal(surface_array.state, 0), 0, 1).flatten()
         )
 
         profile_path = os.path.join(Globals.outdir, 'profile.csv')
