@@ -9,6 +9,196 @@ from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError, DataPreparationInvalidInput
 
 class PrepareDataBase(ABC):
+    @staticmethod
+    def _get_a(mat_n, mat_x, mat_y, r, c, no_data, mat_slope):
+        """Build 'a' and 'aa' arrays.
+
+        :param mat_n:
+        :param mat_x:
+        :param mat_y:
+        :param r: number of rows
+        :param c: number of columns
+        :param no_data: no data value
+        :param mat_slope:
+        :return: np ndarray for mat_a and for mat_aa
+        """
+        mat_a = np.zeros(
+            [r, c], float
+        )
+        mat_aa = np.zeros(
+            [r, c], float
+        )
+
+        # calculating the "a" parameter
+        for i in range(r):
+            for j in range(c):
+                slope = mat_slope[i][j]
+                par_x = mat_x[i][j]
+                par_y = mat_y[i][j]
+
+                if par_x == no_data or par_y == no_data or slope == no_data:
+                    par_a = no_data
+                    par_aa = no_data
+                elif par_x == no_data or par_y == no_data or slope == 0.0:
+                    par_a = 0.0001
+                    par_aa = par_a / mat_n[i][j]
+                else:
+                    exp = np.power(slope, par_y)
+                    par_a = par_x * exp
+                    par_aa = par_a / mat_n[i][j]
+
+                mat_a[i][j] = par_a
+                mat_aa[i][j] = par_aa
+
+        return mat_a, mat_aa
+
+    def _get_crit_water(self, mat_b, mat_tau, mat_v, r, c, mat_slope,
+                        no_data_value, mat_aa):
+        """
+
+        :param all_attrib:
+        """
+        # critical water level
+        mat_hcrit_tau = np.zeros([r, c], float)
+        mat_hcrit_v = np.zeros([r, c], float)
+        mat_hcrit_flux = np.zeros([r, c], float)
+        mat_hcrit = np.zeros([r, c], float)
+
+        for i in range(r):
+            for j in range(c):
+                if mat_slope[i][j] != no_data_value \
+                   and mat_tau[i][j] != no_data_value:
+                    slope = mat_slope[i][j]
+                    tau_crit = mat_tau[i][j]
+                    v_crit = mat_v[i][j]
+                    b = mat_b[i][j]
+                    aa = mat_aa[i][j]
+                    flux_crit = tau_crit * v_crit
+                    exp = 1 / (b - 1)
+
+                    if slope == 0.0:
+                        hcrit_tau = hcrit_v = hcrit_flux = 1000 # set come auxiliary high value for zero slope
+
+                    else:
+                        hcrit_v = np.power((v_crit / aa), exp)  # h critical from v
+                        hcrit_tau = tau_crit / 9807 / slope  # h critical from tau
+                        hcrit_flux = np.power((flux_crit / slope / 9807 / aa),(1 / mat_b[i][j]))  # kontrola jednotek
+
+                    mat_hcrit_tau[i][j] = hcrit_tau
+                    mat_hcrit_v[i][j] = hcrit_v
+                    mat_hcrit_flux[i][j] = hcrit_flux
+                    hcrit = min(hcrit_tau, hcrit_v, hcrit_flux)
+                    mat_hcrit[i][j] = hcrit
+                else:
+                    mat_hcrit_tau[i][j] = no_data_value
+                    mat_hcrit_v[i][j] = no_data_value
+                    mat_hcrit_flux[i][j] = no_data_value
+                    mat_hcrit[i][j] = no_data_value
+
+        return mat_hcrit
+
+    @staticmethod
+    def _get_inf_combinat_index(r, c, mat_k, mat_s):
+        """
+
+        :param sfield:
+        :param intersect:
+
+        :return all_atrib:
+        """
+        mat_inf_index = None
+        combinatIndex = None
+
+        infiltration_type = 0  # "Phillip"
+        if infiltration_type == 0:
+            # to se rovna vzdycky ne? nechapu tuhle podminku 23.05.2018 MK
+            mat_inf_index = np.zeros(
+                [r, c], int
+            )
+            combinat = []
+            combinatIndex = []
+            for i in range(r):
+                for j in range(c):
+                    kkk = mat_k[i][j]
+                    sss = mat_s[i][j]
+                    ccc = [kkk, sss]
+                    try:
+                        if combinat.index(ccc):
+                            mat_inf_index[i][j] = combinat.index(ccc)
+                    except:
+                        combinat.append(ccc)
+                        combinatIndex.append(
+                            [combinat.index(ccc), kkk, sss, 0]
+                        )
+                        mat_inf_index[i][j] = combinat.index(
+                            ccc
+                        )
+
+        return mat_inf_index, combinatIndex
+
+    def _get_mat_nan(self, r, c, no_data_value, mat_slope, mat_dem):
+        # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u
+        # sklonu a acc
+        mat_nan = np.zeros(
+            [r, c], float
+        )
+
+        i = j = 0
+
+        # data value vector intersection
+        # TODO: no loop needed?
+        nv = no_data_value
+        for i in range(r):
+            for j in range(c):
+                x_mat_dem = mat_dem[i][j]
+                slp = mat_slope[i][j]
+                if x_mat_dem == nv or slp == nv:
+                    mat_nan[i][j] = nv
+                    mat_slope[i][j] = nv
+                    mat_dem[i][j] = nv
+                else:
+                    mat_nan[i][j] = 0
+
+        return mat_nan, mat_slope, mat_dem
+
+    @staticmethod
+    def _get_rr_rc(r, c, mat_boundary):
+        """Create list rr and list of lists rc which contain i and j index of
+        elements inside the compuation domain."""
+        nr = range(r)
+        nc = range(c)
+
+        rr = []
+        rc = []
+
+        in_domain = False
+        in_boundary = False
+
+        for i in nr:
+            one_col = []
+            one_col_boundary = []
+            for j in nc:
+
+                if mat_boundary[i][j] == -99 and in_boundary is False:
+                    in_boundary = True
+
+                if mat_boundary[i][j] == -99 and in_boundary is True:
+                    one_col_boundary.append(j)
+
+                if (mat_boundary[i][j] == 0.0) and in_domain is False:
+                    rr.append(i)
+                    in_domain = True
+
+                if (mat_boundary[i][j] == 0.0) and in_domain is True:
+                    one_col.append(j)
+
+            in_domain = False
+            in_boundary = False
+            rc.append(one_col)
+
+        return rr, rc
+    
+class PrepareDataGISBase(PrepareDataBase):
     def __init__(self, writter):
         self.storage = writter
 
@@ -464,45 +654,6 @@ class PrepareDataBase(ABC):
 
         self.storage.create_storage(self._input_params['output'])
 
-    @staticmethod
-    def _get_inf_combinat_index(r, c, mat_k, mat_s):
-        """
-
-        :param sfield:
-        :param intersect:
-
-        :return all_atrib:
-        """
-        mat_inf_index = None
-        combinatIndex = None
-
-        infiltration_type = 0  # "Phillip"
-        if infiltration_type == 0:
-            # to se rovna vzdycky ne? nechapu tuhle podminku 23.05.2018 MK
-            mat_inf_index = np.zeros(
-                [r, c], int
-            )
-            combinat = []
-            combinatIndex = []
-            for i in range(r):
-                for j in range(c):
-                    kkk = mat_k[i][j]
-                    sss = mat_s[i][j]
-                    ccc = [kkk, sss]
-                    try:
-                        if combinat.index(ccc):
-                            mat_inf_index[i][j] = combinat.index(ccc)
-                    except:
-                        combinat.append(ccc)
-                        combinatIndex.append(
-                            [combinat.index(ccc), kkk, sss, 0]
-                        )
-                        mat_inf_index[i][j] = combinat.index(
-                            ccc
-                        )
-
-        return mat_inf_index, combinatIndex
-
     def _get_points_dem_coords(self, x, y):
         """ Finds the raster row and column index for input x, y coordinates
         :param x: X coordinate of the point
@@ -528,119 +679,6 @@ class PrepareDataBase(ABC):
             return r, c
         else:
             return None
-
-    @staticmethod
-    def _get_a(mat_n, mat_x, mat_y, r, c, no_data, mat_slope):
-        """Build 'a' and 'aa' arrays.
-
-        :param mat_n:
-        :param mat_x:
-        :param mat_y:
-        :param r: number of rows
-        :param c: number of columns
-        :param no_data: no data value
-        :param mat_slope:
-        :return: np ndarray for mat_a and for mat_aa
-        """
-        mat_a = np.zeros(
-            [r, c], float
-        )
-        mat_aa = np.zeros(
-            [r, c], float
-        )
-
-        # calculating the "a" parameter
-        for i in range(r):
-            for j in range(c):
-                slope = mat_slope[i][j]
-                par_x = mat_x[i][j]
-                par_y = mat_y[i][j]
-
-                if par_x == no_data or par_y == no_data or slope == no_data:
-                    par_a = no_data
-                    par_aa = no_data
-                elif par_x == no_data or par_y == no_data or slope == 0.0:
-                    par_a = 0.0001
-                    par_aa = par_a / mat_n[i][j]
-                else:
-                    exp = np.power(slope, par_y)
-                    par_a = par_x * exp
-                    par_aa = par_a / mat_n[i][j]
-
-                mat_a[i][j] = par_a
-                mat_aa[i][j] = par_aa
-
-        return mat_a, mat_aa
-
-    def _get_crit_water(self, mat_b, mat_tau, mat_v, r, c, mat_slope,
-                        no_data_value, mat_aa):
-        """
-
-        :param all_attrib:
-        """
-        # critical water level
-        mat_hcrit_tau = np.zeros([r, c], float)
-        mat_hcrit_v = np.zeros([r, c], float)
-        mat_hcrit_flux = np.zeros([r, c], float)
-        mat_hcrit = np.zeros([r, c], float)
-
-        for i in range(r):
-            for j in range(c):
-                if mat_slope[i][j] != no_data_value \
-                   and mat_tau[i][j] != no_data_value:
-                    slope = mat_slope[i][j]
-                    tau_crit = mat_tau[i][j]
-                    v_crit = mat_v[i][j]
-                    b = mat_b[i][j]
-                    aa = mat_aa[i][j]
-                    flux_crit = tau_crit * v_crit
-                    exp = 1 / (b - 1)
-
-                    if slope == 0.0:
-                        hcrit_tau = hcrit_v = hcrit_flux = 1000 # set come auxiliary high value for zero slope
-
-                    else:
-                        hcrit_v = np.power((v_crit / aa), exp)  # h critical from v
-                        hcrit_tau = tau_crit / 9807 / slope  # h critical from tau
-                        hcrit_flux = np.power((flux_crit / slope / 9807 / aa),(1 / mat_b[i][j]))  # kontrola jednotek
-
-                    mat_hcrit_tau[i][j] = hcrit_tau
-                    mat_hcrit_v[i][j] = hcrit_v
-                    mat_hcrit_flux[i][j] = hcrit_flux
-                    hcrit = min(hcrit_tau, hcrit_v, hcrit_flux)
-                    mat_hcrit[i][j] = hcrit
-                else:
-                    mat_hcrit_tau[i][j] = no_data_value
-                    mat_hcrit_v[i][j] = no_data_value
-                    mat_hcrit_flux[i][j] = no_data_value
-                    mat_hcrit[i][j] = no_data_value
-
-        return mat_hcrit
-
-    def _get_mat_nan(self, r, c, no_data_value, mat_slope, mat_dem):
-        # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u
-        # sklonu a acc
-        mat_nan = np.zeros(
-            [r, c], float
-        )
-
-        i = j = 0
-
-        # data value vector intersection
-        # TODO: no loop needed?
-        nv = no_data_value
-        for i in range(r):
-            for j in range(c):
-                x_mat_dem = mat_dem[i][j]
-                slp = mat_slope[i][j]
-                if x_mat_dem == nv or slp == nv:
-                    mat_nan[i][j] = nv
-                    mat_slope[i][j] = nv
-                    mat_dem[i][j] = nv
-                else:
-                    mat_nan[i][j] = 0
-
-        return mat_nan, mat_slope, mat_dem
 
     def _prepare_streams(self, stream, stream_shape_tab, stream_shape_code, dem_aoi, aoi_polygon):
         self.data['type_of_computing'] = 1
@@ -714,43 +752,6 @@ class PrepareDataBase(ABC):
                 mat_boundary[i][j] = val
 
         return mat_boundary
-
-    @staticmethod
-    def _get_rr_rc(r, c, mat_boundary):
-        """Create list rr and list of lists rc which contain i and j index of
-        elements inside the compuation domain."""
-        nr = range(r)
-        nc = range(c)
-
-        rr = []
-        rc = []
-
-        in_domain = False
-        in_boundary = False
-
-        for i in nr:
-            one_col = []
-            one_col_boundary = []
-            for j in nc:
-
-                if mat_boundary[i][j] == -99 and in_boundary is False:
-                    in_boundary = True
-
-                if mat_boundary[i][j] == -99 and in_boundary is True:
-                    one_col_boundary.append(j)
-
-                if (mat_boundary[i][j] == 0.0) and in_domain is False:
-                    rr.append(i)
-                    in_domain = True
-
-                if (mat_boundary[i][j] == 0.0) and in_domain is True:
-                    one_col.append(j)
-
-            in_domain = False
-            in_boundary = False
-            rc.append(one_col)
-
-        return rr, rc
 
     def _convert_slope_units(self):
         """

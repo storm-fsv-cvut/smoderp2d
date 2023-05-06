@@ -11,7 +11,7 @@ import os
 from start import start_smoderp2d
 
 if __name__ == "__main__":
-    os.environ["PROFILE1D"] = "1"
+    os.environ["SMODERP2D_PROFILE1D"] = "1"
     start_smoderp2d()
 else:
     sys.exit("Can be run only as standalone program.")

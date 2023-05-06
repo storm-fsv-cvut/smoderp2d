@@ -1,15 +1,17 @@
-name: GRASS GIS provider consistency test
+name: GRASS GIS provider
 
 on:
   push:
     branches:
       - master
+      - release_1_0
   pull_request:
     branches:
       - master
+      - release_1_0
 
 jobs:
-  pytest:
+  consistency_test:
     strategy:
       fail-fast: false
 

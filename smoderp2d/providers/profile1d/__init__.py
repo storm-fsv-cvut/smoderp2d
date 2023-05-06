@@ -24,6 +24,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         super(Profile1DProvider, self).__init__()
 
         # load configuration
+        if config_file is None and os.getenv("SMODERP2D_CONFIG_FILE"):
+            config_file = os.getenv("SMODERP2D_CONFIG_FILE")
         cloader = CmdArgumentParser(config_file)
         # no gis has only roff comp type
         self.args.config_file, self.args.typecomp = cloader.set_config(

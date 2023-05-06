@@ -5,11 +5,11 @@ import arcpy
 
 from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
-from smoderp2d.providers.base.data_preparation import PrepareDataBase
+from smoderp2d.providers.base.data_preparation import PrepareDataGISBase
 from smoderp2d.providers.base.exceptions import DataPreparationError, DataPreparationInvalidInput, LicenceNotAvailable, DataPreparationNoIntersection
 import smoderp2d.processes.rainfall as rainfall
 
-class PrepareData(PrepareDataBase):
+class PrepareData(PrepareDataGISBase):
     def __init__(self, options, writter):
         # define input parameters
         self._set_input_params(options)
