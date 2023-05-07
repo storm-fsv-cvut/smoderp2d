@@ -178,7 +178,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         cond_sur_state1 = surface.state == 1
         cond_sur_state2 = surface.state == 2
         self.h_sheet_tot = ma.where(
-            cond_sur_state1 | cond_sur_state2,
+            ma.logical_or(cond_sur_state1, cond_sur_state2),
             surface.h_crit,
             self.h_sheet_tot
         )
