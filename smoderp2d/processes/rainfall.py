@@ -183,7 +183,6 @@ def current_rain(rain, rainfallm, sum_interception):
             rain_veg = True # as vegetatio interception is full
         else:
             NS = rainfallm - interc  # netto rainfallm
-    
     else:
         NS = rainfallm
 
