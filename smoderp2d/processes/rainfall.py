@@ -187,9 +187,7 @@ def current_rain(rain, rainfallm, sum_interception):
             sum_interception >= rain_pi,
             True,  # as vegetatio interception is full
             rain_veg
-        )[-1, -1]
-        # OP: I dont understand why we return only the last rain_veg, but it
-        # is written that way in smoderp 1.0.0
+        )
     else:
         NS = rainfallm
 
