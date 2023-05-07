@@ -111,9 +111,8 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
     def fill_slope(self):
         self.update_H()
 
-    def get_exfiltration(self, i, j):
-
-        return self.arr.exfiltration[i, j]
+    def get_exfiltration(self):
+        return self.arr.exfiltration
 
     def bilance(self, i, j, infilt, inflow, dt):
 
