@@ -595,11 +595,11 @@ class PrepareData(PrepareDataGISBase):
 
         _check_empty_values(
             self.__qualified_name(self._input_params['vegetation']),
-            self._input_params['vegetation_type']
+            self._input_params['vegetation_type_fieldname']
         )
         _check_empty_values(
             self.__qualified_name(self._input_params['soil']),
-            self._input_params['soil_type']
+            self._input_params['soil_type_fieldname']
         )
 
         
