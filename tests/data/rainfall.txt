@@ -1,1 +1,6 @@
+t[min] precipitation total[mm]
+5 10
+15 40
 30 60
+40 70
+
