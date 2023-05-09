@@ -2,6 +2,9 @@
 
 import math
 import sys
+
+import numpy.ma as ma
+
 from inspect import currentframe, getframeinfo
 
 from smoderp2d.providers import Logger
@@ -79,13 +82,10 @@ def rectangle(reach, dt):
         reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt                   # prutok
     reach.V_out = reach.Q_out * \
         dt                                               # odtekly objem
-    if reach.V_out > dV:
-        reach.V_out = dV
-        reach.Q_out = dV / dt
-        reach.vol_rest = 0.0
-    else:
-        reach.Q_out = reach.V_out / dt
-        reach.vol_rest = dV - reach.V_out  # V_zbyt
+    condition = ma.greater(reach.V_out, dV)
+    reach.V_out = ma.where(condition, dV, reach.V_out)
+    reach.vol_rest = ma.where(condition, 0, dV - reach.V_out)
+    reach.Q_out = reach.V_out / dt
     reach.h = H
 
 
@@ -121,16 +121,14 @@ def trapezoid(reach, dt):
     # v ToDo and Question - proc tady mame 3/5 a 1/2 cislem a ne zlomkem
     reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
-    if reach.V_out > dV:
-        reach.V_out = dV
-        reach.Q_out = dV / dt
-        reach.vol_rest
-    else:
-        reach.Q_out = reach.V_out / dt
-        reach.vol_rest = dV - reach.V_out  # V_zbyt
+
+    condition = ma.greater(reach.V_out, dV)
+    reach.V_out = ma.where(condition, dV, reach.V_out)
+    reach.vol_rest = ma.where(condition, 0, dV - reach.V_out)
+    reach.Q_out = reach.V_out / dt
     reach.h = H
-    
-    
+
+
     #print reach.V_in_from_field, reach.vol_rest, reach.V_in_from_reach, reach.length
     #raw_input()
     # prt.mujout.writelines(str(reach.id_) + ';' + str(reach.h) + ';' +
@@ -181,13 +179,11 @@ def triangle(reach, dt):
             reach.roughness)  # v
     reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
-    if reach.V_out > Ve:
-        reach.V_out = Ve
-        reach.Q_out = Ve / dt
-        reach.vol_rest = 0
-    else:
-        reach.Q_out = reach.V_out / dt
-        reach.vol_rest = Ve - reach.V_out
+
+    condition = ma.greater(reach.V_out, Ve)
+    reach.V_out = ma.where(condition, Ve, reach.V_out)
+    reach.vol_rest = ma.where(condition, 0, Ve - reach.V_out)
+    reach.Q_out = reach.V_out / dt
     reach.h = H
 
 
