@@ -122,12 +122,19 @@ class Stream(object):
         for r in self.reach.values():
             r.V_out_cum += r.V_out
             r.V_in_from_field_cum += r.V_in_from_field
-            if ma.any(r.Q_out > r.Q_max):
-                r.Q_max = r.Q_out
-                r.timeQ_max = time
-            if ma.any(r.h > r.h_max):
-                r.h_max = r.h
-                r.timeh_max = time
+
+            r.timeQ_max = ma.where(
+                r.Q_out > r.Q_max,
+                time,
+                r.timeQ_max
+            )
+            r.Q_max = ma.maximum(r.Q_out, r.Q_max)
+            r.timeh_max = ma.where(
+                r.h > r.h_max,
+                time,
+                r.timeh_max
+            )
+            r.h_max = ma.maximum(r.h, r.h_max)
 
     def return_stream_str_vals(self, i, j, sep, dt, extraOut):
         fid = int(self.state[i, j] - Gl.streams_flow_inc)
