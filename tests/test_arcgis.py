@@ -24,4 +24,4 @@ def dpre_params():
     }
 
 if __name__ == "__main__":
-    perform_dpre_ref_test(ArcGisRunner, dpre_params, dataprep_only=False)
+    perform_dpre_ref_test(ArcGisRunner, dpre_params, dataprep_only=True)
