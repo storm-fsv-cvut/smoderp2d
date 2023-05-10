@@ -227,7 +227,7 @@ class PrepareData(PrepareDataGISBase):
         region.from_rast(raster)
         region.set_raster_region()
         array = raster2numpy(raster)
-        array[np.isnan(array)] = GridGlobals.NoDataValue
+        np.nan_to_num(array, copy=False, nan=GridGlobals.NoDataValue)
         return array
 
     def _update_grid_globals(self, reference):
