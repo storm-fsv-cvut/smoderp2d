@@ -122,10 +122,10 @@ class Stream(object):
         for r in self.reach.values():
             r.V_out_cum += r.V_out
             r.V_in_from_field_cum += r.V_in_from_field
-            if r.Q_out > r.Q_max:
+            if ma.any(r.Q_out > r.Q_max):
                 r.Q_max = r.Q_out
                 r.timeQ_max = time
-            if r.h > r.h_max:
+            if ma.any(r.h > r.h_max):
                 r.h_max = r.h
                 r.timeh_max = time
 
