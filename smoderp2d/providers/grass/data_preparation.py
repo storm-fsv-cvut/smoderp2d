@@ -577,7 +577,7 @@ class PrepareData(PrepareDataGISBase):
                     stream_attr[fields[i]].append(row[i])
                     i += 1
 
-        return stream_attr
+        return self._decode_stream_attr(stream_attr)
                     
     def _check_input_data(self):
         """See base method for description.
