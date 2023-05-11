@@ -37,9 +37,13 @@ def compute_h(A, m, b, err=0.0001, max_iter=20):
         h_pre = 0.0
     h = h_pre
     iter_ = 1
-    while feval(h_pre) > err:
-        h = h_pre - feval(h_pre) / dfdheval(h_pre)
-        h_pre = h
+    while ma.any(feval(h_pre) > err):
+        h = ma.where(
+            feval(h_pre) > err,
+            h_pre - feval(h_pre) / dfdheval(h_pre),
+            h
+        )
+        h_pre = ma.copy(h)
         if iter_ >= max_iter:
             Logger.error(
                 "if file {} near line {} \n\t newton solver didnt converge after {max_iter} iterations (max_iter={max_iter})",
