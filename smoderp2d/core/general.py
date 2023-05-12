@@ -101,10 +101,8 @@ class GridGlobals(object):
 
     @classmethod
     def set_llcorner(cls, xy):
-        # truncate coordinates to 7 digits to enable passing tests for
-        # different data providers
-        cls.xllcorner = int(xy[0] * 1e7)/1e7
-        cls.yllcorner = int(xy[1] * 1e7)/1e7
+        cls.xllcorner = xy[0]
+        cls.yllcorner = xy[1]
 
     @classmethod
     def get_size(cls):
