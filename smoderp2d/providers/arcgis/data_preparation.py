@@ -339,7 +339,7 @@ class PrepareData(PrepareDataGISBase):
         arcpy.management.AddField(stream, start_elev_fieldname, "DOUBLE")
         arcpy.management.AddField(stream, end_elev_fieldname, "DOUBLE")
         arcpy.management.AddField(stream, inclination_fieldname, "DOUBLE")
-        arcpy.management.AddField(stream, next_down_id_fieldname, "DOUBLE")
+        arcpy.management.AddField(stream, next_down_id_fieldname, "SHORT")
         arcpy.management.AddField(stream, segment_length_fieldname, "DOUBLE")
 
         xy_tolerance = 0.01 # don't know why the arcpy.env.XYtolerance does not work (otherwise would use the arcpy.Point.equals() method)
