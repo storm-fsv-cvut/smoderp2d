@@ -420,7 +420,6 @@ class PrepareData(PrepareDataGISBase):
         with arcpy.da.SearchCursor(streams, fields) as cursor:
             try:
                 for row in cursor:
-                    i = 0
                     for i in range(len(row)):
                         if row[i] in (" ", None):
                             raise DataPreparationError(
@@ -428,7 +427,6 @@ class PrepareData(PrepareDataGISBase):
                                     self._input_params["channel_properties_table"], fields[i])
                             )
                         stream_attr[fields[i]].append(row[i])
-                        i += 1
 
             except RuntimeError as e:
                 raise DataPreparationError(
