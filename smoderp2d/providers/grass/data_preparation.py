@@ -468,7 +468,7 @@ class PrepareData(PrepareDataGISBase):
                    '{} double precision'.format(start_elev_field_name),
                    '{} double precision'.format(end_elev_field_name),
                    '{} double precision'.format(inclination_field_name),
-                   '{} double precision'.format(next_down_field_name),
+                   '{} integer'.format(next_down_field_name),
                    '{} double precision'.format(segment_length_field_name)
                ]
         )
@@ -489,9 +489,9 @@ class PrepareData(PrepareDataGISBase):
                 seg.attrs[segment_length_field_name] = segment_props.get(segment_id).get("length")
 
                 # find the next down segment by comparing the points distance
-                start, end = seg.nodes()
+                _, end = seg.nodes()
                 seg.attrs[next_down_field_name] = Globals.streamsNextDownIdNoSegment
-                for start_seg in start.lines():
+                for start_seg in end.lines():
                     if start_seg.id != seg.id:
                         if seg.attrs[next_down_field_name] != Globals.streamsNextDownIdNoSegment:
                             raise DataPreparationError(
@@ -523,30 +523,6 @@ class PrepareData(PrepareDataGISBase):
 
         return mat_stream_seg.astype('int16')
         
-    def _stream_slope(self, stream):
-        """See base method for description.
-        """
-        Module('v.db.addcolumn',
-               map=stream,
-               columns=['slope double precision'])
-
-        Module('v.to.db',
-               map=stream,
-               columns='shape_length',
-               option='length')
-        Module('v.db.update',
-               map=stream,column='slope',
-               query_column='(elev_start - elev_end) / shape_length')
-
-        # ML: compare with AcrGIS
-        with Vector(stream) as vmap:
-            vmap.table.filters.select(
-                self.storage.primary_key, 'slope')
-            for row in vmap.table:
-                if row[1] == 0:
-                    raise DataPreparationError(
-                        'Reach FID: {} has zero slope'.format(row[0]))
-
     def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
         """See base method for description.
         """
@@ -566,7 +542,6 @@ class PrepareData(PrepareDataGISBase):
         with Vector(stream) as vmap:
             vmap.table.filters.select(*stream_attr.keys())
             for row in vmap.table:
-                i = 0
                 fields = list(stream_attr.keys())
                 for i in range(len(row)):
                     if row[i] in (" ", None):
@@ -575,7 +550,6 @@ class PrepareData(PrepareDataGISBase):
                                 self._input_params["channel_properties_table"], fields[i])
                         )
                     stream_attr[fields[i]].append(row[i])
-                    i += 1
 
         return self._decode_stream_attr(stream_attr)
                     
