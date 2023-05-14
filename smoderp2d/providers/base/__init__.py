@@ -10,12 +10,12 @@ import logging
 import numpy as np
 import numpy.ma as ma
 from configparser import ConfigParser, NoSectionError, NoOptionError
+from abc import abstractmethod
 
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
-from smoderp2d.exceptions import ProviderError, ConfigError
-
+from smoderp2d.exceptions import ProviderError, ConfigError, GlobalsNotSet
 
 class Args:
     # type of computation (CompType)
@@ -55,11 +55,13 @@ class BaseWritter(object):
         self._data_target = data
 
     @staticmethod
-    def _raster_output_path(output, directory=''):
-        dir_name = os.path.join(
-            Globals.outdir,
-            directory
-            )
+    def _raster_output_path(output, directory=None):
+        """Get output raster path.
+
+        :param output: raster output name
+        :param directory: target directory (temp, control)
+        """
+        dir_name = os.path.join(Globals.outdir, directory) if directory else Globals.outdir
 
         if not os.path.exists(dir_name):
            os.makedirs(dir_name)
@@ -82,12 +84,46 @@ class BaseWritter(object):
             na_arr.min(), na_arr.max(), na_arr.mean()
         ))
 
-    # todo: abstractmethod
-    def write_raster(self, arr, output):
-        pass
+    @abstractmethod
+    def write_raster(self, array, output_name, directory=None):
+        """Write raster (numpy array) to ASCII file.
+
+        :param array: numpy array
+        :param output_name: output filename
+        :param directory: directory where to write output file
+        """
+        file_output = self._raster_output_path(output_name, directory)
+
+        self._write_raster(array, file_output)
+
+        self._print_array_stats(
+            array, file_output
+        )
+
 
     def create_storage(self, outdir):
         pass
+
+    @abstractmethod
+    def _write_raster(self, array, file_output):
+        """Write array into file.
+
+        :param array: numpy array to be saved
+        :param file_output: path to output file
+        """
+        pass
+
+    @staticmethod
+    def _check_globals():
+        """Check globals to prevent call globals before values assigned.
+
+        Raise GlobalsNotSet on failure.
+        """
+        if GridGlobals.xllcorner is None or \
+            GridGlobals.yllcorner is None or \
+            GridGlobals.dx is None or \
+            GridGlobals.dy is None:
+            raise GlobalsNotSet()
 
 class BaseProvider(object):
     def __init__(self):
