@@ -684,7 +684,7 @@ class PrepareDataGISBase(PrepareDataBase):
 
         if self.data['type_of_computing'] in (3, 5):
             Logger.info("Clipping stream to AoI outline ...")
-            stream_aoi = self._stream_clip(stream, aoi_polygon)
+            stream_aoi = self._clip_streams(stream, aoi_polygon)
             Logger.progress(70)
 
             Logger.info("Computing stream direction and inclinations...")

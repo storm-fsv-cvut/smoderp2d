@@ -1,6 +1,6 @@
 import numpy as np
 import math
-
+import os
 import arcpy
 
 from smoderp2d.core.general import GridGlobals, Globals
@@ -269,7 +269,7 @@ class PrepareData(PrepareDataGISBase):
                 )
         return points_array
     
-    def _stream_clip(self, stream, aoi_polygon):
+    def _clip_streams(self, stream, aoi_polygon):
         """See base method for description.
         """
         # AoI slighty smaller due to start/end elevation extraction
@@ -282,6 +282,20 @@ class PrepareData(PrepareDataGISBase):
         stream_aoi = self.storage.output_filepath('stream_aoi')
         arcpy.analysis.Clip(stream, aoi_buffer, stream_aoi)
 
+        # make sure that no of the stream properties fields are in the stream feature class
+        fields = self._get_field_names(stream_aoi)
+        wrongFields = []
+        for f in fields:
+            if f in self.stream_shape_fields:
+                arcpy.management.DeleteField(stream_aoi, f)
+                wrongFields.append(f)
+
+        # inform the user about deleted fields
+        if len(wrongFields) > 0:
+            Logger.info("\tThe input stream feature class '{}' must not contain fields from the channel properties table '{}'."
+                .format(os.path.basename(self._input_params["streams"]), os.path.basename(self._input_params["channel_properties_table"])))
+            for f in wrongFields:
+                Logger.info("\tField '{}' was deleted from the streams dataset.".format(f))
         return stream_aoi
 
     def _stream_direction(self, stream, dem_aoi):
@@ -309,7 +323,7 @@ class PrepareData(PrepareDataGISBase):
                 segment_id += 1
 
         # extract elevation for the stream segment vertices
-        arcpy.ddd.InterpolateShape(dem_aoi, stream, self.storage.output_filepath("stream_z"), "", "", "NEAREST", "VERTICES_ONLY")
+        arcpy.ddd.InterpolateShape(dem_aoi, stream, self.storage.output_filepath("stream_z"), "", "", "CONFLATE_NEAREST", "VERTICES_ONLY")
         desc = arcpy.Describe(self.storage.output_filepath("stream_z"))
         shape_fieldname = "SHAPE@"
 
@@ -322,7 +336,7 @@ class PrepareData(PrepareDataGISBase):
 
                 if elev_change == 0:
                     raise DataPreparationError(
-                        'Stream segment {}: {} has zero slope'.format(segment_id_field_name, row[1])
+                        'Stream segment {}: {} has zero slope'.format(segment_id_fieldname, row[1])
                     )
                 elif elev_change < 0:
                     segment_props.get(row[1]).update({'start_point':startpt})
