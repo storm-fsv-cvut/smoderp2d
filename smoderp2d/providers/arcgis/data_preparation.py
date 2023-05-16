@@ -309,7 +309,7 @@ class PrepareData(PrepareDataGISBase):
                 segment_id += 1
 
         # extract elevation for the stream segment vertices
-        arcpy.ddd.InterpolateShape(dem_aoi, stream, self.storage.output_filepath("stream_z"), "", "", "LINEAR", "VERTICES_ONLY")
+        arcpy.ddd.InterpolateShape(dem_aoi, stream, self.storage.output_filepath("stream_z"), "", "", "NEAREST", "VERTICES_ONLY")
         desc = arcpy.Describe(self.storage.output_filepath("stream_z"))
         shape_fieldname = "SHAPE@"
 
