@@ -537,9 +537,8 @@ class BaseProvider(object):
                 outputtable[i][6] = stream[fid[i]].Q_max
 
             path_ = os.path.join(
-                    Globals.outdir,
-                    'stream.csv'
-                    )
+                Globals.outdir, 'temp', 'stream.csv'
+            )
             np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
                        header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}q365_m3_s{sep}V_out_cum_m3{sep}Q_max_m3_s'.format(sep=';'))
 
