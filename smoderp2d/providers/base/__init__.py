@@ -55,13 +55,13 @@ class BaseWritter(object):
         self._data_target = data
 
     @staticmethod
-    def _raster_output_path(output, directory=None):
+    def _raster_output_path(output, directory='core'):
         """Get output raster path.
 
         :param output: raster output name
         :param directory: target directory (temp, control)
         """
-        dir_name = os.path.join(Globals.outdir, directory) if directory else Globals.outdir
+        dir_name = os.path.join(Globals.outdir, directory) if directory != 'core' else Globals.outdir
 
         if not os.path.exists(dir_name):
            os.makedirs(dir_name)
@@ -85,14 +85,14 @@ class BaseWritter(object):
         ))
 
     @abstractmethod
-    def write_raster(self, array, output_name, directory=None):
+    def write_raster(self, array, output_name, item='core'):
         """Write raster (numpy array) to ASCII file.
 
         :param array: numpy array
         :param output_name: output filename
-        :param directory: directory where to write output file
+        :param item: directory where to write output file
         """
-        file_output = self._raster_output_path(output_name, directory)
+        file_output = self._raster_output_path(output_name, item)
 
         self._write_raster(array, file_output)
 
@@ -343,17 +343,12 @@ class BaseProvider(object):
             # no output directory defined
             return
         if os.path.exists(output_dir):
-            output_elements = ['control', 'core', 'mat_hcrit.asc',
-                               'profile.csv', 'temp']
-            for output_element in output_elements:
-                path_to_output = os.path.join(output_dir, output_element)
-                if os.path.isdir(path_to_output):
-                    shutil.rmtree(path_to_output)
-                elif os.path.isfile(path_to_output):
-                    os.remove(path_to_output)
-            for point_x in glob.glob(os.path.join(output_dir, 'point*.csv')):
-                # can be more pointxxxx.csv files
-                os.remove(point_x)
+            for filename in os.listdir(output_dir):
+                file_path = os.path.join(output_dir, filename)
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
         else:
             os.makedirs(output_dir)
 
@@ -491,7 +486,7 @@ class BaseProvider(object):
             self.storage.write_raster(
                 self._make_mask(getattr(cumulative, item)),
                 cumulative.data[item].file_name,
-                directory=cumulative.data[item].data_type
+                cumulative.data[item].data_type
             )
 
         finState = np.zeros(np.shape(surface_array.state), np.float32)
@@ -521,9 +516,9 @@ class BaseProvider(object):
                         Globals.streams_flow_inc :
                     totalBil[i][j] = GridGlobals.NoDataValue
 
-        self.storage.write_raster(self._make_mask(totalBil), 'massBalance')
-        self.storage.write_raster(self._make_mask(vRest), 'volRest_m3')
-        self.storage.write_raster(self._make_mask(finState),  'reachFid')
+        self.storage.write_raster(self._make_mask(totalBil), 'massbalance', 'control')
+        self.storage.write_raster(self._make_mask(vRest), 'volrest_m3', 'control')
+        self.storage.write_raster(self._make_mask(finState), 'reachfid', 'control')
 
         # store stream reaches results to a table
         # if stream is calculated

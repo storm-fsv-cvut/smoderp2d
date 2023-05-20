@@ -135,11 +135,14 @@ class Hydrographs:
                 self.header.append(header)
 
         self.files = []
+        target_dir = os.path.join(Globals.get_outdir(), 'control_point')
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
         for i in range(self.n):
             filename = 'point{}.csv'.format(
                 str(self.point_int[i][0]).zfill(3)
             )
-            fd = open(os.path.join(Globals.get_outdir(), filename), 'w')
+            fd = open(os.path.join(target_dir, filename), 'w')
             fd.writelines(self.header[i])
             self.files.append(fd)
 
