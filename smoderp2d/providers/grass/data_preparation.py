@@ -302,8 +302,7 @@ class PrepareData(PrepareDataGISBase):
         self.__remove_temp_data({'name': soil_aoi, 'type': 'vector'})
 
         soilveg_code = self._input_params['table_soil_vegetation_code']            
-        with Vector(soilveg_aoi) as vmap:
-            fields = vmap.table.columns.names()
+        fields = self._get_field_names(soilveg_aoi)
         if soilveg_code in fields:
             Module('v.db.dropcolumn',
                    map=soilveg_aoi,
@@ -401,6 +400,11 @@ class PrepareData(PrepareDataGISBase):
                input=stream, clip=aoi_buffer,
                output=stream_aoi)
 
+        drop_fields = self._stream_check_fields(stream_aoi)
+        if drop_fields:
+            Module('v.db.dropcolumn', map=stream_aoi,
+                   columns=drop_fields)
+        
         return stream_aoi
 
     def _stream_direction(self, stream, dem):
@@ -600,3 +604,10 @@ class PrepareData(PrepareDataGISBase):
                         )
         except OpenError as e:
             raise DataPreparationInvalidInput(e)
+
+    def _get_field_names(self, ds):
+        """See base method for description.
+        """
+        with Vector(ds) as vmap:
+            fields = vmap.table.columns.names()
+        return fields

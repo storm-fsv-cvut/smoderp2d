@@ -470,7 +470,12 @@ class PrepareDataGISBase(PrepareDataBase):
         Raise DataPreparationInvalidInput on error.
         """
         pass
-            
+
+    @abstractmethod
+    def _get_field_names(self, ds):
+        """Get field names for vector layer."""
+        pass
+
     def run(self):
         """Perform data preparation steps.
 
@@ -684,7 +689,7 @@ class PrepareDataGISBase(PrepareDataBase):
 
         if self.data['type_of_computing'] in (3, 5):
             Logger.info("Clipping stream to AoI outline ...")
-            stream_aoi = self._clip_streams(stream, aoi_polygon)
+            stream_aoi = self._stream_clip(stream, aoi_polygon)
             Logger.progress(70)
 
             Logger.info("Computing stream direction and inclinations...")
@@ -812,3 +817,24 @@ class PrepareDataGISBase(PrepareDataBase):
             attr_decoded[key_decoded] = v
 
         return attr_decoded
+
+    def _stream_check_fields(self, stream_aoi):
+        fields = self._get_field_names(stream_aoi)
+        duplicated_fields = []
+        for f in fields:
+            if f in self.stream_shape_fields:
+                # arcpy.management.DeleteField(stream_aoi, f)
+                duplicated_fields.append(f)
+
+        # inform the user about deleted fields
+        if len(duplicated_fields) > 0:
+            Logger.warning("The input stream feature class '{}' must not contain fields from "
+                        "the channel properties table '{}':".format(
+                            os.path.basename(self._input_params["streams"]),
+                            os.path.basename(self._input_params["channel_properties_table"]))
+            )
+            for f in duplicated_fields:
+                Logger.warning("\tField '{}' was deleted from the streams dataset.".format(f))
+
+        return duplicated_fields
+

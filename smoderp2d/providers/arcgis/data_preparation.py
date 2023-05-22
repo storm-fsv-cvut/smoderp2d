@@ -269,7 +269,7 @@ class PrepareData(PrepareDataGISBase):
                 )
         return points_array
     
-    def _clip_streams(self, stream, aoi_polygon):
+    def _stream_clip(self, stream, aoi_polygon):
         """See base method for description.
         """
         # AoI slighty smaller due to start/end elevation extraction
@@ -283,19 +283,10 @@ class PrepareData(PrepareDataGISBase):
         arcpy.analysis.Clip(stream, aoi_buffer, stream_aoi)
 
         # make sure that no of the stream properties fields are in the stream feature class
-        fields = self._get_field_names(stream_aoi)
-        wrongFields = []
-        for f in fields:
-            if f in self.stream_shape_fields:
-                arcpy.management.DeleteField(stream_aoi, f)
-                wrongFields.append(f)
+        drop_fields = self._stream_check_fields(stream_aoi)
+        for f in drop_fields:
+            arcpy.management.DeleteField(stream_aoi, f)
 
-        # inform the user about deleted fields
-        if len(wrongFields) > 0:
-            Logger.info("\tThe input stream feature class '{}' must not contain fields from the channel properties table '{}'."
-                .format(os.path.basename(self._input_params["streams"]), os.path.basename(self._input_params["channel_properties_table"])))
-            for f in wrongFields:
-                Logger.info("\tField '{}' was deleted from the streams dataset.".format(f))
         return stream_aoi
 
     def _stream_direction(self, stream, dem_aoi):
@@ -485,7 +476,8 @@ class PrepareData(PrepareDataGISBase):
                             f, self._input_params['channel_properties_table'], ', '.join(map(lambda x: "'{}'".format(x), self.stream_shape_fields)))
                     )
 
-    def _get_field_names(self, fc):
-        return [field.name for field in arcpy.ListFields(fc)]
-        # ML: what else?
+    def _get_field_names(self, ds):
+        """See base method for description.
+        """
+        return [field.name for field in arcpy.ListFields(ds)]
                 
