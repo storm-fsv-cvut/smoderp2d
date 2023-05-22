@@ -19,7 +19,7 @@ def dpre_params():
         'table_soil_vegetation_code': "soilveg",
         'streams': os.path.join(data_dir, "stream.shp"),
         'channel_properties_table': os.path.join(data_dir, "stream_shape.dbf"),
-        'streams_channel_shape_code': "channel_id",
+        'streams_channel_type_fieldname': "channel_id",
         'output': output_dir,
     }
 

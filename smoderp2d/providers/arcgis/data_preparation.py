@@ -414,7 +414,7 @@ class PrepareData(PrepareDataGISBase):
             raise DataPreparationError(
                 "Error joining channel shape properties to stream network segments!\n"
                 "Check fields names in stream network feature class. "
-                "Missing field is: '{}'".format(self._input_params['streams_channel_shape_code'])
+                "Missing field is: '{}'".format(self._input_params['streams_channel_type_fieldname'])
             )
 
         arcpy.management.JoinField(streams, channel_shape_code, channel_properties_table, channel_shape_code,

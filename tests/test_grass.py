@@ -23,7 +23,7 @@ def dpre_params():
         'table_soil_vegetation_code': "soilveg",
         'streams': "stream@PERMANENT",
         'channel_properties_table': "stream_shape@PERMANENT",
-        'streams_channel_shape_code': "channel_id",
+        'streams_channel_type_fieldname': "channel_id",
         'output': output_dir,
     }
 

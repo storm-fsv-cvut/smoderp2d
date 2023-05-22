@@ -241,7 +241,7 @@ class PrepareDataGISBase(PrepareDataBase):
             'stream_segment_inclination': 'inclination',
             'stream_segment_next_down_id': 'next_down_id',
             'stream_segment_length': 'segment_length',
-            'channel_shape_id':  self._input_params['streams_channel_shape_code'],
+            'channel_shape_id':  self._input_params['streams_channel_type_fieldname'],
             'channel_profile': 'profile',
             'channel_shapetype': 'shapetype',
             'channel_bottom_width': 'b',
@@ -585,10 +585,10 @@ class PrepareDataGISBase(PrepareDataBase):
         Logger.progress(60)
 
         Logger.info("Processing stream network:")
-        if self._input_params['streams'] and self._input_params['channel_properties_table'] and self._input_params['streams_channel_shape_code']:
+        if self._input_params['streams'] and self._input_params['channel_properties_table'] and self._input_params['streams_channel_type_fieldname']:
             self._prepare_streams(self._input_params['streams'],
                                  self._input_params['channel_properties_table'],
-                                 self._input_params['streams_channel_shape_code'],
+                                 self._input_params['streams_channel_type_fieldname'],
                                  dem_aoi, aoi_polygon
             )
         Logger.progress(90)
@@ -681,7 +681,7 @@ class PrepareDataGISBase(PrepareDataBase):
         # vypocet toku, streams se pocitaji a type_of_computing je 3
         listin = [self._input_params['streams'],
                   self._input_params['channel_properties_table'],
-                  self._input_params['streams_channel_shape_code']]
+                  self._input_params['streams_channel_type_fieldname']]
         tflistin = [len(i) > 1 for i in listin] ### TODO: ???
 
         if all(tflistin):
@@ -779,7 +779,7 @@ class PrepareDataGISBase(PrepareDataBase):
     def _get_streams_attr_(self):
         fields = [
             self.fieldnames['stream_segment_id'],
-            self._input_params['streams_channel_shape_code'],
+            self._input_params['streams_channel_type_fieldname'],
             self.fieldnames['stream_segment_next_down_id'],
             self.fieldnames['stream_segment_length'], 
             self.fieldnames['stream_segment_inclination']] + self.stream_shape_fields
@@ -791,12 +791,12 @@ class PrepareDataGISBase(PrepareDataBase):
         return stream_attr
 
     def _check_input_data_(self):
-        if self._input_params['streams'] or self._input_params['channel_properties_table'] or self._input_params['streams_channel_shape_code']:
+        if self._input_params['streams'] or self._input_params['channel_properties_table'] or self._input_params['streams_channel_type_fieldname']:
             if not self._input_params['streams']:
                 raise DataPreparationInvalidInput("Input parameter 'Stream network feature layer' must be defined!")
             if not self._input_params['channel_properties_table']:
                 raise DataPreparationInvalidInput("Input parameter 'Channel properties table' must be defined!")
-            if not self._input_params['streams_channel_shape_code']:
+            if not self._input_params['streams_channel_type_fieldname']:
                 raise DataPreparationInvalidInput("Field containing the channel shape identifier must be set!")
 
     @staticmethod
