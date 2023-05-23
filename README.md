@@ -79,7 +79,7 @@ Launch SMODERP2D ArcToolbox from `bin\arcgis` directory.
 Quick test (on Linux):
 
 ```sh
-QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/projekt.qgs
+QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/qgis_project.qgz
 ```
 
 Enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
