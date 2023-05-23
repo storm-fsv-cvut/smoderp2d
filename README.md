@@ -54,7 +54,7 @@ docker run -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
 
 ### From GRASS GIS
 
-Note: GRASS GIS 7.8+ required
+Note: GRASS GIS 8.3+ required
 
 Create testing mapset:
 
@@ -65,7 +65,21 @@ grass --text -c tests/grassdata/smoderp2d-location/test/
 Run `r.smoderp2d` module:
 
 ```sh
-./bin/grass/test_r_smoderp2d.py
+./bin/grass/r.smoderp2d/r.smoderp2d.py \
+    elevation=dem10m@PERMANENT \
+    soil=soils@PERMANENT \
+    soil_type_fieldname=SID \
+    vegetation=landuse@PERMANENT \
+    vegetation_type_fieldname=LandUse \
+    rainfall_file=tests/data/rainfall.txt \
+    maxdt=30 end_time=40 \
+    points=points@PERMANENT \
+    table_soil_vegetation=soil_veg_tab_mean@PERMANENT \
+    table_soil_vegetation_fieldname=soilveg \
+    streams=stream@PERMANENT \
+    channel_properties_table=stream_shape@PERMANENT \
+    streams_channel_type_fieldname=channel_id \
+    output=tests/data/output
 ```
 
 ### From ArcGIS 10.x or Pro
@@ -79,7 +93,7 @@ Launch SMODERP2D ArcToolbox from `bin\arcgis` directory.
 Quick test (on Linux):
 
 ```sh
-QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/projekt.qgs
+QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/qgis_project.qgz
 ```
 
 Enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.

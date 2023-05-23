@@ -176,14 +176,10 @@ class Globals:
     mat_n = None
     # ???
     points = None
-    # ???
-    poradi = None
     # end time of computation
     end_time = None
     # raster contains cell flow state information
     state_cell = None
-    # path to directory for temporal data storage
-    temp = None
     # bool variable for flow direction algorithm (false=one direction, true
     # multiple flow direction)
     mfda = None
@@ -298,10 +294,6 @@ class Globals:
     @classmethod
     def get_points(cls):
         return cls.points
-
-    @classmethod
-    def get_poradi(cls):
-        return cls.poradi
 
     @classmethod
     def get_end_tim(cls):

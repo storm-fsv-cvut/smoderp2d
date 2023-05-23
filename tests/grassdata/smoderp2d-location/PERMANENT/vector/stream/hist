@@ -1,7 +1,7 @@
 COMMAND: v.in.ogr --overwrite input="tests/data/stream.shp" output="stream" min_area=0.0001 type="" snap=-1
 GISDBASE: /home/martin/git/storm-fsv-cvut/smoderp2d/tests/grassdata
-LOCATION: tmp_v_import_location_debianpc_23141 MAPSET: PERMANENT USER: martin DATE: Sun Apr 16 10:10:07 2023
+LOCATION: tmp_v_import_location_debianpc_39071 MAPSET: PERMANENT USER: martin DATE: Sat May 13 08:41:51 2023
 ---------------------------------------------------------------------------------
-COMMAND: v.proj --overwrite location="tmp_v_import_location_debianpc_23141" mapset="PERMANENT" input="stream" smax=10000
+COMMAND: v.proj --overwrite location="tmp_v_import_location_debianpc_39071" mapset="PERMANENT" input="stream" smax=10000
 GISDBASE: /home/martin/git/storm-fsv-cvut/smoderp2d/tests/grassdata
-LOCATION: smoderp2d-location MAPSET: PERMANENT USER: martin DATE: Sun Apr 16 10:10:08 2023
+LOCATION: smoderp2d-location MAPSET: PERMANENT USER: martin DATE: Sat May 13 08:41:51 2023
