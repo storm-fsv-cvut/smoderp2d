@@ -522,7 +522,7 @@ class PrepareData(PrepareDataGISBase):
 
         stream_seg = self.storage.output_filepath('stream_seg')
         Module('v.to.rast',
-               input=stream, type='line', use='cat',
+               input=stream, type='line', use='attr', attribute_column=self.fieldnames['stream_segment_id'],
                output=stream_seg)
 
         mat_stream_seg = self._rst2np(stream_seg)
