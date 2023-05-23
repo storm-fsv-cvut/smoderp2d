@@ -12,18 +12,18 @@ def dpre_params():
     return {
         'elevation': "dem10m@PERMANENT",
         'soil': "soils@PERMANENT",
-        'soil_type': "SID",
+        'soil_type_fieldname': "SID",
         'vegetation': "landuse@PERMANENT",
-        'vegetation_type': "LandUse",
+        'vegetation_type_fieldname': "LandUse",
         'rainfall_file': os.path.join(data_dir, "rainfall.txt"),
         'maxdt': 30,
         'end_time': 40,
         'points': "points@PERMANENT",
         'table_soil_vegetation': "soil_veg_tab_mean@PERMANENT",
-        'table_soil_vegetation_code': "soilveg",
+        'table_soil_vegetation_fieldname': "soilveg",
         'streams': "stream@PERMANENT",
         'channel_properties_table': "stream_shape@PERMANENT",
-        'streams_channel_shape_code': "channel_id",
+        'streams_channel_type_fieldname': "channel_id",
         'output': output_dir,
     }
 

@@ -167,9 +167,6 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
 
 
         # general settings
-        # output directory is always set
-        # TODO: isn't it already in globals?
-        data['temp'] = os.path.join(Globals.outdir, 'temp')
         # some self._configs are not in pickle.dump
         data['extraOut'] = self._config.getboolean('output', 'extraout', fallback=False)
         # rainfall data can be saved
@@ -371,7 +368,6 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['bc'] = None
         data['br'] = None
         data['streams'] = None
-        data['poradi'] = None
 
     def _set_hydrographs(self, max_row):
         """Get array_points and points for the data dictionary.
