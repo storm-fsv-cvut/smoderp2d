@@ -240,7 +240,7 @@ class PrepareDataGISBase(PrepareDataBase):
             'stream_segment_inclination': 'inclination',
             'stream_segment_next_down_id': 'next_down_id',
             'stream_segment_length': 'segment_length',
-            'channel_shape_id':  self._input_params['streams_channel_shape_code'],
+            'channel_shape_id':  self._input_params['streams_channel_type_fieldname'],
             'channel_profile': 'profile',
             'channel_shapetype': 'shapetype',
             'channel_bottom_width': 'b',
@@ -282,10 +282,8 @@ class PrepareDataGISBase(PrepareDataBase):
             'mat_nan': None,
             'mat_a': None,
             'mat_n': None,
-            'poradi': None,
             'end_time': self._input_params['end_time'],
             'state_cell': None,
-            'temp': None,
             'type_of_computing': None,
             'mfda': None,
             'sr': None,
@@ -471,7 +469,12 @@ class PrepareDataGISBase(PrepareDataBase):
         Raise DataPreparationInvalidInput on error.
         """
         pass
-            
+
+    @abstractmethod
+    def _get_field_names(self, ds):
+        """Get field names for vector layer."""
+        pass
+
     def run(self):
         """Perform data preparation steps.
 
@@ -535,8 +538,8 @@ class PrepareDataGISBase(PrepareDataBase):
         #   join the attributes to soil_veg intersect and check the table consistency
         Logger.info("Preparing soil and vegetation properties...")
         self._prepare_soilveg(
-            self._input_params['soil'], self._input_params['soil_type'],
-            self._input_params['vegetation'], self._input_params['vegetation_type'],
+            self._input_params['soil'], self._input_params['soil_type_fieldname'],
+            self._input_params['vegetation'], self._input_params['vegetation_type_fieldname'],
             aoi_polygon, self._input_params['table_soil_vegetation']
         )
         Logger.progress(40)
@@ -581,10 +584,10 @@ class PrepareDataGISBase(PrepareDataBase):
         Logger.progress(60)
 
         Logger.info("Processing stream network:")
-        if self._input_params['streams'] and self._input_params['channel_properties_table'] and self._input_params['streams_channel_shape_code']:
+        if self._input_params['streams'] and self._input_params['channel_properties_table'] and self._input_params['streams_channel_type_fieldname']:
             self._prepare_streams(self._input_params['streams'],
                                  self._input_params['channel_properties_table'],
-                                 self._input_params['streams_channel_shape_code'],
+                                 self._input_params['streams_channel_type_fieldname'],
                                  dem_aoi, aoi_polygon
             )
         Logger.progress(90)
@@ -634,23 +637,13 @@ class PrepareDataGISBase(PrepareDataBase):
             shutil.rmtree(Globals.outdir)
         os.makedirs(Globals.outdir)
 
-        # create temporary dir
-        self.data['temp'] = os.path.join(
-            Globals.outdir, "temp"
-        )
-        Logger.debug(
-            "Creating temp directory <{}>".format(self.data['temp'])
-        )
-        os.makedirs(self.data['temp'])
-
-        # create control dir
-        control = os.path.join(
-            Globals.outdir, "control"
-        )
-        Logger.debug(
-            "Creating control directory <{}>".format(control)
-        )
-        os.makedirs(control)
+        # create temporary/control dir
+        for dir_name in ("temp", "control"):
+            dir_path = os.path.join(Globals.outdir, dir_name)
+            Logger.debug(
+                "Creating {} directory <{}>".format(dir_name, dir_path)
+            )
+            os.makedirs(dir_path)
 
         self.storage.create_storage(self._input_params['output'])
 
@@ -687,7 +680,7 @@ class PrepareDataGISBase(PrepareDataBase):
         # vypocet toku, streams se pocitaji a type_of_computing je 3
         listin = [self._input_params['streams'],
                   self._input_params['channel_properties_table'],
-                  self._input_params['streams_channel_shape_code']]
+                  self._input_params['streams_channel_type_fieldname']]
         tflistin = [len(i) > 1 for i in listin] ### TODO: ???
 
         if all(tflistin):
@@ -785,7 +778,7 @@ class PrepareDataGISBase(PrepareDataBase):
     def _get_streams_attr_(self):
         fields = [
             self.fieldnames['stream_segment_id'],
-            self._input_params['streams_channel_shape_code'],
+            self._input_params['streams_channel_type_fieldname'],
             self.fieldnames['stream_segment_next_down_id'],
             self.fieldnames['stream_segment_length'], 
             self.fieldnames['stream_segment_inclination']] + self.stream_shape_fields
@@ -797,12 +790,12 @@ class PrepareDataGISBase(PrepareDataBase):
         return stream_attr
 
     def _check_input_data_(self):
-        if self._input_params['streams'] or self._input_params['channel_properties_table'] or self._input_params['streams_channel_shape_code']:
+        if self._input_params['streams'] or self._input_params['channel_properties_table'] or self._input_params['streams_channel_type_fieldname']:
             if not self._input_params['streams']:
                 raise DataPreparationInvalidInput("Input parameter 'Stream network feature layer' must be defined!")
             if not self._input_params['channel_properties_table']:
                 raise DataPreparationInvalidInput("Input parameter 'Channel properties table' must be defined!")
-            if not self._input_params['streams_channel_shape_code']:
+            if not self._input_params['streams_channel_type_fieldname']:
                 raise DataPreparationInvalidInput("Field containing the channel shape identifier must be set!")
 
     @staticmethod
@@ -823,3 +816,24 @@ class PrepareDataGISBase(PrepareDataBase):
             attr_decoded[key_decoded] = v
 
         return attr_decoded
+
+    def _stream_check_fields(self, stream_aoi):
+        fields = self._get_field_names(stream_aoi)
+        duplicated_fields = []
+        for f in fields:
+            if f in self.stream_shape_fields:
+                # arcpy.management.DeleteField(stream_aoi, f)
+                duplicated_fields.append(f)
+
+        # inform the user about deleted fields
+        if len(duplicated_fields) > 0:
+            Logger.warning("The input stream feature class '{}' must not contain fields from "
+                        "the channel properties table '{}':".format(
+                            os.path.basename(self._input_params["streams"]),
+                            os.path.basename(self._input_params["channel_properties_table"]))
+            )
+            for f in duplicated_fields:
+                Logger.warning("\tField '{}' was deleted from the streams dataset.".format(f))
+
+        return duplicated_fields
+
