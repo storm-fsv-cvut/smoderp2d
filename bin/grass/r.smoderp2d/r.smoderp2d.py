@@ -5,7 +5,7 @@
 # MODULE:      r.smoderp2d
 # AUTHOR(S):   Martin Landa and SMODERP2D development team
 # PURPOSE:     Performs SMODERP2D soil erosion model.
-# COPYRIGHT:   (C) 2018-2019 by Martin Landa and Smoderp2d development team
+# COPYRIGHT:   (C) 2018-2023 by Martin Landa and Smoderp2d development team
 #
 #              This program is free software under the GNU General Public
 #              License (>=v3.0) and comes with ABSOLUTELY NO WARRANTY.
@@ -36,7 +36,7 @@
 #% guisection: Data preparation
 #%end
 #%option G_OPT_DB_COLUMN
-#% key: soil_type
+#% key: soil_type_fieldname
 #% description: Soil types
 #% required: yes
 #% guisection: Data preparation
@@ -47,7 +47,7 @@
 #% guisection: Data preparation
 #%end
 #%option G_OPT_DB_COLUMN
-#% key: vegetation_type
+#% key: vegetation_type_fieldname
 #% description: Land use types
 #% required: yes
 #% guisection: Data preparation
@@ -85,23 +85,23 @@
 #% guisection: Settings
 #%end
 #%option G_OPT_DB_COLUMN
-#% key: table_soil_vegetation_code
+#% key: table_soil_vegetation_fieldname
 #% description: Soil land use code
 #% guisection: Settings
 #%end
 #%option G_OPT_V_INPUT
-#% key: stream
+#% key: streams
 #% label: Reach feature
 #% required: no
 #% guisection: Data preparation
 #%end
 #%option G_OPT_DB_TABLE
-#% key: table_stream_shape
+#% key: channel_properties_table
 #% description: Reach shapes table
 #% guisection: Settings
 #%end
 #%option G_OPT_DB_COLUMN
-#% key: table_stream_shape_code
+#% key: streams_channel_type_fieldname
 #% description: Reach shape table code
 #% guisection: Settings
 #%end
@@ -111,7 +111,7 @@
 #% required: no
 #%end
 #%option G_OPT_M_DIR
-#% key: output_dir
+#% key: output
 #% description: Name for output directory where to store results
 #% required: yes
 #%end
@@ -121,7 +121,7 @@ import sys
 import grass.script as gs
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from smoderp2d import GrassRunner
+from smoderp2d import GrassGisRunner
 from smoderp2d.providers.base import CompType
 from smoderp2d.exceptions import ProviderError
 
@@ -134,7 +134,7 @@ if __name__ == "__main__":
         gs.warning("No pickle file will be generated. Flag -{} not given".format('d'))
 
     try:
-        runner = GrassRunner()
+        runner = GrassGisRunner()
 
         runner.set_options(options)
         if flags['d']:
