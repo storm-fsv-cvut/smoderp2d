@@ -1,6 +1,6 @@
 import numpy as np
 import math
-
+import os
 import arcpy
 
 from smoderp2d.core.general import GridGlobals, Globals
@@ -190,7 +190,7 @@ class PrepareData(PrepareDataGISBase):
         soilveg_aoi_path = self.storage.output_filepath("soilveg_aoi")
         arcpy.analysis.Intersect([soil, vegetation, aoi_polygon], soilveg_aoi_path, "NO_FID")
 
-        soilveg_code = self._input_params['table_soil_vegetation_code']
+        soilveg_code = self._input_params['table_soil_vegetation_fieldname']
         if soilveg_code in arcpy.ListFields(soilveg_aoi_path):
             arcpy.management.DeleteField(soilveg_aoi_path, soilveg_code)
             Logger.info(
@@ -275,6 +275,11 @@ class PrepareData(PrepareDataGISBase):
         stream_aoi = self.storage.output_filepath('stream_aoi')
         arcpy.analysis.Clip(stream, aoi_buffer, stream_aoi)
 
+        # make sure that no of the stream properties fields are in the stream feature class
+        drop_fields = self._stream_check_fields(stream_aoi)
+        for f in drop_fields:
+            arcpy.management.DeleteField(stream_aoi, f)
+
         return stream_aoi
 
     def _stream_direction(self, stream, dem_aoi):
@@ -302,7 +307,7 @@ class PrepareData(PrepareDataGISBase):
                 segment_id += 1
 
         # extract elevation for the stream segment vertices
-        arcpy.ddd.InterpolateShape(dem_aoi, stream, self.storage.output_filepath("stream_z"), "", "", "LINEAR", "VERTICES_ONLY")
+        arcpy.ddd.InterpolateShape(dem_aoi, stream, self.storage.output_filepath("stream_z"), "", "", "CONFLATE_NEAREST", "VERTICES_ONLY")
         desc = arcpy.Describe(self.storage.output_filepath("stream_z"))
         shape_fieldname = "SHAPE@"
 
@@ -315,7 +320,7 @@ class PrepareData(PrepareDataGISBase):
 
                 if elev_change == 0:
                     raise DataPreparationError(
-                        'Stream segment {}: {} has zero slope'.format(segment_id_field_name, row[1])
+                        'Stream segment {}: {} has zero slope'.format(segment_id_fieldname, row[1])
                     )
                 elif elev_change < 0:
                     segment_props.get(row[1]).update({'start_point':startpt})
@@ -332,7 +337,7 @@ class PrepareData(PrepareDataGISBase):
         arcpy.management.AddField(stream, start_elev_fieldname, "DOUBLE")
         arcpy.management.AddField(stream, end_elev_fieldname, "DOUBLE")
         arcpy.management.AddField(stream, inclination_fieldname, "DOUBLE")
-        arcpy.management.AddField(stream, next_down_id_fieldname, "DOUBLE")
+        arcpy.management.AddField(stream, next_down_id_fieldname, "SHORT")
         arcpy.management.AddField(stream, segment_length_fieldname, "DOUBLE")
 
         xy_tolerance = 0.01 # don't know why the arcpy.env.XYtolerance does not work (otherwise would use the arcpy.Point.equals() method)
@@ -402,7 +407,7 @@ class PrepareData(PrepareDataGISBase):
             raise DataPreparationError(
                 "Error joining channel shape properties to stream network segments!\n"
                 "Check fields names in stream network feature class. "
-                "Missing field is: '{}'".format(self._input_params['streams_channel_shape_code'])
+                "Missing field is: '{}'".format(self._input_params['streams_channel_type_fieldname'])
             )
 
         arcpy.management.JoinField(streams, channel_shape_code, channel_properties_table, channel_shape_code,
@@ -413,7 +418,6 @@ class PrepareData(PrepareDataGISBase):
         with arcpy.da.SearchCursor(streams, fields) as cursor:
             try:
                 for row in cursor:
-                    i = 0
                     for i in range(len(row)):
                         if row[i] in (" ", None):
                             raise DataPreparationError(
@@ -421,7 +425,6 @@ class PrepareData(PrepareDataGISBase):
                                     self._input_params["channel_properties_table"], fields[i])
                             )
                         stream_attr[fields[i]].append(row[i])
-                        i += 1
 
             except RuntimeError as e:
                 raise DataPreparationError(
@@ -466,7 +469,8 @@ class PrepareData(PrepareDataGISBase):
                             f, self._input_params['channel_properties_table'], ', '.join(map(lambda x: "'{}'".format(x), self.stream_shape_fields)))
                     )
 
-    def _get_field_names(self, fc):
-        return [field.name for field in arcpy.ListFields(fc)]
-        # ML: what else?
+    def _get_field_names(self, ds):
+        """See base method for description.
+        """
+        return [field.name for field in arcpy.ListFields(ds)]
                 
