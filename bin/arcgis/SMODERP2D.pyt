@@ -25,7 +25,7 @@ PARAMETER_END_TIME = 7
 #PARAMETER_SURFACE_RETENTION = 6  # nula jen docasne, typ vypoctu se resi jinak
 PARAMETER_POINTS = 8
 PARAMETER_SOILVEGTABLE = 9
-PARAMETER_SOILVEGTABLE_CODE = 10
+PARAMETER_SOILVEGTABLE_TYPE = 10
 PARAMETER_STREAM = 11
 PARAMETER_CHANNEL_TYPE = 12
 PARAMETER_CHANNEL_PROPS_TABLE = 13
@@ -246,7 +246,7 @@ class SMODERP2D(object):
             'end_time': float(parameters[PARAMETER_END_TIME].valueAsText),
             'points': parameters[PARAMETER_POINTS].valueAsText,
             'table_soil_vegetation': parameters[PARAMETER_SOILVEGTABLE].valueAsText,
-            'table_soil_vegetation_fieldname': parameters[PARAMETER_SOILVEGTABLE_CODE].valueAsText,
+            'table_soil_vegetation_fieldname': parameters[PARAMETER_SOILVEGTABLE_TYPE].valueAsText,
             'streams': parameters[PARAMETER_STREAM].valueAsText,
             'streams_channel_type_fieldname': parameters[PARAMETER_CHANNEL_TYPE].valueAsText,
             'channel_properties_table': parameters[PARAMETER_CHANNEL_PROPS_TABLE].valueAsText,
