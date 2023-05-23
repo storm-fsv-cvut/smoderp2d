@@ -54,7 +54,7 @@ docker run -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
 
 ### From GRASS GIS
 
-Note: GRASS GIS 8.3+ required
+Note: GRASS GIS 7.8+ required
 
 Create testing mapset:
 
