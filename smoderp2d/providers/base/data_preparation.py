@@ -538,8 +538,8 @@ class PrepareDataGISBase(PrepareDataBase):
         #   join the attributes to soil_veg intersect and check the table consistency
         Logger.info("Preparing soil and vegetation properties...")
         self._prepare_soilveg(
-            self._input_params['soil'], self._input_params['soil_type'],
-            self._input_params['vegetation'], self._input_params['vegetation_type'],
+            self._input_params['soil'], self._input_params['soil_type_fieldname'],
+            self._input_params['vegetation'], self._input_params['vegetation_type_fieldname'],
             aoi_polygon, self._input_params['table_soil_vegetation']
         )
         Logger.progress(40)
