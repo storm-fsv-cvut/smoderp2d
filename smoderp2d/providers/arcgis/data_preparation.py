@@ -197,7 +197,7 @@ class PrepareData(PrepareDataGISBase):
         soilveg_aoi_path = self.storage.output_filepath("soilveg_aoi")
         arcpy.analysis.Intersect([soil, vegetation, aoi_polygon], soilveg_aoi_path, "NO_FID")
 
-        soilveg_code = self._input_params['table_soil_vegetation_code']
+        soilveg_code = self._input_params['table_soil_vegetation_fieldname']
         if soilveg_code in arcpy.ListFields(soilveg_aoi_path):
             arcpy.management.DeleteField(soilveg_aoi_path, soilveg_code)
             Logger.info(

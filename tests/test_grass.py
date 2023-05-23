@@ -20,7 +20,7 @@ def dpre_params():
         'end_time': 40,
         'points': "points@PERMANENT",
         'table_soil_vegetation': "soil_veg_tab_mean@PERMANENT",
-        'table_soil_vegetation_code': "soilveg",
+        'table_soil_vegetation_fieldname': "soilveg",
         'streams': "stream@PERMANENT",
         'channel_properties_table': "stream_shape@PERMANENT",
         'streams_channel_type_fieldname': "channel_id",

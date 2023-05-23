@@ -246,7 +246,7 @@ class SMODERP2D(object):
             'end_time': float(parameters[PARAMETER_END_TIME].valueAsText),
             'points': parameters[PARAMETER_POINTS].valueAsText,
             'table_soil_vegetation': parameters[PARAMETER_SOILVEGTABLE].valueAsText,
-            'table_soil_vegetation_code': parameters[PARAMETER_SOILVEGTABLE_CODE].valueAsText,
+            'table_soil_vegetation_fieldname': parameters[PARAMETER_SOILVEGTABLE_CODE].valueAsText,
             'streams': parameters[PARAMETER_STREAM].valueAsText,
             'streams_channel_type_fieldname': parameters[PARAMETER_CHANNEL_TYPE].valueAsText,
             'channel_properties_table': parameters[PARAMETER_CHANNEL_PROPS_TABLE].valueAsText,

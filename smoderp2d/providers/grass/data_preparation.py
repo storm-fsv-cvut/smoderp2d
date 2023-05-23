@@ -305,7 +305,7 @@ class PrepareData(PrepareDataGISBase):
                output=soilveg_aoi)
         self.__remove_temp_data({'name': soil_aoi, 'type': 'vector'})
 
-        soilveg_code = self._input_params['table_soil_vegetation_code']            
+        soilveg_code = self._input_params['table_soil_vegetation_fieldname']
         fields = self._get_field_names(soilveg_aoi)
         if soilveg_code in fields:
             Module('v.db.dropcolumn',
