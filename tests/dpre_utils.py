@@ -7,6 +7,7 @@ import numpy
 
 from difflib import unified_diff
 
+from smoderp2d import ArcGisRunner
 from smoderp2d.exceptions import ProviderError
 from smoderp2d.providers.base import CompType
 
@@ -88,6 +89,9 @@ def perform_dpre_ref_test(runner, params_fn, dataprep_only=True):
 
     if dataprep_only:
         dataprep_filepath = os.path.join(output_dir, 'dpre.save')
-        reference_filepath = os.path.join(output_dir, '..', 'reference', 'dpre.save')
+        reference_filepath = os.path.join(
+            output_dir, '..', 'reference', 'gistest',
+            'arcgis' if isinstance(runner, ArcGisRunner) else 'grass',
+            'dpre.save')
         assert filecmp.cmp(dataprep_filepath, reference_filepath),\
             report_pickle_difference(dataprep_filepath, reference_filepath)
