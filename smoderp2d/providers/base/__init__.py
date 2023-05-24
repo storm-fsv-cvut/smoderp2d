@@ -15,7 +15,7 @@ from abc import abstractmethod
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
-from smoderp2d.exceptions import ProviderError, ConfigError, GlobalsNotSet
+from smoderp2d.exceptions import ProviderError, ConfigError, GlobalsNotSet, SmoderpError
 
 class Args:
     # type of computation (CompType)
@@ -534,8 +534,16 @@ class BaseProvider(object):
                 outputtable[i][2] = stream[fid[i]].m
                 outputtable[i][3] = stream[fid[i]].roughness
                 outputtable[i][4] = stream[fid[i]].q365
-                outputtable[i][5] = stream[fid[i]].V_out_cum
-                outputtable[i][6] = stream[fid[i]].Q_max
+                # TODO: The following should probably be made scalars already
+                #       before in the code
+                #       The following conditions are here meanwhile to be sure
+                #       nothing went wrong
+                if len(ma.unique(stream[fid[i]].V_out_cum)) > 2:
+                    raise SmoderpError('Too many values in V_out_cum')
+                if len(ma.unique(stream[fid[i]].Q_max)) > 2:
+                    raise SmoderpError('Too many values in Q_max')
+                outputtable[i][5] = ma.unique(stream[fid[i]].V_out_cum)[0]
+                outputtable[i][6] = ma.unique(stream[fid[i]].Q_max)[0]
 
             path_ = os.path.join(
                 Globals.outdir, 'temp', 'stream.csv'
