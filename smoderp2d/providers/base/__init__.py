@@ -9,12 +9,12 @@ import pickle
 import logging
 import numpy as np
 from configparser import ConfigParser, NoSectionError, NoOptionError
+from abc import abstractmethod
 
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
-from smoderp2d.exceptions import ProviderError, ConfigError
-
+from smoderp2d.exceptions import ProviderError, ConfigError, GlobalsNotSet
 
 class Args:
     # type of computation (CompType)
@@ -54,11 +54,13 @@ class BaseWritter(object):
         self._data_target = data
 
     @staticmethod
-    def _raster_output_path(output, directory=''):
-        dir_name = os.path.join(
-            Globals.outdir,
-            directory
-            )
+    def _raster_output_path(output, directory='core'):
+        """Get output raster path.
+
+        :param output: raster output name
+        :param directory: target directory (temp, control)
+        """
+        dir_name = os.path.join(Globals.outdir, directory) if directory != 'core' else Globals.outdir
 
         if not os.path.exists(dir_name):
            os.makedirs(dir_name)
@@ -81,12 +83,46 @@ class BaseWritter(object):
             na_arr.min(), na_arr.max(), na_arr.mean()
         ))
 
-    # todo: abstractmethod
-    def write_raster(self, arr, output):
-        pass
+    @abstractmethod
+    def write_raster(self, array, output_name, data_type='core'):
+        """Write raster (numpy array) to ASCII file.
+
+        :param array: numpy array
+        :param output_name: output filename
+        :param date_type: directory where to write output file
+        """
+        file_output = self._raster_output_path(output_name, data_type)
+
+        self._write_raster(array, file_output)
+
+        self._print_array_stats(
+            array, file_output
+        )
+
 
     def create_storage(self, outdir):
         pass
+
+    @abstractmethod
+    def _write_raster(self, array, file_output):
+        """Write array into file.
+
+        :param array: numpy array to be saved
+        :param file_output: path to output file
+        """
+        pass
+
+    @staticmethod
+    def _check_globals():
+        """Check globals to prevent call globals before values assigned.
+
+        Raise GlobalsNotSet on failure.
+        """
+        if GridGlobals.xllcorner is None or \
+            GridGlobals.yllcorner is None or \
+            GridGlobals.dx is None or \
+            GridGlobals.dy is None:
+            raise GlobalsNotSet()
 
 class BaseProvider(object):
     def __init__(self):
@@ -299,17 +335,12 @@ class BaseProvider(object):
             # no output directory defined
             return
         if os.path.exists(output_dir):
-            output_elements = ['control', 'core', 'mat_hcrit.asc',
-                               'profile.csv', 'temp']
-            for output_element in output_elements:
-                path_to_output = os.path.join(output_dir, output_element)
-                if os.path.isdir(path_to_output):
-                    shutil.rmtree(path_to_output)
-                elif os.path.isfile(path_to_output):
-                    os.remove(path_to_output)
-            for point_x in glob.glob(os.path.join(output_dir, 'point*.csv')):
-                # can be more pointxxxx.csv files
-                os.remove(point_x)
+            for filename in os.listdir(output_dir):
+                file_path = os.path.join(output_dir, filename)
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
         else:
             os.makedirs(output_dir)
 
@@ -439,7 +470,8 @@ class BaseProvider(object):
         for item in data_output:
             self.storage.write_raster(
                 self._make_mask(getattr(cumulative, item)),
-                cumulative.data[item].file_name
+                cumulative.data[item].file_name,
+                cumulative.data[item].data_type
             )
 
         # make extra rasters from cumulative clasess into temp dir
@@ -447,7 +479,7 @@ class BaseProvider(object):
             self.storage.write_raster(
                 self._make_mask(getattr(cumulative, item)),
                 cumulative.data[item].file_name,
-                directory=cumulative.data[item].data_type
+                cumulative.data[item].data_type
             )
 
         finState = np.zeros(np.shape(surface_array), np.float32)
@@ -474,9 +506,9 @@ class BaseProvider(object):
                 if  int(surface_array[i][j].state) >= Globals.streams_flow_inc :
                     totalBil[i][j] = GridGlobals.NoDataValue
 
-        self.storage.write_raster(self._make_mask(totalBil), 'massBalance')
-        self.storage.write_raster(self._make_mask(vRest), 'volRest_m3')
-        self.storage.write_raster(self._make_mask(finState),  'reachFid')
+        self.storage.write_raster(self._make_mask(totalBil), 'massbalance', 'control')
+        self.storage.write_raster(self._make_mask(vRest), 'volrest_m3', 'control')
+        self.storage.write_raster(self._make_mask(finState), 'reachfid', 'control')
 
         # store stream reaches results to a table
         # if stream is calculated
@@ -495,9 +527,8 @@ class BaseProvider(object):
                 outputtable[i][6] = stream[fid[i]].Q_max
 
             path_ = os.path.join(
-                    Globals.outdir,
-                    'stream.csv'
-                    )
+                Globals.outdir, 'temp', 'stream.csv'
+            )
             np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
                        header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}q365_m3_s{sep}V_out_cum_m3{sep}Q_max_m3_s'.format(sep=';'))
 

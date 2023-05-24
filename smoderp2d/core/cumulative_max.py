@@ -48,15 +48,15 @@ class CumulativeSubsurface(CumulativeSubsurfacePass):
 
         self.data.update({
             # cumulative exfiltration volume [m3]
-            'exfiltration': CumulativeData('core', 'cExfiltr_m3'),     # 1
+            'exfiltration': CumulativeData('core', 'cexfiltr_m3'),
             # cumulative percolation volume [m3]
-            'percolation' : CumulativeData('core', 'cPercol_m3'),      # 2
+            'percolation' : CumulativeData('core', 'cpercol_m3'),
             # maximum water level in the subsurface soil layer [m]
-            'h_sub'       : CumulativeData('core', 'mWLevelSub_M'),    # 3
+            'h_sub'       : CumulativeData('core', 'mwlevelsub_m'),
             # maximum subsurface flux [m3s-1]
-            'q_sub'       : CumulativeData('core', 'mQSub_m3_s'),      # 4
+            'q_sub'       : CumulativeData('core', 'mqsub_m3_s'),
             # cumulative outflow volume in subsurface soil layer [m3]
-            'vol_sub'     : CumulativeData('core', 'cVOutSub_m3')      # 5
+            'vol_sub'     : CumulativeData('core', 'cvoutsub_m3')
         })
 
     def update_cumulative_subsur(self, i, j, sub, q_subsur):
@@ -89,37 +89,37 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         # Dictionary stores the python arrays identification.
         self.data.update({
             # cumulative infiltrated volume [m3]
-            'infiltration' : CumulativeData('core',    'cInfil_m3'),     # 1
+            'infiltration' : CumulativeData('control', 'cinfil_m3'),
             # cumulative precipitation volume [m3]
-            'precipitation': CumulativeData('core',    'cRain_m3'),      # 2
+            'precipitation': CumulativeData('control', 'crain_m3'),
             # maximum surface water level [m]
-            'h_sur_tot'    : CumulativeData('control', 'mWLevel_m'),     # 3
+            'h_sur_tot'    : CumulativeData('core',    'mwlevel_m'),  
             # maximum sheet discharge [m3s-1]
-            'q_sheet_tot'  : CumulativeData('control', 'mQsheet_m3_s'),  # 4
+            'q_sheet_tot'  : CumulativeData('control', 'mqsheet_m3_s'),
             # cumulative sheet runoff volume [m3]
-            'vol_sheet'    : CumulativeData('control', 'cSheetVOutM3'),  # 5
+            'vol_sheet'    : CumulativeData('control', 'csheetvout_m3'),
             # maximum sheet velocity [ms-1]
-            'v_sheet'      : CumulativeData('control', 'mVel_m_s'),      # 6
+            'v_sheet'      : CumulativeData('core',    'mvel_m_s'),
             # maximum sheet shear stress [Pa]
-            'shear_sheet'  : CumulativeData('control', 'mrSearStr_Pa'),  # 7
+            'shear_sheet'  : CumulativeData('core',    'mrsearstr_pa'),
             # maximum water level in rills [m]
-            'h_rill'       : CumulativeData('control', 'mWLevelRill_m'), # 8
+            'h_rill'       : CumulativeData('control',    'mwlevelrill_m'),
             # maximum discharge in rills [m3s-1]
-            'q_rill_tot'   : CumulativeData('control', 'mQRill_m3_s'),   # 9
+            'q_rill_tot'   : CumulativeData('control', 'mqrill_m3_s'),
             # cumulative runoff volume in rills [m3]
-            'vol_rill'     : CumulativeData('control', 'cRillVOut_m3'),  # 10
+            'vol_rill'     : CumulativeData('control', 'crillvout_m3'),
             # maximum rill width [m]
-            'b_rill'       : CumulativeData('control', 'widthRill'),     # 11
+            'b_rill'       : CumulativeData('control', 'widthrill'),
             # cumulative surface inflow volume [m3]
-            'inflow_sur'   : CumulativeData('control', 'cVIn_M3'),       # 12
+            'inflow_sur'   : CumulativeData('control', 'cvin_m3'),
             # maximum surface retention [m]
-            'sur_ret'      : CumulativeData('control', 'surRet_M'),      # 13
+            'sur_ret'      : CumulativeData('control', 'surret_m'),
             # maximum sheet water level [m]
-            'h_sheet_tot'  : CumulativeData('control', 'mWLevelsheet_m'),  # 14
+            'h_sheet_tot'  : CumulativeData('control', 'mwlevelsheet_m'),
             # maximal total surface flow [m3/s]
-            'q_sur_tot'    : CumulativeData('core',    'mQsur_m3_s'),    # 15
+            'q_sur_tot'    : CumulativeData('core',    'mqsur_m3_s'),
             # cumulative total surface flow [m3/s]
-            'vol_sur_tot'  : CumulativeData('core',    'cVsur_m3'),       # 16
+            'vol_sur_tot'  : CumulativeData('core',    'cvsur_m3'),
         })
         # define arrays class attributes
         for item in self.data.keys():
