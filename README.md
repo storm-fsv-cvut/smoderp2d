@@ -54,7 +54,7 @@ docker run -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
 
 ### From GRASS GIS
 
-Note: GRASS GIS 7.8+ required
+Note: GRASS GIS 8.3+ required
 
 Create testing mapset:
 
@@ -79,7 +79,7 @@ Launch SMODERP2D ArcToolbox from `bin\arcgis` directory.
 Quick test (on Linux):
 
 ```sh
-QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/projekt.qgs
+QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/qgis_project.qgz
 ```
 
 Enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
