@@ -110,7 +110,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             # cumulative runoff volume in rills [m3]
             'vol_rill'     : CumulativeData('control', 'crillvout_m3'),
             # maximum rill width [m]
-            'b_rill'       : CumulativeData('temp',    'widthrill'),
+            'b_rill'       : CumulativeData('control', 'widthrill'),
             # cumulative surface inflow volume [m3]
             'inflow_sur'   : CumulativeData('control', 'cvin_m3'),
             # maximum surface retention [m]
