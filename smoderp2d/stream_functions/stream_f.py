@@ -1,6 +1,5 @@
 # @package smoderp2d.stream_functions.stream_f Module to calculate the stream reaches runoff.
 
-import math
 import sys
 
 import numpy.ma as ma
