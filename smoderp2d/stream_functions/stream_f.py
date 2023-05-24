@@ -1,6 +1,5 @@
 # @package smoderp2d.stream_functions.stream_f Module to calculate the stream reaches runoff.
 
-import math
 import sys
 
 import numpy.ma as ma
@@ -37,9 +36,13 @@ def compute_h(A, m, b, err=0.0001, max_iter=20):
         h_pre = 0.0
     h = h_pre
     iter_ = 1
-    while feval(h_pre) > err:
-        h = h_pre - feval(h_pre) / dfdheval(h_pre)
-        h_pre = h
+    while ma.any(feval(h_pre) > err):
+        h = ma.where(
+            feval(h_pre) > err,
+            h_pre - feval(h_pre) / dfdheval(h_pre),
+            h
+        )
+        h_pre = ma.copy(h)
         if iter_ >= max_iter:
             Logger.error(
                 "if file {} near line {} \n\t newton solver didnt converge after {max_iter} iterations (max_iter={max_iter})",
@@ -72,9 +75,9 @@ def rectangle(reach, dt):
     O = reach.b + 2 * H  # omoceny obvod
     S = reach.b * H    # prurocna plocha
     R = S / O          # hydraulicky polomer
-    reach.vs = ma.pow(
+    reach.vs = ma.power(
         R,
-        0.6666) * ma.pow(
+        0.6666) * ma.power(
         reach.inclination,
          0.5) / (
             reach.roughness)  # rychlost
@@ -112,12 +115,12 @@ def trapezoid(reach, dt):
      b=reach.b)
     # tuhle iteracni metodu nezna ToDo - nevim kdo ji kdy tvoril
     H = hp + h  # celkova vyska
-    O = B + 2.0 * H * ma.pow(1 + reach.m * reach.m, 0.5)
+    O = B + 2.0 * H * ma.power(1 + reach.m * reach.m, 0.5)
     S = B * H + reach.m * H * H
     dS = S - reach.b * hp + reach.m * hp * hp
     dV = dS * reach.length
     R = S / O
-    reach.vs = ma.pow(R, 0.6666) * ma.pow(reach.inclination, 0.5) / (reach.roughness)
+    reach.vs = ma.power(R, 0.6666) * ma.power(reach.inclination, 0.5) / (reach.roughness)
     # v ToDo and Question - proc tady mame 3/5 a 1/2 cislem a ne zlomkem
     reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
@@ -143,7 +146,7 @@ def trapezoid(reach, dt):
 def triangle(reach, dt):
     if reach.q365 > 0:
         Vp = reach.q365 * dt               # objem           : baseflow
-        hp = ma.pow(Vp / (reach.length * reach.m), 0.5)  # vyska hladiny   : baseflow
+        hp = ma.power(Vp / (reach.length * reach.m), 0.5)  # vyska hladiny   : baseflow
     else:
         # Vp == 0.0
         hp = 0.0
@@ -161,7 +164,7 @@ def triangle(reach, dt):
     # zakladna lichobezniku \__/ je spodni 'horni'  zakladna trojuhelniku \/
     he = compute_h(A=Ve / reach.length, m=reach.m, b=B)  # funkce pouzita pro lichobeznik  ____
     H = hp + he                                     # vyska vysledneho trouhelniku    \  /
-    O = 2.0 * H * ma.pow(
+    O = 2.0 * H * ma.power(
         1.0 + reach.m * reach.m,
         0.5)  # \/
     S = reach.m * H * H
@@ -171,9 +174,9 @@ def triangle(reach, dt):
         R = S / O
     except ZeroDivisionError:
         R = 0.0
-    reach.vs = ma.pow(
+    reach.vs = ma.power(
         R,
-        0.6666) * ma.pow(
+        0.6666) * ma.power(
         reach.inclination,
          0.5) / (
             reach.roughness)  # v
@@ -195,9 +198,9 @@ def parabola(reach, dt): # ToDo - podivat se proc parabola nefunguje, ale to nec
     # a = reach.b   #vzd ohniska od vrcholu
     # u = 3.0 #(h=B/u  B=f(a))
     # Vp = reach.q365*dt
-    # hp = ma.pow(Vp*3/(2*reach.length*u),0.5)
+    # hp = ma.power(Vp*3/(2*reach.length*u),0.5)
     # B = u*hp #sirka hladiny #b = 3*a/(2*h)
-    # reach.h = ma.pow((reach.V_in_from_field + reach.vol_rest)/(2*reach.length*ma.pow(hp,0.5))+ma.pow(hp,1.5),0.6666)  # h = (dV/2.L.hp^0,5+hp^1,5)^0,666
+    # reach.h = ma.power((reach.V_in_from_field + reach.vol_rest)/(2*reach.length*ma.power(hp,0.5))+ma.power(hp,1.5),0.6666)  # h = (dV/2.L.hp^0,5+hp^1,5)^0,666
     # H = hp + reach.h
     # Bb = u*H
     # O = Bb+8*H*H/(3*Bb)
@@ -205,12 +208,12 @@ def parabola(reach, dt): # ToDo - podivat se proc parabola nefunguje, ale to nec
     # dS = S - 2/3*B*hp
     # dV = dS*reach.length
     # R = S/O
-    # reach.Q_out = S*ma.pow(R,0.66666)*ma.pow(reach.slope,0.5)/(reach.roughness) # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
+    # reach.Q_out = S*ma.power(R,0.66666)*ma.power(reach.slope,0.5)/(reach.roughness) # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     # reach.V_out = reach.Q_out*dt
     # if reach.V_out > dV:
         # reach.V_out = dV
         # reach.Q_out = dV/dt
-    # reach.vs = ma.pow(R,0.6666)*ma.pow(reach.slope,0.5)/(reach.roughness) #v
+    # reach.vs = ma.power(R,0.6666)*ma.power(reach.slope,0.5)/(reach.roughness) #v
     # reach.vol_rest = dV - reach.V_out
     # reach.h = H
 

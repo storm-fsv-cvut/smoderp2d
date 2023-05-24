@@ -1,5 +1,4 @@
 # import os
-import math
 from subprocess import PIPE
 
 import numpy as np

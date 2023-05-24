@@ -1,7 +1,6 @@
 # @package smoderp2d.time_step methods to performe
 #  time step, and to store intermeriate variables
 
-import math
 from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.processes.infiltration as infilt
