@@ -31,13 +31,11 @@ class GrassGisWritter(BaseWritter):
         # TODO: how to deal with temp/core...?
         return name
 
-    def write_raster(self, array, output_name, directory='core'):
-        """Write raster to ASCII file.
-
-        :param array: numpy array
-        :param output_name: output filename
-        :param directory: directory where to write output file
+    def _write_raster(self, array, file_output):
+        """See base method for description.
         """
+        self._check_globals()
+
         # set output region (use current region when GridGlobals are not set)
         if GridGlobals.r:
             region = Region()
@@ -50,25 +48,19 @@ class GrassGisWritter(BaseWritter):
             region.rows = GridGlobals.r
             region.write()
 
-        # TBD: extend pygrass to export array directly to specified
-        # external format
+        raster_name = os.path.splitext(os.path.basename(file_output))[0]
+        
         numpy2raster(
             array, "FCELL",
-            output_name, overwrite=True
+            raster_name, overwrite=True
         )
 
-        file_output = self._raster_output_path(output_name, directory)
-
         Module('r.out.gdal',
-               input=output_name,
+               input=raster_name,
                output=file_output,
                format='AAIGrid',
                nodata=GridGlobals.NoDataValue,
                overwrite=True
-        )
-
-        self._print_array_stats(
-            array, file_output
         )
 
 class GrassGisProvider(BaseProvider):

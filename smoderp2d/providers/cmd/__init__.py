@@ -16,20 +16,10 @@ class CmdWritter(BaseWritter):
     def __init__(self):
         super(CmdWritter, self).__init__()
 
-    def write_raster(self, array, output_name, directory='core'):
-        """Write raster (numpy array) to ASCII file.
-
-        :param array: numpy array
-        :param output_name: output filename
-        :param directory: directory where to write output file
+    def _write_raster(self, array, file_output):
+        """See base method for description.
         """
-        file_output = self._raster_output_path(output_name, directory)
-
         np.savetxt(file_output, array, fmt='%.6e')
-
-        self._print_array_stats(
-            array, file_output
-        )
 
 class CmdArgumentParser(object):
     def __init__(self, config_file):
