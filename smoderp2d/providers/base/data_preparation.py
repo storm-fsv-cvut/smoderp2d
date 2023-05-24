@@ -578,6 +578,7 @@ class PrepareDataGISBase(PrepareDataBase):
             self.data['mat_b'], self.soilveg_fields['tau'], self.soilveg_fields['v'], GridGlobals.r,
             GridGlobals.c, self.data['mat_slope'],
             GridGlobals.NoDataValue, self.data['mat_aa'])
+        self.storage.write_raster(self.data['mat_hcrit'], 'hcrit', 'control')
 
         # load precipitation input file
         self.data['sr'], self.data['itera'] = \

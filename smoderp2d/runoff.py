@@ -178,7 +178,7 @@ class Runoff(object):
         Logger.info('Corrected time step is {} [s]'.format(self.delta_t.max()))
 
         # opens files for storing hydrographs
-        if Globals.points and Globals.points != "#":
+        if Globals.get_array_points() is not None:
             self.hydrographs = wf.Hydrographs()
             ### TODO
             # arcgis = Globals.arcgis

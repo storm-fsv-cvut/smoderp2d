@@ -6,7 +6,7 @@ from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.providers.base import BaseProvider, CompType, BaseWritter
 from smoderp2d.providers.arcgis.logger import ArcPyLogHandler
 from smoderp2d.providers import Logger
-from smoderp2d.exceptions import GlobalsNotSet, ProviderError
+from smoderp2d.exceptions import ProviderError
 
 try:
     import arcpy
@@ -52,36 +52,24 @@ class ArcGisWritter(BaseWritter):
 
         return path
 
-    def write_raster(self, array, output_name, directory=''):
-        """Write raster (numpy array) to ASCII file.
-
-        :param array: numpy array
-        :param output_name: output filename
-        :param directory: directory where to write output file
+    def _write_raster(self, array, file_output):
+        """See base method for description.
         """
-        file_output = self._raster_output_path(output_name, directory)
-        
-        # prevent call globals before values assigned
-        if GridGlobals.xllcorner is None or \
-            GridGlobals.yllcorner is None or \
-            GridGlobals.dx is None or \
-            GridGlobals.dy is None:
-            raise GlobalsNotSet()
+        self._check_globals()
 
         lower_left = arcpy.Point(
             GridGlobals.xllcorner,
             GridGlobals.yllcorner,
         )
+        
         raster = arcpy.NumPyArrayToRaster(
             array, lower_left, GridGlobals.dx, GridGlobals.dy,
-            value_to_nodata=GridGlobals.NoDataValue)
+            value_to_nodata=GridGlobals.NoDataValue
+        )
+        
         arcpy.RasterToASCII_conversion(
             raster,
             file_output
-        )
-
-        self._print_array_stats(
-            array, file_output
         )
 
 class ArcGisProvider(BaseProvider):
