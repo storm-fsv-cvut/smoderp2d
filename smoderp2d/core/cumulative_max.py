@@ -104,7 +104,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             # maximum sheet shear stress [Pa]
             'shear_sheet'  : CumulativeData('core',    'mrsearstr_pa'),
             # maximum water level in rills [m]
-            'h_rill'       : CumulativeData('temp',    'mwlevelrill_m'),
+            'h_rill'       : CumulativeData('control',    'mwlevelrill_m'),
             # maximum discharge in rills [m3s-1]
             'q_rill_tot'   : CumulativeData('control', 'mqrill_m3_s'),
             # cumulative runoff volume in rills [m3]
@@ -116,7 +116,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             # maximum surface retention [m]
             'sur_ret'      : CumulativeData('control', 'surret_m'),
             # maximum sheet water level [m]
-            'h_sheet_tot'  : CumulativeData('control', 'mwlevelrill_m'),
+            'h_sheet_tot'  : CumulativeData('control', 'mwlevelsheet_m'),
             # maximal total surface flow [m3/s]
             'q_sur_tot'    : CumulativeData('core',    'mqsur_m3_s'),
             # cumulative total surface flow [m3/s]

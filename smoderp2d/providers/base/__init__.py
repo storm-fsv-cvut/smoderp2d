@@ -85,14 +85,14 @@ class BaseWritter(object):
         ))
 
     @abstractmethod
-    def write_raster(self, array, output_name, item='core'):
+    def write_raster(self, array, output_name, data_type='core'):
         """Write raster (numpy array) to ASCII file.
 
         :param array: numpy array
         :param output_name: output filename
-        :param item: directory where to write output file
+        :param date_type: directory where to write output file
         """
-        file_output = self._raster_output_path(output_name, item)
+        file_output = self._raster_output_path(output_name, data_type)
 
         self._write_raster(array, file_output)
 
@@ -478,7 +478,8 @@ class BaseProvider(object):
         for item in data_output:
             self.storage.write_raster(
                 self._make_mask(getattr(cumulative, item)),
-                cumulative.data[item].file_name
+                cumulative.data[item].file_name,
+                cumulative.data[item].data_type
             )
 
         # make extra rasters from cumulative clasess into temp dir
