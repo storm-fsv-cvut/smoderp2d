@@ -49,15 +49,15 @@ class CumulativeSubsurface(CumulativeSubsurfacePass):
 
         self.data.update({
             # cumulative exfiltration volume [m3]
-            'exfiltration': CumulativeData('core', 'cExfiltr_m3'),     # 1
+            'exfiltration': CumulativeData('core', 'cexfiltr_m3'),
             # cumulative percolation volume [m3]
-            'percolation' : CumulativeData('core', 'cPercol_m3'),      # 2
+            'percolation' : CumulativeData('core', 'cpercol_m3'),
             # maximum water level in the subsurface soil layer [m]
-            'h_sub'       : CumulativeData('core', 'mWLevelSub_M'),    # 3
+            'h_sub'       : CumulativeData('core', 'mwlevelsub_m'),
             # maximum subsurface flux [m3s-1]
-            'q_sub'       : CumulativeData('core', 'mQSub_m3_s'),      # 4
+            'q_sub'       : CumulativeData('core', 'mqsub_m3_s'),
             # cumulative outflow volume in subsurface soil layer [m3]
-            'vol_sub'     : CumulativeData('core', 'cVOutSub_m3')      # 5
+            'vol_sub'     : CumulativeData('core', 'cvoutsub_m3')
         })
 
     def update_cumulative_subsur(self, i, j, sub, q_subsur):
