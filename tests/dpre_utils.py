@@ -28,6 +28,15 @@ def extract_pickle_data(data_dict, target_dir):
 def _extract_target_dir(path):
     return os.path.join(os.path.dirname(path),
                         os.path.splitext(os.path.basename(path))[0] + '.extracted')
+
+def _data_to_str(data_dict):
+    return [
+        '{}:{}\n'.format(key,
+                         numpy.array2string(value, threshold=numpy.inf) if isinstance(value, numpy.ndarray) else
+                         value)
+        for (key, value) in sorted(data_dict.items())
+    ]
+
 def report_pickle_difference(new_output, reference):
     """Report the inconsistency of two files.
 
@@ -52,16 +61,8 @@ def report_pickle_difference(new_output, reference):
             extract_pickle_data(new_output_dict, _extract_target_dir(new_output))
             extract_pickle_data(reference_dict, _extract_target_dir(reference))
 
-            new_output_str = [
-                '{}:{}\n'.format(key, value) for (key,  value) in sorted(
-                    new_output_dict.items()
-                )
-            ]
-            reference_str = [
-                '{}:{}\n'.format(key, value) for (key, value) in sorted(
-                    reference_dict.items()
-                )
-            ]
+            new_output_str = _data_to_str(new_output_dict)
+            reference_str = _data_to_str(reference_dict)
 
             sys.stdout.writelines(unified_diff(new_output_str, reference_str))
             diff_fd.writelines(unified_diff(new_output_str, reference_str))
