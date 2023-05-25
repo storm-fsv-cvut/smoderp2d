@@ -539,9 +539,15 @@ class BaseProvider(object):
                 #       The following conditions are here meanwhile to be sure
                 #       nothing went wrong
                 if len(ma.unique(stream[fid[i]].V_out_cum)) > 2:
-                    raise SmoderpError('Too many values in V_out_cum')
+                    raise SmoderpError(
+                        'Too many values in V_out_cum - More than one for one '
+                        'stream'
+                    )
                 if len(ma.unique(stream[fid[i]].Q_max)) > 2:
-                    raise SmoderpError('Too many values in Q_max')
+                    raise SmoderpError(
+                        'Too many values in Q_max - More than one for one '
+                        'stream'
+                    )
                 outputtable[i][5] = ma.unique(stream[fid[i]].V_out_cum)[0]
                 outputtable[i][6] = ma.unique(stream[fid[i]].Q_max)[0]
 
