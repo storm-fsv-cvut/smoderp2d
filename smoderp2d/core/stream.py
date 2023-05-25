@@ -177,11 +177,11 @@ class Stream(object):
         # print fid, self.reach[fid].Q_out, str(self.reach[fid].V_out)
         r = self.reach[fid]
         if not(extraOut):
-            line = '{h}{sep}{q}{sep}{cumvol}'.format(
+            line = '{h:.4e}{sep}{q:.4e}{sep}{cumvol:.4e}'.format(
                 h=r.h[i, j], q=r.Q_out[i, j], cumvol=r.V_out_cum[i, j], sep=sep
             )
         else:
-            line = '{h}{sep}{v}{sep}{q}{sep}{vi}{sep}{vo}'.format(
+            line = '{h:.4e}{sep}{v:.4e}{sep}{q:.4e}{sep}{vi:.4e}{sep}{vo:.4e}'.format(
                 h=r.h[i, j], v=r.V_out[i, j], q=r.Q_out[i, j],
                 vi=r.V_in_from_field[i, j], vo=r.vol_rest[i, j], sep=sep
             )
