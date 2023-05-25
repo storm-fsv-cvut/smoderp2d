@@ -4,7 +4,11 @@ import pickle
 import filecmp
 import shutil
 import numpy
-import matplotlib.image
+try:
+    import matplotlib.pyplot as plt
+    has_matplotlib = True
+except ModuleNotFoundError:
+    has_matplotlib = False
 
 from difflib import unified_diff
 
@@ -45,7 +49,13 @@ def compare_arrays(new_output_dict, reference_dict, target_dir):
         diff = v - reference_dict[k]
         with open(os.path.join(target_dir, k+'.diff'), 'w') as fd:
             numpy.savetxt(fd, diff)
-        matplotlib.image.imsave(os.path.join(target_dir, k+'_diff.png'), diff, cmap='bwr')
+        if not has_matplotlib:
+            continue
+        plt.imshow(diff.astype(int), cmap='bwr')
+        # plt.colorbar()
+        # print(k)
+        # print(numpy.unique(diff, return_counts=True))
+        plt.savefig(os.path.join(target_dir, k+'_diff.png'))
 
 def report_pickle_difference(new_output, reference):
     """Report the inconsistency of two files.
