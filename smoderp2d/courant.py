@@ -7,6 +7,7 @@ import numpy.ma as ma
 from smoderp2d.providers import Logger
 
 from smoderp2d.core.general import Globals as Gl, GridGlobals
+from smoderp2d.exceptions import SmoderpError
 
 # Contains variables and methods needed for time step size handling
 #
@@ -182,6 +183,6 @@ class Courant():
                 return delta_t * self.max_delta_t_mult, ratio
 
 
-    Logger.critical(
+    raise SmoderpError(
         'courant.cour() missed all its time step conditions\n no rule to preserve or change the time step!'
     )
