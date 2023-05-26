@@ -57,6 +57,7 @@ def compare_arrays(new_output_dict, reference_dict, target_dir):
             norm = mcolors.TwoSlopeNorm(vmin=diff.min(), vcenter=0, vmax=diff.max())
 
             plt.imshow(diff.astype(int), cmap='bwr', norm=norm)
+            plt.colorbar()
             plt.savefig(os.path.join(target_dir, k+'_diff.png'))
 
 def report_pickle_difference(new_output, reference):
