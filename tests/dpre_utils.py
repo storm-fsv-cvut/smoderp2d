@@ -6,6 +6,7 @@ import shutil
 import numpy
 try:
     import matplotlib.pyplot as plt
+    import matplotlib.colors as mcolors
     has_matplotlib = True
 except ModuleNotFoundError:
     has_matplotlib = False
@@ -51,11 +52,12 @@ def compare_arrays(new_output_dict, reference_dict, target_dir):
             numpy.savetxt(fd, diff)
         if not has_matplotlib:
             continue
-        plt.imshow(diff.astype(int), cmap='bwr')
-        # plt.colorbar()
-        # print(k)
-        # print(numpy.unique(diff, return_counts=True))
-        plt.savefig(os.path.join(target_dir, k+'_diff.png'))
+
+        if diff.any():
+            norm = mcolors.TwoSlopeNorm(vmin=diff.min(), vcenter=0, vmax=diff.max())
+
+            plt.imshow(diff.astype(int), cmap='bwr', norm=norm)
+            plt.savefig(os.path.join(target_dir, k+'_diff.png'))
 
 def report_pickle_difference(new_output, reference):
     """Report the inconsistency of two files.
