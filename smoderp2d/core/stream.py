@@ -77,7 +77,7 @@ class Stream(object):
 
         for i in range(self.nReaches):
             args = {k:v[i] for k,v in self.streams.items()}
-            self.reach[int(self.streams['stream_segment_id'][i])] = Reach(**args)
+            self.reach[self.streams['stream_segment_id'][i]] = Reach(**args)
 
         self.mat_stream_reach = Gl.mat_stream_reach
 
