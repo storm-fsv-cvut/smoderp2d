@@ -14,6 +14,12 @@ from smoderp2d.providers.base import CompType
 data_dir = os.path.join(os.path.dirname(__file__), "data")
 output_dir = os.path.join(data_dir, "output")
 
+def is_on_github_actions():
+    # https://docs.github.com/en/actions/learn-github-actions/variables
+    if "GITHUB_ACTION" in os.environ:
+        return True
+    return False
+
 def extract_pickle_data(data_dict, target_dir):
     if os.path.exists(target_dir):
         shutil.rmtree(target_dir)
@@ -28,6 +34,32 @@ def extract_pickle_data(data_dict, target_dir):
 def _extract_target_dir(path):
     return os.path.join(os.path.dirname(path),
                         os.path.splitext(os.path.basename(path))[0] + '.extracted')
+
+def _data_to_str(data_dict):
+    return [
+        '{}:{}\n'.format(key,
+                         numpy.array2string(value, threshold=numpy.inf) if isinstance(value, numpy.ndarray) else
+                         value)
+        for (key, value) in sorted(data_dict.items())
+    ]
+
+def compare_arrays(new_output_dict, reference_dict, target_dir):
+    import matplotlib.pyplot as plt
+    import matplotlib.colors as mcolors
+
+    for k, v in new_output_dict.items():
+        if not isinstance(v, numpy.ndarray):
+            continue
+        diff = v - reference_dict[k]
+        if diff.any():
+            with open(os.path.join(target_dir, k+'.diff'), 'w') as fd:
+                numpy.savetxt(fd, diff)
+
+            norm = mcolors.TwoSlopeNorm(vmin=diff.min(), vcenter=0, vmax=diff.max())
+            plt.imshow(diff.astype(int), cmap='bwr', norm=norm)
+            plt.colorbar()
+            plt.savefig(os.path.join(target_dir, k+'_diff.png'))
+
 def report_pickle_difference(new_output, reference):
     """Report the inconsistency of two files.
 
@@ -49,21 +81,15 @@ def report_pickle_difference(new_output, reference):
                 new_output_dict = pickle.load(left)
                 reference_dict = pickle.load(right)
 
-            extract_pickle_data(new_output_dict, _extract_target_dir(new_output))
-            extract_pickle_data(reference_dict, _extract_target_dir(reference))
+            if not is_on_github_actions():
+                extract_pickle_data(new_output_dict, _extract_target_dir(new_output))
+                extract_pickle_data(reference_dict, _extract_target_dir(reference))
+                compare_arrays(new_output_dict, reference_dict, _extract_target_dir(new_output))
 
-            new_output_str = [
-                '{}:{}\n'.format(key, value) for (key,  value) in sorted(
-                    new_output_dict.items()
-                )
-            ]
-            reference_str = [
-                '{}:{}\n'.format(key, value) for (key, value) in sorted(
-                    reference_dict.items()
-                )
-            ]
+            new_output_str = _data_to_str(new_output_dict)
+            reference_str = _data_to_str(reference_dict)
 
-            sys.stdout.writelines(unified_diff(new_output_str, reference_str))
+            # sys.stdout.writelines(unified_diff(new_output_str, reference_str))
             diff_fd.writelines(unified_diff(new_output_str, reference_str))
 
     diff_fd.close()
