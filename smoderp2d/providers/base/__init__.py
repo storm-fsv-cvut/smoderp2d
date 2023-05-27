@@ -76,11 +76,14 @@ class BaseWritter(object):
         """Print array stats.
         """
 
-        Logger.info("Raster ASCII output file {} saved".format(
+        Logger.info("Raster ASCII output file <{}> saved".format(
             file_output
         ))
-        na_arr = arr[arr != GridGlobals.NoDataValue]
-        Logger.info("\tArray stats: min={} max={} mean={}".format(
+        if not isinstance(arr, np.ma.MaskedArray):
+            na_arr = arr[arr != GridGlobals.NoDataValue]
+        else:
+            na_arr = arr
+        Logger.info("\tArray stats: min={0:.3f} max={1:.3f} mean={2:.3f}".format(
             na_arr.min(), na_arr.max(), na_arr.mean()
         ))
 
@@ -94,11 +97,11 @@ class BaseWritter(object):
         """
         file_output = self._raster_output_path(output_name, data_type)
 
-        self._write_raster(array, file_output)
-
         self._print_array_stats(
             array, file_output
         )
+
+        self._write_raster(array, file_output)
 
 
     def create_storage(self, outdir):

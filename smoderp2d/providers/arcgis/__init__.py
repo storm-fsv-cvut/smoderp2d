@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import numpy as np
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.providers.base import BaseProvider, CompType, BaseWritter
@@ -63,7 +64,8 @@ class ArcGisWritter(BaseWritter):
         )
         
         raster = arcpy.NumPyArrayToRaster(
-            array, lower_left, GridGlobals.dx, GridGlobals.dy,
+            array.filled(GridGlobals.NoDataValue) if isinstance(array, np.ma.MaskedArray) else array,
+            lower_left, GridGlobals.dx, GridGlobals.dy,
             value_to_nodata=GridGlobals.NoDataValue
         )
         
