@@ -1,3 +1,1 @@
-pytest==7.2.2
 numpy==1.20.1
-configparser
