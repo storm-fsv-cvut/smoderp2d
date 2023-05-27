@@ -4,8 +4,6 @@ import pickle
 import filecmp
 import shutil
 import numpy
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
 
 from difflib import unified_diff
 
@@ -46,6 +44,9 @@ def _data_to_str(data_dict):
     ]
 
 def compare_arrays(new_output_dict, reference_dict, target_dir):
+    import matplotlib.pyplot as plt
+    import matplotlib.colors as mcolors
+
     for k, v in new_output_dict.items():
         if not isinstance(v, numpy.ndarray):
             continue
