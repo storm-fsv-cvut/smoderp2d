@@ -221,7 +221,9 @@ class Runoff(object):
             self.surface,
             self.subsurface,
             self.cumulative,
-            0.0,
+            ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+            ),
             True
         )
 

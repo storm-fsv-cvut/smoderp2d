@@ -839,3 +839,12 @@ class PrepareDataGISBase(PrepareDataBase):
 
         return duplicated_fields
 
+    @staticmethod
+    def _update_points_array(array_points, i, fid, r, c, x, y):
+        """Update array of points"""
+        array_points[i][0] = fid
+        array_points[i][1] = r
+        array_points[i][2] = c
+        # x,y coordinates of current point stored in an array
+        array_points[i][3] = x
+        array_points[i][4] = y
