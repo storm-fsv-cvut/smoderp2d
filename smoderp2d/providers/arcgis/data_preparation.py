@@ -236,11 +236,12 @@ class PrepareData(PrepareDataGISBase):
     def _get_points_location(self, points_layer):
         """See base method for description.
         """
-        points_array = []
+        points_array = None
         if points_layer:
             # get number of points
             count = int(arcpy.management.GetCount(points_layer).getOutput(0))
             if count > 0:
+                points_array = np.zeros([int(count), 5], float)
                 # get the points geometry and IDs into array
                 desc = arcpy.Describe(points_layer)
                 with arcpy.da.SearchCursor(points_layer, [desc.OIDFieldName, desc.ShapeFieldName]) as table:
@@ -250,7 +251,7 @@ class PrepareData(PrepareDataGISBase):
                         x, y = row[1]
                         if self._get_points_dem_coords(x, y):
                             r, c = self._get_points_dem_coords(x, y)
-                            points_array.append([fid, r, c, x, y])
+                            self._update_points_array(points_array, i, fid, r, c, x, y)
                         else:
                             Logger.info(
                             "Point FID = {} is at the edge of the raster. "
@@ -260,6 +261,7 @@ class PrepareData(PrepareDataGISBase):
                 raise DataPreparationInvalidInput(
                     "None of the record points lays within the modeled area."
                 )
+
         return points_array
     
     def _stream_clip(self, stream, aoi_polygon):

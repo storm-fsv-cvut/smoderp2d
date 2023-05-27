@@ -363,13 +363,14 @@ class PrepareData(PrepareDataGISBase):
     def _get_points_location(self, points_layer):
         """See base method for description.
         """
-        points_array = []
+        points_array = None
         if points_layer:
             # get number of points
             points_map = self.__qualified_name(points_layer)
             with VectorTopo(**points_map) as vmap:
                 count = vmap.number_of('points')
             if count > 0:
+                points_array = np.zeros([int(count), 5], float)
                 # get the points geometry and IDs into array
                 with Vector(**points_map) as vmap:
                     i = 0
@@ -378,7 +379,7 @@ class PrepareData(PrepareDataGISBase):
                         x, y = p.x, p.y
                         if self._get_points_dem_coords(x, y):
                             r, c = self._get_points_dem_coords(x, y)
-                            points_array.append([fid, r, c, x, y])
+                            self._update_points_array(points_array, i, fid, r, c, x, y)
                         else:
                             Logger.info(
                             "Point FID = {} is at the edge of the raster. "
@@ -388,6 +389,7 @@ class PrepareData(PrepareDataGISBase):
                 raise DataPreparationInvalidInput(
                     "None of the record points lays within the modeled area."
                 )
+
         return points_array
 
     def _stream_clip(self, stream, aoi_polygon):
