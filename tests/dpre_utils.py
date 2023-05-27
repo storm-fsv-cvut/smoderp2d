@@ -4,12 +4,8 @@ import pickle
 import filecmp
 import shutil
 import numpy
-try:
-    import matplotlib.pyplot as plt
-    import matplotlib.colors as mcolors
-    has_matplotlib = True
-except ModuleNotFoundError:
-    has_matplotlib = False
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 
 from difflib import unified_diff
 
@@ -19,6 +15,12 @@ from smoderp2d.providers.base import CompType
 
 data_dir = os.path.join(os.path.dirname(__file__), "data")
 output_dir = os.path.join(data_dir, "output")
+
+def is_on_github_actions():
+    # https://docs.github.com/en/actions/learn-github-actions/variables
+    if "GITHUB_ACTION" in os.environ:
+        return True
+    return False
 
 def extract_pickle_data(data_dict, target_dir):
     if os.path.exists(target_dir):
@@ -48,14 +50,11 @@ def compare_arrays(new_output_dict, reference_dict, target_dir):
         if not isinstance(v, numpy.ndarray):
             continue
         diff = v - reference_dict[k]
-        with open(os.path.join(target_dir, k+'.diff'), 'w') as fd:
-            numpy.savetxt(fd, diff)
-        if not has_matplotlib:
-            continue
-
         if diff.any():
-            norm = mcolors.TwoSlopeNorm(vmin=diff.min(), vcenter=0, vmax=diff.max())
+            with open(os.path.join(target_dir, k+'.diff'), 'w') as fd:
+                numpy.savetxt(fd, diff)
 
+            norm = mcolors.TwoSlopeNorm(vmin=diff.min(), vcenter=0, vmax=diff.max())
             plt.imshow(diff.astype(int), cmap='bwr', norm=norm)
             plt.colorbar()
             plt.savefig(os.path.join(target_dir, k+'_diff.png'))
@@ -81,9 +80,10 @@ def report_pickle_difference(new_output, reference):
                 new_output_dict = pickle.load(left)
                 reference_dict = pickle.load(right)
 
-            extract_pickle_data(new_output_dict, _extract_target_dir(new_output))
-            extract_pickle_data(reference_dict, _extract_target_dir(reference))
-            compare_arrays(new_output_dict, reference_dict, _extract_target_dir(new_output))
+            if not is_on_github_actions():
+                extract_pickle_data(new_output_dict, _extract_target_dir(new_output))
+                extract_pickle_data(reference_dict, _extract_target_dir(reference))
+                compare_arrays(new_output_dict, reference_dict, _extract_target_dir(new_output))
 
             new_output_str = _data_to_str(new_output_dict)
             reference_str = _data_to_str(reference_dict)
