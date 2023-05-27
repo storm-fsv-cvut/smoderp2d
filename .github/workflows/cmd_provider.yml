@@ -15,7 +15,7 @@ jobs:
         python-version:
           - "2.7"
           - "3.9"
-          - "3.11.2"
+          - "3.11"
 
     uses: ./.github/workflows/cmd_template.yml
     with:
@@ -27,7 +27,7 @@ jobs:
       matrix:
         python-version:
           - "3.9"
-          - "3.11.2"
+          - "3.11"
 
     uses: ./.github/workflows/cmd_template.yml
     with:
