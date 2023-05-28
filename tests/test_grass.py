@@ -2,11 +2,10 @@ import os
 import sys
 import pytest
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
 from test_utils import PerformTest
-from smoderp2d import GrassGisRunner
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from smoderp2d import GrassGisRunner
 
 def params():
     return {
