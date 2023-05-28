@@ -165,9 +165,9 @@ class PerformTest:
 
         diff_fd.close()
 
-        return Inconsistency in {} compared to the reference data. ' \
-               The diff can be seen above and is stored in {}.'.format(
-                  new_output, diff_fn)
+        return 'Inconsistency in {} compared to the reference data. ' \
+           'The diff can be seen above and is stored in {}.'.format(
+              new_output, diff_fn)
 
     def _run(self, comptype=None):
         runner = self.runner()
