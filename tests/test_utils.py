@@ -7,6 +7,8 @@ from shutil import rmtree
 
 from difflib import unified_diff
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+print(sys.path)
 from smoderp2d.providers.base import CompType
 from smoderp2d.exceptions import ProviderError
 from smoderp2d.providers import Logger
