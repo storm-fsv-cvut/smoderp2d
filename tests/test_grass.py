@@ -5,7 +5,7 @@ import pytest
 from test_utils import PerformTest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from smoderp2d import GrassGisRunner
+from smoderp2d import GrassGisRunner, Runner
 
 def params():
     return {
@@ -19,14 +19,13 @@ def params():
     }
 
 class TestGrass:
-    config_file = os.path.join(os.path.dirname(__file__), "quicktest.ini")
-
     def test_001_dpre(self):
         PerformTest(GrassGisRunner, params).run_dpre()
 
     def test_002_roff(self):
-        # TODO
-        pass
+        PerformTest(Runner).run_roff(
+            os.path.join(os.path.dirname(__file__), "gistest.ini")
+        )
     
     def test_003_full(self):
         PerformTest(GrassGisRunner, params).run_full()
