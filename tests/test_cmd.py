@@ -1,19 +1,12 @@
 import os
 import pytest
 
-from test_utils import TestCmdBase, _setup
+from smoderp2d import Runner
 
-config_file = os.path.join(os.path.dirname(__file__), "quicktest.ini")
-    
-@pytest.fixture(scope='class')
-def class_manager(request):
-    _setup(request, config_file)
-    yield
-    
-@pytest.mark.usefixtures('class_manager')
-class TestCmd(TestCmdBase):
-    def test_001_read_config(self):
-        self.do_001_read_config()
+from test_utils import PerformTest
 
-    def test_002_run(self):\
-        self.do_002_run()
+class TestCmd:
+    def test_001_roff(self):
+        PerformTest(Runner).run_roff(
+            os.path.join(os.path.dirname(__file__), "quicktest.ini")
+        )
