@@ -252,15 +252,14 @@ class PerformTest:
 
         assert os.path.isdir(self._output_dir)
 
+        testcase = os.path.splitext(os.path.basename(config_file))[0]
+        reference_dir = os.path.join(os.path.dirname(__file__),
+                                     "data", "reference", testcase)
+        if reference_dir == "gistest":
+            reference_dir = os.path.join(reference_dir, "full")
+
         assert are_dir_trees_equal(
-            self._output_dir,
-            os.path.join(
-                os.path.dirname(__file__),
-                "data",
-                "reference",
-                os.path.splitext(os.path.basename(config_file))[0],
-                "full"
-            ),
+            self._output_dir, reference_dir
         )
 
     def run_full(self):
