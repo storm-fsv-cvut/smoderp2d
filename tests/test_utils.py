@@ -90,7 +90,7 @@ def are_dir_trees_equal(dir1, dir2):
     )
     if len(mismatch) > 0 or len(errors) > 0:
         print("Mismatch: {}".format(mismatch))
-        print("Error: {}".format(error))
+        print("Error: {}".format(errors))
         return False
     for common_dir in dirs_cmp.common_dirs:
         new_dir1 = os.path.join(dir1, common_dir)
