@@ -150,8 +150,12 @@ def timestepRainfall(iterace, total_time, delta_t, tz, sr):
             else:
                 # pokud je total_time + delta_t stale dal nez konec posunuteho zaznamu
                 # vezme celou delku zaznamu a tuto srazku pricte
-                while (sr[z][0] <= (total_time + delta_t)):
-                    rainfall += sr[z][1] * (sr[z][0] - sr[z - 1][0])
+                while ma.any(sr[z][0] <= (total_time + delta_t)):
+                    rainfall += ma.where(
+                        sr[z][0] <= (total_time + delta_t),
+                        sr[z][1] * (sr[z][0] - sr[z - 1][0]),
+                        0
+                    )
                     z += 1
                     if z > (iterace - 1):
                         break
