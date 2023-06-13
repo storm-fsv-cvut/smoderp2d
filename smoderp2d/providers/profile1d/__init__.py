@@ -22,13 +22,12 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         super(Profile1DProvider, self).__init__()
 
         # load configuration
-        # load configuration
         if config_file is None and os.getenv("SMODERP2D_CONFIG_FILE"):
             config_file = os.getenv("SMODERP2D_CONFIG_FILE")
         cloader = CmdArgumentParser(config_file)
         # no gis has only roff comp type
-        self.args.config_file, self.args.typecomp = cloader.set_config(
-            "Run PROFILE1D.", typecomp='roff')
+        self.args.config_file, self.args.workflow_mode = cloader.set_config(
+            "Run PROFILE1D.", workflow_mode='roff')
         self._config = self._load_config()
 
         # define storage writter

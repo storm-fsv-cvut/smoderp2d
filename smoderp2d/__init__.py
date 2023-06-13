@@ -53,13 +53,18 @@ class Runner(object):
 
         return provider_class
 
-    def set_workflow_mode(self, workflow_mode):
+    @property
+    def workflow_mode(self):
+        return self._provider.args.workflow_mode
+
+    @workflow_mode.setter
+    def workflow_mode(self, workflow_mode):
         """Set computation type.
 
         :param WorkflowMode workflow_mode: workflow mode
         """
-        self._provider.args.workflow_mode = comp_type
-        if comp_type in (WorkflowMode.dpre, WorkflowMode.roff):
+        self._provider.args.workflow_mode = workflow_mode
+        if workflow_mode in (WorkflowMode.dpre, WorkflowMode.roff):
             self._provider.args.data_file = os.path.join(Globals.outdir, "dpre.save")
 
     def run(self):

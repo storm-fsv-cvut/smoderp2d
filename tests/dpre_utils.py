@@ -107,7 +107,7 @@ def perform_dpre_ref_test(runner, params_fn, dataprep_only=True):
         runner.set_options(params)
         if dataprep_only:
             # run only data preparation
-            runner.set_workflow_mode(WorkflowMode.dpre)
+            runner.workflow_mode = WorkflowMode.dpre
         runner.run()
     except ProviderError as e:
         sys.exit(e)

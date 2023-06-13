@@ -222,7 +222,7 @@ class SMODERP2D(object):
                 self._get_input_params(parameters)
             )
             if parameters[PARAMETER_DATAPREP_ONLY].value:
-                runner.set_workflow_mode(WorkflowMode.dpre)
+                runner.workflow_mode = WorkflowMode.dpre
 
             runner.run()
         except ProviderError as e:

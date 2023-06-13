@@ -105,11 +105,6 @@
 #% description: Reach shape table code
 #% guisection: Settings
 #%end
-#%option G_OPT_F_OUTPUT
-#% key: pickle_file
-#% description: Output picke file (related to -d flag only)
-#% required: no
-#%end
 #%option G_OPT_M_DIR
 #% key: output
 #% description: Name for output directory where to store results
@@ -138,10 +133,7 @@ if __name__ == "__main__":
 
         runner.set_options(options)
         if flags['d']:
-            runner.set_workflow_mode(
-                comp_type=WorkflowMode.dpre,
-                data_file=options['pickle_file']
-            )
+            runner.workflow_mode = WorkflowMode.dpre
 
         sys.exit(
             runner.run()
