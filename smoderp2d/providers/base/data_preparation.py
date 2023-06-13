@@ -592,6 +592,9 @@ class PrepareDataGISBase(PrepareDataBase):
                                  self._input_params['streams_channel_type_fieldname'],
                                  dem_aoi, aoi_polygon
             )
+        else:
+            self.data['type_of_computing'] = 1
+
         Logger.progress(90)
 
         # define mask (rc/rc variables)
