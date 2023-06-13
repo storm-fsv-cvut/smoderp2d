@@ -11,8 +11,7 @@ else:
     from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 from smoderp2d.core.general import Globals
-from smoderp2d.providers.base import BaseProvider, Logger, CompType, \
-    BaseWritter
+from smoderp2d.providers.base import BaseProvider, Logger, BaseWritter, CompType
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.cmd import CmdWritter, CmdArgumentParser
 from smoderp2d.exceptions import ConfigError, ProviderError
@@ -143,9 +142,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             raise ConfigError(e)
 
         # defaults for profile1d provider
-        #  type of computing =  1 sheet and rill flow
         data = {}
-        data['type_of_computing'] = 1
+        data['type_of_computing'] = CompType.rill
         data['mfda'] = False
 
         # time settings

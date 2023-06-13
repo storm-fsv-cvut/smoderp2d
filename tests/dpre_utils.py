@@ -7,9 +7,8 @@ import numpy
 
 from difflib import unified_diff
 
-from smoderp2d import ArcGisRunner
+from smoderp2d import ArcGisRunner, WorkflowMode
 from smoderp2d.exceptions import ProviderError
-from smoderp2d.providers.base import CompType
 
 data_dir = os.path.join(os.path.dirname(__file__), "data")
 output_dir = os.path.join(data_dir, "output")
@@ -108,7 +107,7 @@ def perform_dpre_ref_test(runner, params_fn, dataprep_only=True):
         runner.set_options(params)
         if dataprep_only:
             # run only data preparation
-            runner.set_comptype(CompType.dpre)
+            runner.set_workflow_mode(WorkflowMode.dpre)
         runner.run()
     except ProviderError as e:
         sys.exit(e)

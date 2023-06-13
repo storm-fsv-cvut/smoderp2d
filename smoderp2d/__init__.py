@@ -1,8 +1,8 @@
 """
 Documentation of Smoderp, distributed event-based model for surface and subsurface runoff and erosion.
 
-.. moduleauthor:: Petr Kavka, Karel Vrana and Jakum Jerabek
-                  model was bild in cooperation with eng. students (Jan Zajicek, Nikola Nemcova, Tomas Edlman, Martin Neumann)
+.. moduleauthor:: Petr Kavka, Karel Vrana and Jakub Jerabek
+                  model was build in cooperation with eng. students (Jan Zajicek, Nikola Nemcova, Tomas Edlman, Martin Neumann)
 
 The computational options are as follows:
  - Type of flow
@@ -23,11 +23,11 @@ The computational options are as follows:
 
 import os
 
-from smoderp2d.providers.base import CompType
+from smoderp2d.core.general import Globals
 from smoderp2d.providers import Logger
+from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
 from smoderp2d.exceptions import SmoderpError
-from smoderp2d.core.general import Globals
 
 __version__ = "2.0.dev"
 
@@ -53,29 +53,29 @@ class Runner(object):
 
         return provider_class
 
-    def set_comptype(self, comp_type):
+    def set_workflow_mode(self, workflow_mode):
         """Set computation type.
 
-        :param CompType comp_type: computation type
+        :param WorkflowMode workflow_mode: workflow mode
         """
-        self._provider.args.typecomp = comp_type
-        if comp_type in (CompType.dpre, CompType.roff):
+        self._provider.args.workflow_mode = comp_type
+        if comp_type in (WorkflowMode.dpre, WorkflowMode.roff):
             self._provider.args.data_file = os.path.join(Globals.outdir, "dpre.save")
 
     def run(self):
         # print logo
         self._provider.logo()
 
-        # check typecomp consistency
-        if self._provider.typecomp not in (CompType.dpre, CompType.roff, CompType.full):
+        # check workflow_mode consistency
+        if self._provider.workflow_mode not in (WorkflowMode.dpre, WorkflowMode.roff, WorkflowMode.full):
             raise ProviderError('Unsupported partial computing: {}'.format(
-                self._provider.typecomp
+                self._provider.workflow_mode
             ))
 
         # set percentage counter
-        if self._provider.typecomp == CompType.dpre:
+        if self._provider.workflow_mode == WorkflowMode.dpre:
             Logger.set_progress(100)
-        elif self._provider.typecomp == CompType.full:
+        elif self._provider.workflow_mode == WorkflowMode.full:
             Logger.set_progress(40)
         else:
             Logger.set_progress(10)
@@ -86,7 +86,7 @@ class Runner(object):
         except DataPreparationInvalidInput:
             return 1
 
-        if self._provider.args.typecomp == CompType.dpre:
+        if self._provider.args.workflow_mode == WorkflowMode.dpre:
             # data prepararation only requested
             return
 
