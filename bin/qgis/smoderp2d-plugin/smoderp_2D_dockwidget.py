@@ -274,7 +274,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
             # TODO: implement data preparation only
 
-            # runner.run()
+            runner.set_options(self._input_params)
+            runner.run()
 
             # TODO: to be implemented
             # runner.show_results()
