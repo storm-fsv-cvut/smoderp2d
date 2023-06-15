@@ -47,16 +47,22 @@ class PrepareData(PrepareDataGISBase):
         :param name: map name
         """
         if '@' in name:
-            part1, part2 = name.split('@', 1)
-            if mtype == 'vector': 
-                return { 'name': part1, 'mapset': part2 }
-            elif mtype == 'table':
-                path = '$GISDBASE/$LOCATION_NAME/{}/sqlite/sqlite.db'.format(part2)
-                return { 'name': part1, 'connection': sqlite3.connect(get_path(path)) }
-            else:
-                raise DataPreparationError("Unexpected mtype {} in __qualified_name".format(mtype))
+            map_name, mapset = name.split('@', 1)
+        else:
+            map_name = name
+            mapset = Mapset().name
 
-        return { 'name': name }
+        qualified_name = {'name': map_name}
+
+        if mtype == 'vector':
+            qualified_name.update({'mapset': mapset})
+        elif mtype == 'table':
+            path = '$GISDBASE/$LOCATION_NAME/{}/sqlite/sqlite.db'.format(mapset)
+            qualified_name.update({'connection': sqlite3.connect(get_path(path))})
+        else:
+            raise DataPreparationError("Unexpected mtype {} in __qualified_name".format(mtype))
+
+        return qualified_name
 
     @staticmethod
     def __remove_temp_data(kwargs):
