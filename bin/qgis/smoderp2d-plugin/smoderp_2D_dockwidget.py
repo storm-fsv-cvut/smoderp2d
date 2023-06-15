@@ -270,7 +270,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             except ProviderError as e:
                 raise ProviderError(e)
 
-            runner.import_data(self._input_params)
+            runner.import_data(self._input_maps)
 
             # TODO: implement data preparation only
 
@@ -287,38 +287,61 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         """Get input parameters from QGIS plugin."""
 
         self._input_params = {
-            'elevation': self.elevation_comboBox.currentLayer().dataProvider().dataSourceUri(),
-            'soil': self.soil_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
-            'soil_type': self.soil_type_comboBox.currentText(),
-            'vegetation': self.vegetation_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
-            'vegetation_type': self.vegetation_type_comboBox.currentText(),
-            'points': "",
+            'elevation': self.elevation_comboBox.currentText(),
+            'soil': self.soil_comboBox.currentText(),
+            'soil_type_fieldname': self.soil_type_comboBox.currentText(),
+            'vegetation': self.vegetation_comboBox.currentText(),
+            'vegetation_type_fieldname':
+                self.vegetation_type_comboBox.currentText(),
+            'points': self.points_comboBox.currentText(),
 #            'output': self.output_lineEdit.text().strip(),
-            'stream': "",
+            'streams': self.stream_comboBox.currentText(),
             'rainfall_file': self.rainfall_lineEdit.text(),
             'end_time': float(self.end_time_lineEdit.text()),
             'maxdt': float(self.maxdt_lineEdit.text()),
             'table_soil_vegetation':
-                self.table_soil_vegetation_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
-            # 'table_soil_vegetation_code': self.table_soil_vegetation_code_comboBox.currentText(),
-            'table_stream_shape': "",
-            'table_stream_shape_code': "",
+                self.table_soil_vegetation_comboBox.currentText(),
+            'table_soil_vegetation_fieldname':
+                self.table_soil_vegetation_field_comboBox.currentText(),
+            'channel_properties_table':
+                self.table_stream_shape_comboBox.currentText(),
+            'streams_channel_type_fieldname':
+                self.table_stream_shape_code_comboBox.currentText(),
             'output': self.main_output_lineEdit.text().strip()
         }
 
+        self._input_maps = {
+            'elevation':
+                self.elevation_comboBox.currentLayer().dataProvider().dataSourceUri(),
+            'soil':
+                self.soil_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
+            'vegetation':
+                self.vegetation_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
+            'points': "",
+            'streams': "",
+            'table_soil_vegetation':
+                self.table_soil_vegetation_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
+            'channel_properties_table': ""
+        }
+
+        # TODO: It would be nicer to use names defined in _input_params before
+        # this reparsing
+        for key in self._input_maps.keys():
+            self._input_params[key] = key
+
         # optional inputs
         if self.points_comboBox.currentLayer() is not None:
-            self._input_params["points"] = \
+            self._input_maps["points"] = \
                 self.points_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
 
         if self.stream_comboBox.currentLayer() is not None:
-            self._input_params["stream"] = \
+            self._input_maps["streams"] = \
                 self.stream_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
 
         if self.table_stream_shape_comboBox.currentLayer() is not None:
-            self._input_params["table_stream_shape"] = \
+            self._input_maps['channel_properties_table'] = \
                 self.table_stream_shape_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
-            self._input_params["table_stream_shape_code"] = self.table_stream_shape_code_comboBox.currentText()
+            self._input_maps["streams_channel_type_fieldname"] = self.table_stream_shape_code_comboBox.currentText()
 
     def _checkInputDataPrep(self):
         """Check if all mandatory fields are filled correctly for data preparation."""
