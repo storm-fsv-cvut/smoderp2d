@@ -89,6 +89,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.vegetation_type_comboBox = QgsFieldComboBox()
         self.table_soil_vegetation_comboBox = QgsMapLayerComboBox()
         self.table_soil_vegetation_toolButton = QtWidgets.QToolButton()
+        self.table_soil_vegetation_field_comboBox = QgsFieldComboBox()
         self.table_stream_shape_code_comboBox = QgsFieldComboBox()
         self.table_stream_shape_comboBox = QgsMapLayerComboBox()
         self.table_stream_shape_toolButton = QtWidgets.QToolButton()
@@ -171,6 +172,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         )
         self.arguments['soil_landuse_table'].addWidget(
             self.table_soil_vegetation_toolButton
+        )
+        self.arguments['soil_landuse_field'].addWidget(
+            self.table_soil_vegetation_field_comboBox
         )
         self.arguments['channel_type_identifier'].addWidget(
             self.table_stream_shape_code_comboBox
@@ -427,16 +431,13 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         if self.soil_comboBox.currentLayer() is not None and t == 'soil':
             self.soil_type_comboBox.setLayer(self.soil_comboBox.currentLayer())
             self.soil_type_comboBox.setField(self.soil_comboBox.currentLayer().fields()[0].name())
-
         elif self.vegetation_comboBox.currentLayer() is not None and t == 'vegetation':
             self.vegetation_type_comboBox.setLayer(self.vegetation_comboBox.currentLayer())
             self.vegetation_type_comboBox.setField(self.vegetation_comboBox.currentLayer().fields()[0].name())
-
-        # elif self.table_soil_vegetation_comboBox.currentLayer() is not None and t == 'table_soil_veg':
-        #     self.table_soil_vegetation_code_comboBox.setLayer(self.table_soil_vegetation_comboBox.currentLayer())
-        #     self.table_soil_vegetation_code_comboBox.setField(
-        #         self.table_soil_vegetation_comboBox.currentLayer().fields()[0].name())
-
+        elif self.table_soil_vegetation_comboBox.currentLayer() is not None and t == 'table_soil_veg':
+            self.table_soil_vegetation_field_comboBox.setLayer(self.table_soil_vegetation_comboBox.currentLayer())
+            self.table_soil_vegetation_field_comboBox.setField(
+                self.table_soil_vegetation_comboBox.currentLayer().fields()[0].name())
         elif t == 'table_stream_shape':
             if self.table_stream_shape_comboBox.currentLayer() is not None:
                 self.table_stream_shape_code_comboBox.setLayer(self.table_stream_shape_comboBox.currentLayer())
