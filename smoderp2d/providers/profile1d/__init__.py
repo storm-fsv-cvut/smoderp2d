@@ -11,7 +11,8 @@ else:
     from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 from smoderp2d.core.general import Globals
-from smoderp2d.providers.base import BaseProvider, Logger, BaseWritter, CompType
+from smoderp2d.core import CompType
+from smoderp2d.providers.base import BaseProvider, Logger, BaseWritter
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.cmd import CmdWritter, CmdArgumentParser
 from smoderp2d.exceptions import ConfigError, ProviderError
