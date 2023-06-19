@@ -521,7 +521,6 @@ class PrepareData(PrepareDataGISBase):
         """See base method for description.
         """
         Module('g.region',
-               vector=stream,
                s=GridGlobals.yllcorner, w=GridGlobals.xllcorner,
                n=GridGlobals.yllcorner+(GridGlobals.r * GridGlobals.dy),
                e=GridGlobals.xllcorner+(GridGlobals.c * GridGlobals.dx),
