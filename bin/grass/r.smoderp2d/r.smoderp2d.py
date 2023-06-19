@@ -123,11 +123,6 @@ from smoderp2d.exceptions import ProviderError
 if __name__ == "__main__":
     options, flags = gs.parser()
 
-    if flags['d'] and not options['pickle_file']:
-        gs.fatal("Required parameter <{}> not set".format('pickle_file'))
-    if options['pickle_file'] and not flags['d']:
-        gs.warning("No pickle file will be generated. Flag -{} not given".format('d'))
-
     try:
         runner = GrassGisRunner()
 
