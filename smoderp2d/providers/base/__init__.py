@@ -522,7 +522,7 @@ class BaseProvider(object):
 
         self.storage.write_raster(self._make_mask(totalBil), 'massbalance', 'control')
         self.storage.write_raster(self._make_mask(vRest), 'volrest_m3', 'control')
-        self.storage.write_raster(self._make_mask(finState), 'reachfid', 'control')
+        self.storage.write_raster(self._make_mask(finState), 'surfacestate', 'control')
 
         # store stream reaches results to a table
         # if stream is calculated
