@@ -147,11 +147,11 @@ class QGISRunner(GrassGisRunner):
         # initialize GRASS session
         gsetup.init(gisdb, location, 'PERMANENT', os.environ['GISBASE'])
 
-        # create location
-        try:
-            gs.create_location(gisdb, location, epsg='5514', overwrite=True)
-        except SmoderpError as e:
-            raise SmoderpError('{}'.format(e))
+        # # create location
+        # try:
+        #     gs.create_location(gisdb, location, epsg='5514', overwrite=True)
+        # except SmoderpError as e:
+        #     raise SmoderpError('{}'.format(e))
 
         # test GRASS env varible
         if not os.getenv('GISRC'):
@@ -173,10 +173,10 @@ class QGISRunner(GrassGisRunner):
                 if key == "elevation":
                     Module("r.import", input=options[key], output=key)
                 # import vectors
-                elif key in ["soil", "vegetation", "points", "stream"]:
+                elif key in ["soil", "vegetation", "points", "streams"]:
                     Module("v.import", input=options[key], output=key, flags = 'o')
                 # import tables
-                elif key in ["table_soil_vegetation", "table_stream_shape"]:
+                elif key in ["table_soil_vegetation", "channel_properties_table"]:
                     Module("db.in.ogr", input=options[key], output=key)
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))

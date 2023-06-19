@@ -110,7 +110,11 @@ class Stream(object):
 
         self.mat_stream_reach = Gl.mat_stream_reach
 
-        self.state = self.mat_stream_reach
+        self.arr.state = ma.where(
+            self.mat_stream_reach > Gl.streams_flow_inc,
+            self.mat_stream_reach,
+            0
+        )
 
         self.STREAM_RATIO = Gl.STREAM_RATIO
 
@@ -124,7 +128,13 @@ class Stream(object):
     #  @param fid feature id
     def reach_inflows(self, fid, inflows, indices):
         try:
-            self.reach[fid].V_in_from_field += ma.where(indices, inflows, 0)
+            # TODO: Would be nice to avoid the loop
+            for fid_cur in self.reach.keys():
+                self.reach[fid_cur].V_in_from_field += ma.sum(
+                    ma.where(
+                        ma.logical_and(indices, fid == fid_cur), inflows, 0
+                    )
+                )
         except KeyError:
             raise ProviderError(
                 "Unable to reach inflow. Feature id {} not found in {}".format(
@@ -172,7 +182,7 @@ class Stream(object):
             r.h_max = ma.maximum(r.h, r.h_max)
 
     def return_stream_str_vals(self, i, j, sep, dt, extraOut):
-        fid = int(self.state[i, j] - Gl.streams_flow_inc)
+        fid = int(self.arr.state[i, j] - Gl.streams_flow_inc)
         # Time;   V_runoff  ;   Q   ;    V_from_field  ;  V_rests_in_stream
         # print fid, self.reach[fid].Q_out, str(self.reach[fid].V_out)
         r = self.reach[fid]

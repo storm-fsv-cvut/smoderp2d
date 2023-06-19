@@ -39,7 +39,7 @@ class GrassGisWritter(BaseWritter):
         if GridGlobals.r:
             region = Region()
             region.west = GridGlobals.xllcorner
-            region.south = GridGlobals.xllcorner
+            region.south = GridGlobals.yllcorner
             # TODO: use pygrass API instead
             region.east = region.west + (GridGlobals.c * GridGlobals.dx)
             region.north = region.south + (GridGlobals.r * GridGlobals.dy)

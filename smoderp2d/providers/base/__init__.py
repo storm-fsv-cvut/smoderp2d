@@ -518,7 +518,7 @@ class BaseProvider(object):
 
         self.storage.write_raster(self._make_mask(totalBil), 'massbalance', 'control')
         self.storage.write_raster(self._make_mask(vRest), 'volrest_m3', 'control')
-        self.storage.write_raster(self._make_mask(finState), 'reachfid', 'control')
+        self.storage.write_raster(self._make_mask(finState), 'surfacestate', 'control')
 
         # store stream reaches results to a table
         # if stream is calculated
@@ -550,9 +550,10 @@ class BaseProvider(object):
                 outputtable[i][5] = ma.unique(stream[fid[i]].V_out_cum)[0]
                 outputtable[i][6] = ma.unique(stream[fid[i]].Q_max)[0]
 
-            path_ = os.path.join(
-                Globals.outdir, 'temp', 'stream.csv'
-            )
+            temp_dir = os.path.join(Globals.outdir, 'temp')
+            if not os.path.isdir(temp_dir):
+                os.makedirs(temp_dir)
+            path_ = os.path.join(temp_dir, 'stream.csv')
             np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
                        header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}q365_m3_s{sep}V_out_cum_m3{sep}Q_max_m3_s'.format(sep=';'))
 
