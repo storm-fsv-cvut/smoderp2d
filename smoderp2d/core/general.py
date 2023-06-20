@@ -2,7 +2,6 @@ import numpy as np
 
 from smoderp2d.exceptions import SmoderpError
 
-
 class GridGlobalsArray(np.ndarray):
     """Class overriding np.ndarray to handle SMODERP border problems."""
 

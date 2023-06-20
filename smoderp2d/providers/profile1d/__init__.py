@@ -11,9 +11,8 @@ else:
     from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 from smoderp2d.core.general import Globals
-import math
-from smoderp2d.providers.base import BaseProvider, Logger, CompType, \
-    BaseWritter
+from smoderp2d.core import CompType
+from smoderp2d.providers.base import BaseProvider, Logger, BaseWritter
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.cmd import CmdWritter, CmdArgumentParser
 from smoderp2d.exceptions import ConfigError, ProviderError
@@ -28,8 +27,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             config_file = os.getenv("SMODERP2D_CONFIG_FILE")
         cloader = CmdArgumentParser(config_file)
         # no gis has only roff comp type
-        self.args.config_file, self.args.typecomp = cloader.set_config(
-            "Run PROFILE1D.", typecomp='roff')
+        self.args.config_file, self.args.workflow_mode = cloader.set_config(
+            "Run PROFILE1D.", workflow_mode='roff')
         self._config = self._load_config()
 
         # define storage writter
@@ -143,9 +142,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             raise ConfigError(e)
 
         # defaults for profile1d provider
-        #  type of computing =  1 sheet and rill flow
         data = {}
-        data['type_of_computing'] = 1
+        data['type_of_computing'] = CompType.rill
         data['mfda'] = False
 
         # time settings

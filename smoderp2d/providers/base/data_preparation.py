@@ -4,6 +4,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 
 from smoderp2d.processes import rainfall
+from smoderp2d.core import CompType
 from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError, DataPreparationInvalidInput
@@ -591,6 +592,9 @@ class PrepareDataGISBase(PrepareDataBase):
                                  self._input_params['streams_channel_type_fieldname'],
                                  dem_aoi, aoi_polygon
             )
+        else:
+            self.data['type_of_computing'] = CompType.rill
+
         Logger.progress(90)
 
         # define mask (rc/rc variables)
@@ -675,7 +679,7 @@ class PrepareDataGISBase(PrepareDataBase):
             return None
 
     def _prepare_streams(self, stream, stream_shape_tab, stream_shape_code, dem_aoi, aoi_polygon):
-        self.data['type_of_computing'] = 1
+        self.data['type_of_computing'] = CompType.rill
 
         # pocitam vzdy s ryhama pokud jsou zadane vsechny vstupy pro
         # vypocet toku, streams se pocitaji a type_of_computing je 3
@@ -685,9 +689,9 @@ class PrepareDataGISBase(PrepareDataBase):
         tflistin = [len(i) > 1 for i in listin] ### TODO: ???
 
         if all(tflistin):
-            self.data['type_of_computing'] = 3
+            self.data['type_of_computing'] = CompType.stream_rill
 
-        if self.data['type_of_computing'] in (3, 5):
+        if self.data['type_of_computing'] in (CompType.stream_rill, CompType.stream_subflow_rill):
             Logger.info("Clipping stream to AoI outline ...")
             stream_aoi = self._stream_clip(stream, aoi_polygon)
             Logger.progress(70)

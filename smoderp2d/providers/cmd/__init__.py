@@ -9,7 +9,7 @@ else:
     from ConfigParser import NoOptionError
 
 from smoderp2d.core.general import Globals
-from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter
+from smoderp2d.providers.base import BaseProvider, Logger, BaseWritter, WorkflowMode
 from smoderp2d.exceptions import ConfigError
 
 class CmdWritter(BaseWritter):
@@ -25,9 +25,9 @@ class CmdArgumentParser(object):
     def __init__(self, config_file):
         self.config_file = config_file
 
-    def set_config(self, description, typecomp):
+    def set_config(self, description, workflow_mode):
         if self.config_file:
-            return self.config_file, CompType()['roff']
+            return self.config_file, WorkflowMode()['roff']
 
         # define CLI parser
         parser = argparse.ArgumentParser(description)
@@ -42,7 +42,7 @@ class CmdArgumentParser(object):
 
         args = parser.parse_args()
 
-        return args.config, CompType()[typecomp]
+        return args.config, WorkflowMode()[workflow_mode]
 
 class CmdProvider(BaseProvider):
     def __init__(self, config_file=None):
@@ -52,8 +52,8 @@ class CmdProvider(BaseProvider):
         if config_file is None and os.getenv("SMODERP2D_CONFIG_FILE"):
             config_file = os.getenv("SMODERP2D_CONFIG_FILE")
         cloader = CmdArgumentParser(config_file)
-        self.args.config_file, self.args.typecomp = cloader.set_config(
-            "Run SMODERP2D.", typecomp='roff')
+        self.args.config_file, self.args.workflow_mode = cloader.set_config(
+            "Run SMODERP2D.", workflow_mode='roff')
         self._config = self._load_config()
         try:
             self.args.data_file = self._config.get('data', 'pickle')
