@@ -181,6 +181,16 @@ class QGISRunner(GrassGisRunner):
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
 
+    def show_results(self):
+        import glob
+        from qgis.core import QgsProject, QgsRasterLayer
+
+        for map_path in glob.glob(os.path.join(Globals.outdir, '*.asc')):
+            layer = QgsRasterLayer(
+                map_path, os.path.basename(os.path.splitext(map_path)[0])
+            )
+            QgsProject.instance().addMapLayer(layer)
+
     def export_data(self):
         pass
 
