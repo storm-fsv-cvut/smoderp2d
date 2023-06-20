@@ -221,7 +221,7 @@ class PerformTest:
         if self._params:
             runner.set_options(self._params)
         if comptype is not None:
-            runner.set_comptype(comptype)
+            runner.workflow_mode = comptype
 
         runner.run()
 
