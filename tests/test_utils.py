@@ -9,7 +9,7 @@ from difflib import unified_diff
 import numpy
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from smoderp2d.providers.base import CompType
+from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.providers import Logger
 
 def write_array_diff(arr1, arr2, target_path):
@@ -226,7 +226,7 @@ class PerformTest:
         runner.run()
 
     def run_dpre(self):
-        self._run(CompType.dpre)
+        self._run(WorkflowMode.dpre)
 
         dataprep_filepath = os.path.join(self._output_dir, "dpre.save")
         reference_filepath = os.path.join(
@@ -265,7 +265,7 @@ class PerformTest:
         )
 
     def run_full(self):
-        self._run(CompType.full)
+        self._run(WorkflowMode.full)
 
         assert os.path.isdir(self._output_dir)
 
