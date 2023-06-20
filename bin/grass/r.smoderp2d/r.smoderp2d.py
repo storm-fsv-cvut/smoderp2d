@@ -105,11 +105,6 @@
 #% description: Reach shape table code
 #% guisection: Settings
 #%end
-#%option G_OPT_F_OUTPUT
-#% key: pickle_file
-#% description: Output picke file (related to -d flag only)
-#% required: no
-#%end
 #%option G_OPT_M_DIR
 #% key: output
 #% description: Name for output directory where to store results
@@ -122,26 +117,18 @@ import grass.script as gs
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 from smoderp2d import GrassGisRunner
-from smoderp2d.providers.base import CompType
+from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.exceptions import ProviderError
 
 if __name__ == "__main__":
     options, flags = gs.parser()
-
-    if flags['d'] and not options['pickle_file']:
-        gs.fatal("Required parameter <{}> not set".format('pickle_file'))
-    if options['pickle_file'] and not flags['d']:
-        gs.warning("No pickle file will be generated. Flag -{} not given".format('d'))
 
     try:
         runner = GrassGisRunner()
 
         runner.set_options(options)
         if flags['d']:
-            runner.set_comptype(
-                comp_type=CompType.dpre,
-                data_file=options['pickle_file']
-            )
+            runner.workflow_mode = WorkflowMode.dpre
 
         sys.exit(
             runner.run()
