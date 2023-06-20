@@ -12,26 +12,26 @@ import numpy.ma as ma
 from configparser import ConfigParser, NoSectionError, NoOptionError
 from abc import abstractmethod
 
-from smoderp2d.providers import Logger
-from smoderp2d.providers.base.exceptions import DataPreparationError
+from smoderp2d.core import CompType
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
 from smoderp2d.exceptions import ProviderError, ConfigError, GlobalsNotSet, SmoderpError
+from smoderp2d.providers import Logger
+from smoderp2d.providers.base.exceptions import DataPreparationError
 
 class Args:
     # type of computation (CompType)
-    typecomp = None
+    workflow_mode = None
     # path to pickle data file
     # used by 'dpre' for output and 'roff' for input
     data_file = None
     # config file
     config_file = None
 
-# unfortunately Python version shipped by ArcGIS 10 lacks Enum
-class CompType:
+class WorkflowMode:
     # type of computation
-    dpre = 0
-    roff = 1
-    full = 2
+    dpre = 0 # data preparation only
+    roff = 1 # runoff calculation only
+    full = 2 # dpre + roff
 
     @classmethod
     def __getitem__(cls, key):
@@ -41,8 +41,7 @@ class CompType:
             return cls.roff
         else:
             return cls.full
-
-
+    
 class BaseWritter(object):
     def __init__(self):
         self._data_target = None
@@ -143,8 +142,8 @@ class BaseProvider(object):
         self._hidden_config = self.__load_hidden_config()
 
     @property
-    def typecomp(self):
-        return self.args.typecomp
+    def workflow_mode(self):
+        return self.args.workflow_mode
 
     @staticmethod
     def add_logging_handler(handler, formatter=None):
@@ -242,13 +241,9 @@ class BaseProvider(object):
         #  time of flow algorithm
         data['mfda'] = self._config.getboolean('processes', 'mfda', fallback=False)
 
-        #  type of computing:
-        #    0 sheet only,
-        #    1 sheet and rill flow,
-        #    2 sheet and subsurface flow,
-        #    3 sheet, rill and reach flow
-        data['type_of_computing'] = self._config.get('processes', 'typecomp', fallback=3)
-
+        #  type of computing
+        data['type_of_computing'] = CompType()[self._config.get('processes', 'typecomp', fallback='stream_rill')]
+        
         #  rainfall data can be saved
         if self._config.get('data', 'rainfall'):
             try:
@@ -276,12 +271,12 @@ class BaseProvider(object):
         self._cleanup()
 
         data = None
-        if self.args.typecomp in (CompType.dpre, CompType.full):
+        if self.args.workflow_mode in (WorkflowMode.dpre, WorkflowMode.full):
             try:
                 data = self._load_dpre()
             except DataPreparationError as e:
                 raise ProviderError('{}'.format(e))
-            if self.args.typecomp == CompType.dpre:
+            if self.args.workflow_mode == WorkflowMode.dpre:
                 # data preparation requested only
                 # add also related information from GridGlobals
                 for k in ('NoDataValue', 'bc', 'br', 'c', 'dx', 'dy',
@@ -290,7 +285,7 @@ class BaseProvider(object):
                 self._save_data(data, self.args.data_file)
                 return
 
-        if self.args.typecomp == CompType.roff:
+        if self.args.workflow_mode == WorkflowMode.roff:
             data = self._load_roff()
 
         # roff || full
@@ -311,11 +306,11 @@ class BaseProvider(object):
                 setattr(DataGlobals, item, data[item])
 
         Globals.mat_reten = -1.0 * data['mat_reten'] / 1000 # converts mm to m
-        Globals.diffuse = self._comp_type(data['type_of_computing'])['diffuse']
-        Globals.subflow = self._comp_type(data['type_of_computing'])['subflow']
-        # TODO: lines below are part only of linux method
-        Globals.isRill = self._comp_type(data['type_of_computing'])['rill']
-        Globals.isStream = self._comp_type(data['type_of_computing'])['stream']
+        comp_type = self._comp_type(data['type_of_computing'])
+        Globals.diffuse = False # not implemented yet
+        Globals.subflow = comp_type['subflow_rill']
+        Globals.isRill = comp_type['rill']
+        Globals.isStream = comp_type['stream_rill']
         Globals.prtTimes = data.get('prtTimes', None)
         Globals.extraOut = self._hidden_config.getboolean('outputs','extraout')
         Globals.end_time *= 60 # convert min to sec
@@ -356,42 +351,43 @@ class BaseProvider(object):
             os.makedirs(output_dir)
 
     @staticmethod
-    def _comp_type(tc):
+    def _comp_type(itc):
         """Returns boolean information about the components of the computation.
 
-        Return 4 true/values for rill, subflow, stream, diffuse
+        Return true/values for rill, subflow, stream,
         presence/non-presence.
 
-        :param str tc: type of computation
-
+        :param CompType tc: type of computation
+        
         :return dict:
+
         """
         ret = {}
-        for item in ('diffuse',
-                     'subflow',
-                     'stream',
+        for item in ('sheet_only',
                      'rill',
-                     'only_surface'):
+                     'sheet_stream',
+                     'stream_rill',
+                     'subflow_rill',
+                     'stream_subflow_rill'):
             ret[item] = False
 
-        itc = int(tc)
-        if itc == 1:
+        if itc == CompType.sheet_only:
+            ret['sheet_only'] = True
+        elif itc == CompType.rill:
             ret['rill'] = True
-        elif itc == 3:
+        elif itc == CompType.stream_rill:
             ret['stream'] = True
             ret['rill'] = True
-        elif itc == 4:
+        elif itc == CompType.subflow_rill:
             ret['subflow'] = True
             ret['rill'] = True
-        elif itc == 5:
+        elif itc == CompType.stream_subflow_rill:
             ret['stream'] = True
             ret['subflow'] = True
             ret['rill'] = True
-        elif itc == 0:
-            ret['only_surface'] = True
 
         return ret
-
+            
     def logo(self):
         """Print Smoderp2d ascii-style logo."""
         logo_file = os.path.join(os.path.dirname(__file__), 'txtlogo.txt')
@@ -523,7 +519,7 @@ class BaseProvider(object):
 
         self.storage.write_raster(self._make_mask(totalBil), 'massbalance', 'control')
         self.storage.write_raster(self._make_mask(vRest), 'volrest_m3', 'control')
-        self.storage.write_raster(self._make_mask(finState), 'reachfid', 'control')
+        self.storage.write_raster(self._make_mask(finState), 'surfacestate', 'control')
 
         # store stream reaches results to a table
         # if stream is calculated
@@ -555,9 +551,10 @@ class BaseProvider(object):
                 outputtable[i][5] = ma.unique(stream[fid[i]].V_out_cum)[0]
                 outputtable[i][6] = ma.unique(stream[fid[i]].Q_max)[0]
 
-            path_ = os.path.join(
-                Globals.outdir, 'temp', 'stream.csv'
-            )
+            temp_dir = os.path.join(Globals.outdir, 'temp')
+            if not os.path.isdir(temp_dir):
+                os.makedirs(temp_dir)
+            path_ = os.path.join(temp_dir, 'stream.csv')
             np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
                        header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}q365_m3_s{sep}V_out_cum_m3{sep}Q_max_m3_s'.format(sep=';'))
 

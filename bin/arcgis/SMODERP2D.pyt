@@ -10,7 +10,7 @@ if py3:
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from smoderp2d import ArcGisRunner
-from smoderp2d.providers.base import CompType
+from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.exceptions import ProviderError
 
 # input parameters constants
@@ -223,7 +223,7 @@ class SMODERP2D(object):
                 self._get_input_params(parameters)
             )
             if parameters[PARAMETER_DATAPREP_ONLY].value:
-                runner.set_comptype(comp_type=CompType.dpre)
+                runner.workflow_mode = WorkflowMode.dpre
 
             runner.run()
         except ProviderError as e:
