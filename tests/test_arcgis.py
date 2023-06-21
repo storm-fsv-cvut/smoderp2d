@@ -8,9 +8,9 @@ def dpre_params():
         # parameter indexes from the bin/arcgis/SMODERP2D.pyt tool for ArcGIS
         'elevation': os.path.join(data_dir, "dem10m.tif"),
         'soil': os.path.join(data_dir, "soils.shp"),
-        'soil_type': "SID",
+        'soil_type_fieldname': "SID",
         'vegetation': os.path.join(data_dir, "landuse.shp"),
-        'vegetation_type': "LandUse",
+        'vegetation_type_fieldname': "LandUse",
         'rainfall_file': os.path.join(data_dir, "rainfall.txt"),
         'maxdt': 30,
         'end_time': 40,
