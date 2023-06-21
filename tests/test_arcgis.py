@@ -6,7 +6,7 @@ from dpre_utils import perform_dpre_ref_test, data_dir, output_dir
 def dpre_params():
     return {
         # parameter indexes from the bin/arcgis/SMODERP2D.pyt tool for ArcGIS
-        'elevation': os.path.join(data_dir, "dem10m"),
+        'elevation': os.path.join(data_dir, "dem10m.tif"),
         'soil': os.path.join(data_dir, "soils.shp"),
         'soil_type': "SID",
         'vegetation': os.path.join(data_dir, "landuse.shp"),
