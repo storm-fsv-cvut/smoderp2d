@@ -46,8 +46,6 @@ PY_FILES = \
 	__init__.py \
 	smoderp_2D.py smoderp_2D_dockwidget.py
 
-UI_FILES = smoderp_2D_dockwidget_base.ui
-
 EXTRAS = metadata.txt icon.png
 
 EXTRA_DIRS =
