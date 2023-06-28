@@ -36,7 +36,7 @@ arguments = {
 
 sections = [
     Section(
-        'Spatial data and rainfall',
+        'Spatial data',
         ('elevation', 'soil', 'landuse', 'points', 'stream', 'rainfall')
     ),
     Section(
