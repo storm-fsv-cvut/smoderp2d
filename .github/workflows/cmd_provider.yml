@@ -9,7 +9,7 @@ on:
       - master
 
 jobs:
-  smoderp2d:
+  smoderp2d-quicktest:
     strategy:
       matrix:
         python-version:
@@ -20,7 +20,20 @@ jobs:
     uses: ./.github/workflows/cmd_template.yml
     with:
       python-version: ${{ matrix.python-version }}
-      pytest-suite: tests/test_cmd.py
+      pytest-suite: tests/test_cmd.py --config quicktest.ini
+
+  smoderp2d-longtest:
+    strategy:
+      matrix:
+        python-version:
+          # - "2.7"
+          - "3.8"
+          - "3.11.2"
+
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      python-version: ${{ matrix.python-version }}
+      pytest-suite: tests/test_cmd.py --config test.ini
 
   profile1d:
     strategy:
