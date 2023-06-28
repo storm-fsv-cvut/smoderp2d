@@ -15,5 +15,5 @@ class TestCmd(TestCmdBase):
     def test_001_read_config(self):
         self.do_001_read_config()
 
-    def test_002_run(self):\
+    def test_002_run(self):
         self.do_002_run()
