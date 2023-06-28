@@ -3,13 +3,14 @@ import pytest
 
 from test_utils import TestCmdBase, _setup
 
-config_file = os.path.join(os.path.dirname(__file__), "quicktest.ini")
-    
+
 @pytest.fixture(scope='class')
-def class_manager(request):
-    _setup(request, config_file)
+def class_manager(request, pytestconfig):
+    config = os.path.join(os.path.dirname(__file__), pytestconfig.getoption("config"))
+    _setup(request, config)
     yield
-    
+
+
 @pytest.mark.usefixtures('class_manager')
 class TestCmd(TestCmdBase):
     def test_001_read_config(self):
