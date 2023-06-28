@@ -36,13 +36,16 @@ arguments = {
 sections = [
     Section(
         'Spatial data',
-        ('elevation', 'soil', 'landuse', 'points', 'stream', 'rainfall')
+        (
+            'elevation', 'soil', 'soil_type_field', 'landuse',
+            'soil_landuse_table', 'points', 'stream', 'rainfall'
+        )
     ),
     Section(
         'Control tables',
         (
-            'soil_type_field', 'landuse_type_field', 'soil_landuse_table',
-            'channel_properties', 'channel_type_identifier'
+            'landuse_type_field', 'soil_landuse_field', 'channel_properties',
+            'channel_type_identifier'
         )
     ),
     Section(
