@@ -39,15 +39,15 @@ sections = [
         ('elevation', 'soil', 'landuse', 'points', 'stream', 'rainfall')
     ),
     Section(
-        'Computation options',
-        ('output', 'max_time_step', 'total_time')
-    ),
-    Section(
         'Control tables',
         (
             'soil_type_field', 'landuse_type_field', 'soil_landuse_table',
             'channel_properties', 'channel_type_identifier'
         )
+    ),
+    Section(
+        'Computation options',
+        ('output', 'max_time_step', 'total_time')
     ),
     Section('Advanced', ())  # TODO: Add ('preparation_only',))
 ]
