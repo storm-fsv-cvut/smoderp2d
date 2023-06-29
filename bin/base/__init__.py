@@ -42,7 +42,7 @@ sections = [
         )
     ),
     Section(
-        'Control tables',
+        'Model parameters',
         (
             'soil_landuse_table', 'soil_landuse_field', 'channel_properties',
             'channel_type_identifier'
