@@ -38,13 +38,13 @@ sections = [
         'Spatial data',
         (
             'elevation', 'soil', 'soil_type_field', 'landuse',
-            'soil_landuse_table', 'points', 'stream', 'rainfall'
+            'landuse_type_field', 'points', 'stream', 'rainfall'
         )
     ),
     Section(
         'Control tables',
         (
-            'landuse_type_field', 'soil_landuse_field', 'channel_properties',
+            'soil_landuse_table', 'soil_landuse_field', 'channel_properties',
             'channel_type_identifier'
         )
     ),
