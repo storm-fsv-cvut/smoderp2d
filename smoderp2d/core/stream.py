@@ -1,3 +1,4 @@
+import numpy as np
 import numpy.ma as ma
 
 from smoderp2d.stream_functions import stream_f
@@ -26,20 +27,48 @@ class Reach(object):
         self.m = channel_bank_steepness
         self.roughness = channel_bed_roughness
         self.q365 = channel_q365
-        self.V_in_from_field = 0.0
-        self.V_in_from_field_cum = 0.0
-        self.V_in_from_reach = 0.0
-        self.V_out_cum = 0.0   # L^3
-        self.vol_rest = 0.0
-        self.h = 0.0  # jj mozna pocatecni podminka? ikdyz to je asi q365 co...
-        self.h_max = 0.0
-        self.timeh_max = 0.0
-        self.V_out = 0.0
-        self.vs = 0.0
-        self.Q_out = 0.0
-        self.Q_max = 0.0
-        self.timeQ_max = 0.0
-        self.V_out_domain = 0.0
+        self.V_in_from_field = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
+        self.V_in_from_field_cum = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
+        self.V_in_from_reach = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
+        self.V_out_cum = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )   # L^3
+        self.vol_rest = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
+        self.h = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )  # jj mozna pocatecni podminka? ikdyz to je asi q365 co...
+        self.h_max = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
+        self.timeh_max = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
+        self.V_out = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
+        self.vs = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
+        self.Q_out = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
+        self.Q_max = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
+        self.timeQ_max = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
+        self.V_out_domain = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
 
 
         if channel_shapetype == 0:  # obdelnik
@@ -81,19 +110,31 @@ class Stream(object):
 
         self.mat_stream_reach = Gl.mat_stream_reach
 
-        self.state = self.mat_stream_reach
+        self.arr.state = ma.where(
+            self.mat_stream_reach > Gl.streams_flow_inc,
+            self.mat_stream_reach,
+            0
+        )
 
         self.STREAM_RATIO = Gl.STREAM_RATIO
 
     def reset_inflows(self):
         for r in self.reach.values():
-            r.V_in_from_field = 0
+            r.V_in_from_field = ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+            )
 
     # Documentation for a reach inflows.
     #  @param fid feature id
     def reach_inflows(self, fid, inflows, indices):
         try:
-            self.reach[fid].V_in_from_field += ma.where(indices, inflows, 0)
+            # TODO: Would be nice to avoid the loop
+            for fid_cur in self.reach.keys():
+                self.reach[fid_cur].V_in_from_field += ma.sum(
+                    ma.where(
+                        ma.logical_and(indices, fid == fid_cur), inflows, 0
+                    )
+                )
         except KeyError:
             raise ProviderError(
                 "Unable to reach inflow. Feature id {} not found in {}".format(
@@ -107,8 +148,12 @@ class Stream(object):
 
     def stream_reach_inflow(self):
         for r in self.reach.values():
-            r.V_in_from_reach = 0
-            r.V_out_domain = 0
+            r.V_in_from_reach = ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+            )
+            r.V_out_domain = ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+            )
 
         for r in self.reach.values():
             fid_to_node = int(r.next_down_id)
@@ -137,18 +182,18 @@ class Stream(object):
             r.h_max = ma.maximum(r.h, r.h_max)
 
     def return_stream_str_vals(self, i, j, sep, dt, extraOut):
-        fid = int(self.state[i, j] - Gl.streams_flow_inc)
+        fid = int(self.arr.state[i, j] - Gl.streams_flow_inc)
         # Time;   V_runoff  ;   Q   ;    V_from_field  ;  V_rests_in_stream
         # print fid, self.reach[fid].Q_out, str(self.reach[fid].V_out)
         r = self.reach[fid]
         if not(extraOut):
-            line = '{h}{sep}{q}{sep}{cumvol}'.format(
-                h=r.h, q=r.Q_out, cumvol=r.V_out_cum, sep=sep
+            line = '{h:.4e}{sep}{q:.4e}{sep}{cumvol:.4e}'.format(
+                h=r.h[i, j], q=r.Q_out[i, j], cumvol=r.V_out_cum[i, j], sep=sep
             )
         else:
-            line = '{h}{sep}{v}{sep}{q}{sep}{vi}{sep}{vo}'.format(
-                h=r.h, v=r.V_out, q=r.Q_out, vi=r.V_in_from_field,
-                vo=r.vol_rest, sep=sep
+            line = '{h:.4e}{sep}{v:.4e}{sep}{q:.4e}{sep}{vi:.4e}{sep}{vo:.4e}'.format(
+                h=r.h[i, j], v=r.V_out[i, j], q=r.Q_out[i, j],
+                vi=r.V_in_from_field[i, j], vo=r.vol_rest[i, j], sep=sep
             )
 
         return line

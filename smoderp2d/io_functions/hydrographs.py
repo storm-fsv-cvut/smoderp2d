@@ -56,13 +56,11 @@ class Hydrographs:
                 l = point_int[ip][1]
                 m = point_int[ip][2]
 
-                if Globals.get_mat_stream_reach()[l, m] >= \
-                        Globals.streams_flow_inc:
+                if Globals.get_mat_stream_reach(l, m) >= Globals.streams_flow_inc:
                     self.inStream.append(counter)
-                    counter += 1
                 else:
                     self.inSurface.append(counter)
-                    counter += 1
+                counter += 1
         else:
             self.inSurface = [i for i in range(ipi)]
 
@@ -176,7 +174,7 @@ class Hydrographs:
                 m = self.point_int[ip][2]
                 self.files[ip].writelines(
                     '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3}{linesep}'.format(
-                    total_time[l, m], dt, currRain,
+                    total_time[l, m], dt[l, m], currRain[l, m],
                     surface.return_stream_str_vals(l, m, SEP, dt, Globals.extraOut),
                     sep=sep, linesep=os.linesep
                 ))

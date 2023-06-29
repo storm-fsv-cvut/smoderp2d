@@ -46,16 +46,22 @@ class PrepareData(PrepareDataGISBase):
         :param name: map name
         """
         if '@' in name:
-            part1, part2 = name.split('@', 1)
-            if mtype == 'vector': 
-                return { 'name': part1, 'mapset': part2 }
-            elif mtype == 'table':
-                path = '$GISDBASE/$LOCATION_NAME/{}/sqlite/sqlite.db'.format(part2)
-                return { 'name': part1, 'connection': sqlite3.connect(get_path(path)) }
-            else:
-                raise DataPreparationError("Unexpected mtype {} in __qualified_name".format(mtype))
+            map_name, mapset = name.split('@', 1)
+        else:
+            map_name = name
+            mapset = Mapset().name
 
-        return { 'name': name }
+        qualified_name = {'name': map_name}
+
+        if mtype == 'vector':
+            qualified_name.update({'mapset': mapset})
+        elif mtype == 'table':
+            path = '$GISDBASE/$LOCATION_NAME/{}/sqlite/sqlite.db'.format(mapset)
+            qualified_name.update({'connection': sqlite3.connect(get_path(path))})
+        else:
+            raise DataPreparationError("Unexpected mtype {} in __qualified_name".format(mtype))
+
+        return qualified_name
 
     @staticmethod
     def __remove_temp_data(kwargs):
@@ -362,13 +368,14 @@ class PrepareData(PrepareDataGISBase):
     def _get_points_location(self, points_layer):
         """See base method for description.
         """
-        points_array = []
+        points_array = None
         if points_layer:
             # get number of points
             points_map = self.__qualified_name(points_layer)
             with VectorTopo(**points_map) as vmap:
                 count = vmap.number_of('points')
             if count > 0:
+                points_array = np.zeros([int(count), 5], float)
                 # get the points geometry and IDs into array
                 with Vector(**points_map) as vmap:
                     i = 0
@@ -377,7 +384,7 @@ class PrepareData(PrepareDataGISBase):
                         x, y = p.x, p.y
                         if self._get_points_dem_coords(x, y):
                             r, c = self._get_points_dem_coords(x, y)
-                            points_array.append([fid, r, c, x, y])
+                            self._update_points_array(points_array, i, fid, r, c, x, y)
                         else:
                             Logger.info(
                             "Point FID = {} is at the edge of the raster. "
@@ -387,6 +394,7 @@ class PrepareData(PrepareDataGISBase):
                 raise DataPreparationInvalidInput(
                     "None of the record points lays within the modeled area."
                 )
+
         return points_array
 
     def _stream_clip(self, stream, aoi_polygon):
@@ -513,7 +521,6 @@ class PrepareData(PrepareDataGISBase):
         """See base method for description.
         """
         Module('g.region',
-               vector=stream,
                s=GridGlobals.yllcorner, w=GridGlobals.xllcorner,
                n=GridGlobals.yllcorner+(GridGlobals.r * GridGlobals.dy),
                e=GridGlobals.xllcorner+(GridGlobals.c * GridGlobals.dx),

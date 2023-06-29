@@ -52,7 +52,10 @@ class TimeStep:
                 delta_t, mat_efect_cont
             )
         if ma.any(cond_state_flow):
-            fc.ratio = 0
+            fc.ratio = ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)),
+                mask=GridGlobals.masks
+            )
         else:
             # TODO: Better way to make it just a number
             fc.ratio = runoff_return[4]

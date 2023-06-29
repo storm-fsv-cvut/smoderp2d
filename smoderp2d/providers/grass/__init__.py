@@ -1,10 +1,9 @@
 import os
 import logging
 
-from smoderp2d.providers.base import BaseProvider, CompType, BaseWritter
-
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.exceptions import ProviderError
+from smoderp2d.providers.base import BaseProvider, BaseWritter, WorkflowMode
 from smoderp2d.providers.grass.logger import GrassGisLogHandler
 from smoderp2d.providers import Logger
 
@@ -40,7 +39,7 @@ class GrassGisWritter(BaseWritter):
         if GridGlobals.r:
             region = Region()
             region.west = GridGlobals.xllcorner
-            region.south = GridGlobals.xllcorner
+            region.south = GridGlobals.yllcorner
             # TODO: use pygrass API instead
             region.east = region.west + (GridGlobals.c * GridGlobals.dx)
             region.north = region.south + (GridGlobals.r * GridGlobals.dy)
@@ -68,7 +67,7 @@ class GrassGisProvider(BaseProvider):
         super(GrassGisProvider, self).__init__()
 
         # type of computation (default)
-        self.args.typecomp = CompType.full
+        self.args.workflow_mode = WorkflowMode.full
 
         # options must be defined by set_options()
         self._options = None

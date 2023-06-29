@@ -25,6 +25,7 @@ arguments = {
     'soil_type_field': Argument('Field with the soil type identifier'),
     'landuse_type_field': Argument('Field with the landuse type identifier'),
     'soil_landuse_table': Argument('Soils and landuse parameters table'),
+    'soil_landuse_field': Argument('Field with the connection between landuse and soil'),
     'channel_type_identifier': Argument(
         'Field with the channel type identifier'
     ),
@@ -35,19 +36,22 @@ arguments = {
 
 sections = [
     Section(
-        'Spatial data and rainfall',
-        ('elevation', 'soil', 'landuse', 'points', 'stream', 'rainfall')
+        'Spatial data',
+        (
+            'elevation', 'soil', 'soil_type_field', 'landuse',
+            'landuse_type_field', 'points', 'stream', 'rainfall'
+        )
+    ),
+    Section(
+        'Model parameters',
+        (
+            'soil_landuse_table', 'soil_landuse_field', 'channel_properties',
+            'channel_type_identifier'
+        )
     ),
     Section(
         'Computation options',
         ('output', 'max_time_step', 'total_time')
-    ),
-    Section(
-        'Control tables',
-        (
-            'soil_type_field', 'landuse_type_field', 'soil_landuse_table',
-            'channel_properties', 'channel_type_identifier'
-        )
     ),
     Section('Advanced', ())  # TODO: Add ('preparation_only',))
 ]
