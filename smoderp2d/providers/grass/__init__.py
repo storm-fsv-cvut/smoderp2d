@@ -3,7 +3,7 @@ import logging
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.exceptions import ProviderError
-from smoderp2d.providers.base import BaseProvider, BaseWritter, WorkflowMode
+from smoderp2d.providers.base import BaseProvider, BaseWriter, WorkflowMode
 from smoderp2d.providers.grass.logger import GrassGisLogHandler
 from smoderp2d.providers import Logger
 
@@ -13,9 +13,9 @@ from grass.pygrass.modules import Module
 from grass.pygrass.raster import numpy2raster
 from grass.pygrass.messages import Messenger
 
-class GrassGisWritter(BaseWritter):
+class GrassGisWriter(BaseWriter):
     def __init__(self):
-        super(GrassGisWritter, self).__init__()
+        super(GrassGisWriter, self).__init__()
 
         # primary key
         self.primary_key = "cat"
@@ -89,7 +89,7 @@ class GrassGisProvider(BaseProvider):
         os.environ['GRASS_VERBOSE'] = '-1'
 
         # define storage writter
-        self.storage = GrassGisWritter()
+        self.storage = GrassGisWriter()
 
     def set_options(self, options):
         """Set input paramaters.
