@@ -128,8 +128,9 @@ class QGISRunner(GrassGisRunner):
         import subprocess
         import tempfile
         import binascii
-        import grass.script as gs
-        from grass.script import setup as gsetup
+        # import grass.script as gs
+        # from grass.script import setup as gsetup
+        from grass.pygrass.gis import Mapset
 
         # path to temp location
         gisdb = os.path.join(tempfile.gettempdir(), 'grassdata')
@@ -144,14 +145,17 @@ class QGISRunner(GrassGisRunner):
             ['grass', '-e', '-c EPSG:5514', os.path.join(gisdb, location)]
         )
 
-        # initialize GRASS session
-        gsetup.init(gisdb, location, 'PERMANENT', os.environ['GISBASE'])
 
         # # create location
         # try:
         #     gs.create_location(gisdb, location, epsg='5514', overwrite=True)
         # except SmoderpError as e:
         #     raise SmoderpError('{}'.format(e))
+
+        # initialize GRASS session
+        Mapset('PERMANENT', location, gisdb).current()
+        ### doesn't work for PyGRASS
+        # gsetup.init(gisdb, location, 'PERMANENT', os.environ['GISBASE'])
 
         # test GRASS env varible
         if not os.getenv('GISRC'):
