@@ -414,30 +414,53 @@ def sheet_runoff( a, b, h_sheet):
 #            vol_to_rill, b
 
 
-# def surface_retention(bil, sur):
-#     """TODO.
+def surface_retention(bil, sur):
+    """TODO.
 
-#     :param bil: TODO
-#     param sur: TODO
-#     """
-#     reten = sur.sur_ret
-#     pre_reten = reten
-#     bil_new = ma.where(
-#         reten < 0,
-#         ma.where(bil + reten > 0, bil + reten, 0),
-#         bil
-#     )
-#     reten_new = ma.where(
-#         reten < 0,
-#         ma.where(bil + reten > 0, 0, bil + reten),
-#         reten
-#     )
+    :param bil: TODO
+    param sur: TODO
+    """
+    reten = sur.sur_ret
+    pre_reten = reten
+    bil_new = ma.where(
+        reten < 0,
+        ma.where(bil + reten > 0, bil + reten, 0),
+        bil
+    )
+    reten_new = ma.where(
+        reten < 0,
+        ma.where(bil + reten > 0, 0, bil + reten),
+        reten
+    )
 
-#     sur.sur_ret = reten_new
-#     sur.cur_sur_ret = reten_new - pre_reten
+    sur.sur_ret = reten_new
+    sur.cur_sur_ret = reten_new - pre_reten
 
-#     return bil_new
+    return bil_new
 
+def surface_retention_impl(h_sur, reten_old):
+    reten = reten_old.ravel()
+    # print(reten.max(), reten.min())
+    # input()
+    h_ret = ma.where(reten<0, 
+                     ma.where(h_sur+reten > 0, reten, 
+                     -h_sur),
+                     0
+                     )
+    
+    return h_ret
+def surface_retention_update(h_sur, sur):
+    reten = sur.sur_ret
+    reten_new = ma.where(
+        reten < 0,
+        ma.where(h_sur + reten > 0, 0, h_sur + reten),
+        reten
+    )
+
+    sur.sur_ret = reten_new
+    sur.cur_sur_ret = reten_new - reten
+    
+    
 # if Globals.isRill:
 #     runoff = __runoff
 # else:

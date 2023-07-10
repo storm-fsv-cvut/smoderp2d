@@ -6,6 +6,8 @@ from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.processes.infiltration as infiltration
 
+from smoderp2d.core.surface import surface_retention_impl
+from smoderp2d.core.surface import surface_retention_update
 
 
 import copy
@@ -42,7 +44,8 @@ class TimeStepImplicit:
               a,b,
               act_rain,
               soil_type,
-              pixel_area):
+              pixel_area,
+              sur_ret_old):
 
         #calculating sheet runoff from all cells
         sheet_flow = np.zeros((r*c))
@@ -60,6 +63,10 @@ class TimeStepImplicit:
         # Calculating infiltration  - function which does not allow negative levels
         infilt_buf = infiltration.philip_infiltration(soil_type,h_new.reshape(r,c)/dt)
         infilt = ma.filled(infilt_buf,fill_value=0)
+
+        # Calculating surface retention
+        sur_ret = ma.filled(surface_retention_impl(h_new,sur_ret_old),fill_value=0)   
+
         # calculating residual for each cell
         for i in range(r):
             for j in range(c):
@@ -125,7 +132,8 @@ class TimeStepImplicit:
                       
                 # infiltration 
                 res[j+i*c] += - infilt[i][j] 
-                   
+                # Surface retention
+                res[j+i*c] +=  sur_ret[j+i*c]/dt   
         return res
 
     # Method to performe one time step
@@ -191,6 +199,7 @@ class TimeStepImplicit:
         b = ma.array(Globals.get_mat_b(),mask=GridGlobals.masks)
         # Setting the initial guess for the solver
         h_0 = h_old 
+ 
         # Calculating the new water level
         soulution = sp.optimize.root(self.model, h_0, 
                                      args=(dt,
@@ -200,7 +209,8 @@ class TimeStepImplicit:
                                             aa,b,
                                             act_rain,
                                             surface.arr.soil_type,
-                                            pixel_area),
+                                            pixel_area,
+                                            surface.arr.sur_ret),
                                         method='krylov')
         
         h_new = soulution.x
@@ -214,18 +224,21 @@ class TimeStepImplicit:
                                             aa,b,
                                             act_rain,
                                             surface.arr.soil_type,
-                                            pixel_area)))
+                                            pixel_area,
+                                            surface.arr.sur_ret)))
             print("h_new = ",h_new)
             
         # Saving the new water level
         surface.arr.h_total_new = ma.array(h_new.reshape(r,c),mask=GridGlobals.masks) 
-
+       
         # Saving results to surface structure (untidy solution) - looks akward, but don't cost much time to compute
         surface.arr.h_sheet = ma.copy(surface.arr.h_total_pre) # [m] - previous time stap as in the explicit version
         
         surface.arr.vol_runoff = sheet_runoff(aa, b, surface.arr.h_sheet)*dt #[m]        
         surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type, surface.arr.h_total_new)*dt #[m]
-            
+        # Updating surface retention
+        h_ret = actRain - surface.arr.infiltration
+        surface_retention_update(h_ret,surface.arr)    
          # Update the cumulative values
         cumulative.update_cumulative(
             surface.arr,

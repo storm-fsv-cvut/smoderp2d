@@ -276,7 +276,8 @@ class Runoff(object):
         self.flow_control.save_vars()
         # main loop: until the end time
         while ma.any(self.flow_control.compare_time(Globals.end_time)):
-            
+            self.flow_control.save_vars()
+            self.flow_control.refresh_iter()
             # Very paskvil job 
             #TODO: AP - probably this is not the best way to do it    
             # ----------------------------------------------
