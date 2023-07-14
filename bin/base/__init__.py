@@ -36,19 +36,22 @@ arguments = {
 
 sections = [
     Section(
-        'Spatial data and rainfall',
-        ('elevation', 'soil', 'landuse', 'points', 'stream', 'rainfall')
+        'Spatial data',
+        (
+            'elevation', 'soil', 'soil_type_field', 'landuse',
+            'landuse_type_field', 'points', 'stream', 'rainfall'
+        )
+    ),
+    Section(
+        'Model parameters',
+        (
+            'soil_landuse_table', 'soil_landuse_field', 'channel_properties',
+            'channel_type_identifier'
+        )
     ),
     Section(
         'Computation options',
         ('output', 'max_time_step', 'total_time')
-    ),
-    Section(
-        'Control tables',
-        (
-            'soil_type_field', 'landuse_type_field', 'soil_landuse_table',
-            'soil_landuse_field', 'channel_properties', 'channel_type_identifier'
-        )
     ),
     Section('Advanced', ())  # TODO: Add ('preparation_only',))
 ]

@@ -9,12 +9,12 @@ else:
     from ConfigParser import NoOptionError
 
 from smoderp2d.core.general import Globals
-from smoderp2d.providers.base import BaseProvider, Logger, BaseWritter, WorkflowMode
+from smoderp2d.providers.base import BaseProvider, Logger, BaseWriter, WorkflowMode
 from smoderp2d.exceptions import ConfigError
 
-class CmdWritter(BaseWritter):
+class CmdWriter(BaseWriter):
     def __init__(self):
-        super(CmdWritter, self).__init__()
+        super(CmdWriter, self).__init__()
 
     def _write_raster(self, array, file_output):
         """See base method for description.
@@ -61,4 +61,4 @@ class CmdProvider(BaseProvider):
             raise ConfigError("No pickle defined")
 
         # define storage writter
-        self.storage = CmdWritter()
+        self.storage = CmdWriter()

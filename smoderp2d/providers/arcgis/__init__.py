@@ -4,7 +4,7 @@ import logging
 import numpy as np
 
 from smoderp2d.core.general import Globals, GridGlobals
-from smoderp2d.providers.base import BaseProvider, BaseWritter, WorkflowMode
+from smoderp2d.providers.base import BaseProvider, BaseWriter, WorkflowMode
 from smoderp2d.providers.arcgis.logger import ArcPyLogHandler
 from smoderp2d.providers import Logger
 from smoderp2d.exceptions import ProviderError
@@ -14,9 +14,9 @@ try:
 except RuntimeError as e:
     raise ProviderError("ArcGIS provider: {}".format(e))
 
-class ArcGisWritter(BaseWritter):
+class ArcGisWriter(BaseWriter):
     def __init__(self):
-        super(ArcGisWritter, self).__init__()
+        super(ArcGisWriter, self).__init__()
 
         # Overwriting output
         arcpy.env.overwriteOutput = 1
@@ -91,7 +91,7 @@ class ArcGisProvider(BaseProvider):
         )
         
         # define storage writter
-        self.storage = ArcGisWritter()
+        self.storage = ArcGisWriter()
 
     def set_options(self, options):
         """Set input paramaters.

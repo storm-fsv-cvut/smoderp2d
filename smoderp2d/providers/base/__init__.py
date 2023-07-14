@@ -42,7 +42,7 @@ class WorkflowMode:
         else:
             return cls.full
     
-class BaseWritter(object):
+class BaseWriter(object):
     def __init__(self):
         self._data_target = None
 

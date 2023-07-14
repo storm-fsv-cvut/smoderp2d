@@ -4,11 +4,18 @@ import sys
 
 from test_utils import PerformTest
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from smoderp2d import Runner
 
-class TestCmd:
-    def test_001_roff(self):
-        PerformTest(Runner).run_roff(
-            os.path.join(os.path.dirname(__file__), "quicktest.ini")
-        )
+@pytest.fixture(scope='class')
+def class_manager(request, pytestconfig):
+    config = os.path.join(os.path.dirname(__file__), pytestconfig.getoption("config"))
+    _setup(request, config)
+    yield
+
+
+@pytest.mark.usefixtures('class_manager')
+class TestCmd(TestCmdBase):
+    def test_001_read_config(self):
+        self.do_001_read_config()
+
+    def test_002_run(self):
+        self.do_002_run()

@@ -281,8 +281,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             runner.set_options(self._input_params)
             runner.run()
 
-            # TODO: to be implemented
-            # runner.show_results()
+            runner.show_results()
         else:
             self._sendMessage("Input parameters error:",
                               "Some of mandatory fields are not filled correctly.",

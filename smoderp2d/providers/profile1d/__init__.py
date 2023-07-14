@@ -12,9 +12,9 @@ else:
 
 from smoderp2d.core.general import Globals
 from smoderp2d.core import CompType
-from smoderp2d.providers.base import BaseProvider, Logger, BaseWritter
+from smoderp2d.providers.base import BaseProvider, Logger, BaseWriter
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
-from smoderp2d.providers.cmd import CmdWritter, CmdArgumentParser
+from smoderp2d.providers.cmd import CmdWriter, CmdArgumentParser
 from smoderp2d.exceptions import ConfigError, ProviderError
 
 
@@ -32,7 +32,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         self._config = self._load_config()
 
         # define storage writter
-        self.storage = CmdWritter()
+        self.storage = CmdWriter()
 
     def _load_input_data(self, filename_indata, filename_soil_types):
         """Load configuration data from roff computation procedure.

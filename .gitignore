@@ -6,7 +6,9 @@ tests/data/output*
 tests/data/reference/gistest/*/dpre.extracted/
 tests/grassdata/smoderp2d-location/test/
 tests/grassdata/smoderp2d-location/PERMANENT/.bash_history
+tests/grassdata/smoderp2d-location/PERMANENT/.bashrc
 tests/grassdata/smoderp2d-location/PERMANENT/.gislock
+tests/grassdata/smoderp2d-location/PERMANENT/.sudo_as_admin_successful
 tests/grassdata/smoderp2d-location/PERMANENT/cell_misc/w001001/reclassed_to
 tests/grassdata/smoderp2d-location/PERMANENT/hist
 tests/grassdata/smoderp2d-location/stream_prep/
