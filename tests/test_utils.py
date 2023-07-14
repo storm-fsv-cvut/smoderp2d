@@ -101,6 +101,9 @@ def are_dir_trees_equal(dir1, dir2):
             return False
     return True
 
+def _setup(request, config_file):
+    request.cls.config_file = config_file
+
 class PerformTest:
     def __init__(self, runner, params_fn=None):
         self.runner = runner
