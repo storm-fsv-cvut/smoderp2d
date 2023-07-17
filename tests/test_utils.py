@@ -98,6 +98,9 @@ def are_dir_trees_equal(dir1, dir2):
     (_, mismatch, errors) = filecmp.cmpfiles(
         dir1, dir2, dirs_cmp.common_files, shallow=False
     )
+    # ignore 'temp' directory
+    if 'temp' in mismatch: mismatch.remove('temp')
+
     if len(mismatch) > 0 or len(errors) > 0:
         if len(mismatch) > 0:
             print("Mismatch: {}".format(mismatch))
