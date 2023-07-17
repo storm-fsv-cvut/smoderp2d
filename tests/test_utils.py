@@ -85,7 +85,7 @@ def are_dir_trees_equal(dir1, dir2):
         for sub_dcmp in dcmp.subdirs.values():
             _print_diff_files(sub_dcmp)
 
-    dirs_cmp = filecmp.dircmp(dir1, dir2, ignore='temp')
+    dirs_cmp = filecmp.dircmp(dir1, dir2, ignore=['temp'])
     _print_diff_files(dirs_cmp)
     if (
         len(dirs_cmp.left_only) > 0
