@@ -91,6 +91,7 @@ def are_dir_trees_equal(dir1, dir2):
             ignore_right = [os.path.split(expanded)[1] for expanded in glob.glob(os.path.join(right, pattern))]
             ignore_list.extend(ignore_left)
             ignore_list.extend(ignore_right)
+        return ignore_list
 
     dirs_cmp = filecmp.dircmp(dir1, dir2, ignore=_ignore_list(dir1, dir2))
     _print_diff_files(dirs_cmp)
