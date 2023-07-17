@@ -54,7 +54,7 @@ def are_dir_trees_equal(dir1, dir2):
         ds = None
         return array
 
-    def _print_diff_files(dcmp):
+    def _print_diff_files(dcmp, files_ignored=('.prj', '.aux.xml')):
         def _read_left(filename):
             with open(filename) as f:
                 use_gdal = f.readline().startswith('ncols')
@@ -65,6 +65,8 @@ def are_dir_trees_equal(dir1, dir2):
         for name in dcmp.same_files:
             print("same_file {} found in {} and {}".format(name, dcmp.left, dcmp.right))
         for name in dcmp.diff_files:
+            if name.endswith(files_ignored):
+                continue
             print("diff_file {} found in {} and {}".format(name, dcmp.left, dcmp.right))
             with open(os.path.join(dcmp.left, name)) as left:
                 with open(os.path.join(dcmp.right, name)) as right:
@@ -83,6 +85,7 @@ def are_dir_trees_equal(dir1, dir2):
         for sub_dcmp in dcmp.subdirs.values():
             _print_diff_files(sub_dcmp)
 
+    # https://stackoverflow.com/questions/46281434/python-filecmp-dircmp-ignore-wildcard
     def _ignore_list(left, right):
         ignore_list = ['temp']
         patterns_to_ignore = ['*.prj', '*.aux.xml']
