@@ -220,7 +220,7 @@ class PerformTest:
                     new_output_dict = pickle.load(left)
                     reference_dict = pickle.load(right)
 
-                if not _is_on_github_action():
+                if not self._is_on_github_action():
                     self._extract_pickle_data(
                         new_output_dict, _extract_target_dir(new_output)
                     )
