@@ -162,7 +162,7 @@ class PerformTest:
     @staticmethod
     def _extract_pickle_data(data_dict, target_dir):
         if os.path.exists(target_dir):
-            shutil.rmtree(target_dir)
+            rmtree(target_dir)
         os.makedirs(target_dir)
         for k, v in data_dict.items():
             with open(os.path.join(target_dir, k), "w") as fd:
