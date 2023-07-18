@@ -34,6 +34,10 @@ def write_array_diff(arr1, arr2, target_path):
     plt.savefig(os.path.join(target_path + ".diff.png"))
     plt.clf()
 
+    # print statistics
+    print("\tdiff_stats min: {} max: {} mean:{}".format(
+        diff.min(), diff.max(), diff.mean()))
+
 def are_dir_trees_equal(dir1, dir2):
     """
     Taken from https://stackoverflow.com/questions/4187564/recursively-compare-two-directories-to-ensure-they-have-the-same-files-and-subdi
@@ -67,10 +71,11 @@ def are_dir_trees_equal(dir1, dir2):
         for name in dcmp.diff_files:
             if name.endswith(files_ignored):
                 continue
-            print("diff_file {} found in {} and {}".format(name, dcmp.left, dcmp.right))
+            diff_file = os.path.join(dcmp.left, name) + '.diff'
+            print("diff_file {} found in {} and {} -> {}".format(name, dcmp.left, dcmp.right, diff_file))
             with open(os.path.join(dcmp.left, name)) as left:
                 with open(os.path.join(dcmp.right, name)) as right:
-                    with open(os.path.join(dcmp.left, name) + '.diff', 'w') as fd:
+                    with open(diff_file, 'w') as fd:
                         fd.writelines(
                             unified_diff(left.readlines(), right.readlines())
                         )
@@ -282,7 +287,7 @@ class PerformTest:
         testcase = os.path.splitext(os.path.basename(config_file))[0]
         reference_dir = os.path.join(os.path.dirname(__file__),
                                      "data", "reference", testcase)
-        if reference_dir == "gistest":
+        if testcase == "gistest":
             reference_dir = os.path.join(reference_dir, "full")
 
         assert are_dir_trees_equal(

@@ -23,7 +23,7 @@ class TestGrass:
         PerformTest(GrassGisRunner, params).run_dpre()
 
     def test_002_roff(self):
-        # TODO: will be solved in separated PR
+        # https://github.com/storm-fsv-cvut/smoderp2d/issues/199
         # PerformTest(Runner).run_roff(
         #     os.path.join(os.path.dirname(__file__), "gistest.ini")
         # )
