@@ -154,7 +154,7 @@ class PerformTest:
             self._params = None
 
     @staticmethod
-    def _is_on_github_actions():
+    def _is_on_github_action():
         # https://docs.github.com/en/actions/learn-github-actions/variables
         if "GITHUB_ACTION" in os.environ:
             return True
@@ -220,7 +220,7 @@ class PerformTest:
                     new_output_dict = pickle.load(left)
                     reference_dict = pickle.load(right)
 
-                if not is_on_github_actions():
+                if not _is_on_github_action():
                     self._extract_pickle_data(
                         new_output_dict, _extract_target_dir(new_output)
                     )
