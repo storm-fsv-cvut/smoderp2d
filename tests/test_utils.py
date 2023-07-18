@@ -4,6 +4,7 @@ import configparser
 import filecmp
 import logging
 import glob
+import pickle
 from shutil import rmtree
 from difflib import unified_diff
 
