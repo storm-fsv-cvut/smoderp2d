@@ -132,6 +132,12 @@ def are_dir_trees_equal(dir1, dir2):
 def _setup(request, config_file):
     request.cls.config_file = config_file
 
+def _is_on_github_action():
+    # https://docs.github.com/en/actions/learn-github-actions/variables
+    if "GITHUB_ACTION" in os.environ:
+        return True
+    return False
+    
 class PerformTest:
     def __init__(self, runner, params_fn=None):
         self.runner = runner
@@ -152,13 +158,6 @@ class PerformTest:
             self._params.update(params_fn())
         else:
             self._params = None
-
-    @staticmethod
-    def _is_on_github_action():
-        # https://docs.github.com/en/actions/learn-github-actions/variables
-        if "GITHUB_ACTION" in os.environ:
-            return True
-        return False
 
     @staticmethod
     def _extract_pickle_data(data_dict, target_dir):
@@ -198,8 +197,7 @@ class PerformTest:
                 continue
             write_array_diff(v, reference_dict[k], os.path.join(target_dir, k))
 
-    @staticmethod
-    def report_pickle_difference(new_output, reference):
+    def report_pickle_difference(self, new_output, reference):
         """Report the inconsistency of two files.
 
         To be called when output comparison assert fails.
@@ -220,15 +218,15 @@ class PerformTest:
                     new_output_dict = pickle.load(left)
                     reference_dict = pickle.load(right)
 
-                if not self._is_on_github_action():
+                if not _is_on_github_action():
                     self._extract_pickle_data(
-                        new_output_dict, _extract_target_dir(new_output)
+                        new_output_dict, self._extract_target_dir(new_output)
                     )
                     self._extract_pickle_data(
-                        reference_dict, _extract_target_dir(reference)
+                        reference_dict, self._extract_target_dir(reference)
                     )
                     self._compare_arrays(
-                        new_output_dict, reference_dict, _extract_target_dir(new_output)
+                        new_output_dict, reference_dict, self._extract_target_dir(new_output)
                     )
 
                 new_output_str = self._data_to_str(new_output_dict)
