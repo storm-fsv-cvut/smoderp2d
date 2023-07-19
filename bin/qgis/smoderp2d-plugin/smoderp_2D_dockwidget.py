@@ -29,7 +29,8 @@ from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication
 
 from PyQt5.QtWidgets import QFileDialog
-from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, QgsVectorLayer, QgsRasterLayer
+from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, \
+    QgsVectorLayer, QgsRasterLayer, QgsTask, QgsApplication
 from qgis.utils import iface
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
 
@@ -49,6 +50,22 @@ class InputError(Exception):
         pass
 
 
+class SmoderpTask(QgsTask):
+    def __init__(self, input_params, input_maps):
+        super().__init__()
+        self.input_params = input_params
+        self.input_maps = input_maps
+
+    def run(self):
+        runner = QGISRunner()
+        runner.set_options(self.input_params)
+        runner.import_data(self.input_maps)
+        runner.run()
+        runner.show_results()
+
+        return 1
+
+
 class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     closingPlugin = pyqtSignal()
@@ -58,6 +75,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         super(Smoderp2DDockWidget, self).__init__(parent)
 
         self.iface = iface
+        self.task_manager = QgsApplication.taskManager()
 
         self.settings = QSettings("CTU", "smoderp")
         self.arguments = {}  # filled during self.retranslateUi()
@@ -268,20 +286,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             # Get input parameters
             self._getInputParams()
 
-            try:
-                runner = QGISRunner()
-
-            except ProviderError as e:
-                raise ProviderError(e)
-
-            runner.import_data(self._input_maps)
-
             # TODO: implement data preparation only
 
-            runner.set_options(self._input_params)
-            runner.run()
-
-            runner.show_results()
+            smoderp_task = SmoderpTask(self._input_params, self._input_maps)
+            self.task_manager.addTask(smoderp_task)
         else:
             self._sendMessage("Input parameters error:",
                               "Some of mandatory fields are not filled correctly.",
