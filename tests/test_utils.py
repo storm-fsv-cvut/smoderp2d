@@ -38,6 +38,8 @@ def write_array_diff(arr1, arr2, target_path):
     # print statistics
     print("diff_stats {} min: {} max: {} mean:{}".format(
         os.path.basename(target_path), diff.min(), diff.max(), diff.mean()))
+    values, counts = numpy.unique(diff, return_counts=True)
+    print('\t' + str(numpy.asarray((values, counts)).T).replace('\n', '\n\t'))
 
 def are_dir_trees_equal(dir1, dir2):
     """
