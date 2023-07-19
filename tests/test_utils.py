@@ -36,8 +36,8 @@ def write_array_diff(arr1, arr2, target_path):
     plt.clf()
 
     # print statistics
-    print("\tdiff_stats min: {} max: {} mean:{}".format(
-        diff.min(), diff.max(), diff.mean()))
+    print("diff_stats {} min: {} max: {} mean:{}".format(
+        os.path.basename(target_path), diff.min(), diff.max(), diff.mean()))
 
 def are_dir_trees_equal(dir1, dir2):
     """
