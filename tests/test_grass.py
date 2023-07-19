@@ -2,34 +2,33 @@ import os
 import sys
 import pytest
 
+from test_utils import PerformTest
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from smoderp2d import GrassGisRunner, Runner
 
-from dpre_utils import perform_dpre_ref_test, data_dir, output_dir
-from smoderp2d import GrassGisRunner
-
-
-def dpre_params():
+def params():
     return {
         'elevation': "dem10m@PERMANENT",
         'soil': "soils@PERMANENT",
-        'soil_type_fieldname': "SID",
         'vegetation': "landuse@PERMANENT",
-        'vegetation_type_fieldname': "LandUse",
-        'rainfall_file': os.path.join(data_dir, "rainfall.txt"),
-        'maxdt': 30,
-        'end_time': 40,
         'points': "points@PERMANENT",
         'table_soil_vegetation': "soil_veg_tab_mean@PERMANENT",
-        'table_soil_vegetation_fieldname': "soilveg",
         'streams': "stream@PERMANENT",
-        'channel_properties_table': "stream_shape@PERMANENT",
-        'streams_channel_type_fieldname': "channel_id",
-        'output': output_dir,
+        'channel_properties_table': "stream_shape@PERMANENT"
     }
 
-
 class TestGrass:
-    config_file = os.path.join(os.path.dirname(__file__), "quicktest.ini")
-
     def test_001_dpre(self):
-        perform_dpre_ref_test(GrassGisRunner, dpre_params, dataprep_only=True)
+        PerformTest(GrassGisRunner, params).run_dpre()
+
+    def test_002_roff(self):
+        # https://github.com/storm-fsv-cvut/smoderp2d/issues/199
+        # PerformTest(Runner).run_roff(
+        #     os.path.join(os.path.dirname(__file__), "gistest.ini")
+        # )
+        pass
+
+    def test_003_full(self):
+        PerformTest(GrassGisRunner, params).run_full()
+        
