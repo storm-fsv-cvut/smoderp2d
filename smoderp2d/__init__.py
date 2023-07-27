@@ -33,23 +33,27 @@ __version__ = "2.0.dev"
 
 class Runner(object):
     def __init__(self):
-        provider_class = self._provider_factory()
-        self._provider = provider_class()
+        self._provider = self._provider_factory()
 
     def _provider_factory(self):
         # initialize provider
         if isinstance(self, ArcGisRunner):
             from smoderp2d.providers.arcgis import ArcGisProvider
-            provider_class = ArcGisProvider
+            provider_class = ArcGisProvider()
+        elif isinstance(self, QGISRunner):
+            from smoderp2d.providers.grass import GrassGisProvider
+            from smoderp2d.providers.grass.logger import QGisLogHandler
+            QGisLogHandler.progress_reporter = self.progress_reporter
+            provider_class = GrassGisProvider(QGisLogHandler)
         elif isinstance(self, GrassGisRunner):
             from smoderp2d.providers.grass import GrassGisProvider
-            provider_class = GrassGisProvider
+            provider_class = GrassGisProvider()
         elif os.getenv('SMODERP2D_PROFILE1D'):
             from smoderp2d.providers.profile1d import Profile1DProvider
-            provider_class = Profile1DProvider
+            provider_class = Profile1DProvider()
         else:
             from smoderp2d.providers.cmd import CmdProvider
-            provider_class = CmdProvider
+            provider_class = CmdProvider()
 
         return provider_class
 
@@ -123,7 +127,9 @@ class GrassGisRunner(Runner):
     pass
 
 class QGISRunner(GrassGisRunner):
-    def __init__(self):
+    def __init__(self, progress_reporter):
+        self.progress_reporter = progress_reporter
+
         # create temp GRASS location
         import subprocess
         import tempfile

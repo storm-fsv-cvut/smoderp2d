@@ -26,13 +26,13 @@ import os
 import sys
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication
+from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication, Qt
 
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QProgressBar
 from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, \
-    QgsVectorLayer, QgsRasterLayer, QgsTask, QgsApplication
+    QgsVectorLayer, QgsRasterLayer, QgsTask, QgsApplication, Qgis
 from qgis.utils import iface
-from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
+from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox, QgsMessageBarItem
 
 ### ONLY FOR TESTING PURPOSES (!!!)
 sys.path.insert(0,
@@ -53,11 +53,12 @@ class InputError(Exception):
 class SmoderpTask(QgsTask):
     def __init__(self, input_params, input_maps):
         super().__init__()
+
         self.input_params = input_params
         self.input_maps = input_maps
 
     def run(self):
-        runner = QGISRunner()
+        runner = QGISRunner(self.setProgress)
         runner.set_options(self.input_params)
         runner.import_data(self.input_maps)
         runner.run()
@@ -289,6 +290,25 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             # TODO: implement data preparation only
 
             smoderp_task = SmoderpTask(self._input_params, self._input_maps)
+
+            # prepare the progress bar
+            self.progress_bar = QProgressBar()
+            self.progress_bar.setMaximum(100)
+            self.progress_bar.setValue(0)
+            self.progress_bar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            progress_msg = self.iface.messageBar().createMessage(
+                "Computation progress: "
+            )
+            progress_msg.layout().addWidget(self.progress_bar)
+            self.iface.messageBar().pushWidget(progress_msg, Qgis.Info)
+            smoderp_task.progressChanged.connect(
+                lambda a: self.progress_bar.setValue(int(a))
+            )
+            smoderp_task.taskCompleted.connect(
+                self.iface.messageBar().clearWidgets
+            )
+
+            # start the task
             self.task_manager.addTask(smoderp_task)
         else:
             self._sendMessage("Input parameters error:",
