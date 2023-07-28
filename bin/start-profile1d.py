@@ -8,6 +8,7 @@ Help:
     ./bin/start-profile1d.py --config tests/profile1d.ini
 """
 import os
+import sys
 from start import start_smoderp2d
 
 if __name__ == "__main__":

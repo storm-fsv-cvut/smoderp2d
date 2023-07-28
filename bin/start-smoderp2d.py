@@ -8,6 +8,7 @@ Help:
     ./bin/start-smoderp2d.py --config tests/quicktest.ini
 """
 
+import sys
 from start import start_smoderp2d
 
 if __name__ == "__main__":
