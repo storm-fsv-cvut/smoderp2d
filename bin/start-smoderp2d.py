@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Starting the rainfall/runoff/soil loss model 
+Starting the rainfall/runoff/soil loss model
 SMODERP2D.
 
 Help:
