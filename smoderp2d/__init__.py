@@ -137,6 +137,9 @@ class QGISRunner(GrassGisRunner):
         # import grass.script as gs
         from grass.script import setup as gsetup
         from grass.pygrass.gis import Mapset
+        from qgis.core import QgsProject
+
+        epsg = QgsProject.instance().crs().authid()
 
         # path to temp location
         gisdb = os.path.join(tempfile.gettempdir(), 'grassdata')
@@ -148,9 +151,8 @@ class QGISRunner(GrassGisRunner):
         location = binascii.hexlify(os.urandom(string_length)).decode("utf-8")
 
         subprocess.call(
-            ['grass', '-e', '-c EPSG:5514', os.path.join(gisdb, location)]
+            ['grass', '-e', f'-c {epsg}', os.path.join(gisdb, location)]
         )
-
 
         # # create location
         # try:
