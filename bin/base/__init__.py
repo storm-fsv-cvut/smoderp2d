@@ -1,10 +1,18 @@
+"""A file containing general gui lookout definitions."""
+
+
 class Argument:
+    """Class for individual arguments/parameters."""
 
     def __init__(self, label):
         self.label = label
 
 
 class Section:
+    """Class for individual GUI sections.
+
+    Each should hold a list of contained arguments/parameters.
+    """
 
     def __init__(self, label, section_arguments=()):
         self.label = label
@@ -25,7 +33,9 @@ arguments = {
     'soil_type_field': Argument('Field with the soil type identifier'),
     'landuse_type_field': Argument('Field with the landuse type identifier'),
     'soil_landuse_table': Argument('Soils and landuse parameters table'),
-    'soil_landuse_field': Argument('Field with the connection between landuse and soil'),
+    'soil_landuse_field': Argument(
+        'Field with the connection between landuse and soil'
+    ),
     'channel_type_identifier': Argument(
         'Field with the channel type identifier'
     ),
