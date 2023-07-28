@@ -55,27 +55,27 @@ def load_precipitation(fh):
     try:
         fh = open(fh, "r")
         x = []
+        l = 0
         for line in fh.readlines():
-            z = line.split()
-            if len(z) == 0:
-                continue
-            elif z[0].find('#') >= 0:
-                continue
-            else:
-                if (len(z) == 0) : # if raw in text file is empty
+            if l > 0: # skip first line with column headers
+                z = line.split()
+                if len(z) == 0: # skip empty lines
                     continue
-                elif ((float(z[0])==0) & (float(z[1])>0)) : # if the record start with zero minutes the line has to be corrected
-                    raise ErrorInRainfallRecord()
-                elif ((float(z[0])==0) & (float(z[1])==0)) : # if the record start with zero minutes and rainfall the line is ignored
+                elif z[0].find('#') >= 0: # skip lines commented out by '#'
                     continue
                 else:
-                    y0 = float(z[0]) * 60.0  # convert minutes to seconds
-                    y1 = float(z[1]) / 1000.0  # convert mm to m
-                    if y1 < y2:
-                        raise NonCumulativeRainData()
-                    y2 = y1
-                    mv = y0, y1
-                    x.append(mv)
+                    if ((float(z[0])==0) & (float(z[1])>0)) : # if the record start with zero minutes the line has to be corrected
+                        raise ErrorInRainfallRecord()
+                    elif ((float(z[0])==0) & (float(z[1])==0)) : # if the record start with zero minutes and no rainfall the line is skipped
+                        continue
+                    else:
+                        y0 = float(z[0]) * 60.0  # convert minutes to seconds
+                        y1 = float(z[1]) / 1000.0  # convert mm to m
+                        if y1 < y2:
+                            raise NonCumulativeRainData()
+                        y2 = y1
+                        mv = y0, y1
+                        x.append(mv)
         fh.close
 
         # Values ordered by time ascending
