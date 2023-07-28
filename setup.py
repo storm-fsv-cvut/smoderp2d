@@ -9,5 +9,5 @@ setup(
     description='Simulacni model odtokovych a eroznich procesosu',
     author='Vrana, Kavka',
     author_email='petr.kavka@googlemail.com',
-    url='http://storm.fsv.cvut.cz/cinnost-katedry/volne-stazitelne-vysledky/smoderp/?lang=en',
+    url='https://storm.fsv.cvut.cz/cinnost-katedry/volne-stazitelne-vysledky/smoderp/?lang=en',
 )
