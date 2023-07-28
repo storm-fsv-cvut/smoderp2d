@@ -39,7 +39,6 @@ sys.path.insert(0,
                 os.path.join(os.path.dirname(__file__), '..', '..', '..')
 )
 from smoderp2d import QGISRunner
-from smoderp2d.exceptions import ProviderError
 from bin.base import arguments, sections
 
 from .connect_grass import find_grass as fg
