@@ -4,6 +4,7 @@ import subprocess
 
 
 def find_grass():
+    """Find GRASS binary."""
     try:
         grass7bin = _grass_loc()
     except ImportError as e:
