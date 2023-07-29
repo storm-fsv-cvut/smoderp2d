@@ -111,6 +111,7 @@ class Runner(object):
 
         # save result data
         Logger.set_progress(100)
+        Logger.reset()
         runoff.save_output()
 
         return 0
