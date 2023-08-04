@@ -5,9 +5,11 @@ import math
 from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.processes.infiltration as infiltration
-
+import smoderp2d.processes.rill as rill
 from smoderp2d.core.surface import surface_retention_impl
 from smoderp2d.core.surface import surface_retention_update
+from smoderp2d.core.surface import update_state1
+from smoderp2d.core.surface import update_state
 
 
 import copy
@@ -22,6 +24,9 @@ from smoderp2d.core.general import Globals, GridGlobals
 
 # from smoerp2d.core.surface import sheet_runoff
 from smoderp2d.core.surface import sheet_runoff
+from smoderp2d.core.surface import rill_runoff
+from smoderp2d.core.surface import compute_h_hrill
+from smoderp2d.core.surface import compute_h_rillPre
 
 infilt_capa = 0
 infilt_time = 0
@@ -29,9 +34,6 @@ max_infilt_capa = 0.000  # [m]
 
 
 # Class manages the one time step operation
-#
-#  the class also contains methods to store the important arrays to reload that if the time step is adjusted
-#
 class TimeStepImplicit:
     
     # objective function  
@@ -45,86 +47,103 @@ class TimeStepImplicit:
               act_rain,
               soil_type,
               pixel_area,
-              sur_ret_old):
-
-        #calculating sheet runoff from all cells
-        sheet_flow = np.zeros((r*c))
-        # print(a)
-        # print(b)
-        # input()
-       
-        sheet_flow =ma.filled(sheet_runoff(a,b,ma.array(h_new.reshape(r,c))),fill_value=0.0).ravel()/pixel_area # [m/s] 
+              sur_ret_old,
+              h_crit,
+              state,
+              rillWidth,
+              h_rillPre,
+              h_last_state1):
         
-
-        sheet_flow = np.nan_to_num(sheet_flow,posinf=0,neginf=0)
-        # setting all residuals to zero
-        res = np.zeros((r*c))
+        h_new = h_new.reshape(r,c)
+        h_old = h_old.reshape(r,c)
 
         # Calculating infiltration  - function which does not allow negative levels
-        infilt_buf = infiltration.philip_infiltration(soil_type,h_new.reshape(r,c)/dt)
+        infilt_buf = infiltration.philip_infiltration(soil_type,h_new/dt)
         infilt = ma.filled(infilt_buf,fill_value=0)
-
+        efect_vrst = Globals.get_mat_efect_cont()
         # Calculating surface retention
-        sur_ret = ma.filled(surface_retention_impl(h_new,sur_ret_old),fill_value=0)   
+        sur_ret = ma.filled(surface_retention_impl(h_new,sur_ret_old),fill_value=0) 
+        # updating rill surface state
+        state = update_state(h_new,h_crit,h_old,state, h_last_state1)
+        if ma.any(state != 0):
+            h_sheet, h_rill = compute_h_hrill(h_new,h_crit,state,h_rillPre) 
+        else:
+            h_sheet = h_new
+            
+        #calculating sheet runoff from all cells
+        sheet_flow  = ma.filled(
+            sheet_runoff(a,b,h_sheet),fill_value=0.0)/pixel_area
+        tot_flow    = sheet_flow 
+        #calculating rill runoff from all cells
+        if ma.any(state != 0):
+            rill_flow = ma.filled(rill_runoff(dt, h_rill,efect_vrst, rillWidth 
+                                            ),fill_value=0.0)/pixel_area # [m/s]
 
+            tot_flow += rill_flow
+            
+        tot_flow = np.nan_to_num(tot_flow,posinf=0,neginf=0).ravel()    
+            
+        h_new = ma.filled(h_new,fill_value=0.0)
+        # setting all residuals to zero
+        res = np.zeros((r*c))
         # calculating residual for each cell
         for i in range(r):
             for j in range(c):
                 # acumulation 
-                res[j+i*c] += - (h_new[j+i*c] - h_old[j+i*c])/dt #m/s
-                
+                res[j+i*c] += - (h_new[i][j] - h_old[i][j])/dt #m/s
+    
                 # rain 
                 res[j+i*c] += act_rain[i][j] #m/s
-                
+               
                 # sheet runoff
-                res[j+i*c] += - sheet_flow[j+i*c] 
+                res[j+i*c] += - tot_flow[j+i*c] 
                 
                 # sheet inflows from neigbouring cells (try is used to avoid out of range errors)
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][0]*sheet_flow[(i-1)*c+j+1] #NE
-                    # print(i,j,list_fd[j+i*c][0],sheet_flow[(i-1)*c+j+1],"NE")
+                    res[j+i*c] +=  list_fd[j+i*c][0]*tot_flow[(i-1)*c+j+1] #NE
+                    # print(i,j,list_fd[j+i*c][0],tot_flow[(i-1)*c+j+1],"NE")
                     # input()
                 except:
                     pass   
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][1]*sheet_flow[(i-1)*c+j] #N
-                    # print(i,j,list_fd[j+i*c][1],sheet_flow[(i-1)*c+j],"N")
+                    res[j+i*c] +=  list_fd[j+i*c][1]*tot_flow[(i-1)*c+j] #N
+                    # print(i,j,list_fd[j+i*c][1],tot_flow[(i-1)*c+j],"N")
                     # input()
                 except:
                     pass 
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][2]*sheet_flow[(i-1)*c+j-1] #NW
-                    # print(i,j,list_fd[j+i*c][2],sheet_flow[(i-1)*c+j-1],"NW")
+                    res[j+i*c] +=  list_fd[j+i*c][2]*tot_flow[(i-1)*c+j-1] #NW
+                    # print(i,j,list_fd[j+i*c][2],tot_flow[(i-1)*c+j-1],"NW")
                     # input()
                 except:
                     pass
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][3]*sheet_flow[(i)*c+j-1] #W
-                    # print(i,j,list_fd[j+i*c][3],sheet_flow[(i)*c+j-1],"W")
+                    res[j+i*c] +=  list_fd[j+i*c][3]*tot_flow[(i)*c+j-1] #W
+                    # print(i,j,list_fd[j+i*c][3],tot_flow[(i)*c+j-1],"W")
                     # input()
                 except:
                     pass
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][4]*sheet_flow[(i+1)*c+j-1] #SW
-                    # print(i,j,list_fd[j+i*c][4],sheet_flow[(i+1)*c+j-1],"SW")
+                    res[j+i*c] +=  list_fd[j+i*c][4]*tot_flow[(i+1)*c+j-1] #SW
+                    # print(i,j,list_fd[j+i*c][4],tot_flow[(i+1)*c+j-1],"SW")
                     # input()
                 except:
                     pass
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][5]*sheet_flow[(i+1)*c+j] #S
-                    # print(i,j,list_fd[j+i*c][5],sheet_flow[(i+1)*c+j],"S")
+                    res[j+i*c] +=  list_fd[j+i*c][5]*tot_flow[(i+1)*c+j] #S
+                    # print(i,j,list_fd[j+i*c][5],tot_flow[(i+1)*c+j],"S")
                     # input()    
                 except:
                     pass
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][6]*sheet_flow[(i+1)*c+j+1] #SE
-                    # print(i,j,list_fd[j+i*c][6],sheet_flow[(i+1)*c+j+1],    "SE")
+                    res[j+i*c] +=  list_fd[j+i*c][6]*tot_flow[(i+1)*c+j+1] #SE
+                    # print(i,j,list_fd[j+i*c][6],tot_flow[(i+1)*c+j+1],    "SE")
                     # input()
                 except:
                     pass
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][7]*sheet_flow[(i)*c+j+1] #E
-                    # print(i,j,list_fd[j+i*c][7],sheet_flow[(i)*c+j+1],"E")
+                    res[j+i*c] +=  list_fd[j+i*c][7]*tot_flow[(i)*c+j+1] #E
+                    # print(i,j,list_fd[j+i*c][7],tot_flow[(i)*c+j+1],"E")
                     # input()
                 except:
                     pass
@@ -133,7 +152,8 @@ class TimeStepImplicit:
                 # infiltration 
                 res[j+i*c] += - infilt[i][j] 
                 # Surface retention
-                res[j+i*c] +=  sur_ret[j+i*c]/dt   
+                res[j+i*c] +=  sur_ret[i][j]/dt   
+           
         return res
 
     # Method to performe one time step
@@ -188,10 +208,11 @@ class TimeStepImplicit:
 
         # Upacking the old water level
         h_old = np.ravel(surface.arr.h_total_pre.tolist(0))
+       
         
         # Changing the actRain to a list - inserting 0 for the NoDataValues	
         act_rain = (actRain/delta_t).tolist(0)
-        # Extracting the smallest time step  - float insted of ma
+        # Changing matrix to a single float
         dt = delta_t.mean()
 
         # Preparing the matrixes of flow parameters
@@ -199,7 +220,8 @@ class TimeStepImplicit:
         b = ma.array(Globals.get_mat_b(),mask=GridGlobals.masks)
         # Setting the initial guess for the solver
         h_0 = h_old 
- 
+
+        
         # Calculating the new water level
         soulution = sp.optimize.root(self.model, h_0, 
                                      args=(dt,
@@ -210,7 +232,12 @@ class TimeStepImplicit:
                                             act_rain,
                                             surface.arr.soil_type,
                                             pixel_area,
-                                            surface.arr.sur_ret),
+                                            surface.arr.sur_ret,
+                                            surface.arr.h_crit,
+                                            surface.arr.state,
+                                            surface.arr.rillWidth,
+                                            surface.arr.h_rillPre,
+                                            surface.arr.h_last_state1),
                                         method='krylov')
         
         h_new = soulution.x
@@ -225,25 +252,79 @@ class TimeStepImplicit:
                                             act_rain,
                                             surface.arr.soil_type,
                                             pixel_area,
-                                            surface.arr.sur_ret)))
+                                            surface.arr.sur_ret,
+                                            surface.arr.h_crit,
+                                            surface.arr.state,
+                                            surface.arr.rillWidth,
+                                            surface.arr.h_rillPre,
+                                            surface.arr.h_last_state1)))
             print("h_new = ",h_new)
             
         # Saving the new water level
         surface.arr.h_total_new = ma.array(h_new.reshape(r,c),mask=GridGlobals.masks) 
+       # updating rill surface state
+        surface.arr.state = update_state(surface.arr.h_total_new,
+                                            surface.arr.h_crit,
+                                            surface.arr.h_total_pre,
+                                            surface.arr.state,
+                                            surface.arr.h_last_state1)
        
-        # Saving results to surface structure (untidy solution) - looks akward, but don't cost much time to compute
-        surface.arr.h_sheet = ma.copy(surface.arr.h_total_pre) # [m] - previous time stap as in the explicit version
+        # Saving results to surface structure
+        # Saving the new rill water level
+        h_sheet, h_rill = compute_h_hrill(surface.arr.h_total_new, surface.arr.h_crit,
+                                                    surface.arr.state,
+                                                    surface.arr.h_rillPre)
         
-        surface.arr.vol_runoff = sheet_runoff(aa, b, surface.arr.h_sheet)*dt #[m]        
+        surface.arr.h_rill = h_rill
+
+        surface.arr.h_sheet = h_sheet 
+        # Updating the information about rill depth
+        surface.arr.h_rillPre = compute_h_rillPre(surface.arr.h_rillPre,h_rill ,surface.arr.state)
+        
+
+        surface.arr.vol_runoff = sheet_runoff(aa, b, surface.arr.h_sheet)*dt #[m]    
+        
+        # calcualting rill runoff
+        vol_to_rill = h_rill * GridGlobals.get_pixel_area()
+        RILL_RATIO = 0.7
+        efect_vrst = Globals.get_mat_efect_cont()
+        
+
+        surface.arr.vol_runoff_rill = rill_runoff(dt, 
+                                                  h_rill,  efect_vrst, 
+                                                  surface.arr.rillWidth) *dt # [m]
+        # Calculating the rill width
+        rill_h, rill_b = rill.update_hb(
+        vol_to_rill, RILL_RATIO, efect_vrst, surface.arr.rillWidth)
+        surface.arr.rillWidth = ma.where(surface.arr.state > 0, rill_b,
+                                          surface.arr.rillWidth) #[m]
+        # Calculating the infiltration
         surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type, surface.arr.h_total_new)*dt #[m]
+        
         # Updating surface retention
         h_ret = actRain - surface.arr.infiltration
-        surface_retention_update(h_ret,surface.arr)    
+        surface_retention_update(h_ret,surface.arr)   
+
+        
+        surface.arr.vol_to_rill = ma.where(surface.arr.state > 0,vol_to_rill,
+                               surface.arr.vol_to_rill)
+        #saving the last value of the water level in rill during growing phase (state = 1)
+        # enables to restart the growing phase (switch from 2 to 1)
+        state_1_cond = ma.logical_and(
+                surface.arr.state == 1,
+                surface.arr.h_total_new < surface.arr.h_total_pre,
+            )
+        surface.arr.h_last_state1 = ma.where(
+                state_1_cond,
+                surface.arr.h_total_pre,
+                surface.arr.h_last_state1
+            )
          # Update the cumulative values
         cumulative.update_cumulative(
             surface.arr,
             subsurface.arr,
             delta_t)
+        
         
 
         return actRain
