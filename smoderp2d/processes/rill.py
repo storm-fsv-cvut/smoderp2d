@@ -7,10 +7,11 @@ from smoderp2d.providers import Logger
 courantMax = 1.0
 courantMin = 0.2
 
-def update_hb(loc_V_to_rill, rillRatio, l, b, ratio, ppp=False):
+def update_hb(loc_V_to_rill, rillRatio, l, b):
     V = loc_V_to_rill
-    if ma.any(V < 0):
-        raise SmoderpError()
+    # if ma.any(V < 0):
+    #     print(V)
+    #     raise SmoderpError("Negative water volume in rill calculations")
     newb = ma.sqrt(V / (rillRatio * l))
     # if ppp :  print 'zvetsuje', newb, b, V
     b = ma.where(

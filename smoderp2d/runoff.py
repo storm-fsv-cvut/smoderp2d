@@ -277,7 +277,7 @@ class Runoff(object):
         # main loop: until the end time
         while ma.any(self.flow_control.compare_time(Globals.end_time)):
             self.flow_control.save_vars()
-            self.flow_control.refresh_iter()
+            # self.flow_control.refresh_iter()
             # Very paskvil job 
             #TODO: AP - probably this is not the best way to do it    
             # ----------------------------------------------
@@ -303,54 +303,10 @@ class Runoff(object):
             )
 
             
-             # Saving results to surface structure - looks akward, but don't cost many time to compute
-            # self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
-            # self.surface.arr.h_sheet = ma.copy(self.surface.arr.h_total_pre)
-            # for i in range(self.r):
-            #     for j in range(self.c):
-            #         self.surface.arr.vol_runoff[i][j] = sheet_runoff(
-            #             Globals.get_mat_aa().ravel()[j+i*self.c], 
-            #             Globals.get_mat_b().ravel()[j+i*self.c],
-            #             self.surface.arr.h_sheet.ravel()[j+i*self.c])*self.delta_t.argmin()/pixel_area
-            # self.surface.arr.infiltration = infilt.philip_infiltration(self.surface.arr.soil_type, self.surface.arr.h_total_new)*self.delta_t
+           
             
             # print raster results in given time steps
             self.times_prt.prt(self.flow_control.total_time, self.delta_t, self.surface)
-
-            # set current time results to previous time step
-            # check if rill flow occur
-            # update state == 0
-            self.surface.arr.state = ma.where(
-                ma.logical_and(
-                    self.surface.arr.state == 0, self.surface.arr.h_total_new > self.surface.arr.h_crit
-                ),
-                1,
-                self.surface.arr.state
-            )
-            # update state == 1
-            state_1_cond = ma.logical_and(
-                self.surface.arr.state == 1,
-                self.surface.arr.h_total_new < self.surface.arr.h_total_pre,
-            )
-            self.surface.arr.state = ma.where(
-                state_1_cond,
-                2,
-                self.surface.arr.state
-            )
-            self.surface.arr.h_last_state1 = ma.where(
-                state_1_cond,
-                self.surface.arr.h_total_pre,
-                self.surface.arr.h_last_state1
-            )
-            # update state == 2
-            self.surface.arr.state = ma.where(
-                ma.logical_and(
-                    self.surface.arr.state == 2,
-                    self.surface.arr.h_total_new > self.surface.arr.h_last_state1,
-                ),
-                1,
-                self.surface.arr.state
-            )
 
             
 

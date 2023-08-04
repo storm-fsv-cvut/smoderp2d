@@ -188,6 +188,7 @@ class Surface(GridGlobals, Stream, Kinematic):
             
 
             if Globals.isRill:
+                arr.vel_rill = arr.vol_runoff/arr.rillWidth/arr.h_rill/dt
                 line += '{sep}{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}' \
                         '{sep}{4:.4e}{sep}{5:.4e}{sep}{6:.4e}{sep}' \
                         '{7:.4e}'.format(
@@ -297,24 +298,54 @@ class Surface(GridGlobals, Stream, Kinematic):
 #            sur.vol_runoff_rill, v_rill
 
 
-# def update_state1(ht_1, hcrit, state, rill_width):
-#     """TODO.
+def update_state1(ht_1, hcrit, state):
+    """TODO.
 
-#     :param ht_1: TODO
-#     :param hcrit: TODO
-#     :param state: TODO (not used)
-#     :patam rill_width: TODO (not used)
+    :param ht_1: TODO
+    :param hcrit: TODO
+    :param state: TODO (not used)
+    :patam rill_width: TODO (not used)
 
-#     :return: TODO
-#     """
-#     if ht_1 > hcrit:
-#         if state == 0:
-#             return 1
-#     return state
+    :return: TODO
+    """
+    state = ma.where(ht_1 > hcrit,ma.where(state == 0, 1, state), state)
+    # if ht_1 > hcrit:
+    #     if state == 0:
+    #         return 1
+    return state
 
+def update_state(h_tot_new,h_crit,h_tot_pre,state,h_last_state1):
+    # update state == 0
+    state = ma.where(
+        ma.logical_and(
+            state == 0, h_tot_new> h_crit
+        ),
+        1,
+        state
+    )
+    # # update state == 1
+    state_1_cond = ma.logical_and(
+        state == 1,
+        h_tot_new < h_tot_pre
+    )
+    state = ma.where(
+        state_1_cond,
+        2,
+        state
+    )      
+    # update state == 2
+    state = ma.where(
+        ma.logical_and(
+            state == 2,
+            h_tot_new> h_last_state1,
+        ),
+        1,
+        state
+    )   
+    return state               
 
-# def compute_h_hrill(h_total_pre, h_crit, state, rill_width, h_rill_pre):
-#     """TODO.
+# # def compute_h_hrill(h_total_pre, h_crit, state,  h_rill_pre):
+#     #"""TODO.
 
 #     :param h_total_pre: TODO
 #     :param h_crit: TODO
@@ -324,47 +355,108 @@ class Surface(GridGlobals, Stream, Kinematic):
 
 #     :return: TODO
 #     """
-#     h_sheet = ma.where(
-#         state == 0,
-#         h_total_pre,
-#         ma.where(
-#             state == 1,
-#             ma.minimum(h_crit, h_total_pre),
-#             ma.where(h_total_pre > h_rill_pre, h_total_pre - h_rill_pre, 0)
-#         )
-#     )
-#     h_rill = ma.where(
-#         state == 0,
-#         0,
-#         ma.where(
-#             state == 1,
-#             ma.maximum(h_total_pre - h_crit, 0),
-#             ma.where(h_total_pre > h_rill_pre, h_rill_pre, h_total_pre)
-#         )
-#     )
-#     h_rill_pre = ma.where(
-#         state == 0,
-#         0,
-#         ma.where(
-#             state == 1,
-#             h_rill,
-#             h_rill_pre
-#         )
-#     )
+    # h_sheet = ma.where(
+    #     state == 0,
+    #     h_total_pre,
+    #     ma.where(
+    #         state == 1,
+    #         ma.minimum(h_crit, h_total_pre),
+    #         ma.where(h_total_pre > h_rill_pre, h_total_pre - h_rill_pre, 0)
+    #     )
+    # )
+    # h_rill = ma.where(
+    #     state == 0,
+    #     0,
+    #     ma.where(
+    #         state == 1,
+    #         ma.maximum(h_total_pre - h_crit, 0),
+    #         ma.where(h_total_pre > h_rill_pre, h_rill_pre, h_total_pre)
+    #     )
+    # )
+    # # h_rill_pre = ma.where(
+    #     state == 0,
+    #     0,
+    #     ma.where(
+    #         state == 1,
+    #         h_rill,
+    #         h_rill_pre
+    #     )
+    # )
+    # return h_sheet, h_rill, h_rill_pre
 
-#     return h_sheet, h_rill, h_rill_pre
+
+# New version for implicit scheme
+def compute_h_hrill(h_total, h_crit, state,h_rillPre):
+    
+    h_rill = ma.where(
+        state == 0,
+        0,
+        ma.where(
+            state == 1,
+            ma.maximum(h_total - h_crit, 0),
+            ma.where(h_total > h_rillPre, h_rillPre, h_total)
+        )
+    )
+    
+    h_sheet = ma.where(
+        state == 0,
+        h_total,
+        ma.where(
+            state == 1,
+            ma.minimum(h_crit, h_total),
+            ma.where(h_total > h_rillPre, h_total - h_rillPre, 0)
+        )
+    )
+    
+    return h_sheet, h_rill
+    
+def compute_h_rillPre( h_rillPre,h_rill,state): #h_rillPre is depth of rill
+    h_rillPre = ma.where(
+        state == 0,
+        0,
+        ma.where(
+            state == 1,
+            h_rill,
+            h_rillPre
+        )
+            )
+    return h_rillPre
+
+    
+
 
 def sheet_runoff( a, b, h_sheet):
     
     q_sheet = surfacefce.shallowSurfaceKinematic(a, b, h_sheet)
 
-    
     vol_runoff = q_sheet  * GridGlobals.get_size()[0]
     
-
-    
-    
     return vol_runoff
+
+def rill_runoff(dt,   h_rill, efect_vrst, rillWidth ):
+    n = Globals.get_mat_n()
+    slope = Globals.get_mat_slope()
+
+    vol_to_rill = h_rill * GridGlobals.get_pixel_area()
+
+    h, b = rill.update_hb(
+        vol_to_rill, RILL_RATIO, efect_vrst, rillWidth
+    )
+    r_rill = (h * b) / (b + 2 * h)
+
+    v_rill = ma.power(r_rill, (2.0 / 3.0)) * 1. / n * ma.power(slope, 0.5)
+
+    q_rill = v_rill * h * b
+
+    vol_rill = q_rill * dt
+
+
+    vol_runoff_rill = ma.where(
+        vol_rill > vol_to_rill, vol_to_rill, vol_rill
+        )/dt
+    
+        
+    return vol_runoff_rill
 
 # def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
 #                 vol_runoff_rill):
@@ -413,7 +505,6 @@ def sheet_runoff( a, b, h_sheet):
 #     return q_rill, v_rill, v_rill_rest, vol_runoff_rill, ratio, courant, \
 #            vol_to_rill, b
 
-
 def surface_retention(bil, sur):
     """TODO.
 
@@ -439,9 +530,9 @@ def surface_retention(bil, sur):
     return bil_new
 
 def surface_retention_impl(h_sur, reten_old):
-    reten = reten_old.ravel()
+    reten = reten_old
     # print(reten.max(), reten.min())
-    # input()
+    
     h_ret = ma.where(reten<0, 
                      ma.where(h_sur+reten > 0, reten, 
                      -h_sur),
