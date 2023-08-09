@@ -39,6 +39,7 @@ sys.path.insert(0,
                 os.path.join(os.path.dirname(__file__), '..', '..', '..')
 )
 from smoderp2d import QGISRunner
+from smoderp2d.core.general import Globals, GridGlobals
 from bin.base import arguments, sections
 
 from .connect_grass import find_grass as fg
@@ -62,6 +63,10 @@ class SmoderpTask(QgsTask):
         runner.import_data(self.input_maps)
         runner.run()
         runner.show_results()
+
+        # resets
+        Globals.reset()
+        GridGlobals.reset()
 
         return 1
 
