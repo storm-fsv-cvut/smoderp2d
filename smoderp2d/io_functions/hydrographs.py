@@ -207,7 +207,8 @@ class Hydrographs:
                 line += os.linesep
                 self.files[ip].writelines(line)
 
-    def _output_path(self, output, directory='core'):
+    @staticmethod
+    def _output_path(output, directory='core'):
         dir_name = os.path.join(
             Globals.outdir,
             directory
@@ -231,5 +232,6 @@ class HydrographsPass:
                                  currRain, inStream=False, sep=SEP):
         pass
 
-    def _output_path(self, output, directory='core'):
+    @staticmethod
+    def _output_path(output, directory='core'):
         pass
