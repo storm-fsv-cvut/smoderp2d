@@ -18,6 +18,7 @@ from smoderp2d.providers import Logger
 courantMax = 1.0
 RILL_RATIO = 0.7
 
+
 class SurArrs(object):
     """Surface attributes."""
     def __init__(self, sur_ret, inf_index, hcrit, a, b):
@@ -273,11 +274,6 @@ def __runoff_zero_comp_type(i, j, sur, dt, efect_vrst, ratio):
 
     :return: TODO
     """
-    h_total_pre = sur.h_total_pre
-    h_crit = sur.h_crit
-    state = sur.arr.state
-
-
     # sur.arr.state               = update_state1(h_total_pre,h_crit,state)
     sur.h_sheet = sur.h_total_pre
 
@@ -291,9 +287,11 @@ def __runoff_zero_comp_type(i, j, sur, dt, efect_vrst, ratio):
     q_rill = 0
     v_rill = 0
 
-    return q_sheet, v_sheet, q_rill, v_rill, ratio, 0.0, sur.h_sheet, \
-           sur.h_rill, sur.h_rillPre, vol_runoff, vol_rest, sur.v_rill_rest, \
-           sur.vol_runoff_rill, v_rill
+    return (
+        q_sheet, v_sheet, q_rill, v_rill, ratio, 0.0, sur.h_sheet,
+        sur.h_rill, sur.h_rillPre, vol_runoff, vol_rest, sur.v_rill_rest,
+        sur.vol_runoff_rill, v_rill
+    )
 
 
 def update_state1(ht_1, hcrit, state, rill_width):
@@ -353,6 +351,7 @@ def compute_h_hrill(h_total_pre, h_crit, state, rill_width, h_rill_pre):
 
     return h_sheet, h_rill, h_rill_pre
 
+
 def sheet_runoff(dt, a, b, h_sheet):
     """TODO.
 
@@ -370,6 +369,7 @@ def sheet_runoff(dt, a, b, h_sheet):
 
     return q_sheet, vol_runoff, vol_rest
 
+
 def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
                 vol_runoff_rill):
     """TODO.
@@ -377,6 +377,10 @@ def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
     :param dt: TODO
     :param efect_vrst: TODO
     :param ratio: TODO
+    :param h_rill: TODO
+    :param rillWidth: TODO
+    :param v_rill_rest: TODO
+    :param vol_runoff_rill: TODO
 
     :return: TODO
     """
@@ -414,15 +418,17 @@ def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
         vol_runoff_rill
     )
 
-    return q_rill, v_rill, v_rill_rest, vol_runoff_rill, ratio, courant, \
-           vol_to_rill, b
+    return (
+        q_rill, v_rill, v_rill_rest, vol_runoff_rill, ratio, courant,
+        vol_to_rill, b
+    )
 
 
 def surface_retention(bil, sur):
     """TODO.
 
     :param bil: TODO
-    param sur: TODO
+    :param sur: TODO
     """
     reten = sur.sur_ret
     pre_reten = reten
@@ -441,6 +447,7 @@ def surface_retention(bil, sur):
     sur.cur_sur_ret = reten_new - pre_reten
 
     return bil_new
+
 
 if Globals.isRill:
     runoff = __runoff
