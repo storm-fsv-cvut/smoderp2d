@@ -233,7 +233,7 @@ def __runoff(sur, dt, efect_vrst, ratio):
 
     # sur.arr.state               = update_state1(h_total_pre,h_crit,state)
     h_sheet, h_rill, h_rillPre = compute_h_hrill(
-        h_total_pre, h_crit, state, sur.rillWidth, sur.h_rillPre)
+        h_total_pre, h_crit, state, sur.h_rillPre)
 
     q_sheet, vol_runoff, vol_rest = sheet_runoff(dt, sur.a, sur.b, h_sheet)
 
@@ -310,14 +310,13 @@ def update_state1(ht_1, hcrit, state, rill_width):
     return state
 
 
-def compute_h_hrill(h_total_pre, h_crit, state, rill_width, h_rill_pre):
+def compute_h_hrill(h_total_pre, h_crit, state, h_rill_pre):
     """TODO.
 
     :param h_total_pre: TODO
     :param h_crit: TODO
     :param state: TODO (not used)
-    :patam rill_width: TODO (not used)
-    :patam h_rill_pre: TODO (not used)
+    :param h_rill_pre: TODO (not used)
 
     :return: TODO
     """
