@@ -118,7 +118,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
     def get_exfiltration(self):
         return self.arr.exfiltration
 
-    def bilance(self, i, j, infilt, inflow, dt):
+    def bilance(self, infilt, inflow, dt):
 
         arr = self.arr
         bil = infilt + arr.vol_rest / self.pixel_area + inflow
@@ -219,7 +219,7 @@ class SubsurfacePass(GridGlobals):
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
 
-    def bilance(self, i, j, infilt, inflow, dt):
+    def bilance(self, infilt, inflow, dt):
         pass
 
     def runoff(self, delta_t, efect_vrst):

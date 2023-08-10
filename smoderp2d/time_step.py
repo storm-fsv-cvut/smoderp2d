@@ -236,7 +236,7 @@ class TimeStep:
         # subsurface inflow
         """
         inflow_sub = subsurface.cell_runoff(i,j,False)
-        subsurface.bilance(i,j,infiltration,inflow_sub/pixel_area,delta_t)
+        subsurface.bilance(infiltration,inflow_sub/pixel_area,delta_t)
         subsurface.fill_slope()
         """
 
