@@ -262,11 +262,9 @@ def __runoff(sur, dt, efect_vrst, ratio):
            vol_runoff_rill, v_rill
 
 
-def __runoff_zero_comp_type(i, j, sur, dt, efect_vrst, ratio):
+def __runoff_zero_comp_type(sur, dt, efect_vrst, ratio):
     """TODO.
 
-    :param i: row index
-    :param j: col index
     :param sur: TOD
     :param dt: TODO
     :param efect_vrst: TODO
