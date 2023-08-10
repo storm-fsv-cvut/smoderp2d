@@ -3,7 +3,7 @@ import math
 
 
 from smoderp2d.core.general import GridGlobals, Globals
-from smoderp2d.core.kinematic_diffuse import Kinematic
+from smoderp2d.core.kinematic_diffuse import Diffuse, Kinematic
 from smoderp2d.exceptions import SmoderpError
 from smoderp2d.providers import Logger
 
