@@ -82,8 +82,8 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
             Ks,
             vg_n,
             vg_l,
-            mat_dem - L_sub,
-            mat_dem)
+            Globals.mat_dem - L_sub,
+            Globals.mat_dem)
 
         self.arr.slope = mat_slope
 
