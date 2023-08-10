@@ -85,7 +85,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
             Globals.mat_dem - L_sub,
             Globals.mat_dem)
 
-        self.arr.slope = mat_slope
+        self.arr.slope = Globals.mat_slope
 
         self.Kr = darcy.relative_unsat_conductivity
         self.darcy = darcy.darcy
