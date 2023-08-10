@@ -7,7 +7,7 @@ SEP = ';'
 os.linesep='\n'
 
 class Hydrographs:
-    def __init__(self, item='core'):
+    def __init__(self):
         points = Globals.get_array_points()
         ipi = points.shape[0]
         jpj = 5
