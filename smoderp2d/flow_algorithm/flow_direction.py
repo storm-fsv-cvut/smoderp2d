@@ -40,7 +40,7 @@ def flow_direction(dem, rr, rc, br, bc, pixel_size):
     for i in br:
         for j in bc[i]:
 
-            if (i >= 1 and j >= 1):
+            if i >= 1 and j >= 1:
                 try:
                     drop[0] = (
                         dem[i][j] - dem[i - 1][j - 1]) / dist[0] * 100.00
@@ -49,7 +49,7 @@ def flow_direction(dem, rr, rc, br, bc, pixel_size):
             else:
                 drop[0] = -99999.0
 
-            if (j >= 1):
+            if j >= 1:
                 try:
                     drop[1] = (dem[i][j] - dem[i][j - 1]) / dist[1] * 100.00
                 except:
@@ -57,7 +57,7 @@ def flow_direction(dem, rr, rc, br, bc, pixel_size):
             else:
                 drop[1] = -99999.0
 
-            if (j >= 1):
+            if j >= 1:
                 try:
                     drop[2] = (dem[i][j] - dem[i + 1][j - 1]) / dist[
                         0] * 100.00
@@ -66,7 +66,7 @@ def flow_direction(dem, rr, rc, br, bc, pixel_size):
             else:
                 drop[2] = -99999.0
 
-            if (i >= 1):
+            if i >= 1:
                 try:
                     drop[3] = (dem[i][j] - dem[i - 1][j]) / dist[1] * 100.00
                 except:
@@ -79,7 +79,7 @@ def flow_direction(dem, rr, rc, br, bc, pixel_size):
             except:
                 drop[4] = -99999.0
 
-            if (i >= 1):
+            if i >= 1:
                 try:
                     drop[5] = (dem[i][j] - dem[i - 1][j + 1]) / dist[
                         0] * 100.00
@@ -99,23 +99,23 @@ def flow_direction(dem, rr, rc, br, bc, pixel_size):
                 drop[7] = -99999.0
 
             min_drop = ma.argmax(drop)
-            if (ma.amax(drop) < 0.0):
-                if (i == 0 and j == 0):
+            if ma.amax(drop) < 0.0:
+                if i == 0 and j == 0:
                     fd[i][j] = 32
-                elif (i == 0 and j == n[1] - 1):
+                elif i == 0 and j == n[1] - 1:
                     fd[i][j] = 8
-                elif (i == n[0] - 1 and j == 0):
+                elif i == n[0] - 1 and j == 0:
                     fd[i][j] = 128
-                elif (i == n[0] - 1 and j == n[1] - 1):
+                elif i == n[0] - 1 and j == n[1] - 1:
                     fd[i][j] = 2
                 else:
-                    if (i == 0):
+                    if i == 0:
                         fd[i][j] = 64
-                    elif (j == n[1] - 1):
+                    elif j == n[1] - 1:
                         fd[i][j] = 1
-                    elif (i == n[0] - 1):
+                    elif i == n[0] - 1:
                         fd[i][j] = 4
-                    elif (j == 0):
+                    elif j == 0:
                         fd[i][j] = 16
                     else:
                         fd[i][j] = dir_[min_drop]
