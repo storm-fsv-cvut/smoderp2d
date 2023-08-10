@@ -11,7 +11,7 @@ class Hydrographs:
         points = Globals.get_array_points()
         ipi = points.shape[0]
         jpj = 5
-        point_int = [[0] * jpj for i in range(ipi)]
+        point_int = [[0] * jpj for _ in range(ipi)]
 
         rr, rc = GridGlobals.get_region_dim()
         pixel_area = GridGlobals.get_pixel_area()
