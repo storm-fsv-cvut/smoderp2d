@@ -147,7 +147,7 @@ class Hydrographs:
 
         Logger.info("Hydrographs files has been created...")
 
-    def write_hydrographs_record(self, i, j, fc, courant, dt, surface, subsurface,
+    def write_hydrographs_record(self, i, j, fc, courant, dt, surface,
                                  cumulative,
                                  currRain, inStream=False, sep=SEP):
 
@@ -227,7 +227,7 @@ class Hydrographs:
             fd.close()
 
 class HydrographsPass:
-    def write_hydrographs_record(self, i, j, fc, courant, dt, surface, subsurface,
+    def write_hydrographs_record(self, i, j, fc, courant, dt, surface,
                                  currRain, inStream=False, sep=SEP):
         pass
 

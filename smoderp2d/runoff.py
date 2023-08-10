@@ -205,7 +205,6 @@ class Runoff(object):
             self.courant,
             self.delta_t,
             self.surface,
-            self.subsurface,
             self.cumulative,
             ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
@@ -219,7 +218,6 @@ class Runoff(object):
             self.courant,
             self.delta_t,
             self.surface,
-            self.subsurface,
             self.cumulative,
             ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
@@ -337,7 +335,6 @@ class Runoff(object):
                     self.courant,
                     self.delta_t,
                     self.surface,
-                    self.subsurface,
                     self.cumulative,
                     actRain
                 )
@@ -377,7 +374,6 @@ class Runoff(object):
                 self.courant,
                 self.delta_t,
                 self.surface,
-                self.subsurface,
                 self.cumulative,
                 actRain,
                 True
