@@ -294,13 +294,12 @@ def __runoff_zero_comp_type(i, j, sur, dt, efect_vrst, ratio):
     )
 
 
-def update_state1(ht_1, hcrit, state, rill_width):
+def update_state1(ht_1, hcrit, state):
     """TODO.
 
     :param ht_1: TODO
     :param hcrit: TODO
     :param state: TODO (not used)
-    :patam rill_width: TODO (not used)
 
     :return: TODO
     """
