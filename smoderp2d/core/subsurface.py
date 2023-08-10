@@ -129,7 +129,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
         bil -= percolation
         # print bil,
         arr.percolation = percolation
-        arr.h, arr.exfiltration = self.calc_exfiltration(i, j, bil)
+        arr.h, arr.exfiltration = self.calc_exfiltration(bil)
         # print arr.h
         # print arr.h, infilt, arr.vol_rest/self.pixel_area, inflow
 
@@ -149,7 +149,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
             perc = bil
         return perc
 
-    def calc_exfiltration(self, i, j, bil):
+    def calc_exfiltration(self, bil):
 
         arr = self.arr
         if bil > arr.L_sub:
