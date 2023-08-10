@@ -40,7 +40,7 @@ def new_inflows(mat_fd):
         for j in range(c):
             in_dir = __smeryInflow(mat_fd, i, j)
             in_fldir[i][j] = in_dir
-            intok = __smery(in_dir, i, j, smer)
+            intok = __smery(in_dir, smer)
             inflows[i][j] = intok
 
     # for item in inflows :
@@ -68,7 +68,7 @@ def __smeryInflow(mat_fd, i, j):
     return pritok
 
 
-def __smery(inflow, i, j, smer):
+def __smery(inflow, smer):
     y = 0
     co = [[1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1]]
     cellin = []
