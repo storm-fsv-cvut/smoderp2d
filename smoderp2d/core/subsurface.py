@@ -124,7 +124,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
         bil = infilt + arr.vol_rest / self.pixel_area + inflow
 
         # print bil, infilt , arr.vol_rest/self.pixel_area , inflow
-        percolation = self.calc_percolation(i, j, bil, dt)
+        percolation = self.calc_percolation(bil, dt)
         arr.cum_percolation += percolation
         bil -= percolation
         # print bil,
@@ -133,7 +133,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
         # print arr.h
         # print arr.h, infilt, arr.vol_rest/self.pixel_area, inflow
 
-    def calc_percolation(self, i, j, bil, dt):
+    def calc_percolation(self, bil, dt):
 
         arr = self.arr
 
