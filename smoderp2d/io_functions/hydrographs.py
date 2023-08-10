@@ -1,7 +1,5 @@
 import os
 
-import numpy.ma as ma
-
 from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers import Logger
 
