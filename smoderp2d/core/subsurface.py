@@ -9,6 +9,7 @@ from smoderp2d.providers import Logger
 
 import smoderp2d.processes.subsurface as darcy
 
+
 class SubArrs:
     def __init__(self, L_sub, Ks, vg_n, vg_l, z, ele):
         """Subsurface attributes.
@@ -21,13 +22,15 @@ class SubArrs:
         :param ele: TODO
         """
         self.L_sub = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * L_sub, mask=GridGlobals.masks
+            np.ones((GridGlobals.r, GridGlobals.c)) * L_sub,
+            mask=GridGlobals.masks
         )
         self.h = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.H = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * ele, mask=GridGlobals.masks
+            np.ones((GridGlobals.r, GridGlobals.c)) * ele,
+            mask=GridGlobals.masks
         )
         self.z = ma.masked_array(
             np.ones((GridGlobals.r, GridGlobals.c)) * z, mask=GridGlobals.masks
@@ -57,11 +60,13 @@ class SubArrs:
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.vg_n = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * vg_n, mask=GridGlobals.masks
+            np.ones((GridGlobals.r, GridGlobals.c)) * vg_n,
+            mask=GridGlobals.masks
         )
         self.vg_m = 1 - (1 / self.vg_n)
         self.vg_l = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * vg_l, mask=GridGlobals.masks
+            np.ones((GridGlobals.r, GridGlobals.c)) * vg_l,
+            mask=GridGlobals.masks
         )
 
 
@@ -132,7 +137,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
 
         arr = self.arr
 
-        if (bil > arr.L_sub):
+        if bil > arr.L_sub:
             S = 1.0
         else:
             S = bil / arr.L_sub
@@ -140,14 +145,14 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
         perc = arr.Ks * self.Kr(S, arr.vg_l, arr.vg_m) * dt
         # jj bacha
         # perc = 0
-        if (perc > bil):
+        if perc > bil:
             perc = bil
         return perc
 
     def calc_exfiltration(self, i, j, bil):
 
         arr = self.arr
-        if (bil > arr.L_sub):
+        if bil > arr.L_sub:
             # print bil
             exfilt = bil - arr.L_sub
             bil = arr.L_sub
@@ -176,7 +181,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
 
     def return_str_vals(self, i, j, sep, dt):
         arr = self.arr
-         #';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[],exfiltration[];'
+        #  ';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[],exfiltration[];'
         line = str(
             arr.h) + sep + str(
                 arr.vol_runoff / dt) + sep + str(
