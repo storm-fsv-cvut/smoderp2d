@@ -15,7 +15,6 @@ import time
 import os
 import numpy as np
 import numpy.ma as ma
-import math
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
