@@ -186,7 +186,7 @@ class Stream(object):
             )
             r.h_max = ma.maximum(r.h, r.h_max)
 
-    def return_stream_str_vals(self, i, j, sep, dt, extraOut):
+    def return_stream_str_vals(self, i, j, sep, extraOut):
         fid = int(self.arr.state[i, j] - Gl.streams_flow_inc)
         # Time;   V_runoff  ;   Q   ;    V_from_field  ;  V_rests_in_stream
         # print fid, self.reach[fid].Q_out, str(self.reach[fid].V_out)
