@@ -97,7 +97,7 @@ def rill(V_to_rill, rillRatio, l, b, delta_t,
 #
 def rillCalculations(sur, pixelArea, l, rillRatio, n, slope, delta_t, ratio):
 
-    raw_input()
+    input()
     h_rill = sur.h_rill
     b = sur.rillWidth
     V_to_rill = h_rill * pixelArea
@@ -120,7 +120,7 @@ def rillCalculations(sur, pixelArea, l, rillRatio, n, slope, delta_t, ratio):
         # print '\t', b, V_rill_runoff, V_rill_rest, courant
         if courant > courantMax:
             Logger.debug('------ ratio += 1 -----')
-            raw_input()
+            input()
             ratio += 1
             if ratio > 10:
                 return (
@@ -130,6 +130,6 @@ def rillCalculations(sur, pixelArea, l, rillRatio, n, slope, delta_t, ratio):
 
     qMax = max(q)
     vMax = max(v)
-    # print raw_input('..')
+    # print input('..')
     # print "V_to_rill, V_rill_runoff", V_to_rill, V_rill_runoff
     return b, V_to_rill, V_rill_runoff, V_rill_rest, qMax, vMax, ratio, courant
