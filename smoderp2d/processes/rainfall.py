@@ -79,7 +79,7 @@ def load_precipitation(fh):
                     y2 = y1
                     mv = y0, y1
                     x.append(mv)
-        fh.close
+        fh.close()
 
         # Values ordered by time ascending
         dtype = [('cas', float), ('value', float)]
