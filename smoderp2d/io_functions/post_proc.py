@@ -2,11 +2,9 @@
 
 import numpy as np
 import os
-import sys
 import shutil
 
 
-import smoderp2d.tools.tools as tools
 from smoderp2d.core.general import Globals as Gl
 from smoderp2d.core.general import GridGlobals as GG
 
