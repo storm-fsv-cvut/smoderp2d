@@ -5,12 +5,12 @@ import os
 import shutil
 
 
-from smoderp2d.core.general import Globals as Gl
+from smoderp2d.core.general import Globals
 from smoderp2d.core.general import GridGlobals
 
 def do(cumulative, mat_slope, G, surArr):
 
-    output = Gl.outdir
+    output = Globals.outdir
     rrows = GridGlobals.rr
     rcols = GridGlobals.rc
 
@@ -31,13 +31,13 @@ def do(cumulative, mat_slope, G, surArr):
                    'q_sur_tot',
                    'v_sur_tot']
 
-    if Gl.subflow:
+    if Globals.subflow:
         main_output += ['v_sur_r',
                         'q_sur_tot',
                         'v_sur_tot',
                         'exfiltration',
                         'percolation']
-    if Gl.extraOut:  # jj tady jen pokud chceme se i ten zbytek Gl.extraOut je zatim definovan  na zacatku class_main_arrays
+    if Globals.extraOut:  # jj tady jen pokud chceme se i ten zbytek Globals.extraOut je zatim definovan  na zacatku class_main_arrays
         main_output += ['q_sur',
                         'h_rill',
                         'q_rill',
@@ -79,7 +79,7 @@ def do(cumulative, mat_slope, G, surArr):
   #  raster_output(finState, G, finState, 'reachfid', False)
   #  raster_output(vRest, G, finState, 'volrest_m3')
 
-    if not(Gl.extraOut):
+    if not(Globals.extraOut):
         if os.path.exists(output + os.sep + 'temp'):
             shutil.rmtree(output + os.sep + 'temp')
         if os.path.exists(output + os.sep + 'temp_dp'):
@@ -87,9 +87,9 @@ def do(cumulative, mat_slope, G, surArr):
         return 1
 ################################
     # creates the raster in argis format in the output directory
-    #def Gl.arcgis_raster(cumulative, mat_slope, G, surArr):
+    #def Globals.arcgis_raster(cumulative, mat_slope, G, surArr):
 
-        # output = Gl.outdir
+        # output = Globals.outdir
         # arcpy.env.workspace = output
         # rrows = GridGlobals.rr
         # rcols = GridGlobals.rc
@@ -105,16 +105,16 @@ def do(cumulative, mat_slope, G, surArr):
         # main_output = [1,2,3,5,6,7,10,15]  #jj vyznam najdes v class
         # Cumulative mezi class Cumulative a def__init__
 
-        # if Gl.subflow :
+        # if Globals.subflow :
             # main_output += [14,15,16,17,18]
-        # if Gl.extraOut == True :    #jj tady jen pokud chceme se i ten zbytek Gl.extraOut je zatim definovan  na zacatku class_main_arrays
+        # if Globals.extraOut == True :    #jj tady jen pokud chceme se i ten zbytek Globals.extraOut je zatim definovan  na zacatku class_main_arrays
             # main_output += [4,8,9,11,12,13,14]
 
         # ll_corner = arcpy.Point(GridGlobals.xllcorner, GridGlobals.yllcorner)
 
         # for i in main_output:
             # arrin = np.copy(getattr(cumulative, cumulative.arrs[i]))
-            # raster_output_Gl.arcgis (aarin, G)
+            # raster_output_Globals.arcgis (aarin, G)
 
         # vRest     = np.zeros(np.shape(surArr),float)
         # finState  = np.zeros(np.shape(surArr),int)
@@ -122,7 +122,7 @@ def do(cumulative, mat_slope, G, surArr):
         # finState.fill(GridGlobals.NoDataValue)
 
         # vRest     = np.zeros(np.shape(surArr),float)
-        # if Gl.isRill :
+        # if Globals.isRill :
             # for i in rrows:
                 # for j in rcols[i]:
                 # if (finState[i][j] >= 1000) :
@@ -167,7 +167,7 @@ def do(cumulative, mat_slope, G, surArr):
                 # tmparr[ii, jj] = totalBil[ii][jj]
 
         # pokud nechci extra output opoustim funkci tu
-        # if not(Gl.extraOut) :
+        # if not(Globals.extraOut) :
             # return 1
 
         # outName = 'VRestEndL'
@@ -197,8 +197,8 @@ def do(cumulative, mat_slope, G, surArr):
         # saveAG = arcpy.NumPyArrayToRaster(tmparr, ll_corner, GridGlobals.dx, GridGlobals.dy, GridGlobals.NoDataValue)
         # saveAG.save(outName)
 
-    # assign the ourput raster function based on the Gl.arcgis selector
-    # raster_output = Gl.arcgis_raster
+    # assign the ourput raster function based on the Globals.arcgis selector
+    # raster_output = Globals.arcgis_raster
 
 
 # else:
@@ -218,9 +218,9 @@ def do(cumulative, mat_slope, G, surArr):
         # main_output = [1,2,3,5,6,7,10,15]  #jj vyznam najdes v class
         # Cumulative mezi class Cumulative a def__init__
 
-        # if Gl.subflow :
+        # if Globals.subflow :
             # main_output += [14,15,16,17,18]
-        # if Gl.extraOut == True :    #jj tady jen pokud chceme se i ten zbytek Gl.extraOut je zatim definovan  na zacatku class_main_arrays
+        # if Globals.extraOut == True :    #jj tady jen pokud chceme se i ten zbytek Globals.extraOut je zatim definovan  na zacatku class_main_arrays
             # main_output += [4,8,9,11,12,13,14]
 
         # finState  = np.zeros(np.shape(surArr),int)
@@ -248,7 +248,7 @@ def do(cumulative, mat_slope, G, surArr):
         # cumulative.sur_ret #+ (cumulative.v_sur_r + cumulative.v_rill_r)
 
         # vRest     = np.zeros(np.shape(surArr),float)
-        # if Gl.isRill :
+        # if Globals.isRill :
             # for i in rrows:
                 # for j in rcols[i]:
                 # if (finState[i][j] >= 1000) :
@@ -274,7 +274,7 @@ def do(cumulative, mat_slope, G, surArr):
         # tools.make_ASC_raster(outName,finState,G)
 
         # pokud nechci extra output opoustim funkci tu
-        # if not(Gl.extraOut) :
+        # if not(Globals.extraOut) :
             # return 1
 
         # outName = output+os.sep+'Stream'+".asc"
@@ -286,12 +286,12 @@ def do(cumulative, mat_slope, G, surArr):
         # outName = output+os.sep+'HCrit'+".asc"
         # tools.make_ASC_raster(outName,hCrit,G)
 
-    # assign the ourput raster function based on the Gl.arcgis selector
+    # assign the ourput raster function based on the Globals.arcgis selector
     # raster_output = ascii_raster
 
 
 ### TODO
-# if Gl.isStream and Gl.arcgis:
+# if Globals.isStream and Globals.arcgis:
 #     import arcpy
 
 #     def write_stream_table(outDir, surface, streams):
@@ -319,19 +319,19 @@ def do(cumulative, mat_slope, G, surArr):
 
 #                 f.write(line)
 
-#         arcpy.MakeFeatureLayer_management(streams, outTemp + "Gl.streamtmp.shp")
+#         arcpy.MakeFeatureLayer_management(streams, outTemp + "Globals.streamtmp.shp")
 #         arcpy.AddJoin_management(
 #             outTemp +
-#             "Gl.streamtmp.shp",
+#             "Globals.streamtmp.shp",
 #             "FID",
 #             outFile,
 #             "FID")
-#         arcpy.CopyFeatures_management(outTemp + "Gl.streamtmp.shp", outFileShp)
+#         arcpy.CopyFeatures_management(outTemp + "Globals.streamtmp.shp", outFileShp)
 
 #     stream_table = write_stream_table
 
 
-# elif Gl.isStream and not(Gl.arcgis):
+# elif Globals.isStream and not(Globals.arcgis):
 #     def write_stream_table(outDir, surface, streams):
 #         sep = ';'
 #         nReaches = surface.nReaches
