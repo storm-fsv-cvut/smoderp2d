@@ -95,8 +95,7 @@ def rill(V_to_rill, rillRatio, l, b, delta_t,
 #
 #
 #
-def rillCalculations(sur, pixelArea, l, rillRatio, n, slope, delta_t, ratio,
-                     ppp=False):
+def rillCalculations(sur, pixelArea, l, rillRatio, n, slope, delta_t, ratio):
 
     raw_input()
     h_rill = sur.h_rill
