@@ -87,7 +87,6 @@ def load_precipitation(fh):
         x = np.sort(val, order='cas')
         # Test if time is more than once the same
         state = 0
-        k = 1
         itera = len(x)  # iter is needed in main loop
         for k in range(itera):
             if x[k][0] == x[k - 1][0] and itera != 1:
