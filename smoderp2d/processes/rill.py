@@ -24,7 +24,7 @@ def update_hb(loc_V_to_rill, rillRatio, l, b):
 
 
 def rill(V_to_rill, rillRatio, l, b, delta_t,
-         ratio, n, slope, pixelArea, ppp=False):
+         ratio, n, slope):
 
     V_rill_runoff = 0
     V_rill_rest = 0     # vrillrest z predchoziho kroku je zapocten v vtorill
@@ -115,7 +115,7 @@ def rillCalculations(sur, pixelArea, l, rillRatio, n, slope, delta_t, ratio,
 
         # print '\t', b,
         b, V_rill_runoff, V_rill_rest, q, v, courant = rill(
-            V_to_rill, rillRatio, l, b, delta_t, ratio, n, slope, pixelArea, ppp
+            V_to_rill, rillRatio, l, b, delta_t, ratio, n, slope
         )
         # if ppp :
         # print '\t', b, V_rill_runoff, V_rill_rest, courant
