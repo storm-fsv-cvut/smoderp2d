@@ -7,7 +7,7 @@ courantMax = 1.0
 courantMin = 0.2
 
 
-def update_hb(loc_V_to_rill, rillRatio, l, b, ratio, ppp=False):
+def update_hb(loc_V_to_rill, rillRatio, l, b):
     V = loc_V_to_rill
     if ma.any(V < 0):
         raise SmoderpError()
@@ -39,7 +39,7 @@ def rill(V_to_rill, rillRatio, l, b, delta_t,
     for k in range(ratio):
 
         h, b = update_hb(
-            loc_V_to_rill + V_rill_rest, rillRatio, l, b, ratio, ppp)
+            loc_V_to_rill + V_rill_rest, rillRatio, l, b)
 
         R_rill = (h * b) / (b + 2 * h)
         v[k] = ma.pow(

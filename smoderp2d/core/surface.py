@@ -380,15 +380,12 @@ def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
 
     :return: TODO
     """
-
-    ppp = False
-
     n = Globals.get_mat_n()
     slope = Globals.get_mat_slope()
 
     vol_to_rill = h_rill * GridGlobals.get_pixel_area()
     h, b = rill.update_hb(
-        vol_to_rill, RILL_RATIO, efect_vrst, rillWidth, ratio, ppp
+        vol_to_rill, RILL_RATIO, efect_vrst, rillWidth
     )
     r_rill = (h * b) / (b + 2 * h)
 
