@@ -60,7 +60,6 @@ def do(cumulative, mat_slope, G, surArr):
 
     # make rasters from cumulative class
     for i in main_output:
-        a = 1
         # arrin = np.copy(getattr(cumulative, cumulative.arrs[i]))
         # outname = cumulative.arrs[i]
         raster_output(i, G, finState, cumulative.arrs[i][1])
