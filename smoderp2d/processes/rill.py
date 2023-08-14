@@ -1,4 +1,3 @@
-import numpy as np
 import numpy.ma as ma
 
 from smoderp2d.exceptions import SmoderpError
