@@ -1,6 +1,5 @@
 import numpy as np
 import math
-import os
 import arcpy
 
 from smoderp2d.core.general import GridGlobals, Globals
@@ -9,7 +8,6 @@ from smoderp2d.providers.base.data_preparation import PrepareDataGISBase
 from smoderp2d.providers.base.exceptions import DataPreparationError, \
     DataPreparationInvalidInput, LicenceNotAvailable, \
     DataPreparationNoIntersection
-import smoderp2d.processes.rainfall as rainfall
 
 
 class PrepareData(PrepareDataGISBase):
