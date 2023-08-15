@@ -4,6 +4,7 @@ import os
 import logging
 import time
 
+
 def logger():
     """
     Return a logger.
@@ -18,5 +19,6 @@ def logger():
     logger = logging.getLogger(logger_name)
 
     return logger
+
 
 Logger = logger()
