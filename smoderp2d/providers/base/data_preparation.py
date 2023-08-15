@@ -418,7 +418,7 @@ class PrepareDataGISBase(PrepareDataBase):
         """Clip stream layer to the given polygon.
 
         :param stream: path to stream layer
-        :param outline: path to polygon layer of the AoI
+        :param aoi_polygon: path to polygon layer of the AoI
 
         :return: full path to clipped stream dataset
         """
