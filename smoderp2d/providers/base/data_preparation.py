@@ -374,11 +374,12 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _compute_efect_cont(self, dem_clip):
+    def _compute_efect_cont(self, dem, asp):
         """Compute efect contour array.
-        ML: improve description
 
-        :param dem_clip: string to dem clipped by area of interest
+        ML: improve description.
+
+        :param dem: string to dem clipped by area of interest
         :return: numpy array
         """
         pass
