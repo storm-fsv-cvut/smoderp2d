@@ -563,4 +563,3 @@ class PrepareData(PrepareDataGISBase):
         """See base method for description.
         """
         return [field.name for field in arcpy.ListFields(ds)]
-
