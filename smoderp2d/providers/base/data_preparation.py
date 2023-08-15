@@ -788,7 +788,8 @@ class PrepareDataGISBase(PrepareDataBase):
                 if self.data['mat_slope'][i][j] != nv:
                     self.data['mat_slope'][i][j] /= 100.
 
-    def _get_mat_stream_seg(self, mat_stream_seg):
+    @staticmethod
+    def _get_mat_stream_seg(mat_stream_seg):
         # each element of stream has a number assigned from 0 to
         # no. of stream parts
         for i in range(GridGlobals.r):
