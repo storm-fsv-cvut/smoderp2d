@@ -402,7 +402,7 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _get_points_location(self):
+    def _get_points_location(self, points_layer):
         """Get array of points locations. X and Y coordinates are obtained from the input points geometry
         points' row and column index in the dem_aoi is calculated
 
