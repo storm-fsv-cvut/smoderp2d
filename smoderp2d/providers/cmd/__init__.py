@@ -1,11 +1,6 @@
 import os
-import sys
 import argparse
 import numpy as np
-if sys.version_info.major >= 3:
-    from configparser import NoOptionError
-else:
-    from ConfigParser import NoOptionError
 
 from smoderp2d.providers.base import BaseProvider, BaseWriter, WorkflowMode
 from smoderp2d.exceptions import ConfigError
