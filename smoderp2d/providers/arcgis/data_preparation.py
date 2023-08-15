@@ -364,7 +364,6 @@ class PrepareData(PrepareDataGISBase):
             dem_aoi, stream, self.storage.output_filepath("stream_z"), "", "",
             "CONFLATE_NEAREST", "VERTICES_ONLY"
         )
-        desc = arcpy.Describe(self.storage.output_filepath("stream_z"))
         shape_fieldname = "SHAPE@"
 
         with arcpy.da.SearchCursor(self.storage.output_filepath("stream_z"), [shape_fieldname, segment_id_fieldname]) as segments:
