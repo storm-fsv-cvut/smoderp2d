@@ -141,8 +141,6 @@ class PrepareDataBase(ABC):
             [r, c], float
         )
 
-        i = j = 0
-
         # data value vector intersection
         # TODO: no loop needed?
         nv = no_data_value
