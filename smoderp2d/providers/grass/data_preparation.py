@@ -1,6 +1,3 @@
-# import os
-from subprocess import PIPE
-
 import numpy as np
 import sqlite3
 
@@ -11,7 +8,6 @@ from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput, \
     DataPreparationError, DataPreparationNoIntersection
 from smoderp2d.providers.base.data_preparation import PrepareDataGISBase
 
-from grass.script.core import tempfile
 from grass.pygrass.modules import Module
 from grass.pygrass.vector import VectorTopo, Vector
 from grass.pygrass.vector.table import Table, get_path
