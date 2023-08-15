@@ -9,8 +9,10 @@ else:
     from ConfigParser import NoOptionError
 
 from smoderp2d.core.general import Globals
-from smoderp2d.providers.base import BaseProvider, Logger, BaseWriter, WorkflowMode
+from smoderp2d.providers.base import BaseProvider, Logger, BaseWriter, \
+    WorkflowMode
 from smoderp2d.exceptions import ConfigError
+
 
 class CmdWriter(BaseWriter):
     def __init__(self):
@@ -20,6 +22,7 @@ class CmdWriter(BaseWriter):
         """See base method for description.
         """
         np.savetxt(file_output, array, fmt='%.6e')
+
 
 class CmdArgumentParser(object):
     def __init__(self, config_file):
@@ -43,6 +46,7 @@ class CmdArgumentParser(object):
         args = parser.parse_args()
 
         return args.config, WorkflowMode()[workflow_mode]
+
 
 class CmdProvider(BaseProvider):
     def __init__(self, config_file=None):
