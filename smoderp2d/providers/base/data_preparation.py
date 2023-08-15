@@ -198,7 +198,7 @@ class PrepareDataBase(ABC):
             rc.append(one_col)
 
         return rr, rc
-    
+
 class PrepareDataGISBase(PrepareDataBase):
     def __init__(self, writter):
         self.storage = writter
@@ -307,12 +307,12 @@ class PrepareDataGISBase(PrepareDataBase):
         :param elevation: string path to DEM layer
         :param soil: string path to soil definition layer
         :param vegetation: string path to vegenatation definition layer
-        
+
         :return: string path to AIO polygon layer
         """
         pass
 
-    @abstractmethod    
+    @abstractmethod
     def _create_DEM_derivatives(self, dem):
         """Creates all the needed DEM derivatives in the DEM's
         original extent to avoid raster edge effects. The clipping
@@ -376,14 +376,14 @@ class PrepareDataGISBase(PrepareDataBase):
     def _compute_efect_cont(self, dem_clip):
         """Compute efect contour array.
         ML: improve description
-        
+
         :param dem: string to dem clipped by area of interest
         :param asp: sting to aspect clipped by area of interest
         :return: numpy array
         """
         pass
 
-    @abstractmethod    
+    @abstractmethod
     def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
                          aoi_outline, table_soil_vegetation):
         """Prepares the combination of soils and vegetation input
@@ -396,7 +396,7 @@ class PrepareDataGISBase(PrepareDataBase):
         :param vegetation_type: vegetation type attribute
         :param aoi_polygon: string path to polygon layer defining area of interest
         :param table_soil_vegetation: string path to table with soil and vegetation attributes
-        
+
         :return: full path to soil and vegetation dataset
         """
         pass
@@ -439,7 +439,7 @@ class PrepareDataGISBase(PrepareDataBase):
         array).
 
         :param stream: string path to stream dataset
-        
+
         :return mat_stream_seg: Numpy array
         """
         pass
@@ -556,7 +556,7 @@ class PrepareDataGISBase(PrepareDataBase):
             self._get_inf_combinat_index(GridGlobals.r, GridGlobals.c,
                                          self.soilveg_fields['k'],
                                          self.soilveg_fields['s'])
-        
+
         self.data['mat_nan'], self.data['mat_slope'], self.data['mat_dem'] = \
             self._get_mat_nan(GridGlobals.r, GridGlobals.c,
                               GridGlobals.NoDataValue, self.data['mat_slope'],
@@ -620,13 +620,13 @@ class PrepareDataGISBase(PrepareDataBase):
     def _set_input_params(self, options):
         """Set input parameters from user-given options.
 
-        :param options: directory with user-given options 
+        :param options: directory with user-given options
         """
         self._input_params = options
         # cast some options to float
         for opt in ('maxdt', 'end_time'):
             self._input_params[opt] = float(self._input_params[opt])
-            
+
     def _create_output_dir(self):
         """Creates empty output and temporary directories to which created
         files are saved.
@@ -786,9 +786,9 @@ class PrepareDataGISBase(PrepareDataBase):
             self.fieldnames['stream_segment_id'],
             self._input_params['streams_channel_type_fieldname'],
             self.fieldnames['stream_segment_next_down_id'],
-            self.fieldnames['stream_segment_length'], 
+            self.fieldnames['stream_segment_length'],
             self.fieldnames['stream_segment_inclination']] + self.stream_shape_fields
-        
+
         stream_attr = {}
         for f in fields:
             stream_attr[f] = []
