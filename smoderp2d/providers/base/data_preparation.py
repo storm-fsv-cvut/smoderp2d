@@ -752,9 +752,6 @@ class PrepareDataGISBase(PrepareDataBase):
         nr = range(r)
         nc = range(c)
 
-        rr = []
-        rc = []
-
         nv = no_data_value
         for i in nr:
             for j in nc:
