@@ -365,7 +365,7 @@ class PrepareData(PrepareDataGISBase):
                         raise DataPreparationInvalidInput(
                             "Values in soilveg table are not correct "
                             "(field '{}': empty value found in row {})".format(
-                                self.sfield[i], row_id
+                                self.sfield[i], i
                             )
                         )
 
