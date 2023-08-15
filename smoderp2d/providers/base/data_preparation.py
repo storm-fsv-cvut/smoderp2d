@@ -55,7 +55,8 @@ class PrepareDataBase(ABC):
 
         return mat_a, mat_aa
 
-    def _get_crit_water(self, mat_b, mat_tau, mat_v, r, c, mat_slope,
+    @staticmethod
+    def _get_crit_water(mat_b, mat_tau, mat_v, r, c, mat_slope,
                         no_data_value, mat_aa):
         # critical water level
         mat_hcrit_tau = np.zeros([r, c], float)
