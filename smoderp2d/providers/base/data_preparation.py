@@ -387,8 +387,9 @@ class PrepareDataGISBase(PrepareDataBase):
     @abstractmethod
     def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
                          aoi_outline, table_soil_vegetation):
-        """Prepares the combination of soils and vegetation input
-        layers. Gets the spatial intersection of both and checks the
+        """Prepare the combination of soils and vegetation input layers.
+
+        Gets the spatial intersection of both and checks the
         consistency of attribute table.
 
         :param soil: string path to soil layer
