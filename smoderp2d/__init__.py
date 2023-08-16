@@ -169,7 +169,8 @@ class QGISRunner(GrassGisRunner):
 
         super().__init__()
 
-    def import_data(self, options):
+    @staticmethod
+    def import_data(options):
         """
         Import files to grass
 
@@ -194,7 +195,8 @@ class QGISRunner(GrassGisRunner):
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
 
-    def show_results(self):
+    @staticmethod
+    def show_results():
         import glob
         from PyQt5.QtGui import QColor
         from qgis.core import (
