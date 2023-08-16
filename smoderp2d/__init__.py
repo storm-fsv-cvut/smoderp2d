@@ -1,8 +1,10 @@
 """
-Documentation of Smoderp, distributed event-based model for surface and subsurface runoff and erosion.
+Documentation of Smoderp, distributed event-based model for surface and
+subsurface runoff and erosion.
 
 .. moduleauthor:: Petr Kavka, Karel Vrana and Jakub Jerabek
-                  model was build in cooperation with eng. students (Jan Zajicek, Nikola Nemcova, Tomas Edlman, Martin Neumann)
+                  model was build in cooperation with eng. students
+                  (Jan Zajicek, Nikola Nemcova, Tomas Edlman, Martin Neumann)
 
 The computational options are as follows:
  - Type of flow
@@ -30,6 +32,7 @@ from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
 from smoderp2d.exceptions import SmoderpError
 
 __version__ = "2.0.dev"
+
 
 class Runner(object):
     def __init__(self):
@@ -65,14 +68,17 @@ class Runner(object):
         """
         self._provider.args.workflow_mode = workflow_mode
         if workflow_mode in (WorkflowMode.dpre, WorkflowMode.roff):
-            self._provider.args.data_file = os.path.join(Globals.outdir, "dpre.save")
+            self._provider.args.data_file = os.path.join(
+                Globals.outdir, "dpre.save"
+            )
 
     def run(self):
         # print logo
         self._provider.logo()
 
         # check workflow_mode consistency
-        if self._provider.workflow_mode not in (WorkflowMode.dpre, WorkflowMode.roff, WorkflowMode.full):
+        modes = (WorkflowMode.dpre, WorkflowMode.roff, WorkflowMode.full)
+        if self._provider.workflow_mode not in modes:
             raise ProviderError('Unsupported partial computing: {}'.format(
                 self._provider.workflow_mode
             ))
@@ -114,15 +120,20 @@ class Runner(object):
     def set_options(self, options):
         self._provider.set_options(options)
 
+
 class ArcGisRunner(Runner):
+
     def __init__(self):
         os.environ['ESRIACTIVEINSTALLATION'] = '1'
         super(ArcGisRunner, self).__init__()
 
+
 class GrassGisRunner(Runner):
     pass
 
+
 class QGISRunner(GrassGisRunner):
+
     def __init__(self):
         # create temp GRASS location
         import subprocess
@@ -174,9 +185,12 @@ class QGISRunner(GrassGisRunner):
                     Module("r.import", input=options[key], output=key)
                 # import vectors
                 elif key in ["soil", "vegetation", "points", "streams"]:
-                    Module("v.import", input=options[key], output=key, flags = 'o')
+                    Module(
+                        "v.import", input=options[key], output=key, flags='o'
+                    )
                 # import tables
-                elif key in ["table_soil_vegetation", "channel_properties_table"]:
+                elif key in ["table_soil_vegetation",
+                             "channel_properties_table"]:
                     Module("db.in.ogr", input=options[key], output=key)
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
@@ -184,8 +198,10 @@ class QGISRunner(GrassGisRunner):
     def show_results(self):
         import glob
         from PyQt5.QtGui import QColor
-        from qgis.core import QgsProject, QgsRasterLayer, QgsRasterShader, \
+        from qgis.core import (
+            QgsProject, QgsRasterLayer, QgsRasterShader,
             QgsSingleBandPseudoColorRenderer, QgsColorRampShader
+        )
 
         # get colour definitions
         color_ramp = QgsColorRampShader()
@@ -216,6 +232,7 @@ class QGISRunner(GrassGisRunner):
 
     def __del__(self):
         pass
+
 
 class WpsRunner(Runner):
     def __init__(self, **args):
