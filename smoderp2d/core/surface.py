@@ -244,16 +244,16 @@ def __runoff(sur, dt, efect_vrst, ratio):
         dt, efect_vrst, ratio, h_rill, sur.rillWidth, sur.v_rill_rest,
         sur.vol_runoff_rill
     )
-    v_rill = ma.where(sur.state > 0, rill_runoff_results[1], 0)
-    v_rill_rest = ma.where(sur.state > 0, rill_runoff_results[2],
+    v_rill = ma.where(sur.state > 0, rill_runoff_results[0], 0)
+    v_rill_rest = ma.where(sur.state > 0, rill_runoff_results[1],
                                sur.v_rill_rest)
-    vol_runoff_rill = ma.where(sur.state > 0, rill_runoff_results[3],
+    vol_runoff_rill = ma.where(sur.state > 0, rill_runoff_results[2],
                                    sur.vol_runoff_rill)
-    ratio = ma.where(sur.state > 0, rill_runoff_results[4], ratio)
-    rill_courant = ma.where(sur.state > 0, rill_runoff_results[5], 0)
-    sur.vol_to_rill = ma.where(sur.state > 0, rill_runoff_results[6],
+    ratio = ma.where(sur.state > 0, rill_runoff_results[3], ratio)
+    rill_courant = ma.where(sur.state > 0, rill_runoff_results[4], 0)
+    sur.vol_to_rill = ma.where(sur.state > 0, rill_runoff_results[5],
                                sur.vol_to_rill)
-    sur.rillWidth = ma.where(sur.state > 0, rill_runoff_results[7],
+    sur.rillWidth = ma.where(sur.state > 0, rill_runoff_results[6],
                              sur.rillWidth)
 
     return v_sheet, v_rill, ratio, rill_courant, h_sheet, h_rill, h_rillPre,\
