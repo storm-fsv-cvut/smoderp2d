@@ -15,9 +15,6 @@ import os
 
 
 def make_sur_raster(surArr, G, t, output):
-    rrows = G.rr
-    rcols = G.rc
-
     arr = surArr.h
     arrrill = surArr.h_rill
 
