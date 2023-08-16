@@ -422,9 +422,10 @@ class BaseProvider(object):
             raise ProviderError('Input file for loading data not defined')
         with open(filename, 'rb') as fd:
             if sys.version_info > (3, 0):
-                data = pickle.load(fd, encoding='bytes')
                 data = {
-                    key.decode(): val.decode if isinstance(val, bytes) else val for key, val in data.items()
+                    key.decode() if isinstance(key, bytes) else key:
+                    val.decode() if isinstance(val, bytes) else val
+                    for key, val in pickle.load(fd, encoding='bytes').items()
                 }
             else:
                 data = pickle.load(fd)

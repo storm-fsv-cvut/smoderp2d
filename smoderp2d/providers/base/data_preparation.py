@@ -7,7 +7,9 @@ from smoderp2d.processes import rainfall
 from smoderp2d.core import CompType
 from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
-from smoderp2d.providers.base.exceptions import DataPreparationError, DataPreparationInvalidInput
+from smoderp2d.providers.base.exceptions import DataPreparationError, \
+    DataPreparationInvalidInput
+
 
 class PrepareDataBase(ABC):
     @staticmethod
@@ -53,12 +55,9 @@ class PrepareDataBase(ABC):
 
         return mat_a, mat_aa
 
-    def _get_crit_water(self, mat_b, mat_tau, mat_v, r, c, mat_slope,
+    @staticmethod
+    def _get_crit_water(mat_b, mat_tau, mat_v, r, c, mat_slope,
                         no_data_value, mat_aa):
-        """
-
-        :param all_attrib:
-        """
         # critical water level
         mat_hcrit_tau = np.zeros([r, c], float)
         mat_hcrit_v = np.zeros([r, c], float)
@@ -78,12 +77,16 @@ class PrepareDataBase(ABC):
                     exp = 1 / (b - 1)
 
                     if slope == 0.0:
-                        hcrit_tau = hcrit_v = hcrit_flux = 1000 # set come auxiliary high value for zero slope
-
+                        hcrit_tau = hcrit_v = hcrit_flux = 1000
+                        # set come auxiliary high value for zero slope
                     else:
-                        hcrit_v = np.power((v_crit / aa), exp)  # h critical from v
-                        hcrit_tau = tau_crit / 9807 / slope  # h critical from tau
-                        hcrit_flux = np.power((flux_crit / slope / 9807 / aa),(1 / mat_b[i][j]))  # kontrola jednotek
+                        hcrit_v = np.power((v_crit / aa), exp)
+                        # h critical from v
+                        hcrit_tau = tau_crit / 9807 / slope
+                        # h critical from tau
+                        hcrit_flux = np.power(
+                            (flux_crit / slope / 9807 / aa), (1 / mat_b[i][j])
+                        )  # kontrola jednotek
 
                     mat_hcrit_tau[i][j] = hcrit_tau
                     mat_hcrit_v[i][j] = hcrit_v
@@ -100,13 +103,6 @@ class PrepareDataBase(ABC):
 
     @staticmethod
     def _get_inf_combinat_index(r, c, mat_k, mat_s):
-        """
-
-        :param sfield:
-        :param intersect:
-
-        :return all_atrib:
-        """
         mat_inf_index = None
         combinatIndex = None
 
@@ -137,14 +133,13 @@ class PrepareDataBase(ABC):
 
         return mat_inf_index, combinatIndex
 
-    def _get_mat_nan(self, r, c, no_data_value, mat_slope, mat_dem):
+    @staticmethod
+    def _get_mat_nan(r, c, no_data_value, mat_slope, mat_dem):
         # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u
         # sklonu a acc
         mat_nan = np.zeros(
             [r, c], float
         )
-
-        i = j = 0
 
         # data value vector intersection
         # TODO: no loop needed?
@@ -198,14 +193,15 @@ class PrepareDataBase(ABC):
             rc.append(one_col)
 
         return rr, rc
-    
+
+
 class PrepareDataGISBase(PrepareDataBase):
     def __init__(self, writter):
         self.storage = writter
 
         # complete dictionary of datasets and their type
         self._data_layers = {
-            'dem_slope_mask' : 'temp',
+            'dem_slope_mask': 'temp',
             'dem_polygon': 'temp',
             'aoi': 'temp',
             'aoi_polygon': 'core',
@@ -229,10 +225,11 @@ class PrepareDataGISBase(PrepareDataBase):
             'stream_start': 'temp',
             'stream_end': 'temp',
             'stream_seg': 'temp',
-            'ratio_cell' : 'temp',
-            'efect_cont' : 'temp',
+            'ratio_cell': 'temp',
+            'efect_cont': 'temp',
         }
-        # complete list of field names that are supposed not to be changed, eg. in properties tables
+        # complete list of field names that are supposed not to be changed,
+        # e.g. in properties tables
         self.fieldnames = {
             'veg_type_fieldname': 'veg_type',
             'soilveg_type_fieldname': 'soilveg_type',
@@ -259,9 +256,15 @@ class PrepareDataGISBase(PrepareDataBase):
             self._data_layers["soilveg_aoi_{}".format(sv)] = 'temp'
         self.storage.set_data_layers(self._data_layers)
 
-        self.stream_shape_fields = [self.fieldnames['channel_profile'], self.fieldnames['channel_shapetype'], self.fieldnames['channel_bottom_width'],
-                                    self.fieldnames['channel_bank_steepness'], self.fieldnames['channel_bank_steepness'],
-                                    self.fieldnames['channel_bed_roughness'], self.fieldnames['channel_q365']]
+        self.stream_shape_fields = [
+            self.fieldnames['channel_profile'],
+            self.fieldnames['channel_shapetype'],
+            self.fieldnames['channel_bottom_width'],
+            self.fieldnames['channel_bank_steepness'],
+            self.fieldnames['channel_bank_steepness'],
+            self.fieldnames['channel_bed_roughness'],
+            self.fieldnames['channel_q365']
+        ]
 
         self.data = {
             'mat_boundary': None,
@@ -307,18 +310,18 @@ class PrepareDataGISBase(PrepareDataBase):
         :param elevation: string path to DEM layer
         :param soil: string path to soil definition layer
         :param vegetation: string path to vegenatation definition layer
-        
+
         :return: string path to AIO polygon layer
         """
         pass
 
-    @abstractmethod    
+    @abstractmethod
     def _create_DEM_derivatives(self, dem):
         """Creates all the needed DEM derivatives in the DEM's
         original extent to avoid raster edge effects. The clipping
         extent could be replaced be AOI border buffered by 1 cell to
-        prevent time consuming operations on DEM if the DEM is much
-        larger then the AOI.
+        prevent time-consuming operations on DEM if the DEM is much
+        larger than the AOI.
 
         :param dem: string path to DEM layer
 
@@ -331,7 +334,6 @@ class PrepareDataGISBase(PrepareDataBase):
         """Clips raster dataset to given polygon.
 
         :param dataset: raster dataset to be clipped
-        :param aoi_polygon: feature class to be used as the clipping geometry
         :param name: dataset name in the _data dictionary
 
         :return: full path to clipped raster
@@ -344,7 +346,6 @@ class PrepareDataGISBase(PrepareDataBase):
         feature layer and logs those outside AOI.
 
         :param dataset: points dataset to be clipped
-        :param aoi_polygon: polygon feature class of the AoI
         :param name: output dataset name in the _data dictionary
 
         :return: full path to clipped points dataset
@@ -373,40 +374,44 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _compute_efect_cont(self, dem_clip):
+    def _compute_efect_cont(self, dem, asp):
         """Compute efect contour array.
-        ML: improve description
-        
+
+        ML: improve description.
+
         :param dem: string to dem clipped by area of interest
-        :param asp: sting to aspect clipped by area of interest
         :return: numpy array
         """
         pass
 
-    @abstractmethod    
+    @abstractmethod
     def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
                          aoi_outline, table_soil_vegetation):
-        """Prepares the combination of soils and vegetation input
-        layers. Gets the spatial intersection of both and checks the
+        """Prepare the combination of soils and vegetation input layers.
+
+        Gets the spatial intersection of both and checks the
         consistency of attribute table.
 
         :param soil: string path to soil layer
         :param soil_type: soil type attribute
         :param vegetation: string path to vegetation layer
         :param vegetation_type: vegetation type attribute
-        :param aoi_polygon: string path to polygon layer defining area of interest
-        :param table_soil_vegetation: string path to table with soil and vegetation attributes
-        
+        :param table_soil_vegetation: string path to table with soil and
+                                      vegetation attributes
+
         :return: full path to soil and vegetation dataset
         """
         pass
 
     @abstractmethod
-    def _get_points_location(self):
-        """Get array of points locations. X and Y coordinates are obtained from the input points geometry
+    def _get_points_location(self, points_layer):
+        """Get array of points locations.
+
+        X and Y coordinates are obtained from the input points geometry
         points' row and column index in the dem_aoi is calculated
 
-        :return: array with point fids, dem row and column indexes and x, y coordinates
+        :return: array with point fids, dem row and column indexes and
+                 x, y coordinates
         """
         pass
 
@@ -415,7 +420,7 @@ class PrepareDataGISBase(PrepareDataBase):
         """Clip stream layer to the given polygon.
 
         :param stream: path to stream layer
-        :param outline: path to polygon layer of the AoI
+        :param aoi_polygon: path to polygon layer of the AoI
 
         :return: full path to clipped stream dataset
         """
@@ -439,7 +444,7 @@ class PrepareDataGISBase(PrepareDataBase):
         array).
 
         :param stream: string path to stream dataset
-        
+
         :return mat_stream_seg: Numpy array
         """
         pass
@@ -453,12 +458,13 @@ class PrepareDataGISBase(PrepareDataBase):
     #     pass
 
     @abstractmethod
-    def _stream_shape(self, streams, channel_shape_code, channel_properties_table):
+    def _stream_shape(self, streams, channel_shape_code,
+                      channel_properties_table):
         """Compute shape of stream.
 
-        :param stream: string path to streams dataset
-        :param stream_shape_code: shape code column
-        :param stream_shape_tab: table with stream shapes
+        :param streams: string path to streams dataset
+        :param channel_shape_code: shape code column
+        :param channel_properties_table: table with stream shapes
 
         :return list: stream shape attributes as list
         """
@@ -512,11 +518,19 @@ class PrepareDataGISBase(PrepareDataBase):
         #   clip the input layers to AIO outline including the record points
         Logger.info("Clipping layers to AoI outline...")
         dem_aoi = self._clip_raster_layer(dem_filled, aoi_mask, 'dem_aoi')
-        dem_flowdir_aoi = self._clip_raster_layer(dem_flowdir, aoi_mask, 'dem_flowdir_aoi')
+        dem_flowdir_aoi = self._clip_raster_layer(
+            dem_flowdir, aoi_mask, 'dem_flowdir_aoi'
+        )
         self._clip_raster_layer(dem_flowacc, aoi_mask, 'dem_flowacc_aoi')
-        dem_slope_aoi = self._clip_raster_layer(dem_slope, aoi_mask, 'dem_slope_aoi')
-        dem_aspect_aoi = self._clip_raster_layer(dem_aspect, aoi_mask, 'dem_aspect_aoi')
-        points_aoi = self._clip_record_points(self._input_params['points'], aoi_polygon, 'points_aoi')
+        dem_slope_aoi = self._clip_raster_layer(
+            dem_slope, aoi_mask, 'dem_slope_aoi'
+        )
+        dem_aspect_aoi = self._clip_raster_layer(
+            dem_aspect, aoi_mask, 'dem_aspect_aoi'
+        )
+        points_aoi = self._clip_record_points(
+            self._input_params['points'], aoi_polygon, 'points_aoi'
+        )
         Logger.progress(30)
 
         # convert to numpy arrays
@@ -527,21 +541,28 @@ class PrepareDataGISBase(PrepareDataBase):
         self._update_grid_globals(dem_aoi)
         if GridGlobals.dx != GridGlobals.dy:
             raise DataPreparationInvalidInput(
-                "Input DEM spatial x resolution ({}) differs from y resolution ({}). "
-                "Resample input data to set the same x and y spatial resolution before "
-                "running SMODERP2D.".format(GridGlobals.dx, GridGlobals.dy))
+                "Input DEM spatial x resolution ({}) differs from y "
+                "resolution ({}). Resample input data to set the same x and y"
+                " spatial resolution before running SMODERP2D.".format(
+                    GridGlobals.dx, GridGlobals.dy)
+            )
         self.data['mat_slope'] = self._rst2np(dem_slope_aoi)
         # unit conversion % -> 0-1
         self._convert_slope_units()
         if dem_flowdir_aoi is not None:
             self.data['mat_fd'] = self._rst2np(dem_flowdir_aoi)
-        self.data['mat_efect_cont'] = self._compute_efect_cont(dem_aoi, dem_aspect_aoi)
+        self.data['mat_efect_cont'] = self._compute_efect_cont(
+            dem_aoi, dem_aspect_aoi
+        )
 
-        #   join the attributes to soil_veg intersect and check the table consistency
+        #   join the attributes to soil_veg intersect and check the table
+        #   consistency
         Logger.info("Preparing soil and vegetation properties...")
         self._prepare_soilveg(
-            self._input_params['soil'], self._input_params['soil_type_fieldname'],
-            self._input_params['vegetation'], self._input_params['vegetation_type_fieldname'],
+            self._input_params['soil'],
+            self._input_params['soil_type_fieldname'],
+            self._input_params['vegetation'],
+            self._input_params['vegetation_type_fieldname'],
             aoi_polygon, self._input_params['table_soil_vegetation']
         )
         Logger.progress(40)
@@ -556,7 +577,7 @@ class PrepareDataGISBase(PrepareDataBase):
             self._get_inf_combinat_index(GridGlobals.r, GridGlobals.c,
                                          self.soilveg_fields['k'],
                                          self.soilveg_fields['s'])
-        
+
         self.data['mat_nan'], self.data['mat_slope'], self.data['mat_dem'] = \
             self._get_mat_nan(GridGlobals.r, GridGlobals.c,
                               GridGlobals.NoDataValue, self.data['mat_slope'],
@@ -576,7 +597,8 @@ class PrepareDataGISBase(PrepareDataBase):
 
         Logger.info("Computing critical level...")
         self.data['mat_hcrit'] = self._get_crit_water(
-            self.data['mat_b'], self.soilveg_fields['tau'], self.soilveg_fields['v'], GridGlobals.r,
+            self.data['mat_b'], self.soilveg_fields['tau'],
+            self.soilveg_fields['v'], GridGlobals.r,
             GridGlobals.c, self.data['mat_slope'],
             GridGlobals.NoDataValue, self.data['mat_aa'])
         self.storage.write_raster(self.data['mat_hcrit'], 'hcrit', 'control')
@@ -588,10 +610,12 @@ class PrepareDataGISBase(PrepareDataBase):
 
         Logger.info("Processing stream network:")
         if self._input_params['streams'] and self._input_params['channel_properties_table'] and self._input_params['streams_channel_type_fieldname']:
-            self._prepare_streams(self._input_params['streams'],
-                                 self._input_params['channel_properties_table'],
-                                 self._input_params['streams_channel_type_fieldname'],
-                                 dem_aoi, aoi_polygon
+            self._prepare_streams(
+                self._input_params['streams'],
+                self._input_params['channel_properties_table'],
+                self._input_params['streams_channel_type_fieldname'],
+                dem_aoi,
+                aoi_polygon
             )
         else:
             self.data['type_of_computing'] = CompType.rill
@@ -608,8 +632,8 @@ class PrepareDataGISBase(PrepareDataBase):
             GridGlobals.r, GridGlobals.c, self.data['mat_boundary']
         )
 
-        self.data['mfda'] = False ### ML: ???
-        self.data['mat_boundary'] = None ## ML: -> JJ ???
+        self.data['mfda'] = False  # ML: ???
+        self.data['mat_boundary'] = None  # ML: -> JJ ???
 
         Logger.info("Data preparation has been finished")
         Logger.info('-' * 80)
@@ -620,13 +644,13 @@ class PrepareDataGISBase(PrepareDataBase):
     def _set_input_params(self, options):
         """Set input parameters from user-given options.
 
-        :param options: directory with user-given options 
+        :param options: directory with user-given options
         """
         self._input_params = options
         # cast some options to float
         for opt in ('maxdt', 'end_time'):
             self._input_params[opt] = float(self._input_params[opt])
-            
+
     def _create_output_dir(self):
         """Creates empty output and temporary directories to which created
         files are saved.
@@ -658,10 +682,13 @@ class PrepareDataGISBase(PrepareDataBase):
         :param x: X coordinate of the point
         :param y: Y coordinate of the point
 
-        :return: r, c - row and column index of the input point if point within the DEM, else None
+        :return: r, c - row and column index of the input point if point within
+        the DEM, else None
         """
         # position i,j in raster (starts at 0)
-        r = int(GridGlobals.r - ((y - GridGlobals.yllcorner) // GridGlobals.dy) - 1)
+        r = int(
+            GridGlobals.r - ((y - GridGlobals.yllcorner) // GridGlobals.dy) - 1
+        )
         c = int((x - GridGlobals.xllcorner) // GridGlobals.dx)
 
         # if point is not on the edge of raster or its
@@ -669,7 +696,7 @@ class PrepareDataGISBase(PrepareDataBase):
         nv = GridGlobals.NoDataValue
         if r != 0 and r != GridGlobals.r \
             and c != 0 and c != GridGlobals.c and \
-            self.data['mat_dem'][r][c]   != nv and \
+            self.data['mat_dem'][r][c] != nv and \
             self.data['mat_dem'][r-1][c] != nv and \
             self.data['mat_dem'][r+1][c] != nv and \
             self.data['mat_dem'][r][c-1] != nv and \
@@ -679,7 +706,8 @@ class PrepareDataGISBase(PrepareDataBase):
         else:
             return None
 
-    def _prepare_streams(self, stream, stream_shape_tab, stream_shape_code, dem_aoi, aoi_polygon):
+    def _prepare_streams(self, stream, stream_shape_tab, stream_shape_code,
+                         dem_aoi, aoi_polygon):
         self.data['type_of_computing'] = CompType.rill
 
         # pocitam vzdy s ryhama pokud jsou zadane vsechny vstupy pro
@@ -687,7 +715,7 @@ class PrepareDataGISBase(PrepareDataBase):
         listin = [self._input_params['streams'],
                   self._input_params['channel_properties_table'],
                   self._input_params['streams_channel_type_fieldname']]
-        tflistin = [len(i) > 1 for i in listin] ### TODO: ???
+        tflistin = [len(i) > 1 for i in listin]  # TODO: ???
 
         if all(tflistin):
             self.data['type_of_computing'] = CompType.stream_rill
@@ -706,8 +734,10 @@ class PrepareDataGISBase(PrepareDataBase):
             Logger.progress(80)
 
             Logger.info("Computing stream hydraulics...")
-            #self._stream_hydraulics(stream_aoi) # ML: is it used -> output ?
-            self.data['streams'] = self._stream_shape(stream_aoi, stream_shape_code, stream_shape_tab)
+            # self._stream_hydraulics(stream_aoi) # ML: is it used -> output ?
+            self.data['streams'] = self._stream_shape(
+                stream_aoi, stream_shape_code, stream_shape_tab
+            )
         else:
             self.data['streams'] = None
             self.data['mat_stream_reach'] = None
@@ -724,9 +754,6 @@ class PrepareDataGISBase(PrepareDataBase):
         nr = range(r)
         nc = range(c)
 
-        rr = []
-        rc = []
-
         nv = no_data_value
         for i in nr:
             for j in nc:
@@ -736,12 +763,12 @@ class PrepareDataGISBase(PrepareDataBase):
                         val = -99
                 else:
                     if val != nv:
-                        if  mat_nan[i - 1][j] == nv or \
+                        if mat_nan[i - 1][j] == nv or \
                             mat_nan[i + 1][j] == nv or \
                             mat_nan[i][j - 1] == nv or \
                             mat_nan[i][j - 1] == nv:
                             val = -99
-                        if  mat_nan[i - 1][j + 1] == nv or \
+                        if mat_nan[i - 1][j + 1] == nv or \
                             mat_nan[i + 1][j + 1] == nv or \
                             mat_nan[i - 1][j - 1] == nv or \
                             mat_nan[i + 1][j - 1] == nv:
@@ -761,14 +788,15 @@ class PrepareDataGISBase(PrepareDataBase):
             for j in range(self.data['mat_slope'].shape[1]):
                 nv = GridGlobals.NoDataValue
                 if self.data['mat_slope'][i][j] != nv:
-                    self.data['mat_slope'][i][j] = self.data['mat_slope'][i][j]/100.
+                    self.data['mat_slope'][i][j] /= 100.
 
-    def _get_mat_stream_seg(self, mat_stream_seg):
+    @staticmethod
+    def _get_mat_stream_seg(mat_stream_seg):
         # each element of stream has a number assigned from 0 to
         # no. of stream parts
         for i in range(GridGlobals.r):
             for j in range(GridGlobals.c):
-                if mat_stream_seg[i][j] > 0: # FID starts at 1
+                if mat_stream_seg[i][j] > 0:  # FID starts at 1
                     # state 0|1|2 (> Globals.streams_flow_inc -> stream flow)
                     mat_stream_seg[i][j] += Globals.streams_flow_inc
 
@@ -776,7 +804,8 @@ class PrepareDataGISBase(PrepareDataBase):
         if self.soilveg_fields[field].shape[0] != GridGlobals.r or \
            self.soilveg_fields[field].shape[1] != GridGlobals.c:
             raise DataPreparationError(
-                "Unexpected soilveg {} attribute array dimension {}: should be ({}, {})".format(
+                "Unexpected soilveg {} attribute array dimension {}: "
+                "should be ({}, {})".format(
                     field, self.soilveg_fields[field].shape,
                     GridGlobals.r, GridGlobals.c)
             )
@@ -786,9 +815,10 @@ class PrepareDataGISBase(PrepareDataBase):
             self.fieldnames['stream_segment_id'],
             self._input_params['streams_channel_type_fieldname'],
             self.fieldnames['stream_segment_next_down_id'],
-            self.fieldnames['stream_segment_length'], 
-            self.fieldnames['stream_segment_inclination']] + self.stream_shape_fields
-        
+            self.fieldnames['stream_segment_length'],
+            self.fieldnames['stream_segment_inclination']
+        ] + self.stream_shape_fields
+
         stream_attr = {}
         for f in fields:
             stream_attr[f] = []
@@ -798,11 +828,20 @@ class PrepareDataGISBase(PrepareDataBase):
     def _check_input_data_(self):
         if self._input_params['streams'] or self._input_params['channel_properties_table'] or self._input_params['streams_channel_type_fieldname']:
             if not self._input_params['streams']:
-                raise DataPreparationInvalidInput("Input parameter 'Stream network feature layer' must be defined!")
+                raise DataPreparationInvalidInput(
+                    "Input parameter 'Stream network feature layer' must be "
+                    "defined!"
+                )
             if not self._input_params['channel_properties_table']:
-                raise DataPreparationInvalidInput("Input parameter 'Channel properties table' must be defined!")
+                raise DataPreparationInvalidInput(
+                    "Input parameter 'Channel properties table' must be "
+                    "defined!"
+                )
             if not self._input_params['streams_channel_type_fieldname']:
-                raise DataPreparationInvalidInput("Field containing the channel shape identifier must be set!")
+                raise DataPreparationInvalidInput(
+                    "Field containing the channel shape identifier must be "
+                    "set!"
+                )
 
     @staticmethod
     def _check_resolution_consistency(ewres, nsres):
@@ -818,7 +857,9 @@ class PrepareDataGISBase(PrepareDataBase):
         """Decode attribute names to fieldnames keys"""
         attr_decoded = {}
         for k, v in attr.items():
-            key_decoded = list(self.fieldnames.keys())[list(self.fieldnames.values()).index(k)]
+            key_decoded = list(self.fieldnames.keys())[
+                list(self.fieldnames.values()).index(k)
+            ]
             attr_decoded[key_decoded] = v
 
         return attr_decoded
@@ -833,13 +874,19 @@ class PrepareDataGISBase(PrepareDataBase):
 
         # inform the user about deleted fields
         if len(duplicated_fields) > 0:
-            Logger.warning("The input stream feature class '{}' must not contain fields from "
-                        "the channel properties table '{}':".format(
-                            os.path.basename(self._input_params["streams"]),
-                            os.path.basename(self._input_params["channel_properties_table"]))
+            Logger.warning(
+                "The input stream feature class '{}' must not contain fields "
+                "from the channel properties table '{}':".format(
+                    os.path.basename(self._input_params["streams"]),
+                    os.path.basename(
+                        self._input_params["channel_properties_table"]
+                    )
+                )
             )
             for f in duplicated_fields:
-                Logger.warning("\tField '{}' was deleted from the streams dataset.".format(f))
+                Logger.warning(
+                    f"\tField '{f}' was deleted from the streams dataset."
+                )
 
         return duplicated_fields
 

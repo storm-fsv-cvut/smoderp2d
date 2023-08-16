@@ -1,10 +1,10 @@
 """TODO."""
 
-import numpy as np
 import numpy.ma as ma
 
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
 from smoderp2d.core.surface import SurArrs
+
 
 class VegArrs(object):
     def __init__(self, veg, ppl, pi):
@@ -18,6 +18,7 @@ class VegArrs(object):
         self.ppl = ma.masked_array(ppl, mask=GridGlobals.masks)
         self.pi = ma.masked_array(pi, mask=GridGlobals.masks)
 
+
 class Vegetation(GridGlobals):
     def __init__(self):
         """Class stores info about the vegetation cover."""
@@ -26,6 +27,6 @@ class Vegetation(GridGlobals):
         self.arr.set_outsides(SurArrs)
 
         # TODO move this conversion into data preparation
-        mat_pi = Globals.get_mat_pi() / 1000.0 # convert unit mm -> m
+        mat_pi = Globals.get_mat_pi() / 1000.0  # convert unit mm -> m
 
         self.arr = VegArrs(False, DataGlobals.get_mat_ppl(), mat_pi)

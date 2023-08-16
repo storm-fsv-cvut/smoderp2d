@@ -1,15 +1,15 @@
 import os
 import sys
 import subprocess
-import shutil
-import tempfile
 
 
 def find_grass():
+    """Find GRASS binary."""
     try:
         grass7bin = _grass_loc()
     except ImportError as e:
         raise ImportError('Unable to find GRASS installation. {}'.format(e))
+
     return grass7bin
 
 
@@ -31,6 +31,7 @@ def _grass_loc():
             raise ImportError("No grass executable found.")
     else:
         grass7bin = '/usr/bin/grass'
+
     startcmd = [grass7bin, '--config', 'path']
 
     p = subprocess.Popen(startcmd,

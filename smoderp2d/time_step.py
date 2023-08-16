@@ -135,7 +135,6 @@ class TimeStep:
                 courant,
                 delta_t,
                 surface,
-                subsurface,
                 cumulative,
                 actRain)
             return actRain
@@ -236,7 +235,7 @@ class TimeStep:
         # subsurface inflow
         """
         inflow_sub = subsurface.cell_runoff(i,j,False)
-        subsurface.bilance(i,j,infiltration,inflow_sub/pixel_area,delta_t)
+        subsurface.bilance(infiltration,inflow_sub/pixel_area,delta_t)
         subsurface.fill_slope()
         """
 
@@ -251,7 +250,6 @@ class TimeStep:
             courant,
             delta_t,
             surface,
-            subsurface.arr,
             cumulative,
             actRain)
 

@@ -15,7 +15,6 @@ import time
 import os
 import numpy as np
 import numpy.ma as ma
-import math
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
@@ -205,7 +204,6 @@ class Runoff(object):
             self.courant,
             self.delta_t,
             self.surface,
-            self.subsurface,
             self.cumulative,
             ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
@@ -219,7 +217,6 @@ class Runoff(object):
             self.courant,
             self.delta_t,
             self.surface,
-            self.subsurface,
             self.cumulative,
             ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
@@ -337,7 +334,6 @@ class Runoff(object):
                     self.courant,
                     self.delta_t,
                     self.surface,
-                    self.subsurface,
                     self.cumulative,
                     actRain
                 )
@@ -377,7 +373,6 @@ class Runoff(object):
                 self.courant,
                 self.delta_t,
                 self.surface,
-                self.subsurface,
                 self.cumulative,
                 actRain,
                 True

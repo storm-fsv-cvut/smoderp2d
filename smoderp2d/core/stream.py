@@ -6,17 +6,21 @@ from smoderp2d.core.general import GridGlobals, Globals as Gl
 from smoderp2d.providers import Logger
 from smoderp2d.exceptions import ProviderError
 
+
 class Reach(object):
-    def __init__(self, stream_segment_id,
-                 stream_segment_next_down_id, stream_segment_length, stream_segment_inclination,
-                 channel_profile, channel_shape_id, channel_shapetype, channel_bottom_width, channel_bank_steepness, channel_bed_roughness, channel_q365):
+    def __init__(self, stream_segment_id, stream_segment_next_down_id,
+                 stream_segment_length, stream_segment_inclination,
+                 channel_profile, channel_shape_id, channel_shapetype,
+                 channel_bottom_width, channel_bank_steepness,
+                 channel_bed_roughness, channel_q365):
 
         self.segment_id = stream_segment_id
         self.next_down_id = stream_segment_next_down_id
         self.length = stream_segment_length
         if stream_segment_inclination < 0:
             Logger.info(
-                "Slope in reach part {} indicated minus slope in stream".format(stream_segment_id)
+                "Slope in reach part {} indicated minus slope in "
+                "stream".format(stream_segment_id)
             )
         self.inclination = abs(stream_segment_inclination)
         self.profile = channel_profile
@@ -70,7 +74,6 @@ class Reach(object):
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
 
-
         if channel_shapetype == 0:  # obdelnik
             self.outflow_method = stream_f.rectangle
         elif channel_shapetype == 1:  # trapezoid
@@ -79,10 +82,11 @@ class Reach(object):
             self.outflow_method = stream_f.triangle
         elif channel_shapetype == 3:  # parabola
             self.outflow_method = stream_f.parabola
-            #ToDO - ve stream_f-py - mame u paraboly napsano, ze nefunguje
+            # ToDO - ve stream_f-py - mame u paraboly napsano, ze nefunguje
         else:
             self.outflow_method = stream_f.rectangle
-            #ToDo - zahodit posledni else a misto toho dat hlasku, ze to je mimo rozsah
+            # ToDo - zahodit posledni else a misto toho dat hlasku, ze to
+            #        je mimo rozsah
 
 
 # Documentation for a class.
@@ -105,7 +109,7 @@ class Stream(object):
         self.reach = {}
 
         for i in range(self.nReaches):
-            args = {k:v[i] for k,v in self.streams.items()}
+            args = {k: v[i] for k, v in self.streams.items()}
             self.reach[self.streams['stream_segment_id'][i]] = Reach(**args)
 
         self.mat_stream_reach = Gl.mat_stream_reach
@@ -140,7 +144,8 @@ class Stream(object):
                 "Unable to reach inflow. Feature id {} not found in {}".format(
                     fid,
                     ','.join(list(map(lambda x: str(x), self.reach.keys())))
-            ))
+                )
+            )
 
     def stream_reach_outflow(self, dt):
         for r in self.reach.values():
@@ -181,17 +186,18 @@ class Stream(object):
             )
             r.h_max = ma.maximum(r.h, r.h_max)
 
-    def return_stream_str_vals(self, i, j, sep, dt, extraOut):
+    def return_stream_str_vals(self, i, j, sep, extraOut):
         fid = int(self.arr.state[i, j] - Gl.streams_flow_inc)
         # Time;   V_runoff  ;   Q   ;    V_from_field  ;  V_rests_in_stream
         # print fid, self.reach[fid].Q_out, str(self.reach[fid].V_out)
         r = self.reach[fid]
-        if not(extraOut):
+        if not extraOut:
             line = '{h:.4e}{sep}{q:.4e}{sep}{cumvol:.4e}'.format(
                 h=r.h[i, j], q=r.Q_out[i, j], cumvol=r.V_out_cum[i, j], sep=sep
             )
         else:
-            line = '{h:.4e}{sep}{v:.4e}{sep}{q:.4e}{sep}{vi:.4e}{sep}{vo:.4e}'.format(
+            line = '{h:.4e}{sep}{v:.4e}{sep}{q:.4e}{sep}{vi:.4e}{sep}' \
+                   '{vo:.4e}'.format(
                 h=r.h[i, j], v=r.V_out[i, j], q=r.Q_out[i, j],
                 vi=r.V_in_from_field[i, j], vo=r.vol_rest[i, j], sep=sep
             )

@@ -6,8 +6,7 @@
 #  Flow algorithms itself  are stores in the package
 #  smoderp2d.flow_algorithm.
 #
-#  Classes defined here assemble the
-#  the algorithms and defines methods to
+#  Classes defined here assemble the algorithms and defines methods to
 #  make D8 or mfda compatible within the SMODERP
 #  framework.
 #
@@ -30,6 +29,8 @@ from smoderp2d.providers import Logger
 #  - smoderp2d.core.kinematic_diffuse.Kinematic
 #  - smoderp2d.core.kinematic_diffuse.Diffuse
 #
+
+
 class D8(object):
 
     # constructor
@@ -45,15 +46,17 @@ class D8(object):
 
     # updates #inflows list if the diffuse approach is used.
     #
-    # In the diffusive approach the flow direction may change due to changes of the water level.
+    # In the diffusive approach the flow direction may change due to changes of
+    # the water level.
     #
     def update_inflows(self, fd):
         self.inflows = D8_.new_inflows(fd)
 
-    # returns the water volume water flows into cell i , j from the previous time step based on the
-    # inflows list, \n
+    # returns the water volume water flows into cell i , j from the previous
+    # time step based on the inflows list.
     #
-    # inflows list definition is shown in the method  new_inflows() in the package smoderp2d.flow_algorithm.D8
+    # inflows list definition is shown in the method  new_inflows() in the
+    # package smoderp2d.flow_algorithm.D8.
     #
     #  The total inflow is sum of sheet and rill runoff volume.
     #

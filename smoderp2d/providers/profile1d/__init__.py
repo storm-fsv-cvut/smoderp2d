@@ -1,18 +1,16 @@
 import os
 import sys
 import csv
-import argparse
-import logging
 import numpy as np
 
 if sys.version_info.major >= 3:
-    from configparser import ConfigParser, NoSectionError, NoOptionError
+    from configparser import NoSectionError, NoOptionError
 else:
-    from ConfigParser import ConfigParser, NoSectionError, NoOptionError
+    from ConfigParser import NoSectionError, NoOptionError
 
 from smoderp2d.core.general import Globals
 from smoderp2d.core import CompType
-from smoderp2d.providers.base import BaseProvider, Logger, BaseWriter
+from smoderp2d.providers.base import BaseProvider
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.cmd import CmdWriter, CmdArgumentParser
 from smoderp2d.exceptions import ConfigError, ProviderError
@@ -55,10 +53,14 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         :return: numpy structured array
         """
         try:
-            data = np.genfromtxt(filename, delimiter=';', names=True, dtype=None,
-                                 encoding='utf-8-sig', deletechars='')
+            data = np.genfromtxt(
+                filename, delimiter=';', names=True, dtype=None,
+                encoding='utf-8-sig', deletechars=''
+            )
         except IndexError:
-            raise ProviderError("Input file '{}' empty or invalid".format(filename))
+            raise ProviderError(
+                "Input file '{}' empty or invalid".format(filename)
+            )
         if data.size == 1:
             data = data.reshape(1)
 
@@ -142,9 +144,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             raise ConfigError(e)
 
         # defaults for profile1d provider
-        data = {}
-        data['type_of_computing'] = CompType.rill
-        data['mfda'] = False
+        data = {'type_of_computing': CompType.rill, 'mfda': False}
 
         # time settings
         try:
@@ -160,14 +160,17 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             )
         except TypeError:
             raise ProviderError('Invalid rainfall file in [data] section')
-        #Logger.progress(10)
-
+        # Logger.progress(10)
 
         # general settings
         # some self._configs are not in pickle.dump
-        data['extraOut'] = self._config.getboolean('output', 'extraout', fallback=False)
+        data['extraOut'] = self._config.getboolean(
+            'output', 'extraout', fallback=False
+        )
         # rainfall data can be saved
-        data['prtTimes'] = self._config.get('output', 'printtimes', fallback=None)
+        data['prtTimes'] = self._config.get(
+            'output', 'printtimes', fallback=None
+        )
 
         resolution = self._config.getfloat('domain', 'res')
         data['r'] = self._compute_rows(joint_data['horizontalProjection[m]'],
@@ -192,8 +195,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['mat_slope'] = self._compute_mat_slope(
             parsed_data['hor_len'], parsed_data['verticalDistance[m]'])
         # TODO can be probably removed (?) or stay zero
-        # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
-        data['mat_efect_cont'].fill(data['dx']) # x-axis (EW) resolution
+        # data['mat_boundary'] = np.zeros((data['r'], data['c']), float)
+        data['mat_efect_cont'].fill(data['dx'])  # x-axis (EW) resolution
         # flow direction is always to the south
         data['mat_fd'].fill(4)
 
@@ -294,7 +297,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
 
         return pix_heights / lengths
 
-    def _divide_joint_data(self, joint_data, r, res):
+    @staticmethod
+    def _divide_joint_data(joint_data, r, res):
         """Divide joint data into corresponding number of rows.
 
         :param joint_data: np structurred array with the joint data
@@ -314,7 +318,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         for slope_segment in joint_data:
             segment_length = np.sum(
                 slope_segment['horizontalProjection[m]'])
-            seg_r = self._compute_rows(segment_length, one_pix_len)
+            # seg_r = self._compute_rows(segment_length, one_pix_len)
 
             seg_hor_len_arr = np.array(
                 [one_pix_len],
@@ -336,28 +340,30 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
 
         return parsed_data
 
-    def _alloc_matrices(self, data):
+    @staticmethod
+    def _alloc_matrices(data):
         # TODO: use loop (check base provider)
         # allocate matrices
-        data['mat_b'] = np.zeros((data['r'],data['c']), float)
-        data['mat_stream_reach'] = np.zeros((data['r'],data['c']), float)
-        data['mat_a'] = np.zeros((data['r'],data['c']), float)
-        data['mat_slope'] = np.zeros((data['r'],data['c']), float)
-        data['mat_n'] = np.zeros((data['r'],data['c']), float)
+        data['mat_b'] = np.zeros((data['r'], data['c']), float)
+        data['mat_stream_reach'] = np.zeros((data['r'], data['c']), float)
+        data['mat_a'] = np.zeros((data['r'], data['c']), float)
+        data['mat_slope'] = np.zeros((data['r'], data['c']), float)
+        data['mat_n'] = np.zeros((data['r'], data['c']), float)
         # dem is not needed for computation
-        data['mat_dem'] = np.zeros((data['r'],data['c']), float)
-        data['mat_inf_index'] = np.zeros((data['r'],data['c']), float)
-        data['mat_fd'] = np.zeros((data['r'],data['c']), float)
-        data['mat_hcrit'] = np.zeros((data['r'],data['c']), float)
-        data['mat_aa'] = np.zeros((data['r'],data['c']), float)
-        data['mat_reten'] = np.zeros((data['r'],data['c']), float)
-        data['mat_nan'] = np.zeros((data['r'],data['c']), float)
-        data['mat_efect_cont'] = np.zeros((data['r'],data['c']), float)
-        data['mat_pi'] = np.zeros((data['r'],data['c']), float)
-        data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
-        data['mat_ppl'] = np.zeros((data['r'],data['c']), float)
+        data['mat_dem'] = np.zeros((data['r'], data['c']), float)
+        data['mat_inf_index'] = np.zeros((data['r'], data['c']), float)
+        data['mat_fd'] = np.zeros((data['r'], data['c']), float)
+        data['mat_hcrit'] = np.zeros((data['r'], data['c']), float)
+        data['mat_aa'] = np.zeros((data['r'], data['c']), float)
+        data['mat_reten'] = np.zeros((data['r'], data['c']), float)
+        data['mat_nan'] = np.zeros((data['r'], data['c']), float)
+        data['mat_efect_cont'] = np.zeros((data['r'], data['c']), float)
+        data['mat_pi'] = np.zeros((data['r'], data['c']), float)
+        data['mat_boundary'] = np.zeros((data['r'], data['c']), float)
+        data['mat_ppl'] = np.zeros((data['r'], data['c']), float)
 
-    def _set_unused(self, data):
+    @staticmethod
+    def _set_unused(data):
         data['cell_stream'] = None
         data['state_cell'] = None
         data['outletCells'] = None
@@ -366,7 +372,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['br'] = None
         data['streams'] = None
 
-    def _set_hydrographs(self, max_row):
+    @staticmethod
+    def _set_hydrographs(max_row):
         """Get array_points and points for the data dictionary.
 
         These keys are needed to force the run to compute hydrographs.
