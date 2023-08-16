@@ -121,9 +121,6 @@ class TimeStep:
             actRain = ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
             )
-            potRain = ma.masked_array(
-                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-            )
             hydrographs.write_hydrographs_record(
                 None,
                 None,
