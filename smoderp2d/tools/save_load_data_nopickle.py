@@ -22,7 +22,7 @@ class SaveItems:
         b = []
         self.f.writelines(str(len(l)) + '\n')
         for i in range(len(l)):
-            if l[i] == []:
+            if not l[i]:
                 pass
             else:
                 if isinstance(l[i], list):
@@ -104,14 +104,14 @@ class LoadItems:
                     iLine += 1
                 iRec += 1
 
-        if (int(line[iRec][0]) == nLinesList - 1):
+        if int(line[iRec][0]) == nLinesList - 1:
             wrk.append(self.el(line[iRec][1]))
             if len(wrk) == 1:
                 list_.append(wrk[0])
             else:
                 list_.append(wrk)
 
-        if (int(line[iRec][0]) < nLinesList - 1):
+        if int(line[iRec][0]) < nLinesList - 1:
             for i in range(nLinesList - int(line[iRec][0]) - 1):
                 list_.append([])
 
@@ -180,13 +180,13 @@ class SaveLoad(SaveItems, LoadItems):
             os.makedirs(dir_)
         for id_, it in enumerate(data):
             # print "%02d" % (id_)
-            with open(dir_ + os.sep + "%02d" % (id_), 'w') as self.f:
+            with open(dir_ + os.sep + "%02d" % id_, 'w') as self.f:
                 self.f.writelines(str(type(it)) + '\n')
                 self.save_item(it)
 
         for root, dirs, files in os.walk(dir_):
             for file in files:
-                    # print os.path.join(root, file)
+                # print os.path.join(root, file)
                 zipf.write(os.path.join(root, file))
 
         shutil.rmtree(dir_)
