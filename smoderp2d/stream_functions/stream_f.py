@@ -111,7 +111,7 @@ def trapezoid(reach, dt):
         hp = 0.0
 
     B = reach.b + 2.0 * hp * reach.m  # b pro pocatecni stav (q365)
-    Bb = B + hp * reach.m
+    # Bb = B + hp * reach.m
     h = compute_h(
         A=(reach.V_in_from_field + reach.vol_rest +
            reach.V_in_from_reach) / reach.length,
