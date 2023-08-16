@@ -172,7 +172,7 @@ class Runoff(object):
 
         # handle times step changes based on Courant condition
         self.courant = Courant()
-        self.delta_t = self.courant.initial_time_step(self.surface)
+        self.delta_t = self.courant.initial_time_step()
         self.courant.set_time_step(self.delta_t)
         Logger.info('Corrected time step is {} [s]'.format(self.delta_t.max()))
 

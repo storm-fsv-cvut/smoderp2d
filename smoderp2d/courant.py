@@ -58,7 +58,7 @@ class Courant:
     # in case of sheet flow only calculation the water level guess is 0.001 \e
     # m by default
     @staticmethod
-    def initial_time_step(sur):
+    def initial_time_step():
         # sumA = sumB = sumHCrit = 0
         # count = 0
         # only_surface = comp_type('surface')
