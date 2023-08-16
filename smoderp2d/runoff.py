@@ -195,8 +195,6 @@ class Runoff(object):
         self.time_step = TimeStep()
 
         # record values into hydrographs at time zero
-        rr, rc = GridGlobals.get_region_dim()
-
         self.hydrographs.write_hydrographs_record(
             None,
             None,
