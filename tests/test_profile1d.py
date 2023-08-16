@@ -1,6 +1,5 @@
 import os
 import sys
-import pytest
 
 from test_utils import PerformTest
 
