@@ -118,7 +118,7 @@ for file in os.listdir("./"):
     if file.endswith(".save"):
         save = os.path.join("./", file)
         zipn = save.replace(".save", ".zip")
-        print "converting ", save.ljust(32), " to ", zipn, "..."
+        print("converting ", save.ljust(32), " to ", zipn, "...")
         f = open(save, 'r')
         dataList = pickle.load(f)
         sl.save(dataList, zipn)
