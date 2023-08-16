@@ -26,7 +26,6 @@ class TimeStep:
 
     @staticmethod
     def do_flow(surface, subsurface, delta_t, flow_control, courant):
-        rr, rc = GridGlobals.get_region_dim()
         mat_efect_cont = Globals.get_mat_efect_cont()
         fc = flow_control
         sr = Globals.get_sr()
@@ -37,7 +36,6 @@ class TimeStep:
         )
 
         surface_state = surface.arr.state
-        h_total_pre = surface.arr.h_total_pre
 
         runoff_return = runoff(
             surface.arr, delta_t, mat_efect_cont, fc.ratio
@@ -49,7 +47,7 @@ class TimeStep:
         q_rill = ma.where(cond_state_flow, 0, runoff_return[2])
         v_rill = ma.where(cond_state_flow, 0, runoff_return[3])
         if ma.all(cond_state_flow):
-            subrunoff_return = subsurface.runoff(
+            subsurface.runoff(
                 delta_t, mat_efect_cont
             )
         if ma.any(cond_state_flow):
@@ -86,7 +84,6 @@ class TimeStep:
             cond_state_flow, surface.arr.vel_rill, runoff_return[13]
         )
 
-        q_surface = q_sheet + q_rill
         v = ma.maximum(v_sheet, v_rill)
         co = 'sheet'
         courant.CFL(
