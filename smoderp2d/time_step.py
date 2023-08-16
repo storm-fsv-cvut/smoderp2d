@@ -133,8 +133,6 @@ class TimeStep:
             return actRain
 
         for iii in combinatIndex:
-            # TODO: variable not used. Should we delete it?
-            index = iii[0]
             k = iii[1]
             s = iii[2]
             # jj * 100.0 !!! smazat
