@@ -92,7 +92,6 @@ class TimeStep:
             co,
             rill_courant
         )
-        rill_courant = 0.
         # w1 = surface.arr.get_item([i, j]).vol_runoff_rill
         # w2 = surface.arr.get_item([i, j]).v_rill_rest
 
