@@ -2,7 +2,7 @@ import os
 import sys
 import numpy as np
 
-# Make a asc raster output from a numpy array
+# Make an asc raster output from a numpy array
 #
 #  only water level in rills and surface are considered
 #  this method saves stages of the advancing computation
@@ -14,6 +14,8 @@ import numpy as np
 #  @param output output directory
 #
 #
+
+
 def make_sur_raster(surArr, G, t, output):
     rrows = G.rr
     rcols = G.rc
