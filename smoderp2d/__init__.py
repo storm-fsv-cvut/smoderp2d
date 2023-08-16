@@ -139,7 +139,6 @@ class QGISRunner(GrassGisRunner):
         import subprocess
         import tempfile
         import binascii
-        import grass.script as gs
         from grass.script import setup as gsetup
 
         # path to temp location
