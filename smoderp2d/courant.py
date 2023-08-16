@@ -57,7 +57,8 @@ class Courant:
     #  the kinematic wave equation and critical water level
     # in case of sheet flow only calculation the water level guess is 0.001 \e
     # m by default
-    def initial_time_step(self, sur):
+    @staticmethod
+    def initial_time_step(sur):
         # sumA = sumB = sumHCrit = 0
         # count = 0
         # only_surface = comp_type('surface')
