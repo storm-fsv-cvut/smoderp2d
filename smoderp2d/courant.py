@@ -145,7 +145,6 @@ class Courant:
         #                                      xor
         if ma.any((self.cour_most < self.cour_least) != (self.cour_crit <=
                                                          self.cour_most)):
-
             # pokud se na povrchu nic nedeje
             # nema se zmena dt cim ridit
             # a zmeni se podle maxima nasobeneho max_delta_t_mult
@@ -173,7 +172,6 @@ class Courant:
             # pokud je courant v povolenem rozmezi
             # skontrolje se pouze pokud neni vetsi nez maxdt * max_delta_t_mult
             # max_delta_t_mult se meni podle ryh, vyse v teto funkci
-
         else:
             # print 'fdafdsfasdfadsfadsfadsfaf'
             # return delta_t, ratio
