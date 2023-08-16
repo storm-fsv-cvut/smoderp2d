@@ -1,4 +1,4 @@
-# @package smoderp2d.courant defines Class Courant which handels the time step adjustement
+# @package smoderp2d.courant defines Class Courant which handles the time step adjustement
 
 
 import numpy as np
@@ -14,7 +14,7 @@ from smoderp2d.exceptions import SmoderpError
 #
 
 
-class Courant():
+class Courant:
 
     # constructor
     #
@@ -56,7 +56,8 @@ class Courant():
 
     # Guesses the initial time step.
     #
-    #  the guess is based on the maximum \e a and \e b parameters of the kinematic wave equation and critical water level
+    #  the guess is based on the maximum \e a and \e b parameters of
+    #  the kinematic wave equation and critical water level
     # in case of sheet flow only calculation the water level guess is 0.001 \e
     # m by default
     def initial_time_step(self, sur):
@@ -66,10 +67,10 @@ class Courant():
 
         # for i in sur.rr:
         # for j in sur.rc[i]:
-          # sumA += sur.arr[i, j].a
-          # sumB += sur.arr[i, j].b
-          # sumHCrit += sur.arr[i, j].h_crit
-          # count += 1
+        #     sumA += sur.arr[i, j].a
+        #     sumB += sur.arr[i, j].b
+        #     sumHCrit += sur.arr[i, j].h_crit
+        #     count += 1
 
         # meanA = sumA/float(count)
         # meanB = sumB/float(count)
@@ -106,7 +107,8 @@ class Courant():
         # if rill_courant > self.cour_most_rill:
             # self.cour_most_rill = rill_courant
 
-    # Returns the adjusted/unchanged time step after a time step computation is completed.
+    # Returns the adjusted/unchanged time step after a time step computation
+    # is completed.
     #
     #  Also returns the ratio for the rill computation division.
     #
@@ -122,10 +124,10 @@ class Courant():
         # if (self.cour_most_rill < 0.1) :
         # ratio = max(1,ratio-1) # ratio nemuze byt mensi nez 1
         # if ratio == 1 :
-            # self.max_delta_t_mult = 1.0
+        #   self.max_delta_t_mult = 1.0
         # else :
-            # self.max_delta_t_mult = min(1.0, self.max_delta_t_mult*1/(0.9)) #
-            # max_delta_t_mult nemuze byt vetsi nez 1.0
+        #     self.max_delta_t_mult = min(1.0, self.max_delta_t_mult*1/(0.9)) #
+        #     max_delta_t_mult nemuze byt vetsi nez 1.0
 
         # ratio se drzi na 10
         # vyse nelze jit
@@ -142,13 +144,12 @@ class Courant():
         # explicitne se dopocita dt na nejvetsi mozne
         #                                      xor
         if ma.any((self.cour_most < self.cour_least) != (self.cour_crit <=
-                                                        self.cour_most)):
+                                                         self.cour_most)):
 
-        # pokud se na povrchu nic nedeje
-        # nema se zmena dt cim ridit
-        # a zmeni se podle maxima nasobeneho max_delta_t_mult
-        # max_delta_t_mult se meni podle ryh, vyse v teto funkci
-        #
+            # pokud se na povrchu nic nedeje
+            # nema se zmena dt cim ridit
+            # a zmeni se podle maxima nasobeneho max_delta_t_mult
+            # max_delta_t_mult se meni podle ryh, vyse v teto funkci
             if ma.any(self.cour_speed == 0.0):
                 return self.max_delta_t * self.max_delta_t_mult, ratio
 
@@ -177,11 +178,12 @@ class Courant():
             # print 'fdafdsfasdfadsfadsfadsfaf'
             # return delta_t, ratio
             # print 'asdf', dt, dt*self.max_delta_t_mult, ratio
-            if (ma.all(ratio <= self.maxratio) and (self.cour_most_rill < 0.5)):
+            if ma.all(ratio <= self.maxratio) and (self.cour_most_rill < 0.5):
                 return delta_t, ratio
             else:
                 return delta_t * self.max_delta_t_mult, ratio
 
         raise SmoderpError(
-            'courant.cour() missed all its time step conditions\n no rule to preserve or change the time step!'
+            'courant.cour() missed all its time step conditions\n no rule to '
+            'preserve or change the time step! '
         )
