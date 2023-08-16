@@ -1,11 +1,11 @@
 import os
 import sys
-import pytest
 
 from test_utils import PerformTest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from smoderp2d import GrassGisRunner, Runner
+from smoderp2d import GrassGisRunner
+
 
 def params():
     return {
@@ -17,6 +17,7 @@ def params():
         'streams': "stream@PERMANENT",
         'channel_properties_table': "stream_shape@PERMANENT"
     }
+
 
 class TestGrass:
     def test_001_dpre(self):
@@ -31,4 +32,3 @@ class TestGrass:
 
     def test_003_full(self):
         PerformTest(GrassGisRunner, params).run_full()
-        

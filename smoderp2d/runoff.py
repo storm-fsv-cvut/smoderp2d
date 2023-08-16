@@ -12,7 +12,6 @@ Classes:
 """
 
 import time
-import os
 import numpy as np
 import numpy.ma as ma
 
@@ -26,12 +25,12 @@ from smoderp2d.time_step import TimeStep
 from smoderp2d.courant import Courant
 
 from smoderp2d.tools.times_prt import TimesPrt
-from smoderp2d.io_functions import post_proc
 from smoderp2d.io_functions import hydrographs as wf
 
 from smoderp2d.providers import Logger
 
 from smoderp2d.exceptions import MaxIterationExceeded
+
 
 class FlowControl(object):
     """ Manage variables related to main computational loop. """
@@ -81,14 +80,14 @@ class FlowControl(object):
 
     def save_vars(self):
         """Store tz and sum of interception
-        in case of repeating time time stem iteration.
+        in case of repeating time stem iteration.
         """
         self.tz_tmp = self.tz
         self.sum_interception_tmp = ma.copy(self.sum_interception)
 
     def restore_vars(self):
         """Restore tz and sum of interception
-        in case of repeating time time stem iteration.
+        in case of repeating time stem iteration.
         """
         self.tz = self.tz_tmp
         self.sum_interception = ma.copy(self.sum_interception_tmp)
@@ -129,6 +128,7 @@ class FlowControl(object):
         """Checkes if end time is reached.
         """
         return self.total_time < end_time
+
 
 class Runoff(object):
     """Performs the calculation.
@@ -172,14 +172,14 @@ class Runoff(object):
 
         # handle times step changes based on Courant condition
         self.courant = Courant()
-        self.delta_t = self.courant.initial_time_step(self.surface)
+        self.delta_t = self.courant.initial_time_step()
         self.courant.set_time_step(self.delta_t)
         Logger.info('Corrected time step is {} [s]'.format(self.delta_t.max()))
 
         # opens files for storing hydrographs
         if Globals.get_array_points() is not None:
             self.hydrographs = wf.Hydrographs()
-            ### TODO
+            # TODO
             # arcgis = Globals.arcgis
             # if not arcgis:
             #     with open(os.path.join(Globals.outdir, 'points.txt'), 'w') as fd:
@@ -195,8 +195,6 @@ class Runoff(object):
         self.time_step = TimeStep()
 
         # record values into hydrographs at time zero
-        rr, rc = GridGlobals.get_region_dim()
-
         self.hydrographs.write_hydrographs_record(
             None,
             None,
@@ -245,8 +243,6 @@ class Runoff(object):
 
         Selected values are stored in at the end of each loop.
         """
-
-
         # saves time before the main loop
         Logger.info('Start of computing...')
         Logger.start_time = time.time()
@@ -290,7 +286,7 @@ class Runoff(object):
                 # update time step size if necessary (based on the courant
                 # condition)
                 self.delta_t, self.flow_control.ratio = self.courant.courant(
-                    potRain, self.delta_t, self.flow_control.ratio
+                    self.delta_t, self.flow_control.ratio
                 )
 
                 # if current time plus timestep is in next minute
@@ -338,7 +334,8 @@ class Runoff(object):
                     actRain
                 )
                 # TODO
-                # post_proc.do(self.cumulative, Globals.mat_slope, Gl, surface.arr)
+                # post_proc.do(
+                # self.cumulative, Globals.mat_slope, Gl, surface.arr)
                 raise MaxIterationExceeded(
                     self.flow_control.max_iter,
                     self.flow_control.total_time
@@ -360,7 +357,9 @@ class Runoff(object):
             # calculate inflow to reaches
             self.surface.stream_reach_inflow()
             # record cumulative and maximal results of a reach
-            self.surface.stream_cumulative(self.flow_control.total_time + self.delta_t)
+            self.surface.stream_cumulative(
+                self.flow_control.total_time + self.delta_t
+            )
 
             # set current times to previous time step
             self.subsurface.curr_to_pre()
@@ -379,7 +378,9 @@ class Runoff(object):
             )
 
             # print raster results in given time steps
-            self.times_prt.prt(self.flow_control.total_time, self.delta_t, self.surface)
+            self.times_prt.prt(
+                self.flow_control.total_time, self.delta_t, self.surface
+            )
 
             # set current time results to previous time step
             # check if rill flow occur
@@ -437,7 +438,7 @@ class Runoff(object):
         # perform postprocessing - store results
         self.provider.postprocessing(self.cumulative, self.surface.arr,
                                      self.surface.reach)
-        #Logger.progress(100)
+        # Logger.progress(100)
 
         # TODO
         # post_proc.stream_table(Globals.outdir + os.sep, self.surface,
