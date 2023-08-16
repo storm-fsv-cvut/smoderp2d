@@ -12,7 +12,6 @@ Classes:
 """
 
 import time
-import os
 import numpy as np
 import numpy.ma as ma
 
@@ -26,7 +25,6 @@ from smoderp2d.time_step import TimeStep
 from smoderp2d.courant import Courant
 
 from smoderp2d.tools.times_prt import TimesPrt
-from smoderp2d.io_functions import post_proc
 from smoderp2d.io_functions import hydrographs as wf
 
 from smoderp2d.providers import Logger
