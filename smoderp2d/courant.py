@@ -110,7 +110,7 @@ class Courant:
     #
     #  Also returns the ratio for the rill computation division.
     #
-    def courant(self, rainfall, delta_t, ratio):
+    def courant(self, delta_t, ratio):
         # ratio se muze zmensit  a max_delta_t_mult zvetsit
         # pokud je courant v ryhach <= 0.2
         #
