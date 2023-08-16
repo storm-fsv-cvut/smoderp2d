@@ -29,7 +29,7 @@ from smoderp2d.core.general import Globals
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
-from smoderp2d.exceptions import SmoderpError
+from smoderp2d.exceptions import SmoderpError, ProviderError
 
 __version__ = "2.0.dev"
 
