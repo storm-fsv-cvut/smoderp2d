@@ -149,10 +149,12 @@ class LoadItems:
 
         return arr
 
-    def __float(self, el):
+    @staticmethod
+    def __float(el):
         return float(el)
 
-    def __int(self, el):
+    @staticmethod
+    def __int(el):
         return int(el)
 
 
