@@ -257,7 +257,7 @@ def __runoff(sur, dt, efect_vrst, ratio):
     sur.rillWidth = ma.where(sur.state > 0, rill_runoff_results[7],
                              sur.rillWidth)
 
-    return q_sheet, v_sheet, q_rill, v_rill, ratio, rill_courant, h_sheet, \
+    return v_sheet, q_rill, v_rill, ratio, rill_courant, h_sheet, \
            h_rill, h_rillPre, vol_runoff, vol_rest, v_rill_rest, \
            vol_runoff_rill, v_rill
 
@@ -286,7 +286,7 @@ def __runoff_zero_comp_type(sur, dt, efect_vrst, ratio):
     v_rill = 0
 
     return (
-        q_sheet, v_sheet, q_rill, v_rill, ratio, 0.0, sur.h_sheet,
+        v_sheet, q_rill, v_rill, ratio, 0.0, sur.h_sheet,
         sur.h_rill, sur.h_rillPre, vol_runoff, vol_rest, sur.v_rill_rest,
         sur.vol_runoff_rill, v_rill
     )
