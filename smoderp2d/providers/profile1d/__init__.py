@@ -1,18 +1,16 @@
 import os
 import sys
 import csv
-import argparse
-import logging
 import numpy as np
 
 if sys.version_info.major >= 3:
-    from configparser import ConfigParser, NoSectionError, NoOptionError
+    from configparser import NoSectionError, NoOptionError
 else:
-    from ConfigParser import ConfigParser, NoSectionError, NoOptionError
+    from ConfigParser import NoSectionError, NoOptionError
 
 from smoderp2d.core.general import Globals
 from smoderp2d.core import CompType
-from smoderp2d.providers.base import BaseProvider, Logger, BaseWriter
+from smoderp2d.providers.base import BaseProvider
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.cmd import CmdWriter, CmdArgumentParser
 from smoderp2d.exceptions import ConfigError, ProviderError
