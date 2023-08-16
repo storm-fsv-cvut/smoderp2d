@@ -51,7 +51,8 @@ class TimesPrt(object):
 
             make_ASC_raster(filen, tmp, Globals)
 
-            # pro pripat, ze v dt by bylo vice pozadovanych tisku, v takovem pripade udela jen jeden
+            # pro pripat, ze v dt by bylo vice pozadovanych tisku,
+            # v takovem pripade udela jen jeden
             # a skoci prvni cas, ktery je mimo
             while (time < self.times[self.__n]) and (self.times[self.__n] <= time + dt):
                 self.__n += 1
