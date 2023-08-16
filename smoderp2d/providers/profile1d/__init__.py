@@ -297,7 +297,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
 
         return pix_heights / lengths
 
-    def _divide_joint_data(self, joint_data, r, res):
+    @staticmethod
+    def _divide_joint_data(joint_data, r, res):
         """Divide joint data into corresponding number of rows.
 
         :param joint_data: np structurred array with the joint data
@@ -339,7 +340,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
 
         return parsed_data
 
-    def _alloc_matrices(self, data):
+    @staticmethod
+    def _alloc_matrices(data):
         # TODO: use loop (check base provider)
         # allocate matrices
         data['mat_b'] = np.zeros((data['r'], data['c']), float)
@@ -360,7 +362,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['mat_boundary'] = np.zeros((data['r'], data['c']), float)
         data['mat_ppl'] = np.zeros((data['r'], data['c']), float)
 
-    def _set_unused(self, data):
+    @staticmethod
+    def _set_unused(data):
         data['cell_stream'] = None
         data['state_cell'] = None
         data['outletCells'] = None
@@ -369,7 +372,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['br'] = None
         data['streams'] = None
 
-    def _set_hydrographs(self, max_row):
+    @staticmethod
+    def _set_hydrographs(max_row):
         """Get array_points and points for the data dictionary.
 
         These keys are needed to force the run to compute hydrographs.
