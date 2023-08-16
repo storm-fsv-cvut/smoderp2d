@@ -1,6 +1,4 @@
-import numpy as np
 import os
-from smoderp2d.core.general import *
 from smoderp2d.providers import Logger
 
 from smoderp2d.core.general import Globals
