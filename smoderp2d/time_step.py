@@ -20,7 +20,8 @@ max_infilt_capa = 0.000  # [m]
 
 # Class manages the one time step operation
 #
-#  the class also contains methods to store the important arrays to reload that if the time step is adjusted
+#  the class also contains methods to store the important arrays to reload that
+#  if the time step is adjusted
 #
 class TimeStep:
 
@@ -97,15 +98,15 @@ class TimeStep:
             rill_courant
         )
         rill_courant = 0.
-                # w1 = surface.arr.get_item([i, j]).vol_runoff_rill
-                # w2 = surface.arr.get_item([i, j]).v_rill_rest
+        # w1 = surface.arr.get_item([i, j]).vol_runoff_rill
+        # w2 = surface.arr.get_item([i, j]).v_rill_rest
 
         return potRain
 
+    # self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
+    # courant, total_time, delta_t, combinatIndex, NoDataValue,
+    # sum_interception, mat_efect_cont, ratio, iter_
 
-# self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
-# courant, total_time, delta_t, combinatIndex, NoDataValue,
-# sum_interception, mat_efect_cont, ratio, iter_
     def do_next_h(self, surface, subsurface, rain_arr, cumulative,
                   hydrographs, flow_control, courant, potRain, delta_t):
 
