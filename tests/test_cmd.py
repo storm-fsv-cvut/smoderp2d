@@ -7,11 +7,15 @@ from test_utils import PerformTest, _setup
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from smoderp2d import Runner
 
+
 @pytest.fixture(scope='class')
 def class_manager(request, pytestconfig):
-    config = os.path.join(os.path.dirname(__file__), pytestconfig.getoption("config"))
+    config = os.path.join(
+        os.path.dirname(__file__), pytestconfig.getoption("config")
+    )
     _setup(request, config)
     yield
+
 
 @pytest.mark.usefixtures('class_manager')
 class TestCmd:
