@@ -5,7 +5,6 @@ import numpy as np
 import numpy.ma as ma
 
 from smoderp2d.core.general import Globals as Gl, GridGlobals
-from smoderp2d.exceptions import SmoderpError
 
 # Contains variables and methods needed for time step size handling
 #
