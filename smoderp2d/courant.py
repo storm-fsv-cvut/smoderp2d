@@ -4,8 +4,6 @@
 import numpy as np
 import numpy.ma as ma
 
-from smoderp2d.providers import Logger
-
 from smoderp2d.core.general import Globals as Gl, GridGlobals
 from smoderp2d.exceptions import SmoderpError
 
