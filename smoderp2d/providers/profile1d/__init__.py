@@ -317,7 +317,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         for slope_segment in joint_data:
             segment_length = np.sum(
                 slope_segment['horizontalProjection[m]'])
-            seg_r = self._compute_rows(segment_length, one_pix_len)
+            # seg_r = self._compute_rows(segment_length, one_pix_len)
 
             seg_hor_len_arr = np.array(
                 [one_pix_len],
