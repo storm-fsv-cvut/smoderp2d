@@ -5,7 +5,7 @@ import pytest
 from test_utils import PerformTest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from smoderp2d import GrassGisRunner, Runner
+from smoderp2d import GrassGisRunner
 
 
 def params():
