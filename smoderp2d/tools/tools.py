@@ -1,6 +1,4 @@
 import os
-import sys
-import numpy as np
 
 # Make an asc raster output from a numpy array
 #
