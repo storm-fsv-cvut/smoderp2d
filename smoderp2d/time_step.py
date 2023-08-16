@@ -24,7 +24,8 @@ max_infilt_capa = 0.000  # [m]
 #
 class TimeStep:
 
-    def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
+    @staticmethod
+    def do_flow(surface, subsurface, delta_t, flow_control, courant):
         rr, rc = GridGlobals.get_region_dim()
         mat_efect_cont = Globals.get_mat_efect_cont()
         fc = flow_control
@@ -106,8 +107,9 @@ class TimeStep:
     # courant, total_time, delta_t, combinatIndex, NoDataValue,
     # sum_interception, mat_efect_cont, ratio, iter_
 
-    def do_next_h(self, surface, subsurface, rain_arr, cumulative,
-                  hydrographs, flow_control, courant, potRain, delta_t):
+    @staticmethod
+    def do_next_h(surface, subsurface, rain_arr, cumulative, hydrographs,
+                  flow_control, courant, potRain, delta_t):
 
         global infilt_capa
         global max_infilt_capa
