@@ -5,12 +5,10 @@
 # true false blbne
 
 
-import pickle
 import numpy as np
 import os
 import sys
 import zipfile
-import time
 
 
 # Class to save item of different typy
