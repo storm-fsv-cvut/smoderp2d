@@ -221,8 +221,6 @@ class TimeStep:
                 state_condition
             )
 
-        surface_state = surface.arr.state
-
         # subsurface inflow
         """
         inflow_sub = subsurface.cell_runoff(i,j,False)
