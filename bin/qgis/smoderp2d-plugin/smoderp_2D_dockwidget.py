@@ -40,6 +40,7 @@ sys.path.insert(0,
 )
 from smoderp2d import QGISRunner
 from smoderp2d.core.general import Globals, GridGlobals
+from smoderp2d.exceptions import ProviderError
 from bin.base import arguments, sections
 
 from .connect_grass import find_grass as fg
@@ -56,20 +57,35 @@ class SmoderpTask(QgsTask):
 
         self.input_params = input_params
         self.input_maps = input_maps
+        self.error = None
 
     def run(self):
         runner = QGISRunner(self.setProgress)
         runner.set_options(self.input_params)
         runner.import_data(self.input_maps)
-        runner.run()
+        try:
+            runner.run()
+        except ProviderError as e:
+            self.error = e
+            return False
         runner.show_results()
 
         # resets
         Globals.reset()
         GridGlobals.reset()
 
-        return 1
+        return True
 
+    def finished(self, result):
+        iface.messageBar().clearWidgets()
+        if result:
+            iface.messageBar().pushMessage(
+                'Computation successfully completed', '', level=Qgis.Info, duration=3)
+        else:
+            iface.messageBar().pushMessage(
+                'Computation failed: ',
+                f'{self.error if self.error is not None else "reason unknown (see SMODERP2D log messages)"}',
+                level=Qgis.Critical)
 
 class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
