@@ -43,8 +43,7 @@ from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.exceptions import ProviderError
 from bin.base import arguments, sections
 
-from .connect_grass import find_grass as fg
-
+from .connect_grass import find_grass_bin
 
 class InputError(Exception):
     def __init__(self):
@@ -60,7 +59,14 @@ class SmoderpTask(QgsTask):
         self.error = None
 
     def run(self):
-        runner = QGISRunner(self.setProgress)
+        # Get GRASS executable
+        try:
+            grass_bin_path = find_grass_bin()
+        except ImportError as e:
+            self.error = e
+            return False
+
+        runner = QGISRunner(self.setProgress, grass_bin_path)
         runner.set_options(self.input_params)
         runner.import_data(self.input_maps)
         try:
@@ -300,10 +306,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
     def OnRunButton(self):
 
         if self._checkInputDataPrep():
-
-            # Get grass
-            grass7bin = fg()
-
             # Get input parameters
             self._getInputParams()
 

@@ -140,7 +140,7 @@ class GrassGisRunner(Runner):
 
 
 class QGISRunner(GrassGisRunner):
-    def __init__(self, progress_reporter):
+    def __init__(self, progress_reporter, grass_bin_path='grass'):
         self.progress_reporter = progress_reporter
 
         # create temp GRASS location
@@ -163,7 +163,7 @@ class QGISRunner(GrassGisRunner):
         location = binascii.hexlify(os.urandom(string_length)).decode("utf-8")
 
         subprocess.call(
-            ['grass', '-e', f'-c {epsg}', os.path.join(gisdb, location)]
+            [grass_bin_path, '-e', f'-c {epsg}', os.path.join(gisdb, location)]
         )
 
         # # create location
