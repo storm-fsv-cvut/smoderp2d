@@ -24,13 +24,14 @@
 
 import os
 import sys
+import tempfile
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication, Qt
 
-from PyQt5.QtWidgets import QFileDialog, QProgressBar
+from PyQt5.QtWidgets import QFileDialog, QProgressBar, QMenu
 from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, \
-    QgsVectorLayer, QgsRasterLayer, QgsTask, QgsApplication, Qgis
+    QgsVectorLayer, QgsRasterLayer, QgsTask, QgsApplication, Qgis, QgsProject
 from qgis.utils import iface
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox, QgsMessageBarItem
 
@@ -531,3 +532,26 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         elif t == 'INFO':
             self.iface.messageBar().pushInfo(self.tr(u'{}').format(caption),
                                              self.tr(u'{}').format(message))
+
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        testAction = menu.addAction("Load test parameters")
+        action = menu.exec_(self.mapToGlobal(event.pos()))
+        if action == testAction:
+            self._loadTestParams()
+
+    def _loadTestParams(self):
+        dir_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'tests', 'data')
+        try:
+            self.elevation_comboBox.setLayer(QgsProject.instance().mapLayersByName('dem10m')[0])
+            self.soil_comboBox.setLayer(QgsProject.instance().mapLayersByName('soils')[0])
+            self.points_comboBox.setLayer(QgsProject.instance().mapLayersByName('points')[0])
+            self.stream_comboBox.setLayer(QgsProject.instance().mapLayersByName('stream')[0])
+            self.rainfall_lineEdit.setText(os.path.join(dir_path, 'rainfall.txt'))
+            self.table_soil_vegetation_comboBox.setLayer(QgsProject.instance().mapLayersByName('soil_veg_tab_mean')[0])
+            self.table_stream_shape_comboBox.setLayer(QgsProject.instance().mapLayersByName('stream_shape')[0])
+            self.table_stream_shape_code_comboBox.setCurrentText('channel_id')
+            with tempfile.NamedTemporaryFile() as temp_dir:
+                self.main_output_lineEdit.setText(temp_dir.name)
+        except IndexError:
+            self._sendMessage('Error', 'Unable to set test parameters. Load demo QGIS project first.', 'CRITICAL')
