@@ -196,7 +196,7 @@ class QGISRunner(GrassGisRunner):
             try:
                 # import rasters
                 if key == "elevation":
-                    Module("r.import", input=options[key], output=key)
+                    Module("r.import", input=options[key], output=key, flags='o')
                 # import vectors
                 elif key in ["soil", "vegetation", "points", "streams"]:
                     Module(
