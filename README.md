@@ -90,6 +90,8 @@ Launch SMODERP2D ArcToolbox from `bin\arcgis` directory.
 
 ### From QGIS
 
+Requirements: QGIS 3.28.10 and higher
+
 Quick test (on Linux):
 
 ```sh
