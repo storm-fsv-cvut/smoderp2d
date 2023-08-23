@@ -200,7 +200,7 @@ class QGISRunner(GrassGisRunner):
                 # import vectors
                 elif key in ["soil", "vegetation", "points", "streams"]:
                     Module(
-                        "v.import", input=options[key], output=key, flags='o'
+                        "v.import", input=options[key], output=key
                     )
                 # import tables
                 elif key in ["table_soil_vegetation",
