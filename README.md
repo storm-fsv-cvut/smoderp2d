@@ -92,10 +92,15 @@ Launch SMODERP2D ArcToolbox from `bin\arcgis` directory.
 
 Requirements: QGIS 3.28.10 and higher
 
-Quick test (on Linux):
+Set path to the plugin:
 
 ```sh
 QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/qgis_project.qgz
 ```
 
-Enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
+or define `QGIS_PLUGINPATH` in `Settings -> Options -> System`:
+
+![SMODERP2D QGIS settings](img/qgis_settings.png?raw=true "QGIS settings")
+
+
+And enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
