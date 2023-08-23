@@ -196,7 +196,22 @@ class QGISRunner(GrassGisRunner):
             try:
                 # import rasters
                 if key == "elevation":
-                    Module("r.import", input=options[key], output=key, flags='o')
+                    from osgeo import gdal, osr
+                    from qgis.core import QgsProject
+
+                    ds = gdal.Open('tests/data/dem10m.tif')
+                    proj = osr.SpatialReference(wkt=ds.GetProjection())
+                    srs = proj.GetAttrValue('AUTHORITY',1)
+
+                    project_projection = QgsProject.instance().crs().authid()
+
+                    if srs == project_projection.split(':')[1]:
+                        Module(
+                            "r.import", input=options[key], output=key,
+                            flags='o'
+                        )
+                    else:
+                        Module("r.import", input=options[key], output=key)
                 # import vectors
                 elif key in ["soil", "vegetation", "points", "streams"]:
                     Module(
