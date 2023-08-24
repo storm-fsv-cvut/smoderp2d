@@ -3,14 +3,14 @@ import sys
 import subprocess
 
 
-def find_grass():
+def find_grass_bin():
     """Find GRASS binary."""
     try:
-        grass7bin = _grass_loc()
+        grass_bin_path = _grass_loc()
     except ImportError as e:
         raise ImportError('Unable to find GRASS installation. {}'.format(e))
 
-    return grass7bin
+    return grass_bin_path
 
 
 def _grass_loc():
@@ -20,19 +20,20 @@ def _grass_loc():
     if sys.platform == 'win32':
         qgis_prefix_path = os.environ['QGIS_PREFIX_PATH']
         bin_path = os.path.join(qgis_prefix_path, '..', '..',  'bin')
-        grass7bin = None
-        for grass_version in ['77', '78']:
+        grass_bin_path = None
+
+        for grass_version in range(83, 89):
             gpath = os.path.join(bin_path, 'grass{}.bat'.format(grass_version))
             if os.path.exists(gpath):
-                grass7bin = gpath
+                grass_bin_path = gpath
                 break
 
-        if grass7bin is None:
-            raise ImportError("No grass executable found.")
+        if grass_bin_path is None:
+            raise ImportError("No GRASS executable found.")
     else:
-        grass7bin = '/usr/bin/grass'
+        grass_bin_path = '/usr/bin/grass'
 
-    startcmd = [grass7bin, '--config', 'path']
+    startcmd = [grass_bin_path, '--config', 'path']
 
     p = subprocess.Popen(startcmd,
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -51,4 +52,4 @@ def _grass_loc():
     # define GRASS-Python environment
     sys.path.append(os.path.join(gisbase, "etc", "python"))
 
-    return grass7bin
+    return grass_bin_path

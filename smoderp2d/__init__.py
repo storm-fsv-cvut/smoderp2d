@@ -36,23 +36,27 @@ __version__ = "2.0.dev"
 
 class Runner(object):
     def __init__(self):
-        provider_class = self._provider_factory()
-        self._provider = provider_class()
+        self._provider = self._provider_factory()
 
     def _provider_factory(self):
         # initialize provider
         if isinstance(self, ArcGisRunner):
             from smoderp2d.providers.arcgis import ArcGisProvider
-            provider_class = ArcGisProvider
+            provider_class = ArcGisProvider()
+        elif isinstance(self, QGISRunner):
+            from smoderp2d.providers.grass import GrassGisProvider
+            from smoderp2d.providers.grass.logger import QGisLogHandler
+            QGisLogHandler.progress_reporter = self.progress_reporter
+            provider_class = GrassGisProvider(QGisLogHandler)
         elif isinstance(self, GrassGisRunner):
             from smoderp2d.providers.grass import GrassGisProvider
-            provider_class = GrassGisProvider
+            provider_class = GrassGisProvider()
         elif os.getenv('SMODERP2D_PROFILE1D'):
             from smoderp2d.providers.profile1d import Profile1DProvider
-            provider_class = Profile1DProvider
+            provider_class = Profile1DProvider()
         else:
             from smoderp2d.providers.cmd import CmdProvider
-            provider_class = CmdProvider
+            provider_class = CmdProvider()
 
         return provider_class
 
@@ -115,6 +119,9 @@ class Runner(object):
         Logger.set_progress(100)
         runoff.save_output()
 
+        # resets
+        Logger.reset()
+
         return 0
 
     def set_options(self, options):
@@ -133,13 +140,18 @@ class GrassGisRunner(Runner):
 
 
 class QGISRunner(GrassGisRunner):
+    def __init__(self, progress_reporter, grass_bin_path='grass'):
+        self.progress_reporter = progress_reporter
 
-    def __init__(self):
         # create temp GRASS location
         import subprocess
         import tempfile
         import binascii
         from grass.script import setup as gsetup
+        from grass.pygrass.gis import Mapset
+        from qgis.core import QgsProject
+
+        epsg = QgsProject.instance().crs().authid()
 
         # path to temp location
         gisdb = os.path.join(tempfile.gettempdir(), 'grassdata')
@@ -151,17 +163,19 @@ class QGISRunner(GrassGisRunner):
         location = binascii.hexlify(os.urandom(string_length)).decode("utf-8")
 
         subprocess.call(
-            ['grass', '-e', '-c EPSG:5514', os.path.join(gisdb, location)]
+            [grass_bin_path, '-e', f'-c {epsg}', os.path.join(gisdb, location)]
         )
-
-        # initialize GRASS session
-        gsetup.init(gisdb, location, 'PERMANENT', os.environ['GISBASE'])
 
         # # create location
         # try:
         #     gs.create_location(gisdb, location, epsg='5514', overwrite=True)
         # except SmoderpError as e:
         #     raise SmoderpError('{}'.format(e))
+
+        # initialize GRASS session
+        gsetup.init(gisdb, location, 'PERMANENT', os.environ['GISBASE'])
+        # calling gsetup.init() is not enough for PyGRASS
+        Mapset('PERMANENT', location, gisdb).current()
 
         # test GRASS env varible
         if not os.getenv('GISRC'):
@@ -182,11 +196,26 @@ class QGISRunner(GrassGisRunner):
             try:
                 # import rasters
                 if key == "elevation":
-                    Module("r.import", input=options[key], output=key)
+                    from osgeo import gdal, osr
+                    from qgis.core import QgsProject
+
+                    ds = gdal.Open('tests/data/dem10m.tif')
+                    proj = osr.SpatialReference(wkt=ds.GetProjection())
+                    srs = proj.GetAttrValue('AUTHORITY',1)
+
+                    project_projection = QgsProject.instance().crs().authid()
+
+                    if srs == project_projection.split(':')[1]:
+                        Module(
+                            "r.import", input=options[key], output=key,
+                            flags='o'
+                        )
+                    else:
+                        Module("r.import", input=options[key], output=key)
                 # import vectors
                 elif key in ["soil", "vegetation", "points", "streams"]:
                     Module(
-                        "v.import", input=options[key], output=key, flags='o'
+                        "v.import", input=options[key], output=key
                     )
                 # import tables
                 elif key in ["table_soil_vegetation",

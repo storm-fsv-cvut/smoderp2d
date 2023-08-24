@@ -24,30 +24,75 @@
 
 import os
 import sys
+import tempfile
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication
+from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication, Qt
 
-from PyQt5.QtWidgets import QFileDialog
-from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, QgsVectorLayer, QgsRasterLayer
+from PyQt5.QtWidgets import QFileDialog, QProgressBar, QMenu
+from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, \
+    QgsVectorLayer, QgsRasterLayer, QgsTask, QgsApplication, Qgis, QgsProject
 from qgis.utils import iface
-from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
+from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox, QgsMessageBarItem
 
 ### ONLY FOR TESTING PURPOSES (!!!)
 sys.path.insert(0,
                 os.path.join(os.path.dirname(__file__), '..', '..', '..')
 )
 from smoderp2d import QGISRunner
+from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.exceptions import ProviderError
 from bin.base import arguments, sections
 
-from .connect_grass import find_grass as fg
-
+from .connect_grass import find_grass_bin
 
 class InputError(Exception):
     def __init__(self):
         pass
 
+
+class SmoderpTask(QgsTask):
+    def __init__(self, input_params, input_maps):
+        super().__init__()
+
+        self.input_params = input_params
+        self.input_maps = input_maps
+        self.error = None
+
+    def run(self):
+        # Get GRASS executable
+        try:
+            grass_bin_path = find_grass_bin()
+        except ImportError as e:
+            self.error = e
+            return False
+
+        runner = QGISRunner(self.setProgress, grass_bin_path)
+        runner.set_options(self.input_params)
+        runner.import_data(self.input_maps)
+        try:
+            runner.run()
+        except ProviderError as e:
+            self.error = e
+            return False
+        runner.show_results()
+
+        # resets
+        Globals.reset()
+        GridGlobals.reset()
+
+        return True
+
+    def finished(self, result):
+        iface.messageBar().clearWidgets()
+        if result:
+            iface.messageBar().pushMessage(
+                'Computation successfully completed', '', level=Qgis.Info, duration=3)
+        else:
+            iface.messageBar().pushMessage(
+                'Computation failed: ',
+                f'{self.error if self.error is not None else "reason unknown (see SMODERP2D log messages)"}',
+                level=Qgis.Critical)
 
 class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
@@ -58,6 +103,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         super(Smoderp2DDockWidget, self).__init__(parent)
 
         self.iface = iface
+        self.task_manager = QgsApplication.taskManager()
 
         self.settings = QSettings("CTU", "smoderp")
         self.arguments = {}  # filled during self.retranslateUi()
@@ -261,27 +307,34 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
     def OnRunButton(self):
 
         if self._checkInputDataPrep():
-
-            # Get grass
-            grass7bin = fg()
-
             # Get input parameters
             self._getInputParams()
 
-            try:
-                runner = QGISRunner()
-
-            except ProviderError as e:
-                raise ProviderError(e)
-
-            runner.import_data(self._input_maps)
-
             # TODO: implement data preparation only
 
-            runner.set_options(self._input_params)
-            runner.run()
+            smoderp_task = SmoderpTask(self._input_params, self._input_maps)
 
-            runner.show_results()
+            # prepare the progress bar
+            self.progress_bar = QProgressBar()
+            self.progress_bar.setMaximum(100)
+            self.progress_bar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            progress_msg = self.iface.messageBar().createMessage(
+                "Computation progress: "
+            )
+            progress_msg.layout().addWidget(self.progress_bar)
+            self.iface.messageBar().pushWidget(progress_msg, Qgis.Info)
+            smoderp_task.begun.connect(
+                lambda: self.progress_bar.setValue(0)
+            )
+            smoderp_task.progressChanged.connect(
+                lambda a: self.progress_bar.setValue(int(a))
+            )
+            smoderp_task.taskCompleted.connect(
+                self.iface.messageBar().clearWidgets
+            )
+
+            # start the task
+            self.task_manager.addTask(smoderp_task)
         else:
             self._sendMessage("Input parameters error:",
                               "Some of mandatory fields are not filled correctly.",
@@ -479,3 +532,26 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         elif t == 'INFO':
             self.iface.messageBar().pushInfo(self.tr(u'{}').format(caption),
                                              self.tr(u'{}').format(message))
+
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        testAction = menu.addAction("Load test parameters")
+        action = menu.exec_(self.mapToGlobal(event.pos()))
+        if action == testAction:
+            self._loadTestParams()
+
+    def _loadTestParams(self):
+        dir_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'tests', 'data')
+        try:
+            self.elevation_comboBox.setLayer(QgsProject.instance().mapLayersByName('dem10m')[0])
+            self.soil_comboBox.setLayer(QgsProject.instance().mapLayersByName('soils')[0])
+            self.points_comboBox.setLayer(QgsProject.instance().mapLayersByName('points')[0])
+            self.stream_comboBox.setLayer(QgsProject.instance().mapLayersByName('stream')[0])
+            self.rainfall_lineEdit.setText(os.path.join(dir_path, 'rainfall.txt'))
+            self.table_soil_vegetation_comboBox.setLayer(QgsProject.instance().mapLayersByName('soil_veg_tab_mean')[0])
+            self.table_stream_shape_comboBox.setLayer(QgsProject.instance().mapLayersByName('stream_shape')[0])
+            self.table_stream_shape_code_comboBox.setCurrentText('channel_id')
+            with tempfile.NamedTemporaryFile() as temp_dir:
+                self.main_output_lineEdit.setText(temp_dir.name)
+        except IndexError:
+            self._sendMessage('Error', 'Unable to set test parameters. Load demo QGIS project first.', 'CRITICAL')

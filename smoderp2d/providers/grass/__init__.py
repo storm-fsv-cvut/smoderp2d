@@ -48,7 +48,7 @@ class GrassGisWriter(BaseWriter):
             region.write()
 
         raster_name = os.path.splitext(os.path.basename(file_output))[0]
-        
+
         numpy2raster(
             array, "FCELL",
             raster_name, overwrite=True
@@ -63,7 +63,8 @@ class GrassGisWriter(BaseWriter):
         )
 
 class GrassGisProvider(BaseProvider):
-    def __init__(self):
+
+    def __init__(self, log_handler=GrassGisLogHandler):
         super(GrassGisProvider, self).__init__()
 
         # type of computation (default)
@@ -74,7 +75,7 @@ class GrassGisProvider(BaseProvider):
 
         # logger
         self.add_logging_handler(
-            handler=GrassGisLogHandler(),
+            handler=log_handler(),
             formatter = logging.Formatter("%(message)s")
         )
 

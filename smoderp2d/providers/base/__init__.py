@@ -158,7 +158,8 @@ class BaseProvider(object):
             )
         handler.setFormatter(formatter)
         if sys.version_info.major >= 3:
-            if not Logger.hasHandlers(): # avoid duplicated handlers (eg. in case of ArcGIS)
+            if len(Logger.handlers) == 0:
+                # avoid duplicated handlers (eg. in case of ArcGIS)
                 Logger.addHandler(handler)
 
     def __load_hidden_config(self):

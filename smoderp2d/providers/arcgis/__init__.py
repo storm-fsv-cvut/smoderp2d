@@ -62,20 +62,20 @@ class ArcGisWriter(BaseWriter):
             GridGlobals.xllcorner,
             GridGlobals.yllcorner,
         )
-        
+
         raster = arcpy.NumPyArrayToRaster(
             array.filled(GridGlobals.NoDataValue) if isinstance(array, np.ma.MaskedArray) else array,
             lower_left, GridGlobals.dx, GridGlobals.dy,
             value_to_nodata=GridGlobals.NoDataValue
         )
-        
+
         arcpy.RasterToASCII_conversion(
             raster,
             file_output
         )
 
 class ArcGisProvider(BaseProvider):
-    def __init__(self):
+    def __init__(self, log_handler=ArcPyLogHandler):
         super(ArcGisProvider, self).__init__()
 
         # type of computation (default)
@@ -86,10 +86,10 @@ class ArcGisProvider(BaseProvider):
 
         # logger
         self.add_logging_handler(
-            handler=ArcPyLogHandler(),
+            handler=log_handler(),
             formatter=logging.Formatter("%(levelname)-8s %(message)s")
         )
-        
+
         # define storage writter
         self.storage = ArcGisWriter()
 

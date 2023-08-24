@@ -1,5 +1,7 @@
+import sys
 import numpy as np
 import sqlite3
+import subprocess
 
 from smoderp2d.core.general import GridGlobals, Globals
 
@@ -16,6 +18,14 @@ from grass.pygrass.gis import Mapset
 from grass.pygrass.gis.region import Region
 from grass.exceptions import CalledModuleError, OpenError
 
+def _run_grass_module(*args, **kwargs):
+    if sys.platform == 'win32':
+        si = subprocess.STARTUPINFO()
+        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        si.wShowWindow = subprocess.SW_HIDE
+        Module(*args, env_={'startupinfo': si}, **kwargs)
+    else:
+        Module(*args, **kwargs)
 
 class PrepareData(PrepareDataGISBase):
 
@@ -67,17 +77,17 @@ class PrepareData(PrepareDataGISBase):
     @staticmethod
     def __remove_temp_data(kwargs):
         if kwargs['type'] != 'table':
-            Module('g.remove', flags="f", **kwargs)
+            _run_grass_module('g.remove', flags="f", **kwargs)
         else:
-            Module('db.droptable', table=kwargs['name'])
+            _run_grass_module('db.droptable', table=kwargs['name'])
 
     def _create_AoI_outline(self, elevation, soil, vegetation):
         """See base method for description.
         """
-        Module('g.region',
+        _run_grass_module('g.region',
                raster=elevation)
         dem_slope_mask_path = self.storage.output_filepath('dem_slope_mask')
-        Module('r.recode',
+        _run_grass_module('r.recode',
                input=elevation, output=dem_slope_mask_path+'1',
                rules="-", stdin_="-100000:100000:1")
         # the slope raster extent will be used in further
@@ -87,10 +97,10 @@ class PrepareData(PrepareDataGISBase):
         with RasterRow(elevation) as rmap:
             nsres = rmap.info.nsres
             ewres = rmap.info.ewres
-        Module('g.region',
+        _run_grass_module('g.region',
                n='n+{}'.format(nsres), s='s-{}'.format(nsres),
                e='e+{}'.format(ewres), w='w-{}'.format(ewres))
-        Module('r.grow',
+        _run_grass_module('r.grow',
                input=dem_slope_mask_path+'1', output=dem_slope_mask_path,
                radius=-1.01, metric="maximum")
         self.__remove_temp_data(
@@ -98,24 +108,24 @@ class PrepareData(PrepareDataGISBase):
         )
 
         dem_polygon = self.storage.output_filepath('dem_polygon')
-        Module('r.to.vect',
+        _run_grass_module('r.to.vect',
                input=dem_slope_mask_path, output=dem_polygon,
                flags="v", type="area")
         aoi = self.storage.output_filepath('aoi')
-        Module('v.clip',
+        _run_grass_module('v.clip',
                input=soil, clip=dem_polygon,
                output=aoi+'1')
-        Module('v.overlay',
+        _run_grass_module('v.overlay',
                ainput=aoi+'1', binput=vegetation,
                operator='and', output=aoi)
         self.__remove_temp_data({'name': aoi+'1', 'type': 'vector'})
 
         aoi_polygon = self.storage.output_filepath('aoi_polygon')
-        Module('v.db.addcolumn',
+        _run_grass_module('v.db.addcolumn',
                map=aoi, columns="dissolve int")
-        Module('v.db.update',
+        _run_grass_module('v.db.update',
                map=aoi, column='dissolve', value=1)
-        Module('v.dissolve',
+        _run_grass_module('v.dissolve',
                input=aoi, column='dissolve', output=aoi_polygon)
 
         with VectorTopo(aoi_polygon) as vmap:
@@ -124,10 +134,10 @@ class PrepareData(PrepareDataGISBase):
             raise DataPreparationNoIntersection()
 
         aoi_mask = self.storage.output_filepath('aoi_mask')
-        Module('g.region',
+        _run_grass_module('g.region',
                vector=aoi_polygon,
                align=elevation)
-        Module('v.to.rast',
+        _run_grass_module('v.to.rast',
                input=aoi_polygon, type='area', use='cat',
                output=aoi_mask)
 
@@ -136,12 +146,12 @@ class PrepareData(PrepareDataGISBase):
     def _create_DEM_derivatives(self, dem):
         """See base method for description.
         """
-        Module('g.region',
+        _run_grass_module('g.region',
                raster=dem)
         dem_filled = self.storage.output_filepath('dem_filled')
         dem_flowdir = self.storage.output_filepath('dem_flowdir')
         # calculate the depressionless DEM
-        Module('r.fill.dir',
+        _run_grass_module('r.fill.dir',
                input=dem, output=dem_filled,
                format='agnps',
                direction=dem_flowdir+'2')
@@ -149,7 +159,7 @@ class PrepareData(PrepareDataGISBase):
         # calculate the flow direction
         # calculate flow accumulation
         dem_flowacc = self.storage.output_filepath('dem_flowacc')
-        Module('r.watershed',
+        _run_grass_module('r.watershed',
                flags='as', elevation=dem,
                drainage=dem_flowdir+'1', accumulation=dem_flowacc)
         # recalculate flow dir to ArcGIS notation
@@ -166,7 +176,7 @@ class PrepareData(PrepareDataGISBase):
 -7 7 = 2
 -8 8 = 1
 """
-        Module('r.reclass',
+        _run_grass_module('r.reclass',
                input=dem_flowdir+'1', output=dem_flowdir,
                rules='-', stdin_=reclass)
         self.__remove_temp_data(
@@ -176,7 +186,7 @@ class PrepareData(PrepareDataGISBase):
         # calculate slope
         dem_slope = self.storage.output_filepath('dem_slope')
         dem_aspect = self.storage.output_filepath('dem_aspect')
-        Module('r.slope.aspect',
+        _run_grass_module('r.slope.aspect',
                elevation=dem_filled,
                format='percent', slope=dem_slope,
                aspect=dem_aspect)
@@ -187,9 +197,9 @@ class PrepareData(PrepareDataGISBase):
         """See base method for description.
         """
         output = self.storage.output_filepath(name)
-        Module('g.region',
+        _run_grass_module('g.region',
                raster=aoi_mask)
-        Module('r.mapcalc',
+        _run_grass_module('r.mapcalc',
                expression='{o} = if(isnull({m}), null(), {i})'.format(
                    o=output, m=aoi_mask, i=dataset))
 
@@ -200,13 +210,13 @@ class PrepareData(PrepareDataGISBase):
         """
         # select points inside the AIO
         points_clipped = self.storage.output_filepath(name)
-        Module('v.select',
+        _run_grass_module('v.select',
                ainput=dataset, binput=aoi_polygon,
                operator='within',
                output=points_clipped)
 
         # select points outside the AoI
-        Module('v.select',
+        _run_grass_module('v.select',
                flags='r',
                ainput=dataset, binput=aoi_polygon,
                operator='within',
@@ -270,7 +280,7 @@ class PrepareData(PrepareDataGISBase):
         """
         # conversion to radias not needed, GRASS's sin() assumes degrees
         ratio_cell = self.storage.output_filepath('ratio_cell')
-        Module(
+        _run_grass_module(
             'r.mapcalc',
             expression='{o} = abs(sin({a})) + abs(cos({a}))'.format(
                 o=ratio_cell, a=asp
@@ -278,7 +288,7 @@ class PrepareData(PrepareDataGISBase):
         )
 
         efect_cont = self.storage.output_filepath('efect_cont')
-        Module('r.mapcalc',
+        _run_grass_module('r.mapcalc',
                expression='{} = {} * {}'.format(
                    efect_cont, ratio_cell, GridGlobals.dx
                ))
@@ -299,7 +309,7 @@ class PrepareData(PrepareDataGISBase):
                 "will be renamed to '{}'.".format(vegatation_type, veg_type)
             )
             # add the new field
-            Module('v.db.renamecolumn',
+            _run_grass_module('v.db.renamecolumn',
                    map=vegetation,
                    column=[vegetation_type, veg_fieldname])
         else:
@@ -308,10 +318,10 @@ class PrepareData(PrepareDataGISBase):
         # create the geometric intersection of soil and vegetation layers
         soilveg_aoi = self.storage.output_filepath("soilveg_aoi")
         soil_aoi = self.__qualified_name(soil)['name']+'1'
-        Module('v.clip',
+        _run_grass_module('v.clip',
                input=soil, clip=aoi_polygon,
                output=soil_aoi)
-        Module('v.overlay',
+        _run_grass_module('v.overlay',
                ainput=soil_aoi,
                binput=vegetation,
                operator='and',
@@ -321,19 +331,19 @@ class PrepareData(PrepareDataGISBase):
         soilveg_code = self._input_params['table_soil_vegetation_fieldname']
         fields = self._get_field_names(soilveg_aoi)
         if soilveg_code in fields:
-            Module('v.db.dropcolumn',
+            _run_grass_module('v.db.dropcolumn',
                    map=soilveg_aoi,
                    columns=[soilveg_code])
             Logger.info(
                 "'{}' attribute field already in the table and will be "
                 "replaced.".format(soilveg_code)
             )
-        Module('v.db.addcolumn',
+        _run_grass_module('v.db.addcolumn',
                map=soilveg_aoi,
                columns=["{} varchar(15)".format(soilveg_code)])
 
         # calculate "soil_veg" values (soil_type + vegetation_type)
-        Module('v.db.update',
+        _run_grass_module('v.db.update',
                map=soilveg_aoi, column=soilveg_code,
                query_column='a_{} || b_{}'.format(
                    soil_type, vegetation_type))
@@ -343,13 +353,13 @@ class PrepareData(PrepareDataGISBase):
         soilveg_table = self.__qualified_name(
             table_soil_vegetation, mtype='table'
         )['name']
-        Module(
+        _run_grass_module(
             'db.copy',
             from_table=soilveg_table,
             to_table=soilveg_table,
             from_database='$GISDBASE/$LOCATION_NAME/PERMANENT/sqlite/sqlite.db'
         )
-        Module('v.db.join',
+        _run_grass_module('v.db.join',
                map=soilveg_aoi, column=soilveg_code,
                other_table=soilveg_table,
                other_column=soilveg_code,
@@ -374,7 +384,7 @@ class PrepareData(PrepareDataGISBase):
             output = self.storage.output_filepath(
                 "soilveg_aoi_{}".format(field)
             )
-            Module('v.to.rast',
+            _run_grass_module('v.to.rast',
                    input=soilveg_aoi, type='area',
                    use='attr', attribute_column=field,
                    output=output)
@@ -422,18 +432,18 @@ class PrepareData(PrepareDataGISBase):
         """
         # AoI slighty smaller due to start/end elevation extraction
         aoi_buffer = self.storage.output_filepath('aoi_buffer')
-        Module('v.buffer',
+        _run_grass_module('v.buffer',
                input=aoi_polygon, output='aoi_buffer',
                distance=-GridGlobals.dx / 3)
 
         stream_aoi = self.storage.output_filepath('stream_aoi')
-        Module('v.clip',
+        _run_grass_module('v.clip',
                input=stream, clip=aoi_buffer,
                output=stream_aoi)
 
         drop_fields = self._stream_check_fields(stream_aoi)
         if drop_fields:
-            Module('v.db.dropcolumn', map=stream_aoi,
+            _run_grass_module('v.db.dropcolumn', map=stream_aoi,
                    columns=drop_fields)
 
         return stream_aoi
@@ -455,7 +465,7 @@ class PrepareData(PrepareDataGISBase):
 
         # add the streamID for later use, get the 2D length of the stream
         # segments
-        Module('v.db.addcolumn',
+        _run_grass_module('v.db.addcolumn',
                map=stream,
                columns=['{} integer'.format(segment_id_field_name)])
         with VectorTopo(stream) as vmap:
@@ -467,8 +477,8 @@ class PrepareData(PrepareDataGISBase):
             vmap.table.conn.commit()
 
         # extract elevation for the stream segment vertices
-        Module('g.region', raster=dem)
-        Module('v.drape',
+        _run_grass_module('g.region', raster=dem)
+        _run_grass_module('v.drape',
                input=stream, elevation=dem,
                output=stream+'3d')
 
@@ -508,7 +518,7 @@ class PrepareData(PrepareDataGISBase):
         self.__remove_temp_data({'name': stream+'3d', 'type': 'vector'})
 
         # add new fields to the stream segments feature class
-        Module('v.db.addcolumn',
+        _run_grass_module('v.db.addcolumn',
                map=stream,
                columns=[
                    '{} integer'.format(segment_id_field_name),
@@ -519,7 +529,7 @@ class PrepareData(PrepareDataGISBase):
                    '{} double precision'.format(segment_length_field_name)
                ])
 
-        Module(
+        _run_grass_module(
             'v.edit',
             map=stream,
             tool='flip',
@@ -565,14 +575,14 @@ class PrepareData(PrepareDataGISBase):
     def _stream_reach(self, stream):
         """See base method for description.
         """
-        Module('g.region',
+        _run_grass_module('g.region',
                s=GridGlobals.yllcorner, w=GridGlobals.xllcorner,
                n=GridGlobals.yllcorner+(GridGlobals.r * GridGlobals.dy),
                e=GridGlobals.xllcorner+(GridGlobals.c * GridGlobals.dx),
                ewres=GridGlobals.dx, nsres=GridGlobals.dy)
 
         stream_seg = self.storage.output_filepath('stream_seg')
-        Module('v.to.rast',
+        _run_grass_module('v.to.rast',
                input=stream, type='line', use='attr',
                attribute_column=self.fieldnames['stream_segment_id'],
                output=stream_seg)
@@ -588,12 +598,12 @@ class PrepareData(PrepareDataGISBase):
         """
         stream_shape_tab = self.__qualified_name(
             stream_shape_tab, mtype='table')['name']
-        Module(
+        _run_grass_module(
             'db.copy',
             from_table=stream_shape_tab,
             from_database='$GISDBASE/$LOCATION_NAME/PERMANENT/sqlite/sqlite.db',
             to_table=stream_shape_tab)
-        Module('v.db.join',
+        _run_grass_module('v.db.join',
                map=stream, column=stream_shape_code,
                other_table=stream_shape_tab,
                other_column=stream_shape_code,

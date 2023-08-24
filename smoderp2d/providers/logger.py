@@ -65,3 +65,10 @@ class BaseLogger(logging.Logger):
 
         self.info("Time to end    {0}: {1:.2f}".format(units, remaining.max()))
         self.info('-' * 80)
+
+    def reset(self):
+        self._progress_info = {
+            'start': 0,
+            'end': 0,
+            'range': 0
+        }
