@@ -358,11 +358,13 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             self.progress_bar = QProgressBar()
             self.progress_bar.setMaximum(100)
             self.progress_bar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            progress_msg = self.iface.messageBar().createMessage(
+            messageBar = self.iface.messageBar()
+            progress_msg = messageBar.createMessage(
                 "Computation progress: "
             )
             progress_msg.layout().addWidget(self.progress_bar)
-            self.iface.messageBar().pushWidget(progress_msg, Qgis.Info)
+            messageBar.pushWidget(progress_msg, Qgis.Info)
+
             smoderp_task.begun.connect(
                 lambda: self.progress_bar.setValue(0)
             )
@@ -370,7 +372,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 lambda a: self.progress_bar.setValue(int(a))
             )
             smoderp_task.taskCompleted.connect(
-                self.iface.messageBar().clearWidgets
+                messageBar.clearWidgets
             )
 
             # start the task
