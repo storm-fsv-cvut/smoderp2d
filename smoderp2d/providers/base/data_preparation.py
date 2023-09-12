@@ -167,7 +167,6 @@ class PrepareDataBase(ABC):
         rr = []
         rc = []
 
-        in_domain = False
         in_boundary = False
 
         for i in nr:
@@ -181,10 +180,7 @@ class PrepareDataBase(ABC):
                 if mat_boundary[i][j] == -99 and in_boundary is True:
                     one_col.append(j)
 
-                if mat_boundary[i][j] == 0.0 and in_domain is False:
-                    in_domain = True
-
-                if mat_boundary[i][j] == 0.0 and in_domain is True:
+                if mat_boundary[i][j] == 0.0:
                     one_col.append(j)
 
             in_domain = False
