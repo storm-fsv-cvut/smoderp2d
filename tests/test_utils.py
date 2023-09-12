@@ -158,19 +158,19 @@ def _is_on_github_action():
         return True
     return False
 
+data_dir = os.path.join(os.path.dirname(__file__), "data")
 
 class PerformTest:
 
     def __init__(self, runner, params_fn=None):
         self.runner = runner
-        self._data_dir = os.path.join(os.path.dirname(__file__), "data")
-        self._output_dir = os.path.join(self._data_dir, "output")
+        self._output_dir = os.path.join(data_dir, "output")
 
         if params_fn:
             self._params = {
                 "soil_type_fieldname": "SID",
                 "vegetation_type_fieldname": "LandUse",
-                "rainfall_file": os.path.join(self._data_dir, "rainfall.txt"),
+                "rainfall_file": os.path.join(data_dir, "rainfall.txt"),
                 "maxdt": 30,
                 "end_time": 40,
                 "table_soil_vegetation_fieldname": "soilveg",
@@ -326,5 +326,5 @@ class PerformTest:
 
         assert are_dir_trees_equal(
             self._output_dir,
-            os.path.join(self._data_dir, "reference", "gistest", "full"),
+            os.path.join(data_dir, "reference", "gistest", "full"),
         )
