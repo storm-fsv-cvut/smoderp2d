@@ -4,6 +4,8 @@
 tests/data/log
 tests/data/output*
 tests/data/reference/gistest/*/dpre.extracted/
+tests/data/reference/gistest/*/*/dpre.extracted/
+tests/data/reference/dpre.extracted/
 tests/grassdata/smoderp2d-location/test/
 tests/grassdata/smoderp2d-location/PERMANENT/.bash_history
 tests/grassdata/smoderp2d-location/PERMANENT/.bashrc
