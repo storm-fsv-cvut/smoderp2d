@@ -2,6 +2,8 @@
 #  time step, and to store intermeriate variables
 
 import math
+
+from matplotlib.streamplot import OutOfBounds
 from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.processes.infiltration as infiltration
@@ -94,7 +96,6 @@ class TimeStepImplicit:
     
                 # rain 
                 res[j+i*c] += act_rain[i][j] #m/s
-               
                 # sheet runoff
                 res[j+i*c] += - tot_flow[j+i*c] 
                 
@@ -103,57 +104,55 @@ class TimeStepImplicit:
                     res[j+i*c] +=  list_fd[j+i*c][0]*tot_flow[(i-1)*c+j+1] #NE
                     # print(i,j,list_fd[j+i*c][0],tot_flow[(i-1)*c+j+1],"NE")
                     # input()
-                except:
+                except IndexError:
                     pass   
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][1]*tot_flow[(i-1)*c+j] #N
                     # print(i,j,list_fd[j+i*c][1],tot_flow[(i-1)*c+j],"N")
                     # input()
-                except:
+                except IndexError:
                     pass 
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][2]*tot_flow[(i-1)*c+j-1] #NW
                     # print(i,j,list_fd[j+i*c][2],tot_flow[(i-1)*c+j-1],"NW")
                     # input()
-                except:
+                except IndexError:
                     pass
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][3]*tot_flow[(i)*c+j-1] #W
                     # print(i,j,list_fd[j+i*c][3],tot_flow[(i)*c+j-1],"W")
                     # input()
-                except:
+                except  IndexError:
                     pass
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][4]*tot_flow[(i+1)*c+j-1] #SW
                     # print(i,j,list_fd[j+i*c][4],tot_flow[(i+1)*c+j-1],"SW")
                     # input()
-                except:
+                except  IndexError:
                     pass
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][5]*tot_flow[(i+1)*c+j] #S
                     # print(i,j,list_fd[j+i*c][5],tot_flow[(i+1)*c+j],"S")
                     # input()    
-                except:
+                except  IndexError:
                     pass
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][6]*tot_flow[(i+1)*c+j+1] #SE
                     # print(i,j,list_fd[j+i*c][6],tot_flow[(i+1)*c+j+1],    "SE")
                     # input()
-                except:
+                except  IndexError:
                     pass
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][7]*tot_flow[(i)*c+j+1] #E
                     # print(i,j,list_fd[j+i*c][7],tot_flow[(i)*c+j+1],"E")
                     # input()
-                except:
+                except  IndexError:
                     pass
                     
-                      
                 # infiltration 
                 res[j+i*c] += - infilt[i][j] 
                 # Surface retention
                 res[j+i*c] +=  sur_ret[i][j]/dt   
-           
         return res
 
     # Method to performe one time step
@@ -198,7 +197,6 @@ class TimeStepImplicit:
                 NoDataValue)
         
         infiltration.set_combinatIndex(combinatIndex)
-         
 
         # Calculating the actual rain
         actRain, fc.sum_interception, rain_arr.arr.veg = \
@@ -244,7 +242,7 @@ class TimeStepImplicit:
         
         if soulution.success == False:
             print("Error: The solver did not converge")
-            print("Objective function (vorst residual)= ", max(self.model(h_new,dt,
+            print("Objective function (worst residual) = ", max(self.model(h_new,dt,
                                             h_old,
                                             list_fd,
                                             r,c,
@@ -262,6 +260,18 @@ class TimeStepImplicit:
             
         # Saving the new water level
         surface.arr.h_total_new = ma.array(h_new.reshape(r,c),mask=GridGlobals.masks) 
+        
+        #saving the last value of the water level in rill during growing phase (state = 1)
+        # enables to restart the growing phase (switch from 2 to 1)
+        state_1_cond = ma.logical_and(
+                surface.arr.state == 1,
+                surface.arr.h_total_new < surface.arr.h_total_pre,
+            )
+        surface.arr.h_last_state1 = ma.where(
+                state_1_cond,
+                surface.arr.h_total_pre,
+                surface.arr.h_last_state1
+            ) 
        # updating rill surface state
         surface.arr.state = update_state(surface.arr.h_total_new,
                                             surface.arr.h_crit,
@@ -308,17 +318,7 @@ class TimeStepImplicit:
         
         surface.arr.vol_to_rill = ma.where(surface.arr.state > 0,vol_to_rill,
                                surface.arr.vol_to_rill)
-        #saving the last value of the water level in rill during growing phase (state = 1)
-        # enables to restart the growing phase (switch from 2 to 1)
-        state_1_cond = ma.logical_and(
-                surface.arr.state == 1,
-                surface.arr.h_total_new < surface.arr.h_total_pre,
-            )
-        surface.arr.h_last_state1 = ma.where(
-                state_1_cond,
-                surface.arr.h_total_pre,
-                surface.arr.h_last_state1
-            )
+       
          # Update the cumulative values
         cumulative.update_cumulative(
             surface.arr,

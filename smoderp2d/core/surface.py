@@ -332,7 +332,12 @@ def update_state(h_tot_new,h_crit,h_tot_pre,state,h_last_state1):
         state_1_cond,
         2,
         state
-    )      
+    )
+    h_last_state1 = ma.where(
+                state_1_cond,
+                h_tot_pre,
+                h_last_state1
+            )      
     # update state == 2
     state = ma.where(
         ma.logical_and(
