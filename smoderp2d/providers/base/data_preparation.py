@@ -167,17 +167,13 @@ class PrepareDataBase(ABC):
         rr = []
         rc = []
 
-        in_boundary = False
         rr_insert = False
 
         for i in nr:
             one_col = []
             for j in nc:
 
-                if mat_boundary[i][j] == -99 and in_boundary is False:
-                    in_boundary = True
-
-                if mat_boundary[i][j] == -99 and in_boundary is True:
+                if mat_boundary[i][j] == -99:
                     one_col.append(j)
                     rr_insert = True
 
@@ -188,7 +184,6 @@ class PrepareDataBase(ABC):
             if rr_insert is True:
                 rr.append(i)
             rr_insert = False
-            in_boundary = False
             rc.append(one_col)
 
         return rr, rc
