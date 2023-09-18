@@ -177,7 +177,7 @@ class PrepareDataBase(ABC):
                     one_col.append(j)
                     rr_insert = True
 
-                if mat_boundary[i][j] == 0.0:
+                elif mat_boundary[i][j] == 0.0:
                     one_col.append(j)
                     rr_insert = True
 
