@@ -58,153 +58,8 @@ def _setup(request, config_file):
 class TestCmdBase:
     config_file = None
 
-def _is_on_github_action():
-    # https://docs.github.com/en/actions/learn-github-actions/variables
-    if "GITHUB_ACTION" in os.environ:
-        return True
-    return False
-
-data_dir = os.path.join(os.path.dirname(__file__), "data")
-
-class PerformTest:
-
-    def __init__(self, runner, params_fn=None):
-        self.runner = runner
-        self._output_dir = os.path.join(data_dir, "output")
-
-        if params_fn:
-            self._params = {
-                "soil_type_fieldname": "SID",
-                "vegetation_type_fieldname": "LandUse",
-                "rainfall_file": os.path.join(data_dir, "rainfall.txt"),
-                "maxdt": 30,
-                "end_time": 40,
-                "table_soil_vegetation_fieldname": "soilveg",
-                "streams_channel_type_fieldname": "channel_id",
-                "output": self._output_dir,
-            }
-            self._params.update(params_fn())
-        else:
-            self._params = None
-
-    @staticmethod
-    def _extract_pickle_data(data_dict, target_dir):
-        if os.path.exists(target_dir):
-            rmtree(target_dir)
-        os.makedirs(target_dir)
-        for k, v in data_dict.items():
-            with open(os.path.join(target_dir, k), "w") as fd:
-                if isinstance(v, numpy.ndarray):
-                    numpy.savetxt(fd, v)
-                else:
-                    fd.write(str(v))
-
-    @staticmethod
-    def _extract_target_dir(path):
-        return os.path.join(
-            os.path.dirname(path),
-            os.path.splitext(os.path.basename(path))[0] + ".extracted",
-        )
-
-    @staticmethod
-    def _data_to_str(data_dict):
-        return [
-            "{}:{}\n".format(
-                key,
-                numpy.array2string(value, threshold=numpy.inf)
-                if isinstance(value, numpy.ndarray)
-                else value,
-            )
-            for (key, value) in sorted(data_dict.items())
-        ]
-
-    @staticmethod
-    def _compare_arrays(new_output_dict, reference_dict, target_dir):
-        for k, v in new_output_dict.items():
-            if not isinstance(v, numpy.ndarray):
-                continue
-            write_array_diff(v, reference_dict[k], os.path.join(target_dir, k))
-
-    def report_pickle_difference(self, new_output, reference):
-        """Report the inconsistency of two files.
-
-        To be called when output comparison assert fails.
-
-        :param new_output: path to the new output file
-        :param reference: path to the reference file
-        :return: string message reporting the content of the new output
-        """
-        diff_fn = new_output + ".diff"
-        diff_fd = open(diff_fn, "w")
-
-        with open(new_output, "rb") as left:
-            with open(reference, "rb") as right:
-                if sys.version_info > (3, 0):
-                    new_output_dict = pickle.load(left, encoding="bytes")
-                    reference_dict = pickle.load(right, encoding="bytes")
-                else:
-                    new_output_dict = pickle.load(left)
-                    reference_dict = pickle.load(right)
-
-                if not _is_on_github_action():
-                    self._extract_pickle_data(
-                        new_output_dict, self._extract_target_dir(new_output)
-                    )
-                    self._extract_pickle_data(
-                        reference_dict, self._extract_target_dir(reference)
-                    )
-                    self._compare_arrays(
-                        new_output_dict,
-                        reference_dict,
-                        self._extract_target_dir(new_output)
-                    )
-
-                new_output_str = self._data_to_str(new_output_dict)
-                reference_str = self._data_to_str(reference_dict)
-
-                # sys.stdout.writelines(
-                #   unified_diff(new_output_str, reference_str)
-                # )
-                diff_fd.writelines(unified_diff(new_output_str, reference_str))
-
-        diff_fd.close()
-
-        return (
-            "Inconsistency in {} compared to the reference data. "
-            "The diff can be seen above and is stored in {}.".format(
-                new_output, diff_fn
-            )
-        )
-
-    def _run(self, comptype=None):
-        runner = self.runner()
-        Logger.setLevel(logging.ERROR)
-        if self._params:
-            runner.set_options(self._params)
-        if comptype is not None:
-            runner.workflow_mode = comptype
-
-        runner.run()
-
-    def run_dpre(self):
-        self._run(WorkflowMode.dpre)
-
-        dataprep_filepath = os.path.join(self._output_dir, "dpre.save")
-        reference_filepath = os.path.join(
-            self._output_dir,
-            "..",
-            "reference",
-            "gistest",
-            "dpre",
-            "arcgis" if "GRASS_OVERWRITE" not in os.environ else "grass",
-            "dpre.save",
-        )
-        assert filecmp.cmp(
-            dataprep_filepath, reference_filepath
-        ), self.report_pickle_difference(dataprep_filepath, reference_filepath)
-
-    def run_roff(self, config_file):
-        assert os.path.exists(config_file)
+    def do_001_read_config(self):
+        assert os.path.exists(self.config_file)
 
         config = configparser.ConfigParser()
         config.read(self.config_file)
@@ -228,5 +83,7 @@ class PerformTest:
         assert os.path.isdir(output_path)
 
         assert are_dir_trees_equal(
-            self._output_dir, reference_dir
+            output_path,
+            os.path.join(os.path.dirname(__file__), "data", "reference",
+                         os.path.splitext(os.path.basename(self.config_file))[0])
         )

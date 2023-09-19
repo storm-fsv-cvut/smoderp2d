@@ -1,16 +1,20 @@
 import os
-import sys
+import pytest
 
-from test_utils import PerformTest
+from test_utils import TestCmdBase, _setup
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from smoderp2d import Runner
+os.environ["SMODERP2D_PROFILE1D"] = "1"
+config_file = os.path.join(os.path.dirname(__file__), "profile1d.ini")
 
+@pytest.fixture(scope='class')
+def class_manager(request):
+    _setup(request, config_file)
+    yield
+    
+@pytest.mark.usefixtures('class_manager')
+class TestProfile1d(TestCmdBase):
+    def test_001_read_config(self):
+        self.do_001_read_config()
 
-class TestCmd:
-    def test_001_roff(self):
-        os.environ["SMODERP2D_PROFILE1D"] = "1"
-
-        PerformTest(Runner).run_roff(
-            os.path.join(os.path.dirname(__file__), "profile1d.ini")
-        )
+    def test_002_run(self):
+        self.do_002_run()
