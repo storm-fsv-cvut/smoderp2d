@@ -230,13 +230,3 @@ class PerformTest:
         assert are_dir_trees_equal(
             self._output_dir, reference_dir
         )
-
-    def run_full(self):
-        self._run(WorkflowMode.full)
-
-        assert os.path.isdir(self._output_dir)
-
-        assert are_dir_trees_equal(
-            self._output_dir,
-            os.path.join(data_dir, "reference", "gistest", "full"),
-        )
