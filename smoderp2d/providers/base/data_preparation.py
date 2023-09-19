@@ -167,29 +167,23 @@ class PrepareDataBase(ABC):
         rr = []
         rc = []
 
-        in_domain = False
-        in_boundary = False
+        rr_insert = False
 
         for i in nr:
             one_col = []
-            one_col_boundary = []
             for j in nc:
 
-                if mat_boundary[i][j] == -99 and in_boundary is False:
-                    in_boundary = True
-
-                if mat_boundary[i][j] == -99 and in_boundary is True:
-                    one_col_boundary.append(j)
-
-                if (mat_boundary[i][j] == 0.0) and in_domain is False:
-                    rr.append(i)
-                    in_domain = True
-
-                if (mat_boundary[i][j] == 0.0) and in_domain is True:
+                if mat_boundary[i][j] == -99:
                     one_col.append(j)
+                    rr_insert = True
 
-            in_domain = False
-            in_boundary = False
+                elif mat_boundary[i][j] == 0.0:
+                    one_col.append(j)
+                    rr_insert = True
+
+            if rr_insert is True:
+                rr.append(i)
+            rr_insert = False
             rc.append(one_col)
 
         return rr, rc
@@ -627,6 +621,7 @@ class PrepareDataGISBase(PrepareDataBase):
             GridGlobals.r, GridGlobals.c, GridGlobals.NoDataValue,
             self.data['mat_nan']
         )
+        self.storage.write_raster(self.data['mat_boundary'], 'mat_boundary', 'temp')
 
         GridGlobals.rr, GridGlobals.rc = self._get_rr_rc(
             GridGlobals.r, GridGlobals.c, self.data['mat_boundary']
