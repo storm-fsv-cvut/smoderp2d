@@ -199,7 +199,7 @@ class QGISRunner(GrassGisRunner):
                     from osgeo import gdal, osr
                     from qgis.core import QgsProject
 
-                    ds = gdal.Open('tests/data/dem10m.tif')
+                    ds = gdal.Open(options[key])
                     proj = osr.SpatialReference(wkt=ds.GetProjection())
                     srs = proj.GetAttrValue('AUTHORITY',1)
 
