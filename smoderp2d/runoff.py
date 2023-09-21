@@ -402,11 +402,6 @@ class Runoff(object):
                 2,
                 self.surface.arr.state
             )
-            self.surface.arr.h_last_state1 = ma.where(
-                state_1_cond,
-                self.surface.arr.h_total_pre,
-                self.surface.arr.h_last_state1
-            )
             # update state == 2
             self.surface.arr.state = ma.where(
                 ma.logical_and(
@@ -415,6 +410,15 @@ class Runoff(object):
                 ),
                 1,
                 self.surface.arr.state
+            )
+            state_1_cond = ma.logical_and(
+                self.surface.arr.state == 1,
+                self.surface.arr.h_total_new < self.surface.arr.h_total_pre,
+            )
+            self.surface.arr.h_last_state1 = ma.where(
+                state_1_cond,
+                self.surface.arr.h_total_pre,
+                self.surface.arr.h_last_state1
             )
 
             self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
