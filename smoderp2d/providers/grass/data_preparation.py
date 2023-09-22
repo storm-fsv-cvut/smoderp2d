@@ -1,7 +1,5 @@
-import sys
 import numpy as np
 import sqlite3
-import subprocess
 
 from smoderp2d.core.general import GridGlobals, Globals
 
@@ -9,23 +7,14 @@ from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput, \
     DataPreparationError, DataPreparationNoIntersection
 from smoderp2d.providers.base.data_preparation import PrepareDataGISBase
+from smoderp2d.providers.grass import _run_grass_module
 
-from grass.pygrass.modules import Module
 from grass.pygrass.vector import VectorTopo, Vector
 from grass.pygrass.vector.table import Table, get_path
 from grass.pygrass.raster import RasterRow, raster2numpy
 from grass.pygrass.gis import Mapset
 from grass.pygrass.gis.region import Region
 from grass.exceptions import CalledModuleError, OpenError
-
-def _run_grass_module(*args, **kwargs):
-    if sys.platform == 'win32':
-        si = subprocess.STARTUPINFO()
-        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        si.wShowWindow = subprocess.SW_HIDE
-        Module(*args, env_={'startupinfo': si}, **kwargs)
-    else:
-        Module(*args, **kwargs)
 
 class PrepareData(PrepareDataGISBase):
 
@@ -42,7 +31,7 @@ class PrepareData(PrepareDataGISBase):
     def __del__(self):
         # remove mask
         try:
-            Module('r.mask', flags='r')
+            _run_grass_module('r.mask', flags='r')
         except CalledModuleError:
             pass  # mask not exists
 

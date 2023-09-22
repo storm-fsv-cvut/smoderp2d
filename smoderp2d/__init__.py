@@ -191,12 +191,13 @@ class QGISRunner(GrassGisRunner):
         :param options: dictionary of input data
         """
         from grass.pygrass.modules import Module
+        from smoderp2d.providers.grass import _run_grass_module
 
         for key in options:
             try:
                 # import rasters
                 if key == "elevation":
-                    Module("r.import", input=options[key], output=key, flags='o')
+                    _run_grass_module("r.import", input=options[key], output=key, flags='o')
                 # import vectors
                 elif key in ["soil", "vegetation", "points", "streams"]:
                     Module(

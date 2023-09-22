@@ -1,5 +1,6 @@
 import os
 import logging
+import sys
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.exceptions import ProviderError
@@ -12,6 +13,38 @@ from grass.pygrass.gis.region import Region
 from grass.pygrass.modules import Module
 from grass.pygrass.raster import numpy2raster
 from grass.pygrass.messages import Messenger
+
+def _run_grass_module(*args, **kwargs):
+    if sys.platform == 'win32':
+        import subprocess
+        import time
+        import shutil
+        si = subprocess.STARTUPINFO()
+        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        si.wShowWindow = subprocess.SW_HIDE
+        m = Module(*args, **kwargs, run_=False)
+        # very ugly hack of m.run()
+        m._finished = False
+        if m.inputs["stdin"].value:
+            m.stdin = m.inputs["stdin"].value
+            m.stdin_ = subprocess.PIPE
+        m.start_time = time.time()
+        cmd = m.make_cmd()
+        cmd = [shutil.which(cmd[0])] + cmd[1:]
+        m._popen = subprocess.Popen( #gs.core.Popen(
+            cmd,
+            shell=False,
+            universal_newlines=True,
+            stdin=m.stdin_,
+            stdout=m.stdout_,
+            stderr=m.stderr_,
+            env=m.env_,
+            startupinfo=si
+        )
+        if m.finish_ is True:
+            m.wait()
+    else:
+        m = Module(*args, **kwargs)
 
 class GrassGisWriter(BaseWriter):
     def __init__(self):
@@ -54,7 +87,7 @@ class GrassGisWriter(BaseWriter):
             raster_name, overwrite=True
         )
 
-        Module('r.out.gdal',
+        _run_grass_module('r.out.gdal',
                input=raster_name,
                output=file_output,
                format='AAIGrid',
