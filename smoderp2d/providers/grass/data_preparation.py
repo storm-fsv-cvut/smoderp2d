@@ -19,13 +19,13 @@ from grass.pygrass.gis.region import Region
 from grass.exceptions import CalledModuleError, OpenError
 
 def _run_grass_module(*args, **kwargs):
-    if sys.platform == 'win32':
-        si = subprocess.STARTUPINFO()
-        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        si.wShowWindow = subprocess.SW_HIDE
-        Module(*args, env_={'startupinfo': si}, **kwargs)
-    else:
-        Module(*args, **kwargs)
+#    if sys.platform == 'win32':
+#        si = subprocess.STARTUPINFO()
+#        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+#        si.wShowWindow = subprocess.SW_HIDE
+#        Module(*args, env_={'startupinfo': si}, **kwargs)
+#    else:
+    Module(*args, **kwargs)
 
 class PrepareData(PrepareDataGISBase):
 
