@@ -1,2 +1,2 @@
 def pytest_addoption(parser):
-    parser.addoption("--config", action="store", default="quicktest.ini")
+    parser.addoption("--config", action="store", default="quicktest_rill.ini")
