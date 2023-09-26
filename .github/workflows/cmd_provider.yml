@@ -1,0 +1,74 @@
+name: CMD provider
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  smoderp2d-quicktest-sheet:
+    strategy:
+      matrix:
+        python-version:
+          # - "2.7"
+          - "3.8"
+          - "3.11.2"
+
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      python-version: ${{ matrix.python-version }}
+      pytest-suite: tests/test_cmd.py --config quicktest_sheet.ini
+
+  smoderp2d-quicktest-rill:
+    strategy:
+      matrix:
+        python-version:
+          # - "2.7"
+          - "3.8"
+          - "3.11.2"
+
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      python-version: ${{ matrix.python-version }}
+      pytest-suite: tests/test_cmd.py --config quicktest_rill.ini
+
+  smoderp2d-longtest-sheet:
+    strategy:
+      matrix:
+        python-version:
+          # - "2.7"
+          - "3.8"
+          - "3.11.2"
+
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      python-version: ${{ matrix.python-version }}
+      pytest-suite: tests/test_cmd.py --config test_sheet.ini
+
+  smoderp2d-longtest-rill:
+    strategy:
+      matrix:
+        python-version:
+          # - "2.7"
+          - "3.8"
+          - "3.11.2"
+
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      python-version: ${{ matrix.python-version }}
+      pytest-suite: tests/test_cmd.py --config test_rill.ini
+
+  profile1d:
+    strategy:
+      matrix:
+        python-version:
+          - "3.8"
+          - "3.11.2"
+
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      python-version: ${{ matrix.python-version }}
+      pytest-suite: tests/test_profile1d.py

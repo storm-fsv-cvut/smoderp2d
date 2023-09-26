@@ -6,8 +6,7 @@
 #  Flow algorithms itself  are stores in the package
 #  smoderp2d.flow_algorithm.
 #
-#  Classes defined here assemble the
-#  the algorithms and defines methods to
+#  Classes defined here assemble the algorithms and defines methods to
 #  make D8 or mfda compatible within the SMODERP
 #  framework.
 #
@@ -15,7 +14,7 @@
 #  classes Kinematic or Diffuse in the
 #  package smoderp2d.core.kinematic_diffuse
 #
-
+import numpy.ma as ma
 
 from smoderp2d.core.general import Globals
 
@@ -30,6 +29,8 @@ from smoderp2d.providers import Logger
 #  - smoderp2d.core.kinematic_diffuse.Kinematic
 #  - smoderp2d.core.kinematic_diffuse.Diffuse
 #
+
+
 class D8(object):
 
     # constructor
@@ -45,15 +46,17 @@ class D8(object):
 
     # updates #inflows list if the diffuse approach is used.
     #
-    # In the diffusive approach the flow direction may change due to changes of the water level.
+    # In the diffusive approach the flow direction may change due to changes of
+    # the water level.
     #
     def update_inflows(self, fd):
         self.inflows = D8_.new_inflows(fd)
 
-    # returns the water volume water flows into cell i , j from the previous time step based on the
-    # inflows list, \n
+    # returns the water volume water flows into cell i , j from the previous
+    # time step based on the inflows list.
     #
-    # inflows list definition is shown in the method  new_inflows() in the package smoderp2d.flow_algorithm.D8
+    # inflows list definition is shown in the method  new_inflows() in the
+    # package smoderp2d.flow_algorithm.D8.
     #
     #  The total inflow is sum of sheet and rill runoff volume.
     #
@@ -66,13 +69,13 @@ class D8(object):
             bx = self.inflows[i][j][z][1]
             iax = i + ax
             jbx = j + bx
-            try:
-                insurfflow_from_cell = self.arr.get_item([iax, jbx]).vol_runoff
-            except:
+            if iax >= 0 and jbx >= 0:
+                insurfflow_from_cell = self.arr.vol_runoff.data[iax][jbx]
+            else:
                 insurfflow_from_cell = 0.0
-            try:
-                inrillflow_from_cell = self.arr.get_item([iax, jbx]).vol_runoff_rill
-            except:
+            if iax >= 0 and jbx >= 0:
+                inrillflow_from_cell = self.arr.vol_runoff_rill.data[iax][jbx]
+            else:
                 inrillflow_from_cell = 0.0
             inflow_from_cells = inflow_from_cells + \
                 insurfflow_from_cell + inrillflow_from_cell
@@ -98,13 +101,13 @@ class Mfda(object):
 
         Logger.info("Multiflow direction algorithm")
         self.inflows, fd_rill = mfd.new_mfda(
-            mat_dem, mat_nan, mat_fd, vpix, spix, rows, cols
+            mat_dem, mat_nan, mat_fd, dy, dx, rows, cols
         )
         self.inflowsRill = D8_.new_inflows(fd_rill)
 
     def update_inflows(self, fd):
         self.inflows, fd_rill = mfd.new_mfda(
-            self.H, mat_nan, fd, vpix, spix, rows, cols)
+            self.H, mat_nan, fd, dy, dx, rows, cols)
         self.inflowsRill = D8_.new_inflows(fd_rill)
 
     def cell_runoff(self, i, j, sur=True):
@@ -112,7 +115,7 @@ class Mfda(object):
             self.inflows[i - 1][j - 1][1] * \
             self.arr.get_item([i - 1, j - 1]).vol_runoff_pre + \
             self.inflows[i - 1][j][2] * \
-            self.arr.get_item([i - 1, j ]).vol_runoff_pre + \
+            self.arr.get_item([i - 1, j]).vol_runoff_pre + \
             self.inflows[i - 1][j + 1][3] * \
             self.arr.get_item([i - 1, j + 1]).vol_runoff_pre + \
             self.inflows[i][j - 1][0] * \
@@ -127,16 +130,15 @@ class Mfda(object):
             self.arr.get_item([i + 1, j + 1]).vol_runoff_pre
 
         if Globals.isRill and sur:
+            state_ij = self.state[i, j]
             for z in range(len(self.inflowsRill[i][j])):
                 ax = self.inflowsRill[i][j][z][0]
                 bx = self.inflowsRill[i][j][z][1]
                 iax = i + ax
                 jbx = j + bx
-                if self.arr.get_item([i, j]).state == 1 or self.arr.get_item([i, j]).state == 2: # rill
-                    try:
-                        inflow_from_cells += \
-                            self.vol_runoff_rill_pre[iax][jbx]  # toto jeste predelat u ryh
-                    except:
-                        inflow_from_cells += 0.0
+
+                if ma.equal(state_ij, 1) or ma.equal(state_ij, 1):
+                    inflow_from_cells += self.vol_runoff_rill_pre[iax, jbx]
+                    # toto jeste predelat u ryh
 
         return inflow_from_cells
