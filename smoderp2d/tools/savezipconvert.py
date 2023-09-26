@@ -12,9 +12,7 @@
 import pickle
 import numpy as np
 import os
-import sys
 import zipfile
-import time
 
 
 class SaveItems:
@@ -24,7 +22,7 @@ class SaveItems:
         b = []
         self.f.writelines(str(len(l)) + '\n')
         for i in range(len(l)):
-            if l[i] == []:
+            if not l[i]:
                 pass
             else:
                 if isinstance(l[i], list):
@@ -80,7 +78,7 @@ class SaveLoad(SaveItems):
             os.makedirs(dir_)
         for id_, it in enumerate(data):
             # print "%02d" % (id_)
-            with open(dir_ + os.sep + "%02d" % (id_), 'w') as self.f:
+            with open(dir_ + os.sep + "%02d" % id_, 'w') as self.f:
                 self.f.writelines(str(type(it)) + '\n')
                 self.save_item(it)
 
@@ -120,7 +118,7 @@ for file in os.listdir("./"):
     if file.endswith(".save"):
         save = os.path.join("./", file)
         zipn = save.replace(".save", ".zip")
-        print "converting ", save.ljust(32), " to ", zipn, "..."
+        print("converting ", save.ljust(32), " to ", zipn, "...")
         f = open(save, 'r')
         dataList = pickle.load(f)
         sl.save(dataList, zipn)

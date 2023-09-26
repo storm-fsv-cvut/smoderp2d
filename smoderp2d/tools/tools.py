@@ -1,8 +1,6 @@
 import os
-import sys
-import numpy as np
 
-# Make a asc raster output from a numpy array
+# Make an asc raster output from a numpy array
 #
 #  only water level in rills and surface are considered
 #  this method saves stages of the advancing computation
@@ -14,15 +12,11 @@ import numpy as np
 #  @param output output directory
 #
 #
+
+
 def make_sur_raster(surArr, G, t, output):
-    rrows = G.rr
-    rcols = G.rc
-    arr = np.zeros(np.shape(surArr), float)
-    arrrill = np.zeros(np.shape(surArr), float)
-    for i in rrows:
-        for j in rcols[i]:
-            arr[i, j] = surArr.get_item([i, j]).h
-            arrrill[i, j] = surArr.get_item([i, j]).h_rill
+    arr = surArr.h
+    arrrill = surArr.h_rill
 
     outName = output + os.sep + 'prubeh' + \
         os.sep + str(int(t)).zfill(10) + 'h' + ".asc"
@@ -33,24 +27,14 @@ def make_sur_raster(surArr, G, t, output):
 
 
 def make_state_raster(surArr, G, t):
-    rrows = G.rr
-    rcols = G.rc
-    arr = np.zeros(np.shape(surArr), float)
-    for i in rrows:
-        for j in rcols[i]:
-            arr[i, j] = surArr.get_item([i, j]).state
+    arr = surArr.state
 
     outName = 'state' + str(int(t)).zfill(10) + 'h' + ".asc"
     make_ASC_raster(outName, arr, G)
 
 
 def make_sub_raster(subArr, G, t, output):
-    rrows = G.rr
-    rcols = G.rc
-    arr = np.zeros(np.shape(subArr), float)
-    for i in rrows:
-        for j in rcols[i]:
-            arr[i, j] = subArr.get_item([i, j]).h
+    arr = subArr.h
 
     outName = output + os.sep + 'prubeh' + \
         os.sep + str(int(t)).zfill(10) + 'hsub' + ".asc"

@@ -1,144 +1,116 @@
 import os
 import sys
 import logging
-
-import arcpy
+import numpy as np
 
 from smoderp2d.core.general import Globals, GridGlobals
-from smoderp2d.providers.base import BaseProvider, CompType, BaseWritter
-from smoderp2d.providers.arcgis import constants
+from smoderp2d.providers.base import BaseProvider, BaseWriter, WorkflowMode
 from smoderp2d.providers.arcgis.logger import ArcPyLogHandler
 from smoderp2d.providers import Logger
-from smoderp2d.exceptions import GlobalsNotSet
+from smoderp2d.exceptions import ProviderError
 
-class ArcGisWritter(BaseWritter):
+try:
+    import arcpy
+except RuntimeError as e:
+    raise ProviderError("ArcGIS provider: {}".format(e))
+
+class ArcGisWriter(BaseWriter):
     def __init__(self):
-        super(ArcGisWritter, self).__init__()
-
-        # primary key depends of storage format
-        # * Shapefile -> FID
-        # * FileGDB -> OBJECTID
-        self.primary_key = "OBJECTID"
+        super(ArcGisWriter, self).__init__()
 
         # Overwriting output
         arcpy.env.overwriteOutput = 1
 
-    def create_storage(self,outdir):
+    def create_storage(self, outdir):
         # create core ArcGIS File Geodatabase
-        arcpy.CreateFileGDB_management(
-            outdir,
-            "data.gdb")
+        arcpy.management.CreateFileGDB(outdir, "data.gdb")
 
         # create temporary ArcGIS File Geodatabase
-        arcpy.CreateFileGDB_management(
-            os.path.join(outdir, 'temp'),
-            "data.gdb")
+        arcpy.management.CreateFileGDB(os.path.join(outdir, 'temp'), "data.gdb")
 
         # create control ArcGIS File Geodatabase
-        arcpy.CreateFileGDB_management(
-            os.path.join(outdir, 'control'),
-            "data.gdb")
+        arcpy.management.CreateFileGDB(os.path.join(outdir, 'control'), "data.gdb")
 
-    def output_filepath(self, name, item='temp'):
-        """Get ArcGIS data path.
-
-        TODO: item needs to be set for each raster 
-        reparatelly. Now all is in temp dir.
-
-        :param name: layer name
-
-        :return: full path
+    def output_filepath(self, name):
         """
-        #try:
-        #    item = self._data[name]
-        #except:
-        #    item = 'temp'
+        Get correct path to store dataset 'name'.
 
-        path = os.path.join(
-            Globals.get_outdir(), item, 'data.gdb', name
-        )
+        :param name: layer name to be saved
+        :return: full path to the dataset
+        """
+        item = self._data_target.get(name)
+        if item is None or item not in ("temp", "control", "core"):
+            raise ProviderError("Unable to define target in output_filepath: {}".format(name))
+
+        path = Globals.get_outdir()
+        # 'core' datasets don't have directory, only the geodatabase
+        if item in ("temp", "control"):
+            path = os.path.join(path, item)
+
+        path = os.path.join(path, 'data.gdb', name)
+
         Logger.debug('File path: {}'.format(path))
 
         return path
 
-    def write_raster(self, array, output_name, directory=''):
-        """Write raster (numpy array) to ASCII file.
-
-        :param array: numpy array
-        :param output_name: output filename
-        :param directory: directory where to write output file
+    def _write_raster(self, array, file_output):
+        """See base method for description.
         """
-        file_output = self._raster_output_path(output_name, directory)
-        
-        # prevent call globals before values assigned
-        if (GridGlobals.xllcorner == None):
-            raise GlobalsNotSet()
-        if (GridGlobals.yllcorner == None):
-            raise GlobalsNotSet()
-        if (GridGlobals.dx == None):
-            raise GlobalsNotSet()
-        if (GridGlobals.dy == None):
-            raise GlobalsNotSet()
+        self._check_globals()
 
         lower_left = arcpy.Point(
             GridGlobals.xllcorner,
             GridGlobals.yllcorner,
         )
+
         raster = arcpy.NumPyArrayToRaster(
-            array, lower_left, GridGlobals.dx, GridGlobals.dy,
-            value_to_nodata=GridGlobals.NoDataValue)
+            array.filled(GridGlobals.NoDataValue) if isinstance(array, np.ma.MaskedArray) else array,
+            lower_left, GridGlobals.dx, GridGlobals.dy,
+            value_to_nodata=GridGlobals.NoDataValue
+        )
+
         arcpy.RasterToASCII_conversion(
             raster,
             file_output
         )
 
-        self._print_array_stats(
-            array, file_output
-        )
-
 class ArcGisProvider(BaseProvider):
-    def __init__(self):
+    def __init__(self, log_handler=ArcPyLogHandler):
         super(ArcGisProvider, self).__init__()
 
-        self._print_fn = self._print_logo_fn = arcpy.AddMessage
+        # type of computation (default)
+        self.args.workflow_mode = WorkflowMode.full
 
-        # output directory must be defined for _cleanup() method
-        Globals.outdir = self._get_argv(
-            constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY
-        )
-
-        # computation type
-        if self._get_argv(constants.PARAMETER_DPRE_ONLY).lower() == 'true':
-            self.args.typecomp = CompType.dpre
-            self.args.data_file = os.path.join(
-                Globals.outdir, 'save.pickle'
-            )
-        else:
-            self.args.typecomp = CompType.full
+        # options must be defined by set_options()
+        self._options = None
 
         # logger
         self.add_logging_handler(
-            handler=ArcPyLogHandler(),
+            handler=log_handler(),
             formatter=logging.Formatter("%(levelname)-8s %(message)s")
         )
-        
+
         # define storage writter
-        self.storage = ArcGisWritter()
+        self.storage = ArcGisWriter()
 
-    @staticmethod
-    def _get_argv(idx):
-        """Get argument by index.
+    def set_options(self, options):
+        """Set input paramaters.
 
-        :param int idx: index
+        :param options: options dict to set
         """
-        return sys.argv[idx+1]
+        self._options = options
+
+        # set output directory
+        Globals.outdir = options['output']
 
     def _load_dpre(self):
         """Run data preparation procedure.
 
         :return dict: loaded data
         """
+        if not self._options:
+            raise ProviderError("No options given")
+
         from smoderp2d.providers.arcgis.data_preparation import PrepareData
-       
-        prep = PrepareData(self.storage)
+        prep = PrepareData(self._options, self.storage)
         return prep.run()
