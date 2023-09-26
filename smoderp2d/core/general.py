@@ -118,6 +118,40 @@ class GridGlobals(object):
         # TODO: int?
         return cls.NoDataValue
 
+    @classmethod
+    def reset(cls):
+        """Reset static variables to their default values."""
+
+        # number of raster rows (int)
+        cls.r = None
+        # number of raster columns (int)
+        cls.c = None
+        # area of a raster cell in meters (float)
+        cls.pixel_area = None
+        # id of rows in computational domain (list)
+        cls.rr = None
+        # id of columns in computational domain (list of lists)
+        # row out of computational domain is empty list
+        cls.rc = None
+        # id of rows in at the boundary of computational domain
+        cls.br = None
+        # id of columns in at the boundary of computational domain
+        cls.bc = None
+        # left bottom corner x coordinate of raster
+        cls.xllcorner = None
+        # left bottom corner y coordinate of raster
+        cls.yllcorner = None
+        # no data value for raster
+        cls.NoDataValue = -9999
+        # no data integer value for raster
+        cls.NoDataInt = None
+        # size of raster cell
+        cls.dx = None
+        # size of raster cell
+        cls.dy = None
+        # masks
+        cls.masks = None
+
 class DataGlobals:
     # raster contains leaf area data
     mat_ppl = None
@@ -202,7 +236,7 @@ class Globals:
     streams_flow_inc = 1000
     # no segment downside
     streamsNextDownIdNoSegment = -1
-    # slope width 
+    # slope width
     slope_width = None
 
     @classmethod
@@ -333,3 +367,80 @@ class Globals:
     @classmethod
     def get_STREAM_RATIO(cls):
         return cls.STREAM_RATIO
+
+    @classmethod
+    def reset(cls):
+        """Reset static variables to their default values."""
+        # type of computation
+        cls.type_of_computing = None
+        # path to a output directory
+        cls.outdir = None
+        # raster with labeled boundary cells
+        cls.mat_boundary = None
+        # list containing coordinates of catchment outlet cells
+        cls.outletCells = None
+        # array containing information of hydrograph points
+        cls.array_points = None
+        # combinatIndex
+        cls.combinatIndex = None
+        # time step
+        cls.delta_t = None
+        # raster contains potential interception data
+        cls.mat_pi = None
+        # raster contains surface retention data
+        cls.surface_retention = None
+        # raster contains id of infiltration type
+        cls.mat_inf_index = None
+        # raster contains critical water level
+        cls.mat_hcrit = None
+        # raster contains parameter of power law for surface runoff
+        cls.mat_aa = None
+        # raster contains parameter of power law for surface runoff
+        cls.mat_b = None
+        # raster contains surface retention data
+        cls.mat_reten = None
+        # raster contains flow direction datas
+        cls.mat_fd = None
+        # raster contains digital elevation model
+        cls.mat_dem = None
+        # raster contains efective couterline data
+        cls.mat_efect_cont = None
+        # raster contains surface slopes data
+        cls.mat_slope = None
+        # raster labels not a number cells
+        cls.mat_nan = None
+        # raster contains parameters ...
+        cls.mat_a = None
+        # raster contains parameters ...
+        cls.mat_n = None
+        # ???
+        cls.points = None
+        # end time of computation
+        cls.end_time = None
+        # raster contains cell flow state information
+        cls.state_cell = None
+        # bool variable for flow direction algorithm (false=one direction, true
+        # multiple flow direction)
+        cls.mfda = None
+        # list contains the precipitation data
+        cls.sr = None
+        # counter of precipitation intervals
+        cls.itera = None
+        # ???
+        cls.streams = None
+        # ???
+        cls.cell_stream = None
+        # raster contains the reach id data
+        cls.mat_stream_reach = None
+        # ???
+        cls.STREAM_RATIO = None
+        # maximum allowed time step during compuation
+        cls.maxdt = None
+        # if true extra data are stores in the point*.dat files
+        cls.extraOut = None
+        # stream magic number
+        cls.streams_flow_inc = 1000
+        # no segment downside
+        cls.streamsNextDownIdNoSegment = -1
+        # slope width
+        cls.slope_width = None

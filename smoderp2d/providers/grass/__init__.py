@@ -3,7 +3,7 @@ import logging
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.exceptions import ProviderError
-from smoderp2d.providers.base import BaseProvider, BaseWritter, WorkflowMode
+from smoderp2d.providers.base import BaseProvider, BaseWriter, WorkflowMode
 from smoderp2d.providers.grass.logger import GrassGisLogHandler
 from smoderp2d.providers import Logger
 
@@ -13,9 +13,9 @@ from grass.pygrass.modules import Module
 from grass.pygrass.raster import numpy2raster
 from grass.pygrass.messages import Messenger
 
-class GrassGisWritter(BaseWritter):
+class GrassGisWriter(BaseWriter):
     def __init__(self):
-        super(GrassGisWritter, self).__init__()
+        super(GrassGisWriter, self).__init__()
 
         # primary key
         self.primary_key = "cat"
@@ -48,7 +48,7 @@ class GrassGisWritter(BaseWritter):
             region.write()
 
         raster_name = os.path.splitext(os.path.basename(file_output))[0]
-        
+
         numpy2raster(
             array, "FCELL",
             raster_name, overwrite=True
@@ -63,7 +63,8 @@ class GrassGisWritter(BaseWritter):
         )
 
 class GrassGisProvider(BaseProvider):
-    def __init__(self):
+
+    def __init__(self, log_handler=GrassGisLogHandler):
         super(GrassGisProvider, self).__init__()
 
         # type of computation (default)
@@ -74,7 +75,7 @@ class GrassGisProvider(BaseProvider):
 
         # logger
         self.add_logging_handler(
-            handler=GrassGisLogHandler(),
+            handler=log_handler(),
             formatter = logging.Formatter("%(message)s")
         )
 
@@ -89,7 +90,7 @@ class GrassGisProvider(BaseProvider):
         os.environ['GRASS_VERBOSE'] = '-1'
 
         # define storage writter
-        self.storage = GrassGisWritter()
+        self.storage = GrassGisWriter()
 
     def set_options(self, options):
         """Set input paramaters.

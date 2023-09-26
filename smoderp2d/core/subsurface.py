@@ -4,11 +4,11 @@ import math
 
 
 from smoderp2d.core.general import GridGlobals, Globals
-from smoderp2d.core.kinematic_diffuse import Kinematic
-from smoderp2d.exceptions import SmoderpError
+from smoderp2d.core.kinematic_diffuse import Diffuse, Kinematic
 from smoderp2d.providers import Logger
 
 import smoderp2d.processes.subsurface as darcy
+
 
 class SubArrs:
     def __init__(self, L_sub, Ks, vg_n, vg_l, z, ele):
@@ -22,13 +22,15 @@ class SubArrs:
         :param ele: TODO
         """
         self.L_sub = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * L_sub, mask=GridGlobals.masks
+            np.ones((GridGlobals.r, GridGlobals.c)) * L_sub,
+            mask=GridGlobals.masks
         )
         self.h = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.H = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * ele, mask=GridGlobals.masks
+            np.ones((GridGlobals.r, GridGlobals.c)) * ele,
+            mask=GridGlobals.masks
         )
         self.z = ma.masked_array(
             np.ones((GridGlobals.r, GridGlobals.c)) * z, mask=GridGlobals.masks
@@ -58,11 +60,13 @@ class SubArrs:
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
         self.vg_n = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * vg_n, mask=GridGlobals.masks
+            np.ones((GridGlobals.r, GridGlobals.c)) * vg_n,
+            mask=GridGlobals.masks
         )
         self.vg_m = 1 - (1 / self.vg_n)
         self.vg_l = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * vg_l, mask=GridGlobals.masks
+            np.ones((GridGlobals.r, GridGlobals.c)) * vg_l,
+            mask=GridGlobals.masks
         )
 
 
@@ -82,10 +86,10 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
             Ks,
             vg_n,
             vg_l,
-            mat_dem - L_sub,
-            mat_dem)
+            Globals.mat_dem - L_sub,
+            Globals.mat_dem)
 
-        self.arr.slope = mat_slope
+        self.arr.slope = Globals.mat_slope
 
         self.Kr = darcy.relative_unsat_conductivity
         self.darcy = darcy.darcy
@@ -114,26 +118,26 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
     def get_exfiltration(self):
         return self.arr.exfiltration
 
-    def bilance(self, i, j, infilt, inflow, dt):
+    def bilance(self, infilt, inflow, dt):
 
         arr = self.arr
         bil = infilt + arr.vol_rest / self.pixel_area + inflow
 
         # print bil, infilt , arr.vol_rest/self.pixel_area , inflow
-        percolation = self.calc_percolation(i, j, bil, dt)
+        percolation = self.calc_percolation(bil, dt)
         arr.cum_percolation += percolation
         bil -= percolation
         # print bil,
         arr.percolation = percolation
-        arr.h, arr.exfiltration = self.calc_exfiltration(i, j, bil)
+        arr.h, arr.exfiltration = self.calc_exfiltration(bil)
         # print arr.h
         # print arr.h, infilt, arr.vol_rest/self.pixel_area, inflow
 
-    def calc_percolation(self, i, j, bil, dt):
+    def calc_percolation(self, bil, dt):
 
         arr = self.arr
 
-        if (bil > arr.L_sub):
+        if bil > arr.L_sub:
             S = 1.0
         else:
             S = bil / arr.L_sub
@@ -141,14 +145,14 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
         perc = arr.Ks * self.Kr(S, arr.vg_l, arr.vg_m) * dt
         # jj bacha
         # perc = 0
-        if (perc > bil):
+        if perc > bil:
             perc = bil
         return perc
 
-    def calc_exfiltration(self, i, j, bil):
+    def calc_exfiltration(self, bil):
 
         arr = self.arr
-        if (bil > arr.L_sub):
+        if bil > arr.L_sub:
             # print bil
             exfilt = bil - arr.L_sub
             bil = arr.L_sub
@@ -177,7 +181,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
 
     def return_str_vals(self, i, j, sep, dt):
         arr = self.arr
-         #';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[],exfiltration[];'
+        #  ';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[],exfiltration[];'
         line = str(
             arr.h) + sep + str(
                 arr.vol_runoff / dt) + sep + str(
@@ -215,7 +219,7 @@ class SubsurfacePass(GridGlobals):
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
 
-    def bilance(self, i, j, infilt, inflow, dt):
+    def bilance(self, infilt, inflow, dt):
         pass
 
     def runoff(self, delta_t, efect_vrst):

@@ -42,7 +42,7 @@ class WorkflowMode:
         else:
             return cls.full
     
-class BaseWritter(object):
+class BaseWriter(object):
     def __init__(self):
         self._data_target = None
 
@@ -158,7 +158,8 @@ class BaseProvider(object):
             )
         handler.setFormatter(formatter)
         if sys.version_info.major >= 3:
-            if not Logger.hasHandlers(): # avoid duplicated handlers (eg. in case of ArcGIS)
+            if len(Logger.handlers) == 0:
+                # avoid duplicated handlers (eg. in case of ArcGIS)
                 Logger.addHandler(handler)
 
     def __load_hidden_config(self):
@@ -421,9 +422,10 @@ class BaseProvider(object):
             raise ProviderError('Input file for loading data not defined')
         with open(filename, 'rb') as fd:
             if sys.version_info > (3, 0):
-                data = pickle.load(fd, encoding='bytes')
                 data = {
-                    key.decode(): val.decode if isinstance(val, bytes) else val for key, val in data.items()
+                    key.decode() if isinstance(key, bytes) else key:
+                    val.decode() if isinstance(val, bytes) else val
+                    for key, val in pickle.load(fd, encoding='bytes').items()
                 }
             else:
                 data = pickle.load(fd)

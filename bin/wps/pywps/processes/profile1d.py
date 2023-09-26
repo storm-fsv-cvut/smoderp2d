@@ -7,6 +7,7 @@ from configparser import ConfigParser
 from pywps import Process, ComplexInput, ComplexOutput, Format, LOGGER
 from pywps.app.exceptions import ProcessError
 
+
 class Profile1d(Process):
     def __init__(self):
         inputs = [
@@ -62,8 +63,10 @@ subsurface runoff and erosion
     @staticmethod
     def __set_response_output(response, output_dir, key, filename=None):
         """Set response output."""
-        filepath = os.path.join(output_dir,
-                                '{}.csv'.format(key if filename is None else filename))
+        filepath = os.path.join(
+            output_dir,
+            '{}.csv'.format(key if filename is None else filename)
+        )
         if not os.path.exists(filepath):
             raise ProcessError("Missing output - {}".format(filepath))
         else:
@@ -73,7 +76,8 @@ subsurface runoff and erosion
         sys.path.insert(0, "/opt/smoderp2d")
 
         from smoderp2d import WpsRunner
-        from smoderp2d.exceptions import ProviderError, ConfigError, MaxIterationExceeded
+        from smoderp2d.exceptions import ProviderError, ConfigError, \
+            MaxIterationExceeded
         from smoderp2d.core.general import Globals
         from smoderp2d.providers.wps.logger import WpsLogHandler
 

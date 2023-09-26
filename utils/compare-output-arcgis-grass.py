@@ -9,6 +9,7 @@ from osgeo import gdal, ogr
 
 import grass.script as gs
 
+
 def comp_rasters(directory, cleanup=False, png=False):
     for item in os.listdir(directory):
         path = os.path.join(directory, item)
@@ -24,48 +25,57 @@ def comp_rasters(directory, cleanup=False, png=False):
 
         # link arcgis raster to GRASS
         arcgis = '{}_arcgis'.format(item)
-        gs.run_command('r.external',
-                       input=path, output=arcgis, flags='o'
+        gs.run_command(
+            'r.external',
+            input=path, output=arcgis, flags='o'
         )
-        gs.run_command('r.colors',
-                       map=arcgis, raster=item
+        gs.run_command(
+            'r.colors',
+            map=arcgis, raster=item
         )
 
-        gs.run_command('g.region',
-                       raster=item
+        gs.run_command(
+            'g.region',
+            raster=item
         )
         diff = '{}_diff'.format(item)
-        gs.run_command('r.mapcalc',
-                       expression='{} = {} - {}'.format(diff, arcgis, item)
+        gs.run_command(
+            'r.mapcalc',
+            expression='{} = {} - {}'.format(diff, arcgis, item)
         )
-        gs.run_command('r.colors',
-                       map=diff, color='diff'
+        gs.run_command(
+            'r.colors',
+            map=diff, color='diff'
         )
         if png:
-            gs.run_command('d.mon',
-                           start='cairo', output=os.path.join(OUTPUT, '{}.png'.format(item))
+            gs.run_command(
+                'd.mon',
+                start='cairo',
+                output=os.path.join(OUTPUT, '{}.png'.format(item))
             )
-            gs.run_command('d.rast.leg',
-                           map=diff
+            gs.run_command(
+                'd.rast.leg',
+                map=diff
             )
-            gs.run_command('d.mon',
-                           stop='cairo'
+            gs.run_command('d.mon', stop='cairo')
+        print(
+            '{sep}{nl}{map}{nl}{sep}{nl}'.format(
+                sep='-' * 80, nl=os.linesep, map=item
             )
-        print('{sep}{nl}{map}{nl}{sep}{nl}'.format(sep='-' * 80, nl=os.linesep, map=item))
-        stats = gs.parse_command('r.univar',
-                                 flags='g',
-                                 map=diff
         )
+        stats = gs.parse_command('r.univar', flags='g', map=diff)
         for key in ('min', 'max', 'range', 'mean'):
-            print ('{}={}'.format(key, stats[key]))
+            print('{}={}'.format(key, stats[key]))
         if abs(float(stats['mean'])) < 1e-4:
-            print ("-> OK")
+            print("-> OK")
         else:
-            print ("-> KO")
+            print("-> KO")
         if cleanup:
-            gs.run_command('g.remove',
-                           type='raster', name=','.join(arcgis, diff), flags='f'
+            gs.run_command(
+                'g.remove',
+                type='raster', name=','.join(arcgis, diff), flags='f'
             )
+
 
 def comp_vectors(directory):
     ds = ogr.Open(directory)
@@ -75,6 +85,7 @@ def comp_vectors(directory):
 
         # TODO: what to compare ?
 
+
 if __name__ == "__main__":
     ARCGIS_OUTPUT = os.path.join(os.environ['HOME'], 'Downloads', 'output')
     if not os.path.exists(ARCGIS_OUTPUT):
@@ -83,7 +94,7 @@ if __name__ == "__main__":
         else:
             sys.exit("Provide path to ArcGIS data dir")
 
-    OUTPUT=os.path.join(ARCGIS_OUTPUT, 'diff')
+    OUTPUT = os.path.join(ARCGIS_OUTPUT, 'diff')
     if not os.path.exists(OUTPUT):
         os.makedirs(OUTPUT)
     os.environ['GRASS_VERBOSE'] = '0'
@@ -93,4 +104,6 @@ if __name__ == "__main__":
     comp_rasters(os.path.join(ARCGIS_OUTPUT, 'temp'))
     # comp_rasters(os.path.join(ARCGIS_OUTPUT, 'stream_prep'))
     # comp_vectors(os.path.join(ARCGIS_OUTPUT, 'temp', 'tempGDB.gdb'))
-    # comp_vectors(os.path.join(ARCGIS_OUTPUT, 'stream_prep', 'stream_prep.gdb'))
+    # comp_vectors(
+    #   os.path.join(ARCGIS_OUTPUT, 'stream_prep', 'stream_prep.gdb')
+    # )

@@ -70,11 +70,10 @@ class Smoderp2D:
         self.toolbar = self.iface.addToolBar(u'Smoderp2D')
         self.toolbar.setObjectName(u'Smoderp2D')
 
-        #print "** INITIALIZING Smoderp2D"
+        # print "** INITIALIZING Smoderp2D"
 
         self.pluginIsActive = False
         self.dockwidget = None
-
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -90,7 +89,6 @@ class Smoderp2D:
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('Smoderp2D', message)
-
 
     def add_action(
         self,
@@ -165,7 +163,6 @@ class Smoderp2D:
 
         return action
 
-
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
@@ -176,12 +173,12 @@ class Smoderp2D:
             callback=self.run,
             parent=self.iface.mainWindow())
 
-    #--------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def onClosePlugin(self):
         """Cleanup necessary items here when plugin dockwidget is closed"""
 
-        #print "** CLOSING Smoderp2D"
+        # print "** CLOSING Smoderp2D"
 
         # disconnects
         self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
@@ -194,11 +191,10 @@ class Smoderp2D:
 
         self.pluginIsActive = False
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
 
-        #print "** UNLOAD Smoderp2D"
+        # print "** UNLOAD Smoderp2D"
 
         for action in self.actions:
             self.iface.removePluginMenu(
@@ -208,7 +204,7 @@ class Smoderp2D:
         # remove the toolbar
         del self.toolbar
 
-    #--------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def run(self):
         """Run method that loads and starts the plugin"""
@@ -216,12 +212,12 @@ class Smoderp2D:
         if not self.pluginIsActive:
             self.pluginIsActive = True
 
-            #print "** STARTING Smoderp2D"
+            # print "** STARTING Smoderp2D"
 
             # dockwidget may not exist if:
             #    first run of plugin
             #    removed on close (see self.onClosePlugin method)
-            if self.dockwidget == None:
+            if self.dockwidget is None:
                 # Create the dockwidget (after translation) and keep reference
                 self.dockwidget = Smoderp2DDockWidget()
 

@@ -18,6 +18,7 @@ from smoderp2d.providers import Logger
 courantMax = 1.0
 RILL_RATIO = 0.7
 
+
 class SurArrs(object):
     """Surface attributes."""
     def __init__(self, sur_ret, inf_index, hcrit, a, b):
@@ -232,7 +233,7 @@ def __runoff(sur, dt, efect_vrst, ratio):
 
     # sur.arr.state               = update_state1(h_total_pre,h_crit,state)
     h_sheet, h_rill, h_rillPre = compute_h_hrill(
-        h_total_pre, h_crit, state, sur.rillWidth, sur.h_rillPre)
+        h_total_pre, h_crit, state, sur.h_rillPre)
 
     q_sheet, vol_runoff, vol_rest = sheet_runoff(dt, sur.a, sur.b, h_sheet)
 
@@ -243,29 +244,25 @@ def __runoff(sur, dt, efect_vrst, ratio):
         dt, efect_vrst, ratio, h_rill, sur.rillWidth, sur.v_rill_rest,
         sur.vol_runoff_rill
     )
-    q_rill = ma.where(sur.state > 0, rill_runoff_results[0], 0)
-    v_rill = ma.where(sur.state > 0, rill_runoff_results[1], 0)
-    v_rill_rest = ma.where(sur.state > 0, rill_runoff_results[2],
+    v_rill = ma.where(sur.state > 0, rill_runoff_results[0], 0)
+    v_rill_rest = ma.where(sur.state > 0, rill_runoff_results[1],
                                sur.v_rill_rest)
-    vol_runoff_rill = ma.where(sur.state > 0, rill_runoff_results[3],
+    vol_runoff_rill = ma.where(sur.state > 0, rill_runoff_results[2],
                                    sur.vol_runoff_rill)
-    ratio = ma.where(sur.state > 0, rill_runoff_results[4], ratio)
-    rill_courant = ma.where(sur.state > 0, rill_runoff_results[5], 0)
-    sur.vol_to_rill = ma.where(sur.state > 0, rill_runoff_results[6],
+    ratio = ma.where(sur.state > 0, rill_runoff_results[3], ratio)
+    rill_courant = ma.where(sur.state > 0, rill_runoff_results[4], 0)
+    sur.vol_to_rill = ma.where(sur.state > 0, rill_runoff_results[5],
                                sur.vol_to_rill)
-    sur.rillWidth = ma.where(sur.state > 0, rill_runoff_results[7],
+    sur.rillWidth = ma.where(sur.state > 0, rill_runoff_results[6],
                              sur.rillWidth)
 
-    return q_sheet, v_sheet, q_rill, v_rill, ratio, rill_courant, h_sheet, \
-           h_rill, h_rillPre, vol_runoff, vol_rest, v_rill_rest, \
-           vol_runoff_rill, v_rill
+    return v_sheet, v_rill, ratio, rill_courant, h_sheet, h_rill, h_rillPre,\
+           vol_runoff, vol_rest, v_rill_rest, vol_runoff_rill, v_rill
 
 
-def __runoff_zero_comp_type(i, j, sur, dt, efect_vrst, ratio):
+def __runoff_zero_comp_type(sur, dt, efect_vrst, ratio):
     """TODO.
 
-    :param i: row index
-    :param j: col index
     :param sur: TOD
     :param dt: TODO
     :param efect_vrst: TODO
@@ -273,36 +270,28 @@ def __runoff_zero_comp_type(i, j, sur, dt, efect_vrst, ratio):
 
     :return: TODO
     """
-    h_total_pre = sur.h_total_pre
-    h_crit = sur.h_crit
-    state = sur.arr.state
-
-
     # sur.arr.state               = update_state1(h_total_pre,h_crit,state)
     sur.h_sheet = sur.h_total_pre
 
-    q_sheet, vol_runoff, vol_rest = sheet_runoff(sur, dt, sur.b, sur.h_sheet)
+    q_sheet, vol_runoff, vol_rest = sheet_runoff(dt, sur.a, sur.b, sur.h_sheet)
 
-    if sur.h_sheet > 0.0:
-        v_sheet = q_sheet / sur.h_sheet
-    else:
-        v_sheet = 0.0
+    v_sheet = ma.where(sur.h_sheet > 0, q_sheet / sur.h_sheet, 0)
 
-    q_rill = 0
     v_rill = 0
 
-    return q_sheet, v_sheet, q_rill, v_rill, ratio, 0.0, sur.h_sheet, \
-           sur.h_rill, sur.h_rillPre, vol_runoff, vol_rest, sur.v_rill_rest, \
-           sur.vol_runoff_rill, v_rill
+    return (
+        v_sheet, v_rill, ratio, 0.0, sur.h_sheet,
+        sur.h_rill, sur.h_rillPre, vol_runoff, vol_rest, sur.v_rill_rest,
+        sur.vol_runoff_rill, v_rill
+    )
 
 
-def update_state1(ht_1, hcrit, state, rill_width):
+def update_state1(ht_1, hcrit, state):
     """TODO.
 
     :param ht_1: TODO
     :param hcrit: TODO
     :param state: TODO (not used)
-    :patam rill_width: TODO (not used)
 
     :return: TODO
     """
@@ -312,14 +301,13 @@ def update_state1(ht_1, hcrit, state, rill_width):
     return state
 
 
-def compute_h_hrill(h_total_pre, h_crit, state, rill_width, h_rill_pre):
+def compute_h_hrill(h_total_pre, h_crit, state, h_rill_pre):
     """TODO.
 
     :param h_total_pre: TODO
     :param h_crit: TODO
     :param state: TODO (not used)
-    :patam rill_width: TODO (not used)
-    :patam h_rill_pre: TODO (not used)
+    :param h_rill_pre: TODO (not used)
 
     :return: TODO
     """
@@ -353,6 +341,7 @@ def compute_h_hrill(h_total_pre, h_crit, state, rill_width, h_rill_pre):
 
     return h_sheet, h_rill, h_rill_pre
 
+
 def sheet_runoff(dt, a, b, h_sheet):
     """TODO.
 
@@ -370,6 +359,7 @@ def sheet_runoff(dt, a, b, h_sheet):
 
     return q_sheet, vol_runoff, vol_rest
 
+
 def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
                 vol_runoff_rill):
     """TODO.
@@ -377,18 +367,19 @@ def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
     :param dt: TODO
     :param efect_vrst: TODO
     :param ratio: TODO
+    :param h_rill: TODO
+    :param rillWidth: TODO
+    :param v_rill_rest: TODO
+    :param vol_runoff_rill: TODO
 
     :return: TODO
     """
-
-    ppp = False
-
     n = Globals.get_mat_n()
     slope = Globals.get_mat_slope()
 
     vol_to_rill = h_rill * GridGlobals.get_pixel_area()
     h, b = rill.update_hb(
-        vol_to_rill, RILL_RATIO, efect_vrst, rillWidth, ratio, ppp
+        vol_to_rill, RILL_RATIO, efect_vrst, rillWidth
     )
     r_rill = (h * b) / (b + 2 * h)
 
@@ -414,15 +405,17 @@ def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
         vol_runoff_rill
     )
 
-    return q_rill, v_rill, v_rill_rest, vol_runoff_rill, ratio, courant, \
-           vol_to_rill, b
+    return (
+        v_rill, v_rill_rest, vol_runoff_rill, ratio, courant,
+        vol_to_rill, b
+    )
 
 
 def surface_retention(bil, sur):
     """TODO.
 
     :param bil: TODO
-    param sur: TODO
+    :param sur: TODO
     """
     reten = sur.sur_ret
     pre_reten = reten
@@ -441,6 +434,7 @@ def surface_retention(bil, sur):
     sur.cur_sur_ret = reten_new - pre_reten
 
     return bil_new
+
 
 if Globals.isRill:
     runoff = __runoff

@@ -44,11 +44,14 @@ def phlilip(k, s, deltaT, totalT, NoDataValue):
     if k and s == NoDataValue:
         infiltration = NoDataValue
     # elif totalT == 0:
-        # infiltration = k*deltaT  ## toto je chyba, infiltrace se rovna k az po ustaleni. Na zacatku je teoreticky nekonecno
+        # infiltration = k*deltaT
+        # toto je chyba, infiltrace se rovna k az po ustaleni.
+        # Na zacatku je teoreticky nekonecno
     # else:
         # try:
     else:
-        infiltration = (0.5 * ma.divide(s, ma.sqrt(totalT + deltaT)) + k) * deltaT
+        infiltration = (0.5 * ma.divide(s, ma.sqrt(totalT + deltaT)) + k) * \
+                       deltaT
         # except ValueError:
     # print k, s
     return infiltration

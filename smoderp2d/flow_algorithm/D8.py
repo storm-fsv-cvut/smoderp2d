@@ -6,10 +6,11 @@ from smoderp2d.core.general import GridGlobals
 
 # defines inflows to the cell of raster based on the flow direction raster
 #
-#  @infloes return list defines relative postion of cells \f$ i+m \f$ and \f$ j+n \f$ from which
-#  the water flows to cell \f$ i,j \f$. \n
+#  @infloes return list defines relative postion of cells \f$ i+m \f$ and
+#  \f$ j+n \f$ from which the water flows to cell \f$ i,j \f$. \n
 #
-#  Accordinto the figure, the inflows list at the cell \f$ i,j \f$ looks as follows:\n
+#  Accordinto the figure, the inflows list at the cell \f$ i,j \f$ looks as
+#  follows:\n
 #
 #  \f$ m_1 = inflows[i][j][0][0] = -1  \f$ \n
 #  \f$ n_1 = inflows[i][j][0][1] =  0  \f$ \n
@@ -39,7 +40,7 @@ def new_inflows(mat_fd):
         for j in range(c):
             in_dir = __smeryInflow(mat_fd, i, j)
             in_fldir[i][j] = in_dir
-            intok = __smery(in_dir, i, j, smer)
+            intok = __smery(in_dir, smer)
             inflows[i][j] = intok
 
     # for item in inflows :
@@ -67,7 +68,7 @@ def __smeryInflow(mat_fd, i, j):
     return pritok
 
 
-def __smery(inflow, i, j, smer):
+def __smery(inflow, smer):
     y = 0
     co = [[1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1]]
     cellin = []
@@ -75,8 +76,8 @@ def __smery(inflow, i, j, smer):
         if inflow >= z:
             cellin.append(co[y])
             inflow = inflow - smer[y]
-            y = y + 1
+            y += 1
         else:
-            y = y + 1
-    y = 0
+            y += 1
+
     return cellin
