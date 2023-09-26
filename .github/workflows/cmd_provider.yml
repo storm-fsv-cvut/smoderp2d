@@ -15,7 +15,7 @@ jobs:
         python-version:
           # - "2.7"
           - "3.9"
-          - "3.11"
+          - "3.11.2"
 
     uses: ./.github/workflows/cmd_template.yml
     with:
@@ -28,7 +28,7 @@ jobs:
         python-version:
           # - "2.7"
           - "3.9"
-          - "3.11"
+          - "3.11.2"
 
     uses: ./.github/workflows/cmd_template.yml
     with:
@@ -41,7 +41,7 @@ jobs:
         python-version:
           # - "2.7"
           - "3.9"
-          - "3.11"
+          - "3.11.2"
 
     uses: ./.github/workflows/cmd_template.yml
     with:
@@ -54,7 +54,7 @@ jobs:
         python-version:
           # - "2.7"
           - "3.9"
-          - "3.11"
+          - "3.11.2"
 
     uses: ./.github/workflows/cmd_template.yml
     with:
@@ -66,7 +66,7 @@ jobs:
       matrix:
         python-version:
           - "3.9"
-          - "3.11"
+          - "3.11.2"
 
     uses: ./.github/workflows/cmd_template.yml
     with:
