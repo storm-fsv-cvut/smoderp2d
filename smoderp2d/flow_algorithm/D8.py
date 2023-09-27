@@ -6,11 +6,10 @@ from smoderp2d.core.general import GridGlobals
 
 # defines inflows to the cell of raster based on the flow direction raster
 #
-#  @infloes return list defines relative postion of cells \f$ i+m \f$ and
-#  \f$ j+n \f$ from which the water flows to cell \f$ i,j \f$. \n
+#  @infloes return list defines relative postion of cells \f$ i+m \f$ and \f$ j+n \f$ from which
+#  the water flows to cell \f$ i,j \f$. \n
 #
-#  Accordinto the figure, the inflows list at the cell \f$ i,j \f$ looks as
-#  follows:\n
+#  Accordinto the figure, the inflows list at the cell \f$ i,j \f$ looks as follows:\n
 #
 #  \f$ m_1 = inflows[i][j][0][0] = -1  \f$ \n
 #  \f$ n_1 = inflows[i][j][0][1] =  0  \f$ \n
@@ -40,7 +39,7 @@ def new_inflows(mat_fd):
         for j in range(c):
             in_dir = __smeryInflow(mat_fd, i, j)
             in_fldir[i][j] = in_dir
-            intok = __smery(in_dir, smer)
+            intok = __smery(in_dir, i, j, smer)
             inflows[i][j] = intok
 
     # for item in inflows :
@@ -68,7 +67,7 @@ def __smeryInflow(mat_fd, i, j):
     return pritok
 
 
-def __smery(inflow, smer):
+def __smery(inflow, i, j, smer):
     y = 0
     co = [[1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1]]
     cellin = []
@@ -76,8 +75,32 @@ def __smery(inflow, smer):
         if inflow >= z:
             cellin.append(co[y])
             inflow = inflow - smer[y]
-            y += 1
+            y = y + 1
         else:
-            y += 1
-
+            y = y + 1
+    y = 0
     return cellin
+
+def inflow_dir(mat_fd, i, j):
+    inflow_dirs = np.zeros(8, float)
+    
+    # inflow matrix stores the information about the inflow directions (0 if there is no inflow, 1 if there is inflow from the direction) 
+    # 32  64  128
+    # 16      1
+    # 8   4   2
+   
+
+    coco = [[-1, 1, 8], [-1, 0, 4], [-1, -1, 2], [0, -1, 1],
+            [1, -1, 128], [1, 0, 64], [1, 1, 32], [0, 1, 16]]
+    pocet = len(coco)
+    for k in range(pocet):
+        a = i + coco[k][0]
+        b = j + coco[k][1]
+        try:
+            value = mat_fd[a][b]
+        except:
+            value = -1
+        if value == coco[k][2]:
+            inflow_dirs[k] = 1.0
+
+    return inflow_dirs

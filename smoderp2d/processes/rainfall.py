@@ -10,17 +10,18 @@ import numpy.ma as ma
 from smoderp2d.providers import Logger
 from smoderp2d.core.general import GridGlobals
 
-
 # definice erroru  na urovni modulu
 #
 
 
 class Error(Exception):
+
     """Base class for exceptions in this module."""
     pass
 
 
 class NonCumulativeRainData(Error):
+
     """Exception raised bad rainfall record assignment.
 
     Attributes:
@@ -35,6 +36,7 @@ class NonCumulativeRainData(Error):
 
 
 class ErrorInRainfallRecord(Error):
+
     """Exception raised for  rainfall record assignment.
 
     Attributes:
@@ -42,8 +44,7 @@ class ErrorInRainfallRecord(Error):
     """
 
     def __init__(self):
-        self.msg = 'Error: Rainfall record starts with the length of the ' \
-                   'first time interval. See manual.'
+        self.msg = 'Error: Rainfall record starts with the length of the first time interval. See manual.'
 
     def __str__(self):
         return repr(self.msg)
@@ -61,15 +62,11 @@ def load_precipitation(fh):
             elif z[0].find('#') >= 0:
                 continue
             else:
-                if len(z) == 0:  # if raw in text file is empty
+                if (len(z) == 0) : # if raw in text file is empty
                     continue
-                elif (float(z[0]) == 0) & (float(z[1]) > 0):
-                    # if the record start with zero minutes the line has to
-                    # be corrected
+                elif ((float(z[0])==0) & (float(z[1])>0)) : # if the record start with zero minutes the line has to be corrected
                     raise ErrorInRainfallRecord()
-                elif (float(z[0]) == 0) & (float(z[1]) == 0):
-                    # if the record start with zero minutes and rainfall
-                    # the line is ignored
+                elif ((float(z[0])==0) & (float(z[1])==0)) : # if the record start with zero minutes and rainfall the line is ignored
                     continue
                 else:
                     y0 = float(z[0]) * 60.0  # convert minutes to seconds
@@ -79,14 +76,15 @@ def load_precipitation(fh):
                     y2 = y1
                     mv = y0, y1
                     x.append(mv)
-        fh.close()
+        fh.close
 
         # Values ordered by time ascending
         dtype = [('cas', float), ('value', float)]
         val = np.array(x, dtype=dtype)
         x = np.sort(val, order='cas')
-        # Test if time is more than once the same
+        # Test if time time is more than once the same
         state = 0
+        k = 1
         itera = len(x)  # iter is needed in main loop
         for k in range(itera):
             if x[k][0] == x[k - 1][0] and itera != 1:
@@ -113,8 +111,8 @@ def load_precipitation(fh):
                     sr[i][0] = x[i][0]
                     sr[i][1] = sr_int
 
-        # for  i, item in enumerate(sr):
-        # print item[0], '\t', item[1]
+        #for  i, item in enumerate(sr):
+            #print item[0], '\t', item[1]
         return sr, itera
 
     except IOError:
@@ -150,25 +148,20 @@ def timestepRainfall(iterace, total_time, delta_t, tz, sr):
             if z > (iterace - 1):
                 rainfall += 0
             else:
-                # pokud je total_time + delta_t stale dal nez konec posunuteho
-                # zaznamu vezme celou delku zaznamu a tuto srazku pricte
-                while ma.any(sr[z][0] <= (total_time + delta_t)):
-                    rainfall += ma.where(
-                        sr[z][0] <= (total_time + delta_t),
-                        sr[z][1] * (sr[z][0] - sr[z - 1][0]),
-                        0
-                    )
+                # pokud je total_time + delta_t stale dal nez konec posunuteho zaznamu
+                # vezme celou delku zaznamu a tuto srazku pricte
+                while ma.all(sr[z][0] <= (total_time + delta_t)): #(sr[z][0] <= (total_time + delta_t)):
+                    rainfall += sr[z][1] * (sr[z][0] - sr[z - 1][0])
                     z += 1
                     if z > (iterace - 1):
                         break
-                # nakonec pricte to co je v poslednim zaznamu kde je
-                # total_time + delta_t pred konce zaznamu
+                # nakonec pricte to co je v poslednim zaznamu kde je total_time + delta_t pred konce zaznamu
                 # nebo pricte nulu pokud uz tam zadny zaznam neni
                 if z > (iterace - 1):
                     rainfall += 0
                 else:
                     rainfall += sr[z][1] * (
-                            total_time + delta_t - sr[z - 1][0])
+                        total_time + delta_t - sr[z - 1][0])
 
             tz = z
 
@@ -181,29 +174,22 @@ def current_rain(rain, rainfallm, sum_interception):
     rain_ppl = rain.ppl
     rain_pi = rain.pi
     sum_interception_pre = ma.copy(sum_interception)
+    if not ma.all(rain_veg):
+        interc = rain_ppl * rainfallm  # interception is konstant
+        sum_interception += interc  # sum of intercepcion
 
-    interc = rain_ppl * rainfallm  # interception is constant
-
-    sum_interception += ma.where(
-        ma.logical_not(rain_veg),
-        interc,
-        0
-    )
-    NS = ma.where(
-        ma.logical_not(rain_veg),
-        ma.where(
+        NS = ma.where(
             sum_interception >= rain_pi,
-            rainfallm - (rain_pi - sum_interception_pre),
-            # rest of intercetpion, netto rainfallm
+            rainfallm - (rain_pi - sum_interception_pre),  # rest of intercetpion, netto rainfallm
             rainfallm - interc  # netto rainfallm
-        ),
-        rainfallm
-    )
-    rain_veg = ma.where(
-        ma.logical_and(ma.logical_not(rain_veg), sum_interception >= rain_pi),
-        True,  # as vegetatio interception is full
-        rain_veg
-    )
+        )
+        rain_veg = ma.where(
+            sum_interception >= rain_pi,
+            True,  # as vegetatio interception is full
+            rain_veg
+        )
+    else:
+        NS = rainfallm
 
     if isinstance(NS, int):
         pass

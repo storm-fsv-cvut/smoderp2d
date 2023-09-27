@@ -1,0 +1,7 @@
+appmap_dir: tmp\appmap
+language: python
+name: smoderp2d_job
+packages:
+- path: base
+- path: smoderp2d
+- path: smoderp2d-plugin
