@@ -173,8 +173,12 @@ class BaseProvider(object):
         config = ConfigParser()
         config.read(_path)
 
-        if not config.has_option('outputs', 'extraout'):
-            raise ConfigError('Section "outputs" or option "extraout" is not set properly in file {}'.format( _path))
+        # set logging level
+        Logger.setLevel(config.get('logging', 'level', fallback=logging.INFO))
+        # sys.stderr logging
+        self.add_logging_handler(
+            logging.StreamHandler(stream=sys.stderr)
+        )
 
         return config
 
@@ -190,13 +194,6 @@ class BaseProvider(object):
         config.read(self.args.config_file)
 
         try:
-            # set logging level
-            Logger.setLevel(config.get('logging', 'level', fallback=logging.INFO))
-            # sys.stderr logging
-            self.add_logging_handler(
-                logging.StreamHandler(stream=sys.stderr)
-            )
-
             # must be defined for _cleanup() method
             Globals.outdir = config.get('output', 'outdir')
         except (NoSectionError, NoOptionError) as e:
@@ -236,15 +233,9 @@ class BaseProvider(object):
 
         # some variables configs can be changes after loading from
         # pickle.dump such as end time of simulation
-
         if self._config.get('time', 'endtime'):
             data['end_time'] = self._config.getfloat('time', 'endtime')
-        #  time of flow algorithm
-        data['mfda'] = self._config.getboolean('processes', 'mfda', fallback=False)
 
-        #  type of computing
-        data['type_of_computing'] = CompType()[self._config.get('processes', 'typecomp', fallback='stream_rill')]
-        
         #  rainfall data can be saved
         if self._config.get('data', 'rainfall'):
             try:
@@ -254,15 +245,20 @@ class BaseProvider(object):
             except TypeError:
                 raise ProviderError('Invalid rainfall file')
 
-        # some self._configs are not in pickle.dump
-        data['extraOut'] = self._config.getboolean('output', 'extraout', fallback=False)
-        # rainfall data can be saved
-        data['prtTimes'] = self._config.get('output', 'printtimes', fallback=None)
 
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
 
         # ensure that dx and dy are defined
         data['dx'] = data['dy'] = math.sqrt(data['pixel_area'])
+
+        # load hidden config
+        data['prtTimes'] = self._hidden_config.get('output', 'printtimes', fallback=None)
+        data['extraout'] = self._hidden_config.getboolean('output', 'extraout', fallback=False)
+        data['mfda'] = self._hidden_config.getboolean('processes', 'mfda', fallback=False)
+        #  type of computing
+        data['type_of_computing'] = CompType()[
+            self._hidden_config.get('processes', 'typecomp', fallback='stream_rill')
+        ]
 
         return data
 
@@ -313,7 +309,7 @@ class BaseProvider(object):
         Globals.isRill = comp_type['rill']
         Globals.isStream = comp_type['stream_rill']
         Globals.prtTimes = data.get('prtTimes', None)
-        Globals.extraOut = self._hidden_config.getboolean('outputs','extraout')
+        Globals.extraOut = data.get('extraout', False)
         Globals.end_time *= 60 # convert min to sec
 
         # If profile1d provider is used the values
