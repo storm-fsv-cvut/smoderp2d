@@ -183,6 +183,26 @@ class BaseProvider(object):
         return config
 
 
+    def _load_data_from_hidden_config(self, config, ignore=[]):
+        """Load data from hidden config.
+
+        :param ConfigParser config: loaded config file
+        :param list ignore: list of options to me ignored
+
+        :return dict
+        """
+        data = {}
+        data['prtTimes'] = self._hidden_config.get('output', 'printtimes', fallback=None)
+        data['extraout'] = self._hidden_config.getboolean('output', 'extraout', fallback=False)
+        if 'mfda' not in ignore:
+            data['mfda'] = self._hidden_config.getboolean('processes', 'mfda', fallback=False)
+        if 'type_of_computing' not in ignore:
+            data['type_of_computing'] = CompType()[
+                self._hidden_config.get('processes', 'typecomp', fallback='stream_rill')
+            ]
+
+        return data
+
     def _load_config(self):
         # load configuration
         if not os.path.exists(self.args.config_file):
@@ -252,13 +272,8 @@ class BaseProvider(object):
         data['dx'] = data['dy'] = math.sqrt(data['pixel_area'])
 
         # load hidden config
-        data['prtTimes'] = self._hidden_config.get('output', 'printtimes', fallback=None)
-        data['extraout'] = self._hidden_config.getboolean('output', 'extraout', fallback=False)
-        data['mfda'] = self._hidden_config.getboolean('processes', 'mfda', fallback=False)
-        #  type of computing
-        data['type_of_computing'] = CompType()[
-            self._hidden_config.get('processes', 'typecomp', fallback='stream_rill')
-        ]
+        data.update(self._load_data_from_hidden_config(
+            self._hidden_config))
 
         return data
 

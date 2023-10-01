@@ -249,6 +249,10 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         slope_width = float(self._config.get('domain', 'slope_width'))
         data['slope_width'] = slope_width
 
+        # load hidden config
+        data.update(self._load_data_from_hidden_config(
+            self._hidden_config, ignore=['mfda', 'type_of_computing']))
+
         return data
 
     @staticmethod
