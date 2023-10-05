@@ -196,10 +196,6 @@ class BaseProvider(object):
         data['extraout'] = self._hidden_config.getboolean('output', 'extraout', fallback=False)
         if 'mfda' not in ignore:
             data['mfda'] = self._hidden_config.getboolean('processes', 'mfda', fallback=False)
-        if 'type_of_computing' not in ignore:
-            data['type_of_computing'] = CompType()[
-                self._hidden_config.get('processes', 'typecomp', fallback='stream_rill')
-            ]
 
         return data
 
@@ -255,6 +251,10 @@ class BaseProvider(object):
         # pickle.dump such as end time of simulation
         if self._config.get('time', 'endtime'):
             data['end_time'] = self._config.getfloat('time', 'endtime')
+
+        data['type_of_computing'] = CompType()[
+            self._config.get('processes', 'typecomp', fallback='stream_rill')
+        ]
 
         #  rainfall data can be saved
         if self._config.get('data', 'rainfall'):

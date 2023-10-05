@@ -251,7 +251,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
 
         # load hidden config
         data.update(self._load_data_from_hidden_config(
-            self._hidden_config, ignore=['mfda', 'type_of_computing']))
+            self._hidden_config, ignore=['mfda']))
 
         return data
 
