@@ -29,8 +29,9 @@ PARAMETER_SOILVEGTABLE_TYPE = 10
 PARAMETER_STREAM = 11
 PARAMETER_CHANNEL_TYPE = 12
 PARAMETER_CHANNEL_PROPS_TABLE = 13
-PARAMETER_DATAPREP_ONLY = 14
-PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 15
+PARAMETER_TYPECOMP = 14
+PARAMETER_DATAPREP_ONLY = 15
+PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 16
 
 class Toolbox(object):
     def __init__(self):
@@ -187,6 +188,17 @@ class SMODERP2D(object):
         )
         dataprepOnly.value = False
 
+        typeComp = arcpy.Parameter(
+           displayName="Type of computation",
+           name="typeComp",
+           datatype="GPValueTable",
+           parameterType="Optional",
+           direction="Input",
+           category="Settings"
+        )
+        typeComp.values = ['sheet_only', 'rill', 'stream_rill', 'subflow_rill', 'stream_subflow_rill']
+        typeComp.value = "stream_rill"
+
         outDir = arcpy.Parameter(
            displayName="Output folder",
            name="outDir",
@@ -201,7 +213,7 @@ class SMODERP2D(object):
             inputLUPolygons, LUtypeFieldName, inputRainfall,
             maxTimeStep, totalRunTime, inputPoints,
             soilvegPropertiesTable, soilvegIDfieldName, streamNetwork, streamChannelShapeIDfieldName,
-            channelPropertiesTable, dataprepOnly, outDir,
+            channelPropertiesTable, typeComp, dataprepOnly, outDir,
         ]
 
     def updateParameters(self, parameters):
@@ -250,5 +262,6 @@ class SMODERP2D(object):
             'streams': parameters[PARAMETER_STREAM].valueAsText,
             'streams_channel_type_fieldname': parameters[PARAMETER_CHANNEL_TYPE].valueAsText,
             'channel_properties_table': parameters[PARAMETER_CHANNEL_PROPS_TABLE].valueAsText,
+            'typecomp': parameters[PARAMETER_TYPECOMP].valueAsText,
             'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
         }
