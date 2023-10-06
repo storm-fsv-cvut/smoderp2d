@@ -185,8 +185,7 @@ class QGISRunner(GrassGisRunner):
 
     @staticmethod
     def import_data(options):
-        """
-        Import files to grass
+        """Import files to grass.
 
         :param options: dictionary of input data
         """
