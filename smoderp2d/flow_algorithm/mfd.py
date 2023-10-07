@@ -15,12 +15,18 @@ from smoderp2d.core.general import GridGlobals
 from smoderp2d.providers import Logger
 
 
-def new_mfda(mat_dem, mat_nan, mat_fd, dy, dx, rows, cols):
+def new_mfda(mat_dem, mat_nan, mat_fd):
     state = 0
     state2 = 0
 
+    rows = GridGlobals.r
+    cols = GridGlobals.c
+    dy = GridGlobals.dy
+    dx = GridGlobals.dx
+
     val_array = ma.masked_array(
-        np.zeros([rows, cols, 8], float), mask=GridGlobals.masks
+        np.zeros([rows, cols, 8], float),
+        mask=np.stack((GridGlobals.masks,) * 8, 2)
     )
     val_array2 = ma.masked_array(
         np.zeros([rows, cols], float), mask=GridGlobals.masks

@@ -101,33 +101,32 @@ class Mfda(object):
 
         Logger.info("Multiflow direction algorithm")
         self.inflows, fd_rill = mfd.new_mfda(
-            mat_dem, mat_nan, mat_fd, dy, dx, rows, cols
+            Globals.mat_dem, Globals.mat_nan, Globals.mat_fd
         )
         self.inflowsRill = D8_.new_inflows(fd_rill)
 
     def update_inflows(self, fd):
-        self.inflows, fd_rill = mfd.new_mfda(
-            self.H, mat_nan, fd, dy, dx, rows, cols)
+        self.inflows, fd_rill = mfd.new_mfda(self.H, Globals.mat_nan, fd)
         self.inflowsRill = D8_.new_inflows(fd_rill)
 
     def cell_runoff(self, i, j, sur=True):
         inflow_from_cells = \
             self.inflows[i - 1][j - 1][1] * \
-            self.arr.get_item([i - 1, j - 1]).vol_runoff_pre + \
+            self.vol_runoff_pre[i - 1, j - 1] + \
             self.inflows[i - 1][j][2] * \
-            self.arr.get_item([i - 1, j]).vol_runoff_pre + \
+            self.vol_runoff_pre[i - 1, j] + \
             self.inflows[i - 1][j + 1][3] * \
-            self.arr.get_item([i - 1, j + 1]).vol_runoff_pre + \
+            self.vol_runoff_pre[i - 1, j + 1] + \
             self.inflows[i][j - 1][0] * \
-            self.arr.get_item([i, j - 1]).vol_runoff_pre + \
+            self.vol_runoff_pre[i, j - 1] + \
             self.inflows[i][j + 1][4] * \
-            self.arr.get_item([i, j + 1]).vol_runoff_pre + \
+            self.vol_runoff_pre[i, j + 1] + \
             self.inflows[i + 1][j - 1][7] * \
-            self.arr.get_item([i + 1, j - 1]).vol_runoff_pre + \
+            self.vol_runoff_pre[i + 1, j - 1] + \
             self.inflows[i + 1][j][6] * \
-            self.arr.get_item([i + 1, j]).vol_runoff_pre + \
+            self.vol_runoff_pre[i + 1, j] + \
             self.inflows[i + 1][j + 1][5] * \
-            self.arr.get_item([i + 1, j + 1]).vol_runoff_pre
+            self.vol_runoff_pre[i + 1, j + 1]
 
         if Globals.isRill and sur:
             state_ij = self.state[i, j]
