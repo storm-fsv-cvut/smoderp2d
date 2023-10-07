@@ -1,4 +1,5 @@
-# @package smoderp2d.courant defines Class Courant which handles the time step adjustement
+# @package smoderp2d.courant defines Class Courant which handles the time
+# step adjustement
 
 
 import numpy as np
@@ -149,9 +150,9 @@ class Courant:
             if ma.any(self.cour_speed == 0.0):
                 return self.max_delta_t * self.max_delta_t_mult, ratio
 
+            efect_cont = Gl.mat_efect_cont[self.i, self.j]
             dt = ma.round(
-                (Gl.mat_efect_cont[self.i, self.j] * self.cour_crit * self.cour_coef) /
-                self.cour_speed,
+                efect_cont * self.cour_crit * self.cour_coef / self.cour_speed,
                 8)
 
             # nove dt nesmi byt vetsi nez je maxdt * max_delta_t_mult
