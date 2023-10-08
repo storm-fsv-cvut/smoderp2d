@@ -178,30 +178,34 @@ def removeCellsWithSameHeightNeighborhood(mat_dem, mat_nan, rows, cols):
     return mat_dem, mat_nan
 
 
-def get_direction_and_slope(x1, y1, z1, x2, y2, z2):
-    # the normal vector
-    nx = z1 * y2 - z2 * y1
-    ny = z1 * x2 - x1 * z2
-
-    if nx == 0 and ny >= 0:
-        d = 0
-    elif nx == 0 and ny < 0:
-        d = math.pi
-    elif nx > 0:
-        d = PI_HALF - math.atan2(ny, nx)
-    elif nx < 0:
-        d = THREE_PI_HALF - math.atan2(ny, nx)
-
-    s = math.sqrt(z1 * z1 / y1 / y1 / 2 + z2 / y2 * z2 / y2)
-
-    return d, s
-
-
 def dirSlope(point_m, nbrs, dy, dx):
     """Return a list of direction a slope values for each triangular facet.
 
     A function calculates for each triangular facet outflow direction and slope.
     """
+    def compute_individual_dir_slope(x1, y1, z1, x2, y2, z2):
+        """Compute direction and slope from given coordinates.
+
+        It is a pure coordinate-based computation. Some if-else magic is done to
+        the results after the calls.
+        """
+        # the normal vector
+        nx = z1 * y2 - z2 * y1
+        ny = z1 * x2 - x1 * z2
+
+        if nx == 0 and ny >= 0:
+            d = 0
+        elif nx == 0 and ny < 0:
+            d = math.pi
+        elif nx > 0:
+            d = PI_HALF - math.atan2(ny, nx)
+        elif nx < 0:
+            d = THREE_PI_HALF - math.atan2(ny, nx)
+
+        s = math.sqrt(z1 * z1 / y1 / y1 / 2 + z2 / y2 * z2 / y2)
+
+        return d, s
+
     direction = np.zeros(8)
     slope = np.zeros(8)
     DY_SQRT = dy * math.sqrt(2)
@@ -246,7 +250,7 @@ def dirSlope(point_m, nbrs, dy, dx):
                 z2 = nbrs[1] - point_m
 
                 # the direction d and slope s
-                d0, s0 = get_direction_and_slope(x1, y1, z1, x2, y2, z2)
+                d0, s0 = compute_individual_dir_slope(x1, y1, z1, x2, y2, z2)
 
                 if d0 > FB:
                     if point_m >= nbrs[1] and nbrs[0] >= nbrs[1]:
@@ -278,7 +282,7 @@ def dirSlope(point_m, nbrs, dy, dx):
                 z2 = nbrs[2] - point_m
 
                 # the direction d and slope s
-                d1, s1 = get_direction_and_slope(x1, y1, z1, x2, y2, z2)
+                d1, s1 = compute_individual_dir_slope(x1, y1, z1, x2, y2, z2)
 
                 if d1 > FB:
                     if point_m >= nbrs[2] and nbrs[1] >= nbrs[2]:
@@ -310,7 +314,7 @@ def dirSlope(point_m, nbrs, dy, dx):
                 z2 = nbrs[4] - point_m
 
                 # the direction d and slope s
-                d2, s2 = get_direction_and_slope(x1, y1, z1, x2, y2, z2)
+                d2, s2 = compute_individual_dir_slope(x1, y1, z1, x2, y2, z2)
 
                 if d2 > FB:
                     if point_m >= nbrs[4] and nbrs[2] >= nbrs[4]:
@@ -343,7 +347,7 @@ def dirSlope(point_m, nbrs, dy, dx):
                 z2 = nbrs[7] - point_m
 
                 # the direction d and slope s
-                d3, s3 = get_direction_and_slope(x1, y1, z1, x2, y2, z2)
+                d3, s3 = compute_individual_dir_slope(x1, y1, z1, x2, y2, z2)
 
                 if d3 > FB:
                     if point_m >= nbrs[7] and nbrs[4] >= nbrs[7]:
@@ -375,7 +379,7 @@ def dirSlope(point_m, nbrs, dy, dx):
                 z2 = nbrs[6] - point_m
 
                 # the direction d and slope s
-                d4, s4 = get_direction_and_slope(x1, y1, z1, x2, y2, z2)
+                d4, s4 = compute_individual_dir_slope(x1, y1, z1, x2, y2, z2)
 
                 if d4 > FB:
                     if point_m >= nbrs[6] and nbrs[7] >= nbrs[6]:
@@ -407,7 +411,7 @@ def dirSlope(point_m, nbrs, dy, dx):
                 z2 = nbrs[5] - point_m
 
                 # the direction d and slope s
-                d5, s5 = get_direction_and_slope(x1, y1, z1, x2, y2, z2)
+                d5, s5 = compute_individual_dir_slope(x1, y1, z1, x2, y2, z2)
 
                 if d5 > FB:
                     if point_m >= nbrs[5] and nbrs[6] >= nbrs[5]:
@@ -439,7 +443,7 @@ def dirSlope(point_m, nbrs, dy, dx):
                 z2 = nbrs[3] - point_m
 
                 # the direction d and slope s
-                d6, s6 = get_direction_and_slope(x1, y1, z1, x2, y2, z2)
+                d6, s6 = compute_individual_dir_slope(x1, y1, z1, x2, y2, z2)
 
                 if d6 > FB:
                     if point_m >= nbrs[3] and nbrs[5] >= nbrs[3]:
@@ -471,7 +475,7 @@ def dirSlope(point_m, nbrs, dy, dx):
                 z2 = nbrs[0] - point_m
 
                 # the direction d and slope s
-                d7, s7 = get_direction_and_slope(x1, y1, z1, x2, y2, z2)
+                d7, s7 = compute_individual_dir_slope(x1, y1, z1, x2, y2, z2)
 
                 if d7 > FB:
                     if point_m >= nbrs[0] and nbrs[3] >= nbrs[0]:
