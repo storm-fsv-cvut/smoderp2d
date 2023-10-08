@@ -20,7 +20,7 @@ jobs:
     uses: ./.github/workflows/cmd_template.yml
     with:
       python-version: ${{ matrix.python-version }}
-      pytest-suite: tests/test_cmd.py --config quicktest_sheet.ini
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_sheet.ini
 
   smoderp2d-quicktest-rill:
     strategy:
@@ -33,7 +33,7 @@ jobs:
     uses: ./.github/workflows/cmd_template.yml
     with:
       python-version: ${{ matrix.python-version }}
-      pytest-suite: tests/test_cmd.py --config quicktest_rill.ini
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_rill.ini
 
   smoderp2d-longtest-sheet:
     strategy:
@@ -46,7 +46,7 @@ jobs:
     uses: ./.github/workflows/cmd_template.yml
     with:
       python-version: ${{ matrix.python-version }}
-      pytest-suite: tests/test_cmd.py --config test_sheet.ini
+      pytest-suite: tests/test_cmd.py --config config_files/test_sheet.ini
 
   smoderp2d-longtest-rill:
     strategy:
@@ -59,7 +59,7 @@ jobs:
     uses: ./.github/workflows/cmd_template.yml
     with:
       python-version: ${{ matrix.python-version }}
-      pytest-suite: tests/test_cmd.py --config test_rill.ini
+      pytest-suite: tests/test_cmd.py --config config_files/test_rill.ini
 
   profile1d:
     strategy:
