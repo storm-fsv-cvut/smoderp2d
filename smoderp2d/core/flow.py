@@ -112,24 +112,24 @@ class Mfda(object):
     def cell_runoff(self, i, j, sur=True):
         inflow_from_cells = \
             self.inflows[i - 1][j - 1][1] * \
-            self.vol_runoff[i - 1, j - 1] + \
+            self.arr.vol_runoff[i - 1, j - 1] + \
             self.inflows[i - 1][j][2] * \
-            self.vol_runoff[i - 1, j] + \
+            self.arr.vol_runoff[i - 1, j] + \
             self.inflows[i - 1][j + 1][3] * \
-            self.vol_runoff[i - 1, j + 1] + \
+            self.arr.vol_runoff[i - 1, j + 1] + \
             self.inflows[i][j - 1][0] * \
-            self.vol_runoff[i, j - 1] + \
+            self.arr.vol_runoff[i, j - 1] + \
             self.inflows[i][j + 1][4] * \
-            self.vol_runoff[i, j + 1] + \
+            self.arr.vol_runoff[i, j + 1] + \
             self.inflows[i + 1][j - 1][7] * \
-            self.vol_runoff[i + 1, j - 1] + \
+            self.arr.vol_runoff[i + 1, j - 1] + \
             self.inflows[i + 1][j][6] * \
-            self.vol_runoff[i + 1, j] + \
+            self.arr.vol_runoff[i + 1, j] + \
             self.inflows[i + 1][j + 1][5] * \
-            self.vol_runoff[i + 1, j + 1]
+            self.arr.vol_runoff[i + 1, j + 1]
 
         if Globals.isRill and sur:
-            state_ij = self.state[i, j]
+            state_ij = self.arr.state[i, j]
             for z in range(len(self.inflowsRill[i][j])):
                 ax = self.inflowsRill[i][j][z][0]
                 bx = self.inflowsRill[i][j][z][1]
@@ -137,7 +137,7 @@ class Mfda(object):
                 jbx = j + bx
 
                 if ma.equal(state_ij, 1) or ma.equal(state_ij, 1):
-                    inflow_from_cells += self.vol_runoff_rill[iax, jbx]
+                    inflow_from_cells += self.arr.vol_runoff_rill[iax, jbx]
                     # toto jeste predelat u ryh
 
         return inflow_from_cells
