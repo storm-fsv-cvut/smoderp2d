@@ -5,6 +5,8 @@ from smoderp2d.exceptions import SmoderpError
 class GridGlobalsArray(np.ndarray):
     """Class overriding np.ndarray to handle SMODERP border problems."""
 
+    invalid_sur_arr = None
+
     def get_item(self, item):
         """Get item at position.
 
