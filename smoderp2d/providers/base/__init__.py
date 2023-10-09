@@ -41,7 +41,7 @@ class WorkflowMode:
             return cls.roff
         else:
             return cls.full
-    
+
 class BaseWriter(object):
     def __init__(self):
         self._data_target = None
@@ -159,7 +159,7 @@ class BaseProvider(object):
         handler.setFormatter(formatter)
         if sys.version_info.major >= 3:
             if len(Logger.handlers) == 0:
-                # avoid duplicated handlers (eg. in case of ArcGIS)
+                # avoid duplicated handlers (e.g. in case of ArcGIS)
                 Logger.addHandler(handler)
 
     def __load_hidden_config(self):
@@ -244,7 +244,7 @@ class BaseProvider(object):
 
         #  type of computing
         data['type_of_computing'] = CompType()[self._config.get('processes', 'typecomp', fallback='stream_rill')]
-        
+
         #  rainfall data can be saved
         if self._config.get('data', 'rainfall'):
             try:
@@ -320,7 +320,7 @@ class BaseProvider(object):
         # should be set in the loop at the beginning
         # of this method since it is part of the
         # data dict (only in profile1d provider).
-        # Otherwise is has to be set to 1.
+        # Otherwise, is has to be set to 1.
         if Globals.slope_width is None:
             Globals.slope_width = 1
 
@@ -359,7 +359,7 @@ class BaseProvider(object):
         presence/non-presence.
 
         :param CompType tc: type of computation
-        
+
         :return dict:
 
         """
@@ -388,7 +388,7 @@ class BaseProvider(object):
             ret['rill'] = True
 
         return ret
-            
+
     def logo(self):
         """Print Smoderp2d ascii-style logo."""
         logo_file = os.path.join(os.path.dirname(__file__), 'txtlogo.txt')
