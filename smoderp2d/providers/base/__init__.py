@@ -18,7 +18,9 @@ from smoderp2d.exceptions import ProviderError, ConfigError, GlobalsNotSet, Smod
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError
 
+
 class Args:
+
     # type of computation (CompType)
     workflow_mode = None
     # path to pickle data file
@@ -27,7 +29,9 @@ class Args:
     # config file
     config_file = None
 
+
 class WorkflowMode:
+
     # type of computation
     dpre = 0 # data preparation only
     roff = 1 # runoff calculation only
@@ -41,6 +45,7 @@ class WorkflowMode:
             return cls.roff
         else:
             return cls.full
+
 
 class BaseWriter(object):
     def __init__(self):
@@ -92,7 +97,7 @@ class BaseWriter(object):
 
         :param array: numpy array
         :param output_name: output filename
-        :param date_type: directory where to write output file
+        :param data_type: directory where to write output file
         """
         file_output = self._raster_output_path(output_name, data_type)
 
@@ -101,7 +106,6 @@ class BaseWriter(object):
         )
 
         self._write_raster(array, file_output)
-
 
     def create_storage(self, outdir):
         pass
@@ -126,6 +130,7 @@ class BaseWriter(object):
             GridGlobals.dx is None or \
             GridGlobals.dy is None:
             raise GlobalsNotSet()
+
 
 class BaseProvider(object):
     def __init__(self):
@@ -178,7 +183,6 @@ class BaseProvider(object):
 
         return config
 
-
     def _load_config(self):
         # load configuration
         if not os.path.exists(self.args.config_file):
@@ -205,7 +209,6 @@ class BaseProvider(object):
             ))
 
         return config
-
 
     def _load_dpre(self):
         """Run data preparation procedure.
@@ -436,7 +439,6 @@ class BaseProvider(object):
         return data
 
     def postprocessing(self, cumulative, surface_array, stream):
-
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
         dx = GridGlobals.get_size()[0]
@@ -578,7 +580,6 @@ class BaseProvider(object):
                 arr[i, j] = copy_arr[i, j]
 
         return arr
-
 
         # TODO
         # if not Globals.extraOut:

@@ -13,6 +13,7 @@ from grass.pygrass.modules import Module
 from grass.pygrass.raster import numpy2raster
 from grass.pygrass.messages import Messenger
 
+
 class GrassGisWriter(BaseWriter):
     def __init__(self):
         super(GrassGisWriter, self).__init__()
@@ -61,6 +62,7 @@ class GrassGisWriter(BaseWriter):
                nodata=GridGlobals.NoDataValue,
                overwrite=True
         )
+
 
 class GrassGisProvider(BaseProvider):
 
