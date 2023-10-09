@@ -604,6 +604,7 @@ class PrepareDataGISBase(PrepareDataBase):
 
         Logger.info("Processing stream network:")
         if self._input_params['streams'] and self._input_params['channel_properties_table'] and self._input_params['streams_channel_type_fieldname']:
+            self.data['type_of_computing'] = CompType.stream_rill
             self._prepare_streams(
                 self._input_params['streams'],
                 self._input_params['channel_properties_table'],
@@ -703,18 +704,6 @@ class PrepareDataGISBase(PrepareDataBase):
 
     def _prepare_streams(self, stream, stream_shape_tab, stream_shape_code,
                          dem_aoi, aoi_polygon):
-        self.data['type_of_computing'] = CompType.rill
-
-        # pocitam vzdy s ryhama pokud jsou zadane vsechny vstupy pro
-        # vypocet toku, streams se pocitaji a type_of_computing je 3
-        listin = [self._input_params['streams'],
-                  self._input_params['channel_properties_table'],
-                  self._input_params['streams_channel_type_fieldname']]
-        tflistin = [len(i) > 1 for i in listin]  # TODO: ???
-
-        if all(tflistin):
-            self.data['type_of_computing'] = CompType.stream_rill
-
         if self.data['type_of_computing'] in (CompType.stream_rill, CompType.stream_subflow_rill):
             Logger.info("Clipping stream to AoI outline ...")
             stream_aoi = self._stream_clip(stream, aoi_polygon)
