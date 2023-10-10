@@ -1,4 +1,6 @@
 import os
+import shutil
+import zipfile
 
 import numpy as np
 
@@ -86,3 +88,30 @@ class SaveItems:
             np.savetxt(self.f, npa, fmt='%15d', delimiter=';')
         if 'float' in type_:
             np.savetxt(self.f, npa, fmt='%15.10e', delimiter=';')
+
+    def save(self, data, zipfname):
+
+        dir_ = './.save/'
+
+        if '.zip' in zipfname:
+            pass
+        else:
+            zipfname += '.zip'
+
+        zipf = zipfile.ZipFile(zipfname, 'w', zipfile.ZIP_DEFLATED)
+
+        self.countList = 1
+        if not os.path.exists(dir_):
+            os.makedirs(dir_)
+        for id_, it in enumerate(data):
+            # print "%02d" % (id_)
+            with open(dir_ + os.sep + "%02d" % id_, 'w') as self.f:
+                self.f.writelines(str(type(it)) + '\n')
+                self.save_item(it)
+
+        for root, dirs, files in os.walk(dir_):
+            for file in files:
+                # print os.path.join(root, file)
+                zipf.write(os.path.join(root, file))
+
+        shutil.rmtree(dir_)

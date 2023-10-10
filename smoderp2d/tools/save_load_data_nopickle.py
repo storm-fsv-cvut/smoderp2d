@@ -13,8 +13,7 @@ import zipfile
 from tools import SaveItems
 
 
-# Class to load item of different typy
-#
+# Class to load items of different types
 class LoadItems:
 
     def loadlist(self, int_):
@@ -118,34 +117,6 @@ class LoadItems:
 #  data returned from the datapreparation
 #  in and from zip archive
 class SaveLoad(SaveItems, LoadItems):
-
-    def save(self, data, zipfname):
-        import shutil
-
-        dir_ = './.save/'
-
-        if '.zip' in zipfname:
-            pass
-        else:
-            zipfname += '.zip'
-
-        zipf = zipfile.ZipFile(zipfname, 'w', zipfile.ZIP_DEFLATED)
-
-        self.countList = 1
-        if not os.path.exists(dir_):
-            os.makedirs(dir_)
-        for id_, it in enumerate(data):
-            # print "%02d" % (id_)
-            with open(dir_ + os.sep + "%02d" % id_, 'w') as self.f:
-                self.f.writelines(str(type(it)) + '\n')
-                self.save_item(it)
-
-        for root, dirs, files in os.walk(dir_):
-            for file in files:
-                # print os.path.join(root, file)
-                zipf.write(os.path.join(root, file))
-
-        shutil.rmtree(dir_)
 
     def load(self, zipfname):
         import shutil
