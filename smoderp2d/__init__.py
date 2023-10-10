@@ -185,8 +185,7 @@ class QGISRunner(GrassGisRunner):
 
     @staticmethod
     def import_data(options):
-        """
-        Import files to grass
+        """Import files to grass.
 
         :param options: dictionary of input data
         """
@@ -201,7 +200,7 @@ class QGISRunner(GrassGisRunner):
 
                     ds = gdal.Open(options[key])
                     proj = osr.SpatialReference(wkt=ds.GetProjection())
-                    srs = proj.GetAttrValue('AUTHORITY',1)
+                    srs = proj.GetAttrValue('AUTHORITY', 1)
 
                     project_projection = QgsProject.instance().crs().authid()
 

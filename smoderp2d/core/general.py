@@ -5,6 +5,8 @@ from smoderp2d.exceptions import SmoderpError
 class GridGlobalsArray(np.ndarray):
     """Class overriding np.ndarray to handle SMODERP border problems."""
 
+    invalid_sur_arr = None
+
     def get_item(self, item):
         """Get item at position.
 
@@ -27,7 +29,7 @@ class GridGlobalsArray(np.ndarray):
         return self[item]
 
     def set_outsides(self, surarrs):
-        """Setup the empty SurArrs.
+        """Set up the empty SurArrs.
 
         The empty SurArrs is intended to be returned when querying values at
         negative positions.
@@ -167,7 +169,7 @@ class Globals:
     """
     # type of computation
     type_of_computing = None
-    # path to a output directory
+    # path to an output directory
     outdir = None
     # raster with labeled boundary cells
     mat_boundary = None
@@ -373,7 +375,7 @@ class Globals:
         """Reset static variables to their default values."""
         # type of computation
         cls.type_of_computing = None
-        # path to a output directory
+        # path to an output directory
         cls.outdir = None
         # raster with labeled boundary cells
         cls.mat_boundary = None

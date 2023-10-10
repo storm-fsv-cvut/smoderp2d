@@ -14,8 +14,8 @@ jobs:
       matrix:
         python-version:
           # - "2.7"
-          - "3.8"
-          - "3.11.2"
+          - "3.9"
+          - "3.11"
 
     uses: ./.github/workflows/cmd_template.yml
     with:
@@ -27,8 +27,8 @@ jobs:
       matrix:
         python-version:
           # - "2.7"
-          - "3.8"
-          - "3.11.2"
+          - "3.9"
+          - "3.11"
 
     uses: ./.github/workflows/cmd_template.yml
     with:
@@ -40,8 +40,8 @@ jobs:
       matrix:
         python-version:
           # - "2.7"
-          - "3.8"
-          - "3.11.2"
+          - "3.9"
+          - "3.11"
 
     uses: ./.github/workflows/cmd_template.yml
     with:
@@ -53,8 +53,8 @@ jobs:
       matrix:
         python-version:
           # - "2.7"
-          - "3.8"
-          - "3.11.2"
+          - "3.9"
+          - "3.11"
 
     uses: ./.github/workflows/cmd_template.yml
     with:
@@ -65,10 +65,11 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - "3.8"
-          - "3.11.2"
+          - "3.9"
+          - "3.11"
 
     uses: ./.github/workflows/cmd_template.yml
     with:
       python-version: ${{ matrix.python-version }}
       pytest-suite: tests/test_profile1d.py
+ 

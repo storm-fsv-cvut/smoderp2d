@@ -64,9 +64,9 @@ class LoadItems:
     def loadlist(self, int_):
 
         if int_:
-            self.el = self.__int
+            el = self.__int
         else:
-            self.el = self.__float
+            el = self.__float
 
         nLinesList = self.lines[1].replace('\n', '').split(';')
         nLinesList = int(nLinesList[0])
@@ -91,7 +91,7 @@ class LoadItems:
 
             else:
                 if int(line[iRec][0]) == iLine:
-                    wrk.append(self.el(line[iRec][1]))
+                    wrk.append(el(line[iRec][1]))
 
                 if int(line[iRec + 1][0]) > iLine:
                     if len(wrk) == 1:
@@ -103,7 +103,7 @@ class LoadItems:
                 iRec += 1
 
         if int(line[iRec][0]) == nLinesList - 1:
-            wrk.append(self.el(line[iRec][1]))
+            wrk.append(el(line[iRec][1]))
             if len(wrk) == 1:
                 list_.append(wrk[0])
             else:
