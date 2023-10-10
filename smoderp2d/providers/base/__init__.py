@@ -441,7 +441,6 @@ class BaseProvider(object):
     def postprocessing(self, cumulative, surface_array, stream):
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
-        dx = GridGlobals.get_size()[0]
 
         # compute maximum shear stress and velocity
         cumulative.calculate_vsheet_sheerstress()
