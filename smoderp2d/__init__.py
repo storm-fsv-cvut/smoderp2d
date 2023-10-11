@@ -224,24 +224,34 @@ class QGISRunner(GrassGisRunner):
                 raise SmoderpError('{}'.format(e))
 
     @staticmethod
-    def show_results():
-        import glob
+    def color_ramp(layer):
         from PyQt5.QtGui import QColor
         from qgis.core import (
-            QgsProject, QgsRasterLayer, QgsRasterShader,
-            QgsSingleBandPseudoColorRenderer, QgsColorRampShader
+            QgsRasterShader, QgsColorRampShader, QgsRasterBandStats
         )
+
+        # get min/max values
+        extent = layer.extent()
+        stats = layer.dataProvider().bandStatistics(1, QgsRasterBandStats.All, extent, 0)
 
         # get colour definitions
         color_ramp = QgsColorRampShader()
         color_ramp.setColorRampType(QgsColorRampShader.Interpolated)
         lst2 = [
-            QgsColorRampShader.ColorRampItem(0, QColor('#0000ff'), '0'),
-            QgsColorRampShader.ColorRampItem(20, QColor('#efefff'), '20')
+            QgsColorRampShader.ColorRampItem(stats.minimumValue, QColor(239, 239, 255), f'{stats.minimumValue:.3f}'),
+            QgsColorRampShader.ColorRampItem(stats.maximumValue, QColor(  0,   0, 255), f'{stats.maximumValue:.3f}')
         ]
         color_ramp.setColorRampItemList(lst2)
         shader = QgsRasterShader()
         shader.setRasterShaderFunction(color_ramp)
+
+        return shader
+
+    def show_results(self):
+        import glob
+        from qgis.core import (
+            QgsProject, QgsRasterLayer, QgsSingleBandPseudoColorRenderer
+        )
 
         for map_path in glob.glob(os.path.join(Globals.outdir, '*.asc')):
             layer = QgsRasterLayer(
@@ -250,7 +260,7 @@ class QGISRunner(GrassGisRunner):
 
             # set colours
             renderer = QgsSingleBandPseudoColorRenderer(
-                layer.dataProvider(), 1, shader
+                layer.dataProvider(), 1, self.color_ramp(layer)
             )
             layer.setRenderer(renderer)
 
