@@ -513,53 +513,26 @@ class PrepareData(PrepareDataGISBase):
 
         return self._decode_stream_attr(stream_attr)
 
-    def _check_input_data(self):
+    def _check_empty_values(self, table, field):
         """See base method for description.
         """
-        def _check_empty_values(table, field):
-            oidfn = arcpy.Describe(table).OIDFieldName
-            with arcpy.da.SearchCursor(table, [field, oidfn]) as cursor:
-                for row in cursor:
-                    if row[0] in (None, ""):
-                        raise DataPreparationInvalidInput(
-                            "'{}' values in '{}' table are not correct, "
-                            "empty value found in row {})".format(
-                                field, table, row[1]
-                            )
-                        )
-
-        self._check_input_data_()
-
-        _check_empty_values(
-            self._input_params['vegetation'],
-            self._input_params['vegetation_type_fieldname']
-        )
-        _check_empty_values(
-            self._input_params['soil'],
-            self._input_params['soil_type_fieldname']
-        )
-
-        # check presence of needed fields in stream shape properties table
-        if self._input_params['channel_properties_table']:
-            fields = self._get_field_names(
-                self._input_params['channel_properties_table']
-            )
-            for f in self.stream_shape_fields:
-                if f not in fields:
+        oidfn = arcpy.Describe(table).OIDFieldName
+        with arcpy.da.SearchCursor(table, [field, oidfn]) as cursor:
+            for row in cursor:
+                if row[0] in (None, ""):
                     raise DataPreparationInvalidInput(
-                        "Field '{}' not found in <{}>\nNeeded fields "
-                        "are: {}".format(
-                            f, self._input_params['channel_properties_table'],
-                            ', '.join(
-                                map(
-                                    lambda x: "'{}'".format(x),
-                                    self.stream_shape_fields
-                                )
-                            )
+                        "'{}' values in '{}' table are not correct, "
+                        "empty value found in row {})".format(
+                            field, table, row[1]
                         )
                     )
 
-    def _get_field_names(self, ds):
+    def _check_input_data(self):
+        """See base method for description.
+        """
+        self._check_input_data_()
+
+    def _get_field_names(self, ds, table_in=None):
         """See base method for description.
         """
         return [field.name for field in arcpy.ListFields(ds)]

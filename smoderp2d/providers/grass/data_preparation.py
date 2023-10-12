@@ -637,50 +637,27 @@ class PrepareData(PrepareDataGISBase):
 
         return self._decode_stream_attr(stream_attr)
 
+    def _check_empty_values(self, table, field):
+        """See base method for description.
+        """
+        try:
+            with Vector(**self.__qualified_name(table)) as vmap:
+                vmap.table.filters.select(field, self.storage.primary_key)
+                for row in vmap.table:
+                    if row[0] in (None, ""):
+                        raise DataPreparationInvalidInput(
+                            "'{}' values in '{}' table are not correct, "
+                            "empty value found in row {})".format(
+                                field, table, row[1]
+                            )
+                        )
+        except OpenError as e:
+            raise DataPreparationInvalidInput(e)
+    
     def _check_input_data(self):
         """See base method for description.
         """
-        def _check_empty_values(table, field):
-            try:
-                with Vector(**table) as vmap:
-                    vmap.table.filters.select(field, self.storage.primary_key)
-                    for row in vmap.table:
-                        if row[0] in (None, ""):
-                            raise DataPreparationInvalidInput(
-                                "'{}' values in '{}' table are not correct, "
-                                "empty value found in row {})".format(
-                                    field, table, row[1]
-                                )
-                            )
-            except OpenError as e:
-                raise DataPreparationInvalidInput(e)
-
-        _check_empty_values(
-            self.__qualified_name(self._input_params['vegetation']),
-            self._input_params['vegetation_type_fieldname']
-        )
-        _check_empty_values(
-            self.__qualified_name(self._input_params['soil']),
-            self._input_params['soil_type_fieldname']
-        )
-
-        if self._input_params['channel_properties_table']:
-            table = Table(
-                **self.__qualified_name(
-                    self._input_params['channel_properties_table'],
-                    mtype='table'
-                )
-            )
-            fields = table.columns.names()
-            for f in self.stream_shape_fields:
-                if f not in fields:
-                    raise DataPreparationInvalidInput(
-                        "Field '{}' not found in '{}'\nProper columns codes "
-                        "are: {}".format(
-                            f, self._input_params['channel_properties_table'],
-                            self.stream_shape_fields
-                        )
-                    )
+        self._check_input_data_()
 
         # overlapping polygons (soils)
         try:
@@ -694,9 +671,16 @@ class PrepareData(PrepareDataGISBase):
         except OpenError as e:
             raise DataPreparationInvalidInput(e)
 
-    def _get_field_names(self, ds):
+    def _get_field_names(self, ds, table_in=False):
         """See base method for description.
         """
-        with Vector(ds) as vmap:
-            fields = vmap.table.columns.names()
+        if table_in:
+            table = Table(
+                **self.__qualified_name(ds, mtype='table')
+            )
+            fields = table.columns.names()
+        else:
+            with Vector(**self.__qualified_name(ds)) as vmap:
+                fields = vmap.table.columns.names()
+
         return fields
