@@ -855,7 +855,7 @@ class PrepareDataGISBase(PrepareDataBase):
                 )
 
             # check presence of needed fields in stream shape properties table
-            fields = self._get_field_names(self._input_params['channel_properties_table'], table_in=True)
+            fields = self._get_field_names(self._input_params['channel_properties_table'])
             for f in self.stream_shape_fields:
                 if f not in fields:
                     raise DataPreparationInvalidInput(

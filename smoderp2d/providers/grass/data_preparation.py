@@ -671,16 +671,16 @@ class PrepareData(PrepareDataGISBase):
         except OpenError as e:
             raise DataPreparationInvalidInput(e)
 
-    def _get_field_names(self, ds, table_in=False):
+    def _get_field_names(self, ds):
         """See base method for description.
         """
-        if table_in:
+        if ds in Mapset().glist(type='vector'):
+            with Vector(**self.__qualified_name(ds)) as vmap:
+                fields = vmap.table.columns.names()
+        else:
             table = Table(
                 **self.__qualified_name(ds, mtype='table')
             )
             fields = table.columns.names()
-        else:
-            with Vector(**self.__qualified_name(ds)) as vmap:
-                fields = vmap.table.columns.names()
 
         return fields

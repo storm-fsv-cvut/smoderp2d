@@ -532,7 +532,7 @@ class PrepareData(PrepareDataGISBase):
         """
         self._check_input_data_()
 
-    def _get_field_names(self, ds, table_in=None):
+    def _get_field_names(self, ds):
         """See base method for description.
         """
         return [field.name for field in arcpy.ListFields(ds)]
