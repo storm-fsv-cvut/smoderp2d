@@ -871,7 +871,7 @@ class PrepareDataGISBase(PrepareDataBase):
                            self._input_params['channel_properties_table']):
                 fields = self._get_field_names(target)
                 if self._input_params["streams_channel_type_fieldname"] not in fields:
-                    raise DataPreparationInvalidInput("Field {} not found in {}".format(
+                    raise DataPreparationInvalidInput("Field '{}' not found in '{}'".format(
                         self._input_params["streams_channel_type_fieldname"], target)
                     )
 
