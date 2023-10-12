@@ -98,7 +98,7 @@ class SmoderpTask(QgsTask):
                 fail_reason = "reason unknown (see SMODERP2D log messages)"
 
             iface.messageBar().pushMessage(
-                'Computation failed: ', fail_reason, level=Qgis.Critical
+                'Computation failed: ', str(fail_reason), level=Qgis.Critical
             )
 
 
