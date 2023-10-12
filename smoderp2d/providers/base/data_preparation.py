@@ -855,24 +855,24 @@ class PrepareDataGISBase(PrepareDataBase):
                 )
 
             # check presence of needed fields in stream shape properties table
-            if self._input_params['channel_properties_table']:
-                fields = self._get_field_names(self._input_params['channel_properties_table'], table_in=True)
-                for f in self.stream_shape_fields:
-                    if f not in fields:
-                        raise DataPreparationInvalidInput(
-                            "Field '{}' not found in '{}'\nProper columns codes "
-                            "are: {}".format(
-                                f, self._input_params['channel_properties_table'],
-                                self.stream_shape_fields
-                            )
+            fields = self._get_field_names(self._input_params['channel_properties_table'], table_in=True)
+            for f in self.stream_shape_fields:
+                if f not in fields:
+                    raise DataPreparationInvalidInput(
+                        "Field '{}' not found in '{}'\nProper columns codes "
+                        "are: {}".format(
+                            f, self._input_params['channel_properties_table'],
+                            self.stream_shape_fields
                         )
+                    )
 
             # check presence streams_channel_type_fieldname in streams
-            if self._input_params["streams_channel_type_fieldname"]:
-                fields = self._get_field_names(self._input_params["streams"])
+            for target in (self._input_params["streams"],
+                           self._input_params['channel_properties_table']):
+                fields = self._get_field_names(target)
                 if self._input_params["streams_channel_type_fieldname"] not in fields:
                     raise DataPreparationInvalidInput("Field {} not found in {}".format(
-                        self._input_params["streams_channel_type_fieldname"], self._input_params["streams"])
+                        self._input_params["streams_channel_type_fieldname"], target)
                     )
 
     @staticmethod
