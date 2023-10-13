@@ -244,9 +244,7 @@ class QGISRunner(GrassGisRunner):
 
     def show_results(self):
         import glob
-        from qgis.core import (
-            QgsProject, QgsRasterLayer, QgsSingleBandPseudoColorRenderer
-        )
+        from qgis.core import QgsProject, QgsRasterLayer
 
         for map_path in glob.glob(os.path.join(Globals.outdir, '*.asc')):
             layer = QgsRasterLayer(
