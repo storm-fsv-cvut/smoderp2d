@@ -18,7 +18,7 @@ class Courant:
     #
 
     def __init__(self):
-        # self.orig_dt = dt
+        self.orig_dt = 0  # to be set during set_time_step(dt)
         self.maxh = 0
         self.cour_speed = 0
         # citical courant value

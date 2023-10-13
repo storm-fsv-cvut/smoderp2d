@@ -12,8 +12,8 @@ services:
       - ./log:/var/log/pywps
       - ./../../:/opt/smoderp2d
     ports:
-      - 8080:80
-      - 4444:443
+      - "8080:80"
+      - "4444:443"
     environment:
       - NGINX_HOST=rain1.fsv.cvut.cz
       - NGINX_PORT=4444

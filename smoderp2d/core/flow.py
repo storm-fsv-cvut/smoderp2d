@@ -10,7 +10,7 @@
 #  make D8 or mfda compatible within the SMODERP
 #  framework.
 #
-#  Both classes can inherited by the
+#  Both classes can be inherited by
 #  classes Kinematic or Diffuse in the
 #  package smoderp2d.core.kinematic_diffuse
 #
@@ -91,7 +91,7 @@ class D8(object):
 #  - smoderp2d.core.kinematic_diffuse.Diffuse
 #
 #  note: The rill flow, if computed, is always defined in terms
-#  of one directions algorithm. In the class Mfda are therefore
+#  of one of the direction algorithm. In the class Mfda are therefore
 #  defined rules for mfda which governs the sheet flow and D8
 #  algorithm which defines the rill flow.
 #
