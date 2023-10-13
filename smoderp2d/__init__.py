@@ -223,40 +223,6 @@ class QGISRunner(GrassGisRunner):
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
 
-    @staticmethod
-    def color_ramp(layer):
-        from PyQt5.QtGui import QColor
-        from qgis.core import (
-            QgsRasterBandStats, QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp 
-        )
-
-        # get min/max values
-        stats = layer.dataProvider().bandStatistics(1, QgsRasterBandStats.All, layer.extent(), 0)
-
-        # get colour definitions
-        renderer = QgsSingleBandPseudoColorRenderer(layer.dataProvider(), 1)
-        color_ramp = QgsGradientColorRamp(QColor(239, 239, 255), QColor(0,   0, 255))
-        renderer.setClassificationMin(stats.minimumValue)
-        renderer.setClassificationMax(stats.maximumValue)
-        renderer.createShader(color_ramp)
-
-        return renderer
-
-    def show_results(self):
-        import glob
-        from qgis.core import QgsProject, QgsRasterLayer
-
-        for map_path in glob.glob(os.path.join(Globals.outdir, '*.asc')):
-            layer = QgsRasterLayer(
-                map_path, os.path.basename(os.path.splitext(map_path)[0])
-            )
-
-            # set symbology
-            layer.setRenderer(self.color_ramp(layer))
-            layer.triggerRepaint()
-
-            QgsProject.instance().addMapLayer(layer)
-
     def export_data(self):
         pass
 
