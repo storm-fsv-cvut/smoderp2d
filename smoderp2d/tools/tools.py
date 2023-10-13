@@ -115,3 +115,18 @@ class SaveItems:
                 zipf.write(os.path.join(root, file))
 
         shutil.rmtree(dir_)
+
+    def save_item(self, it):
+        if isinstance(it, list):
+            self.savelist(it)
+            self.countList += 1
+        if isinstance(it, float):
+            self.savefloat(it)
+        if isinstance(it, str):
+            self.savestr(it)
+        if isinstance(it, np.ndarray):
+            self.savenumpy(it)
+        if isinstance(it, unicode):
+            self.saveunicode(it)
+        if isinstance(it, int):
+            self.saveint(it)

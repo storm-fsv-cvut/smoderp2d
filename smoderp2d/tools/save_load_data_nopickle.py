@@ -150,21 +150,6 @@ class SaveLoad(SaveItems, LoadItems):
 
         return listOut
 
-    def save_item(self, it):
-        if isinstance(it, list):
-            self.savelist(it)
-            self.countList += 1
-        if isinstance(it, float):
-            self.savefloat(it)
-        if isinstance(it, str):
-            self.savestr(it)
-        if isinstance(it, np.ndarray):
-            self.savenumpy(it)
-        if isinstance(it, unicode):
-            self.saveunicode(it)
-        if isinstance(it, int):
-            self.saveint(it)
-
     def load_item(self):
         if self.lines[0].replace('\n', '') == str(type(list())):
             if self.countList in [1, 2, 3, 4, 5, 8]:
