@@ -224,35 +224,36 @@ class QGISRunner(GrassGisRunner):
                 raise SmoderpError('{}'.format(e))
 
     @staticmethod
-    def show_results():
-        import glob
+    def color_ramp(layer):
         from PyQt5.QtGui import QColor
         from qgis.core import (
-            QgsProject, QgsRasterLayer, QgsRasterShader,
-            QgsSingleBandPseudoColorRenderer, QgsColorRampShader
+            QgsRasterBandStats, QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp 
         )
 
+        # get min/max values
+        stats = layer.dataProvider().bandStatistics(1, QgsRasterBandStats.All, layer.extent(), 0)
+
         # get colour definitions
-        color_ramp = QgsColorRampShader()
-        color_ramp.setColorRampType(QgsColorRampShader.Interpolated)
-        lst2 = [
-            QgsColorRampShader.ColorRampItem(0, QColor('#0000ff'), '0'),
-            QgsColorRampShader.ColorRampItem(20, QColor('#efefff'), '20')
-        ]
-        color_ramp.setColorRampItemList(lst2)
-        shader = QgsRasterShader()
-        shader.setRasterShaderFunction(color_ramp)
+        renderer = QgsSingleBandPseudoColorRenderer(layer.dataProvider(), 1)
+        color_ramp = QgsGradientColorRamp(QColor(239, 239, 255), QColor(0,   0, 255))
+        renderer.setClassificationMin(stats.minimumValue)
+        renderer.setClassificationMax(stats.maximumValue)
+        renderer.createShader(color_ramp)
+
+        return renderer
+
+    def show_results(self):
+        import glob
+        from qgis.core import QgsProject, QgsRasterLayer
 
         for map_path in glob.glob(os.path.join(Globals.outdir, '*.asc')):
             layer = QgsRasterLayer(
                 map_path, os.path.basename(os.path.splitext(map_path)[0])
             )
 
-            # set colours
-            renderer = QgsSingleBandPseudoColorRenderer(
-                layer.dataProvider(), 1, shader
-            )
-            layer.setRenderer(renderer)
+            # set symbology
+            layer.setRenderer(self.color_ramp(layer))
+            layer.triggerRepaint()
 
             QgsProject.instance().addMapLayer(layer)
 
