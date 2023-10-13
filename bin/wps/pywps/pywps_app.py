@@ -4,11 +4,11 @@ __author__ = "Martin Landa"
 
 from pywps.app.Service import Service
 
-from processes.smoderp1d import Smoderp1d
+from processes.profile1d import Profile1d
 from processes.smoderp2d import Smoderp2d
 
 processes = [
-    Smoderp1d(),
+    Profile1d(),
     Smoderp2d()
 ]
 

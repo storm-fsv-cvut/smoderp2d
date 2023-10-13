@@ -12,9 +12,8 @@ Classes:
 """
 
 import time
-import os
 import numpy as np
-import math
+import numpy.ma as ma
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
@@ -26,19 +25,18 @@ from smoderp2d.time_step import TimeStep
 from smoderp2d.courant import Courant
 
 from smoderp2d.tools.times_prt import TimesPrt
-from smoderp2d.io_functions import post_proc
 from smoderp2d.io_functions import hydrographs as wf
 
 from smoderp2d.providers import Logger
 
 from smoderp2d.exceptions import MaxIterationExceeded
 
+
 class FlowControl(object):
     """ Manage variables related to main computational loop. """
 
     def __init__(self):
         """ Set iteration criteria variables. """
-
         # number of rows and columns in numpy array
         r, c = GridGlobals.get_dim()
 
@@ -49,17 +47,23 @@ class FlowControl(object):
         self.infiltration_type = 0
 
         # actual time in calculation
-        self.total_time = 0.0
+        self.total_time = ma.masked_array(
+            np.zeros((r, c), float), mask=GridGlobals.masks
+        )
 
         # keep order of a current rainfall interval
         self.tz = 0
 
         # stores cumulative interception
-        self.sum_interception = np.zeros((r, c), float)
+        self.sum_interception = ma.masked_array(
+            np.zeros((r, c), float), mask=GridGlobals.masks
+        )
 
         # factor deviding the time step for rill calculation
         # currently inactive
-        self.ratio = 1
+        self.ratio = ma.masked_array(
+            np.ones((r, c), float), mask=GridGlobals.masks
+        )
 
         # maximum amount of iterations
         self.max_iter = 40
@@ -69,24 +73,24 @@ class FlowControl(object):
 
         # defined by save_vars()
         self.tz_tmp = None
-        self.sum_interception_tmp = np.copy(self.sum_interception)
+        self.sum_interception_tmp = ma.copy(self.sum_interception)
 
         # defined by save_ratio()
         self.ratio_tmp = None
 
     def save_vars(self):
         """Store tz and sum of interception
-        in case of repeating time time stem iteration.
+        in case of repeating time stem iteration.
         """
         self.tz_tmp = self.tz
-        self.sum_interception_tmp = np.copy(self.sum_interception)
+        self.sum_interception_tmp = ma.copy(self.sum_interception)
 
     def restore_vars(self):
         """Restore tz and sum of interception
-        in case of repeating time time stem iteration.
+        in case of repeating time stem iteration.
         """
         self.tz = self.tz_tmp
-        self.sum_interception = np.copy(self.sum_interception_tmp)
+        self.sum_interception = ma.copy(self.sum_interception_tmp)
 
     def refresh_iter(self):
         """Set current number of iteration to
@@ -124,6 +128,7 @@ class FlowControl(object):
         """Checkes if end time is reached.
         """
         return self.total_time < end_time
+
 
 class Runoff(object):
     """Performs the calculation.
@@ -167,14 +172,14 @@ class Runoff(object):
 
         # handle times step changes based on Courant condition
         self.courant = Courant()
-        self.delta_t = self.courant.initial_time_step(self.surface)
+        self.delta_t = self.courant.initial_time_step()
         self.courant.set_time_step(self.delta_t)
-        Logger.info('Corrected time step is {} [s]'.format(self.delta_t))
+        Logger.info('Corrected time step is {} [s]'.format(self.delta_t.max()))
 
         # opens files for storing hydrographs
-        if Globals.points and Globals.points != "#":
+        if Globals.get_array_points() is not None:
             self.hydrographs = wf.Hydrographs()
-            ### TODO
+            # TODO
             # arcgis = Globals.arcgis
             # if not arcgis:
             #     with open(os.path.join(Globals.outdir, 'points.txt'), 'w') as fd:
@@ -190,31 +195,30 @@ class Runoff(object):
         self.time_step = TimeStep()
 
         # record values into hydrographs at time zero
-        rr, rc = GridGlobals.get_region_dim()
-        for i in rr:
-            for j in rc[i]:
-                self.hydrographs.write_hydrographs_record(
-                    i,
-                    j,
-                    self.flow_control,
-                    self.courant,
-                    self.delta_t,
-                    self.surface,
-                    self.subsurface,
-                    self.cumulative,
-                    0.0
-                )
-        # record values into stream hydrographs at time zero
         self.hydrographs.write_hydrographs_record(
-            i,
-            j,
+            None,
+            None,
             self.flow_control,
             self.courant,
             self.delta_t,
             self.surface,
-            self.subsurface,
             self.cumulative,
-            0.0,
+            ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+            )
+        )
+        # record values into stream hydrographs at time zero
+        self.hydrographs.write_hydrographs_record(
+            None,
+            None,
+            self.flow_control,
+            self.courant,
+            self.delta_t,
+            self.surface,
+            self.cumulative,
+            ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+            ),
             True
         )
 
@@ -239,15 +243,20 @@ class Runoff(object):
 
         Selected values are stored in at the end of each loop.
         """
-
-
         # saves time before the main loop
         Logger.info('Start of computing...')
         Logger.start_time = time.time()
 
         # main loop: until the end time
-        i = j = 0 # TODO: rename vars (variable overlap)
-        while self.flow_control.compare_time(Globals.end_time):
+        timeperc_last = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
+
+        self.delta_t = ma.masked_array(
+            self.delta_t, mask=GridGlobals.masks
+        )
+
+        while ma.any(self.flow_control.compare_time(Globals.end_time)):
 
             self.flow_control.save_vars()
             self.flow_control.refresh_iter()
@@ -277,7 +286,7 @@ class Runoff(object):
                 # update time step size if necessary (based on the courant
                 # condition)
                 self.delta_t, self.flow_control.ratio = self.courant.courant(
-                    potRain, self.delta_t, self.flow_control.ratio
+                    self.delta_t, self.flow_control.ratio
                 )
 
                 # if current time plus timestep is in next minute
@@ -285,12 +294,15 @@ class Runoff(object):
                 # coputed time is exactli at the top of each minute
                 oldtime_minut = self.flow_control.total_time/60
                 newtime_minut = (self.flow_control.total_time+self.delta_t)/60
-                if (math.floor(newtime_minut) > math.floor(oldtime_minut)):
-                    self.delta_t = (math.floor(newtime_minut) - oldtime_minut)*60.
+                if ma.any(ma.floor(newtime_minut) > ma.floor(oldtime_minut)):
+                    self.delta_t = (ma.floor(newtime_minut) - oldtime_minut)*60.
 
                 # courant conditions is satisfied (time step did
                 # change) the iteration loop breaks
-                if delta_t_tmp == self.delta_t and self.flow_control.compare_ratio():
+                if ma.all(
+                    ma.logical_and(delta_t_tmp == self.delta_t,
+                                   self.flow_control.compare_ratio())
+                ):
                     break
 
             # Calculate actual rainfall and adds up interception todo:
@@ -311,33 +323,33 @@ class Runoff(object):
             # last results are stored in hydrographs
             # and error is raised
             if not self.flow_control.max_iter_reached():
-                for i in GridGlobals.rr:
-                    for j in GridGlobals.rc[i]:
-                        self.hydrographs.write_hydrographs_record(
-                            i,
-                            j,
-                            self.flow_control,
-                            self.courant,
-                            self.delta_t,
-                            self.surface,
-                            self.subsurface,
-                            self.cumulative,
-                            actRain
-                        )
+                self.hydrographs.write_hydrographs_record(
+                    0,
+                    0,
+                    self.flow_control,
+                    self.courant,
+                    self.delta_t,
+                    self.surface,
+                    self.cumulative,
+                    actRain
+                )
                 # TODO
-                # post_proc.do(self.cumulative, Globals.mat_slope, Gl, surface.arr)
+                # post_proc.do(
+                # self.cumulative, Globals.mat_slope, Gl, surface.arr)
                 raise MaxIterationExceeded(
                     self.flow_control.max_iter,
                     self.flow_control.total_time
                 )
 
             # adjusts the last time step size
-            if (Globals.end_time - self.flow_control.total_time) < self.delta_t and \
-               (Globals.end_time - self.flow_control.total_time) > 0:
+            if ma.all(ma.logical_and(
+                    Globals.end_time - self.flow_control.total_time < self.delta_t,
+                    Globals.end_time - self.flow_control.total_time > 0
+            )):
                 self.delta_t = Globals.end_time - self.flow_control.total_time
 
             # if end time reached the main loop breaks
-            if self.flow_control.total_time == Globals.end_time:
+            if ma.all(self.flow_control.total_time == Globals.end_time):
                 break
 
             # calculate outflow from each reach of the stream network
@@ -345,54 +357,78 @@ class Runoff(object):
             # calculate inflow to reaches
             self.surface.stream_reach_inflow()
             # record cumulative and maximal results of a reach
-            self.surface.stream_cumulative(self.flow_control.total_time + self.delta_t)
+            self.surface.stream_cumulative(
+                self.flow_control.total_time + self.delta_t
+            )
 
             # set current times to previous time step
             self.subsurface.curr_to_pre()
 
             # write hydrographs of reaches
             self.hydrographs.write_hydrographs_record(
-                i,
-                j,
+                0,
+                0,
                 self.flow_control,
                 self.courant,
                 self.delta_t,
                 self.surface,
-                self.subsurface,
                 self.cumulative,
                 actRain,
                 True
             )
 
             # print raster results in given time steps
-            self.times_prt.prt(self.flow_control.total_time, self.delta_t, self.surface)
+            self.times_prt.prt(
+                self.flow_control.total_time, self.delta_t, self.surface
+            )
 
             # set current time results to previous time step
             # check if rill flow occur
-            for i in self.surface.rr:
-                for j in self.surface.rc[i]:
-                    if self.surface.arr.get_item([i, j]).state == 0:
-                        if self.surface.arr.get_item([i, j]).h_total_new > self.surface.arr.get_item([i, j]).h_crit:
-                            self.surface.arr.get_item([i, j]).state = 1
+            # update state == 0
+            self.surface.arr.state = ma.where(
+                ma.logical_and(
+                    self.surface.arr.state == 0, self.surface.arr.h_total_new > self.surface.arr.h_crit
+                ),
+                1,
+                self.surface.arr.state
+            )
+            # update state == 1
+            state_1_cond = ma.logical_and(
+                self.surface.arr.state == 1,
+                self.surface.arr.h_total_new < self.surface.arr.h_total_pre,
+            )
+            self.surface.arr.state = ma.where(
+                state_1_cond,
+                2,
+                self.surface.arr.state
+            )
+            self.surface.arr.h_last_state1 = ma.where(
+                state_1_cond,
+                self.surface.arr.h_total_pre,
+                self.surface.arr.h_last_state1
+            )
+            # update state == 2
+            self.surface.arr.state = ma.where(
+                ma.logical_and(
+                    self.surface.arr.state == 2,
+                    self.surface.arr.h_total_new > self.surface.arr.h_last_state1,
+                ),
+                1,
+                self.surface.arr.state
+            )
 
-                    if self.surface.arr.get_item([i, j]).state == 1:
-                        if self.surface.arr.get_item([i, j]).h_total_new < self.surface.arr.get_item([i, j]).h_total_pre:
-                            self.surface.arr.get_item([i, j]).h_last_state1 = self.surface.arr.get_item([i, j]).h_total_pre
-                            self.surface.arr.get_item([i, j]).state = 2
-
-                    if self.surface.arr.get_item([i, j]).state == 2:
-                        if self.surface.arr.get_item([i, j]).h_total_new > self.surface.arr.get_item([i, j]).h_last_state1:
-                            self.surface.arr.get_item([i, j]).state = 1
-
-                    self.surface.arr.get_item([i, j]).h_total_pre = self.surface.arr.get_item([i, j]).h_total_new
+            self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
-            Logger.progress(
-                timeperc,
-                self.delta_t,
-                self.flow_control.iter_,
-                self.flow_control.total_time + self.delta_t
-            )
+            if ma.any(timeperc > 99.9) or ma.any(timeperc - timeperc_last > 5):
+                # print progress with 5% step
+                Logger.progress(
+                    timeperc.max(),
+                    self.delta_t.max(),
+                    self.flow_control.iter_,
+                    self.flow_control.total_time + self.delta_t
+                )
+                timeperc_last = timeperc
 
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
@@ -402,7 +438,7 @@ class Runoff(object):
         # perform postprocessing - store results
         self.provider.postprocessing(self.cumulative, self.surface.arr,
                                      self.surface.reach)
-        #Logger.progress(100)
+        # Logger.progress(100)
 
         # TODO
         # post_proc.stream_table(Globals.outdir + os.sep, self.surface,

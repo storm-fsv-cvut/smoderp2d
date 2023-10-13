@@ -24,26 +24,26 @@
 
 import os
 import sys
+import tempfile
 
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings
+from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication, Qt
 
-from PyQt5.QtWidgets import QFileDialog
-from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, QgsVectorLayer, QgsRasterLayer
+from PyQt5.QtWidgets import QFileDialog, QProgressBar, QMenu
+from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, \
+    QgsVectorLayer, QgsRasterLayer, QgsTask, QgsApplication, Qgis, QgsProject
 from qgis.utils import iface
-from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
+from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox, QgsMessageBarItem
 
-### ONLY FOR TESTING PURPOSES (!!!)
-sys.path.insert(0,
-                os.path.join(os.path.dirname(__file__), '..', '..', '..')
-)
+# ONLY FOR TESTING PURPOSES (!!!)
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+
 from smoderp2d import QGISRunner
+from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.exceptions import ProviderError
+from bin.base import arguments, sections
 
-from .connect_grass import find_grass as fg
-
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'smoderp_2D_dockwidget_base.ui'))
+from .connect_grass import find_grass_bin
 
 
 class InputError(Exception):
@@ -51,63 +51,257 @@ class InputError(Exception):
         pass
 
 
-class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
+class SmoderpTask(QgsTask):
+    def __init__(self, input_params, input_maps):
+        super().__init__()
+
+        self.input_params = input_params
+        self.input_maps = input_maps
+        self.error = None
+
+    def run(self):
+        # Get GRASS executable
+        try:
+            grass_bin_path = find_grass_bin()
+        except ImportError as e:
+            self.error = e
+            return False
+
+        runner = QGISRunner(self.setProgress, grass_bin_path)
+        runner.set_options(self.input_params)
+        runner.import_data(self.input_maps)
+        try:
+            runner.run()
+        except ProviderError as e:
+            self.error = e
+            return False
+        runner.show_results()
+
+        # resets
+        Globals.reset()
+        GridGlobals.reset()
+
+        return True
+
+    def finished(self, result):
+        iface.messageBar().clearWidgets()
+        if result:
+            iface.messageBar().pushMessage(
+                'Computation successfully completed', '',
+                level=Qgis.Info,
+                duration=3
+            )
+        else:
+            if self.error is not None:
+                fail_reason = self.error
+            else:
+                fail_reason = "reason unknown (see SMODERP2D log messages)"
+
+            iface.messageBar().pushMessage(
+                'Computation failed: ', str(fail_reason), level=Qgis.Critical
+            )
+
+
+class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     closingPlugin = pyqtSignal()
 
     def __init__(self, parent=None):
         """Constructor."""
         super(Smoderp2DDockWidget, self).__init__(parent)
-        # Set up the user interface from Designer.
-        # After setupUI you can access any designer object by doing
-        # self.<objectname>, and you can use autoconnect slots - see
-        # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
-        # #widgets-and-dialogs-with-auto-connect
-        self.setupUi(self)
 
         self.iface = iface
+        self.task_manager = QgsApplication.taskManager()
 
         self.settings = QSettings("CTU", "smoderp")
+        self.arguments = {}  # filled during self.retranslateUi()
+        # (could be set during something more reasonable later)
 
-        self.setupButtons()
+        # master tabwwidget
+        self.dockWidgetContents = QtWidgets.QWidget()
+        self.tabWidget = QtWidgets.QTabWidget()
+        self.layout = QtWidgets.QVBoxLayout()
+
+        # widgets
+        self.elevation_comboBox = QgsMapLayerComboBox()
+        self.elevation_toolButton = QtWidgets.QToolButton()
+        self.soil_comboBox = QgsMapLayerComboBox()
+        self.soil_toolButton = QtWidgets.QToolButton()
+        self.soil_type_comboBox = QgsFieldComboBox()
+        self.vegetation_comboBox = QgsMapLayerComboBox()
+        self.vegetation_toolButton = QtWidgets.QToolButton()
+        self.points_comboBox = QgsMapLayerComboBox()
+        self.points_toolButton = QtWidgets.QToolButton()
+        self.stream_comboBox = QgsMapLayerComboBox()
+        self.stream_toolButton = QtWidgets.QToolButton()
+        self.rainfall_lineEdit = QtWidgets.QLineEdit()
+        self.rainfall_toolButton = QtWidgets.QToolButton()
+        self.main_output_lineEdit = QtWidgets.QLineEdit()
+        self.main_output_toolButton = QtWidgets.QToolButton()
+        self.maxdt_lineEdit = QtWidgets.QSpinBox()
+        self.end_time_lineEdit = QtWidgets.QSpinBox()
+        self.vegetation_type_comboBox = QgsFieldComboBox()
+        self.table_soil_vegetation_comboBox = QgsMapLayerComboBox()
+        self.table_soil_vegetation_toolButton = QtWidgets.QToolButton()
+        self.table_soil_vegetation_field_comboBox = QgsFieldComboBox()
+        self.table_stream_shape_code_comboBox = QgsFieldComboBox()
+        self.table_stream_shape_comboBox = QgsMapLayerComboBox()
+        self.table_stream_shape_toolButton = QtWidgets.QToolButton()
+        self.run_button = QtWidgets.QPushButton(self.dockWidgetContents)
+
+        # set default values
+        self.maxdt_lineEdit.setProperty("value", 5)
+        self.end_time_lineEdit.setProperty("value", 30)
+
+        self.retranslateUi()
+
+        self.set_widgets()
+
+        self.set_allow_empty()
+        self.set_button_texts()
+
+        self.setupButtonSlots()
 
         self.setupCombos()
+
+        self.run_button.setText('Run')
+
+        self.layout.addWidget(self.tabWidget)
+        self.layout.addWidget(self.run_button)
+        self.dockWidgetContents.setLayout(self.layout)
+        self.setWidget(self.dockWidgetContents)
+
+    def retranslateUi(self):
+        for section in sections:
+            section_tab = QtWidgets.QWidget()
+            self.tabWidget.addTab(section_tab, section.label)
+
+            section_tab_layout = QtWidgets.QVBoxLayout()
+
+            for argument_id in section.arguments:
+                # add label
+                argument_label = QtWidgets.QLabel()
+                argument_label.setText(
+                    QCoreApplication.translate(
+                        self.__class__.__name__, arguments[argument_id].label
+                    )
+                )
+                section_tab_layout.addWidget(argument_label)
+
+                # create empty layout for the specific widget
+                argument_widget = QtWidgets.QWidget()
+                argument_widget_layout = QtWidgets.QHBoxLayout()
+                argument_widget.setLayout(argument_widget_layout)
+                section_tab_layout.addWidget(argument_widget)
+
+                self.arguments.update({argument_id: argument_widget_layout})
+
+            section_tab_layout.addStretch()
+
+            section_tab.setLayout(section_tab_layout)
+
+    def set_widgets(self):
+        self.arguments['elevation'].addWidget(self.elevation_comboBox)
+        self.arguments['elevation'].addWidget(self.elevation_toolButton)
+        self.arguments['soil'].addWidget(self.soil_comboBox)
+        self.arguments['soil'].addWidget(self.soil_toolButton)
+        self.arguments['landuse'].addWidget(self.vegetation_comboBox)
+        self.arguments['landuse'].addWidget(self.vegetation_toolButton)
+        self.arguments['points'].addWidget(self.points_comboBox)
+        self.arguments['points'].addWidget(self.points_toolButton)
+        self.arguments['stream'].addWidget(self.stream_comboBox)
+        self.arguments['stream'].addWidget(self.stream_toolButton)
+        self.arguments['rainfall'].addWidget(self.rainfall_lineEdit)
+        self.arguments['rainfall'].addWidget(self.rainfall_toolButton)
+        self.arguments['output'].addWidget(self.main_output_lineEdit)
+        self.arguments['output'].addWidget(self.main_output_toolButton)
+        self.arguments['max_time_step'].addWidget(self.maxdt_lineEdit)
+        self.arguments['total_time'].addWidget(self.end_time_lineEdit)
+        self.arguments['soil_type_field'].addWidget(self.soil_type_comboBox)
+        self.arguments['landuse_type_field'].addWidget(
+            self.vegetation_type_comboBox
+        )
+        self.arguments['soil_landuse_table'].addWidget(
+            self.table_soil_vegetation_comboBox
+        )
+        self.arguments['soil_landuse_table'].addWidget(
+            self.table_soil_vegetation_toolButton
+        )
+        self.arguments['soil_landuse_field'].addWidget(
+            self.table_soil_vegetation_field_comboBox
+        )
+        self.arguments['channel_type_identifier'].addWidget(
+            self.table_stream_shape_code_comboBox
+        )
+        self.arguments['channel_properties'].addWidget(
+            self.table_stream_shape_comboBox
+        )
+        self.arguments['channel_properties'].addWidget(
+            self.table_stream_shape_toolButton
+        )
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
 
-    def setupButtons(self):
+    def setupButtonSlots(self):
         """Setup buttons slots."""
 
-        # TODO: what if tables are in format that cannot be added to map? (txt), currently works for dbf
+        # TODO: what if tables are in format that cannot be added to map?
+        #  (txt), currently works for dbf
 
-        self.run_dataprep.clicked.connect(self.OnRunButton)
+        self.run_button.clicked.connect(self.OnRunButton)
 
         # 1st tab - Data preparation
-        self.elevation_toolButton.clicked.connect(lambda: self.openFileDialog('raster', self.elevation_comboBox))
-        self.soil_toolButton.clicked.connect(lambda: self.openFileDialog('vector', self.soil_comboBox))
-        self.vegetation_toolButton.clicked.connect(lambda: self.openFileDialog('vector', self.vegetation_comboBox))
-        self.points_toolButton.clicked.connect(lambda: self.openFileDialog('vector', self.points_comboBox))
-#        self.output_toolButton.clicked.connect(lambda: self.openFileDialog('folder', self.output_lineEdit))
-        self.stream_toolButton.clicked.connect(lambda: self.openFileDialog('vector', self.stream_comboBox))
+        self.elevation_toolButton.clicked.connect(
+            lambda: self.openFileDialog('raster', self.elevation_comboBox)
+        )
+        self.soil_toolButton.clicked.connect(
+            lambda: self.openFileDialog('vector', self.soil_comboBox)
+        )
+        self.vegetation_toolButton.clicked.connect(
+            lambda: self.openFileDialog('vector', self.vegetation_comboBox)
+        )
+        self.points_toolButton.clicked.connect(
+            lambda: self.openFileDialog('vector', self.points_comboBox)
+        )
+        # self.output_toolButton.clicked.connect(
+        #        lambda: self.openFileDialog('folder', self.output_lineEdit))
+        self.stream_toolButton.clicked.connect(
+            lambda: self.openFileDialog('vector', self.stream_comboBox)
+        )
 
         self.soil_comboBox.layerChanged.connect(lambda: self.setFields('soil'))
-        self.vegetation_comboBox.layerChanged.connect(lambda: self.setFields('vegetation'))
+        self.vegetation_comboBox.layerChanged.connect(
+            lambda: self.setFields('vegetation')
+        )
 
         # 2nd tab - Computation
-        self.pickle_toolButton.clicked.connect(lambda: self.openFileDialog('file', self.pickle_lineEdit))
-        self.rainfall_toolButton.clicked.connect(lambda: self.openFileDialog('file', self.rainfall_lineEdit))
+        self.rainfall_toolButton.clicked.connect(
+            lambda: self.openFileDialog('file', self.rainfall_lineEdit)
+        )
 
         # 3rd tab - Settings
-        self.table_soil_vegetation_toolButton.clicked.connect(lambda: self.openFileDialog(
-            'table', self.table_soil_vegetation_comboBox))
-        self.table_stream_shape_toolButton.clicked.connect(lambda: self.openFileDialog(
-            'table', self.table_stream_shape_comboBox))
-        self.main_output_toolButton.clicked.connect(lambda: self.openFileDialog('folder', self.main_output_lineEdit))
+        self.table_soil_vegetation_toolButton.clicked.connect(
+            lambda: self.openFileDialog(
+                'table', self.table_soil_vegetation_comboBox
+            )
+        )
+        self.table_stream_shape_toolButton.clicked.connect(
+            lambda: self.openFileDialog(
+                'table', self.table_stream_shape_comboBox
+            )
+        )
+        self.main_output_toolButton.clicked.connect(
+            lambda: self.openFileDialog('folder', self.main_output_lineEdit)
+        )
 
-        self.table_soil_vegetation_comboBox.layerChanged.connect(lambda: self.setFields('table_soil_veg'))
-        self.table_stream_shape_comboBox.layerChanged.connect(lambda: self.setFields('table_stream_shape'))
+        self.table_soil_vegetation_comboBox.layerChanged.connect(
+            lambda: self.setFields('table_soil_veg')
+        )
+        self.table_stream_shape_comboBox.layerChanged.connect(
+            lambda: self.setFields('table_stream_shape')
+        )
 
     def setupCombos(self):
         """Setup combo boxes."""
@@ -123,81 +317,137 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.setFields('vegetation')
 
         # 3rd tab - Settings
-        self.table_soil_vegetation_comboBox.setFilters(QgsMapLayerProxyModel.VectorLayer)
-        self.table_stream_shape_comboBox.setFilters(QgsMapLayerProxyModel.VectorLayer)
+        self.table_soil_vegetation_comboBox.setFilters(
+            QgsMapLayerProxyModel.VectorLayer
+        )
+        self.table_stream_shape_comboBox.setFilters(
+            QgsMapLayerProxyModel.VectorLayer
+        )
 
         self.setFields('table_soil_veg')
         self.setFields('table_stream_shape')
 
+    def set_allow_empty(self):
+        self.points_comboBox.setAllowEmptyLayer(True)
+        self.stream_comboBox.setAllowEmptyLayer(True)
+        self.table_stream_shape_comboBox.setAllowEmptyLayer(True)
+
+    def set_button_texts(self):
+        buttons = (
+            self.elevation_toolButton, self.soil_toolButton,
+            self.vegetation_toolButton, self.points_toolButton,
+            self.stream_toolButton, self.main_output_toolButton,
+            self.table_soil_vegetation_toolButton,
+            self.table_stream_shape_toolButton, self.rainfall_toolButton
+        )
+
+        for button in buttons:
+            button.setText('...')
+
     def OnRunButton(self):
 
         if self._checkInputDataPrep():
-
-            # Get grass
-            grass7bin = fg()
-
             # Get input parameters
             self._getInputParams()
 
-            try:
-                runner = QGISRunner()
-
-            except ProviderError as e:
-                raise ProviderError(e)
-
-            runner.import_data(self._input_params)
-
             # TODO: implement data preparation only
-            
-            # runner.run()
 
-            # TODO: to be implemented
-            # runner.show_results()
+            smoderp_task = SmoderpTask(self._input_params, self._input_maps)
+
+            # prepare the progress bar
+            self.progress_bar = QProgressBar()
+            self.progress_bar.setMaximum(100)
+            self.progress_bar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            messageBar = self.iface.messageBar()
+            progress_msg = messageBar.createMessage(
+                "Computation progress: "
+            )
+            progress_msg.layout().addWidget(self.progress_bar)
+            messageBar.pushWidget(progress_msg, Qgis.Info)
+
+            smoderp_task.begun.connect(
+                lambda: self.progress_bar.setValue(0)
+            )
+            smoderp_task.progressChanged.connect(
+                lambda a: self.progress_bar.setValue(int(a))
+            )
+            smoderp_task.taskCompleted.connect(
+                messageBar.clearWidgets
+            )
+
+            # start the task
+            print('********* tasks **************')
+            print(self.task_manager.tasks())
+            self.task_manager.addTask(smoderp_task)
         else:
-            self._sendMessage("Input parameters error:",
-                              "Some of mandatory fields are not filled correctly.",
-                              "CRITICAL")
+            self._sendMessage(
+                "Input parameters error:",
+                "Some of mandatory fields are not filled correctly.",
+                "CRITICAL"
+            )
 
     def _getInputParams(self):
         """Get input parameters from QGIS plugin."""
 
         self._input_params = {
-            'elevation': self.elevation_comboBox.currentLayer().dataProvider().dataSourceUri(),
-            'soil': self.soil_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
-            'soil_type': self.soil_type_comboBox.currentText(),
-            'vegetation': self.vegetation_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
-            'vegetation_type': self.vegetation_type_comboBox.currentText(),
-            'points': "",
-#            'output': self.output_lineEdit.text().strip(),
-            'stream': "",
-            'pickle': self.pickle_lineEdit.text().strip(),
+            'elevation': self.elevation_comboBox.currentText(),
+            'soil': self.soil_comboBox.currentText(),
+            'soil_type_fieldname': self.soil_type_comboBox.currentText(),
+            'vegetation': self.vegetation_comboBox.currentText(),
+            'vegetation_type_fieldname':
+                self.vegetation_type_comboBox.currentText(),
+            'points': self.points_comboBox.currentText(),
+            # 'output': self.output_lineEdit.text().strip(),
+            'streams': self.stream_comboBox.currentText(),
             'rainfall_file': self.rainfall_lineEdit.text(),
-            'end_time': float(self.end_time_lineEdit.text()) * 60.0,  # to seconds
+            'end_time': float(self.end_time_lineEdit.text()),
             'maxdt': float(self.maxdt_lineEdit.text()),
             'table_soil_vegetation':
-                self.table_soil_vegetation_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
-            'table_soil_vegetation_code': self.table_soil_vegetation_code_comboBox.currentText(),
-            'table_stream_shape': "",
-            'table_stream_shape_code': "",
+                self.table_soil_vegetation_comboBox.currentText(),
+            'table_soil_vegetation_fieldname':
+                self.table_soil_vegetation_field_comboBox.currentText(),
+            'channel_properties_table':
+                self.table_stream_shape_comboBox.currentText(),
+            'streams_channel_type_fieldname':
+                self.table_stream_shape_code_comboBox.currentText(),
             'output': self.main_output_lineEdit.text().strip()
         }
 
+        self._input_maps = {
+            'elevation':
+                self.elevation_comboBox.currentLayer().dataProvider().dataSourceUri(),
+            'soil':
+                self.soil_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
+            'vegetation':
+                self.vegetation_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
+            'points': "",
+            'streams': "",
+            'table_soil_vegetation':
+                self.table_soil_vegetation_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
+            'channel_properties_table': ""
+        }
+
+        # TODO: It would be nicer to use names defined in _input_params before
+        # this reparsing
+        for key in self._input_maps.keys():
+            self._input_params[key] = key
+
         # optional inputs
         if self.points_comboBox.currentLayer() is not None:
-            self._input_params["points"] = \
+            self._input_maps["points"] = \
                 self.points_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
 
         if self.stream_comboBox.currentLayer() is not None:
-            self._input_params["stream"] = \
+            self._input_maps["streams"] = \
                 self.stream_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
 
         if self.table_stream_shape_comboBox.currentLayer() is not None:
-            self._input_params["table_stream_shape"] = \
+            self._input_maps['channel_properties_table'] = \
                 self.table_stream_shape_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
-            self._input_params["table_stream_shape_code"] = self.table_stream_shape_code_comboBox.currentText()
+            self._input_maps["streams_channel_type_fieldname"] = self.table_stream_shape_code_comboBox.currentText()
 
     def _checkInputDataPrep(self):
-        """Check if all mandatory fields are filled correctly for data preparation (without pickle)."""
+        """Check if all mandatory fields are filled correctly for data preparation."""
 
         # Check if none of fields are empty
         if None not in (
@@ -207,9 +457,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 self.vegetation_comboBox.currentLayer(),
                 self.vegetation_type_comboBox.currentText(),
                 self.table_soil_vegetation_comboBox.currentLayer(),
-                self.table_soil_vegetation_code_comboBox.currentText(),
+                # self.table_soil_vegetation_code_comboBox.currentText(),
                 ) and "" not in (
-#                self.output_lineEdit.text().strip(),
+                # self.output_lineEdit.text().strip(),
                 self.maxdt_lineEdit.text().strip(),
                 self.rainfall_lineEdit.text().strip(),
                 self.end_time_lineEdit.text().strip(),
@@ -224,13 +474,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         else:
             return False
 
-    def _checkInputComp(self):
-        """Check if pickle field is filled correctly for further computation."""
-        if self.pickle_lineEdit.text().strip() == "":
-            return False
-        else:
-            return True
-
     def openFileDialog(self, t, widget):
         """Open file dialog, load layer and set path/name to widget."""
 
@@ -242,37 +485,57 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         last_used_file_path = self.settings.value(sender, '')
 
         if t == 'vector':
-            file_name = QFileDialog.getOpenFileName(self, self.tr(u'Open file'),
-                                                    self.tr(u'{}').format(last_used_file_path),
-                                                    QgsProviderRegistry.instance().fileVectorFilters())[0]
+            file_name = QFileDialog.getOpenFileName(
+                self, self.tr(u'Open file'),
+                self.tr(u'{}').format(last_used_file_path),
+                QgsProviderRegistry.instance().fileVectorFilters()
+            )[0]
             if file_name:
                 name, file_extension = os.path.splitext(file_name)
                 if file_extension not in QgsProviderRegistry.instance().fileVectorFilters():
-                    self._sendMessage(u'Error', u'{} is not a valid vector layer.'.format(file_name), 'CRITICAL')
+                    self._sendMessage(
+                        u'Error', u'{} is not a valid vector layer.'.format(
+                            file_name
+                        ),
+                        'CRITICAL'
+                    )
                     return
 
-                self.iface.addVectorLayer(file_name, QFileInfo(file_name).baseName(), "ogr")
+                self.iface.addVectorLayer(
+                    file_name, QFileInfo(file_name).baseName(), "ogr"
+                )
                 widget.setLayer(self.iface.activeLayer())
                 self.settings.setValue(sender, os.path.dirname(file_name))
 
         elif t == 'raster':
-            file_name = QFileDialog.getOpenFileName(self, self.tr(u'Open file'),
-                                                    self.tr(u'{}').format(last_used_file_path),
-                                                    QgsProviderRegistry.instance().fileRasterFilters())[0]
+            file_name = QFileDialog.getOpenFileName(
+                self, self.tr(u'Open file'),
+                self.tr(u'{}').format(last_used_file_path),
+                QgsProviderRegistry.instance().fileRasterFilters()
+            )[0]
             if file_name:
                 name, file_extension = os.path.splitext(file_name)
 
                 if file_extension not in QgsProviderRegistry.instance().fileRasterFilters():
-                    self._sendMessage(u'Error', u'{} is not a valid raster layer.'.format(file_name), 'CRITICAL')
+                    self._sendMessage(
+                        u'Error', u'{} is not a valid raster layer.'.format(
+                            file_name
+                        ),
+                        'CRITICAL'
+                    )
                     return
 
-                self.iface.addRasterLayer(file_name, QFileInfo(file_name).baseName())
+                self.iface.addRasterLayer(
+                    file_name, QFileInfo(file_name).baseName()
+                )
                 widget.setLayer(self.iface.activeLayer())
                 self.settings.setValue(sender, os.path.dirname(file_name))
 
         elif t == 'folder':
-            folder_name = QFileDialog.getExistingDirectory(self, self.tr(u'Select directory'),
-                                                           self.tr(u'{}').format(last_used_file_path))
+            folder_name = QFileDialog.getExistingDirectory(
+                self, self.tr(u'Select directory'),
+                self.tr(u'{}').format(last_used_file_path)
+            )
 
             if os.access(folder_name, os.W_OK):
                 widget.setText(folder_name)
@@ -280,22 +543,33 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             elif folder_name == "":
                 pass
             else:
-                self._sendMessage(u'Error', u'{} is not writable.'.format(folder_name), 'CRITICAL')
+                self._sendMessage(
+                    u'Error',
+                    u'{} is not writable.'.format(folder_name),
+                    'CRITICAL'
+                )
 
         elif t == 'table':
             # write path to file to lineEdit
-            file_name = QFileDialog.getOpenFileName(self, self.tr(u'Open file'),
-                                                    self.tr(u'{}').format(last_used_file_path))[0]
+            file_name = QFileDialog.getOpenFileName(
+                self, self.tr(u'Open file'),
+                self.tr(u'{}').format(last_used_file_path)
+            )[0]
 
             if file_name:
-                self.iface.addVectorLayer(file_name, QFileInfo(file_name).baseName(), "ogr")
+                self.iface.addVectorLayer(
+                    file_name, QFileInfo(file_name).baseName(), "ogr"
+                )
                 widget.setLayer(self.iface.activeLayer())
                 self.settings.setValue(sender, os.path.dirname(file_name))
 
         elif t == 'file':
             # write path to file to lineEdit
-            file_name = QFileDialog.getOpenFileName(self, self.tr(u'Open file'),
-                                                    self.tr(u'{}').format(last_used_file_path))[0]
+            file_name = QFileDialog.getOpenFileName(
+                self,
+                self.tr(u'Open file'),
+                self.tr(u'{}').format(last_used_file_path)
+            )[0]
 
             if file_name:
                 widget.setText(file_name)
@@ -308,20 +582,28 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         if self.soil_comboBox.currentLayer() is not None and t == 'soil':
             self.soil_type_comboBox.setLayer(self.soil_comboBox.currentLayer())
-            self.soil_type_comboBox.setField(self.soil_comboBox.currentLayer().fields()[0].name())
-
+            self.soil_type_comboBox.setField(
+                self.soil_comboBox.currentLayer().fields()[0].name()
+            )
         elif self.vegetation_comboBox.currentLayer() is not None and t == 'vegetation':
-            self.vegetation_type_comboBox.setLayer(self.vegetation_comboBox.currentLayer())
-            self.vegetation_type_comboBox.setField(self.vegetation_comboBox.currentLayer().fields()[0].name())
-
+            self.vegetation_type_comboBox.setLayer(
+                self.vegetation_comboBox.currentLayer()
+            )
+            self.vegetation_type_comboBox.setField(
+                self.vegetation_comboBox.currentLayer().fields()[0].name()
+            )
         elif self.table_soil_vegetation_comboBox.currentLayer() is not None and t == 'table_soil_veg':
-            self.table_soil_vegetation_code_comboBox.setLayer(self.table_soil_vegetation_comboBox.currentLayer())
-            self.table_soil_vegetation_code_comboBox.setField(
-                self.table_soil_vegetation_comboBox.currentLayer().fields()[0].name())
-
+            self.table_soil_vegetation_field_comboBox.setLayer(
+                self.table_soil_vegetation_comboBox.currentLayer()
+            )
+            self.table_soil_vegetation_field_comboBox.setField(
+                self.table_soil_vegetation_comboBox.currentLayer().fields()[0].name()
+            )
         elif t == 'table_stream_shape':
             if self.table_stream_shape_comboBox.currentLayer() is not None:
-                self.table_stream_shape_code_comboBox.setLayer(self.table_stream_shape_comboBox.currentLayer())
+                self.table_stream_shape_code_comboBox.setLayer(
+                    self.table_stream_shape_comboBox.currentLayer()
+                )
                 self.table_stream_shape_code_comboBox.setField(
                     self.table_stream_shape_comboBox.currentLayer().fields()[0].name())
             else:
@@ -338,3 +620,47 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         elif t == 'INFO':
             self.iface.messageBar().pushInfo(self.tr(u'{}').format(caption),
                                              self.tr(u'{}').format(message))
+
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        testAction = menu.addAction("Load test parameters")
+        action = menu.exec_(self.mapToGlobal(event.pos()))
+        if action == testAction:
+            self._loadTestParams()
+
+    def _loadTestParams(self):
+        dir_path = os.path.join(
+            os.path.dirname(__file__), '..', '..', '..', 'tests', 'data'
+        )
+        try:
+            self.elevation_comboBox.setLayer(
+                QgsProject.instance().mapLayersByName('dem10m')[0]
+            )
+            self.soil_comboBox.setLayer(
+                QgsProject.instance().mapLayersByName('soils')[0]
+            )
+            self.points_comboBox.setLayer(
+                QgsProject.instance().mapLayersByName('points')[0]
+            )
+            self.stream_comboBox.setLayer(
+                QgsProject.instance().mapLayersByName('stream')[0]
+            )
+            self.rainfall_lineEdit.setText(
+                os.path.join(dir_path, 'rainfall.txt')
+            )
+            self.table_soil_vegetation_comboBox.setLayer(
+                QgsProject.instance().mapLayersByName('soil_veg_tab_mean')[0]
+            )
+            self.table_stream_shape_comboBox.setLayer(
+                QgsProject.instance().mapLayersByName('stream_shape')[0]
+            )
+            self.table_stream_shape_code_comboBox.setCurrentText('channel_id')
+            with tempfile.NamedTemporaryFile() as temp_dir:
+                self.main_output_lineEdit.setText(temp_dir.name)
+            self.end_time_lineEdit.setValue(5)
+        except IndexError:
+            self._sendMessage(
+                'Error',
+                'Unable to set test parameters. Load demo QGIS project first.',
+                'CRITICAL'
+            )

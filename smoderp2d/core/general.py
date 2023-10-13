@@ -2,9 +2,10 @@ import numpy as np
 
 from smoderp2d.exceptions import SmoderpError
 
-
 class GridGlobalsArray(np.ndarray):
     """Class overriding np.ndarray to handle SMODERP border problems."""
+
+    invalid_sur_arr = None
 
     def get_item(self, item):
         """Get item at position.
@@ -28,7 +29,7 @@ class GridGlobalsArray(np.ndarray):
         return self[item]
 
     def set_outsides(self, surarrs):
-        """Setup the empty SurArrs.
+        """Set up the empty SurArrs.
 
         The empty SurArrs is intended to be returned when querying values at
         negative positions.
@@ -59,13 +60,15 @@ class GridGlobals(object):
     # left bottom corner y coordinate of raster
     yllcorner = None
     # no data value for raster
-    NoDataValue = None
+    NoDataValue = -9999
     # no data integer value for raster
     NoDataInt = None
     # size of raster cell
     dx = None
     # size of raster cell
     dy = None
+    # masks
+    masks = None
 
     def __init__(self):
         if self.r is None or self.c is None:
@@ -110,19 +113,54 @@ class GridGlobals(object):
     def set_size(cls, dxdy):
         cls.dx = dxdy[0]
         cls.dy = dxdy[1]
+        cls.pixel_area = cls.dx * cls.dy
 
     @classmethod
     def get_no_data(cls):
         # TODO: int?
         return cls.NoDataValue
 
+    @classmethod
+    def reset(cls):
+        """Reset static variables to their default values."""
+
+        # number of raster rows (int)
+        cls.r = None
+        # number of raster columns (int)
+        cls.c = None
+        # area of a raster cell in meters (float)
+        cls.pixel_area = None
+        # id of rows in computational domain (list)
+        cls.rr = None
+        # id of columns in computational domain (list of lists)
+        # row out of computational domain is empty list
+        cls.rc = None
+        # id of rows in at the boundary of computational domain
+        cls.br = None
+        # id of columns in at the boundary of computational domain
+        cls.bc = None
+        # left bottom corner x coordinate of raster
+        cls.xllcorner = None
+        # left bottom corner y coordinate of raster
+        cls.yllcorner = None
+        # no data value for raster
+        cls.NoDataValue = -9999
+        # no data integer value for raster
+        cls.NoDataInt = None
+        # size of raster cell
+        cls.dx = None
+        # size of raster cell
+        cls.dy = None
+        # masks
+        cls.masks = None
+
 class DataGlobals:
     # raster contains leaf area data
     mat_ppl = None
 
     @classmethod
-    def get_mat_ppl(cls, i, j):
-        return cls.mat_ppl[i][j]
+    def get_mat_ppl(cls):
+        return cls.mat_ppl
 
 class Globals:
     """Globals contains global variables from data_preparation, in
@@ -131,7 +169,7 @@ class Globals:
     """
     # type of computation
     type_of_computing = None
-    # path to a output directory
+    # path to an output directory
     outdir = None
     # raster with labeled boundary cells
     mat_boundary = None
@@ -173,18 +211,10 @@ class Globals:
     mat_n = None
     # ???
     points = None
-    # ???
-    poradi = None
     # end time of computation
     end_time = None
-    # ???
-    spix = None
     # raster contains cell flow state information
     state_cell = None
-    # path to directory for temporal data storage
-    temp = None
-    # ???
-    vpix = None
     # bool variable for flow direction algorithm (false=one direction, true
     # multiple flow direction)
     mfda = None
@@ -200,15 +230,15 @@ class Globals:
     mat_stream_reach = None
     # ???
     STREAM_RATIO = None
-    # ???
-    streams_loc = None
     # maximum allowed time step during compuation
     maxdt = None
     # if true extra data are stores in the point*.dat files
     extraOut = None
     # stream magic number
     streams_flow_inc = 1000
-    # slope width 
+    # no segment downside
+    streamsNextDownIdNoSegment = -1
+    # slope width
     slope_width = None
 
     @classmethod
@@ -249,24 +279,24 @@ class Globals:
         return cls.surface_retention
 
     @classmethod
-    def get_mat_inf_index(cls, i, j):
-        return cls.mat_inf_index[i][j]
+    def get_mat_inf_index(cls):
+        return cls.mat_inf_index
 
     @classmethod
-    def get_mat_hcrit(cls, i, j):
-        return cls.mat_hcrit[i][j]
+    def get_mat_hcrit(cls):
+        return cls.mat_hcrit
 
     @classmethod
-    def get_mat_aa(cls, i, j):
-        return cls.mat_aa[i][j]
+    def get_mat_aa(cls):
+        return cls.mat_aa
 
     @classmethod
-    def get_mat_b(cls, i, j):
-        return cls.mat_b[i][j]
+    def get_mat_b(cls):
+        return cls.mat_b
 
     @classmethod
-    def get_mat_reten(cls, i, j):
-        return cls.mat_reten[i][j]
+    def get_mat_reten(cls):
+        return cls.mat_reten
 
     @classmethod
     def get_mat_fd(cls):
@@ -281,8 +311,8 @@ class Globals:
         return cls.mat_efect_cont
 
     @classmethod
-    def get_mat_slope(cls, i, j):
-        return cls.mat_slope[i][j]
+    def get_mat_slope(cls):
+        return cls.mat_slope
 
     @classmethod
     def get_mat_nan(cls):
@@ -293,24 +323,16 @@ class Globals:
         return cls.mat_a
 
     @classmethod
-    def get_mat_n(cls, i, j):
-        return cls.mat_n[i][j]
+    def get_mat_n(cls):
+        return cls.mat_n
 
     @classmethod
     def get_points(cls):
         return cls.points
 
     @classmethod
-    def get_poradi(cls):
-        return cls.poradi
-
-    @classmethod
     def get_end_tim(cls):
         return cls.end_time
-
-    @classmethod
-    def get_spix(cls):
-        return cls.spix
 
     @classmethod
     def get_state_cell(cls):
@@ -319,10 +341,6 @@ class Globals:
     @classmethod
     def get_temp(cls):
         return cls.temp
-
-    @classmethod
-    def get_vpix(cls):
-        return cls.vpix
 
     @classmethod
     def get_mfda(cls):
@@ -353,5 +371,78 @@ class Globals:
         return cls.STREAM_RATIO
 
     @classmethod
-    def get_streams_loc(cls):
-        return cls.streams_loc
+    def reset(cls):
+        """Reset static variables to their default values."""
+        # type of computation
+        cls.type_of_computing = None
+        # path to an output directory
+        cls.outdir = None
+        # raster with labeled boundary cells
+        cls.mat_boundary = None
+        # list containing coordinates of catchment outlet cells
+        cls.outletCells = None
+        # array containing information of hydrograph points
+        cls.array_points = None
+        # combinatIndex
+        cls.combinatIndex = None
+        # time step
+        cls.delta_t = None
+        # raster contains potential interception data
+        cls.mat_pi = None
+        # raster contains surface retention data
+        cls.surface_retention = None
+        # raster contains id of infiltration type
+        cls.mat_inf_index = None
+        # raster contains critical water level
+        cls.mat_hcrit = None
+        # raster contains parameter of power law for surface runoff
+        cls.mat_aa = None
+        # raster contains parameter of power law for surface runoff
+        cls.mat_b = None
+        # raster contains surface retention data
+        cls.mat_reten = None
+        # raster contains flow direction datas
+        cls.mat_fd = None
+        # raster contains digital elevation model
+        cls.mat_dem = None
+        # raster contains efective couterline data
+        cls.mat_efect_cont = None
+        # raster contains surface slopes data
+        cls.mat_slope = None
+        # raster labels not a number cells
+        cls.mat_nan = None
+        # raster contains parameters ...
+        cls.mat_a = None
+        # raster contains parameters ...
+        cls.mat_n = None
+        # ???
+        cls.points = None
+        # end time of computation
+        cls.end_time = None
+        # raster contains cell flow state information
+        cls.state_cell = None
+        # bool variable for flow direction algorithm (false=one direction, true
+        # multiple flow direction)
+        cls.mfda = None
+        # list contains the precipitation data
+        cls.sr = None
+        # counter of precipitation intervals
+        cls.itera = None
+        # ???
+        cls.streams = None
+        # ???
+        cls.cell_stream = None
+        # raster contains the reach id data
+        cls.mat_stream_reach = None
+        # ???
+        cls.STREAM_RATIO = None
+        # maximum allowed time step during compuation
+        cls.maxdt = None
+        # if true extra data are stores in the point*.dat files
+        cls.extraOut = None
+        # stream magic number
+        cls.streams_flow_inc = 1000
+        # no segment downside
+        cls.streamsNextDownIdNoSegment = -1
+        # slope width
+        cls.slope_width = None

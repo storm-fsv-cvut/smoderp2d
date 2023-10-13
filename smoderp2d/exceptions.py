@@ -1,25 +1,28 @@
 # TODO: cyclic import...
 from smoderp2d.providers import Logger
 
+
 class SmoderpError(Exception):
     def __init__(self, msg):
         Logger.fatal(msg)
+
 
 class ProviderError(Exception):
     def __init__(self, msg):
         Logger.fatal(msg)
 
+
 class MaxIterationExceeded(SmoderpError):
     """Number of iteration exceed max iteration criterion.
     """
     def __init__(self, mi, t):
-        self.msg = 'Maximum of iterations (max_iter = {}) was exceeded of at time [s]: {}'.format(
-            mi, t
-        )
+        self.msg = 'Maximum of iterations (max_iter = {}) was exceeded of ' \
+                   'at time [s]: {}'.format(mi, t)
         super().__init__(self.msg)
 
     def __str__(self):
         return self.msg
+
 
 class GlobalsNotSet(SmoderpError):
     """Exception raised if globals called variable is None.
@@ -30,6 +33,7 @@ class GlobalsNotSet(SmoderpError):
             'Global variable is still None'
         )
 
+
 class NegativeWaterLevel(SmoderpError):
     """Exception raised if the water level goes to negative values.
 
@@ -39,28 +43,36 @@ class NegativeWaterLevel(SmoderpError):
             'Water level reached negative value'
         )
 
+
 class ConfigError(Exception):
     pass
+
 
 class SmallParameterValueError(ConfigError):
     """ Exception raised if a parameter reaches a wrong numeric value
     """
-    def __init__(self,param,value,limit):
+    def __init__(self,param, value, limit):
         self.msg = "Parameter '{}' has low value ({} < {}).".format(
-                param,value,limit)
+                param, value, limit
+        )
         Logger.fatal(self.msg)
+
 
 class LargeParameterValueError(ConfigError):
     """ Exception raised if a parameter reaches a wrong numeric value
     """
-    def __init__(self,param,value,limit):
+    def __init__(self,param, value, limit):
         self.msg = "Parameter '{}' has a wrong value ({} > {}).".format(
-                param,value,limit)
+                param, value, limit
+        )
         Logger.fatal(self.msg)
 
-class WrongParameterValueError(ConfigError):
+
+class WrongParameterValue(ConfigError):
     """ Exception raised if a parameter reaches a wrong numeric value
     """
-    def __init__(self,param,value):
-        self.msg = "Parameter '{}' has a wrong value ({}).".format(param,value)
+    def __init__(self, param, value):
+        self.msg = "Parameter '{}' has a wrong value ({}).".format(
+            param, value
+        )
         Logger.fatal(self.msg)

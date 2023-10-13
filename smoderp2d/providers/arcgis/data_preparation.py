@@ -1,374 +1,189 @@
-import shutil
-import os
-import sys
 import numpy as np
 import math
-import csv
-
-import smoderp2d.processes.rainfall as rainfall
-
-from smoderp2d.core.general import GridGlobals
-
-from smoderp2d.providers.arcgis import constants
-from smoderp2d.providers.base import Logger
-from smoderp2d.providers.base.data_preparation import PrepareDataBase
-from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
-
-from smoderp2d.providers.arcgis.terrain import compute_products
-from smoderp2d.providers.arcgis import constants
-from smoderp2d.providers.arcgis.manage_fields import ManageFields
-
 import arcpy
-import arcgisscripting
-from arcpy.sa import *
 
-class PrepareData(PrepareDataBase, ManageFields):
-    def __init__(self, writter):
+from smoderp2d.core.general import GridGlobals, Globals
+from smoderp2d.providers.base import Logger
+from smoderp2d.providers.base.data_preparation import PrepareDataGISBase
+from smoderp2d.providers.base.exceptions import DataPreparationError, \
+    DataPreparationInvalidInput, LicenceNotAvailable, \
+    DataPreparationNoIntersection
+
+
+class PrepareData(PrepareDataGISBase):
+    def __init__(self, options, writter):
+        # define input parameters
+        self._set_input_params(options)
+
+        # checking if ArcGIS Spatial extension is available
+        if arcpy.CheckExtension("Spatial") == "Available":
+            arcpy.CheckOutExtension("Spatial")
+        else:
+            raise LicenceNotAvailable(
+                "Spatial Analysis extension for ArcGIS is not available"
+            )
+
+        arcpy.env.XYTolerance = "0.01 Meters"
         super(PrepareData, self).__init__(writter)
 
-        # creating the geoprocessor object
-        self.gp = arcgisscripting.create()
+    def _create_AoI_outline(self, elevation, soil, vegetation):
+        """See base method for description.
+        """
+        dem_slope_mask_path = self.storage.output_filepath('dem_slope_mask')
+        dem_mask = arcpy.sa.Reclassify(
+            elevation, "VALUE", "-100000 100000 1", "DATA"
+        )
+        dem_slope_mask = arcpy.sa.Shrink(dem_mask, 1, 1)
+        # the slope raster extent will be used in further
+        # intersections as it is always smaller than the DEM extent
+        # ...
+        dem_slope_mask.save(dem_slope_mask_path)
 
-        # setting the workspace environment
-        self.gp.workspace = self.gp.GetParameterAsText(
-            constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY
+        dem_polygon = self.storage.output_filepath('dem_polygon')
+        arcpy.conversion.RasterToPolygon(
+            dem_slope_mask, dem_polygon, "NO_SIMPLIFY", "VALUE"
+        )
+        aoi = self.storage.output_filepath('aoi')
+        arcpy.analysis.Intersect(
+            [dem_polygon, soil, vegetation], aoi, "NO_FID"
         )
 
-        # checking arcgis if ArcGIS Spatial extension is available
-        arcpy.CheckOutExtension("Spatial")
+        aoi_polygon = self.storage.output_filepath('aoi_polygon')
+        arcpy.management.Dissolve(aoi, aoi_polygon)
 
-        # get input parameters
-        self._get_input_params()
+        if int(arcpy.management.GetCount(aoi_polygon).getOutput(0)) == 0:
+            raise DataPreparationNoIntersection()
 
-    def _get_input_params(self):
-        """Get input parameters from ArcGIS toolbox.
-        """
-        self._input_params = {
-            'elevation': self.gp.GetParameterAsText(
-                constants.PARAMETER_DEM),
-            'soil': self.gp.GetParameterAsText(
-                constants.PARAMETER_SOIL),
-            'soil_type': self.gp.GetParameterAsText(
-                constants.PARAMETER_SOIL_TYPE),
-            'vegetation': self.gp.GetParameterAsText(
-                constants.PARAMETER_VEGETATION),
-            'vegetation_type': self.gp.GetParameterAsText(
-                constants.PARAMETER_VEGETATION_TYPE),
-            'rainfall_file': self.gp.GetParameterAsText(
-                constants.PARAMETER_PATH_TO_RAINFALL_FILE),
-            'maxdt': float(self.gp.GetParameterAsText(
-                constants.PARAMETER_MAX_DELTA_T)),
-            'end_time': float(self.gp.GetParameterAsText(
-                constants.PARAMETER_END_TIME)) * 60.0,  # prevod na s
-            'points': self.gp.GetParameterAsText(
-                constants.PARAMETER_POINTS),
-            'output': self.gp.GetParameterAsText(
-                constants.PARAMETER_PATH_TO_OUTPUT_DIRECTORY),
-            'table_soil_vegetation': self.gp.GetParameterAsText(
-                constants.PARAMETER_SOILVEGTABLE),
-            'table_soil_vegetation_code': self.gp.GetParameterAsText(
-                constants.PARAMETER_SOILVEGTABLE_CODE),
-            'stream': self.gp.GetParameterAsText(
-                constants.PARAMETER_STREAM),
-            'table_stream_shape': self.gp.GetParameterAsText(
-                constants.PARAMETER_STREAMTABLE),
-            'table_stream_shape_code': self.gp.GetParameterAsText(
-                constants.PARAMETER_STREAMTABLE_CODE)
-        }
-
-    def _add_message(self, message):
-        """
-        Pops up a message into arcgis and saves it into log file.
-        :param message: Message to be printed.
-        """
-        Logger.info(message)
-
-
-    def _set_output(self):
-        """Creates empty output and temporary directories to which created
-        files are saved. Creates temporary ArcGIS File Geodatabase.
-
-        """
-        super(PrepareData, self)._set_output()
-        self.storage.create_storage(self._input_params['output'])
-
-    def _set_mask(self):
-        """Set mask from elevation map.
-
-        :return: dem copy, binary mask
-        """
-        # Do not work for CopyRaster, https://github.com/storm-fsv-cvut/smoderp2d/issues/46
-        # dem_copy = os.path.join(self.data['temp'], 'dem_copy')
-        dem_copy = self.storage.output_filepath('dem_copy')
-
-        arcpy.CopyRaster_management(
-            self._input_params['elevation'], dem_copy
-        )
-
-        # align computation region to DTM grid
-        arcpy.env.snapRaster = self._input_params['elevation']
-
-        dem_mask = self.storage.output_filepath('dem_mask')
-        self.gp.Reclassify_sa(
-            dem_copy, "VALUE", "-100000 100000 1", dem_mask, "DATA"
-        )
-        
-        return dem_copy, dem_mask
-
-    def _terrain_products(self, dem):
-        """Computes terrains products.
-
-        :param str elev: DTM raster map name
-        
-        :return: (filled elevation, flow direction, flow accumulation, slope)
-        """
-        flow_direction_clip, \
-        flow_accumulation_clip, \
-        slope_clip = compute_products(dem, self.data['outdir'])
-        # this is a workaround if the input dem does not have nodatavalue assigned 
-        # or has different nodatavalue compared to env nodatavalue. 
-        slope_clip_desc = arcpy.Describe(slope_clip)
-        self.data['NoDataValue'] = slope_clip_desc.nodatavalue
-        return flow_direction_clip, flow_accumulation_clip, slope_clip 
-
-    def _get_intersect(self, dem, mask,
-                        vegetation, soil, vegetation_type, soil_type,
-                        table_soil_vegetation, table_soil_vegetation_code):
-        """
-        Intersect data by area of interest.
-
-
-        :param str dem: DTM raster name
-        :param str mask: raster mask name
-        :param str vegetation: vegetation input vector name
-        :param soil: soil input vector name
-        :param vegetation_type: attribute vegetation column for dissolve
-        :param soil_type: attribute soil column for dissolve
-        :param table_soil_vegetation: soil table to join
-        :param table_soil_vegetation_code: key soil attribute 
-
-        :return intersect: intersect vector name
-        :return mask_shp: vector mask name
-        :return sfield: list of selected attributes
-        """
-        # convert mask into polygon feature class
-        mask_shp = self.storage.output_filepath('vector_mask')
-        arcpy.RasterToPolygon_conversion(
-            mask, mask_shp, "NO_SIMPLIFY")
-
-        # dissolve soil and vegmetation polygons
-        soil_boundary = self.storage.output_filepath('soil_boundary')
-        vegetation_boundary = self.storage.output_filepath('vegetation_boundary')
-        arcpy.Dissolve_management(
-            vegetation, vegetation_boundary, vegetation_type
-        )
-        arcpy.Dissolve_management(
-            soil, soil_boundary, soil_type
-        )
-
-        # do intersection
-        group = [soil_boundary, vegetation_boundary, mask_shp]
-        intersect = self.storage.output_filepath('inter_soil_lu')
-        arcpy.Intersect_analysis(
-            group, intersect, "ALL", "", "INPUT")
-
-        # remove "soil_veg" if exists and create a new one
-        if self.gp.ListFields(intersect, self._data['soil_veg_column']).Next():
-            arcpy.DeleteField_management(intersect, self._data['soil_veg_column'])
-        arcpy.AddField_management(
-            intersect, self._data['soil_veg_column'], "TEXT", "", "", "15", "",
-            "NULLABLE", "NON_REQUIRED","")
-
-        # compute "soil_veg" values (soil_type + vegetation_type)
-        vtype1 = vegetation_type + "_1" if soil_type == vegetation_type else vegetation_type
-        fields = [soil_type, vtype1, self._data['soil_veg_column']]
-        with arcpy.da.UpdateCursor(intersect, fields) as cursor:
-            for row in cursor:
-                row[2] = row[0] + row[1]
-                cursor.updateRow(row)
-
-        # copy attribute table to DBF file for modifications
-        soil_veg_copy = os.path.join(
-            self.data['outdir'], self._data['soil_veg_copy'], "soil_veg_tab_current.dbf"
-        )
-        arcpy.CopyRows_management(table_soil_vegetation, soil_veg_copy)
-
-        # join table copy to intersect feature class
-        self._join_table(
-            intersect, self._data['soil_veg_column'],
-            soil_veg_copy,
-            table_soil_vegetation_code,
-            ";".join(self._data['sfield'])
-        )
-
-        # check for empty values
-        with arcpy.da.SearchCursor(intersect, self._data['sfield']) as cursor:
-            row_idx = 0
-            for row in cursor:
-                row_idx += 1
-                for i in range(len(row)):
-                    if row[i] == " ": # TODO: empty string or NULL value?
-                        raise DataPreparationInvalidInput(
-                            "Values in soilveg tab are not correct "
-                            "(field '{}': empty value found in row {})".format(
-                                self._data['sfield'][i], row_idx
-                        ))
-
-        return intersect, mask_shp, self._data['sfield']
-
-    def _clip_data(self, dem, intersect):
-        """
-        Clip input data based on AOI.
-
-        :param str dem: raster DTM name
-        :param str intersect: vector intersect feature call name
-
-        :return str dem_clip: output clipped DTM name
-
-        """
-        if self.data['points']:
-            self.data['points'] = self._clip_points(intersect)
-
-        # set extent from intersect vector map
-        arcpy.env.extent = intersect
-
-        # raster description
-        dem_desc = arcpy.Describe(dem)
-
-        # output raster coordinate system
-        arcpy.env.outputCoordinateSystem = dem_desc.SpatialReference
-
-        # create raster mask based on intersect feature call
-        mask = self.storage.output_filepath('inter_mask')
-        arcpy.PolygonToRaster_conversion(
-            intersect, self.storage.primary_key, mask, "MAXIMUM_AREA",
-            cellsize = dem_desc.MeanCellHeight)
-
-        # cropping rasters
-        dem_clip = ExtractByMask(dem, mask)
-        dem_clip.save(self.storage.output_filepath('dem_inter'))
-        
-        return dem_clip
-
-    def _clip_points(self, intersect):
-        """
-        Clip input points data.
-
-        :param intersect: vector intersect feature class
-        """
-        pointsClipCheck = self.storage.output_filepath('points_inter', item='')
-        arcpy.Clip_analysis(
-            self.data['points'], intersect, pointsClipCheck
-        )
-
-        # count number of features (rows)
-        npoints = arcpy.GetCount_management(self._input_params['points'])
-        npoints_clipped = arcpy.GetCount_management(pointsClipCheck)
-                
-        self._diff_npoints(int(npoints[0]), int(npoints_clipped[0]))
-
-        return pointsClipCheck
-
-    def _get_attrib(self, sfield, intersect):
-        """
-        Get numpy arrays of selected attributes.
-
-        :param sfield: list of attributes
-        :param intersect: vector intersect name
-
-        :return all_atrib: list of numpy array
-        """
-        all_attrib = self._init_attrib(sfield, intersect)
-        
-        idx = 0
-        for field in sfield:
-            output = os.path.join(self.data['outdir'], self._data['sfield_dir'], "r{}".format(field))
-            arcpy.PolygonToRaster_conversion(
-                intersect, field, output,
-                "MAXIMUM_AREA", "", self.data['vpix']
+        aoi_mask = self.storage.output_filepath('aoi_mask')
+        with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=dem_mask, cellAlignment=dem_mask, snapRaster=dem_mask):
+            field = arcpy.Describe(aoi_polygon).OIDFieldName
+            arcpy.conversion.PolygonToRaster(
+                aoi_polygon, field, aoi_mask, "MAXIMUM_AREA", "",
+                GridGlobals.dy
             )
-            all_attrib[idx] = self._rst2np(output)
-            idx += 1
-            
-        return all_attrib
+
+        # return aoi_polygon
+        return aoi_polygon, aoi_mask
+
+    def _create_DEM_derivatives(self, dem):
+        """See base method for description.
+        """
+        # calculate the depressionless DEM
+        dem_filled_path = self.storage.output_filepath('dem_filled')
+        dem_filled = arcpy.sa.Fill(dem)
+        dem_filled.save(dem_filled_path)
+
+        # calculate the flow direction
+        dem_flowdir_path = self.storage.output_filepath('dem_flowdir')
+        flowdir = arcpy.sa.FlowDirection(dem_filled)
+        flowdir.save(dem_flowdir_path)
+
+        # calculate flow accumulation
+        dem_flowacc_path = self.storage.output_filepath('dem_flowacc')
+        flowacc = arcpy.sa.FlowAccumulation(flowdir)
+        flowacc.save(dem_flowacc_path)
+
+        # calculate slope
+        dem_slope_path = self.storage.output_filepath('dem_slope')
+        dem_slope = arcpy.sa.Slope(dem, "PERCENT_RISE")
+        dem_slope.save(dem_slope_path)
+
+        # calculate aspect
+        dem_aspect_path = self.storage.output_filepath('dem_aspect')
+        dem_aspect = arcpy.sa.Aspect(dem)
+        dem_aspect.save(dem_aspect_path)
+
+        return (
+            dem_filled_path, dem_flowdir_path, dem_flowacc_path,
+            dem_slope_path, dem_aspect_path
+        )
+
+    def _clip_raster_layer(self, dataset, aoi_mask, name):
+        """See base method for description.
+        """
+        output_path = self.storage.output_filepath(name)
+        # arcpy.management.Clip(dataset, out_raster=output_path, in_template_dataset=aoi_polygon, nodata_value=GridGlobals.NoDataValue, clipping_geometry="ClippingGeometry")
+        with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=aoi_mask, cellAlignment=aoi_mask, snapRaster=aoi_mask):
+            output_raster = arcpy.sa.ExtractByMask(dataset, aoi_mask)
+            # analysis_extent = arcpy.Describe(aoi_mask).Extent)
+            output_raster.save(output_path)
+        return output_path
+
+    def _clip_record_points(self, dataset, aoi_polygon, name):
+        """See base method for description.
+        """
+        # create a feature layer for the selections
+        points_layer = arcpy.management.MakeFeatureLayer(
+            dataset, "points_layer"
+        )
+        # select points inside the AIO
+        arcpy.management.SelectLayerByLocation(
+            points_layer, "WITHIN", aoi_polygon, "", "NEW_SELECTION"
+        )
+        # save them as a new dataset
+        points_clipped = self.storage.output_filepath(name)
+        arcpy.management.CopyFeatures(points_layer, points_clipped)
+
+        # select points outside the AoI
+        # TODO: shouldn't be the point to close the border removed here
+        #       as well?
+        arcpy.management.SelectLayerByLocation(
+            points_layer, "WITHIN", aoi_polygon, "", "NEW_SELECTION", "INVERT"
+        )
+        pointsOID = arcpy.Describe(dataset).OIDFieldName
+        outsideList = []
+        # get their IDs
+        with arcpy.da.SearchCursor(points_layer, [pointsOID]) as table:
+            for row in table:
+                outsideList.append(row[0])
+
+        # report them to the user
+        Logger.info(
+            "\t{} record points outside of "
+            "the area of interest ({}: {})".format(
+                len(outsideList), pointsOID, ",".join(map(str, outsideList))
+            )
+        )
+
+        return points_clipped
 
     def _rst2np(self, raster):
+        """See base method for description.
         """
-        Convert raster data into numpy array
+        return arcpy.RasterToNumPyArray(
+            raster, nodata_to_value=GridGlobals.NoDataValue
+        )
 
-        :param raster: raster name
-
-        :return: numpy array
+    def _update_grid_globals(self, reference):
+        """See base method for description.
         """
-        return arcpy.RasterToNumPyArray(raster)
+        desc = arcpy.Describe(reference)
 
-    def _get_raster_dim(self, dem_clip):
-        """
-        Get raster spatial reference info.
+        # check data consistency
+        if desc.height != GridGlobals.r or \
+                desc.width != GridGlobals.c:
+            raise DataPreparationError(
+                "Data inconsistency ({},{}) vs ({},{})".format(
+                    desc.height, desc.width,
+                    GridGlobals.r, GridGlobals.c)
+            )
 
-        :param dem_clip: clipped dem raster map
-        """
-        dem_desc = arcpy.Describe(dem_clip)
-        
         # lower left corner coordinates
-        GridGlobals.set_llcorner((dem_desc.Extent.XMin,
-                                  dem_desc.Extent.YMin))
-        self.data['xllcorner'] = dem_desc.Extent.XMin
-        self.data['yllcorner'] = dem_desc.Extent.YMin
-        GridGlobals.set_size((dem_desc.MeanCellHeight,
-                              dem_desc.MeanCellWidth))
-        self.data['vpix'] = dem_desc.MeanCellHeight
-        self.data['spix'] = dem_desc.MeanCellWidth
-        GridGlobals.set_pixel_area(self.data['spix'] * self.data['vpix'])
-        self.data['pixel_area'] = self.data['spix'] * self.data['vpix']
+        GridGlobals.set_llcorner((desc.Extent.XMin, desc.Extent.YMin))
+        GridGlobals.set_size((desc.MeanCellWidth, desc.MeanCellHeight))
+        inp = arcpy.Describe(self._input_params['elevation'])
+        self._check_resolution_consistency(
+            inp.meanCellWidth, inp.meanCellHeight
+        )
 
-        # size of the raster [0] = number of rows; [1] = number of columns
-        self.data['r'] = self.data['mat_dem'].shape[0]
-        self.data['c'] = self.data['mat_dem'].shape[1]
+        # set arcpy environment (needed for rasterization)
+        arcpy.env.extent = desc.Extent
+        arcpy.env.snapRaster = reference
 
-    def _get_array_points(self):
-        """Get array of points. Points near AOI border are skipped.
+    def _compute_efect_cont(self, dem, asp):
+        """See base method for description.
         """
-        if self.data['points'] and \
-           (self.data['points'] != "#") and (self.data['points'] != ""):
-            # identify the geometry field
-            desc = arcpy.Describe(self.data['points'])
-            shapefieldname = desc.ShapeFieldName
-            # create search cursor
-            rows_p = arcpy.SearchCursor(self.data['points'])
-            
-            # get number of points
-            count = arcpy.GetCount_management(self.data['points'])  # result
-            count = count.getOutput(0)
-
-            # empty array
-            self.data['array_points'] = np.zeros([int(count), 5], float)
-
-            i = 0
-            for row in rows_p:
-                fid = row.getValue(self.storage.primary_key)
-                # geometry
-                feat = row.getValue(shapefieldname)
-                pnt = feat.getPart()
-
-                i = self._get_array_points_(
-                    pnt.X, pnt.Y, fid, i
-                )
-                i += 1
-        else:
-            self.data['array_points'] = None
-
-    def _get_slope_dir(self, dem_clip):
-        """
-        ?
-
-        :param dem_clip:
-        """
-
-        # fiktivni vrstevnice a priprava "state cell, jestli to je tok
-        # ci plocha
         pii = math.pi / 180.0
-        asp = arcpy.sa.Aspect(dem_clip)
         asppii = arcpy.sa.Times(asp, pii)
         sinasp = arcpy.sa.Sin(asppii)
         cosasp = arcpy.sa.Cos(asppii)
@@ -377,17 +192,347 @@ class PrepareData(PrepareDataBase, ManageFields):
         times1 = arcpy.sa.Plus(cosslope, sinslope)
         times1.save(self.storage.output_filepath('ratio_cell'))
 
-        efect_cont = arcpy.sa.Times(times1, self.data['spix'])
+        efect_cont = arcpy.sa.Times(times1, GridGlobals.dx)
         efect_cont.save(self.storage.output_filepath('efect_cont'))
-        self.data['mat_efect_cont'] = self._rst2np(efect_cont)
 
-    def _streamPreparation(self, args):
-        from smoderp2d.providers.arcgis.stream_preparation import StreamPreparation
+        return self._rst2np(efect_cont)
 
-        return StreamPreparation(args, writter=self.storage).prepare()
+    def _prepare_soilveg(self, soil, soil_type_fieldname, vegetation,
+                         vegetation_type_fieldname, aoi_polygon,
+                         soil_vegetation_table):
+        """See base method for description.
+        """
+        # check if the soil_type_fieldname and vegetation_type_fieldname field
+        # names are equal and deal with it if not
+        if soil_type_fieldname == vegetation_type_fieldname:
+            veg_fieldname = self.fieldnames['veg_type_fieldname']
+            Logger.info(
+                "The vegetation type attribute field name ('{}') is equal to "
+                "the soil type attribute field name. Vegetation type attribute "
+                "will be renamed to '{}'.".format(
+                    vegetation_type_fieldname, veg_fieldname
+                )
+            )
+
+            # arcpy.management.AlterField(vegetation,vegetation_type_fieldname, veg_fieldname) # - does not work correctly, better to add field -> copy values -> delete field
+            # add new field
+            arcpy.management.AddField(vegetation, veg_fieldname, "TEXT")
+            # copy the values and delete the old field
+            with arcpy.da.UpdateCursor(vegetation, [vegetation_type_fieldname, veg_fieldname]) as table:
+                for row in table:
+                    row[0] = row[1]
+                    table.updateRow(row)
+            arcpy.management.DeleteField(vegetation, vegetation_type_fieldname)
+        else:
+            veg_fieldname = vegetation_type_fieldname
+
+        # create the geometric intersection of soil and vegetation layers
+        soilveg_aoi_path = self.storage.output_filepath("soilveg_aoi")
+        arcpy.analysis.Intersect(
+            [soil, vegetation, aoi_polygon], soilveg_aoi_path, "NO_FID"
+        )
+
+        soilveg_code = self._input_params['table_soil_vegetation_fieldname']
+        if soilveg_code in arcpy.ListFields(soilveg_aoi_path):
+            arcpy.management.DeleteField(soilveg_aoi_path, soilveg_code)
+            Logger.info(
+                "'{}' attribute field already in the table and will be "
+                "replaced.".format(soilveg_code)
+            )
+
+        arcpy.management.AddField(soilveg_aoi_path, soilveg_code, "TEXT")
+
+        # calculate "soil_veg" values (soil_type_fieldname + vegetation_type_fieldname)
+        with arcpy.da.UpdateCursor(soilveg_aoi_path, [soil_type_fieldname, veg_fieldname, soilveg_code]) as table:
+            for row in table:
+                row[2] = row[0] + row[1]
+                table.updateRow(row)
+
+        # join soil and vegetation model parameters from input table
+        arcpy.management.JoinField(
+            soilveg_aoi_path, soilveg_code,
+            soil_vegetation_table,
+            soilveg_code, list(self.soilveg_fields.keys())
+        )
+
+        # check for empty values
+        with arcpy.da.SearchCursor(soilveg_aoi_path, list(self.soilveg_fields.keys())) as cursor:
+            row_id = 0
+            for row in cursor:
+                row_id += 1
+                for i in range(len(row)):
+                    if row[i] in ("", " ", None):
+                        raise DataPreparationInvalidInput(
+                            "Values in soilveg table are not correct "
+                            "(field '{}': empty value found in row {})".format(
+                                self.sfield[i], row_id
+                            )
+                        )
+
+        # generate numpy array of soil and vegetation attributes
+        for field in self.soilveg_fields.keys():
+            output = self.storage.output_filepath("soilveg_aoi_{}".format(field))
+            aoi_mask = self.storage.output_filepath('aoi_mask')
+            with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=aoi_mask, cellAlignment=aoi_mask, snapRaster=aoi_mask):
+                arcpy.conversion.PolygonToRaster(soilveg_aoi_path, field, output, "MAXIMUM_AREA", "", GridGlobals.dy)
+            self.soilveg_fields[field] = self._rst2np(output)
+            self._check_soilveg_dim(field)
+
+    def _get_points_location(self, points_layer):
+        """See base method for description.
+        """
+        points_array = None
+        if points_layer:
+            # get number of points
+            count = int(arcpy.management.GetCount(points_layer).getOutput(0))
+            if count > 0:
+                points_array = np.zeros([int(count), 5], float)
+                # get the points geometry and IDs into array
+                desc = arcpy.Describe(points_layer)
+                with arcpy.da.SearchCursor(points_layer, [desc.OIDFieldName, desc.ShapeFieldName]) as table:
+                    i = 0
+                    for row in table:
+                        fid = row[0]
+                        x, y = row[1]
+                        if self._get_points_dem_coords(x, y):
+                            r, c = self._get_points_dem_coords(x, y)
+                            self._update_points_array(
+                                points_array, i, fid, r, c, x, y
+                            )
+                        else:
+                            Logger.info(
+                                "Point FID = {} is at the edge of the raster. "
+                                "This point will not be included in "
+                                "results.".format(fid))
+                        i += 1
+            else:
+                raise DataPreparationInvalidInput(
+                    "None of the record points lays within the modeled area."
+                )
+
+        return points_array
+
+    def _stream_clip(self, stream, aoi_polygon):
+        """See base method for description.
+        """
+        # AoI slighty smaller due to start/end elevation extraction
+        aoi_buffer = arcpy.analysis.Buffer(
+            aoi_polygon,
+            self.storage.output_filepath('aoi_buffer'),
+            -GridGlobals.dx / 3,
+            "FULL", "ROUND",
+        )
+
+        stream_aoi = self.storage.output_filepath('stream_aoi')
+        arcpy.analysis.Clip(stream, aoi_buffer, stream_aoi)
+
+        # make sure that no of the stream properties fields are in the stream
+        # feature class
+        drop_fields = self._stream_check_fields(stream_aoi)
+        for f in drop_fields:
+            arcpy.management.DeleteField(stream_aoi, f)
+
+        return stream_aoi
+
+    def _stream_direction(self, stream, dem_aoi):
+        """See base method for description.
+        """
+        segment_id_fieldname = self.fieldnames['stream_segment_id']
+        start_elev_fieldname = self.fieldnames['stream_segment_start_elevation']
+        end_elev_fieldname = self.fieldnames['stream_segment_end_elevation']
+        inclination_fieldname = self.fieldnames['stream_segment_inclination']
+        next_down_id_fieldname = self.fieldnames['stream_segment_next_down_id']
+        segment_length_fieldname = self.fieldnames['stream_segment_length']
+
+        # segments properties
+        segment_props = {}
+
+        # add the streamID for later use, get the 2D length of the stream
+        # segments
+        length_fieldname = arcpy.Describe(stream).lengthFieldName
+        arcpy.management.AddField(stream, segment_id_fieldname, "SHORT")
+        segment_id = 1
+        with arcpy.da.UpdateCursor(stream, [segment_id_fieldname, length_fieldname]) as segments:
+            for row in segments:
+                row[0] = segment_id
+                segments.updateRow(row)
+                segment_props.update({segment_id: {'length': row[1]}})
+                segment_id += 1
+
+        # extract elevation for the stream segment vertices
+        arcpy.ddd.InterpolateShape(
+            dem_aoi, stream, self.storage.output_filepath("stream_z"), "", "",
+            "CONFLATE_NEAREST", "VERTICES_ONLY"
+        )
+        shape_fieldname = "SHAPE@"
+
+        with arcpy.da.SearchCursor(self.storage.output_filepath("stream_z"), [shape_fieldname, segment_id_fieldname]) as segments:
+            for row in segments:
+                startpt = row[0].firstPoint
+                endpt = row[0].lastPoint
+                # negative elevation change is the correct direction for
+                # stream segments
+                elev_change = endpt.Z - startpt.Z
+
+                if elev_change == 0:
+                    raise DataPreparationError(
+                        'Stream segment {}: {} has zero slope'.format(
+                            segment_id_fieldname, row[1]
+                        )
+                    )
+                elif elev_change < 0:
+                    segment_props.get(row[1]).update({'start_point': startpt})
+                    segment_props.get(row[1]).update({'end_point': endpt})
+                else:
+                    segment_props.get(row[1]).update({'start_point': endpt})
+                    segment_props.get(row[1]).update({'end_point': startpt})
+
+                inclination = elev_change/segment_props.get(row[1]).get(
+                    'length'
+                )
+                segment_props.get(row[1]).update({'inclination': inclination})
+
+        # add new fields to the stream segments feature class
+        arcpy.management.AddField(stream, segment_id_fieldname, "SHORT")
+        arcpy.management.AddField(stream, start_elev_fieldname, "DOUBLE")
+        arcpy.management.AddField(stream, end_elev_fieldname, "DOUBLE")
+        arcpy.management.AddField(stream, inclination_fieldname, "DOUBLE")
+        arcpy.management.AddField(stream, next_down_id_fieldname, "SHORT")
+        arcpy.management.AddField(stream, segment_length_fieldname, "DOUBLE")
+
+        xy_tolerance = 0.01
+        # don't know why the arcpy.env.XYtolerance does not work
+        # (otherwise would use the arcpy.Point.equals() method)
+        with arcpy.da.UpdateCursor(stream, [segment_id_fieldname, shape_fieldname, start_elev_fieldname,
+                                            end_elev_fieldname, inclination_fieldname, next_down_id_fieldname,
+                                            segment_length_fieldname, length_fieldname]) as table:
+            for row in table:
+                segment_inclination = segment_props.get(row[0]).get('inclination')
+                row[1] = row[1] if segment_inclination < 0 else self._reverse_line_direction(row[1])
+                row[2] = segment_props.get(row[0]).get('start_point').Z
+                row[3] = segment_props.get(row[0]).get('end_point').Z
+                row[4] = abs(segment_inclination)
+                row[6] = segment_props.get(row[0]).get("length")
+
+                # find the next down segment by comparing the points distance
+                next_down_id = Globals.streamsNextDownIdNoSegment
+                matched = 0
+                for segment_id in segment_props.keys():
+                    dist = pow(
+                        pow(row[1].lastPoint.X-segment_props.get(segment_id).get('start_point').X, 2) + pow(row[1].lastPoint.Y-segment_props.get(segment_id).get('start_point').Y, 2),
+                        0.5
+                    )
+                    if dist < xy_tolerance:
+                        next_down_id = segment_id
+                        matched += 1
+                if matched > 1:
+                    row[5] = None
+                    raise DataPreparationError(
+                        'Incorrect stream network topology downstream segment '
+                        'streamID: {}. The network can not bifurcate.'.format(
+                            row[0]
+                        )
+                    )
+                else:
+                    row[5] = next_down_id
+                table.updateRow(row)
+
+    def _reverse_line_direction(self, line):
+        """Flip the order of points if a line to change its direction.
+
+        If the geometry is multipart the parts are dissolved into single part
+        line.
+
+        :param line: line geometry to be flipped
+        :return: the line geometry with flipped point order
+        """
+        newpart = []
+        for part in line:
+            for point in part:
+                newpart.append(point)
+
+        newline = arcpy.Polyline(arcpy.Array(reversed(newpart)))
+        return newline
+
+    def _stream_reach(self, stream):
+        """See base method for description.
+        """
+        stream_seg = self.storage.output_filepath('stream_seg')
+        arcpy.conversion.PolylineToRaster(
+            stream, self.fieldnames['stream_segment_id'], stream_seg,
+            "MAXIMUM_LENGTH", cellsize=GridGlobals.dx
+        )
+
+        mat_stream_seg = self._rst2np(stream_seg)
+        # ML: is no_of_streams needed (-> mat_stream_seg.max())
+        self._get_mat_stream_seg(mat_stream_seg)
+
+        return mat_stream_seg.astype('int16')
+
+    def _stream_shape(self, streams, channel_shape_code,
+                      channel_properties_table):
+        """See base method for description.
+        """
+        if channel_shape_code not in self._get_field_names(streams):
+            raise DataPreparationError(
+                "Error joining channel shape properties to stream network "
+                "segments!\nCheck fields names in stream network feature "
+                "class. Missing field is: '{}'".format(
+                    self._input_params['streams_channel_type_fieldname']
+                )
+            )
+
+        arcpy.management.JoinField(
+            streams, channel_shape_code, channel_properties_table,
+            channel_shape_code, self.stream_shape_fields
+        )
+
+        stream_attr = self._get_streams_attr_()
+        fields = list(stream_attr.keys())
+        with arcpy.da.SearchCursor(streams, fields) as cursor:
+            try:
+                for row in cursor:
+                    for i in range(len(row)):
+                        if row[i] in (" ", None):
+                            raise DataPreparationError(
+                                "Empty value in {} ({}) found.".format(
+                                    self._input_params["channel_properties_table"],
+                                    fields[i])
+                            )
+                        stream_attr[fields[i]].append(row[i])
+
+            except RuntimeError as e:
+                raise DataPreparationError(
+                        "Error: {}\n" 
+                        "Check fields names in {}. "
+                        "Proper columns codes are: {}".format(
+                            e, self._input_params["channel_properties_table"],
+                            self.stream_shape_fields
+                        )
+                )
+
+        return self._decode_stream_attr(stream_attr)
+
+    def _check_empty_values(self, table, field):
+        """See base method for description.
+        """
+        oidfn = arcpy.Describe(table).OIDFieldName
+        with arcpy.da.SearchCursor(table, [field, oidfn]) as cursor:
+            for row in cursor:
+                if row[0] in (None, ""):
+                    raise DataPreparationInvalidInput(
+                        "'{}' values in '{}' table are not correct, "
+                        "empty value found in row {})".format(
+                            field, table, row[1]
+                        )
+                    )
 
     def _check_input_data(self):
-        """Check input data.
+        """See base method for description.
         """
-        # TODO: not imlemented yet
-        pass
+        self._check_input_data_()
+
+    def _get_field_names(self, ds):
+        """See base method for description.
+        """
+        return [field.name for field in arcpy.ListFields(ds)]
