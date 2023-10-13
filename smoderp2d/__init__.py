@@ -235,7 +235,7 @@ class QGISRunner(GrassGisRunner):
 
         # get colour definitions
         renderer = QgsSingleBandPseudoColorRenderer(layer.dataProvider(), 1)
-        color_ramp = QgsGradientColorRamp(QColor(239, 239, 255), QColor(  0,   0, 255))
+        color_ramp = QgsGradientColorRamp(QColor(239, 239, 255), QColor(0,   0, 255))
         renderer.setClassificationMin(stats.minimumValue)
         renderer.setClassificationMax(stats.maximumValue)
         renderer.createShader(color_ramp)
