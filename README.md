@@ -43,13 +43,13 @@ Run SMODERP command line tool from Docker container:
 ```sh
 docker run -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
  ./bin/start-smoderp2d.py smoderp \
- --config tests/quicktest.ini
+ --config tests/config_files/quicktest.ini
 ```
 
 ### From command line locally
 
 ```sh
-./bin/start-smoderp2d.py --config tests/quicktest.ini
+./bin/start-smoderp2d.py --config tests/config_files/quicktest.ini
 ```
 
 ### From GRASS GIS

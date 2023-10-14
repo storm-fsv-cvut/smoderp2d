@@ -10,7 +10,7 @@ courantMin = 0.2
 def update_hb(loc_V_to_rill, rillRatio, l, b):
     V = loc_V_to_rill
     if ma.any(V < 0):
-        raise SmoderpError()
+        raise SmoderpError('V is smaller than 0')
     newb = ma.sqrt(V / (rillRatio * l))
     # if ppp :  print 'zvetsuje', newb, b, V
     b = ma.where(

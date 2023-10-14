@@ -1,6 +1,5 @@
 import os
 import sys
-import fileinput
 import logging
 from configparser import ConfigParser
 

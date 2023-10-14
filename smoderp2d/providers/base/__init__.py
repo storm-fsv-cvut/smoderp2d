@@ -18,7 +18,9 @@ from smoderp2d.exceptions import ProviderError, ConfigError, GlobalsNotSet, Smod
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError
 
+
 class Args:
+
     # type of computation (CompType)
     workflow_mode = None
     # path to pickle data file
@@ -27,7 +29,9 @@ class Args:
     # config file
     config_file = None
 
+
 class WorkflowMode:
+
     # type of computation
     dpre = 0 # data preparation only
     roff = 1 # runoff calculation only
@@ -41,7 +45,8 @@ class WorkflowMode:
             return cls.roff
         else:
             return cls.full
-    
+
+
 class BaseWriter(object):
     def __init__(self):
         self._data_target = None
@@ -92,7 +97,7 @@ class BaseWriter(object):
 
         :param array: numpy array
         :param output_name: output filename
-        :param date_type: directory where to write output file
+        :param data_type: directory where to write output file
         """
         file_output = self._raster_output_path(output_name, data_type)
 
@@ -101,7 +106,6 @@ class BaseWriter(object):
         )
 
         self._write_raster(array, file_output)
-
 
     def create_storage(self, outdir):
         pass
@@ -126,6 +130,7 @@ class BaseWriter(object):
             GridGlobals.dx is None or \
             GridGlobals.dy is None:
             raise GlobalsNotSet()
+
 
 class BaseProvider(object):
     def __init__(self):
@@ -159,7 +164,7 @@ class BaseProvider(object):
         handler.setFormatter(formatter)
         if sys.version_info.major >= 3:
             if len(Logger.handlers) == 0:
-                # avoid duplicated handlers (eg. in case of ArcGIS)
+                # avoid duplicated handlers (e.g. in case of ArcGIS)
                 Logger.addHandler(handler)
 
     def __load_hidden_config(self):
@@ -181,7 +186,6 @@ class BaseProvider(object):
         )
 
         return config
-
 
     def _load_data_from_hidden_config(self, config, ignore=[]):
         """Load data from hidden config.
@@ -218,7 +222,6 @@ class BaseProvider(object):
             ))
 
         return config
-
 
     def _load_dpre(self):
         """Run data preparation procedure.
@@ -331,7 +334,7 @@ class BaseProvider(object):
         # should be set in the loop at the beginning
         # of this method since it is part of the
         # data dict (only in profile1d provider).
-        # Otherwise is has to be set to 1.
+        # Otherwise, is has to be set to 1.
         if Globals.slope_width is None:
             Globals.slope_width = 1
 
@@ -370,7 +373,7 @@ class BaseProvider(object):
         presence/non-presence.
 
         :param CompType tc: type of computation
-        
+
         :return dict:
 
         """
@@ -399,7 +402,7 @@ class BaseProvider(object):
             ret['rill'] = True
 
         return ret
-            
+
     def logo(self):
         """Print Smoderp2d ascii-style logo."""
         logo_file = os.path.join(os.path.dirname(__file__), 'txtlogo.txt')
@@ -447,10 +450,8 @@ class BaseProvider(object):
         return data
 
     def postprocessing(self, cumulative, surface_array, stream):
-
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
-        dx = GridGlobals.get_size()[0]
 
         # compute maximum shear stress and velocity
         cumulative.calculate_vsheet_sheerstress()
@@ -589,7 +590,6 @@ class BaseProvider(object):
                 arr[i, j] = copy_arr[i, j]
 
         return arr
-
 
         # TODO
         # if not Globals.extraOut:

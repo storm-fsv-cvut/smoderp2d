@@ -98,7 +98,7 @@ class SmoderpTask(QgsTask):
                 fail_reason = "reason unknown (see SMODERP2D log messages)"
 
             iface.messageBar().pushMessage(
-                'Computation failed: ', fail_reason, level=Qgis.Critical
+                'Computation failed: ', str(fail_reason), level=Qgis.Critical
             )
 
 
@@ -657,6 +657,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             self.table_stream_shape_code_comboBox.setCurrentText('channel_id')
             with tempfile.NamedTemporaryFile() as temp_dir:
                 self.main_output_lineEdit.setText(temp_dir.name)
+            self.end_time_lineEdit.setValue(5)
         except IndexError:
             self._sendMessage(
                 'Error',
