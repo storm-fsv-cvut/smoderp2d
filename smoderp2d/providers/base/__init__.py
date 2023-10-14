@@ -326,8 +326,18 @@ class BaseProvider(object):
         Globals.subflow = comp_type['subflow_rill']
         Globals.isRill = comp_type['rill']
         Globals.isStream = comp_type['stream_rill']
-        Globals.prtTimes = data.get('prtTimes', None)
-        Globals.extraOut = data.get('extraout', False)
+
+        # hidden config
+        hidden_config = self._load_data_from_hidden_config(self._hidden_config)
+        if 'prtTimes' in data:
+            Globals.prtTimes = data['prtTimes']
+        else:
+            Globals.prtTimes = hidden_config.get('prtTimes', None)
+        if 'extraout' in data:
+            Globals.extraOut = data['extraout']
+        else:
+            Globals.extraOut = hidden_config.get('extraout', False)
+
         Globals.end_time *= 60 # convert min to sec
 
         # If profile1d provider is used the values
