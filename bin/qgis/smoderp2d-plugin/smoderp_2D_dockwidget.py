@@ -404,8 +404,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         # show results
         root = QgsProject.instance().layerTreeRoot()
-        group = root.insertGroup(0, "SMODERP")
-        group.setExpanded(True)
+        group = root.insertGroup(0, "SMODERP2D")
 
         outdir = self.main_output_lineEdit.text().strip()
         for map_path in glob.glob(os.path.join(outdir, '*.asc')):
@@ -420,6 +419,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             QgsProject.instance().addMapLayer(layer, False)
             node = group.addLayer(layer)
             node.setExpanded(False)
+
+        # QGIUS bug: group must be collapsed and than expanded
+        group.setExpanded(False)
+        group.setExpanded(True)
 
     def _getInputParams(self):
         """Get input parameters from QGIS plugin."""
