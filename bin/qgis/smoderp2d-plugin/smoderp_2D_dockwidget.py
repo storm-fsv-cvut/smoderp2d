@@ -407,6 +407,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         group = root.insertGroup(0, "SMODERP2D")
 
         outdir = self.main_output_lineEdit.text().strip()
+        first = True
         for map_path in glob.glob(os.path.join(outdir, '*.asc')):
             layer = QgsRasterLayer(
                 map_path, os.path.basename(os.path.splitext(map_path)[0])
@@ -419,8 +420,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             QgsProject.instance().addMapLayer(layer, False)
             node = group.addLayer(layer)
             node.setExpanded(False)
+            node.setItemVisibilityChecked(first is True)
+            first = False
 
-        # QGIUS bug: group must be collapsed and than expanded
+        # QGIS bug: group must be collapsed and than expanded
         group.setExpanded(False)
         group.setExpanded(True)
 
