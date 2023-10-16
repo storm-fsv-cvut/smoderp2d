@@ -48,6 +48,9 @@ def make_sub_raster(subArr, G, t, output):
 # Class to save item of different types
 class SaveItems:
 
+    def __init__(self):
+        self.countList = 1
+
     def savelist(self, l):
         a = 0
         b = []
