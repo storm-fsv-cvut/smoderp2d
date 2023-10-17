@@ -309,15 +309,15 @@ class BaseProvider(object):
             elif hasattr(DataGlobals, item):
                 setattr(DataGlobals, item, data[item])
 
-        Globals.mat_reten = -1.0 * data['mat_reten'] / 1000 # converts mm to m
+        Globals.mat_reten = -1.0 * data['mat_reten'] / 1000  # converts mm to m
         comp_type = self._comp_type(data['type_of_computing'])
         Globals.diffuse = False # not implemented yet
         Globals.subflow = comp_type['subflow_rill']
         Globals.isRill = comp_type['rill']
         Globals.isStream = comp_type['stream_rill']
         Globals.prtTimes = data.get('prtTimes', None)
-        Globals.extraOut = self._hidden_config.getboolean('outputs','extraout')
-        Globals.end_time *= 60 # convert min to sec
+        Globals.extraOut = self._hidden_config.getboolean('outputs', 'extraout')
+        Globals.end_time *= 60  # convert min to sec
 
         # If profile1d provider is used the values
         # should be set in the loop at the beginning
