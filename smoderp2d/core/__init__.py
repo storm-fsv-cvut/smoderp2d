@@ -20,4 +20,3 @@ class CompType:
             return cls.subflow_rill
         else:
             return cls.stream_subflow_rill
-    
