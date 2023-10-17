@@ -137,13 +137,14 @@ class PrepareData(PrepareDataGISBase):
             for row in table:
                 outsideList.append(row[0])
 
-        # report them to the user
-        Logger.info(
-            "\t{} record points outside of "
-            "the area of interest ({}: {})".format(
-                len(outsideList), pointsOID, ",".join(map(str, outsideList))
+        if outsideList:
+            # report them to the user
+            Logger.info(
+                "\t{} record points outside of "
+                "the area of interest ({}: {})".format(
+                    len(outsideList), pointsOID, ",".join(map(str, outsideList))
+                )
             )
-        )
 
         return points_clipped
 

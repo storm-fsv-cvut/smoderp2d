@@ -222,20 +222,25 @@ class PrepareData(PrepareDataGISBase):
                operator='within',
                output=points_clipped+'1')
         outsideList = []
-        # get their IDs
-        with Vector(points_clipped+'1') as vmap:
-            vmap.table.filters.select(self.storage.primary_key)
-            for row in vmap.table:
-                outsideList.append(row[0])
-        self.__remove_temp_data({'name': points_clipped+'1', 'type': 'vector'})
+        try:
+            # get their IDs
+            with Vector(points_clipped+'1') as vmap:
+                vmap.table.filters.select(self.storage.primary_key)
+                for row in vmap.table:
+                    outsideList.append(row[0])
+            self.__remove_temp_data({'name': points_clipped+'1', 'type': 'vector'})
 
-        # report them to the user
-        Logger.info(
-            "\t{} record points outside of the area of interest "
-            "({}: {})".format(
-                len(outsideList), "FID", ",".join(map(str, outsideList))
+            # report them to the user
+            Logger.info(
+                "\t{} record points outside of the area of interest "
+                "({}: {})".format(
+                    len(outsideList), "FID", ",".join(map(str, outsideList))
+                )
             )
-        )
+        except OpenError:
+            # only created if there is at least one point out of AOI
+            pass
+
 
         return points_clipped
 
