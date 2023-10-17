@@ -423,7 +423,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             node.setItemVisibilityChecked(first is True)
             first = False
 
-        # QGIS bug: group must be collapsed and than expanded
+        # QGIS bug: group must be collapsed and then expanded
         group.setExpanded(False)
         group.setExpanded(True)
 
