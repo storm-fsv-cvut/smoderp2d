@@ -320,7 +320,7 @@ class BaseProvider(object):
             elif hasattr(DataGlobals, item):
                 setattr(DataGlobals, item, data[item])
 
-        Globals.mat_reten = -1.0 * data['mat_reten'] / 1000 # converts mm to m
+        Globals.mat_reten = -1.0 * data['mat_reten'] / 1000  # converts mm to m
         comp_type = self._comp_type(data['type_of_computing'])
         Globals.diffuse = False # not implemented yet
         Globals.subflow = comp_type['subflow_rill']
