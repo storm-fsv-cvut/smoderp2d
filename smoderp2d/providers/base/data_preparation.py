@@ -613,7 +613,7 @@ class PrepareDataGISBase(PrepareDataBase):
                 self._input_params['streams'],
                 self._input_params['channel_properties_table'],
                 self._input_params['streams_channel_type_fieldname'],
-                dem_aoi,
+                dem_filled, # provide not clipped DEM to avoid stream vertices placed outside DEM
                 aoi_polygon
             )
         else:
@@ -707,7 +707,7 @@ class PrepareDataGISBase(PrepareDataBase):
             return None
 
     def _prepare_streams(self, stream, stream_shape_tab, stream_shape_code,
-                         dem_aoi, aoi_polygon):
+                         dem, aoi_polygon):
         self.data['type_of_computing'] = CompType.rill
 
         # pocitam vzdy s ryhama pokud jsou zadane vsechny vstupy pro
@@ -726,7 +726,7 @@ class PrepareDataGISBase(PrepareDataBase):
             Logger.progress(70)
 
             Logger.info("Computing stream direction and inclinations...")
-            self._stream_direction(stream_aoi, dem_aoi)
+            self._stream_direction(stream_aoi, dem)
             Logger.progress(75)
 
             Logger.info("Computing stream segments...")
