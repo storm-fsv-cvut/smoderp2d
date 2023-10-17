@@ -25,13 +25,16 @@
 import os
 import sys
 import tempfile
+import glob
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication, Qt
-
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QFileDialog, QProgressBar, QMenu
+
 from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, \
-    QgsVectorLayer, QgsRasterLayer, QgsTask, QgsApplication, Qgis, QgsProject
+    QgsVectorLayer, QgsRasterLayer, QgsTask, QgsApplication, Qgis, QgsProject, \
+    QgsRasterBandStats, QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp
 from qgis.utils import iface
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox, QgsMessageBarItem
 
@@ -75,7 +78,6 @@ class SmoderpTask(QgsTask):
         except ProviderError as e:
             self.error = e
             return False
-        runner.show_results()
 
         # resets
         Globals.reset()
@@ -371,13 +373,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             smoderp_task.progressChanged.connect(
                 lambda a: self.progress_bar.setValue(int(a))
             )
-            smoderp_task.taskCompleted.connect(
-                messageBar.clearWidgets
-            )
+            smoderp_task.taskCompleted.connect(self.computationFinished)
 
             # start the task
-            print('********* tasks **************')
-            print(self.task_manager.tasks())
             self.task_manager.addTask(smoderp_task)
         else:
             self._sendMessage(
@@ -385,6 +383,49 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 "Some of mandatory fields are not filled correctly.",
                 "CRITICAL"
             )
+
+    @staticmethod
+    def _layerColorRamp(layer):
+        # get min/max values
+        stats = layer.dataProvider().bandStatistics(1, QgsRasterBandStats.All, layer.extent(), 0)
+
+        # get colour definitions
+        renderer = QgsSingleBandPseudoColorRenderer(layer.dataProvider(), 1)
+        color_ramp = QgsGradientColorRamp(QColor(239, 239, 255), QColor(0, 0, 255))
+        renderer.setClassificationMin(stats.minimumValue)
+        renderer.setClassificationMax(stats.maximumValue)
+        renderer.createShader(color_ramp)
+
+        return renderer
+
+    def computationFinished(self):
+        # clear message bar
+        self.iface.messageBar().clearWidgets
+
+        # show results
+        root = QgsProject.instance().layerTreeRoot()
+        group = root.insertGroup(0, "SMODERP2D")
+
+        outdir = self.main_output_lineEdit.text().strip()
+        first = True
+        for map_path in glob.glob(os.path.join(outdir, '*.asc')):
+            layer = QgsRasterLayer(
+                map_path, os.path.basename(os.path.splitext(map_path)[0])
+            )
+
+            # set symbology
+            layer.setRenderer(self._layerColorRamp(layer))
+
+            # add layer into group
+            QgsProject.instance().addMapLayer(layer, False)
+            node = group.addLayer(layer)
+            node.setExpanded(False)
+            node.setItemVisibilityChecked(first is True)
+            first = False
+
+        # QGIS bug: group must be collapsed and then expanded
+        group.setExpanded(False)
+        group.setExpanded(True)
 
     def _getInputParams(self):
         """Get input parameters from QGIS plugin."""
