@@ -456,14 +456,14 @@ class PrepareData(PrepareDataGISBase):
     def _stream_direction(self, stream, dem):
         """See base method for description.
         """
-        segment_id_field_name = self.fieldnames['stream_segment_id']
-        start_elev_field_name = self.fieldnames[
+        segment_id_fieldname = self.fieldnames['stream_segment_id']
+        start_elev_fieldname = self.fieldnames[
             'stream_segment_start_elevation'
         ]
-        end_elev_field_name = self.fieldnames['stream_segment_end_elevation']
-        inclination_field_name = self.fieldnames['stream_segment_inclination']
-        next_down_field_name = self.fieldnames['stream_segment_next_down_id']
-        segment_length_field_name = self.fieldnames['stream_segment_length']
+        end_elev_fieldname = self.fieldnames['stream_segment_end_elevation']
+        inclination_fieldname = self.fieldnames['stream_segment_inclination']
+        next_down_fieldname = self.fieldnames['stream_segment_next_down_id']
+        segment_length_fieldname = self.fieldnames['stream_segment_length']
 
         # segments properties
         segment_props = {}
@@ -472,11 +472,11 @@ class PrepareData(PrepareDataGISBase):
         # segments
         _run_grass_module('v.db.addcolumn',
                map=stream,
-               columns=['{} integer'.format(segment_id_field_name)])
+               columns=['{} integer'.format(segment_id_fieldname)])
         with VectorTopo(stream) as vmap:
             segment_id = 1
             for f in vmap:
-                f.attrs[segment_id_field_name] = segment_id
+                f.attrs[segment_id_fieldname] = segment_id
                 segment_props.update({segment_id: {'length': f.length()}})
                 segment_id += 1
             vmap.table.conn.commit()
@@ -496,11 +496,11 @@ class PrepareData(PrepareDataGISBase):
                 # segments
                 elev_change = endpt.z - startpt.z
 
-                segment_id = seg.attrs[segment_id_field_name]
+                segment_id = seg.attrs[segment_id_fieldname]
                 if elev_change == 0:
                     raise DataPreparationError(
                         'Stream segment {}: {} has zero slope'.format(
-                            segment_id_field_name, segment_id
+                            segment_id_fieldname, segment_id
                         )
                     )
                 elif elev_change < 0:
@@ -526,12 +526,12 @@ class PrepareData(PrepareDataGISBase):
         _run_grass_module('v.db.addcolumn',
                map=stream,
                columns=[
-                   '{} integer'.format(segment_id_field_name),
-                   '{} double precision'.format(start_elev_field_name),
-                   '{} double precision'.format(end_elev_field_name),
-                   '{} double precision'.format(inclination_field_name),
-                   '{} integer'.format(next_down_field_name),
-                   '{} double precision'.format(segment_length_field_name)
+                   '{} integer'.format(segment_id_fieldname),
+                   '{} double precision'.format(start_elev_fieldname),
+                   '{} double precision'.format(end_elev_fieldname),
+                   '{} double precision'.format(inclination_fieldname),
+                   '{} integer'.format(next_down_fieldname),
+                   '{} double precision'.format(segment_length_fieldname)
                ])
 
         _run_grass_module(
@@ -539,41 +539,41 @@ class PrepareData(PrepareDataGISBase):
             map=stream,
             tool='flip',
             where='{} in ({})'.format(
-                segment_id_field_name, ','.join(to_reverse)
+                segment_id_fieldname, ','.join(to_reverse)
             )
         )
 
         with VectorTopo(stream) as vmap:
             for seg in vmap:
-                segment_id = seg.attrs[segment_id_field_name]
+                segment_id = seg.attrs[segment_id_fieldname]
                 segment_inclination = segment_props.get(segment_id).get(
                     "inclination"
                 )
-                seg.attrs[start_elev_field_name] = segment_props.get(
+                seg.attrs[start_elev_fieldname] = segment_props.get(
                     segment_id
                 ).get("start_point").z
-                seg.attrs[end_elev_field_name] = segment_props.get(
+                seg.attrs[end_elev_fieldname] = segment_props.get(
                     segment_id
                 ).get("end_point").z
-                seg.attrs[inclination_field_name] = abs(segment_inclination)
-                seg.attrs[segment_length_field_name] = segment_props.get(
+                seg.attrs[inclination_fieldname] = abs(segment_inclination)
+                seg.attrs[segment_length_fieldname] = segment_props.get(
                     segment_id
                 ).get("length")
 
                 # find the next down segment by comparing the points distance
                 _, end = seg.nodes()
-                seg.attrs[next_down_field_name] = Globals.streamsNextDownIdNoSegment
+                seg.attrs[next_down_fieldname] = Globals.streamsNextDownIdNoSegment
                 for start_seg in end.lines():
                     if start_seg.id != seg.id:
-                        if seg.attrs[next_down_field_name] != Globals.streamsNextDownIdNoSegment:
+                        if seg.attrs[next_down_fieldname] != Globals.streamsNextDownIdNoSegment:
                             raise DataPreparationError(
                                 'Incorrect stream network topology downstream '
                                 'segment streamID: {}. The network can not '
                                 'bifurcate.'.format(segment_id)
                             )
-                        seg.attrs[next_down_field_name] = vmap[
+                        seg.attrs[next_down_fieldname] = vmap[
                             start_seg.id
-                        ].attrs[segment_id_field_name]
+                        ].attrs[segment_id_fieldname]
 
             vmap.table.conn.commit()
 
@@ -647,7 +647,7 @@ class PrepareData(PrepareDataGISBase):
                         )
         except OpenError as e:
             raise DataPreparationInvalidInput(e)
-    
+
     def _check_input_data(self):
         """See base method for description.
         """
