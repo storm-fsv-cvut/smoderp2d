@@ -91,7 +91,6 @@ class BaseWriter(object):
             na_arr.min(), na_arr.max(), na_arr.mean()
         ))
 
-    @abstractmethod
     def write_raster(self, array, output_name, data_type='core'):
         """Write raster (numpy array) to ASCII file.
 
