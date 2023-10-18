@@ -10,16 +10,16 @@ library('manipulate')
 # install package is missing with: install.packages("manipulate")
 #
 # root dir
-root  <-  "~/Documents/Smoderp/smoderp2d"
+root  <-  "d:/0_Smoderp/02_AGPro_provider/out2_AG"
+root  <-  "d:/2_granty_projekty/2_Bezici/2022_RAGO/01_reseni_projektu/00_test_Smoderp/out2"
 # output dir
-outdir <- 'tests/data/output/control_point/'
+outdir <- 'control_point'
 # choose points to be printed (*.dat file v output dir)
 # point000.dat -> id = 1
 # point001.dat -> id = 2
 # atd...
-id1_ = 3
-id2_ = 3
-
+id1_ = 1
+id2_ = 2
 #
 # End setting  
 #
@@ -66,14 +66,14 @@ pp = function(t1,t2,sel,add_,sel2,od,do,stejny,titles)
   plot(t1[,1],t1[[sel]],
        ylab = '',type = 'o',lwd=2,xlim = c(od,do),ylim=r1,cex=0.5)
   grid()
-  mtext(paste(basename(titles[1]),":",sel),side = 3,line = 0.8,adj = 0,cex = 1.5)
+  mtext(paste(titles[1],":",sel),side = 3,line = 0.8,adj = 0,cex = 1.5)
   mtext(names1_[sel],side = 2,line = 3)
   if (add_) {
     par(new=TRUE)
     plot(t2[,1],t2[[sel2]],
          axes = FALSE, ylab = '',type = 'o',col=2,lwd=2,xlim = c(od,do),ylim=r2,cex=0.5)
     axis(4,col.ticks = 2, col = 2,col.axis=2)
-    mtext(paste(basename(titles[2]),":",sel2),side = 3,line = 2,adj = 1,cex = 1.5, col=2)
+    mtext(paste(titles[2],":",sel2),side = 3,line = 2,adj = 1,cex = 1.5, col=2)
     mtext(names2_[sel2],side = 4,line = 3,col = 2)
   }
 }
@@ -130,3 +130,4 @@ for (file_ in files) {
 }
 
 plot_(id1_,id2_)
+
