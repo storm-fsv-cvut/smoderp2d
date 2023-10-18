@@ -170,7 +170,9 @@ class BaseProvider(object):
 
     def __load_hidden_config(self):
         # load hidden configuration with advanced settings
-        _path = os.path.join(os.path.dirname(__file__), '..', '..', '.config.ini')
+        _path = os.path.join(
+            os.path.dirname(__file__), '..', '..', '.config.ini'
+        )
         if not os.path.exists(_path):
             raise ConfigError("{} does not exist".format(
                 _path
@@ -180,7 +182,10 @@ class BaseProvider(object):
         config.read(_path)
 
         if not config.has_option('outputs', 'extraout'):
-            raise ConfigError('Section "outputs" or option "extraout" is not set properly in file {}'.format( _path))
+            raise ConfigError(
+                'Section "outputs" or option "extraout" is not set properly '
+                'in file {}'.format( _path)
+            )
 
         return config
 
