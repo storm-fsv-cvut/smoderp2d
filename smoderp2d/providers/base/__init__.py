@@ -167,7 +167,8 @@ class BaseProvider(object):
                 # avoid duplicated handlers (e.g. in case of ArcGIS)
                 Logger.addHandler(handler)
 
-    def __load_hidden_config(self):
+    @staticmethod
+    def __load_hidden_config():
         # load hidden configuration with advanced settings
         _path = os.path.join(
             os.path.dirname(__file__), '..', '..', '.config.ini'
@@ -565,7 +566,8 @@ class BaseProvider(object):
             np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
                        header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}q365_m3_s{sep}V_out_cum_m3{sep}Q_max_m3_s'.format(sep=';'))
 
-    def _make_mask(self, arr):
+    @staticmethod
+    def _make_mask(arr):
         """ Assure that the no data value is outside the
         computation region.
         Works only for type float.

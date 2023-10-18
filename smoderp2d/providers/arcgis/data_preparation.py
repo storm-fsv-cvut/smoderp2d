@@ -438,7 +438,8 @@ class PrepareData(PrepareDataGISBase):
                     row[5] = next_down_id
                 table.updateRow(row)
 
-    def _reverse_line_direction(self, line):
+    @staticmethod
+    def _reverse_line_direction(line):
         """Flip the order of points if a line to change its direction.
 
         If the geometry is multipart the parts are dissolved into single part
