@@ -133,6 +133,7 @@ class BaseWriter(object):
 
 
 class BaseProvider(object):
+
     def __init__(self):
         self.args = Args()
 

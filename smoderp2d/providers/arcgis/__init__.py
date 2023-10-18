@@ -14,6 +14,7 @@ try:
 except RuntimeError as e:
     raise ProviderError("ArcGIS provider: {}".format(e))
 
+
 class ArcGisWriter(BaseWriter):
     def __init__(self):
         super(ArcGisWriter, self).__init__()
@@ -73,6 +74,7 @@ class ArcGisWriter(BaseWriter):
             raster,
             file_output
         )
+
 
 class ArcGisProvider(BaseProvider):
     def __init__(self, log_handler=ArcPyLogHandler):
