@@ -387,11 +387,16 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
     @staticmethod
     def _layerColorRamp(layer):
         # get min/max values
-        stats = layer.dataProvider().bandStatistics(1, QgsRasterBandStats.All, layer.extent(), 0)
+        data_provider = layer.dataProvider()
+        stats = data_provider.bandStatistics(
+            1, QgsRasterBandStats.All, layer.extent(), 0
+        )
 
         # get colour definitions
-        renderer = QgsSingleBandPseudoColorRenderer(layer.dataProvider(), 1)
-        color_ramp = QgsGradientColorRamp(QColor(239, 239, 255), QColor(0, 0, 255))
+        renderer = QgsSingleBandPseudoColorRenderer(data_provider, 1)
+        color_ramp = QgsGradientColorRamp(
+            QColor(239, 239, 255), QColor(0, 0, 255)
+        )
         renderer.setClassificationMin(stats.minimumValue)
         renderer.setClassificationMax(stats.maximumValue)
         renderer.createShader(color_ramp)
@@ -488,7 +493,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             self._input_maps["streams_channel_type_fieldname"] = self.table_stream_shape_code_comboBox.currentText()
 
     def _checkInputDataPrep(self):
-        """Check if all mandatory fields are filled correctly for data preparation."""
+        """Check mandatory field.
+
+        Check if all mandatory fields are filled correctly for data preparation.
+        """
 
         # Check if none of fields are empty
         if None not in (
@@ -526,14 +534,15 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         last_used_file_path = self.settings.value(sender, '')
 
         if t == 'vector':
+            vector_filters = QgsProviderRegistry.instance().fileVectorFilters()
             file_name = QFileDialog.getOpenFileName(
                 self, self.tr(u'Open file'),
                 self.tr(u'{}').format(last_used_file_path),
-                QgsProviderRegistry.instance().fileVectorFilters()
+                vector_filters
             )[0]
             if file_name:
                 name, file_extension = os.path.splitext(file_name)
-                if file_extension not in QgsProviderRegistry.instance().fileVectorFilters():
+                if file_extension not in vector_filters:
                     self._sendMessage(
                         u'Error', u'{} is not a valid vector layer.'.format(
                             file_name
@@ -549,15 +558,16 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self.settings.setValue(sender, os.path.dirname(file_name))
 
         elif t == 'raster':
+            raster_filters = QgsProviderRegistry.instance().fileRasterFilters()
             file_name = QFileDialog.getOpenFileName(
                 self, self.tr(u'Open file'),
                 self.tr(u'{}').format(last_used_file_path),
-                QgsProviderRegistry.instance().fileRasterFilters()
+                raster_filters
             )[0]
             if file_name:
                 name, file_extension = os.path.splitext(file_name)
 
-                if file_extension not in QgsProviderRegistry.instance().fileRasterFilters():
+                if file_extension not in raster_filters:
                     self._sendMessage(
                         u'Error', u'{} is not a valid raster layer.'.format(
                             file_name

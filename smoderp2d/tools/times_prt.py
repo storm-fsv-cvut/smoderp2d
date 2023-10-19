@@ -40,9 +40,10 @@ class TimesPrt(object):
         if (time < self.times[self.__n]) and (self.times[self.__n] <= time + dt):
 
             cas = '%015.2f' % (time + dt)
-            filein = os.path.join(Globals.outdir,
-                                 self.outsubrid,
-                                 'H' + str(cas).replace('.', '_') + '.asc')
+            filein = os.path.join(
+                Globals.outdir, self.outsubrid,
+                'H' + str(cas).replace('.', '_') + '.asc'
+            )
             Logger.info("Printing total H into file {}".format(filein))
 
             tmp = sur.arr.h_total_new
