@@ -61,7 +61,7 @@ def __smeryInflow(mat_fd, i, j):
         b = j + coco[k][1]
         try:
             value = mat_fd[a][b]
-        except:
+        except IndexError:
             value = -1
         if value == coco[k][2]:
             pritok = pritok + value
