@@ -30,7 +30,9 @@ class ArcGisWriter(BaseWriter):
         arcpy.management.CreateFileGDB(os.path.join(outdir, 'temp'), "data.gdb")
 
         # create control ArcGIS File Geodatabase
-        arcpy.management.CreateFileGDB(os.path.join(outdir, 'control'), "data.gdb")
+        arcpy.management.CreateFileGDB(
+            os.path.join(outdir, 'control'), "data.gdb"
+        )
 
     def output_filepath(self, name):
         """
@@ -41,7 +43,9 @@ class ArcGisWriter(BaseWriter):
         """
         item = self._data_target.get(name)
         if item is None or item not in ("temp", "control", "core"):
-            raise ProviderError("Unable to define target in output_filepath: {}".format(name))
+            raise ProviderError(
+                "Unable to define target in output_filepath: {}".format(name)
+            )
 
         path = Globals.get_outdir()
         # 'core' datasets don't have directory, only the geodatabase

@@ -55,12 +55,13 @@ class GrassGisWriter(BaseWriter):
             raster_name, overwrite=True
         )
 
-        Module('r.out.gdal',
-               input=raster_name,
-               output=file_output,
-               format='AAIGrid',
-               nodata=GridGlobals.NoDataValue,
-               overwrite=True
+        Module(
+            'r.out.gdal',
+            input=raster_name,
+            output=file_output,
+            format='AAIGrid',
+            nodata=GridGlobals.NoDataValue,
+            overwrite=True
         )
 
 
@@ -78,7 +79,7 @@ class GrassGisProvider(BaseProvider):
         # logger
         self.add_logging_handler(
             handler=log_handler(),
-            formatter = logging.Formatter("%(message)s")
+            formatter=logging.Formatter("%(message)s")
         )
 
         # check version
