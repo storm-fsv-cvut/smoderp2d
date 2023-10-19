@@ -102,7 +102,7 @@ class Runner(object):
             return 1
 
         if self._provider.args.workflow_mode == WorkflowMode.dpre:
-            # data prepararation only requested
+            # data preparation only requested
             return
 
         # must be called after initialization (!)
