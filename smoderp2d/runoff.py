@@ -246,6 +246,7 @@ class Runoff(object):
         # saves time before the main loop
         Logger.info('Start of computing...')
         Logger.start_time = time.time()
+        end_time = Globals.end_time
 
         # main loop: until the end time
         timeperc_last = ma.masked_array(
@@ -256,7 +257,7 @@ class Runoff(object):
             self.delta_t, mask=GridGlobals.masks
         )
 
-        while ma.any(self.flow_control.compare_time(Globals.end_time)):
+        while ma.any(self.flow_control.compare_time(end_time)):
 
             self.flow_control.save_vars()
             self.flow_control.refresh_iter()
@@ -343,13 +344,13 @@ class Runoff(object):
 
             # adjusts the last time step size
             if ma.all(ma.logical_and(
-                    Globals.end_time - self.flow_control.total_time < self.delta_t,
-                    Globals.end_time - self.flow_control.total_time > 0
+                    end_time - self.flow_control.total_time < self.delta_t,
+                    end_time - self.flow_control.total_time > 0
             )):
-                self.delta_t = Globals.end_time - self.flow_control.total_time
+                self.delta_t = end_time - self.flow_control.total_time
 
             # if end time reached the main loop breaks
-            if ma.all(self.flow_control.total_time == Globals.end_time):
+            if ma.all(self.flow_control.total_time == end_time):
                 break
 
             # calculate outflow from each reach of the stream network
@@ -419,7 +420,7 @@ class Runoff(object):
 
             self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
 
-            timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
+            timeperc = 100 * (self.flow_control.total_time + self.delta_t) / end_time
             if ma.any(timeperc > 99.9) or ma.any(timeperc - timeperc_last > 5):
                 # print progress with 5% step
                 Logger.progress(

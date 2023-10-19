@@ -2,6 +2,7 @@ import numpy as np
 
 from smoderp2d.exceptions import SmoderpError
 
+
 class GridGlobalsArray(np.ndarray):
     """Class overriding np.ndarray to handle SMODERP border problems."""
 
@@ -154,6 +155,7 @@ class GridGlobals(object):
         # masks
         cls.masks = None
 
+
 class DataGlobals:
     # raster contains leaf area data
     mat_ppl = None
@@ -161,6 +163,7 @@ class DataGlobals:
     @classmethod
     def get_mat_ppl(cls):
         return cls.mat_ppl
+
 
 class Globals:
     """Globals contains global variables from data_preparation, in
@@ -272,7 +275,6 @@ class Globals:
     @classmethod
     def get_mat_pi(cls):
         return cls.mat_pi
-
 
     @classmethod
     def get_surface_retention(cls):
