@@ -261,7 +261,7 @@ class PrepareData(PrepareDataGISBase):
 
         return array
 
-    def _update_grid_globals(self, reference):
+    def _update_grid_globals(self, reference, reference_cellsize):
         """See base method for description.
         """
         # lower left corner coordinates
