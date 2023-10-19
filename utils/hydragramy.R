@@ -66,14 +66,14 @@ pp = function(t1,t2,sel,add_,sel2,od,do,stejny,titles)
   plot(t1[,1],t1[[sel]],
        ylab = '',type = 'o',lwd=2,xlim = c(od,do),ylim=r1,cex=0.5)
   grid()
-  mtext(paste(titles[1],":",sel),side = 3,line = 0.8,adj = 0,cex = 1.5)
+  mtext(paste(basename(titles[1]),":",sel),side = 3,line = 0.8,adj = 0,cex = 1.5)
   mtext(names1_[sel],side = 2,line = 3)
   if (add_) {
     par(new=TRUE)
     plot(t2[,1],t2[[sel2]],
          axes = FALSE, ylab = '',type = 'o',col=2,lwd=2,xlim = c(od,do),ylim=r2,cex=0.5)
     axis(4,col.ticks = 2, col = 2,col.axis=2)
-    mtext(paste(titles[2],":",sel2),side = 3,line = 2,adj = 1,cex = 1.5, col=2)
+    mtext(paste(basename(titles[2]),":",sel2),side = 3,line = 2,adj = 1,cex = 1.5, col=2)
     mtext(names2_[sel2],side = 4,line = 3,col = 2)
   }
 }
@@ -92,11 +92,11 @@ plot_ = function(id1,id2,title='')
   n2 = length(t2[1,])
   manipulate(pp(t1,t2,sel,add_,sel2,od,do,stejny,titles),
              # sel = slider(initial = 5,1,n1,label = 'spoupec v levem grafu'),
-             sel = picker(as.list(names1_), initial = 'surfaceFlow.m3.s.'),#initial = 'Surface_Flow.m3.s.'),
+             sel = picker(as.list(names1_)), #initial = 'Surface_Flow.m3.s.'),
              add_= checkbox(TRUE,'pridat druhy graf'),
              stejny= checkbox(FALSE,'stejny meritka'),
              # sel2 = slider(initial = n2, 1,n2,label = 'spoupec v pravem grafu'),
-             sel2 = picker(as.list(names2_), initial = 'state'),#initial = 'ratio'),
+             sel2 = picker(as.list(names2_)),#initial = 'ratio'),
              od = slider(initial = 0     ,0,maxCas,label = 'cas od'),
              do = slider(initial = maxCas,0,maxCas,label = 'cas do')
              )
