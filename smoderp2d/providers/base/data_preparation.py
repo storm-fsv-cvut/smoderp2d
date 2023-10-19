@@ -122,7 +122,8 @@ class PrepareDataBase(ABC):
                     try:
                         if combinat.index(ccc):
                             mat_inf_index[i][j] = combinat.index(ccc)
-                    except IndexError:
+                    except ValueError:
+                        # ccc not in combinat
                         combinat.append(ccc)
                         combinatIndex.append(
                             [combinat.index(ccc), kkk, sss, 0]
