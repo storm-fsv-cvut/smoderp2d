@@ -547,7 +547,7 @@ def dirSlope(point_m, nbrs, dy, dx):
     return direction, slope
 
 
-def boolToInt(x):  # function creates bit value from vector of ones and zeros
+def boolToInt(x):  # function creates a bit value from vector of ones and zeros
     """Return int value."""
     y = 0
     for i, j in enumerate(x):

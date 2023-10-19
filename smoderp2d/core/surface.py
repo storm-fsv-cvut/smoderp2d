@@ -198,8 +198,7 @@ class Surface(GridGlobals, Stream, Kinematic):
                     arr.vol_runoff_rill[i, j],
                     arr.vel_rill[i, j],
                     arr.v_rill_rest[i, j],
-                    vol_runoff / dt[i, j] + \
-                        arr.vol_runoff_rill[i, j] / dt[i, j],
+                    vol_runoff / dt[i, j] + arr.vol_runoff_rill[i, j] / dt[i, j],
                     vol_runoff + arr.vol_runoff_rill[i, j],
                     sep=sep
                 )
@@ -256,8 +255,8 @@ def __runoff(sur, dt, efect_vrst, ratio):
     sur.rillWidth = ma.where(sur.state > 0, rill_runoff_results[6],
                              sur.rillWidth)
 
-    return v_sheet, v_rill, ratio, rill_courant, h_sheet, h_rill, h_rillPre,\
-           vol_runoff, vol_rest, v_rill_rest, vol_runoff_rill, v_rill
+    return (v_sheet, v_rill, ratio, rill_courant, h_sheet, h_rill, h_rillPre,
+            vol_runoff, vol_rest, v_rill_rest, vol_runoff_rill, v_rill)
 
 
 def __runoff_zero_comp_type(sur, dt, efect_vrst, ratio):

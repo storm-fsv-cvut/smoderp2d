@@ -25,13 +25,16 @@
 import os
 import sys
 import tempfile
+import glob
 
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication, Qt
-
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QFileDialog, QProgressBar, QMenu
+
 from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, \
-    QgsVectorLayer, QgsRasterLayer, QgsTask, QgsApplication, Qgis, QgsProject
+    QgsVectorLayer, QgsRasterLayer, QgsTask, QgsApplication, Qgis, QgsProject, \
+    QgsRasterBandStats, QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp
 from qgis.utils import iface
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox, QgsMessageBarItem
 
@@ -75,7 +78,6 @@ class SmoderpTask(QgsTask):
         except ProviderError as e:
             self.error = e
             return False
-        runner.show_results()
 
         # resets
         Globals.reset()
@@ -371,13 +373,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             smoderp_task.progressChanged.connect(
                 lambda a: self.progress_bar.setValue(int(a))
             )
-            smoderp_task.taskCompleted.connect(
-                messageBar.clearWidgets
-            )
+            smoderp_task.taskCompleted.connect(self.computationFinished)
 
             # start the task
-            print('********* tasks **************')
-            print(self.task_manager.tasks())
             self.task_manager.addTask(smoderp_task)
         else:
             self._sendMessage(
@@ -385,6 +383,54 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 "Some of mandatory fields are not filled correctly.",
                 "CRITICAL"
             )
+
+    @staticmethod
+    def _layerColorRamp(layer):
+        # get min/max values
+        data_provider = layer.dataProvider()
+        stats = data_provider.bandStatistics(
+            1, QgsRasterBandStats.All, layer.extent(), 0
+        )
+
+        # get colour definitions
+        renderer = QgsSingleBandPseudoColorRenderer(data_provider, 1)
+        color_ramp = QgsGradientColorRamp(
+            QColor(239, 239, 255), QColor(0, 0, 255)
+        )
+        renderer.setClassificationMin(stats.minimumValue)
+        renderer.setClassificationMax(stats.maximumValue)
+        renderer.createShader(color_ramp)
+
+        return renderer
+
+    def computationFinished(self):
+        # clear message bar
+        self.iface.messageBar().clearWidgets
+
+        # show results
+        root = QgsProject.instance().layerTreeRoot()
+        group = root.insertGroup(0, "SMODERP2D")
+
+        outdir = self.main_output_lineEdit.text().strip()
+        first = True
+        for map_path in glob.glob(os.path.join(outdir, '*.asc')):
+            layer = QgsRasterLayer(
+                map_path, os.path.basename(os.path.splitext(map_path)[0])
+            )
+
+            # set symbology
+            layer.setRenderer(self._layerColorRamp(layer))
+
+            # add layer into group
+            QgsProject.instance().addMapLayer(layer, False)
+            node = group.addLayer(layer)
+            node.setExpanded(False)
+            node.setItemVisibilityChecked(first is True)
+            first = False
+
+        # QGIS bug: group must be collapsed and then expanded
+        group.setExpanded(False)
+        group.setExpanded(True)
 
     def _getInputParams(self):
         """Get input parameters from QGIS plugin."""
@@ -447,7 +493,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             self._input_maps["streams_channel_type_fieldname"] = self.table_stream_shape_code_comboBox.currentText()
 
     def _checkInputDataPrep(self):
-        """Check if all mandatory fields are filled correctly for data preparation."""
+        """Check mandatory field.
+
+        Check if all mandatory fields are filled correctly for data preparation.
+        """
 
         # Check if none of fields are empty
         if None not in (
@@ -485,14 +534,15 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         last_used_file_path = self.settings.value(sender, '')
 
         if t == 'vector':
+            vector_filters = QgsProviderRegistry.instance().fileVectorFilters()
             file_name = QFileDialog.getOpenFileName(
                 self, self.tr(u'Open file'),
                 self.tr(u'{}').format(last_used_file_path),
-                QgsProviderRegistry.instance().fileVectorFilters()
+                vector_filters
             )[0]
             if file_name:
                 name, file_extension = os.path.splitext(file_name)
-                if file_extension not in QgsProviderRegistry.instance().fileVectorFilters():
+                if file_extension not in vector_filters:
                     self._sendMessage(
                         u'Error', u'{} is not a valid vector layer.'.format(
                             file_name
@@ -508,15 +558,16 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self.settings.setValue(sender, os.path.dirname(file_name))
 
         elif t == 'raster':
+            raster_filters = QgsProviderRegistry.instance().fileRasterFilters()
             file_name = QFileDialog.getOpenFileName(
                 self, self.tr(u'Open file'),
                 self.tr(u'{}').format(last_used_file_path),
-                QgsProviderRegistry.instance().fileRasterFilters()
+                raster_filters
             )[0]
             if file_name:
                 name, file_extension = os.path.splitext(file_name)
 
-                if file_extension not in QgsProviderRegistry.instance().fileRasterFilters():
+                if file_extension not in raster_filters:
                     self._sendMessage(
                         u'Error', u'{} is not a valid raster layer.'.format(
                             file_name
@@ -657,6 +708,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             self.table_stream_shape_code_comboBox.setCurrentText('channel_id')
             with tempfile.NamedTemporaryFile() as temp_dir:
                 self.main_output_lineEdit.setText(temp_dir.name)
+            self.end_time_lineEdit.setValue(5)
         except IndexError:
             self._sendMessage(
                 'Error',
