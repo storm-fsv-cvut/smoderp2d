@@ -404,9 +404,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         return renderer
 
     def computationFinished(self):
-        # clear message bar
-        self.iface.messageBar().clearWidgets
-
         # show results
         root = QgsProject.instance().layerTreeRoot()
         group = root.insertGroup(0, "SMODERP2D")
