@@ -148,32 +148,17 @@ def removeCellsWithSameHeightNeighborhood(mat_dem, mat_nan, rows, cols):
                 for k in range(8):
                     if point_m > 0 and point_m == nbrs[k]:
                         count_nbrs += 1
+
+                # compare number of neighbours with the same height
                 if count_nbrs >= 7:
-                    # compare number of neighbours with the same height
-                    bad_cells.append(c)
-                    bc = 1
+                    # set problematic cells to NoData
+                    mat_dem[i][j] = np.nan
+                    mat_nan[i][j] = np.nan
 
     Logger.info(
         "Possible water circulation! Check the input DTM raster for flat "
         "areas with the same height neighborhood."
     )
-
-    # all problem cells set as NoData
-    if len(bad_cells) > 0:
-        for i in range(rows):
-            for j in range(cols):
-                if bc == 1:
-                    bc_i = bad_cells[0][0]
-                    bc_j = bad_cells[0][1]
-
-                    if bc_i == i and bc_j == j:
-                        mat_dem[i][j] = np.nan
-                        mat_nan[i][j] = np.nan
-                        bad_cells.pop(0)
-                        if len(bad_cells) == 0:
-                            bc = 0
-                else:
-                    break
 
     return mat_dem, mat_nan
 
