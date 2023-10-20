@@ -79,7 +79,7 @@ class GridGlobals(object):
 
     @classmethod
     def get_dim(cls):
-        return (cls.r, cls.c)
+        return cls.r, cls.c
 
     @classmethod
     def get_pixel_area(cls):
@@ -91,15 +91,15 @@ class GridGlobals(object):
 
     @classmethod
     def get_region_dim(cls):
-        return (cls.rr, cls.rc)
+        return cls.rr, cls.rc
 
     @classmethod
     def get_border_dim(cls):
-        return (cls.br, cls.bc)
+        return cls.br, cls.bc
 
     @classmethod
     def get_llcorner(cls):
-        return (cls.xllcorner, cls.yllcorner)
+        return cls.xllcorner, cls.yllcorner
 
     @classmethod
     def set_llcorner(cls, xy):
@@ -108,7 +108,7 @@ class GridGlobals(object):
 
     @classmethod
     def get_size(cls):
-        return (cls.dx, cls.dy)
+        return cls.dx, cls.dy
 
     @classmethod
     def set_size(cls, dxdy):

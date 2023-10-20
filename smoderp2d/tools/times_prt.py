@@ -38,7 +38,6 @@ class TimesPrt(object):
             return
 
         if (time < self.times[self.__n]) and (self.times[self.__n] <= time + dt):
-
             cas = '%015.2f' % (time + dt)
             filein = os.path.join(
                 Globals.outdir, self.outsubrid,
