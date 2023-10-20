@@ -152,12 +152,13 @@ class Surface(GridGlobals, Stream, Kinematic):
         sw = Globals.slope_width
 
         vol_runoff = arr.vol_runoff[i, j]
+        vol_runoff_rill = arr.vol_runoff_rill[i, j]
 
         # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
         if not extra_out:
             line = '{0:.4e}{sep}{1:.4e}'.format(
                 arr.h_total_new[i, j],
-                (vol_runoff / dt[i, j] + arr.vol_runoff_rill[i, j] / dt[i, j]) *
+                (vol_runoff / dt[i, j] + vol_runoff_rill / dt[i, j]) *
                 sw,
                 sep=sep
             )
@@ -194,19 +195,19 @@ class Surface(GridGlobals, Stream, Kinematic):
                         '{7:.4e}'.format(
                     arr.h_rill[i, j],
                     arr.rillWidth[i, j],
-                    arr.vol_runoff_rill[i, j] / dt[i, j],
-                    arr.vol_runoff_rill[i, j],
+                    vol_runoff_rill / dt[i, j],
+                    vol_runoff_rill,
                     arr.vel_rill[i, j],
                     arr.v_rill_rest[i, j],
-                    vol_runoff / dt[i, j] + arr.vol_runoff_rill[i, j] / dt[i, j],
-                    vol_runoff + arr.vol_runoff_rill[i, j],
+                    vol_runoff / dt[i, j] + vol_runoff_rill / dt[i, j],
+                    vol_runoff + vol_runoff_rill,
                     sep=sep
                 )
 
             bil_ = arr.h_total_pre[i, j] * self.pixel_area + \
                    arr.cur_rain[i, j] * self.pixel_area + \
                    arr.inflow_tm[i, j] - \
-                   (vol_runoff + arr.vol_runoff_rill[i, j] +
+                   (vol_runoff + vol_runoff_rill +
                     arr.infiltration[i, j] * self.pixel_area) - \
                     (arr.cur_sur_ret[i, j] * self.pixel_area) - \
                     arr.h_total_new[i, j] * self.pixel_area
