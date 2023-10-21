@@ -359,10 +359,7 @@ class BaseProvider(object):
 
     @staticmethod
     def _cleanup():
-        """Clean-up output directory.
-
-        :param output_dir: output directory to clean up
-        """
+        """Clean-up output directory."""
         output_dir = Globals.outdir
         if not output_dir:
             # no output directory defined
@@ -384,7 +381,7 @@ class BaseProvider(object):
         Return true/values for rill, subflow, stream,
         presence/non-presence.
 
-        :param CompType tc: type of computation
+        :param CompType itc: type of computation
 
         :return dict:
 
@@ -597,7 +594,7 @@ class BaseProvider(object):
         computation region.
         Works only for type float.
 
-        :param arrr: numpy array
+        :param arr: numpy array
         """
 
         rrows = GridGlobals.rr
