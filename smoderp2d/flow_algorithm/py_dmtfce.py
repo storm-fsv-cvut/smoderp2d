@@ -124,12 +124,9 @@ def removeCellsWithSameHeightNeighborhood(mat_dem, mat_nan, rows, cols):
     A function determines if cell neighborhood has exactly same values of
     height, and then it save that cell as NoData.
     """
-    bad_cells = []
-
     # finding problem cells with same height neogborhood
     for i in range(rows):
         for j in range(cols):
-            c = [i, j]
             count_nbrs = 0
             point_m = mat_dem[i][j]
 
