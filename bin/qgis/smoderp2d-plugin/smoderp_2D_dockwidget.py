@@ -27,16 +27,16 @@ import sys
 import tempfile
 import glob
 
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication, Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QFileDialog, QProgressBar, QMenu
 
 from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, \
-    QgsVectorLayer, QgsRasterLayer, QgsTask, QgsApplication, Qgis, QgsProject, \
+    QgsRasterLayer, QgsTask, QgsApplication, Qgis, QgsProject, \
     QgsRasterBandStats, QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp
 from qgis.utils import iface
-from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox, QgsMessageBarItem
+from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
 
 # ONLY FOR TESTING PURPOSES (!!!)
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))

@@ -1,7 +1,5 @@
-import sys
 import numpy as np
 import sqlite3
-import subprocess
 
 from smoderp2d.core.general import GridGlobals, Globals
 
