@@ -221,21 +221,6 @@ class Hydrographs:
                 line += os.linesep
                 self.files[ip].writelines(line)
 
-    @staticmethod
-    def _output_path(output, directory='core'):
-        dir_name = os.path.join(
-            Globals.outdir,
-            directory
-            )
-
-        if not os.path.exists(dir_name):
-            os.makedirs(dir_name)
-
-        return os.path.join(
-            dir_name,
-            output
-        )
-
     def __del__(self):
         for fd in self.files:
             Logger.debug('Hydrographs file "{}" closed'.format(fd.name))
@@ -245,8 +230,4 @@ class Hydrographs:
 class HydrographsPass:
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface,
                                  currRain, inStream=False, sep=SEP):
-        pass
-
-    @staticmethod
-    def _output_path(output, directory='core'):
         pass
