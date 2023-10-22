@@ -327,7 +327,7 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _clip_raster_layer(self, dataset, outline, name):
+    def _clip_raster_layer(self, dataset, aoi_mask, name):
         """Clips raster dataset to given polygon.
 
         :param dataset: raster dataset to be clipped
@@ -338,7 +338,7 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _clip_record_points(self, dataset, outline, name):
+    def _clip_record_points(self, dataset, aoi_polygon, name):
         """Makes a copy of record points inside the AOI as new
         feature layer and logs those outside AOI.
 
