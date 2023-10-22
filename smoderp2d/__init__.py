@@ -223,9 +223,6 @@ class QGISRunner(GrassGisRunner):
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
 
-    def export_data(self):
-        pass
-
     def __del__(self):
         pass
 
