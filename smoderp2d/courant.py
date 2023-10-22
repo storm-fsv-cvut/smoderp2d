@@ -30,7 +30,6 @@ class Courant:
         self.i = -1
         self.j = -1
         self.co = 'sheet'
-        self.co_pre = 'sheet'
         self.maxratio = 10
         self.max_delta_t = ma.masked_array(
             np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt,
