@@ -383,7 +383,7 @@ class PrepareDataGISBase(PrepareDataBase):
 
     @abstractmethod
     def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
-                         aoi_outline, table_soil_vegetation):
+                         aoi_polygon, table_soil_vegetation):
         """Prepare the combination of soils and vegetation input layers.
 
         Gets the spatial intersection of both and checks the
