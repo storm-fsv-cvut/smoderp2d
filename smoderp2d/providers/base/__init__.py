@@ -138,7 +138,6 @@ class BaseProvider(object):
     def __init__(self):
         self.args = Args()
 
-        self._print_fn = print
         self._print_logo_fn = print
 
         # default logging level (can be modified by provider)
