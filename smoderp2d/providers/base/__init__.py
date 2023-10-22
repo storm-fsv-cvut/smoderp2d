@@ -260,6 +260,7 @@ class BaseProvider(object):
         if self._config.get('time', 'endtime'):
             data['end_time'] = self._config.getfloat('time', 'endtime')
 
+        # type of computing
         data['type_of_computing'] = CompType()[
             self._config.get('processes', 'typecomp', fallback='stream_rill')
         ]
@@ -331,7 +332,7 @@ class BaseProvider(object):
         Globals.isRill = comp_type['rill']
         Globals.isStream = comp_type['stream_rill']
 
-        # hidden config
+        # load hidden config
         hidden_config = self._load_data_from_hidden_config(self._hidden_config)
         if 'prtTimes' in data:
             Globals.prtTimes = data['prtTimes']
