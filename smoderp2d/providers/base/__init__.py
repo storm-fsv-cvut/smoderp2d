@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import os
 import sys
-import glob
 import shutil
 import math
 import pickle
@@ -14,7 +13,8 @@ from abc import abstractmethod
 
 from smoderp2d.core import CompType
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
-from smoderp2d.exceptions import ProviderError, ConfigError, GlobalsNotSet, SmoderpError
+from smoderp2d.exceptions import ProviderError, ConfigError, GlobalsNotSet, \
+    SmoderpError
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError
 
@@ -33,9 +33,9 @@ class Args:
 class WorkflowMode:
 
     # type of computation
-    dpre = 0 # data preparation only
-    roff = 1 # runoff calculation only
-    full = 2 # dpre + roff
+    dpre = 0  # data preparation only
+    roff = 1  # runoff calculation only
+    full = 2  # dpre + roff
 
     @classmethod
     def __getitem__(cls, key):
@@ -68,7 +68,7 @@ class BaseWriter(object):
         dir_name = os.path.join(Globals.outdir, directory) if directory != 'core' else Globals.outdir
 
         if not os.path.exists(dir_name):
-           os.makedirs(dir_name)
+            os.makedirs(dir_name)
 
         return os.path.join(
             dir_name,
@@ -87,11 +87,12 @@ class BaseWriter(object):
             na_arr = arr[arr != GridGlobals.NoDataValue]
         else:
             na_arr = arr
-        Logger.info("\tArray stats: min={0:.3f} max={1:.3f} mean={2:.3f}".format(
-            na_arr.min(), na_arr.max(), na_arr.mean()
-        ))
+        Logger.info(
+            "\tArray stats: min={0:.3f} max={1:.3f} mean={2:.3f}".format(
+                na_arr.min(), na_arr.max(), na_arr.mean()
+            )
+        )
 
-    @abstractmethod
     def write_raster(self, array, output_name, data_type='core'):
         """Write raster (numpy array) to ASCII file.
 
@@ -133,10 +134,10 @@ class BaseWriter(object):
 
 
 class BaseProvider(object):
+
     def __init__(self):
         self.args = Args()
 
-        self._print_fn = print
         self._print_logo_fn = print
 
         # default logging level (can be modified by provider)
@@ -159,7 +160,8 @@ class BaseProvider(object):
         """
         if not formatter:
             formatter = logging.Formatter(
-                "%(asctime)s - %(name)s - %(levelname)s - %(message)s - [%(module)s:%(lineno)s]"
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s "
+                "- [%(module)s:%(lineno)s]"
             )
         handler.setFormatter(formatter)
         if sys.version_info.major >= 3:
@@ -167,9 +169,12 @@ class BaseProvider(object):
                 # avoid duplicated handlers (e.g. in case of ArcGIS)
                 Logger.addHandler(handler)
 
-    def __load_hidden_config(self):
+    @staticmethod
+    def __load_hidden_config():
         # load hidden configuration with advanced settings
-        _path = os.path.join(os.path.dirname(__file__), '..', '..', '.config.ini')
+        _path = os.path.join(
+            os.path.dirname(__file__), '..', '..', '.config.ini'
+        )
         if not os.path.exists(_path):
             raise ConfigError("{} does not exist".format(
                 _path
@@ -269,8 +274,6 @@ class BaseProvider(object):
                 raise ProviderError('Invalid rainfall file')
 
 
-        data['maxdt'] = self._config.getfloat('time', 'maxdt')
-
         # ensure that dx and dy are defined
         data['dx'] = data['dy'] = math.sqrt(data['pixel_area'])
 
@@ -295,7 +298,8 @@ class BaseProvider(object):
                 # data preparation requested only
                 # add also related information from GridGlobals
                 for k in ('NoDataValue', 'bc', 'br', 'c', 'dx', 'dy',
-                          'pixel_area', 'r', 'rc', 'rr', 'xllcorner', 'yllcorner'):
+                          'pixel_area', 'r', 'rc', 'rr', 'xllcorner',
+                          'yllcorner'):
                     data[k] = getattr(GridGlobals, k)
                 self._save_data(data, self.args.data_file)
                 return
@@ -322,7 +326,7 @@ class BaseProvider(object):
 
         Globals.mat_reten = -1.0 * data['mat_reten'] / 1000  # converts mm to m
         comp_type = self._comp_type(data['type_of_computing'])
-        Globals.diffuse = False # not implemented yet
+        Globals.diffuse = False  # not implemented yet
         Globals.subflow = comp_type['subflow_rill']
         Globals.isRill = comp_type['rill']
         Globals.isStream = comp_type['stream_rill']
@@ -349,7 +353,9 @@ class BaseProvider(object):
             Globals.slope_width = 1
 
         # set masks of the area of interest
-        GridGlobals.masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
+        GridGlobals.masks = [
+            [True] * GridGlobals.c for _ in range(GridGlobals.r)
+        ]
         rr, rc = GridGlobals.get_region_dim()
         for r in rr:
             for c in rc[r]:
@@ -357,10 +363,7 @@ class BaseProvider(object):
 
     @staticmethod
     def _cleanup():
-        """Clean-up output directory.
-
-        :param output_dir: output directory to clean up
-        """
+        """Clean-up output directory."""
         output_dir = Globals.outdir
         if not output_dir:
             # no output directory defined
@@ -382,7 +385,7 @@ class BaseProvider(object):
         Return true/values for rill, subflow, stream,
         presence/non-presence.
 
-        :param CompType tc: type of computation
+        :param CompType itc: type of computation
 
         :return dict:
 
@@ -418,7 +421,7 @@ class BaseProvider(object):
         logo_file = os.path.join(os.path.dirname(__file__), 'txtlogo.txt')
         with open(logo_file, 'r') as fd:
             self._print_logo_fn(fd.read())
-        self._print_logo_fn('') # extra line
+        self._print_logo_fn('')  # extra line
 
     @staticmethod
     def _save_data(data, filename):
@@ -536,20 +539,26 @@ class BaseProvider(object):
 
         for i in rrows:
             for j in rcols[i]:
-                if  int(surface_array.state.data[i, j]) >= \
-                        Globals.streams_flow_inc :
+                if int(surface_array.state.data[i, j]) >= \
+                        Globals.streams_flow_inc:
                     totalBil[i][j] = GridGlobals.NoDataValue
 
-        self.storage.write_raster(self._make_mask(totalBil), 'massbalance', 'control')
-        self.storage.write_raster(self._make_mask(vRest), 'volrest_m3', 'control')
-        self.storage.write_raster(self._make_mask(finState), 'surfacestate', 'control')
+        self.storage.write_raster(
+            self._make_mask(totalBil), 'massbalance', 'control'
+        )
+        self.storage.write_raster(
+            self._make_mask(vRest), 'volrest_m3', 'control'
+        )
+        self.storage.write_raster(
+            self._make_mask(finState), 'surfacestate', 'control'
+        )
 
         # store stream reaches results to a table
         # if stream is calculated
         if stream:
             n = len(stream)
             m = 7
-            outputtable = np.zeros([n,m])
+            outputtable = np.zeros([n, m])
             fid = list(stream.keys())
             for i in range(n):
                 outputtable[i][0] = stream[fid[i]].segment_id
@@ -578,15 +587,18 @@ class BaseProvider(object):
             if not os.path.isdir(temp_dir):
                 os.makedirs(temp_dir)
             path_ = os.path.join(temp_dir, 'stream.csv')
-            np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
-                       header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}q365_m3_s{sep}V_out_cum_m3{sep}Q_max_m3_s'.format(sep=';'))
+            np.savetxt(path_, outputtable, delimiter=';', fmt='%.3e',
+                       header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}'
+                              'q365_m3_s{sep}V_out_cum_m3{sep}'
+                              'Q_max_m3_s'.format(sep=';'))
 
-    def _make_mask(self, arr):
+    @staticmethod
+    def _make_mask(arr):
         """ Assure that the no data value is outside the
         computation region.
         Works only for type float.
 
-        :param arrr: numpy array
+        :param arr: numpy array
         """
 
         rrows = GridGlobals.rr

@@ -54,8 +54,9 @@ class Hydrographs:
             for ip in range(ipi):
                 l = point_int[ip][1]
                 m = point_int[ip][2]
+                mat_stream_reach = Globals.get_mat_stream_reach(l, m)
 
-                if Globals.get_mat_stream_reach(l, m) >= Globals.streams_flow_inc:
+                if mat_stream_reach >= Globals.streams_flow_inc:
                     self.inStream.append(counter)
                 else:
                     self.inSurface.append(counter)

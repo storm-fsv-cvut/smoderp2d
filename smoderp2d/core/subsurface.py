@@ -79,7 +79,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
         :param vg_n: TODO
         :param vg_l: TODO
         """
-        GridGlobals.__init__()
+        GridGlobals.__init__(self)
 
         self.arr = SubArrs(
             L_sub,

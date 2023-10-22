@@ -272,7 +272,9 @@ class PrepareData(PrepareDataGISBase):
 
         # generate numpy array of soil and vegetation attributes
         for field in self.soilveg_fields.keys():
-            output = self.storage.output_filepath("soilveg_aoi_{}".format(field))
+            output = self.storage.output_filepath(
+                "soilveg_aoi_{}".format(field)
+            )
             aoi_mask = self.storage.output_filepath('aoi_mask')
             with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=aoi_mask, cellAlignment=aoi_mask, snapRaster=aoi_mask):
                 arcpy.conversion.PolygonToRaster(soilveg_aoi_path, field, output, "MAXIMUM_AREA", "", GridGlobals.dy)
@@ -408,12 +410,13 @@ class PrepareData(PrepareDataGISBase):
                                             end_elev_fieldname, inclination_fieldname, next_down_id_fieldname,
                                             segment_length_fieldname, length_fieldname]) as table:
             for row in table:
-                segment_inclination = segment_props.get(row[0]).get('inclination')
+                segment_props_row0 = segment_props.get(row[0])
+                segment_inclination = segment_props_row0.get('inclination')
                 row[1] = row[1] if segment_inclination < 0 else self._reverse_line_direction(row[1])
-                row[2] = segment_props.get(row[0]).get('start_point').Z
-                row[3] = segment_props.get(row[0]).get('end_point').Z
+                row[2] = segment_props_row0.get('start_point').Z
+                row[3] = segment_props_row0.get('end_point').Z
                 row[4] = abs(segment_inclination)
-                row[6] = segment_props.get(row[0]).get("length")
+                row[6] = segment_props_row0.get("length")
 
                 # find the next down segment by comparing the points distance
                 next_down_id = Globals.streamsNextDownIdNoSegment
@@ -438,7 +441,8 @@ class PrepareData(PrepareDataGISBase):
                     row[5] = next_down_id
                 table.updateRow(row)
 
-    def _reverse_line_direction(self, line):
+    @staticmethod
+    def _reverse_line_direction(line):
         """Flip the order of points if a line to change its direction.
 
         If the geometry is multipart the parts are dissolved into single part
@@ -497,7 +501,9 @@ class PrepareData(PrepareDataGISBase):
                         if row[i] in (" ", None):
                             raise DataPreparationError(
                                 "Empty value in {} ({}) found.".format(
-                                    self._input_params["channel_properties_table"],
+                                    self._input_params[
+                                        "channel_properties_table"
+                                    ],
                                     fields[i])
                             )
                         stream_attr[fields[i]].append(row[i])

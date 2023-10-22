@@ -122,7 +122,8 @@ class PrepareDataBase(ABC):
                     try:
                         if combinat.index(ccc):
                             mat_inf_index[i][j] = combinat.index(ccc)
-                    except:
+                    except ValueError:
+                        # ccc not in combinat
                         combinat.append(ccc)
                         combinatIndex.append(
                             [combinat.index(ccc), kkk, sss, 0]
@@ -233,7 +234,9 @@ class PrepareDataGISBase(PrepareDataBase):
             'stream_segment_inclination': 'inclination',
             'stream_segment_next_down_id': 'next_down_id',
             'stream_segment_length': 'segment_length',
-            'channel_shape_id':  self._input_params['streams_channel_type_fieldname'],
+            'channel_shape_id':  self._input_params[
+                'streams_channel_type_fieldname'
+            ],
             'channel_profile': 'profile',
             'channel_shapetype': 'shapetype',
             'channel_bottom_width': 'b',
@@ -324,7 +327,7 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _clip_raster_layer(self, dataset, outline, name):
+    def _clip_raster_layer(self, dataset, aoi_mask, name):
         """Clips raster dataset to given polygon.
 
         :param dataset: raster dataset to be clipped
@@ -335,7 +338,7 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _clip_record_points(self, dataset, outline, name):
+    def _clip_record_points(self, dataset, aoi_polygon, name):
         """Makes a copy of record points inside the AOI as new
         feature layer and logs those outside AOI.
 
@@ -380,7 +383,7 @@ class PrepareDataGISBase(PrepareDataBase):
 
     @abstractmethod
     def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
-                         aoi_outline, table_soil_vegetation):
+                         aoi_polygon, table_soil_vegetation):
         """Prepare the combination of soils and vegetation input layers.
 
         Gets the spatial intersection of both and checks the
@@ -614,7 +617,9 @@ class PrepareDataGISBase(PrepareDataBase):
                 self._input_params['streams'],
                 self._input_params['channel_properties_table'],
                 self._input_params['streams_channel_type_fieldname'],
-                dem_filled, # provide not clipped DEM to avoid stream vertices placed outside DEM
+                dem_filled,
+                # provide unclipped DEM to avoid stream vertices placed
+                # outside DEM
                 aoi_polygon
             )
         else:
@@ -627,7 +632,9 @@ class PrepareDataGISBase(PrepareDataBase):
             GridGlobals.r, GridGlobals.c, GridGlobals.NoDataValue,
             self.data['mat_nan']
         )
-        self.storage.write_raster(self.data['mat_boundary'], 'mat_boundary', 'temp')
+        self.storage.write_raster(
+            self.data['mat_boundary'], 'mat_boundary', 'temp'
+        )
 
         GridGlobals.rr, GridGlobals.rc = self._get_rr_rc(
             GridGlobals.r, GridGlobals.c, self.data['mat_boundary']
@@ -844,7 +851,9 @@ class PrepareDataGISBase(PrepareDataBase):
                 )
 
             # check presence of needed fields in stream shape properties table
-            fields = self._get_field_names(self._input_params['channel_properties_table'])
+            fields = self._get_field_names(
+                self._input_params['channel_properties_table']
+            )
             for f in self.stream_shape_fields:
                 if f not in fields:
                     raise DataPreparationInvalidInput(
@@ -859,9 +868,14 @@ class PrepareDataGISBase(PrepareDataBase):
             for target in (self._input_params["streams"],
                            self._input_params['channel_properties_table']):
                 fields = self._get_field_names(target)
-                if self._input_params["streams_channel_type_fieldname"] not in fields:
-                    raise DataPreparationInvalidInput("Field '{}' not found in '{}'".format(
-                        self._input_params["streams_channel_type_fieldname"], target)
+                channel_type_fieldname = self._input_params[
+                    "streams_channel_type_fieldname"
+                ]
+                if channel_type_fieldname not in fields:
+                    raise DataPreparationInvalidInput(
+                        "Field '{}' not found in '{}'".format(
+                            channel_type_fieldname, target
+                        )
                     )
 
     @staticmethod

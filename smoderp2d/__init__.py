@@ -102,7 +102,7 @@ class Runner(object):
             return 1
 
         if self._provider.args.workflow_mode == WorkflowMode.dpre:
-            # data prepararation only requested
+            # data preparation only requested
             return
 
         # must be called after initialization (!)
@@ -222,9 +222,6 @@ class QGISRunner(GrassGisRunner):
                     Module("db.in.ogr", input=options[key], output=key)
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
-
-    def export_data(self):
-        pass
 
     def __del__(self):
         pass
