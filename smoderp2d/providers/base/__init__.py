@@ -276,6 +276,7 @@ class BaseProvider(object):
             except TypeError:
                 raise ProviderError('Invalid rainfall file')
 
+        data['maxdt'] = self._config.getfloat('time', 'maxdt')
 
         # ensure that dx and dy are defined
         data['dx'] = data['dy'] = math.sqrt(data['pixel_area'])
