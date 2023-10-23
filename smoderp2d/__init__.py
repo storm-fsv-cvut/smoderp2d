@@ -213,7 +213,7 @@ class QGISRunner(GrassGisRunner):
                         Module("r.import", input=options[key], output=key)
                 # import vectors
                 elif key in ["soil", "vegetation", "points", "streams"]:
-                    if options[key]: # streams are optional
+                    if options[key]: # points and streams are optional
                         Module(
                             "v.import", input=options[key], output=key
                         )
