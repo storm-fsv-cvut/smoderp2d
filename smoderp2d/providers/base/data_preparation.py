@@ -888,7 +888,10 @@ class PrepareDataGISBase(PrepareDataBase):
 
     @staticmethod
     def _check_rst2np(arr):
-        """TODO"""
+        """Check numpy array consistency with GridGlobals
+        
+        Raise DataPreparationError() if array's shape is different from GridGlobals.
+        """
         if arr.shape[0] != GridGlobals.r or arr.shape[1] != GridGlobals.c:
             raise DataPreparationError(
                 "Data inconsistency ({},{}) vs ({},{})".format(
