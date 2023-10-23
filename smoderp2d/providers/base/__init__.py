@@ -169,9 +169,11 @@ class BaseProvider(object):
                 # avoid duplicated handlers (e.g. in case of ArcGIS)
                 Logger.addHandler(handler)
 
-    @staticmethod
-    def __load_hidden_config():
-        # load hidden configuration with advanced settings
+    def __load_hidden_config(self):
+        """Load hidden configuration with advanced settings.
+
+        return ConfigParser: object
+        """
         _path = os.path.join(
             os.path.dirname(__file__), '..', '..', '.config.ini'
         )
