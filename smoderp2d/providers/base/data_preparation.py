@@ -530,9 +530,10 @@ class PrepareDataGISBase(PrepareDataBase):
         dem_aspect_aoi = self._clip_raster_layer(
             dem_aspect, aoi_mask, 'dem_aspect_aoi'
         )
-        points_aoi = self._clip_record_points(
-            self._input_params['points'], aoi_polygon, 'points_aoi'
-        )
+        if self._input_params['points']:
+            points_aoi = self._clip_record_points(
+                self._input_params['points'], aoi_polygon, 'points_aoi'
+            )
         Logger.progress(30)
 
         # convert to numpy arrays
@@ -586,8 +587,9 @@ class PrepareDataGISBase(PrepareDataBase):
                               self.data['mat_dem'])
 
         # build points array
-        Logger.info("Prepare points for hydrographs...")
-        self.data['array_points'] = self._get_points_location(points_aoi)
+        if self._input_params['points']:
+            Logger.info("Prepare points for hydrographs...")
+            self.data['array_points'] = self._get_points_location(points_aoi)
 
         # build a/aa arrays
         self.data['mat_a'], self.data['mat_aa'] = self._get_a(
