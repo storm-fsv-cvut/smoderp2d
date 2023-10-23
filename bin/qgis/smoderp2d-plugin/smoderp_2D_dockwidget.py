@@ -473,7 +473,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         # TODO: It would be nicer to use names defined in _input_params before
         # this reparsing
         for key in self._input_maps.keys():
-            self._input_params[key] = key
+            if self._input_params[key]:
+                self._input_params[key] = key
 
         # optional inputs
         if self.points_comboBox.currentLayer() is not None:

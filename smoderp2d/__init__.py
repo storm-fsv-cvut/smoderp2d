@@ -213,13 +213,15 @@ class QGISRunner(GrassGisRunner):
                         Module("r.import", input=options[key], output=key)
                 # import vectors
                 elif key in ["soil", "vegetation", "points", "streams"]:
-                    Module(
-                        "v.import", input=options[key], output=key
-                    )
+                    if options[key]: # streams are optional
+                        Module(
+                            "v.import", input=options[key], output=key
+                        )
                 # import tables
                 elif key in ["table_soil_vegetation",
                              "channel_properties_table"]:
-                    Module("db.in.ogr", input=options[key], output=key)
+                    if options[key]: # channel_properties_table is optinal
+                        Module("db.in.ogr", input=options[key], output=key)
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
 
