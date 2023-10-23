@@ -259,6 +259,8 @@ class PrepareData(PrepareDataGISBase):
         else:
             np.nan_to_num(array, copy=False, nan=GridGlobals.NoDataValue)
 
+        self._check_rst2np(array)
+
         return array
 
     def _update_grid_globals(self, reference, reference_cellsize):
@@ -266,15 +268,8 @@ class PrepareData(PrepareDataGISBase):
         """
         # lower left corner coordinates
         with RasterRow(reference) as data:
-            # check data consistency
-            # see https://github.com/storm-fsv-cvut/smoderp2d/issues/42
-            if data.info.rows != GridGlobals.r or \
-               data.info.cols != GridGlobals.c:
-                raise DataPreparationError(
-                    "Data inconsistency ({},{}) vs ({},{})".format(
-                        data.info.rows, data.info.cols,
-                        GridGlobals.r, GridGlobals.c)
-                )
+            GridGlobals.r = data.info.rows
+            GridGlobals.c = data.info.cols
             GridGlobals.set_llcorner((data.info.west, data.info.south))
             GridGlobals.set_size((data.info.ewres, data.info.nsres))
 
