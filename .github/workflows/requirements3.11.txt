@@ -1,4 +1,4 @@
 pytest
 numpy==1.23.5
 matplotlib==3.6.3
-scipy==1.10.1
+scipy==1.11.3
