@@ -171,9 +171,13 @@ class TimeStep:
         #
         # Surface BILANCE
         #
-        surBIL = surface.arr.h_total_pre + actRain + surface.arr.inflow_tm / \
-                 pixel_area - (surface.arr.vol_runoff / pixel_area +
-                               surface.arr.vol_runoff_rill / pixel_area)
+        surBIL = (
+            surface.arr.h_total_pre + actRain + surface.arr.inflow_tm /
+            pixel_area - (
+                surface.arr.vol_runoff / pixel_area +
+                surface.arr.vol_runoff_rill / pixel_area
+            )
+        )
 
         #
         # infiltration

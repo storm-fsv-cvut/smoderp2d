@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import os
 import sys
-import glob
 import shutil
 import math
 import pickle
@@ -139,7 +138,6 @@ class BaseProvider(object):
     def __init__(self):
         self.args = Args()
 
-        self._print_fn = print
         self._print_logo_fn = print
 
         # default logging level (can be modified by provider)
@@ -359,10 +357,7 @@ class BaseProvider(object):
 
     @staticmethod
     def _cleanup():
-        """Clean-up output directory.
-
-        :param output_dir: output directory to clean up
-        """
+        """Clean-up output directory."""
         output_dir = Globals.outdir
         if not output_dir:
             # no output directory defined
@@ -384,7 +379,7 @@ class BaseProvider(object):
         Return true/values for rill, subflow, stream,
         presence/non-presence.
 
-        :param CompType tc: type of computation
+        :param CompType itc: type of computation
 
         :return dict:
 
@@ -516,7 +511,6 @@ class BaseProvider(object):
             )
 
         finState = np.zeros(np.shape(surface_array.state), np.float32)
-        # TODO: Maybe should be filled with NoDataInt
         finState.fill(GridGlobals.NoDataValue)
         vRest = np.zeros(np.shape(surface_array.state), np.float32)
         vRest.fill(GridGlobals.NoDataValue)
@@ -597,7 +591,7 @@ class BaseProvider(object):
         computation region.
         Works only for type float.
 
-        :param arrr: numpy array
+        :param arr: numpy array
         """
 
         rrows = GridGlobals.rr

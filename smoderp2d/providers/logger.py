@@ -7,6 +7,7 @@ import numpy as np
 PROGRESS = 101
 logging.addLevelName(PROGRESS, "PROGRESS")
 
+
 class BaseLogger(logging.Logger):
     def __init__(self, name):
         super(BaseLogger, self).__init__(name)

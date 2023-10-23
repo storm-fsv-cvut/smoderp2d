@@ -1,7 +1,5 @@
-import sys
 import numpy as np
 import sqlite3
-import subprocess
 
 from smoderp2d.core.general import GridGlobals, Globals
 
@@ -18,14 +16,16 @@ from grass.pygrass.gis import Mapset
 from grass.pygrass.gis.region import Region
 from grass.exceptions import CalledModuleError, OpenError
 
+
 def _run_grass_module(*args, **kwargs):
-#    if sys.platform == 'win32':
-#        si = subprocess.STARTUPINFO()
-#        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-#        si.wShowWindow = subprocess.SW_HIDE
-#        Module(*args, env_={'startupinfo': si}, **kwargs)
-#    else:
+    # if sys.platform == 'win32':
+    #     si = subprocess.STARTUPINFO()
+    #     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    #     si.wShowWindow = subprocess.SW_HIDE
+    #     Module(*args, env_={'startupinfo': si}, **kwargs)
+    # else:
     Module(*args, **kwargs)
+
 
 class PrepareData(PrepareDataGISBase):
 
@@ -51,6 +51,7 @@ class PrepareData(PrepareDataGISBase):
         """Get qualified map name as dict used by Vector class.
 
         :param name: map name
+        :param mtype: TODO
         """
         if '@' in name:
             map_name, mapset = name.split('@', 1)
@@ -82,14 +83,13 @@ class PrepareData(PrepareDataGISBase):
             _run_grass_module('db.droptable', table=kwargs['name'])
 
     def _create_AoI_outline(self, elevation, soil, vegetation):
-        """See base method for description.
-        """
-        _run_grass_module('g.region',
-               raster=elevation)
+        """See base method for description."""
+        _run_grass_module('g.region', raster=elevation)
         dem_slope_mask_path = self.storage.output_filepath('dem_slope_mask')
-        _run_grass_module('r.recode',
-               input=elevation, output=dem_slope_mask_path+'1',
-               rules="-", stdin_="-100000:100000:1")
+        _run_grass_module(
+            'r.recode', input=elevation, output=dem_slope_mask_path+'1',
+            rules="-", stdin_="-100000:100000:1"
+        )
         # the slope raster extent will be used in further
         # intersections as it is always smaller than the DEM extent
         # ...
@@ -97,36 +97,38 @@ class PrepareData(PrepareDataGISBase):
         with RasterRow(elevation) as rmap:
             nsres = rmap.info.nsres
             ewres = rmap.info.ewres
-        _run_grass_module('g.region',
-               n='n+{}'.format(nsres), s='s-{}'.format(nsres),
-               e='e+{}'.format(ewres), w='w-{}'.format(ewres))
-        _run_grass_module('r.grow',
-               input=dem_slope_mask_path+'1', output=dem_slope_mask_path,
-               radius=-1.01, metric="maximum")
+        _run_grass_module(
+            'g.region', n='n+{}'.format(nsres), s='s-{}'.format(nsres),
+            e='e+{}'.format(ewres), w='w-{}'.format(ewres))
+        _run_grass_module(
+            'r.grow', input=dem_slope_mask_path+'1',
+            output=dem_slope_mask_path, radius=-1.01, metric="maximum"
+        )
         self.__remove_temp_data(
             {'name': dem_slope_mask_path+'1', 'type': 'raster'}
         )
 
         dem_polygon = self.storage.output_filepath('dem_polygon')
-        _run_grass_module('r.to.vect',
-               input=dem_slope_mask_path, output=dem_polygon,
-               flags="v", type="area")
+        _run_grass_module(
+            'r.to.vect', input=dem_slope_mask_path, output=dem_polygon,
+            flags="v", type="area"
+        )
         aoi = self.storage.output_filepath('aoi')
-        _run_grass_module('v.clip',
-               input=soil, clip=dem_polygon,
-               output=aoi+'1')
-        _run_grass_module('v.overlay',
-               ainput=aoi+'1', binput=vegetation,
-               operator='and', output=aoi)
+        _run_grass_module(
+            'v.clip', input=soil, clip=dem_polygon, output=aoi+'1'
+        )
+        _run_grass_module(
+            'v.overlay', ainput=aoi+'1', binput=vegetation, operator='and',
+            output=aoi
+        )
         self.__remove_temp_data({'name': aoi+'1', 'type': 'vector'})
 
         aoi_polygon = self.storage.output_filepath('aoi_polygon')
-        _run_grass_module('v.db.addcolumn',
-               map=aoi, columns="dissolve int")
-        _run_grass_module('v.db.update',
-               map=aoi, column='dissolve', value=1)
-        _run_grass_module('v.dissolve',
-               input=aoi, column='dissolve', output=aoi_polygon)
+        _run_grass_module('v.db.addcolumn', map=aoi, columns="dissolve int")
+        _run_grass_module('v.db.update', map=aoi, column='dissolve', value=1)
+        _run_grass_module(
+            'v.dissolve', input=aoi, column='dissolve', output=aoi_polygon
+        )
 
         with VectorTopo(aoi_polygon) as vmap:
             count = vmap.number_of('areas')
@@ -134,34 +136,32 @@ class PrepareData(PrepareDataGISBase):
             raise DataPreparationNoIntersection()
 
         aoi_mask = self.storage.output_filepath('aoi_mask')
-        _run_grass_module('g.region',
-               vector=aoi_polygon,
-               align=elevation)
-        _run_grass_module('v.to.rast',
-               input=aoi_polygon, type='area', use='cat',
-               output=aoi_mask)
+        _run_grass_module('g.region', vector=aoi_polygon, align=elevation)
+        _run_grass_module(
+            'v.to.rast', input=aoi_polygon, type='area', use='cat',
+            output=aoi_mask
+        )
 
         return aoi_polygon, aoi_mask
 
     def _create_DEM_derivatives(self, dem):
-        """See base method for description.
-        """
-        _run_grass_module('g.region',
-               raster=dem)
+        """See base method for description."""
+        _run_grass_module('g.region', raster=dem)
         dem_filled = self.storage.output_filepath('dem_filled')
         dem_flowdir = self.storage.output_filepath('dem_flowdir')
         # calculate the depressionless DEM
-        _run_grass_module('r.fill.dir',
-               input=dem, output=dem_filled,
-               format='agnps',
-               direction=dem_flowdir+'2')
+        _run_grass_module(
+            'r.fill.dir', input=dem, output=dem_filled, format='agnps',
+            direction=dem_flowdir+'2'
+        )
 
         # calculate the flow direction
         # calculate flow accumulation
         dem_flowacc = self.storage.output_filepath('dem_flowacc')
-        _run_grass_module('r.watershed',
-               flags='as', elevation=dem,
-               drainage=dem_flowdir+'1', accumulation=dem_flowacc)
+        _run_grass_module(
+            'r.watershed', flags='as', elevation=dem,
+            drainage=dem_flowdir+'1', accumulation=dem_flowacc
+        )
         # recalculate flow dir to ArcGIS notation
         # https://idea.isnew.info/how-to-import-arcgis-flow-direction-into-grass-gis.html
         # ML: flowdir is slightly different compared to ArcGIS
@@ -176,9 +176,10 @@ class PrepareData(PrepareDataGISBase):
 -7 7 = 2
 -8 8 = 1
 """
-        _run_grass_module('r.reclass',
-               input=dem_flowdir+'1', output=dem_flowdir,
-               rules='-', stdin_=reclass)
+        _run_grass_module(
+            'r.reclass', input=dem_flowdir+'1', output=dem_flowdir,
+            rules='-', stdin_=reclass
+        )
         self.__remove_temp_data(
             {'name': '{r}1,{r}2'.format(r=dem_flowdir), 'type': 'raster'}
         )
@@ -186,67 +187,66 @@ class PrepareData(PrepareDataGISBase):
         # calculate slope
         dem_slope = self.storage.output_filepath('dem_slope')
         dem_aspect = self.storage.output_filepath('dem_aspect')
-        _run_grass_module('r.slope.aspect',
-               elevation=dem_filled,
-               format='percent', slope=dem_slope,
-               aspect=dem_aspect)
+        _run_grass_module(
+            'r.slope.aspect', elevation=dem_filled, format='percent',
+            slope=dem_slope, aspect=dem_aspect
+        )
 
         return dem_filled, dem_flowdir, dem_flowacc, dem_slope, dem_aspect
 
     def _clip_raster_layer(self, dataset, aoi_mask, name):
-        """See base method for description.
-        """
+        """See base method for description."""
         output = self.storage.output_filepath(name)
-        _run_grass_module('g.region',
-               raster=aoi_mask)
-        _run_grass_module('r.mapcalc',
-               expression='{o} = if(isnull({m}), null(), {i})'.format(
-                   o=output, m=aoi_mask, i=dataset))
+        _run_grass_module('g.region', raster=aoi_mask)
+        _run_grass_module(
+            'r.mapcalc',
+            expression='{o} = if(isnull({m}), null(), {i})'.format(
+                o=output, m=aoi_mask, i=dataset
+            )
+        )
 
         return output
 
     def _clip_record_points(self, dataset, aoi_polygon, name):
-        """See base method for description.
-        """
+        """See base method for description."""
         # select points inside the AIO
         points_clipped = self.storage.output_filepath(name)
-        _run_grass_module('v.select',
-               ainput=dataset, binput=aoi_polygon,
-               operator='within',
-               output=points_clipped)
+        _run_grass_module(
+            'v.select', ainput=dataset, binput=aoi_polygon,
+            operator='within', output=points_clipped
+        )
 
         # select points outside the AoI
-        _run_grass_module('v.select',
-               flags='r',
-               ainput=dataset, binput=aoi_polygon,
-               operator='within',
-               output=points_clipped+'1')
-        outsideList = []
+        _run_grass_module(
+            'v.select', flags='r', ainput=dataset, binput=aoi_polygon,
+            operator='within', output=points_clipped+'1'
+        )
+        outside_list = []
         try:
             # get their IDs
-            with Vector(points_clipped+'1') as vmap:
+            with Vector(points_clipped + '1') as vmap:
                 vmap.table.filters.select(self.storage.primary_key)
                 for row in vmap.table:
-                    outsideList.append(row[0])
-            self.__remove_temp_data({'name': points_clipped+'1', 'type': 'vector'})
+                    outside_list.append(row[0])
+            self.__remove_temp_data(
+                {'name': points_clipped+'1', 'type': 'vector'}
+            )
 
             # report them to the user
             Logger.info(
                 "\t{} record points outside of the area of interest "
                 "({}: {})".format(
-                    len(outsideList), "FID", ",".join(map(str, outsideList))
+                    len(outside_list), "FID", ",".join(map(str, outside_list))
                 )
             )
         except OpenError:
             # only created if there is at least one point out of AOI
             pass
 
-
         return points_clipped
 
     def _rst2np(self, raster):
-        """See base method for description.
-        """
+        """See base method for description."""
         # raster is read from current computation region
         # g.region cannot be called here,
         # see https://github.com/storm-fsv-cvut/smoderp2d/issues/42
@@ -281,8 +281,7 @@ class PrepareData(PrepareDataGISBase):
             self._check_resolution_consistency(data.info.ewres, data.info.nsres)
 
     def _compute_efect_cont(self, dem, asp):
-        """See base method for description.
-        """
+        """See base method for description."""
         # conversion to radias not needed, GRASS's sin() assumes degrees
         ratio_cell = self.storage.output_filepath('ratio_cell')
         _run_grass_module(
@@ -293,17 +292,18 @@ class PrepareData(PrepareDataGISBase):
         )
 
         efect_cont = self.storage.output_filepath('efect_cont')
-        _run_grass_module('r.mapcalc',
-               expression='{} = {} * {}'.format(
-                   efect_cont, ratio_cell, GridGlobals.dx
-               ))
+        _run_grass_module(
+            'r.mapcalc',
+            expression='{} = {} * {}'.format(
+                efect_cont, ratio_cell, GridGlobals.dx
+            )
+        )
 
         return self._rst2np(efect_cont)
 
     def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
                          aoi_polygon, table_soil_vegetation):
-        """See base method for description.
-        """
+        """See base method for description."""
         # check if the soil_type and vegetation_type field names are
         # equal and deal with it if not
         if soil_type == vegetation_type:
@@ -314,44 +314,45 @@ class PrepareData(PrepareDataGISBase):
                 "will be renamed to '{}'.".format(vegatation_type, veg_type)
             )
             # add the new field
-            _run_grass_module('v.db.renamecolumn',
-                   map=vegetation,
-                   column=[vegetation_type, veg_fieldname])
+            _run_grass_module(
+                'v.db.renamecolumn', map=vegetation,
+                column=[vegetation_type, veg_fieldname]
+            )
         else:
             veg_fieldname = vegetation_type
 
         # create the geometric intersection of soil and vegetation layers
         soilveg_aoi = self.storage.output_filepath("soilveg_aoi")
         soil_aoi = self.__qualified_name(soil)['name']+'1'
-        _run_grass_module('v.clip',
-               input=soil, clip=aoi_polygon,
-               output=soil_aoi)
-        _run_grass_module('v.overlay',
-               ainput=soil_aoi,
-               binput=vegetation,
-               operator='and',
-               output=soilveg_aoi)
+        _run_grass_module(
+            'v.clip', input=soil, clip=aoi_polygon, output=soil_aoi
+        )
+        _run_grass_module(
+            'v.overlay', ainput=soil_aoi, binput=vegetation, operator='and',
+            output=soilveg_aoi
+        )
         self.__remove_temp_data({'name': soil_aoi, 'type': 'vector'})
 
         soilveg_code = self._input_params['table_soil_vegetation_fieldname']
         fields = self._get_field_names(soilveg_aoi)
         if soilveg_code in fields:
-            _run_grass_module('v.db.dropcolumn',
-                   map=soilveg_aoi,
-                   columns=[soilveg_code])
+            _run_grass_module(
+                'v.db.dropcolumn', map=soilveg_aoi, columns=[soilveg_code]
+            )
             Logger.info(
                 "'{}' attribute field already in the table and will be "
                 "replaced.".format(soilveg_code)
             )
-        _run_grass_module('v.db.addcolumn',
-               map=soilveg_aoi,
-               columns=["{} varchar(15)".format(soilveg_code)])
+        _run_grass_module(
+            'v.db.addcolumn', map=soilveg_aoi,
+            columns=["{} varchar(15)".format(soilveg_code)]
+        )
 
         # calculate "soil_veg" values (soil_type + vegetation_type)
-        _run_grass_module('v.db.update',
-               map=soilveg_aoi, column=soilveg_code,
-               query_column='a_{} || b_{}'.format(
-                   soil_type, vegetation_type))
+        _run_grass_module(
+            'v.db.update', map=soilveg_aoi, column=soilveg_code,
+            query_column='a_{} || b_{}'.format(soil_type, vegetation_type)
+        )
 
         # join soil and vegetation model parameters from input table
         # v.db.join doesn't support to access tables from other mapsets
@@ -364,11 +365,11 @@ class PrepareData(PrepareDataGISBase):
             to_table=soilveg_table,
             from_database='$GISDBASE/$LOCATION_NAME/PERMANENT/sqlite/sqlite.db'
         )
-        _run_grass_module('v.db.join',
-               map=soilveg_aoi, column=soilveg_code,
-               other_table=soilveg_table,
-               other_column=soilveg_code,
-               subset_columns=list(self.soilveg_fields.keys()))
+        _run_grass_module(
+            'v.db.join', map=soilveg_aoi, column=soilveg_code,
+            other_table=soilveg_table, other_column=soilveg_code,
+            subset_columns=list(self.soilveg_fields.keys())
+        )
         self.__remove_temp_data({'name': soilveg_table, 'type': 'table'})
 
         # check for empty values
@@ -389,16 +390,15 @@ class PrepareData(PrepareDataGISBase):
             output = self.storage.output_filepath(
                 "soilveg_aoi_{}".format(field)
             )
-            _run_grass_module('v.to.rast',
-                   input=soilveg_aoi, type='area',
-                   use='attr', attribute_column=field,
-                   output=output)
+            _run_grass_module(
+                'v.to.rast', input=soilveg_aoi, type='area', use='attr',
+                attribute_column=field, output=output
+            )
             self.soilveg_fields[field] = self._rst2np(output)
             self._check_soilveg_dim(field)
 
     def _get_points_location(self, points_layer):
-        """See base method for description.
-        """
+        """See base method for description."""
         points_array = None
         if points_layer:
             # get number of points
@@ -433,29 +433,29 @@ class PrepareData(PrepareDataGISBase):
         return points_array
 
     def _stream_clip(self, stream, aoi_polygon):
-        """See base method for description.
-        """
+        """See base method for description."""
         # AoI slighty smaller due to start/end elevation extraction
         aoi_buffer = self.storage.output_filepath('aoi_buffer')
-        _run_grass_module('v.buffer',
-               input=aoi_polygon, output='aoi_buffer',
-               distance=-GridGlobals.dx / 3)
+        _run_grass_module(
+            'v.buffer', input=aoi_polygon, output='aoi_buffer',
+            distance=-GridGlobals.dx / 3
+        )
 
         stream_aoi = self.storage.output_filepath('stream_aoi')
-        _run_grass_module('v.clip',
-               input=stream, clip=aoi_buffer,
-               output=stream_aoi)
+        _run_grass_module(
+            'v.clip', input=stream, clip=aoi_buffer, output=stream_aoi
+        )
 
         drop_fields = self._stream_check_fields(stream_aoi)
         if drop_fields:
-            _run_grass_module('v.db.dropcolumn', map=stream_aoi,
-                   columns=drop_fields)
+            _run_grass_module(
+                'v.db.dropcolumn', map=stream_aoi, columns=drop_fields
+            )
 
         return stream_aoi
 
     def _stream_direction(self, stream, dem):
-        """See base method for description.
-        """
+        """See base method for description."""
         segment_id_fieldname = self.fieldnames['stream_segment_id']
         start_elev_fieldname = self.fieldnames[
             'stream_segment_start_elevation'
@@ -470,9 +470,10 @@ class PrepareData(PrepareDataGISBase):
 
         # add the streamID for later use, get the 2D length of the stream
         # segments
-        _run_grass_module('v.db.addcolumn',
-               map=stream,
-               columns=['{} integer'.format(segment_id_fieldname)])
+        _run_grass_module(
+            'v.db.addcolumn', map=stream,
+            columns=['{} integer'.format(segment_id_fieldname)]
+        )
         with VectorTopo(stream) as vmap:
             segment_id = 1
             for f in vmap:
@@ -483,9 +484,9 @@ class PrepareData(PrepareDataGISBase):
 
         # extract elevation for the stream segment vertices
         _run_grass_module('g.region', raster=dem)
-        _run_grass_module('v.drape',
-               input=stream, elevation=dem,
-               output=stream+'3d')
+        _run_grass_module(
+            'v.drape', input=stream, elevation=dem, output=stream+'3d'
+        )
 
         to_reverse = []
         with Vector(stream+'3d') as vmap:
@@ -523,16 +524,18 @@ class PrepareData(PrepareDataGISBase):
         self.__remove_temp_data({'name': stream+'3d', 'type': 'vector'})
 
         # add new fields to the stream segments feature class
-        _run_grass_module('v.db.addcolumn',
-               map=stream,
-               columns=[
-                   '{} integer'.format(segment_id_fieldname),
-                   '{} double precision'.format(start_elev_fieldname),
-                   '{} double precision'.format(end_elev_fieldname),
-                   '{} double precision'.format(inclination_fieldname),
-                   '{} integer'.format(next_down_fieldname),
-                   '{} double precision'.format(segment_length_fieldname)
-               ])
+        _run_grass_module(
+            'v.db.addcolumn',
+            map=stream,
+            columns=[
+                '{} integer'.format(segment_id_fieldname),
+                '{} double precision'.format(start_elev_fieldname),
+                '{} double precision'.format(end_elev_fieldname),
+                '{} double precision'.format(inclination_fieldname),
+                '{} integer'.format(next_down_fieldname),
+                '{} double precision'.format(segment_length_fieldname)
+            ]
+        )
 
         _run_grass_module(
             'v.edit',
@@ -578,19 +581,20 @@ class PrepareData(PrepareDataGISBase):
             vmap.table.conn.commit()
 
     def _stream_reach(self, stream):
-        """See base method for description.
-        """
-        _run_grass_module('g.region',
-               s=GridGlobals.yllcorner, w=GridGlobals.xllcorner,
-               n=GridGlobals.yllcorner+(GridGlobals.r * GridGlobals.dy),
-               e=GridGlobals.xllcorner+(GridGlobals.c * GridGlobals.dx),
-               ewres=GridGlobals.dx, nsres=GridGlobals.dy)
+        """See base method for description."""
+        _run_grass_module(
+            'g.region', s=GridGlobals.yllcorner, w=GridGlobals.xllcorner,
+            n=GridGlobals.yllcorner+(GridGlobals.r * GridGlobals.dy),
+            e=GridGlobals.xllcorner+(GridGlobals.c * GridGlobals.dx),
+            ewres=GridGlobals.dx, nsres=GridGlobals.dy
+        )
 
         stream_seg = self.storage.output_filepath('stream_seg')
-        _run_grass_module('v.to.rast',
-               input=stream, type='line', use='attr',
-               attribute_column=self.fieldnames['stream_segment_id'],
-               output=stream_seg)
+        _run_grass_module(
+            'v.to.rast', input=stream, type='line', use='attr',
+            attribute_column=self.fieldnames['stream_segment_id'],
+            output=stream_seg
+        )
 
         mat_stream_seg = self._rst2np(stream_seg)
         # ML: is no_of_streams needed (-> mat_stream_seg.max())
@@ -599,8 +603,7 @@ class PrepareData(PrepareDataGISBase):
         return mat_stream_seg.astype('int16')
 
     def _stream_shape(self, stream, stream_shape_code, stream_shape_tab):
-        """See base method for description.
-        """
+        """See base method for description."""
         stream_shape_tab = self.__qualified_name(
             stream_shape_tab, mtype='table')['name']
         _run_grass_module(
@@ -608,11 +611,12 @@ class PrepareData(PrepareDataGISBase):
             from_table=stream_shape_tab,
             from_database='$GISDBASE/$LOCATION_NAME/PERMANENT/sqlite/sqlite.db',
             to_table=stream_shape_tab)
-        _run_grass_module('v.db.join',
-               map=stream, column=stream_shape_code,
-               other_table=stream_shape_tab,
-               other_column=stream_shape_code,
-               subset_columns=self.stream_shape_fields)
+        _run_grass_module(
+            'v.db.join',
+            map=stream, column=stream_shape_code, other_table=stream_shape_tab,
+            other_column=stream_shape_code,
+            subset_columns=self.stream_shape_fields
+        )
 
         stream_attr = self._get_streams_attr_()
         with Vector(stream) as vmap:
@@ -632,8 +636,7 @@ class PrepareData(PrepareDataGISBase):
         return self._decode_stream_attr(stream_attr)
 
     def _check_empty_values(self, table, field):
-        """See base method for description.
-        """
+        """See base method for description."""
         try:
             with Vector(**self.__qualified_name(table)) as vmap:
                 vmap.table.filters.select(field, self.storage.primary_key)
@@ -649,25 +652,24 @@ class PrepareData(PrepareDataGISBase):
             raise DataPreparationInvalidInput(e)
 
     def _check_input_data(self):
-        """See base method for description.
-        """
+        """See base method for description."""
         self._check_input_data_()
 
         # overlapping polygons (soils)
         try:
-            with VectorTopo(**self.__qualified_name(self._input_params['soil'])) as fd:
+            soil = self._input_params['soil']
+            with VectorTopo(**self.__qualified_name(soil)) as fd:
                 for area in fd.viter('areas'):
                     cats = list(area.cats().get_list())
                     if len(cats) > 1:
                         raise DataPreparationInvalidInput(
-                            "overlapping soil polygons detected"
+                            "Overlapping soil polygons detected"
                         )
         except OpenError as e:
             raise DataPreparationInvalidInput(e)
 
     def _get_field_names(self, ds):
-        """See base method for description.
-        """
+        """See base method for description."""
         if ds in Mapset().glist(type='vector'):
             with Vector(**self.__qualified_name(ds)) as vmap:
                 fields = vmap.table.columns.names()
