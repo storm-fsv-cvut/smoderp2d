@@ -62,8 +62,6 @@ class GridGlobals(object):
     yllcorner = None
     # no data value for raster
     NoDataValue = -9999
-    # no data integer value for raster
-    NoDataInt = None
     # size of raster cell
     dx = None
     # size of raster cell
@@ -146,8 +144,6 @@ class GridGlobals(object):
         cls.yllcorner = None
         # no data value for raster
         cls.NoDataValue = -9999
-        # no data integer value for raster
-        cls.NoDataInt = None
         # size of raster cell
         cls.dx = None
         # size of raster cell

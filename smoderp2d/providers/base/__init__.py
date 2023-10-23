@@ -511,7 +511,6 @@ class BaseProvider(object):
             )
 
         finState = np.zeros(np.shape(surface_array.state), np.float32)
-        # TODO: Maybe should be filled with NoDataInt
         finState.fill(GridGlobals.NoDataValue)
         vRest = np.zeros(np.shape(surface_array.state), np.float32)
         vRest.fill(GridGlobals.NoDataValue)
