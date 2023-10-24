@@ -124,56 +124,37 @@ def removeCellsWithSameHeightNeighborhood(mat_dem, mat_nan, rows, cols):
     A function determines if cell neighborhood has exactly same values of
     height, and then it save that cell as NoData.
     """
-    bad_cells = []
-
-    # finding problem cells with same height neogborhood
-    for i in range(rows):
-        for j in range(cols):
-            c = [i, j]
+    # finding problem cells with same height neigbourhood
+    # run only for non-edge cells - edge cells are excluded thanks to slope
+    # trimming
+    for i in range(1, rows - 1):
+        for j in range(1, cols - 1):
             count_nbrs = 0
             point_m = mat_dem[i][j]
 
-            if 0 < i < (rows - 1) and 0 < j < (cols - 1):
-                # non-edge cells - edge cells are excluded thanks to slope
-                # trimming
-                nbrs = [mat_dem[i - 1][j - 1],
-                        mat_dem[i - 1][j],
-                        mat_dem[i - 1][j + 1],
-                        mat_dem[i][j - 1],
-                        mat_dem[i][j + 1],
-                        mat_dem[i + 1][j - 1],
-                        mat_dem[i + 1][j],
-                        mat_dem[i + 1][j + 1]]
+            nbrs = [mat_dem[i - 1][j - 1],
+                    mat_dem[i - 1][j],
+                    mat_dem[i - 1][j + 1],
+                    mat_dem[i][j - 1],
+                    mat_dem[i][j + 1],
+                    mat_dem[i + 1][j - 1],
+                    mat_dem[i + 1][j],
+                    mat_dem[i + 1][j + 1]]
 
-                for k in range(8):
-                    if point_m > 0 and point_m == nbrs[k]:
-                        count_nbrs += 1
-                if count_nbrs >= 7:
-                    # compare number of neighbours with the same height
-                    bad_cells.append(c)
-                    bc = 1
+            for nbrs_k in nbrs:
+                if point_m > 0 and point_m == nbrs_k:
+                    count_nbrs += 1
+
+            # compare number of neighbours with the same height
+            if count_nbrs >= 7:
+                # set problematic cells to NoData
+                mat_dem[i][j] = np.nan
+                mat_nan[i][j] = np.nan
 
     Logger.info(
         "Possible water circulation! Check the input DTM raster for flat "
         "areas with the same height neighborhood."
     )
-
-    # all problem cells set as NoData
-    if len(bad_cells) > 0:
-        for i in range(rows):
-            for j in range(cols):
-                if bc == 1:
-                    bc_i = bad_cells[0][0]
-                    bc_j = bad_cells[0][1]
-
-                    if bc_i == i and bc_j == j:
-                        mat_dem[i][j] = np.nan
-                        mat_nan[i][j] = np.nan
-                        bad_cells.pop(0)
-                        if len(bad_cells) == 0:
-                            bc = 0
-                else:
-                    break
 
     return mat_dem, mat_nan
 
