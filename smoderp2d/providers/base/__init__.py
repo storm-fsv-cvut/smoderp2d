@@ -138,7 +138,6 @@ class BaseProvider(object):
     def __init__(self):
         self.args = Args()
 
-        self._print_fn = print
         self._print_logo_fn = print
 
         # default logging level (can be modified by provider)
@@ -512,7 +511,6 @@ class BaseProvider(object):
             )
 
         finState = np.zeros(np.shape(surface_array.state), np.float32)
-        # TODO: Maybe should be filled with NoDataInt
         finState.fill(GridGlobals.NoDataValue)
         vRest = np.zeros(np.shape(surface_array.state), np.float32)
         vRest.fill(GridGlobals.NoDataValue)

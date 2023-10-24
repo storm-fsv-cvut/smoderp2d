@@ -58,8 +58,7 @@ class PrepareData(PrepareDataGISBase):
         with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=dem_mask, cellAlignment=dem_mask, snapRaster=dem_mask):
             field = arcpy.Describe(aoi_polygon).OIDFieldName
             arcpy.conversion.PolygonToRaster(
-                aoi_polygon, field, aoi_mask, "MAXIMUM_AREA", "",
-                GridGlobals.dy
+                aoi_polygon, field, aoi_mask, "MAXIMUM_AREA"
             )
 
         # return aoi_polygon
@@ -151,27 +150,25 @@ class PrepareData(PrepareDataGISBase):
     def _rst2np(self, raster):
         """See base method for description.
         """
-        return arcpy.RasterToNumPyArray(
+        arr =  arcpy.RasterToNumPyArray(
             raster, nodata_to_value=GridGlobals.NoDataValue
         )
+        self._check_rst2np(arr)
 
-    def _update_grid_globals(self, reference):
+        return arr
+
+    def _update_grid_globals(self, reference, reference_cellsize):
         """See base method for description.
         """
         desc = arcpy.Describe(reference)
+        desc_cellsize = arcpy.Describe(reference_cellsize)
 
-        # check data consistency
-        if desc.height != GridGlobals.r or \
-                desc.width != GridGlobals.c:
-            raise DataPreparationError(
-                "Data inconsistency ({},{}) vs ({},{})".format(
-                    desc.height, desc.width,
-                    GridGlobals.r, GridGlobals.c)
-            )
+        GridGlobals.r = desc.height
+        GridGlobals.c = desc.width
 
         # lower left corner coordinates
         GridGlobals.set_llcorner((desc.Extent.XMin, desc.Extent.YMin))
-        GridGlobals.set_size((desc.MeanCellWidth, desc.MeanCellHeight))
+        GridGlobals.set_size((desc_cellsize.MeanCellWidth, desc_cellsize.MeanCellHeight))
         inp = arcpy.Describe(self._input_params['elevation'])
         self._check_resolution_consistency(
             inp.meanCellWidth, inp.meanCellHeight
@@ -179,7 +176,7 @@ class PrepareData(PrepareDataGISBase):
 
         # set arcpy environment (needed for rasterization)
         arcpy.env.extent = desc.Extent
-        arcpy.env.snapRaster = reference
+        arcpy.env.snapRaster = reference_cellsize
 
     def _compute_efect_cont(self, dem, asp):
         """See base method for description.

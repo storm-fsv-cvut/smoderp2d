@@ -112,9 +112,8 @@ class SaveItems:
                 self.f.writelines(str(type(it)) + '\n')
                 self.save_item(it)
 
-        for root, dirs, files in os.walk(dir_):
+        for root, _, files in os.walk(dir_):
             for file in files:
-                # print os.path.join(root, file)
                 zipf.write(os.path.join(root, file))
 
         shutil.rmtree(dir_)

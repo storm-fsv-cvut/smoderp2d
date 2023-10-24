@@ -4,7 +4,6 @@ from smoderp2d.exceptions import SmoderpError
 from smoderp2d.providers import Logger
 
 courantMax = 1.0
-courantMin = 0.2
 
 
 def update_hb(loc_V_to_rill, rillRatio, l, b):
