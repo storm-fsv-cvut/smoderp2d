@@ -94,41 +94,41 @@ def rill(V_to_rill, rillRatio, l, b, delta_t,
 #
 #
 #
-def rillCalculations(sur, pixelArea, l, rillRatio, n, slope, delta_t, ratio):
-
-    input()
-    h_rill = sur.h_rill
-    b = sur.rillWidth
-    V_to_rill = h_rill * pixelArea
-    sur.V_to_rill = V_to_rill
-
-    b_tmp = b
-    courant = courantMax + 1.0
-
-    while courant > courantMax:
-
-        b = b_tmp
-        # if sur.state != 2 :
-        #     b = 0
-
-        # print '\t', b,
-        b, V_rill_runoff, V_rill_rest, q, v, courant = rill(
-            V_to_rill, rillRatio, l, b, delta_t, ratio, n, slope
-        )
-        # if ppp :
-        # print '\t', b, V_rill_runoff, V_rill_rest, courant
-        if courant > courantMax:
-            Logger.debug('------ ratio += 1 -----')
-            input()
-            ratio += 1
-            if ratio > 10:
-                return (
-                    b_tmp, V_to_rill, V_rill_runoff, V_rill_rest, 0.0, 0.0,
-                    11, courant
-                )
-
-    qMax = max(q)
-    vMax = max(v)
-    # print input('..')
-    # print "V_to_rill, V_rill_runoff", V_to_rill, V_rill_runoff
-    return b, V_to_rill, V_rill_runoff, V_rill_rest, qMax, vMax, ratio, courant
+# def rillCalculations(sur, pixelArea, l, rillRatio, n, slope, delta_t, ratio):
+#
+#     input()
+#     h_rill = sur.h_rill
+#     b = sur.rillWidth
+#     V_to_rill = h_rill * pixelArea
+#     sur.V_to_rill = V_to_rill
+#
+#     b_tmp = b
+#     courant = courantMax + 1.0
+#
+#     while courant > courantMax:
+#
+#         b = b_tmp
+#         # if sur.state != 2 :
+#         #     b = 0
+#
+#         # print '\t', b,
+#         b, V_rill_runoff, V_rill_rest, q, v, courant = rill(
+#             V_to_rill, rillRatio, l, b, delta_t, ratio, n, slope
+#         )
+#         # if ppp :
+#         # print '\t', b, V_rill_runoff, V_rill_rest, courant
+#         if courant > courantMax:
+#             Logger.debug('------ ratio += 1 -----')
+#             input()
+#             ratio += 1
+#             if ratio > 10:
+#                 return (
+#                     b_tmp, V_to_rill, V_rill_runoff, V_rill_rest, 0.0, 0.0,
+#                     11, courant
+#                 )
+#
+#     qMax = max(q)
+#     vMax = max(v)
+#     # print input('..')
+#     # print "V_to_rill, V_rill_runoff", V_to_rill, V_rill_runoff
+#     return b, V_to_rill, V_rill_runoff, V_rill_rest, qMax, vMax, ratio, courant
