@@ -73,7 +73,7 @@ def comp_rasters(directory, cleanup=False, png=False):
         if cleanup:
             gs.run_command(
                 'g.remove',
-                type='raster', name=','.join(arcgis, diff), flags='f'
+                type='raster', name=','.join((arcgis, diff)), flags='f'
             )
 
 

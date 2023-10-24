@@ -102,7 +102,7 @@ class Runner(object):
             return 1
 
         if self._provider.args.workflow_mode == WorkflowMode.dpre:
-            # data prepararation only requested
+            # data preparation only requested
             return
 
         # must be called after initialization (!)
@@ -185,8 +185,7 @@ class QGISRunner(GrassGisRunner):
 
     @staticmethod
     def import_data(options):
-        """
-        Import files to grass
+        """Import files to grass.
 
         :param options: dictionary of input data
         """
@@ -201,7 +200,7 @@ class QGISRunner(GrassGisRunner):
 
                     ds = gdal.Open(options[key])
                     proj = osr.SpatialReference(wkt=ds.GetProjection())
-                    srs = proj.GetAttrValue('AUTHORITY',1)
+                    srs = proj.GetAttrValue('AUTHORITY', 1)
 
                     project_projection = QgsProject.instance().crs().authid()
 
@@ -223,42 +222,6 @@ class QGISRunner(GrassGisRunner):
                     Module("db.in.ogr", input=options[key], output=key)
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
-
-    @staticmethod
-    def show_results():
-        import glob
-        from PyQt5.QtGui import QColor
-        from qgis.core import (
-            QgsProject, QgsRasterLayer, QgsRasterShader,
-            QgsSingleBandPseudoColorRenderer, QgsColorRampShader
-        )
-
-        # get colour definitions
-        color_ramp = QgsColorRampShader()
-        color_ramp.setColorRampType(QgsColorRampShader.Interpolated)
-        lst2 = [
-            QgsColorRampShader.ColorRampItem(0, QColor('#0000ff'), '0'),
-            QgsColorRampShader.ColorRampItem(20, QColor('#efefff'), '20')
-        ]
-        color_ramp.setColorRampItemList(lst2)
-        shader = QgsRasterShader()
-        shader.setRasterShaderFunction(color_ramp)
-
-        for map_path in glob.glob(os.path.join(Globals.outdir, '*.asc')):
-            layer = QgsRasterLayer(
-                map_path, os.path.basename(os.path.splitext(map_path)[0])
-            )
-
-            # set colours
-            renderer = QgsSingleBandPseudoColorRenderer(
-                layer.dataProvider(), 1, shader
-            )
-            layer.setRenderer(renderer)
-
-            QgsProject.instance().addMapLayer(layer)
-
-    def export_data(self):
-        pass
 
     def __del__(self):
         pass

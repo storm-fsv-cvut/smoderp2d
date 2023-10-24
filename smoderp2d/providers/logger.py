@@ -7,6 +7,7 @@ import numpy as np
 PROGRESS = 101
 logging.addLevelName(PROGRESS, "PROGRESS")
 
+
 class BaseLogger(logging.Logger):
     def __init__(self, name):
         super(BaseLogger, self).__init__(name)
@@ -21,7 +22,6 @@ class BaseLogger(logging.Logger):
         """Set percentage progress counter.
 
         :param int end: end value in %
-        :param int start: start value in %
         """
         self._progress_info = {
             'start': self._progress_info['end'],

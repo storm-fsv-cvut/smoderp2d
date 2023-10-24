@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.providers import Logger
 
+
 def write_array_diff_png(diff, target_path):
     import matplotlib.pyplot as plt
     import matplotlib.colors as mcolors
@@ -30,8 +31,14 @@ def write_array_diff_png(diff, target_path):
     plt.savefig(os.path.join(target_path + ".diff.png"))
     plt.clf()
 
+
 def write_array_diff(arr1, arr2, target_path):
-    diff = arr1 - arr2
+    try:
+        diff = arr1 - arr2
+    except ValueError as e:
+        print(f"Unable to compute array diff: {e}")
+        return
+
     if not diff.any():
         return
 
@@ -43,6 +50,7 @@ def write_array_diff(arr1, arr2, target_path):
         numpy.savetxt(fd, diff)
 
     write_array_diff_png(diff, target_path)
+
 
 def are_dir_trees_equal(dir1, dir2):
     """
@@ -167,7 +175,9 @@ def _is_on_github_action():
         return True
     return False
 
+
 data_dir = os.path.join(os.path.dirname(__file__), "data")
+
 
 class PerformTest:
 
