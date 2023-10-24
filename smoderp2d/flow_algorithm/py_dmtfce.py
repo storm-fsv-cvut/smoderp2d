@@ -536,14 +536,3 @@ def boolToInt(x):  # function creates a bit value from vector of ones and zeros
             y += 1 << i
 
     return y
-
-
-def lenght(flow_direction, dy, dx):
-    if flow_direction in (2, 8, 32, 128):
-        L = math.sqrt(dy * dy + dx * dx)
-    elif flow_direction in (4, 64):
-        L = dy
-    elif flow_direction in (1, 16):
-        L = dx
-
-    return L
