@@ -534,6 +534,10 @@ class PrepareDataGISBase(PrepareDataBase):
             points_aoi = self._clip_record_points(
                 self._input_params['points'], aoi_polygon, 'points_aoi'
             )
+            # build points array
+            Logger.info("Prepare points for hydrographs...")
+            self.data['array_points'] = self._get_points_location(points_aoi)
+
         Logger.progress(30)
 
         # convert to numpy arrays
@@ -585,11 +589,6 @@ class PrepareDataGISBase(PrepareDataBase):
             self._get_mat_nan(GridGlobals.r, GridGlobals.c,
                               GridGlobals.NoDataValue, self.data['mat_slope'],
                               self.data['mat_dem'])
-
-        # build points array
-        if self._input_params['points']:
-            Logger.info("Prepare points for hydrographs...")
-            self.data['array_points'] = self._get_points_location(points_aoi)
 
         # build a/aa arrays
         self.data['mat_a'], self.data['mat_aa'] = self._get_a(
