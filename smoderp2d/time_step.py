@@ -85,7 +85,6 @@ class TimeStep:
         v = ma.maximum(v_sheet, v_rill)
         co = 'sheet'
         courant.CFL(
-            surface.arr.h_total_pre,
             v,
             delta_t,
             mat_efect_cont,
