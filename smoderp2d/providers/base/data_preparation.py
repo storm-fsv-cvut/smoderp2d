@@ -555,7 +555,7 @@ class PrepareDataGISBase(PrepareDataBase):
         Logger.progress(30)
 
         # build points array
-        if self._input_params['points']:
+        if self._input_params['points'] != '':
             points_aoi = self._clip_record_points(
                 self._input_params['points'], aoi_polygon, 'points_aoi'
             )
