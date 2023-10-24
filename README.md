@@ -43,13 +43,13 @@ Run SMODERP command line tool from Docker container:
 ```sh
 docker run -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
  ./bin/start-smoderp2d.py smoderp \
- --config tests/quicktest.ini
+ --config tests/config_files/quicktest.ini
 ```
 
 ### From command line locally
 
 ```sh
-./bin/start-smoderp2d.py --config tests/quicktest.ini
+./bin/start-smoderp2d.py --config tests/config_files/quicktest.ini
 ```
 
 ### From GRASS GIS
@@ -72,7 +72,7 @@ Run `r.smoderp2d` module:
     vegetation=landuse@PERMANENT \
     vegetation_type_fieldname=LandUse \
     rainfall_file=tests/data/rainfall.txt \
-    maxdt=30 end_time=40 \
+    maxdt=5 end_time=5 \
     points=points@PERMANENT \
     table_soil_vegetation=soil_veg_tab_mean@PERMANENT \
     table_soil_vegetation_fieldname=soilveg \

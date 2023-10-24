@@ -271,13 +271,16 @@ class Runoff(object):
         # saves time before the main loop
         Logger.info('Start of computing...')
         Logger.start_time = time.time()
+        end_time = Globals.end_time
 
         
         
        
         self.flow_control.save_vars()
         # main loop: until the end time
+
         while ma.any(self.flow_control.compare_time(Globals.end_time)):
+
             self.flow_control.save_vars()
             # self.flow_control.refresh_iter()
             # Very paskvil job 
@@ -339,7 +342,6 @@ class Runoff(object):
             self.flow_control.update_total_time(self.delta_t)
             self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
         
-
 
     def save_output(self):
         Logger.info('Saving output data...')

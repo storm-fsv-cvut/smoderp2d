@@ -267,10 +267,10 @@ def dirSlope(point_m, nbrs, dy, dx):
             if nbrs[1] < 0 and nbrs[2] < 0 or (nbrs[1] > point_m and nbrs[2] > point_m):
                 d1 = -1
                 s1 = -1
-            elif nbrs[1] > 0 and nbrs[2] < 0:
+            elif nbrs[1] > 0 > nbrs[2]:
                 d1 = 0
                 s0 = (point_m - nbrs[1]) / dy
-            elif nbrs[2] > 0 and nbrs[1] < 0 or (abs(point_m - nbrs[2]) < 1e-8 and nbrs[1] > point_m):
+            elif nbrs[2] > 0 > nbrs[1] or (abs(point_m - nbrs[2]) < 1e-8 and nbrs[1] > point_m):
                 d1 = FB
                 s0 = (point_m - nbrs[2]) / DY_SQRT
             else:
@@ -299,10 +299,10 @@ def dirSlope(point_m, nbrs, dy, dx):
             if nbrs[2] < 0 and nbrs[4] < 0 or (nbrs[2] > point_m and nbrs[4] > point_m):
                 d2 = -1
                 s2 = -1
-            elif nbrs[2] > 0 and nbrs[4] < 0:
+            elif nbrs[2] > 0 > nbrs[4]:
                 d2 = 0
                 s2 = (point_m - nbrs[2]) / DY_SQRT
-            elif nbrs[4] > 0 and nbrs[2] < 0 or (abs(point_m - nbrs[4]) < 1e-8 and nbrs[2] > point_m):
+            elif nbrs[4] > 0 > nbrs[2] or (abs(point_m - nbrs[4]) < 1e-8 and nbrs[2] > point_m):
                 d2 = FB
                 s2 = (point_m - nbrs[4]) / dx
             else:
@@ -332,10 +332,10 @@ def dirSlope(point_m, nbrs, dy, dx):
             if nbrs[4] < 0 and nbrs[7] < 0 or (nbrs[4] > point_m and nbrs[7] > point_m):
                 d3 = -1
                 s3 = -1
-            elif nbrs[4] > 0 and nbrs[7] < 0:
+            elif nbrs[4] > 0 > nbrs[7]:
                 d3 = 0
                 s3 = (point_m - nbrs[4]) / dx
-            elif nbrs[7] > 0 and nbrs[4] < 0 or (abs(point_m - nbrs[7]) < 1e-8 and nbrs[4] > point_m):
+            elif nbrs[7] > 0 > nbrs[4] or (abs(point_m - nbrs[7]) < 1e-8 and nbrs[4] > point_m):
                 d3 = FB
                 s3 = (point_m - nbrs[7]) / DY_SQRT
             else:
@@ -364,10 +364,10 @@ def dirSlope(point_m, nbrs, dy, dx):
             if nbrs[7] < 0 and nbrs[6] < 0 or (nbrs[7] > point_m and nbrs[6] > point_m):
                 d4 = -1
                 s4 = -1
-            elif nbrs[7] > 0 and nbrs[6] < 0:
+            elif nbrs[7] > 0 > nbrs[6]:
                 d4 = 0
                 s4 = (point_m - nbrs[7]) / DY_SQRT
-            elif nbrs[6] > 0 and nbrs[7] < 0 or (abs(point_m - nbrs[6]) < 1e-8 and nbrs[7] > point_m):
+            elif nbrs[6] > 0 > nbrs[7] or (abs(point_m - nbrs[6]) < 1e-8 and nbrs[7] > point_m):
                 d4 = FB
                 s4 = (point_m - nbrs[6]) / dy
             else:
@@ -396,10 +396,10 @@ def dirSlope(point_m, nbrs, dy, dx):
             if nbrs[6] < 0 and nbrs[5] < 0 or (nbrs[6] > point_m and nbrs[5] > point_m):
                 d5 = -1
                 s5 = -1
-            elif nbrs[6] > 0 and nbrs[5] < 0:
+            elif nbrs[6] > 0 > nbrs[5]:
                 d5 = 0
                 s5 = (point_m - nbrs[6]) / dy
-            elif nbrs[5] > 0 and nbrs[6] < 0 or (abs(point_m - nbrs[5]) < 1e-8 and nbrs[6] > point_m):
+            elif nbrs[5] > 0 > nbrs[6] or (abs(point_m - nbrs[5]) < 1e-8 and nbrs[6] > point_m):
                 d5 = FB
                 s5 = (point_m - nbrs[5]) / DY_SQRT
             else:
@@ -428,10 +428,10 @@ def dirSlope(point_m, nbrs, dy, dx):
             if nbrs[5] < 0 and nbrs[3] < 0 or (nbrs[5] > point_m and nbrs[3] > point_m):
                 d6 = -1
                 s6 = -1
-            elif nbrs[5] > 0 and nbrs[3] < 0:
+            elif nbrs[5] > 0 > nbrs[3]:
                 d6 = 0
                 s6 = (point_m - nbrs[5]) / DY_SQRT
-            elif nbrs[3] > 0 and nbrs[5] < 0 or (abs(point_m - nbrs[3]) < 1e-8 and nbrs[5] > point_m):
+            elif nbrs[3] > 0 > nbrs[5] or (abs(point_m - nbrs[3]) < 1e-8 and nbrs[5] > point_m):
                 d6 = FB
                 s6 = (point_m - nbrs[3]) / dx
             else:
@@ -460,10 +460,10 @@ def dirSlope(point_m, nbrs, dy, dx):
             if nbrs[3] < 0 and nbrs[0] < 0 or (nbrs[3] > point_m and nbrs[0] > point_m):
                 d7 = -1
                 s7 = -1
-            elif nbrs[3] > 0 and nbrs[0] < 0:
+            elif nbrs[3] > 0 > nbrs[0]:
                 d7 = 0
                 s7 = (point_m - nbrs[3]) / dx
-            elif nbrs[0] > 0 and nbrs[3] < 0 or (abs(point_m - nbrs[0]) < 1e-8 and nbrs[3] > point_m):
+            elif nbrs[0] > 0 > nbrs[3] or (abs(point_m - nbrs[0]) < 1e-8 and nbrs[3] > point_m):
                 d7 = FB
                 s7 = (point_m - nbrs[0]) / DY_SQRT
             else:
@@ -547,7 +547,7 @@ def dirSlope(point_m, nbrs, dy, dx):
     return direction, slope
 
 
-def boolToInt(x):  # function creates bit value from vector of ones and zeros
+def boolToInt(x):  # function creates a bit value from vector of ones and zeros
     """Return int value."""
     y = 0
     for i, j in enumerate(x):
