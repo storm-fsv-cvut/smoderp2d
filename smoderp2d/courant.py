@@ -18,7 +18,6 @@ class Courant:
     #
 
     def __init__(self):
-        self.orig_dt = 0  # to be set during set_time_step(dt)
         self.cour_speed = 0
         # citical courant value
         self.cour_crit = 0.95
@@ -35,11 +34,6 @@ class Courant:
             mask=GridGlobals.masks
         )
         self.max_delta_t_mult = 1.0
-
-    # Store the original guess time step
-    #
-    def set_time_step(self, dt):
-        self.orig_dt = dt
 
     #
     def reset(self):
