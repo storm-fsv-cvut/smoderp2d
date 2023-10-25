@@ -5,7 +5,6 @@ from smoderp2d.exceptions import SmoderpError
 from smoderp2d.providers import Logger
 
 courantMax = 1.0
-courantMin = 0.2
 
 def update_hb(loc_V_to_rill, rillRatio, l, b):
     V = loc_V_to_rill
@@ -95,6 +94,7 @@ def rill(V_to_rill, rillRatio, l, b, delta_t,
 #
 #
 #
+
 def rillCalculations(
         sur, pixelArea, l, rillRatio, n, slope, delta_t, ratio, ppp=False):
 
@@ -130,3 +130,4 @@ def rillCalculations(
     # print raw_input('..')
     # print "V_to_rill, V_rill_runoff", V_to_rill, V_rill_runoff
     return b, V_to_rill, V_rill_runoff, V_rill_rest, qMax, vMax, ratio, courant
+

@@ -1,5 +1,6 @@
 import os
 import shutil
+import math
 import numpy as np
 from abc import ABC, abstractmethod
 
@@ -360,13 +361,14 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _update_grid_globals(self, reference):
+    def _update_grid_globals(self, reference, reference_cellsize=None):
         """Update raster spatial reference info.
 
         This function must be called before _rst2np() is used first
         time.
 
         :param reference: reference raster layer
+        :param reference_cellsize: reference raster layer for cell size (see https://github.com/storm-fsv-cvut/smoderp2d/issues/256)
         """
         pass
 
@@ -508,6 +510,16 @@ class PrepareDataGISBase(PrepareDataBase):
         )
         Logger.progress(10)
 
+        # set GridGlobals
+        self._update_grid_globals(aoi_mask, self._input_params['elevation'])
+        if GridGlobals.dx != GridGlobals.dy:
+            raise DataPreparationInvalidInput(
+                "Input DEM spatial x resolution ({}) differs from y "
+                "resolution ({}). Resample input data to set the same x and y"
+                " spatial resolution before running SMODERP2D.".format(
+                    GridGlobals.dx, GridGlobals.dy)
+            )
+
         # calculate DEM derivatives
         # intentionally done on non-clipped DEM to avoid edge effects
         Logger.info("Creating DEM-derived layers...")
@@ -537,17 +549,6 @@ class PrepareDataGISBase(PrepareDataBase):
 
         # convert to numpy arrays
         self.data['mat_dem'] = self._rst2np(dem_aoi)
-        # update data dict for spatial ref info
-        GridGlobals.r = self.data['mat_dem'].shape[0]
-        GridGlobals.c = self.data['mat_dem'].shape[1]
-        self._update_grid_globals(dem_aoi)
-        if GridGlobals.dx != GridGlobals.dy:
-            raise DataPreparationInvalidInput(
-                "Input DEM spatial x resolution ({}) differs from y "
-                "resolution ({}). Resample input data to set the same x and y"
-                " spatial resolution before running SMODERP2D.".format(
-                    GridGlobals.dx, GridGlobals.dy)
-            )
         self.data['mat_slope'] = self._rst2np(dem_slope_aoi)
         # unit conversion % -> 0-1
         self._convert_slope_units()
@@ -892,11 +893,24 @@ class PrepareDataGISBase(PrepareDataBase):
     @staticmethod
     def _check_resolution_consistency(ewres, nsres):
         """Raise DataPreparationInvalidInput on different spatial resolution."""
-        if GridGlobals.dx != ewres or GridGlobals.dy != nsres:
+        if not math.isclose(GridGlobals.dx, ewres) or not math.isclose(GridGlobals.dy, nsres):
             raise DataPreparationInvalidInput(
                 "Input DEM spatial resolution ({}, {}) differs from processing "
                 "spatial resolution ({}, {})".format(
                     GridGlobals.dx, GridGlobals.dy, ewres, nsres)
+            )
+
+    @staticmethod
+    def _check_rst2np(arr):
+        """Check numpy array consistency with GridGlobals
+        
+        Raise DataPreparationError() if array's shape is different from GridGlobals.
+        """
+        if arr.shape[0] != GridGlobals.r or arr.shape[1] != GridGlobals.c:
+            raise DataPreparationError(
+                "Data inconsistency ({},{}) vs ({},{})".format(
+                arr.shape[0], arr.shape[1],
+                GridGlobals.r, GridGlobals.c)
             )
 
     def _decode_stream_attr(self, attr):

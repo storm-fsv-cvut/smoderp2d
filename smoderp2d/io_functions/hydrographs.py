@@ -236,5 +236,7 @@ class HydrographsPass:
                                  currRain, inStream=False, sep=SEP):
         pass
 
+
     def _output_path(self, output, directory='core'):
         pass
+
