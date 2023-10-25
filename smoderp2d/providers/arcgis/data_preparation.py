@@ -58,8 +58,7 @@ class PrepareData(PrepareDataGISBase):
         with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=dem_mask, cellAlignment=dem_mask, snapRaster=dem_mask):
             field = arcpy.Describe(aoi_polygon).OIDFieldName
             arcpy.conversion.PolygonToRaster(
-                aoi_polygon, field, aoi_mask, "MAXIMUM_AREA", "",
-                GridGlobals.dy
+                aoi_polygon, field, aoi_mask, "MAXIMUM_AREA"
             )
 
         # return aoi_polygon
@@ -137,40 +136,39 @@ class PrepareData(PrepareDataGISBase):
             for row in table:
                 outsideList.append(row[0])
 
-        # report them to the user
-        Logger.info(
-            "\t{} record points outside of "
-            "the area of interest ({}: {})".format(
-                len(outsideList), pointsOID, ",".join(map(str, outsideList))
+        if outsideList:
+            # report them to the user
+            Logger.info(
+                "\t{} record points outside of "
+                "the area of interest ({}: {})".format(
+                    len(outsideList), pointsOID, ",".join(map(str, outsideList))
+                )
             )
-        )
 
         return points_clipped
 
     def _rst2np(self, raster):
         """See base method for description.
         """
-        return arcpy.RasterToNumPyArray(
+        arr =  arcpy.RasterToNumPyArray(
             raster, nodata_to_value=GridGlobals.NoDataValue
         )
+        self._check_rst2np(arr)
 
-    def _update_grid_globals(self, reference):
+        return arr
+
+    def _update_grid_globals(self, reference, reference_cellsize):
         """See base method for description.
         """
         desc = arcpy.Describe(reference)
+        desc_cellsize = arcpy.Describe(reference_cellsize)
 
-        # check data consistency
-        if desc.height != GridGlobals.r or \
-                desc.width != GridGlobals.c:
-            raise DataPreparationError(
-                "Data inconsistency ({},{}) vs ({},{})".format(
-                    desc.height, desc.width,
-                    GridGlobals.r, GridGlobals.c)
-            )
+        GridGlobals.r = desc.height
+        GridGlobals.c = desc.width
 
         # lower left corner coordinates
         GridGlobals.set_llcorner((desc.Extent.XMin, desc.Extent.YMin))
-        GridGlobals.set_size((desc.MeanCellWidth, desc.MeanCellHeight))
+        GridGlobals.set_size((desc_cellsize.MeanCellWidth, desc_cellsize.MeanCellHeight))
         inp = arcpy.Describe(self._input_params['elevation'])
         self._check_resolution_consistency(
             inp.meanCellWidth, inp.meanCellHeight
@@ -178,7 +176,7 @@ class PrepareData(PrepareDataGISBase):
 
         # set arcpy environment (needed for rasterization)
         arcpy.env.extent = desc.Extent
-        arcpy.env.snapRaster = reference
+        arcpy.env.snapRaster = reference_cellsize
 
     def _compute_efect_cont(self, dem, asp):
         """See base method for description.
@@ -271,7 +269,9 @@ class PrepareData(PrepareDataGISBase):
 
         # generate numpy array of soil and vegetation attributes
         for field in self.soilveg_fields.keys():
-            output = self.storage.output_filepath("soilveg_aoi_{}".format(field))
+            output = self.storage.output_filepath(
+                "soilveg_aoi_{}".format(field)
+            )
             aoi_mask = self.storage.output_filepath('aoi_mask')
             with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=aoi_mask, cellAlignment=aoi_mask, snapRaster=aoi_mask):
                 arcpy.conversion.PolygonToRaster(soilveg_aoi_path, field, output, "MAXIMUM_AREA", "", GridGlobals.dy)
@@ -407,12 +407,13 @@ class PrepareData(PrepareDataGISBase):
                                             end_elev_fieldname, inclination_fieldname, next_down_id_fieldname,
                                             segment_length_fieldname, length_fieldname]) as table:
             for row in table:
-                segment_inclination = segment_props.get(row[0]).get('inclination')
+                segment_props_row0 = segment_props.get(row[0])
+                segment_inclination = segment_props_row0.get('inclination')
                 row[1] = row[1] if segment_inclination < 0 else self._reverse_line_direction(row[1])
-                row[2] = segment_props.get(row[0]).get('start_point').Z
-                row[3] = segment_props.get(row[0]).get('end_point').Z
+                row[2] = segment_props_row0.get('start_point').Z
+                row[3] = segment_props_row0.get('end_point').Z
                 row[4] = abs(segment_inclination)
-                row[6] = segment_props.get(row[0]).get("length")
+                row[6] = segment_props_row0.get("length")
 
                 # find the next down segment by comparing the points distance
                 next_down_id = Globals.streamsNextDownIdNoSegment
@@ -437,7 +438,8 @@ class PrepareData(PrepareDataGISBase):
                     row[5] = next_down_id
                 table.updateRow(row)
 
-    def _reverse_line_direction(self, line):
+    @staticmethod
+    def _reverse_line_direction(line):
         """Flip the order of points if a line to change its direction.
 
         If the geometry is multipart the parts are dissolved into single part
@@ -496,7 +498,9 @@ class PrepareData(PrepareDataGISBase):
                         if row[i] in (" ", None):
                             raise DataPreparationError(
                                 "Empty value in {} ({}) found.".format(
-                                    self._input_params["channel_properties_table"],
+                                    self._input_params[
+                                        "channel_properties_table"
+                                    ],
                                     fields[i])
                             )
                         stream_attr[fields[i]].append(row[i])
