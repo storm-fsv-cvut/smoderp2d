@@ -505,7 +505,7 @@ class PrepareData(PrepareDataGISBase):
                     )
                     segment_props.get(segment_id).update({'end_point': endpt})
                 else:
-                    to_reverse.append(segment_id)
+                    to_reverse.append(str(segment_id))
                     segment_props.get(segment_id).update({'start_point': endpt})
                     segment_props.get(segment_id).update({'end_point': startpt})
 
