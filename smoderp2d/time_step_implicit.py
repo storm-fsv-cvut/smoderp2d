@@ -67,7 +67,7 @@ class TimeStepImplicit:
         sur_ret = ma.filled(surface_retention_impl(h_new,sur_ret_old),fill_value=0) 
         # updating rill surface state
         state = update_state(h_new,h_crit,h_old,state, h_last_state1)
-        if ma.any(state != 0):
+        if Globals.isRill and ma.any(state != 0):
             h_sheet, h_rill = compute_h_hrill(h_new,h_crit,state,h_rillPre) 
         else:
             h_sheet = h_new
@@ -77,7 +77,8 @@ class TimeStepImplicit:
             sheet_runoff(a,b,h_sheet),fill_value=0.0)/pixel_area
         tot_flow    = sheet_flow 
         #calculating rill runoff from all cells
-        if ma.any(state != 0):
+        
+        if  Globals.isRill and ma.any(state != 0):
             rill_flow = ma.filled(rill_runoff(dt, h_rill,efect_vrst, rillWidth 
                                             ),fill_value=0.0)/pixel_area # [m/s]
 
@@ -261,63 +262,71 @@ class TimeStepImplicit:
         # Saving the new water level
         surface.arr.h_total_new = ma.array(h_new.reshape(r,c),mask=GridGlobals.masks) 
         
-        #saving the last value of the water level in rill during growing phase (state = 1)
-        # enables to restart the growing phase (switch from 2 to 1)
-        state_1_cond = ma.logical_and(
-                surface.arr.state == 1,
-                surface.arr.h_total_new < surface.arr.h_total_pre,
-            )
-        surface.arr.h_last_state1 = ma.where(
-                state_1_cond,
-                surface.arr.h_total_pre,
-                surface.arr.h_last_state1
-            ) 
-       # updating rill surface state
-        surface.arr.state = update_state(surface.arr.h_total_new,
-                                            surface.arr.h_crit,
-                                            surface.arr.h_total_pre,
-                                            surface.arr.state,
-                                            surface.arr.h_last_state1)
-       
-        # Saving results to surface structure
-        # Saving the new rill water level
-        h_sheet, h_rill = compute_h_hrill(surface.arr.h_total_new, surface.arr.h_crit,
-                                                    surface.arr.state,
-                                                    surface.arr.h_rillPre)
+        if Globals.isRill:
+            #saving the last value of the water level in rill during growing phase (state = 1)
+            # enables to restart the growing phase (switch from 2 to 1)
+            state_1_cond = ma.logical_and(
+                    surface.arr.state == 1,
+                    surface.arr.h_total_new < surface.arr.h_total_pre,
+                )
+            surface.arr.h_last_state1 = ma.where(
+                    state_1_cond,
+                    surface.arr.h_total_pre,
+                    surface.arr.h_last_state1
+                ) 
+        # updating rill surface state
+            surface.arr.state = update_state(surface.arr.h_total_new,
+                                                surface.arr.h_crit,
+                                                surface.arr.h_total_pre,
+                                                surface.arr.state,
+                                                surface.arr.h_last_state1)
         
-        surface.arr.h_rill = h_rill
+            # Saving results to surface structure
+            # Saving the new rill water level
+            h_sheet, h_rill = compute_h_hrill(surface.arr.h_total_new, surface.arr.h_crit,
+                                                        surface.arr.state,
+                                                        surface.arr.h_rillPre)
+            
+            surface.arr.h_rill = h_rill
 
-        surface.arr.h_sheet = h_sheet 
-        # Updating the information about rill depth
-        surface.arr.h_rillPre = compute_h_rillPre(surface.arr.h_rillPre,h_rill ,surface.arr.state)
-        
+            surface.arr.h_sheet = h_sheet 
+            # Updating the information about rill depth
+            surface.arr.h_rillPre = compute_h_rillPre(surface.arr.h_rillPre,h_rill ,surface.arr.state)
+            
 
-        surface.arr.vol_runoff = sheet_runoff(aa, b, surface.arr.h_sheet)*dt #[m]    
-        
-        # calcualting rill runoff
-        vol_to_rill = h_rill * GridGlobals.get_pixel_area()
-        RILL_RATIO = 0.7
-        efect_vrst = Globals.get_mat_efect_cont()
-        
+                
+            
+            # calcualting rill runoff
+            vol_to_rill = h_rill * GridGlobals.get_pixel_area()
+            RILL_RATIO = 0.7
+            efect_vrst = Globals.get_mat_efect_cont()
+            
 
-        surface.arr.vol_runoff_rill = rill_runoff(dt, 
-                                                  h_rill,  efect_vrst, 
-                                                  surface.arr.rillWidth) *dt # [m]
-        # Calculating the rill width
-        rill_h, rill_b = rill.update_hb(
-        vol_to_rill, RILL_RATIO, efect_vrst, surface.arr.rillWidth)
-        surface.arr.rillWidth = ma.where(surface.arr.state > 0, rill_b,
-                                          surface.arr.rillWidth) #[m]
+            surface.arr.vol_runoff_rill = rill_runoff(dt, 
+                                                    h_rill,  efect_vrst, 
+                                                    surface.arr.rillWidth) *dt # [m]
+            # Calculating the rill width
+            rill_h, rill_b = rill.update_hb(
+            vol_to_rill, RILL_RATIO, efect_vrst, surface.arr.rillWidth)
+            surface.arr.rillWidth = ma.where(surface.arr.state > 0, rill_b,
+                                            surface.arr.rillWidth) #[m]
+            
+
+            surface.arr.vol_to_rill = ma.where(surface.arr.state > 0,vol_to_rill,
+                               surface.arr.vol_to_rill)
+        else: 
+            surface.arr.h_sheet = surface.arr.h_total_new
+            
+        #calculating sheet runoff
+        surface.arr.vol_runoff = sheet_runoff(aa, b, surface.arr.h_sheet)*dt #[m]
         # Calculating the infiltration
-        surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type, surface.arr.h_total_new)*dt #[m]
-        
+        surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type, surface.arr.h_total_new)*dt #[m]    
         # Updating surface retention
         h_ret = actRain - surface.arr.infiltration
         surface_retention_update(h_ret,surface.arr)   
 
         
-        surface.arr.vol_to_rill = ma.where(surface.arr.state > 0,vol_to_rill,
-                               surface.arr.vol_to_rill)
+       
        
          # Update the cumulative values
         cumulative.update_cumulative(
