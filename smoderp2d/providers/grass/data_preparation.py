@@ -275,7 +275,7 @@ class PrepareData(PrepareDataGISBase):
 
             self._check_resolution_consistency(data.info.ewres, data.info.nsres)
 
-    def _compute_efect_cont(self, dem, asp):
+    def _compute_effect_cont(self, dem, asp):
         """See base method for description."""
         # conversion to radias not needed, GRASS's sin() assumes degrees
         ratio_cell = self.storage.output_filepath('ratio_cell')
@@ -286,15 +286,15 @@ class PrepareData(PrepareDataGISBase):
             )
         )
 
-        efect_cont = self.storage.output_filepath('efect_cont')
+        effect_cont = self.storage.output_filepath('effect_cont')
         _run_grass_module(
             'r.mapcalc',
             expression='{} = {} * {}'.format(
-                efect_cont, ratio_cell, GridGlobals.dx
+                effect_cont, ratio_cell, GridGlobals.dx
             )
         )
 
-        return self._rst2np(efect_cont)
+        return self._rst2np(effect_cont)
 
     def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
                          aoi_polygon, table_soil_vegetation):

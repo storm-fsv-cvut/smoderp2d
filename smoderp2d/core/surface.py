@@ -217,11 +217,11 @@ class Surface(GridGlobals, Stream, Kinematic):
         return line, bil_
 
 
-def __runoff(sur, dt, efect_vrst, ratio):
+def __runoff(sur, dt, effect_vrst, ratio):
     """Calculates the sheet and rill flow.
 
     :param dt: TODO
-    :param efect_vrst: TODO
+    :param effect_vrst: TODO
     :param ratio: TODO
 
     :return: TODO
@@ -241,7 +241,7 @@ def __runoff(sur, dt, efect_vrst, ratio):
 
     # rill runoff
     rill_runoff_results = rill_runoff(
-        dt, efect_vrst, ratio, h_rill, sur.rillWidth, sur.v_rill_rest,
+        dt, effect_vrst, ratio, h_rill, sur.rillWidth, sur.v_rill_rest,
         sur.vol_runoff_rill
     )
     v_rill = ma.where(sur.state > 0, rill_runoff_results[0], 0)
@@ -260,12 +260,12 @@ def __runoff(sur, dt, efect_vrst, ratio):
             vol_runoff, vol_rest, v_rill_rest, vol_runoff_rill, v_rill)
 
 
-def __runoff_zero_comp_type(sur, dt, efect_vrst, ratio):
+def __runoff_zero_comp_type(sur, dt, effect_vrst, ratio):
     """TODO.
 
     :param sur: TOD
     :param dt: TODO
-    :param efect_vrst: TODO
+    :param effect_vrst: TODO
     :param ratio: TODO
 
     :return: TODO
@@ -360,12 +360,12 @@ def sheet_runoff(dt, a, b, h_sheet):
     return q_sheet, vol_runoff, vol_rest
 
 
-def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
+def rill_runoff(dt, effect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
                 vol_runoff_rill):
     """TODO.
 
     :param dt: TODO
-    :param efect_vrst: TODO
+    :param effect_vrst: TODO
     :param ratio: TODO
     :param h_rill: TODO
     :param rillWidth: TODO
@@ -379,7 +379,7 @@ def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
 
     vol_to_rill = h_rill * GridGlobals.get_pixel_area()
     h, b = rill.update_hb(
-        vol_to_rill, RILL_RATIO, efect_vrst, rillWidth
+        vol_to_rill, RILL_RATIO, effect_vrst, rillWidth
     )
     r_rill = (h * b) / (b + 2 * h)
 
@@ -389,7 +389,7 @@ def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
 
     vol_rill = q_rill * dt
 
-    courant = (v_rill * dt) / efect_vrst
+    courant = (v_rill * dt) / effect_vrst
 
     # celerita
     # courant = (1 + s*b/(3*(b+2*h))) * q_rill/(b*h)

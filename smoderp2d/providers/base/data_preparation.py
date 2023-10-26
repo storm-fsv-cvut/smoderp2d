@@ -222,7 +222,7 @@ class PrepareDataGISBase(PrepareDataBase):
             'stream_end': 'temp',
             'stream_seg': 'temp',
             'ratio_cell': 'temp',
-            'efect_cont': 'temp',
+            'effect_cont': 'temp',
         }
         # complete list of field names that are supposed not to be changed,
         # e.g. in properties tables
@@ -280,7 +280,7 @@ class PrepareDataGISBase(PrepareDataBase):
             'mat_reten': None,
             'mat_fd': None,
             'mat_dem': None,
-            'mat_efect_cont': None,
+            'mat_effect_cont': None,
             'mat_slope': None,
             'mat_nan': None,
             'mat_a': None,
@@ -373,8 +373,8 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _compute_efect_cont(self, dem, asp):
-        """Compute efect contour array.
+    def _compute_effect_cont(self, dem, asp):
+        """Compute effect contour array.
 
         ML: improve description.
 
@@ -554,7 +554,7 @@ class PrepareDataGISBase(PrepareDataBase):
         self._convert_slope_units()
         if dem_flowdir_aoi is not None:
             self.data['mat_fd'] = self._rst2np(dem_flowdir_aoi)
-        self.data['mat_efect_cont'] = self._compute_efect_cont(
+        self.data['mat_effect_cont'] = self._compute_effect_cont(
             dem_aoi, dem_aspect_aoi
         )
 
