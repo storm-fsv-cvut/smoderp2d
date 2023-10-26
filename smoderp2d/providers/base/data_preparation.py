@@ -542,11 +542,6 @@ class PrepareDataGISBase(PrepareDataBase):
         dem_aspect_aoi = self._clip_raster_layer(
             dem_aspect, aoi_mask, 'dem_aspect_aoi'
         )
-        points_aoi = self._clip_record_points(
-            self._input_params['points'], aoi_polygon, 'points_aoi'
-        )
-        Logger.progress(30)
-
         # convert to numpy arrays
         self.data['mat_dem'] = self._rst2np(dem_aoi)
         self.data['mat_slope'] = self._rst2np(dem_slope_aoi)
@@ -557,6 +552,15 @@ class PrepareDataGISBase(PrepareDataBase):
         self.data['mat_effect_cont'] = self._compute_effect_cont(
             dem_aoi, dem_aspect_aoi
         )
+        Logger.progress(30)
+
+        # build points array
+        if self._input_params['points'] != '':
+            points_aoi = self._clip_record_points(
+                self._input_params['points'], aoi_polygon, 'points_aoi'
+            )
+            Logger.info("Preparing points for hydrographs...")
+            self.data['array_points'] = self._get_points_location(points_aoi)
 
         #   join the attributes to soil_veg intersect and check the table
         #   consistency
@@ -585,10 +589,6 @@ class PrepareDataGISBase(PrepareDataBase):
             self._get_mat_nan(GridGlobals.r, GridGlobals.c,
                               GridGlobals.NoDataValue, self.data['mat_slope'],
                               self.data['mat_dem'])
-
-        # build points array
-        Logger.info("Prepare points for hydrographs...")
-        self.data['array_points'] = self._get_points_location(points_aoi)
 
         # build a/aa arrays
         self.data['mat_a'], self.data['mat_aa'] = self._get_a(
