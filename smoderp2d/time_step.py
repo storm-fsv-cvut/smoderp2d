@@ -85,7 +85,6 @@ class TimeStep:
         v = ma.maximum(v_sheet, v_rill)
         co = 'sheet'
         courant.CFL(
-            surface.arr.h_total_pre,
             v,
             delta_t,
             mat_efect_cont,
@@ -171,9 +170,13 @@ class TimeStep:
         #
         # Surface BILANCE
         #
-        surBIL = surface.arr.h_total_pre + actRain + surface.arr.inflow_tm / \
-                 pixel_area - (surface.arr.vol_runoff / pixel_area +
-                               surface.arr.vol_runoff_rill / pixel_area)
+        surBIL = (
+            surface.arr.h_total_pre + actRain + surface.arr.inflow_tm /
+            pixel_area - (
+                surface.arr.vol_runoff / pixel_area +
+                surface.arr.vol_runoff_rill / pixel_area
+            )
+        )
 
         #
         # infiltration

@@ -33,7 +33,12 @@ def write_array_diff_png(diff, target_path):
 
 
 def write_array_diff(arr1, arr2, target_path):
-    diff = arr1 - arr2
+    try:
+        diff = arr1 - arr2
+    except ValueError as e:
+        print(f"Unable to compute array diff: {e}")
+        return
+
     if not diff.any():
         return
 

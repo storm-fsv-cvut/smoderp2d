@@ -33,8 +33,8 @@ class Profile1d(Process):
             identifier='profile1d',
             version='0.1',
             title="Experimental PROFILE1D process",
-            abstract="""Performs SMODERP distributed event-based model for surface and
-subsurface runoff and erosion
+            abstract="""Performs SMODERP distributed event-based model for
+surface and subsurface runoff and erosion
 (https://github.com/storm-fsv-cvut/smoderp2d) in 1D""",
             inputs=inputs,
             outputs=outputs,

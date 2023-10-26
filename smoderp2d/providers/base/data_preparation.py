@@ -1,5 +1,6 @@
 import os
 import shutil
+import math
 import numpy as np
 from abc import ABC, abstractmethod
 
@@ -122,7 +123,8 @@ class PrepareDataBase(ABC):
                     try:
                         if combinat.index(ccc):
                             mat_inf_index[i][j] = combinat.index(ccc)
-                    except:
+                    except ValueError:
+                        # ccc not in combinat
                         combinat.append(ccc)
                         combinatIndex.append(
                             [combinat.index(ccc), kkk, sss, 0]
@@ -233,7 +235,9 @@ class PrepareDataGISBase(PrepareDataBase):
             'stream_segment_inclination': 'inclination',
             'stream_segment_next_down_id': 'next_down_id',
             'stream_segment_length': 'segment_length',
-            'channel_shape_id':  self._input_params['streams_channel_type_fieldname'],
+            'channel_shape_id':  self._input_params[
+                'streams_channel_type_fieldname'
+            ],
             'channel_profile': 'profile',
             'channel_shapetype': 'shapetype',
             'channel_bottom_width': 'b',
@@ -324,7 +328,7 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _clip_raster_layer(self, dataset, outline, name):
+    def _clip_raster_layer(self, dataset, aoi_mask, name):
         """Clips raster dataset to given polygon.
 
         :param dataset: raster dataset to be clipped
@@ -335,7 +339,7 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _clip_record_points(self, dataset, outline, name):
+    def _clip_record_points(self, dataset, aoi_polygon, name):
         """Makes a copy of record points inside the AOI as new
         feature layer and logs those outside AOI.
 
@@ -357,13 +361,14 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _update_grid_globals(self, reference):
+    def _update_grid_globals(self, reference, reference_cellsize=None):
         """Update raster spatial reference info.
 
         This function must be called before _rst2np() is used first
         time.
 
         :param reference: reference raster layer
+        :param reference_cellsize: reference raster layer for cell size (see https://github.com/storm-fsv-cvut/smoderp2d/issues/256)
         """
         pass
 
@@ -380,7 +385,7 @@ class PrepareDataGISBase(PrepareDataBase):
 
     @abstractmethod
     def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
-                         aoi_outline, table_soil_vegetation):
+                         aoi_polygon, table_soil_vegetation):
         """Prepare the combination of soils and vegetation input layers.
 
         Gets the spatial intersection of both and checks the
@@ -505,6 +510,16 @@ class PrepareDataGISBase(PrepareDataBase):
         )
         Logger.progress(10)
 
+        # set GridGlobals
+        self._update_grid_globals(aoi_mask, self._input_params['elevation'])
+        if GridGlobals.dx != GridGlobals.dy:
+            raise DataPreparationInvalidInput(
+                "Input DEM spatial x resolution ({}) differs from y "
+                "resolution ({}). Resample input data to set the same x and y"
+                " spatial resolution before running SMODERP2D.".format(
+                    GridGlobals.dx, GridGlobals.dy)
+            )
+
         # calculate DEM derivatives
         # intentionally done on non-clipped DEM to avoid edge effects
         Logger.info("Creating DEM-derived layers...")
@@ -534,17 +549,6 @@ class PrepareDataGISBase(PrepareDataBase):
 
         # convert to numpy arrays
         self.data['mat_dem'] = self._rst2np(dem_aoi)
-        # update data dict for spatial ref info
-        GridGlobals.r = self.data['mat_dem'].shape[0]
-        GridGlobals.c = self.data['mat_dem'].shape[1]
-        self._update_grid_globals(dem_aoi)
-        if GridGlobals.dx != GridGlobals.dy:
-            raise DataPreparationInvalidInput(
-                "Input DEM spatial x resolution ({}) differs from y "
-                "resolution ({}). Resample input data to set the same x and y"
-                " spatial resolution before running SMODERP2D.".format(
-                    GridGlobals.dx, GridGlobals.dy)
-            )
         self.data['mat_slope'] = self._rst2np(dem_slope_aoi)
         # unit conversion % -> 0-1
         self._convert_slope_units()
@@ -613,7 +617,9 @@ class PrepareDataGISBase(PrepareDataBase):
                 self._input_params['streams'],
                 self._input_params['channel_properties_table'],
                 self._input_params['streams_channel_type_fieldname'],
-                dem_aoi,
+                dem_filled,
+                # provide unclipped DEM to avoid stream vertices placed
+                # outside DEM
                 aoi_polygon
             )
         else:
@@ -626,7 +632,9 @@ class PrepareDataGISBase(PrepareDataBase):
             GridGlobals.r, GridGlobals.c, GridGlobals.NoDataValue,
             self.data['mat_nan']
         )
-        self.storage.write_raster(self.data['mat_boundary'], 'mat_boundary', 'temp')
+        self.storage.write_raster(
+            self.data['mat_boundary'], 'mat_boundary', 'temp'
+        )
 
         GridGlobals.rr, GridGlobals.rc = self._get_rr_rc(
             GridGlobals.r, GridGlobals.c, self.data['mat_boundary']
@@ -707,7 +715,7 @@ class PrepareDataGISBase(PrepareDataBase):
             return None
 
     def _prepare_streams(self, stream, stream_shape_tab, stream_shape_code,
-                         dem_aoi, aoi_polygon):
+                         dem, aoi_polygon):
         self.data['type_of_computing'] = CompType.rill
 
         # pocitam vzdy s ryhama pokud jsou zadane vsechny vstupy pro
@@ -726,7 +734,7 @@ class PrepareDataGISBase(PrepareDataBase):
             Logger.progress(70)
 
             Logger.info("Computing stream direction and inclinations...")
-            self._stream_direction(stream_aoi, dem_aoi)
+            self._stream_direction(stream_aoi, dem)
             Logger.progress(75)
 
             Logger.info("Computing stream segments...")
@@ -855,7 +863,9 @@ class PrepareDataGISBase(PrepareDataBase):
                 )
 
             # check presence of needed fields in stream shape properties table
-            fields = self._get_field_names(self._input_params['channel_properties_table'])
+            fields = self._get_field_names(
+                self._input_params['channel_properties_table']
+            )
             for f in self.stream_shape_fields:
                 if f not in fields:
                     raise DataPreparationInvalidInput(
@@ -870,19 +880,37 @@ class PrepareDataGISBase(PrepareDataBase):
             for target in (self._input_params["streams"],
                            self._input_params['channel_properties_table']):
                 fields = self._get_field_names(target)
-                if self._input_params["streams_channel_type_fieldname"] not in fields:
-                    raise DataPreparationInvalidInput("Field '{}' not found in '{}'".format(
-                        self._input_params["streams_channel_type_fieldname"], target)
+                channel_type_fieldname = self._input_params[
+                    "streams_channel_type_fieldname"
+                ]
+                if channel_type_fieldname not in fields:
+                    raise DataPreparationInvalidInput(
+                        "Field '{}' not found in '{}'".format(
+                            channel_type_fieldname, target
+                        )
                     )
 
     @staticmethod
     def _check_resolution_consistency(ewres, nsres):
         """Raise DataPreparationInvalidInput on different spatial resolution."""
-        if GridGlobals.dx != ewres or GridGlobals.dy != nsres:
+        if not math.isclose(GridGlobals.dx, ewres) or not math.isclose(GridGlobals.dy, nsres):
             raise DataPreparationInvalidInput(
                 "Input DEM spatial resolution ({}, {}) differs from processing "
                 "spatial resolution ({}, {})".format(
                     GridGlobals.dx, GridGlobals.dy, ewres, nsres)
+            )
+
+    @staticmethod
+    def _check_rst2np(arr):
+        """Check numpy array consistency with GridGlobals
+        
+        Raise DataPreparationError() if array's shape is different from GridGlobals.
+        """
+        if arr.shape[0] != GridGlobals.r or arr.shape[1] != GridGlobals.c:
+            raise DataPreparationError(
+                "Data inconsistency ({},{}) vs ({},{})".format(
+                arr.shape[0], arr.shape[1],
+                GridGlobals.r, GridGlobals.c)
             )
 
     def _decode_stream_attr(self, attr):
