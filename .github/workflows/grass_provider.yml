@@ -15,7 +15,7 @@ jobs:
 
     runs-on: ubuntu-22.04
     container:
-      image: mundialis/grass-py3-pdal:latest-debian
+      image: osgeo/grass-gis:releasebranch_8_3-debian
 
     steps:
       - uses: actions/checkout@v3
