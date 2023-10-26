@@ -178,7 +178,7 @@ class PrepareData(PrepareDataGISBase):
         arcpy.env.extent = desc.Extent
         arcpy.env.snapRaster = reference_cellsize
 
-    def _compute_efect_cont(self, dem, asp):
+    def _compute_effect_cont(self, dem, asp):
         """See base method for description.
         """
         pii = math.pi / 180.0
@@ -190,10 +190,10 @@ class PrepareData(PrepareDataGISBase):
         times1 = arcpy.sa.Plus(cosslope, sinslope)
         times1.save(self.storage.output_filepath('ratio_cell'))
 
-        efect_cont = arcpy.sa.Times(times1, GridGlobals.dx)
-        efect_cont.save(self.storage.output_filepath('efect_cont'))
+        effect_cont = arcpy.sa.Times(times1, GridGlobals.dx)
+        effect_cont.save(self.storage.output_filepath('effect_cont'))
 
-        return self._rst2np(efect_cont)
+        return self._rst2np(effect_cont)
 
     def _prepare_soilveg(self, soil, soil_type_fieldname, vegetation,
                          vegetation_type_fieldname, aoi_polygon,

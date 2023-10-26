@@ -26,7 +26,7 @@ def main(filename):
         'mat_inf_index': indata[17], 'mat_hcrit': indata[18],
         'mat_aa': indata[19], 'mat_b': indata[20],
         'mat_reten': indata[21], 'mat_fd': indata[22],
-        'mat_dmt': indata[23], 'mat_efect_cont': indata[24],
+        'mat_dmt': indata[23], 'mat_effect_cont': indata[24],
         'mat_slope': indata[25], 'mat_nan': indata[26],
         'mat_a': indata[27], 'mat_n': indata[28],
         'outdir': indata[29], 'pixel_area': indata[30],

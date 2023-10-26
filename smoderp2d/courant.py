@@ -81,11 +81,11 @@ class Courant:
         )
 
     #
-    def CFL(self, v, delta_t, efect_cont, co, rill_courant):
+    def CFL(self, v, delta_t, effect_cont, co, rill_courant):
         """Checks and store in each computational cell the maximum velocity
         and maximum Courant coefficient.
         """
-        cour = v / self.cour_coef * delta_t / efect_cont
+        cour = v / self.cour_coef * delta_t / effect_cont
         cour = ma.maximum(cour, rill_courant)
         # print cour
         if ma.any(cour > self.cour_most):
@@ -141,9 +141,9 @@ class Courant:
             if ma.any(self.cour_speed == 0.0):
                 return self.max_delta_t * self.max_delta_t_mult, ratio
 
-            efect_cont = Gl.mat_efect_cont[self.i, self.j]
+            effect_cont = Gl.mat_effect_cont[self.i, self.j]
             dt = ma.round(
-                efect_cont * self.cour_crit * self.cour_coef / self.cour_speed,
+                effect_cont * self.cour_crit * self.cour_coef / self.cour_speed,
                 8)
 
             # nove dt nesmi byt vetsi nez je maxdt * max_delta_t_mult
