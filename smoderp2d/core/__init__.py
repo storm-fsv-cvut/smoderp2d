@@ -16,6 +16,8 @@ class CompType:
             return cls.rill
         elif key == 'sheet_stream':
             return cls.sheet_stream
+        elif key == 'stream_rill':
+            return cls.stream_rill
         elif key == 'subflow_rill':
             return cls.subflow_rill
         else:

@@ -223,7 +223,8 @@ class QGISRunner(GrassGisRunner):
                              "channel_properties_table"]:
                     if options[key] != '':
                         # channel_properties_table is optional
-                        Module("db.in.ogr", input=options[key], output=key)
+                        Module("db.in.ogr", input=options[key], output=key,
+                               gdal_doo='AUTODETECT_TYPE=YES')
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
 
