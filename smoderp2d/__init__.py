@@ -219,7 +219,8 @@ class QGISRunner(GrassGisRunner):
                 # import tables
                 elif key in ["table_soil_vegetation",
                              "channel_properties_table"]:
-                    Module("db.in.ogr", input=options[key], output=key)
+                    Module("db.in.ogr", input=options[key], output=key,
+                           gdal_doo='AUTODETECT_TYPE=YES')
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
 
