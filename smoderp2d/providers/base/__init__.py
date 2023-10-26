@@ -333,7 +333,7 @@ class BaseProvider(object):
         Globals.diffuse = False  # not implemented yet
         Globals.subflow = comp_type['subflow_rill']
         Globals.isRill = comp_type['rill']
-        Globals.isStream = comp_type['stream_rill']
+        Globals.isStream = comp_type['stream']
         Globals.prtTimes = data.get('prtTimes', None)
         Globals.extraOut = self._hidden_config.getboolean('outputs', 'extraout')
         Globals.end_time *= 60  # convert min to sec
@@ -388,7 +388,7 @@ class BaseProvider(object):
         for item in ('sheet_only',
                      'rill',
                      'sheet_stream',
-                     'stream_rill',
+                     'stream',
                      'subflow_rill',
                      'stream_subflow_rill'):
             ret[item] = False
