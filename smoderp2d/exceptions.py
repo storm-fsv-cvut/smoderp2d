@@ -49,7 +49,7 @@ class ConfigError(Exception):
 
 
 class SmallParameterValueError(ConfigError):
-    """ Exception raised if a parameter reaches a wrong numeric value
+    """ Exception raised if a parameter reaches a wrong (too small) numeric value
     """
     def __init__(self,param, value, limit):
         self.msg = "Parameter '{}' has low value ({} < {}).".format(
