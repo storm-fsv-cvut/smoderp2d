@@ -55,22 +55,16 @@ class InputError(Exception):
 
 
 class SmoderpTask(QgsTask):
-    def __init__(self, input_params, input_maps):
+    def __init__(self, input_params, input_maps, grass_bin_path):
         super().__init__()
 
         self.input_params = input_params
         self.input_maps = input_maps
+        self.grass_bin_path = grass_bin_path
         self.error = None
 
     def run(self):
-        # Get GRASS executable
-        try:
-            grass_bin_path = find_grass_bin()
-        except ImportError as e:
-            self.error = e
-            return False
-
-        runner = QGISRunner(self.setProgress, grass_bin_path)
+        runner = QGISRunner(self.setProgress, self.grass_bin_path)
         runner.set_options(self.input_params)
         runner.import_data(self.input_maps)
         try:
@@ -176,6 +170,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.setWidget(self.dockWidgetContents)
 
         self._result_group_name = "SMODERP2D"
+        self._grass_bin_path = None
 
     def retranslateUi(self):
         for section in sections:
@@ -351,6 +346,17 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             button.setText('...')
 
     def OnRunButton(self):
+        if not self._grass_bin_path:
+            # Get GRASS executable
+            try:
+                self._grass_bin_path = find_grass_bin()
+            except ImportError as e:
+                self._sendMessage(
+                    "ERROR:",
+                    "GRASS GIS not found.",
+                    "CRITICAL"
+                )
+                return
 
         if self._checkInputDataPrep():
             # remove previous results
@@ -362,7 +368,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             # Get input parameters
             self._getInputParams()
 
-            smoderp_task = SmoderpTask(self._input_params, self._input_maps)
+            smoderp_task = SmoderpTask(self._input_params, self._input_maps, self._grass_bin_path)
 
             # prepare the progress bar
             self.progress_bar = QProgressBar()

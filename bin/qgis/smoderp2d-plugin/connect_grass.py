@@ -50,7 +50,7 @@ def _grass_loc():
     # Set GISBASE environment variable
     if os.environ.get('GISBASE') is None: # workaround for https://github.com/storm-fsv-cvut/smoderp2d/issues/278
         os.environ['GISBASE'] = gisbase
-    # define GRASS-Python environment
-    sys.path.append(os.path.join(gisbase, "etc", "python"))
+        # define GRASS-Python environment
+        sys.path.append(os.path.join(gisbase, "etc", "python"))
 
     return grass_bin_path
