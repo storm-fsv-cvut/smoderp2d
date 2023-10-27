@@ -61,7 +61,7 @@ class SmallParameterValueError(ConfigError):
 class LargeParameterValueError(ConfigError):
     """ Exception raised if a parameter reaches a wrong numeric value
     """
-    def __init__(self,param, value, limit):
+    def __init__(self, param, value, limit):
         self.msg = "Parameter '{}' has a wrong value ({} > {}).".format(
                 param, value, limit
         )
