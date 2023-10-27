@@ -144,7 +144,6 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         """
         self.infiltration += surface.infiltration * GridGlobals.pixel_area
         self.precipitation += surface.cur_rain * GridGlobals.pixel_area
-        self.vol_sheet += surface.vol_runoff
         self.vol_rill += surface.vol_runoff_rill
         self.vol_sur_tot += surface.vol_runoff_rill + surface.vol_runoff
         self.inflow_sur += surface.inflow_tm
