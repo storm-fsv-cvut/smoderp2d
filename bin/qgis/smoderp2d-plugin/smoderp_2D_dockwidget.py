@@ -79,6 +79,8 @@ class SmoderpTask(QgsTask):
             self.error = e
             return False
 
+        runner.finish()
+
         # resets
         Globals.reset()
         GridGlobals.reset()
@@ -172,6 +174,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.layout.addWidget(self.run_button)
         self.dockWidgetContents.setLayout(self.layout)
         self.setWidget(self.dockWidgetContents)
+
+        self._result_group_name = "SMODERP2D"
 
     def retranslateUi(self):
         for section in sections:
@@ -349,10 +353,14 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
     def OnRunButton(self):
 
         if self._checkInputDataPrep():
+            # remove previous results
+            root = QgsProject.instance().layerTreeRoot()
+            result_node = root.findGroup(self._result_group_name)
+            if result_node:
+                root.removeChildNode(result_node)
+
             # Get input parameters
             self._getInputParams()
-
-            # TODO: implement data preparation only
 
             smoderp_task = SmoderpTask(self._input_params, self._input_maps)
 
@@ -406,7 +414,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
     def computationFinished(self):
         # show results
         root = QgsProject.instance().layerTreeRoot()
-        group = root.insertGroup(0, "SMODERP2D")
+        group = root.insertGroup(0, self._result_group_name)
 
         outdir = self.main_output_lineEdit.text().strip()
         first = True
