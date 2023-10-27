@@ -62,9 +62,13 @@ class QGisLogHandler(logging.Handler):
         if record.levelno >= PROGRESS:
             self.progress_reporter(record.msg)
         elif record.levelno >= logging.ERROR:
-            QgsMessageLog.logMessage(record.msg, 'SMODERP2D', level=Qgis.Critical)
+            QgsMessageLog.logMessage(
+                record.msg, 'SMODERP2D', level=Qgis.Critical
+            )
         elif record.levelno >= logging.WARNING:
-            QgsMessageLog.logMessage(record.msg, 'SMODERP2D', level=Qgis.Warning)
+            QgsMessageLog.logMessage(
+                record.msg, 'SMODERP2D', level=Qgis.Warning
+            )
         elif record.levelno >= logging.INFO or record.levelno >= logging.DEBUG:
             # QGIS has no debug level
             QgsMessageLog.logMessage(record.msg, 'SMODERP2D', level=Qgis.Info)

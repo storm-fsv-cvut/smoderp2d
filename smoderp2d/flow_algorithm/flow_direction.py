@@ -44,7 +44,7 @@ def flow_direction(dem, rr, rc, br, bc, pixel_size):
                 try:
                     drop[0] = (
                         dem[i][j] - dem[i - 1][j - 1]) / dist[0] * 100.00
-                except:
+                except IndexError:
                     drop[0] = -99999.0
             else:
                 drop[0] = -99999.0
@@ -52,7 +52,7 @@ def flow_direction(dem, rr, rc, br, bc, pixel_size):
             if j >= 1:
                 try:
                     drop[1] = (dem[i][j] - dem[i][j - 1]) / dist[1] * 100.00
-                except:
+                except IndexError:
                     drop[1] = -99999.0
             else:
                 drop[1] = -99999.0
@@ -61,7 +61,7 @@ def flow_direction(dem, rr, rc, br, bc, pixel_size):
                 try:
                     drop[2] = (dem[i][j] - dem[i + 1][j - 1]) / dist[
                         0] * 100.00
-                except:
+                except IndexError:
                     drop[2] = -99999.0
             else:
                 drop[2] = -99999.0
@@ -69,33 +69,33 @@ def flow_direction(dem, rr, rc, br, bc, pixel_size):
             if i >= 1:
                 try:
                     drop[3] = (dem[i][j] - dem[i - 1][j]) / dist[1] * 100.00
-                except:
+                except IndexError:
                     drop[3] = -99999.0
             else:
                 drop[3] = -99999.0
 
             try:
                 drop[4] = (dem[i][j] - dem[i + 1][j]) / dist[1] * 100.00
-            except:
+            except IndexError:
                 drop[4] = -99999.0
 
             if i >= 1:
                 try:
                     drop[5] = (dem[i][j] - dem[i - 1][j + 1]) / dist[
                         0] * 100.00
-                except:
+                except IndexError:
                     drop[5] = -99999.0
             else:
                 drop[5] = -99999.0
 
             try:
                 drop[6] = (dem[i][j] - dem[i][j + 1]) / dist[1] * 100.00
-            except:
+            except IndexError:
                 drop[6] = -99999.0
 
             try:
                 drop[7] = (dem[i][j] - dem[i + 1][j + 1]) / dist[0] * 100.00
-            except:
+            except IndexError:
                 drop[7] = -99999.0
 
             min_drop = ma.argmax(drop)
