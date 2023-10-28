@@ -223,8 +223,14 @@ class QGISRunner(GrassGisRunner):
                              "channel_properties_table"]:
                     if options[key] != '':
                         # channel_properties_table is optional
-                        Module("db.in.ogr", input=options[key], output=key,
-                               gdal_doo='AUTODETECT_TYPE=YES')
+                        from osgeo import ogr
+                        kwargs = {}
+                        ds = ogr.Open(options[key])
+                        if ds:
+                            if ds.GetDriver().GetName() == 'CSV':
+                                kwargs['gdal_doo'] = 'AUTODETECT_TYPE=YES'
+                            ds = None
+                        Module("db.in.ogr", input=options[key], output=key, **kwargs)
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
 
