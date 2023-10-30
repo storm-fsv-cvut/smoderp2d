@@ -173,7 +173,7 @@ class QGISRunner(GrassGisRunner):
         #     raise SmoderpError('{}'.format(e))
 
         # initialize GRASS session
-        gsetup.init(gisdb, location, 'PERMANENT', os.environ['GISBASE'])
+        self._grass_session = gsetup.init(gisdb, location, 'PERMANENT')
         # calling gsetup.init() is not enough for PyGRASS
         Mapset('PERMANENT', location, gisdb).current()
 
@@ -234,9 +234,9 @@ class QGISRunner(GrassGisRunner):
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
 
-    def __del__(self):
-        pass
-
+    def finish(self):
+        from grass.script import setup as gsetup
+        self._grass_session.finish()
 
 class WpsRunner(Runner):
     def __init__(self, **args):

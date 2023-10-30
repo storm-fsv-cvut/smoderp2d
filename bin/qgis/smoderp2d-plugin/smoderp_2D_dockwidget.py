@@ -55,22 +55,16 @@ class InputError(Exception):
 
 
 class SmoderpTask(QgsTask):
-    def __init__(self, input_params, input_maps):
+    def __init__(self, input_params, input_maps, grass_bin_path):
         super().__init__()
 
         self.input_params = input_params
         self.input_maps = input_maps
+        self.grass_bin_path = grass_bin_path
         self.error = None
 
     def run(self):
-        # Get GRASS executable
-        try:
-            grass_bin_path = find_grass_bin()
-        except ImportError as e:
-            self.error = e
-            return False
-
-        runner = QGISRunner(self.setProgress, grass_bin_path)
+        runner = QGISRunner(self.setProgress, self.grass_bin_path)
         runner.set_options(self.input_params)
         runner.import_data(self.input_maps)
         try:
@@ -78,6 +72,8 @@ class SmoderpTask(QgsTask):
         except ProviderError as e:
             self.error = e
             return False
+
+        runner.finish()
 
         # resets
         Globals.reset()
@@ -172,6 +168,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.layout.addWidget(self.run_button)
         self.dockWidgetContents.setLayout(self.layout)
         self.setWidget(self.dockWidgetContents)
+
+        self._result_group_name = "SMODERP2D"
+        self._grass_bin_path = None
 
     def retranslateUi(self):
         for section in sections:
@@ -347,14 +346,29 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             button.setText('...')
 
     def OnRunButton(self):
+        if not self._grass_bin_path:
+            # Get GRASS executable
+            try:
+                self._grass_bin_path = find_grass_bin()
+            except ImportError as e:
+                self._sendMessage(
+                    "ERROR:",
+                    "GRASS GIS not found.",
+                    "CRITICAL"
+                )
+                return
 
         if self._checkInputDataPrep():
+            # remove previous results
+            root = QgsProject.instance().layerTreeRoot()
+            result_node = root.findGroup(self._result_group_name)
+            if result_node:
+                root.removeChildNode(result_node)
+
             # Get input parameters
             self._getInputParams()
 
-            # TODO: implement data preparation only
-
-            smoderp_task = SmoderpTask(self._input_params, self._input_maps)
+            smoderp_task = SmoderpTask(self._input_params, self._input_maps, self._grass_bin_path)
 
             # prepare the progress bar
             self.progress_bar = QProgressBar()
@@ -406,7 +420,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
     def computationFinished(self):
         # show results
         root = QgsProject.instance().layerTreeRoot()
-        group = root.insertGroup(0, "SMODERP2D")
+        group = root.insertGroup(0, self._result_group_name)
 
         outdir = self.main_output_lineEdit.text().strip()
         first = True
