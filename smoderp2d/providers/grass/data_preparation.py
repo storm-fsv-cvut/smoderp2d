@@ -33,7 +33,6 @@ def _run_grass_module(*args, **kwargs):
             tmp_fn = tmp.name
             Module(*args, **kwargs)
     except CalledModuleError as e:
-        print(tmp_fn)
         with open(tmp_fn) as fd:
             error_msg = fd.read()
         Logger.error(f"Data preparation failed:\n{e}\n{error_msg}")
