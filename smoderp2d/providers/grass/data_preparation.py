@@ -1,5 +1,6 @@
 import numpy as np
 import sqlite3
+import tempfile
 
 from smoderp2d.core.general import GridGlobals, Globals
 
@@ -24,7 +25,16 @@ def _run_grass_module(*args, **kwargs):
     #     si.wShowWindow = subprocess.SW_HIDE
     #     Module(*args, env_={'startupinfo': si}, **kwargs)
     # else:
-    Module(*args, **kwargs)
+    try:
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            kwargs['stderr_'] = tmp
+            tmp_fn = tmp.name
+            Module(*args, **kwargs)
+    except CalledModuleError as e:
+        with open(tmp_fn) as fd:
+            error_msg = fd.read()
+        Logger.error(f"Data preparation failed:\n{e}\n{error_msg}")
+        raise DataPreparationError(f"Data preparation failed: {error_msg}")
 
 
 class PrepareData(PrepareDataGISBase):
