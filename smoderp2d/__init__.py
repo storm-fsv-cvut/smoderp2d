@@ -190,7 +190,7 @@ class QGISRunner(GrassGisRunner):
 
         :param options: dictionary of input data
         """
-        from grass.pygrass.modules import Module
+        from smoderp2d.providers.grass import Module
 
         for key in options:
             try:

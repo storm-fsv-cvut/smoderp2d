@@ -10,41 +10,49 @@ from smoderp2d.providers import Logger
 
 import grass.script as gs
 from grass.pygrass.gis.region import Region
-from grass.pygrass.modules import Module
+from grass.pygrass.modules import Module as GrassModule
 from grass.pygrass.raster import numpy2raster
 from grass.pygrass.messages import Messenger
 
-def _run_grass_module(*args, **kwargs):
-    if sys.platform == 'win32':
-        import subprocess
-        import time
-        import shutil
-        si = subprocess.STARTUPINFO()
-        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        si.wShowWindow = subprocess.SW_HIDE
-        m = Module(*args, **kwargs, run_=False)
-        # very ugly hack of m.run()
-        m._finished = False
-        if m.inputs["stdin"].value:
-            m.stdin = m.inputs["stdin"].value
-            m.stdin_ = subprocess.PIPE
-        m.start_time = time.time()
-        cmd = m.make_cmd()
-        cmd = [shutil.which(cmd[0])] + cmd[1:]
-        m._popen = subprocess.Popen( #gs.core.Popen(
-            cmd,
-            shell=False,
-            universal_newlines=True,
-            stdin=m.stdin_,
-            stdout=m.stdout_,
-            stderr=m.stderr_,
-            env=m.env_,
-            startupinfo=si
-        )
-        if m.finish_ is True:
-            m.wait()
-    else:
-        m = Module(*args, **kwargs)
+class Module:
+    def __init__(self, *args, **kwargs):
+        if sys.platform == 'win32':
+            import subprocess
+            import time
+            import shutil
+            si = subprocess.STARTUPINFO()
+            si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            si.wShowWindow = subprocess.SW_HIDE
+            m = GrassModule(*args, **kwargs, run_=False)
+            # very ugly hack of m.run()
+            m._finished = False
+            if m.inputs["stdin"].value:
+                m.stdin = m.inputs["stdin"].value
+                m.stdin_ = subprocess.PIPE
+            m.start_time = time.time()
+            cmd = m.make_cmd()
+            cmd = [shutil.which(cmd[0])] + cmd[1:]
+            with subprocess.Popen( #gs.core.Popen(
+                cmd,
+                shell=False,
+                universal_newlines=True,
+                stdin=m.stdin_,
+                stdout=m.stdout_,
+                stderr=subprocess.PIPE,
+                env=m.env_,
+                startupinfo=si
+            ) as m._popen:
+                for line in iter(lambda: self._readline_with_recover(m._popen.stderr), ''):
+                    print(line)
+        else:
+            GrassModule(*args, **kwargs)
+
+    @staticmethod
+    def _readline_with_recover(stdout):
+        try:
+            return stdout.readline()
+        except UnicodeDecodeError:
+            return ''  # replaced-text
 
 class GrassGisWriter(BaseWriter):
     def __init__(self):
@@ -87,7 +95,7 @@ class GrassGisWriter(BaseWriter):
             raster_name, overwrite=True
         )
 
-        _run_grass_module('r.out.gdal',
+        Module('r.out.gdal',
                input=raster_name,
                output=file_output,
                format='AAIGrid',
