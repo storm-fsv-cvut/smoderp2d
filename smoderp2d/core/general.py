@@ -62,8 +62,6 @@ class GridGlobals(object):
     yllcorner = None
     # no data value for raster
     NoDataValue = -9999
-    # no data integer value for raster
-    NoDataInt = None
     # size of raster cell
     dx = None
     # size of raster cell
@@ -79,7 +77,7 @@ class GridGlobals(object):
 
     @classmethod
     def get_dim(cls):
-        return (cls.r, cls.c)
+        return cls.r, cls.c
 
     @classmethod
     def get_pixel_area(cls):
@@ -91,15 +89,15 @@ class GridGlobals(object):
 
     @classmethod
     def get_region_dim(cls):
-        return (cls.rr, cls.rc)
+        return cls.rr, cls.rc
 
     @classmethod
     def get_border_dim(cls):
-        return (cls.br, cls.bc)
+        return cls.br, cls.bc
 
     @classmethod
     def get_llcorner(cls):
-        return (cls.xllcorner, cls.yllcorner)
+        return cls.xllcorner, cls.yllcorner
 
     @classmethod
     def set_llcorner(cls, xy):
@@ -108,7 +106,7 @@ class GridGlobals(object):
 
     @classmethod
     def get_size(cls):
-        return (cls.dx, cls.dy)
+        return cls.dx, cls.dy
 
     @classmethod
     def set_size(cls, dxdy):
@@ -146,8 +144,6 @@ class GridGlobals(object):
         cls.yllcorner = None
         # no data value for raster
         cls.NoDataValue = -9999
-        # no data integer value for raster
-        cls.NoDataInt = None
         # size of raster cell
         cls.dx = None
         # size of raster cell
@@ -202,8 +198,8 @@ class Globals:
     mat_fd = None
     # raster contains digital elevation model
     mat_dem = None
-    # raster contains efective couterline data
-    mat_efect_cont = None
+    # raster contains effective couterline data
+    mat_effect_cont = None
     # raster contains surface slopes data
     mat_slope = None
     # raster labels not a number cells
@@ -309,8 +305,8 @@ class Globals:
         return cls.mat_dem
 
     @classmethod
-    def get_mat_efect_cont(cls):
-        return cls.mat_efect_cont
+    def get_mat_effect_cont(cls):
+        return cls.mat_effect_cont
 
     @classmethod
     def get_mat_slope(cls):
@@ -407,8 +403,8 @@ class Globals:
         cls.mat_fd = None
         # raster contains digital elevation model
         cls.mat_dem = None
-        # raster contains efective couterline data
-        cls.mat_efect_cont = None
+        # raster contains effective couterline data
+        cls.mat_effect_cont = None
         # raster contains surface slopes data
         cls.mat_slope = None
         # raster labels not a number cells

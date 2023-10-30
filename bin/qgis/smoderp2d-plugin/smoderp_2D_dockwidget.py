@@ -27,16 +27,16 @@ import sys
 import tempfile
 import glob
 
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication, Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QFileDialog, QProgressBar, QMenu
 
 from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, \
-    QgsVectorLayer, QgsRasterLayer, QgsTask, QgsApplication, Qgis, QgsProject, \
+    QgsRasterLayer, QgsTask, QgsApplication, Qgis, QgsProject, \
     QgsRasterBandStats, QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp
 from qgis.utils import iface
-from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox, QgsMessageBarItem
+from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
 
 # ONLY FOR TESTING PURPOSES (!!!)
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
@@ -404,9 +404,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         return renderer
 
     def computationFinished(self):
-        # clear message bar
-        self.iface.messageBar().clearWidgets
-
         # show results
         root = QgsProject.instance().layerTreeRoot()
         group = root.insertGroup(0, "SMODERP2D")
@@ -476,7 +473,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         # TODO: It would be nicer to use names defined in _input_params before
         # this reparsing
         for key in self._input_maps.keys():
-            self._input_params[key] = key
+            if self._input_params[key] != '':
+                self._input_params[key] = key
 
         # optional inputs
         if self.points_comboBox.currentLayer() is not None:

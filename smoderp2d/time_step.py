@@ -26,7 +26,7 @@ class TimeStep:
 
     @staticmethod
     def do_flow(surface, subsurface, delta_t, flow_control, courant):
-        mat_efect_cont = Globals.get_mat_efect_cont()
+        mat_effect_cont = Globals.get_mat_effect_cont()
         fc = flow_control
         sr = Globals.get_sr()
         itera = Globals.get_itera()
@@ -38,7 +38,7 @@ class TimeStep:
         surface_state = surface.arr.state
 
         runoff_return = runoff(
-            surface.arr, delta_t, mat_efect_cont, fc.ratio
+            surface.arr, delta_t, mat_effect_cont, fc.ratio
         )
 
         cond_state_flow = surface_state > Globals.streams_flow_inc
@@ -46,7 +46,7 @@ class TimeStep:
         v_rill = ma.where(cond_state_flow, 0, runoff_return[1])
         if ma.all(cond_state_flow):
             subsurface.runoff(
-                delta_t, mat_efect_cont
+                delta_t, mat_effect_cont
             )
         if ma.any(cond_state_flow):
             fc.ratio = ma.masked_array(
@@ -85,10 +85,9 @@ class TimeStep:
         v = ma.maximum(v_sheet, v_rill)
         co = 'sheet'
         courant.CFL(
-            surface.arr.h_total_pre,
             v,
             delta_t,
-            mat_efect_cont,
+            mat_effect_cont,
             co,
             rill_courant
         )
@@ -99,7 +98,7 @@ class TimeStep:
 
     # self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
     # courant, total_time, delta_t, combinatIndex, NoDataValue,
-    # sum_interception, mat_efect_cont, ratio, iter_
+    # sum_interception, mat_effect_cont, ratio, iter_
 
     @staticmethod
     def do_next_h(surface, subsurface, rain_arr, cumulative, hydrographs,

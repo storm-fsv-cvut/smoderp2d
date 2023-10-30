@@ -152,12 +152,13 @@ class Surface(GridGlobals, Stream, Kinematic):
         sw = Globals.slope_width
 
         vol_runoff = arr.vol_runoff[i, j]
+        vol_runoff_rill = arr.vol_runoff_rill[i, j]
 
         # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
         if not extra_out:
             line = '{0:.4e}{sep}{1:.4e}'.format(
                 arr.h_total_new[i, j],
-                (vol_runoff / dt[i, j] + arr.vol_runoff_rill[i, j] / dt[i, j]) *
+                (vol_runoff / dt[i, j] + vol_runoff_rill / dt[i, j]) *
                 sw,
                 sep=sep
             )
@@ -194,19 +195,19 @@ class Surface(GridGlobals, Stream, Kinematic):
                         '{7:.4e}'.format(
                     arr.h_rill[i, j],
                     arr.rillWidth[i, j],
-                    arr.vol_runoff_rill[i, j] / dt[i, j],
-                    arr.vol_runoff_rill[i, j],
+                    vol_runoff_rill / dt[i, j],
+                    vol_runoff_rill,
                     arr.vel_rill[i, j],
                     arr.v_rill_rest[i, j],
-                    vol_runoff / dt[i, j] + arr.vol_runoff_rill[i, j] / dt[i, j],
-                    vol_runoff + arr.vol_runoff_rill[i, j],
+                    vol_runoff / dt[i, j] + vol_runoff_rill / dt[i, j],
+                    vol_runoff + vol_runoff_rill,
                     sep=sep
                 )
 
             bil_ = arr.h_total_pre[i, j] * self.pixel_area + \
                    arr.cur_rain[i, j] * self.pixel_area + \
                    arr.inflow_tm[i, j] - \
-                   (vol_runoff + arr.vol_runoff_rill[i, j] +
+                   (vol_runoff + vol_runoff_rill +
                     arr.infiltration[i, j] * self.pixel_area) - \
                     (arr.cur_sur_ret[i, j] * self.pixel_area) - \
                     arr.h_total_new[i, j] * self.pixel_area
@@ -216,11 +217,11 @@ class Surface(GridGlobals, Stream, Kinematic):
         return line, bil_
 
 
-def __runoff(sur, dt, efect_vrst, ratio):
+def __runoff(sur, dt, effect_vrst, ratio):
     """Calculates the sheet and rill flow.
 
     :param dt: TODO
-    :param efect_vrst: TODO
+    :param effect_vrst: TODO
     :param ratio: TODO
 
     :return: TODO
@@ -240,7 +241,7 @@ def __runoff(sur, dt, efect_vrst, ratio):
 
     # rill runoff
     rill_runoff_results = rill_runoff(
-        dt, efect_vrst, ratio, h_rill, sur.rillWidth, sur.v_rill_rest,
+        dt, effect_vrst, ratio, h_rill, sur.rillWidth, sur.v_rill_rest,
         sur.vol_runoff_rill
     )
     v_rill = ma.where(sur.state > 0, rill_runoff_results[0], 0)
@@ -259,12 +260,12 @@ def __runoff(sur, dt, efect_vrst, ratio):
             vol_runoff, vol_rest, v_rill_rest, vol_runoff_rill, v_rill)
 
 
-def __runoff_zero_comp_type(sur, dt, efect_vrst, ratio):
+def __runoff_zero_comp_type(sur, dt, effect_vrst, ratio):
     """TODO.
 
     :param sur: TOD
     :param dt: TODO
-    :param efect_vrst: TODO
+    :param effect_vrst: TODO
     :param ratio: TODO
 
     :return: TODO
@@ -359,12 +360,12 @@ def sheet_runoff(dt, a, b, h_sheet):
     return q_sheet, vol_runoff, vol_rest
 
 
-def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
+def rill_runoff(dt, effect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
                 vol_runoff_rill):
     """TODO.
 
     :param dt: TODO
-    :param efect_vrst: TODO
+    :param effect_vrst: TODO
     :param ratio: TODO
     :param h_rill: TODO
     :param rillWidth: TODO
@@ -378,7 +379,7 @@ def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
 
     vol_to_rill = h_rill * GridGlobals.get_pixel_area()
     h, b = rill.update_hb(
-        vol_to_rill, RILL_RATIO, efect_vrst, rillWidth
+        vol_to_rill, RILL_RATIO, effect_vrst, rillWidth
     )
     r_rill = (h * b) / (b + 2 * h)
 
@@ -388,7 +389,7 @@ def rill_runoff(dt, efect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
 
     vol_rill = q_rill * dt
 
-    courant = (v_rill * dt) / efect_vrst
+    courant = (v_rill * dt) / effect_vrst
 
     # celerita
     # courant = (1 + s*b/(3*(b+2*h))) * q_rill/(b*h)

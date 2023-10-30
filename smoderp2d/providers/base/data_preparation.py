@@ -1,5 +1,6 @@
 import os
 import shutil
+import math
 import numpy as np
 from abc import ABC, abstractmethod
 
@@ -221,7 +222,7 @@ class PrepareDataGISBase(PrepareDataBase):
             'stream_end': 'temp',
             'stream_seg': 'temp',
             'ratio_cell': 'temp',
-            'efect_cont': 'temp',
+            'effect_cont': 'temp',
         }
         # complete list of field names that are supposed not to be changed,
         # e.g. in properties tables
@@ -279,7 +280,7 @@ class PrepareDataGISBase(PrepareDataBase):
             'mat_reten': None,
             'mat_fd': None,
             'mat_dem': None,
-            'mat_efect_cont': None,
+            'mat_effect_cont': None,
             'mat_slope': None,
             'mat_nan': None,
             'mat_a': None,
@@ -327,7 +328,7 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _clip_raster_layer(self, dataset, outline, name):
+    def _clip_raster_layer(self, dataset, aoi_mask, name):
         """Clips raster dataset to given polygon.
 
         :param dataset: raster dataset to be clipped
@@ -338,7 +339,7 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _clip_record_points(self, dataset, outline, name):
+    def _clip_record_points(self, dataset, aoi_polygon, name):
         """Makes a copy of record points inside the AOI as new
         feature layer and logs those outside AOI.
 
@@ -360,19 +361,20 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _update_grid_globals(self, reference):
+    def _update_grid_globals(self, reference, reference_cellsize=None):
         """Update raster spatial reference info.
 
         This function must be called before _rst2np() is used first
         time.
 
         :param reference: reference raster layer
+        :param reference_cellsize: reference raster layer for cell size (see https://github.com/storm-fsv-cvut/smoderp2d/issues/256)
         """
         pass
 
     @abstractmethod
-    def _compute_efect_cont(self, dem, asp):
-        """Compute efect contour array.
+    def _compute_effect_cont(self, dem, asp):
+        """Compute effect contour array.
 
         ML: improve description.
 
@@ -383,7 +385,7 @@ class PrepareDataGISBase(PrepareDataBase):
 
     @abstractmethod
     def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
-                         aoi_outline, table_soil_vegetation):
+                         aoi_polygon, table_soil_vegetation):
         """Prepare the combination of soils and vegetation input layers.
 
         Gets the spatial intersection of both and checks the
@@ -508,6 +510,16 @@ class PrepareDataGISBase(PrepareDataBase):
         )
         Logger.progress(10)
 
+        # set GridGlobals
+        self._update_grid_globals(aoi_mask, self._input_params['elevation'])
+        if GridGlobals.dx != GridGlobals.dy:
+            raise DataPreparationInvalidInput(
+                "Input DEM spatial x resolution ({}) differs from y "
+                "resolution ({}). Resample input data to set the same x and y"
+                " spatial resolution before running SMODERP2D.".format(
+                    GridGlobals.dx, GridGlobals.dy)
+            )
+
         # calculate DEM derivatives
         # intentionally done on non-clipped DEM to avoid edge effects
         Logger.info("Creating DEM-derived layers...")
@@ -530,32 +542,25 @@ class PrepareDataGISBase(PrepareDataBase):
         dem_aspect_aoi = self._clip_raster_layer(
             dem_aspect, aoi_mask, 'dem_aspect_aoi'
         )
-        points_aoi = self._clip_record_points(
-            self._input_params['points'], aoi_polygon, 'points_aoi'
-        )
-        Logger.progress(30)
-
         # convert to numpy arrays
         self.data['mat_dem'] = self._rst2np(dem_aoi)
-        # update data dict for spatial ref info
-        GridGlobals.r = self.data['mat_dem'].shape[0]
-        GridGlobals.c = self.data['mat_dem'].shape[1]
-        self._update_grid_globals(dem_aoi)
-        if GridGlobals.dx != GridGlobals.dy:
-            raise DataPreparationInvalidInput(
-                "Input DEM spatial x resolution ({}) differs from y "
-                "resolution ({}). Resample input data to set the same x and y"
-                " spatial resolution before running SMODERP2D.".format(
-                    GridGlobals.dx, GridGlobals.dy)
-            )
         self.data['mat_slope'] = self._rst2np(dem_slope_aoi)
         # unit conversion % -> 0-1
         self._convert_slope_units()
         if dem_flowdir_aoi is not None:
             self.data['mat_fd'] = self._rst2np(dem_flowdir_aoi)
-        self.data['mat_efect_cont'] = self._compute_efect_cont(
+        self.data['mat_effect_cont'] = self._compute_effect_cont(
             dem_aoi, dem_aspect_aoi
         )
+        Logger.progress(30)
+
+        # build points array
+        if self._input_params['points'] != '':
+            points_aoi = self._clip_record_points(
+                self._input_params['points'], aoi_polygon, 'points_aoi'
+            )
+            Logger.info("Preparing points for hydrographs...")
+            self.data['array_points'] = self._get_points_location(points_aoi)
 
         #   join the attributes to soil_veg intersect and check the table
         #   consistency
@@ -584,10 +589,6 @@ class PrepareDataGISBase(PrepareDataBase):
             self._get_mat_nan(GridGlobals.r, GridGlobals.c,
                               GridGlobals.NoDataValue, self.data['mat_slope'],
                               self.data['mat_dem'])
-
-        # build points array
-        Logger.info("Prepare points for hydrographs...")
-        self.data['array_points'] = self._get_points_location(points_aoi)
 
         # build a/aa arrays
         self.data['mat_a'], self.data['mat_aa'] = self._get_a(
@@ -892,11 +893,24 @@ class PrepareDataGISBase(PrepareDataBase):
     @staticmethod
     def _check_resolution_consistency(ewres, nsres):
         """Raise DataPreparationInvalidInput on different spatial resolution."""
-        if GridGlobals.dx != ewres or GridGlobals.dy != nsres:
+        if not math.isclose(GridGlobals.dx, ewres) or not math.isclose(GridGlobals.dy, nsres):
             raise DataPreparationInvalidInput(
                 "Input DEM spatial resolution ({}, {}) differs from processing "
                 "spatial resolution ({}, {})".format(
                     GridGlobals.dx, GridGlobals.dy, ewres, nsres)
+            )
+
+    @staticmethod
+    def _check_rst2np(arr):
+        """Check numpy array consistency with GridGlobals
+        
+        Raise DataPreparationError() if array's shape is different from GridGlobals.
+        """
+        if arr.shape[0] != GridGlobals.r or arr.shape[1] != GridGlobals.c:
+            raise DataPreparationError(
+                "Data inconsistency ({},{}) vs ({},{})".format(
+                arr.shape[0], arr.shape[1],
+                GridGlobals.r, GridGlobals.c)
             )
 
     def _decode_stream_attr(self, attr):

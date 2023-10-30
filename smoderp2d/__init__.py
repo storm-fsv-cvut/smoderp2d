@@ -213,18 +213,26 @@ class QGISRunner(GrassGisRunner):
                         Module("r.import", input=options[key], output=key)
                 # import vectors
                 elif key in ["soil", "vegetation", "points", "streams"]:
-                    Module(
-                        "v.import", input=options[key], output=key
-                    )
+                    if options[key] != '':
+                        # points and streams are optional
+                        Module(
+                            "v.import", input=options[key], output=key
+                        )
                 # import tables
                 elif key in ["table_soil_vegetation",
                              "channel_properties_table"]:
-                    Module("db.in.ogr", input=options[key], output=key)
+                    if options[key] != '':
+                        # channel_properties_table is optional
+                        from osgeo import ogr
+                        kwargs = {}
+                        ds = ogr.Open(options[key])
+                        if ds:
+                            if ds.GetDriver().GetName() == 'CSV':
+                                kwargs['gdal_doo'] = 'AUTODETECT_TYPE=YES'
+                            ds = None
+                        Module("db.in.ogr", input=options[key], output=key, **kwargs)
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
-
-    def export_data(self):
-        pass
 
     def __del__(self):
         pass
