@@ -287,7 +287,7 @@ class PrepareData(PrepareDataGISBase):
 
     def _compute_effect_cont(self, dem, asp):
         """See base method for description."""
-        # conversion to radias not needed, GRASS's sin() assumes degrees
+        # conversion to radians not needed, GRASS's sin() assumes degrees
         ratio_cell = self.storage.output_filepath('ratio_cell')
         _run_grass_module(
             'r.mapcalc',

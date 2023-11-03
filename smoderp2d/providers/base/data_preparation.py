@@ -361,7 +361,7 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _update_grid_globals(self, reference, reference_cellsize=None):
+    def _update_grid_globals(self, reference, reference_cellsize):
         """Update raster spatial reference info.
 
         This function must be called before _rst2np() is used first
