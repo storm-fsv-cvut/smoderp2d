@@ -309,7 +309,7 @@ class PrepareDataGISBase(PrepareDataBase):
         :param soil: string path to soil definition layer
         :param vegetation: string path to vegenatation definition layer
 
-        :return: string path to AIO polygon layer
+        :return: string path to AoI polygon layer
         """
         pass
 
