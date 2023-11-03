@@ -2,6 +2,7 @@ import os
 import shutil
 import math
 import numpy as np
+import numpy.ma as ma
 from abc import ABC, abstractmethod
 
 from smoderp2d.processes import rainfall
@@ -791,22 +792,23 @@ class PrepareDataGISBase(PrepareDataBase):
         """
         Converts slope units from % to 0-1 range in the mask.
         """
-        # TODO convert to NumPy logic!!!
-        for i in range(self.data['mat_slope'].shape[0]):
-            for j in range(self.data['mat_slope'].shape[1]):
-                nv = GridGlobals.NoDataValue
-                if self.data['mat_slope'][i][j] != nv:
-                    self.data['mat_slope'][i][j] /= 100.
+        # TODO: check if the != NoDataValue is needed when working with ma
+        self.data['mat_slope'] = ma.where(
+            self.data['mat_slope'] != GridGlobals.NoDataValue,
+            self.data['mat_slope'] / 100.,
+            self.data['mat_slope']
+        )
 
     @staticmethod
     def _get_mat_stream_seg(mat_stream_seg):
         # each element of stream has a number assigned from 0 to
         # no. of stream parts
-        for i in range(GridGlobals.r):
-            for j in range(GridGlobals.c):
-                if mat_stream_seg[i][j] > 0:  # FID starts at 1
-                    # state 0|1|2 (> Globals.streams_flow_inc -> stream flow)
-                    mat_stream_seg[i][j] += Globals.streams_flow_inc
+        mat_stream_seg += ma.where(
+            mat_stream_seg > 0,  # FID starts at 1
+            # state 0|1|2 (> Globals.streams_flow_inc -> stream flow)
+            Globals.streams_flow_inc,
+            0
+        )
 
     def _check_soilveg_dim(self, field):
         if self.soilveg_fields[field].shape[0] != GridGlobals.r or \
