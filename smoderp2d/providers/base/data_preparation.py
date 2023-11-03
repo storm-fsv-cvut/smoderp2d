@@ -792,8 +792,7 @@ class PrepareDataGISBase(PrepareDataBase):
         """
         Converts slope units from % to 0-1 range in the mask.
         """
-        # TODO: check if the != NoDataValue is needed when working with ma
-        self.data['mat_slope'] = ma.where(
+        self.data['mat_slope'] = np.where(
             self.data['mat_slope'] != GridGlobals.NoDataValue,
             self.data['mat_slope'] / 100.,
             self.data['mat_slope']
