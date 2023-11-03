@@ -307,7 +307,7 @@ class PrepareDataGISBase(PrepareDataBase):
 
         :param elevation: string path to DEM layer
         :param soil: string path to soil definition layer
-        :param vegetation: string path to vegenatation definition layer
+        :param vegetation: string path to vegetation definition layer
 
         :return: string path to AoI polygon layer
         """
