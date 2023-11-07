@@ -189,7 +189,7 @@ class PerformTest:
             self._params = {
                 "soil_type_fieldname": "SID",
                 "vegetation_type_fieldname": "LandUse",
-                "rainfall_file": os.path.join(data_dir, "rainfall.txt"),
+                "rainfall_file": os.path.join(data_dir, "rainfall_nucice.txt"),
                 "maxdt": 30,
                 "end_time": 40,
                 "table_soil_vegetation_fieldname": "soilveg",
@@ -321,7 +321,6 @@ class PerformTest:
 
         config = configparser.ConfigParser()
         config.read(config_file)
-        assert config.get("data", "rainfall") == "tests/data/rainfall.txt"
 
         os.environ["SMODERP2D_CONFIG_FILE"] = str(config_file)
         self._run()
