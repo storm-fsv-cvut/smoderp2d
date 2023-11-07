@@ -189,7 +189,7 @@ class PerformTest:
             self._params = {
                 "soil_type_fieldname": "SID",
                 "vegetation_type_fieldname": "LandUse",
-                "rainfall_file": os.path.join(data_dir, "rainfall.txt"),
+                "rainfall_file": os.path.join(data_dir, "rainfall_nucice.txt"),
                 "maxdt": 30,
                 "end_time": 40,
                 "table_soil_vegetation_fieldname": "soilveg",
