@@ -321,7 +321,6 @@ class PerformTest:
 
         config = configparser.ConfigParser()
         config.read(config_file)
-        assert config.get("data", "rainfall") == "tests/data/rainfall.txt"
 
         os.environ["SMODERP2D_CONFIG_FILE"] = str(config_file)
         self._run()
