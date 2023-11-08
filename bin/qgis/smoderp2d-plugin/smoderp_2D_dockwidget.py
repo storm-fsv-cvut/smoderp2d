@@ -709,7 +709,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 QgsProject.instance().mapLayersByName('stream')[0]
             )
             self.rainfall_lineEdit.setText(
-                os.path.join(dir_path, 'rainfall.txt')
+                os.path.join(dir_path, 'rainfall_nucice.txt')
             )
             self.table_soil_vegetation_comboBox.setLayer(
                 QgsProject.instance().mapLayersByName('soil_veg_tab_mean')[0]
