@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import sqlite3
 import tempfile
@@ -18,7 +19,7 @@ from grass.pygrass.gis.region import Region
 from grass.exceptions import CalledModuleError, OpenError
 
 
-def _run_grass_module(*args, **kwargs):
+def _run_grass_module(*args, block_export=False, **kwargs):
     # if sys.platform == 'win32':
     #     si = subprocess.STARTUPINFO()
     #     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -35,6 +36,35 @@ def _run_grass_module(*args, **kwargs):
             error_msg = fd.read()
         Logger.error(f"Data preparation failed:\n{e}\n{error_msg}")
         raise DataPreparationError(f"Data preparation failed: {error_msg}")
+
+    if block_export is True:
+        return 0
+
+    export_layers = PrepareDataGISBase.data_layers.keys()
+    if 'output' in kwargs.keys() and kwargs['output'] in export_layers:
+        output_path = os.path.join(
+            Globals.get_outdir(),
+            PrepareDataGISBase.data_layers[kwargs['output']],
+            kwargs['output']
+            # extension will be added specifically in export (raster/vector)
+        )
+        module = args[0]
+        if module[0] == 'r' and module != 'r.to.vect' or module == 'v.to.rast':
+            _run_grass_module(
+                'r.out.gdal',
+                block_export=True,
+                input=kwargs['output'],
+                format='GTiff',
+                output=output_path + '.tif'
+            )
+        else:
+            _run_grass_module(
+                'v.out.ogr',
+                block_export=True,
+                input=kwargs['output'],
+                format='GPKG',
+                output=output_path + '.gpkg'
+            )
 
 
 class PrepareData(PrepareDataGISBase):
