@@ -678,7 +678,7 @@ class PrepareDataGISBase(PrepareDataBase):
         os.makedirs(Globals.outdir)
 
         # create temporary/control dir
-        for dir_name in ("temp", "control", "core"):
+        for dir_name in ("temp", "control"):
             dir_path = os.path.join(Globals.outdir, dir_name)
             Logger.debug(
                 "Creating {} directory <{}>".format(dir_name, dir_path)
