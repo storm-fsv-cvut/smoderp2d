@@ -145,6 +145,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.table_stream_shape_code_comboBox = QgsFieldComboBox()
         self.table_stream_shape_comboBox = QgsMapLayerComboBox()
         self.table_stream_shape_toolButton = QtWidgets.QToolButton()
+        self.export_temporary_checkBox = QtWidgets.QCheckBox()
         self.run_button = QtWidgets.QPushButton(self.dockWidgetContents)
 
         # set default values
@@ -239,6 +240,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         )
         self.arguments['channel_properties'].addWidget(
             self.table_stream_shape_toolButton
+        )
+        self.arguments['export_temporary'].addWidget(
+            self.export_temporary_checkBox
         )
 
     def closeEvent(self, event):
@@ -368,7 +372,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             # Get input parameters
             self._getInputParams()
 
-            smoderp_task = SmoderpTask(self._input_params, self._input_maps, self._grass_bin_path)
+            smoderp_task = SmoderpTask(
+                self._input_params, self._input_maps, self._grass_bin_path
+            )
 
             # prepare the progress bar
             self.progress_bar = QProgressBar()
@@ -467,6 +473,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self.table_stream_shape_comboBox.currentText(),
             'streams_channel_type_fieldname':
                 self.table_stream_shape_code_comboBox.currentText(),
+            't': bool(self.export_temporary_checkBox.checkState()),
             'output': self.main_output_lineEdit.text().strip()
         }
 
