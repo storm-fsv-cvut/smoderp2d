@@ -58,13 +58,15 @@ def _run_grass_module(*args, block_export=False, **kwargs):
                 output=output_path + '.tif'
             )
         else:
-            _run_grass_module(
-                'v.out.ogr',
-                block_export=True,
-                input=kwargs['output'],
-                format='GPKG',
-                output=output_path + '.gpkg'
-            )
+            pass
+            # vector data not to be exported
+            # _run_grass_module(
+            #     'v.out.ogr',
+            #     block_export=True,
+            #     input=kwargs['output'],
+            #     format='GPKG',
+            #     output=output_path + '.gpkg'
+            # )
 
 
 class PrepareData(PrepareDataGISBase):
