@@ -79,6 +79,12 @@
 # % required: no
 # % guisection: Data preparation
 # %end
+# %option G_OPT_DB_COLUMN
+# % key: points_fieldname
+# % description: Point code
+# % required: no
+# % guisection: Settings
+# %end
 # %option G_OPT_DB_TABLE
 # % key: table_soil_vegetation
 # % description: Table of soil and land use information

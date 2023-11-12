@@ -71,9 +71,9 @@ Run `r.smoderp2d` module:
     soil_type_fieldname=SID \
     vegetation=landuse@PERMANENT \
     vegetation_type_fieldname=LandUse \
-    rainfall_file=tests/data/rainfall.txt \
+    rainfall_file=tests/data/rainfall_nucice.txt \
     maxdt=5 end_time=5 \
-    points=points@PERMANENT \
+    points=points@PERMANENT points_fieldname='point_id' \
     table_soil_vegetation=soil_veg_tab_mean@PERMANENT \
     table_soil_vegetation_fieldname=soilveg \
     streams=stream@PERMANENT \
