@@ -40,19 +40,7 @@ class ArcGisWriter(BaseWriter):
         :param name: layer name to be saved
         :return: full path to the dataset
         """
-        item = self._data_target.get(name)
-        if item is None or item not in ("temp", "control", "core"):
-            raise ProviderError(
-                "Unable to define target in output_filepath: {}".format(name)
-            )
-
-        path = Globals.get_outdir()
-        # 'core' datasets don't have directory, only the geodatabase
-        if item in ("temp", "control"):
-            path = os.path.join(path, item)
-
-        path = os.path.join(path, 'data.gdb', name)
-
+        path = os.path.join(BaseWritter.output_filepath(name, dirname_only=True), 'data.gdb', name)
         Logger.debug('File path: {}'.format(path))
 
         return path

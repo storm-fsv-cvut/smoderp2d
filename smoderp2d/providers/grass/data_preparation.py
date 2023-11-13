@@ -699,24 +699,16 @@ class PrepareData(PrepareDataGISBase):
             mtype = m.outputs['output'].typedesc
             do_export = map_name in export_layers
         if do_export:
-            output_path = self.storage.raster_output_path(
-                map_name,
-                PrepareDataGISBase.data_layers[map_name]
-            )
-
+            output_path = self.storage.output_filepath(map_name, full_path=True)
             if mtype == 'raster':
                 self.storage.export_raster(
                     map_name,
                     output_path
                 )
             elif mtype == 'vector':
-                pass
-                # vector data not to be exported
-                # self._run_grass_module(
-                #     'v.out.ogr',
-                #     input=kwargs['output'],
-                #     format='GPKG',
-                #     output=output_path + '.gpkg'
-                # )
+                self.storage.export_vector(
+                    map_name,
+                    output_path
+                )
             else:
                 raise DataPreparationError(f"Unsupported data type for export: {mtype}")
