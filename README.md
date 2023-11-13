@@ -95,7 +95,7 @@ Requirements: QGIS 3.28.10 and higher
 Set path to the plugin from command line:
 
 ```sh
-QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/qgis_project.qgz
+QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/nucice/qgis_project.qgz
 ```
 
 or define `QGIS_PLUGINPATH` in `Settings -> Options -> System` and restart QGIS:

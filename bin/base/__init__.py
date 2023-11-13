@@ -24,6 +24,7 @@ arguments = {
     'soil': Argument('Soil polygons feature layer'),
     'landuse': Argument('Landuse polygons feature layer'),
     'points': Argument('Input points feature layer'),
+    'points_field': Argument('Field with the input points identifier'),
     'stream': Argument('Stream network feature layer'),
     'rainfall': Argument('Definition of the rainfall event'),
     'output': Argument('Output directory'),
@@ -49,7 +50,7 @@ sections = [
         'Spatial data',
         (
             'elevation', 'soil', 'soil_type_field', 'landuse',
-            'landuse_type_field', 'points', 'stream', 'rainfall'
+            'landuse_type_field', 'points', 'points_field', 'stream', 'rainfall'
         )
     ),
     Section(

@@ -81,7 +81,7 @@
 # %end
 # %option G_OPT_DB_COLUMN
 # % key: points_fieldname
-# % description: Point code
+# % description: Field with the input points idenfifier
 # % required: no
 # % guisection: Settings
 # %end
