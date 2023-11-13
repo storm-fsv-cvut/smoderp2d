@@ -692,23 +692,31 @@ class PrepareData(PrepareDataGISBase):
         do_export = False
         if m.name == 'r.mapcalc':
             map_name = m.inputs.expression.split('=')[0].strip()
-            mtype = 'raster'
-            do_export = map_name in export_layers
-        elif 'output' in m.outputs:
-            map_name = m.outputs['output'].value
-            mtype = m.outputs['output'].typedesc
-            do_export = map_name in export_layers
-        if do_export:
-            output_path = self.storage.output_filepath(map_name, full_path=True)
-            if mtype == 'raster':
-                self.storage.export_raster(
-                    map_name,
-                    output_path
-                )
-            elif mtype == 'vector':
-                self.storage.export_vector(
-                    map_name,
-                    output_path
-                )
-            else:
-                raise DataPreparationError(f"Unsupported data type for export: {mtype}")
+            if map_name in export_layers:
+                self._export_data(map_name, 'raster')
+        else:
+            for p in m.outputs.values():
+                if p.typedesc in ('raster', 'vector') and p.value is not None:
+                    map_name = p.value
+                    if map_name in export_layers:
+                        self._export_data(map_name, p.typedesc)
+
+    def _export_data(self, map_name, mtype):
+        """Export GRASS data.
+
+        :param map_name: map name
+        :param mtype: map type
+        """
+        output_path = self.storage.output_filepath(map_name, full_path=True)
+        if mtype == 'raster':
+            self.storage.export_raster(
+                map_name,
+                output_path
+            )
+        elif mtype == 'vector':
+            self.storage.export_vector(
+                map_name,
+                output_path
+            )
+        else:
+            raise DataPreparationError(f"Unsupported data type for export: {mtype}")
