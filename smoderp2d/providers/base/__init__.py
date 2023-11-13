@@ -48,6 +48,8 @@ class WorkflowMode:
 
 
 class BaseWriter(object):
+    _raster_extension = '.asc'
+
     def __init__(self):
         self._data_target = None
 

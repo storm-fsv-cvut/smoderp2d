@@ -64,7 +64,7 @@ class GrassGisWriter(BaseWriter):
         Module(
             'r.out.gdal',
             input=raster_name,
-            output=file_output + '.asc',
+            output=file_output + self._raster_extension,
             format='AAIGrid',
             nodata=GridGlobals.NoDataValue,
             type='Float64',
