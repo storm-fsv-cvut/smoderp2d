@@ -20,32 +20,50 @@ class Module:
             import subprocess
             import time
             import shutil
+            from qgis.core import Qgis, QgsMessageLog
+
+            #si = subprocess.STARTUPINFO()
+            #si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            #si.wShowWindow = subprocess.SW_HIDE
             si = subprocess.STARTUPINFO()
-            si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            si.dwFlags = subprocess.CREATE_NEW_CONSOLE | subprocess.STARTF_USESHOWWINDOW
             si.wShowWindow = subprocess.SW_HIDE
             m = GrassModule(*args, **kwargs, run_=False)
             # very ugly hack of m.run()
-            m._finished = False
-            if m.inputs["stdin"].value:
-                m.stdin = m.inputs["stdin"].value
-                m.stdin_ = subprocess.PIPE
-            m.start_time = time.time()
+            #m._finished = False
+            #if m.inputs["stdin"].value:
+            #    m.stdin = m.inputs["stdin"].value
+            #    m.stdin_ = subprocess.PIPE
+            #m.start_time = time.time()
             cmd = m.make_cmd()
             cmd = [shutil.which(cmd[0])] + cmd[1:]
+            with open(r"C:\users\martin\cmd.bat", "w") as fd:
+                fd.write("chcp {self._getWindowsCodePage()}>NUL\n")
+                fd.write(' '.join(cmd))
             with subprocess.Popen( #gs.core.Popen(
-                cmd,
+                r"C:\users\martin\cmd.bat",
                 shell=False,
                 universal_newlines=True,
-                stdin=m.stdin_,
-                stdout=m.stdout_,
-                stderr=subprocess.PIPE,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
                 env=m.env_,
                 startupinfo=si
             ) as m._popen:
-                for line in iter(lambda: self._readline_with_recover(m._popen.stderr), ''):
-                    print(line)
+                for line in iter(lambda: self._readline_with_recover(m._popen.stdout), ''):
+                    QgsMessageLog.logMessage(line, 'SMODERP2D', level=Qgis.Info)
+
         else:
             GrassModule(*args, **kwargs)
+
+    @staticmethod
+    def _getWindowsCodePage():
+        """
+        Determines MS-Windows CMD.exe shell codepage.
+        Used into GRASS exec script under MS-Windows.
+        """
+        from ctypes import cdll
+        return str(cdll.kernel32.GetACP())
 
     @staticmethod
     def _readline_with_recover(stdout):
