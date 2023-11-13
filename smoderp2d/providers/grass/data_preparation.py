@@ -425,7 +425,7 @@ class PrepareData(PrepareDataGISBase):
                             )
                         else:
                             Logger.info(
-                                f"Point code = {fid} is at the edge of the "
+                                f"Point FID = {fid} is at the edge of the "
                                 f"raster. This point will not be included in "
                                 f"results."
                             )

@@ -282,7 +282,7 @@ class PrepareData(PrepareDataGISBase):
             self.soilveg_fields[field] = self._rst2np(output)
             self._check_soilveg_dim(field)
 
-    def _get_points_location(self, points_layer):
+    def _get_points_location(self, points_layer, points_fieldname):
         """See base method for description.
         """
         points_array = None
@@ -293,7 +293,7 @@ class PrepareData(PrepareDataGISBase):
                 points_array = np.zeros([int(count), 5], float)
                 # get the points geometry and IDs into array
                 desc = arcpy.Describe(points_layer)
-                with arcpy.da.SearchCursor(points_layer, [desc.OIDFieldName, desc.ShapeFieldName]) as table:
+                with arcpy.da.SearchCursor(points_layer, [points_fieldname, desc.ShapeFieldName]) as table:
                     i = 0
                     for row in table:
                         fid = row[0]
