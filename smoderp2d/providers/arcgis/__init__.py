@@ -75,7 +75,7 @@ class ArcGisWriter(BaseWriter):
 
         arcpy.RasterToASCII_conversion(
             raster,
-            file_output
+            file_output + '.asc'
         )
 
 

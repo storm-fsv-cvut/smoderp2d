@@ -678,34 +678,30 @@ class PrepareData(PrepareDataGISBase):
             with tempfile.NamedTemporaryFile(delete=False) as tmp:
                 kwargs['stderr_'] = tmp
                 tmp_fn = tmp.name
-                Module(*args, **kwargs)
+                m = Module(*args, **kwargs)
         except CalledModuleError as e:
             with open(tmp_fn) as fd:
                 error_msg = fd.read()
             Logger.error(f"Data preparation failed:\n{e}\n{error_msg}")
             raise DataPreparationError(f"Data preparation failed: {error_msg}")
 
-        if self._input_params['t'] is False or '.out.' in args[0]:
+        if self._input_params['t'] is False:
             return 0
 
         export_layers = PrepareDataGISBase.data_layers.keys()
-        if 'output' in kwargs.keys() and kwargs['output'] in export_layers:
-            output_path = os.path.join(
-                Globals.get_outdir(),
-                PrepareDataGISBase.data_layers[kwargs['output']],
-                kwargs['output']
-                # extension will be added specifically in export (raster/vector)
+        if 'output' in m.outputs and m.outputs['output'].value in export_layers:
+            output_path = self.storage.raster_output_path(
+                m.outputs['output'].value,
+                PrepareDataGISBase.data_layers[m.outputs['output'].value]
             )
-            module = args[0]
-            if module[
-                0] == 'r' and module != 'r.to.vect' or module == 'v.to.rast':
-                self._run_grass_module(
-                    'r.out.gdal',
-                    input=kwargs['output'],
-                    format='GTiff',
-                    output=output_path + '.tif'
+
+            mtype = m.outputs['output'].typedesc
+            if mtype == 'raster':
+                self.storage.export_raster(
+                    m.outputs['output'].value,
+                    output_path
                 )
-            else:
+            elif mtype == 'vector':
                 pass
                 # vector data not to be exported
                 # self._run_grass_module(
@@ -714,3 +710,5 @@ class PrepareData(PrepareDataGISBase):
                 #     format='GPKG',
                 #     output=output_path + '.gpkg'
                 # )
+            else:
+                raise DataPreparationError(f"Unsupported data type for export: {mtype}")

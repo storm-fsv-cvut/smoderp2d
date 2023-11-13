@@ -53,13 +53,22 @@ class GrassGisWriter(BaseWriter):
             raster_name, overwrite=True
         )
 
+        self.export_raster(raster_name, file_output)
+
+    def export_raster(self, raster_name, file_output):
+        """Export GRASS raster to output data format.
+
+        :param raster_name: GRASS raster map name
+        :param file_output: Target file path
+        """
         Module(
             'r.out.gdal',
             input=raster_name,
-            output=file_output,
+            output=file_output + '.asc',
             format='AAIGrid',
             nodata=GridGlobals.NoDataValue,
-            overwrite=True
+            type='Float64',
+            overwrite=True,
         )
 
 

@@ -59,7 +59,7 @@ class BaseWriter(object):
         self._data_target = data
 
     @staticmethod
-    def _raster_output_path(output, directory='core'):
+    def raster_output_path(output, directory='core'):
         """Get output raster path.
 
         :param output: raster output name
@@ -72,7 +72,7 @@ class BaseWriter(object):
 
         return os.path.join(
             dir_name,
-            output + '.asc'
+            output
         )
 
     @staticmethod
@@ -100,7 +100,7 @@ class BaseWriter(object):
         :param output_name: output filename
         :param data_type: directory where to write output file
         """
-        file_output = self._raster_output_path(output_name, data_type)
+        file_output = self.raster_output_path(output_name, data_type)
 
         self._print_array_stats(
             array, file_output
