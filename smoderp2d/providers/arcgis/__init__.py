@@ -40,7 +40,7 @@ class ArcGisWriter(BaseWriter):
         :param name: layer name to be saved
         :return: full path to the dataset
         """
-        path = os.path.join(BaseWritter.output_filepath(name, dirname_only=True), 'data.gdb', name)
+        path = os.path.join(BaseWriter.output_filepath(self, name, dirname_only=True), 'data.gdb', name)
         Logger.debug('File path: {}'.format(path))
 
         return path
