@@ -689,16 +689,24 @@ class PrepareData(PrepareDataGISBase):
             return 0
 
         export_layers = PrepareDataGISBase.data_layers.keys()
-        if 'output' in m.outputs and m.outputs['output'].value in export_layers:
+        do_export = False
+        if m.name == 'r.mapcalc':
+            map_name = m.inputs.expression.split('=')[0].strip()
+            mtype = 'raster'
+            do_export = map_name in export_layers
+        elif 'output' in m.outputs:
+            map_name = m.outputs['output'].value
+            mtype = m.outputs['output'].typedesc
+            do_export = map_name in export_layers
+        if do_export:
             output_path = self.storage.raster_output_path(
-                m.outputs['output'].value,
-                PrepareDataGISBase.data_layers[m.outputs['output'].value]
+                map_name,
+                PrepareDataGISBase.data_layers[map_name]
             )
 
-            mtype = m.outputs['output'].typedesc
             if mtype == 'raster':
                 self.storage.export_raster(
-                    m.outputs['output'].value,
+                    map_name,
                     output_path
                 )
             elif mtype == 'vector':
