@@ -13,7 +13,7 @@ from grass.pygrass.raster import numpy2raster
 
 
 class GrassGisWriter(BaseWriter):
-    _vector_extension = '.gpkg'
+    _vector_extension = '.gml'
 
     def __init__(self):
         super(GrassGisWriter, self).__init__()
@@ -86,7 +86,7 @@ class GrassGisWriter(BaseWriter):
             'v.out.ogr',
             input=raster_name,
             output=file_output + self._vector_extension,
-            format='GPKG',
+            format='GML',
             overwrite=True,
         )
 
