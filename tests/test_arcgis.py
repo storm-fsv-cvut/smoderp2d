@@ -9,15 +9,15 @@ from smoderp2d import ArcGisRunner
 
 def params():
     return {
-        'elevation': os.path.join(data_dir, "dem10m.tif"),
-        'soil': os.path.join(data_dir, "soils.shp"),
-        'vegetation': os.path.join(data_dir, "landuse.shp"),
-        'points': os.path.join(data_dir, "points.shp"),
+        'elevation': os.path.join(data_dir, "nucice", "dem10m.tif"),
+        'soil': os.path.join(data_dir, "nucice", "soils.shp"),
+        'vegetation': os.path.join(data_dir, "nucice", "landuse.shp"),
+        'points': os.path.join(data_dir, "nucice", "points.shp"),
         'table_soil_vegetation': os.path.join(
-            data_dir, "soil_veg_tab_mean.dbf"
+            data_dir, "nucice", "soil_veg_tab_mean.dbf"
         ),
-        'streams': os.path.join(data_dir, "stream.shp"),
-        'channel_properties_table':  os.path.join(data_dir, "stream_shape.dbf")
+        'streams': os.path.join(data_dir, "nucice", "stream.shp"),
+        'channel_properties_table':  os.path.join(data_dir, "nucice", "stream_shape.dbf")
     }
 
 

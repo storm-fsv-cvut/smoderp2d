@@ -1,5 +1,6 @@
 import numpy as np
 import sqlite3
+import tempfile
 
 from smoderp2d.core.general import GridGlobals, Globals
 
@@ -24,7 +25,16 @@ def _run_grass_module(*args, **kwargs):
     #     si.wShowWindow = subprocess.SW_HIDE
     #     Module(*args, env_={'startupinfo': si}, **kwargs)
     # else:
-    Module(*args, **kwargs)
+    try:
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            kwargs['stderr_'] = tmp
+            tmp_fn = tmp.name
+            Module(*args, **kwargs)
+    except CalledModuleError as e:
+        with open(tmp_fn) as fd:
+            error_msg = fd.read()
+        Logger.error(f"Data preparation failed:\n{e}\n{error_msg}")
+        raise DataPreparationError(f"Data preparation failed: {error_msg}")
 
 
 class PrepareData(PrepareDataGISBase):
@@ -259,29 +269,25 @@ class PrepareData(PrepareDataGISBase):
         else:
             np.nan_to_num(array, copy=False, nan=GridGlobals.NoDataValue)
 
+        self._check_rst2np(array)
+
         return array
 
-    def _update_grid_globals(self, reference):
-        """See base method for description."""
+    def _update_grid_globals(self, reference, reference_cellsize):
+        """See base method for description.
+        """
         # lower left corner coordinates
         with RasterRow(reference) as data:
-            # check data consistency
-            # see https://github.com/storm-fsv-cvut/smoderp2d/issues/42
-            if data.info.rows != GridGlobals.r or \
-               data.info.cols != GridGlobals.c:
-                raise DataPreparationError(
-                    "Data inconsistency ({},{}) vs ({},{})".format(
-                        data.info.rows, data.info.cols,
-                        GridGlobals.r, GridGlobals.c)
-                )
+            GridGlobals.r = data.info.rows
+            GridGlobals.c = data.info.cols
             GridGlobals.set_llcorner((data.info.west, data.info.south))
             GridGlobals.set_size((data.info.ewres, data.info.nsres))
 
             self._check_resolution_consistency(data.info.ewres, data.info.nsres)
 
-    def _compute_efect_cont(self, dem, asp):
+    def _compute_effect_cont(self, dem, asp):
         """See base method for description."""
-        # conversion to radias not needed, GRASS's sin() assumes degrees
+        # conversion to radians not needed, GRASS's sin() assumes degrees
         ratio_cell = self.storage.output_filepath('ratio_cell')
         _run_grass_module(
             'r.mapcalc',
@@ -290,15 +296,15 @@ class PrepareData(PrepareDataGISBase):
             )
         )
 
-        efect_cont = self.storage.output_filepath('efect_cont')
+        effect_cont = self.storage.output_filepath('effect_cont')
         _run_grass_module(
             'r.mapcalc',
             expression='{} = {} * {}'.format(
-                efect_cont, ratio_cell, GridGlobals.dx
+                effect_cont, ratio_cell, GridGlobals.dx
             )
         )
 
-        return self._rst2np(efect_cont)
+        return self._rst2np(effect_cont)
 
     def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
                          aoi_polygon, table_soil_vegetation):
@@ -509,7 +515,7 @@ class PrepareData(PrepareDataGISBase):
                     )
                     segment_props.get(segment_id).update({'end_point': endpt})
                 else:
-                    to_reverse.append(segment_id)
+                    to_reverse.append(str(segment_id))
                     segment_props.get(segment_id).update({'start_point': endpt})
                     segment_props.get(segment_id).update({'end_point': startpt})
 

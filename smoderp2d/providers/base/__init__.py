@@ -333,7 +333,7 @@ class BaseProvider(object):
         Globals.diffuse = False  # not implemented yet
         Globals.subflow = comp_type['subflow_rill']
         Globals.isRill = comp_type['rill']
-        Globals.isStream = comp_type['stream_rill']
+        Globals.isStream = comp_type['stream']
 
         # load hidden config
         hidden_config = self._load_data_from_hidden_config(self._hidden_config)
@@ -398,7 +398,7 @@ class BaseProvider(object):
         for item in ('sheet_only',
                      'rill',
                      'sheet_stream',
-                     'stream_rill',
+                     'stream',
                      'subflow_rill',
                      'stream_subflow_rill'):
             ret[item] = False
@@ -521,7 +521,6 @@ class BaseProvider(object):
             )
 
         finState = np.zeros(np.shape(surface_array.state), np.float32)
-        # TODO: Maybe should be filled with NoDataInt
         finState.fill(GridGlobals.NoDataValue)
         vRest = np.zeros(np.shape(surface_array.state), np.float32)
         vRest.fill(GridGlobals.NoDataValue)

@@ -173,7 +173,7 @@ class QGISRunner(GrassGisRunner):
         #     raise SmoderpError('{}'.format(e))
 
         # initialize GRASS session
-        gsetup.init(gisdb, location, 'PERMANENT', os.environ['GISBASE'])
+        self._grass_session = gsetup.init(gisdb, location, 'PERMANENT')
         # calling gsetup.init() is not enough for PyGRASS
         Mapset('PERMANENT', location, gisdb).current()
 
@@ -213,19 +213,30 @@ class QGISRunner(GrassGisRunner):
                         Module("r.import", input=options[key], output=key)
                 # import vectors
                 elif key in ["soil", "vegetation", "points", "streams"]:
-                    Module(
-                        "v.import", input=options[key], output=key
-                    )
+                    if options[key] != '':
+                        # points and streams are optional
+                        Module(
+                            "v.import", input=options[key], output=key
+                        )
                 # import tables
                 elif key in ["table_soil_vegetation",
                              "channel_properties_table"]:
-                    Module("db.in.ogr", input=options[key], output=key)
+                    if options[key] != '':
+                        # channel_properties_table is optional
+                        from osgeo import ogr
+                        kwargs = {}
+                        ds = ogr.Open(options[key])
+                        if ds:
+                            if ds.GetDriver().GetName() == 'CSV':
+                                kwargs['gdal_doo'] = 'AUTODETECT_TYPE=YES'
+                            ds = None
+                        Module("db.in.ogr", input=options[key], output=key, **kwargs)
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
 
-    def __del__(self):
-        pass
-
+    def finish(self):
+        from grass.script import setup as gsetup
+        self._grass_session.finish()
 
 class WpsRunner(Runner):
     def __init__(self, **args):

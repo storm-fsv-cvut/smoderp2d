@@ -187,7 +187,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             parsed_data['hor_len'], parsed_data['verticalDistance[m]'])
         # TODO can be probably removed (?) or stay zero
         # data['mat_boundary'] = np.zeros((data['r'], data['c']), float)
-        data['mat_efect_cont'].fill(data['dx'])  # x-axis (EW) resolution
+        data['mat_effect_cont'].fill(data['dx'])  # x-axis (EW) resolution
         # flow direction is always to the south
         data['mat_fd'].fill(4)
 
@@ -352,7 +352,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['mat_aa'] = np.zeros((data['r'], data['c']), float)
         data['mat_reten'] = np.zeros((data['r'], data['c']), float)
         data['mat_nan'] = np.zeros((data['r'], data['c']), float)
-        data['mat_efect_cont'] = np.zeros((data['r'], data['c']), float)
+        data['mat_effect_cont'] = np.zeros((data['r'], data['c']), float)
         data['mat_pi'] = np.zeros((data['r'], data['c']), float)
         data['mat_boundary'] = np.zeros((data['r'], data['c']), float)
         data['mat_ppl'] = np.zeros((data['r'], data['c']), float)

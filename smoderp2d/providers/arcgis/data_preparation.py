@@ -58,8 +58,7 @@ class PrepareData(PrepareDataGISBase):
         with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=dem_mask, cellAlignment=dem_mask, snapRaster=dem_mask):
             field = arcpy.Describe(aoi_polygon).OIDFieldName
             arcpy.conversion.PolygonToRaster(
-                aoi_polygon, field, aoi_mask, "MAXIMUM_AREA", "",
-                GridGlobals.dy
+                aoi_polygon, field, aoi_mask, "MAXIMUM_AREA"
             )
 
         # return aoi_polygon
@@ -151,27 +150,25 @@ class PrepareData(PrepareDataGISBase):
     def _rst2np(self, raster):
         """See base method for description.
         """
-        return arcpy.RasterToNumPyArray(
+        arr = arcpy.RasterToNumPyArray(
             raster, nodata_to_value=GridGlobals.NoDataValue
         )
+        self._check_rst2np(arr)
 
-    def _update_grid_globals(self, reference):
+        return arr
+
+    def _update_grid_globals(self, reference, reference_cellsize):
         """See base method for description.
         """
         desc = arcpy.Describe(reference)
+        desc_cellsize = arcpy.Describe(reference_cellsize)
 
-        # check data consistency
-        if desc.height != GridGlobals.r or \
-                desc.width != GridGlobals.c:
-            raise DataPreparationError(
-                "Data inconsistency ({},{}) vs ({},{})".format(
-                    desc.height, desc.width,
-                    GridGlobals.r, GridGlobals.c)
-            )
+        GridGlobals.r = desc.height
+        GridGlobals.c = desc.width
 
         # lower left corner coordinates
         GridGlobals.set_llcorner((desc.Extent.XMin, desc.Extent.YMin))
-        GridGlobals.set_size((desc.MeanCellWidth, desc.MeanCellHeight))
+        GridGlobals.set_size((desc_cellsize.MeanCellWidth, desc_cellsize.MeanCellHeight))
         inp = arcpy.Describe(self._input_params['elevation'])
         self._check_resolution_consistency(
             inp.meanCellWidth, inp.meanCellHeight
@@ -179,9 +176,9 @@ class PrepareData(PrepareDataGISBase):
 
         # set arcpy environment (needed for rasterization)
         arcpy.env.extent = desc.Extent
-        arcpy.env.snapRaster = reference
+        arcpy.env.snapRaster = reference_cellsize
 
-    def _compute_efect_cont(self, dem, asp):
+    def _compute_effect_cont(self, dem, asp):
         """See base method for description.
         """
         pii = math.pi / 180.0
@@ -193,10 +190,10 @@ class PrepareData(PrepareDataGISBase):
         times1 = arcpy.sa.Plus(cosslope, sinslope)
         times1.save(self.storage.output_filepath('ratio_cell'))
 
-        efect_cont = arcpy.sa.Times(times1, GridGlobals.dx)
-        efect_cont.save(self.storage.output_filepath('efect_cont'))
+        effect_cont = arcpy.sa.Times(times1, GridGlobals.dx)
+        effect_cont.save(self.storage.output_filepath('effect_cont'))
 
-        return self._rst2np(efect_cont)
+        return self._rst2np(effect_cont)
 
     def _prepare_soilveg(self, soil, soil_type_fieldname, vegetation,
                          vegetation_type_fieldname, aoi_polygon,
@@ -243,7 +240,8 @@ class PrepareData(PrepareDataGISBase):
 
         arcpy.management.AddField(soilveg_aoi_path, soilveg_code, "TEXT")
 
-        # calculate "soil_veg" values (soil_type_fieldname + vegetation_type_fieldname)
+        # calculate "soil_veg" values
+        # = (soil_type_fieldname + vegetation_type_fieldname)
         with arcpy.da.UpdateCursor(soilveg_aoi_path, [soil_type_fieldname, veg_fieldname, soilveg_code]) as table:
             for row in table:
                 row[2] = row[0] + row[1]
@@ -277,7 +275,10 @@ class PrepareData(PrepareDataGISBase):
             )
             aoi_mask = self.storage.output_filepath('aoi_mask')
             with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=aoi_mask, cellAlignment=aoi_mask, snapRaster=aoi_mask):
-                arcpy.conversion.PolygonToRaster(soilveg_aoi_path, field, output, "MAXIMUM_AREA", "", GridGlobals.dy)
+                arcpy.conversion.PolygonToRaster(
+                    soilveg_aoi_path, field, output, "MAXIMUM_AREA", "",
+                    GridGlobals.dy
+                )
             self.soilveg_fields[field] = self._rst2np(output)
             self._check_soilveg_dim(field)
 
