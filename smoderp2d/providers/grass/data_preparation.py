@@ -471,11 +471,11 @@ class PrepareData(PrepareDataGISBase):
         # extract elevation for the stream segment vertices
         self._run_grass_module('g.region', raster=dem)
         self._run_grass_module(
-            'v.drape', input=stream, elevation=dem, output=stream+'3d'
+            'v.drape', input=stream, elevation=dem, output=stream+'_z'
         )
 
         to_reverse = []
-        with Vector(stream+'3d') as vmap:
+        with Vector(stream+'_z') as vmap:
             for seg in vmap:
                 startpt = seg[0]
                 endpt = seg[-1]
@@ -506,8 +506,6 @@ class PrepareData(PrepareDataGISBase):
                 segment_props.get(segment_id).update(
                     {'inclination': inclination}
                 )
-
-        self.__remove_temp_data({'name': stream+'3d', 'type': 'vector'})
 
         # add new fields to the stream segments feature class
         self._run_grass_module(

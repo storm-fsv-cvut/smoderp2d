@@ -365,12 +365,12 @@ class PrepareData(PrepareDataGISBase):
 
         # extract elevation for the stream segment vertices
         arcpy.ddd.InterpolateShape(
-            dem_aoi, stream, self.storage.output_filepath("stream_z"), "", "",
+            dem_aoi, stream, self.storage.output_filepath("stream_aoi_z"), "", "",
             "CONFLATE_NEAREST", "VERTICES_ONLY"
         )
         shape_fieldname = "SHAPE@"
 
-        with arcpy.da.SearchCursor(self.storage.output_filepath("stream_z"), [shape_fieldname, segment_id_fieldname]) as segments:
+        with arcpy.da.SearchCursor(self.storage.output_filepath("stream_aoi_z"), [shape_fieldname, segment_id_fieldname]) as segments:
             for row in segments:
                 startpt = row[0].firstPoint
                 endpt = row[0].lastPoint
