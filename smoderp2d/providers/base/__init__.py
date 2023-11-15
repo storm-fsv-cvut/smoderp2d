@@ -169,9 +169,11 @@ class BaseProvider(object):
                 # avoid duplicated handlers (e.g. in case of ArcGIS)
                 Logger.addHandler(handler)
 
-    @staticmethod
-    def __load_hidden_config():
-        # load hidden configuration with advanced settings
+    def __load_hidden_config(self):
+        """Load hidden configuration with advanced settings.
+
+        return ConfigParser: object
+        """
         _path = os.path.join(
             os.path.dirname(__file__), '..', '..', '.config.ini'
         )
@@ -183,13 +185,30 @@ class BaseProvider(object):
         config = ConfigParser()
         config.read(_path)
 
-        if not config.has_option('outputs', 'extraout'):
-            raise ConfigError(
-                'Section "outputs" or option "extraout" is not set properly '
-                'in file {}'.format(_path)
-            )
+        # set logging level
+        Logger.setLevel(config.get('logging', 'level', fallback=logging.INFO))
+        # sys.stderr logging
+        self.add_logging_handler(
+            logging.StreamHandler(stream=sys.stderr)
+        )
 
         return config
+
+    def _load_data_from_hidden_config(self, config, ignore=[]):
+        """Load data from hidden config.
+
+        :param ConfigParser config: loaded config file
+        :param list ignore: list of options to me ignored
+
+        :return dict
+        """
+        data = {}
+        data['prtTimes'] = self._hidden_config.get('output', 'printtimes', fallback=None)
+        data['extraout'] = self._hidden_config.getboolean('output', 'extraout', fallback=False)
+        if 'mfda' not in ignore:
+            data['mfda'] = self._hidden_config.getboolean('processes', 'mfda', fallback=False)
+
+        return data
 
     def _load_config(self):
         # load configuration
@@ -202,15 +221,6 @@ class BaseProvider(object):
         config.read(self.args.config_file)
 
         try:
-            # set logging level
-            Logger.setLevel(
-                config.get('logging', 'level', fallback=logging.INFO)
-            )
-            # sys.stderr logging
-            self.add_logging_handler(
-                logging.StreamHandler(stream=sys.stderr)
-            )
-
             # must be defined for _cleanup() method
             Globals.outdir = config.get('output', 'outdir')
         except (NoSectionError, NoOptionError) as e:
@@ -249,15 +259,10 @@ class BaseProvider(object):
 
         # some variables configs can be changes after loading from
         # pickle.dump such as end time of simulation
-
         if self._config.get('time', 'endtime'):
             data['end_time'] = self._config.getfloat('time', 'endtime')
-        #  time of flow algorithm
-        data['mfda'] = self._config.getboolean(
-            'processes', 'mfda', fallback=False
-        )
 
-        #  type of computing
+        # type of computing
         data['type_of_computing'] = CompType()[
             self._config.get('processes', 'typecomp', fallback='stream_rill')
         ]
@@ -271,19 +276,14 @@ class BaseProvider(object):
             except TypeError:
                 raise ProviderError('Invalid rainfall file')
 
-        # some self._configs are not in pickle.dump
-        data['extraOut'] = self._config.getboolean(
-            'output', 'extraout', fallback=False
-        )
-        # rainfall data can be saved
-        data['prtTimes'] = self._config.get(
-            'output', 'printtimes', fallback=None
-        )
-
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
 
         # ensure that dx and dy are defined
         data['dx'] = data['dy'] = math.sqrt(data['pixel_area'])
+
+        # load hidden config
+        data.update(self._load_data_from_hidden_config(
+            self._hidden_config))
 
         return data
 
@@ -334,9 +334,19 @@ class BaseProvider(object):
         Globals.subflow = comp_type['subflow_rill']
         Globals.isRill = comp_type['rill']
         Globals.isStream = comp_type['stream']
-        Globals.prtTimes = data.get('prtTimes', None)
-        Globals.extraOut = self._hidden_config.getboolean('outputs', 'extraout')
-        Globals.end_time *= 60  # convert min to sec
+
+        # load hidden config
+        hidden_config = self._load_data_from_hidden_config(self._hidden_config)
+        if 'prtTimes' in data:
+            Globals.prtTimes = data['prtTimes']
+        else:
+            Globals.prtTimes = hidden_config.get('prtTimes', None)
+        if 'extraout' in data:
+            Globals.extraOut = data['extraout']
+        else:
+            Globals.extraOut = hidden_config.get('extraout', False)
+
+        Globals.end_time *= 60 # convert min to sec
 
         # If profile1d provider is used the values
         # should be set in the loop at the beginning

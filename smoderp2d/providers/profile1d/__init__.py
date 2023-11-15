@@ -163,15 +163,6 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         # Logger.progress(10)
 
         # general settings
-        # some self._configs are not in pickle.dump
-        data['extraOut'] = self._config.getboolean(
-            'output', 'extraout', fallback=False
-        )
-        # rainfall data can be saved
-        data['prtTimes'] = self._config.get(
-            'output', 'printtimes', fallback=None
-        )
-
         resolution = self._config.getfloat('domain', 'res')
         data['r'] = self._compute_rows(joint_data['horizontalProjection[m]'],
                                        resolution)
@@ -257,6 +248,10 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
 
         slope_width = float(self._config.get('domain', 'slope_width'))
         data['slope_width'] = slope_width
+
+        # load hidden config
+        data.update(self._load_data_from_hidden_config(
+            self._hidden_config, ignore=['mfda']))
 
         return data
 
