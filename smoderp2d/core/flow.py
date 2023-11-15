@@ -136,7 +136,7 @@ class Mfda(object):
                 iax = i + ax
                 jbx = j + bx
 
-                if ma.equal(state_ij, 1) or ma.equal(state_ij, 1):
+                if ma.equal(state_ij, 1) or ma.equal(state_ij, 2):
                     inflow_from_cells += self.arr.vol_runoff_rill[iax, jbx]
                     # toto jeste predelat u ryh
 
