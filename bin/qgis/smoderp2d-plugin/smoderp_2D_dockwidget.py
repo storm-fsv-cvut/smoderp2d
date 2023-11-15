@@ -147,7 +147,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.table_stream_shape_code_comboBox = QgsFieldComboBox()
         self.table_stream_shape_comboBox = QgsMapLayerComboBox()
         self.table_stream_shape_toolButton = QtWidgets.QToolButton()
-        self.export_temporary_checkBox = QtWidgets.QCheckBox()
+        self.generate_temporary_checkBox = QtWidgets.QCheckBox()
         self.run_button = QtWidgets.QPushButton(self.dockWidgetContents)
 
         # set default values
@@ -243,8 +243,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.arguments['channel_properties'].addWidget(
             self.table_stream_shape_toolButton
         )
-        self.arguments['export_temporary'].addWidget(
-            self.export_temporary_checkBox
+        self.arguments['generate_temporary'].addWidget(
+            self.generate_temporary_checkBox
         )
 
     def closeEvent(self, event):
@@ -491,7 +491,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self.table_stream_shape_comboBox.currentText(),
             'streams_channel_type_fieldname':
                 self.table_stream_shape_code_comboBox.currentText(),
-            't': bool(self.export_temporary_checkBox.checkState()),
+            't': bool(self.generate_temporary_checkBox.checkState()),
             'output': self.main_output_lineEdit.text().strip()
         }
 
