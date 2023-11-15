@@ -458,7 +458,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         outdir = self.main_output_lineEdit.text().strip()
         import_group_layers(group, outdir, show=True)
 
-        if self._input_params['t']is True:
+        if self._input_params['t'] is True:
             temp_group = group.addGroup('temp')
             temp_group.setExpanded(False)
             temp_group.setItemVisibilityChecked(False)
