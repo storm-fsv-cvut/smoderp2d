@@ -38,4 +38,4 @@ jobs:
 
       - name: Run command test suite
         run: |
-          pytest ${{ inputs.pytest-suite }}
+          python3 -m pytest ${{ inputs.pytest-suite }}
