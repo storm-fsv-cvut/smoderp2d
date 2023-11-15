@@ -14,9 +14,10 @@
 #  classes Kinematic or Diffuse in the
 #  package smoderp2d.core.kinematic_diffuse
 #
+import numpy as np
 import numpy.ma as ma
 
-from smoderp2d.core.general import Globals
+from smoderp2d.core.general import Globals, GridGlobals
 
 import smoderp2d.flow_algorithm.mfd as mfd
 import smoderp2d.flow_algorithm.D8 as D8_
@@ -110,23 +111,71 @@ class Mfda(object):
         self.inflowsRill = D8_.new_inflows(fd_rill)
 
     def cell_runoff(self, i, j, sur=True):
+        if i == 0:
+            inflows_up = np.array([[0,] * 8,] * GridGlobals.c)
+            inflows_down = self.inflows[i + 1]
+            vol_runoff_up = np.array([[0,] * 8,] * GridGlobals.c)
+            vol_runoff_down = self.arr.vol_runoff[i + 1]
+        elif i == GridGlobals.r - 1:
+            inflows_up = self.inflows[i - 1]
+            inflows_down = np.array([[0,] * 8,] * GridGlobals.c)
+            vol_runoff_up = self.arr.vol_runoff[i - 1]
+            vol_runoff_down = np.array([[0,] * 8,] * GridGlobals.c)
+        else:
+            inflows_up = self.inflows[i - 1]
+            inflows_down = self.inflows[i + 1]
+            vol_runoff_up = self.arr.vol_runoff[i - 1]
+            vol_runoff_down = self.arr.vol_runoff[i + 1]
+
+        if j == 0:
+            inflows_leftup = 0
+            inflows_left = 0
+            inflows_leftdown = 0
+            inflows_rightup = inflows_up[j + 1][3]
+            inflows_right = self.inflows[i][j + 1][4]
+            inflows_rightdown = inflows_down[j + 1][5]
+            vol_runoff_leftup = 0
+            vol_runoff_left = 0
+            vol_runoff_leftdown = 0
+            vol_runoff_rightup = vol_runoff_up[j + 1]
+            vol_runoff_right = self.arr.vol_runoff[i][j + 1]
+            vol_runoff_rightdown = vol_runoff_down[j + 1]
+        elif j == GridGlobals.c - 1:
+            inflows_leftup = inflows_up[j - 1][1]
+            inflows_left = self.inflows[i][j - 1][0]
+            inflows_leftdown = inflows_down[j - 1][7]
+            inflows_rightup = 0
+            inflows_right = 0
+            inflows_rightdown = 0
+            vol_runoff_leftup = vol_runoff_up[j - 1]
+            vol_runoff_left = self.arr.vol_runoff[i][j - 1]
+            vol_runoff_leftdown = vol_runoff_down[j - 1]
+            vol_runoff_rightup = 0
+            vol_runoff_right = 0
+            vol_runoff_rightdown = 0
+        else:
+            inflows_leftup = inflows_up[j - 1][1]
+            inflows_left = self.inflows[i][j - 1][0]
+            inflows_leftdown = inflows_down[j - 1][7]
+            inflows_rightup = inflows_up[j + 1][3]
+            inflows_right = self.inflows[i][j + 1][4]
+            inflows_rightdown = inflows_down[j + 1][5]
+            vol_runoff_leftup = vol_runoff_up[j - 1]
+            vol_runoff_left = self.arr.vol_runoff[i][j - 1]
+            vol_runoff_leftdown = vol_runoff_down[j - 1]
+            vol_runoff_rightup = vol_runoff_up[j + 1]
+            vol_runoff_right = self.arr.vol_runoff[i][j + 1]
+            vol_runoff_rightdown = vol_runoff_down[j + 1]
+
         inflow_from_cells = \
-            self.inflows[i - 1][j - 1][1] * \
-            self.arr.vol_runoff[i - 1, j - 1] + \
-            self.inflows[i - 1][j][2] * \
-            self.arr.vol_runoff[i - 1, j] + \
-            self.inflows[i - 1][j + 1][3] * \
-            self.arr.vol_runoff[i - 1, j + 1] + \
-            self.inflows[i][j - 1][0] * \
-            self.arr.vol_runoff[i, j - 1] + \
-            self.inflows[i][j + 1][4] * \
-            self.arr.vol_runoff[i, j + 1] + \
-            self.inflows[i + 1][j - 1][7] * \
-            self.arr.vol_runoff[i + 1, j - 1] + \
-            self.inflows[i + 1][j][6] * \
-            self.arr.vol_runoff[i + 1, j] + \
-            self.inflows[i + 1][j + 1][5] * \
-            self.arr.vol_runoff[i + 1, j + 1]
+            inflows_leftup * vol_runoff_leftup + \
+            inflows_up[j][2] * vol_runoff_up[j] + \
+            inflows_rightup * vol_runoff_rightup + \
+            inflows_left * vol_runoff_left + \
+            inflows_right * vol_runoff_right + \
+            inflows_leftdown * vol_runoff_leftdown + \
+            inflows_down[j][6] * vol_runoff_down[j] + \
+            inflows_rightdown * vol_runoff_rightdown
 
         if Globals.isRill and sur:
             state_ij = self.arr.state[i, j]
