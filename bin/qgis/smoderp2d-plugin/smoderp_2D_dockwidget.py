@@ -32,9 +32,11 @@ from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication, Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QFileDialog, QProgressBar, QMenu
 
-from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, \
-    QgsRasterLayer, QgsTask, QgsApplication, Qgis, QgsProject, \
-    QgsRasterBandStats, QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp
+from qgis.core import (
+    QgsProviderRegistry, QgsMapLayerProxyModel, QgsRasterLayer, QgsTask,
+    QgsApplication, Qgis, QgsProject, QgsRasterBandStats,
+    QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp, QgsVectorLayer
+)
 from qgis.utils import iface
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
 
@@ -424,26 +426,42 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         return renderer
 
     def computationFinished(self):
+        def import_group_layers(group, outdir, ext='asc', show=False):
+            for map_path in glob.glob(os.path.join(outdir, f'*.{ext}')):
+                if ext == 'asc':
+                    # raster
+                    layer = QgsRasterLayer(
+                        map_path,
+                        os.path.basename(os.path.splitext(map_path)[0])
+                    )
+
+                    # set symbology
+                    layer.setRenderer(self._layerColorRamp(layer))
+                else:
+                    # vector
+                    layer = QgsVectorLayer(
+                        map_path,
+                        os.path.basename(os.path.splitext(map_path)[0])
+                    )
+
+                # add layer into group
+                QgsProject.instance().addMapLayer(layer, False)
+                node = group.addLayer(layer)
+                node.setExpanded(False)
+                node.setItemVisibilityChecked(show is True)
+                show = False
+
         # show results
         root = QgsProject.instance().layerTreeRoot()
         group = root.insertGroup(0, self._result_group_name)
 
         outdir = self.main_output_lineEdit.text().strip()
-        first = True
-        for map_path in glob.glob(os.path.join(outdir, '*.asc')):
-            layer = QgsRasterLayer(
-                map_path, os.path.basename(os.path.splitext(map_path)[0])
-            )
+        import_group_layers(group, outdir, show=True)
 
-            # set symbology
-            layer.setRenderer(self._layerColorRamp(layer))
-
-            # add layer into group
-            QgsProject.instance().addMapLayer(layer, False)
-            node = group.addLayer(layer)
-            node.setExpanded(False)
-            node.setItemVisibilityChecked(first is True)
-            first = False
+        if self._input_params['t']is True:
+            temp_group = group.addGroup('temp')
+            import_group_layers(temp_group, os.path.join(outdir, 'temp'))
+            import_group_layers(temp_group, os.path.join(outdir, 'temp'), 'gml')
 
         # QGIS bug: group must be collapsed and then expanded
         group.setExpanded(False)
