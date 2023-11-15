@@ -451,19 +451,27 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 node.setItemVisibilityChecked(show is True)
                 show = False
 
-        # show results
+        # show main results
         root = QgsProject.instance().layerTreeRoot()
         group = root.insertGroup(0, self._result_group_name)
 
         outdir = self.main_output_lineEdit.text().strip()
         import_group_layers(group, outdir, show=True)
 
+        # import control results
+        ctrl_group = group.addGroup('control')
+        ctrl_group.setExpanded(False)
+        ctrl_group.setItemVisibilityChecked(False)
+        import_group_layers(ctrl_group, os.path.join(outdir, 'control'))
+
         if self._input_params['t'] is True:
+            # import temp results
             temp_group = group.addGroup('temp')
             temp_group.setExpanded(False)
             temp_group.setItemVisibilityChecked(False)
             import_group_layers(temp_group, os.path.join(outdir, 'temp'))
             import_group_layers(temp_group, os.path.join(outdir, 'temp'), 'gml')
+
 
         # QGIS bug: group must be collapsed and then expanded
         group.setExpanded(False)
