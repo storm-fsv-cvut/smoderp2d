@@ -15,7 +15,7 @@ grass -c /tmp/smoderp2d-nucice/test
 Perform computation on Nucice dataset:
 
 <div class="code"><pre>
-r.smoderp2d \
+./bin/grass/r.smoderp2d/r.smoderp2d.py \
  elevation=dem10m@PERMANENT \
  soil=soils@PERMANENT \
  soil_type_fieldname=SID \
@@ -42,7 +42,7 @@ grass -c /tmp/smoderp2d-rainsim/test
 Perform computation on Rain simulation dataset:
 
 <div class="code"><pre>
-r.smoderp2d \
+./bin/grass/r.smoderp2d/r.smoderp2d.py \
  elevation=rastr10_05_t2_5@PERMANENT \
  soil=soil@PERMANENT \
  soil_type_fieldname=Soil \
@@ -50,7 +50,7 @@ r.smoderp2d \
  vegetation_type_fieldname=LandUse \
  rainfall_file=tests/data/rainfall_sim.txt \
  maxdt=30 end_time=40 \
- points=ObsPointssel@PERMANENT \
+ points=ObsPointssel@PERMANENT points_fieldname=point_id \
  table_soil_vegetation=test_soilveg@PERMANENT \
  table_soil_vegetation_fieldname=soilveg \
  streams=streams@PERMANENT \
