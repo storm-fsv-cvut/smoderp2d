@@ -33,7 +33,12 @@ def write_array_diff_png(diff, target_path):
 
 
 def write_array_diff(arr1, arr2, target_path):
-    diff = arr1 - arr2
+    try:
+        diff = arr1 - arr2
+    except ValueError as e:
+        print(f"Unable to compute array diff: {e}")
+        return
+
     if not diff.any():
         return
 
@@ -184,7 +189,8 @@ class PerformTest:
             self._params = {
                 "soil_type_fieldname": "SID",
                 "vegetation_type_fieldname": "LandUse",
-                "rainfall_file": os.path.join(data_dir, "rainfall.txt"),
+                "points_fieldname": "point_id",
+                "rainfall_file": os.path.join(data_dir, "rainfall_nucice.txt"),
                 "maxdt": 30,
                 "end_time": 40,
                 "table_soil_vegetation_fieldname": "soilveg",
@@ -316,7 +322,6 @@ class PerformTest:
 
         config = configparser.ConfigParser()
         config.read(config_file)
-        assert config.get("data", "rainfall") == "tests/data/rainfall.txt"
 
         os.environ["SMODERP2D_CONFIG_FILE"] = str(config_file)
         self._run()

@@ -163,15 +163,6 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         # Logger.progress(10)
 
         # general settings
-        # some self._configs are not in pickle.dump
-        data['extraOut'] = self._config.getboolean(
-            'output', 'extraout', fallback=False
-        )
-        # rainfall data can be saved
-        data['prtTimes'] = self._config.get(
-            'output', 'printtimes', fallback=None
-        )
-
         resolution = self._config.getfloat('domain', 'res')
         data['r'] = self._compute_rows(joint_data['horizontalProjection[m]'],
                                        resolution)
@@ -196,7 +187,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             parsed_data['hor_len'], parsed_data['verticalDistance[m]'])
         # TODO can be probably removed (?) or stay zero
         # data['mat_boundary'] = np.zeros((data['r'], data['c']), float)
-        data['mat_efect_cont'].fill(data['dx'])  # x-axis (EW) resolution
+        data['mat_effect_cont'].fill(data['dx'])  # x-axis (EW) resolution
         # flow direction is always to the south
         data['mat_fd'].fill(4)
 
@@ -257,6 +248,10 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
 
         slope_width = float(self._config.get('domain', 'slope_width'))
         data['slope_width'] = slope_width
+
+        # load hidden config
+        data.update(self._load_data_from_hidden_config(
+            self._hidden_config, ignore=['mfda']))
 
         return data
 
@@ -357,7 +352,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['mat_aa'] = np.zeros((data['r'], data['c']), float)
         data['mat_reten'] = np.zeros((data['r'], data['c']), float)
         data['mat_nan'] = np.zeros((data['r'], data['c']), float)
-        data['mat_efect_cont'] = np.zeros((data['r'], data['c']), float)
+        data['mat_effect_cont'] = np.zeros((data['r'], data['c']), float)
         data['mat_pi'] = np.zeros((data['r'], data['c']), float)
         data['mat_boundary'] = np.zeros((data['r'], data['c']), float)
         data['mat_ppl'] = np.zeros((data['r'], data['c']), float)

@@ -84,10 +84,9 @@ def rectangle(reach, dt):
         reach.inclination,
         0.5) / (
                    reach.roughness)  # rychlost
-    reach.Q_out = S * \
-                  reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt                   # prutok
-    reach.V_out = reach.Q_out * \
-                  dt  # odtekly objem
+    reach.Q_out = S * reach.vs
+    # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt                   # prutok
+    reach.V_out = reach.Q_out * dt  # odtekly objem
     condition = ma.greater(reach.V_out, dV)
     reach.V_out = ma.where(condition, dV, reach.V_out)
     reach.vol_rest = ma.where(condition, 0, dV - reach.V_out)

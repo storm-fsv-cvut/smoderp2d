@@ -29,13 +29,13 @@ if 'profile1d' in args.template:
         'soil_types': file_content(
             os.path.join(data_dir, 'profile1d', 'data1D_soil_types.csv')
         ),
-        'rainfall': file_content(os.path.join(data_dir, 'rainfall.txt')),
+        'rainfall': file_content(os.path.join(data_dir, 'rainfall_nucice.txt')),
         'config': file_content(os.path.join(tests_dir, 'profile1d.ini'))
     }
 else:  # smoderp2d
     d = {
         'input': file_content(os.path.join(data_dir, 'destak.save')),
-        'rainfall': file_content(os.path.join(data_dir, 'rainfall.txt')),
+        'rainfall': file_content(os.path.join(data_dir, 'rainfall_nucice.txt')),
         'config': file_content(os.path.join(tests_dir, 'quicktest.ini'))
     }
 

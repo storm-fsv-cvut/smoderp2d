@@ -124,56 +124,37 @@ def removeCellsWithSameHeightNeighborhood(mat_dem, mat_nan, rows, cols):
     A function determines if cell neighborhood has exactly same values of
     height, and then it save that cell as NoData.
     """
-    bad_cells = []
-
-    # finding problem cells with same height neogborhood
-    for i in range(rows):
-        for j in range(cols):
-            c = [i, j]
+    # finding problem cells with same height neigbourhood
+    # run only for non-edge cells - edge cells are excluded thanks to slope
+    # trimming
+    for i in range(1, rows - 1):
+        for j in range(1, cols - 1):
             count_nbrs = 0
             point_m = mat_dem[i][j]
 
-            if 0 < i < (rows - 1) and 0 < j < (cols - 1):
-                # non-edge cells - edge cells are excluded thanks to slope
-                # trimming
-                nbrs = [mat_dem[i - 1][j - 1],
-                        mat_dem[i - 1][j],
-                        mat_dem[i - 1][j + 1],
-                        mat_dem[i][j - 1],
-                        mat_dem[i][j + 1],
-                        mat_dem[i + 1][j - 1],
-                        mat_dem[i + 1][j],
-                        mat_dem[i + 1][j + 1]]
+            nbrs = [mat_dem[i - 1][j - 1],
+                    mat_dem[i - 1][j],
+                    mat_dem[i - 1][j + 1],
+                    mat_dem[i][j - 1],
+                    mat_dem[i][j + 1],
+                    mat_dem[i + 1][j - 1],
+                    mat_dem[i + 1][j],
+                    mat_dem[i + 1][j + 1]]
 
-                for k in range(8):
-                    if point_m > 0 and point_m == nbrs[k]:
-                        count_nbrs += 1
-                if count_nbrs >= 7:
-                    # compare number of neighbours with the same height
-                    bad_cells.append(c)
-                    bc = 1
+            for nbrs_k in nbrs:
+                if point_m > 0 and point_m == nbrs_k:
+                    count_nbrs += 1
+
+            # compare number of neighbours with the same height
+            if count_nbrs >= 7:
+                # set problematic cells to NoData
+                mat_dem[i][j] = np.nan
+                mat_nan[i][j] = np.nan
 
     Logger.info(
         "Possible water circulation! Check the input DTM raster for flat "
         "areas with the same height neighborhood."
     )
-
-    # all problem cells set as NoData
-    if len(bad_cells) > 0:
-        for i in range(rows):
-            for j in range(cols):
-                if bc == 1:
-                    bc_i = bad_cells[0][0]
-                    bc_j = bad_cells[0][1]
-
-                    if bc_i == i and bc_j == j:
-                        mat_dem[i][j] = np.nan
-                        mat_nan[i][j] = np.nan
-                        bad_cells.pop(0)
-                        if len(bad_cells) == 0:
-                            bc = 0
-                else:
-                    break
 
     return mat_dem, mat_nan
 
@@ -267,10 +248,10 @@ def dirSlope(point_m, nbrs, dy, dx):
             if nbrs[1] < 0 and nbrs[2] < 0 or (nbrs[1] > point_m and nbrs[2] > point_m):
                 d1 = -1
                 s1 = -1
-            elif nbrs[1] > 0 and nbrs[2] < 0:
+            elif nbrs[1] > 0 > nbrs[2]:
                 d1 = 0
                 s0 = (point_m - nbrs[1]) / dy
-            elif nbrs[2] > 0 and nbrs[1] < 0 or (abs(point_m - nbrs[2]) < 1e-8 and nbrs[1] > point_m):
+            elif nbrs[2] > 0 > nbrs[1] or (abs(point_m - nbrs[2]) < 1e-8 and nbrs[1] > point_m):
                 d1 = FB
                 s0 = (point_m - nbrs[2]) / DY_SQRT
             else:
@@ -299,10 +280,10 @@ def dirSlope(point_m, nbrs, dy, dx):
             if nbrs[2] < 0 and nbrs[4] < 0 or (nbrs[2] > point_m and nbrs[4] > point_m):
                 d2 = -1
                 s2 = -1
-            elif nbrs[2] > 0 and nbrs[4] < 0:
+            elif nbrs[2] > 0 > nbrs[4]:
                 d2 = 0
                 s2 = (point_m - nbrs[2]) / DY_SQRT
-            elif nbrs[4] > 0 and nbrs[2] < 0 or (abs(point_m - nbrs[4]) < 1e-8 and nbrs[2] > point_m):
+            elif nbrs[4] > 0 > nbrs[2] or (abs(point_m - nbrs[4]) < 1e-8 and nbrs[2] > point_m):
                 d2 = FB
                 s2 = (point_m - nbrs[4]) / dx
             else:
@@ -332,10 +313,10 @@ def dirSlope(point_m, nbrs, dy, dx):
             if nbrs[4] < 0 and nbrs[7] < 0 or (nbrs[4] > point_m and nbrs[7] > point_m):
                 d3 = -1
                 s3 = -1
-            elif nbrs[4] > 0 and nbrs[7] < 0:
+            elif nbrs[4] > 0 > nbrs[7]:
                 d3 = 0
                 s3 = (point_m - nbrs[4]) / dx
-            elif nbrs[7] > 0 and nbrs[4] < 0 or (abs(point_m - nbrs[7]) < 1e-8 and nbrs[4] > point_m):
+            elif nbrs[7] > 0 > nbrs[4] or (abs(point_m - nbrs[7]) < 1e-8 and nbrs[4] > point_m):
                 d3 = FB
                 s3 = (point_m - nbrs[7]) / DY_SQRT
             else:
@@ -364,10 +345,10 @@ def dirSlope(point_m, nbrs, dy, dx):
             if nbrs[7] < 0 and nbrs[6] < 0 or (nbrs[7] > point_m and nbrs[6] > point_m):
                 d4 = -1
                 s4 = -1
-            elif nbrs[7] > 0 and nbrs[6] < 0:
+            elif nbrs[7] > 0 > nbrs[6]:
                 d4 = 0
                 s4 = (point_m - nbrs[7]) / DY_SQRT
-            elif nbrs[6] > 0 and nbrs[7] < 0 or (abs(point_m - nbrs[6]) < 1e-8 and nbrs[7] > point_m):
+            elif nbrs[6] > 0 > nbrs[7] or (abs(point_m - nbrs[6]) < 1e-8 and nbrs[7] > point_m):
                 d4 = FB
                 s4 = (point_m - nbrs[6]) / dy
             else:
@@ -396,10 +377,10 @@ def dirSlope(point_m, nbrs, dy, dx):
             if nbrs[6] < 0 and nbrs[5] < 0 or (nbrs[6] > point_m and nbrs[5] > point_m):
                 d5 = -1
                 s5 = -1
-            elif nbrs[6] > 0 and nbrs[5] < 0:
+            elif nbrs[6] > 0 > nbrs[5]:
                 d5 = 0
                 s5 = (point_m - nbrs[6]) / dy
-            elif nbrs[5] > 0 and nbrs[6] < 0 or (abs(point_m - nbrs[5]) < 1e-8 and nbrs[6] > point_m):
+            elif nbrs[5] > 0 > nbrs[6] or (abs(point_m - nbrs[5]) < 1e-8 and nbrs[6] > point_m):
                 d5 = FB
                 s5 = (point_m - nbrs[5]) / DY_SQRT
             else:
@@ -428,10 +409,10 @@ def dirSlope(point_m, nbrs, dy, dx):
             if nbrs[5] < 0 and nbrs[3] < 0 or (nbrs[5] > point_m and nbrs[3] > point_m):
                 d6 = -1
                 s6 = -1
-            elif nbrs[5] > 0 and nbrs[3] < 0:
+            elif nbrs[5] > 0 > nbrs[3]:
                 d6 = 0
                 s6 = (point_m - nbrs[5]) / DY_SQRT
-            elif nbrs[3] > 0 and nbrs[5] < 0 or (abs(point_m - nbrs[3]) < 1e-8 and nbrs[5] > point_m):
+            elif nbrs[3] > 0 > nbrs[5] or (abs(point_m - nbrs[3]) < 1e-8 and nbrs[5] > point_m):
                 d6 = FB
                 s6 = (point_m - nbrs[3]) / dx
             else:
@@ -460,10 +441,10 @@ def dirSlope(point_m, nbrs, dy, dx):
             if nbrs[3] < 0 and nbrs[0] < 0 or (nbrs[3] > point_m and nbrs[0] > point_m):
                 d7 = -1
                 s7 = -1
-            elif nbrs[3] > 0 and nbrs[0] < 0:
+            elif nbrs[3] > 0 > nbrs[0]:
                 d7 = 0
                 s7 = (point_m - nbrs[3]) / dx
-            elif nbrs[0] > 0 and nbrs[3] < 0 or (abs(point_m - nbrs[0]) < 1e-8 and nbrs[3] > point_m):
+            elif nbrs[0] > 0 > nbrs[3] or (abs(point_m - nbrs[0]) < 1e-8 and nbrs[3] > point_m):
                 d7 = FB
                 s7 = (point_m - nbrs[0]) / DY_SQRT
             else:
@@ -547,7 +528,7 @@ def dirSlope(point_m, nbrs, dy, dx):
     return direction, slope
 
 
-def boolToInt(x):  # function creates bit value from vector of ones and zeros
+def boolToInt(x):  # function creates a bit value from vector of ones and zeros
     """Return int value."""
     y = 0
     for i, j in enumerate(x):
@@ -555,14 +536,3 @@ def boolToInt(x):  # function creates bit value from vector of ones and zeros
             y += 1 << i
 
     return y
-
-
-def lenght(flow_direction, dy, dx):
-    if flow_direction in (2, 8, 32, 128):
-        L = math.sqrt(dy * dy + dx * dx)
-    elif flow_direction in (4, 64):
-        L = dy
-    elif flow_direction in (1, 16):
-        L = dx
-
-    return L

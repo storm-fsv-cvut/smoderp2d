@@ -102,7 +102,7 @@ class Runner(object):
             return 1
 
         if self._provider.args.workflow_mode == WorkflowMode.dpre:
-            # data prepararation only requested
+            # data preparation only requested
             return
 
         # must be called after initialization (!)
@@ -173,7 +173,7 @@ class QGISRunner(GrassGisRunner):
         #     raise SmoderpError('{}'.format(e))
 
         # initialize GRASS session
-        gsetup.init(gisdb, location, 'PERMANENT', os.environ['GISBASE'])
+        self._grass_session = gsetup.init(gisdb, location, 'PERMANENT')
         # calling gsetup.init() is not enough for PyGRASS
         Mapset('PERMANENT', location, gisdb).current()
 
@@ -213,55 +213,30 @@ class QGISRunner(GrassGisRunner):
                         Module("r.import", input=options[key], output=key)
                 # import vectors
                 elif key in ["soil", "vegetation", "points", "streams"]:
-                    Module(
-                        "v.import", input=options[key], output=key
-                    )
+                    if options[key] != '':
+                        # points and streams are optional
+                        Module(
+                            "v.import", input=options[key], output=key
+                        )
                 # import tables
                 elif key in ["table_soil_vegetation",
                              "channel_properties_table"]:
-                    Module("db.in.ogr", input=options[key], output=key)
+                    if options[key] != '':
+                        # channel_properties_table is optional
+                        from osgeo import ogr
+                        kwargs = {}
+                        ds = ogr.Open(options[key])
+                        if ds:
+                            if ds.GetDriver().GetName() == 'CSV':
+                                kwargs['gdal_doo'] = 'AUTODETECT_TYPE=YES'
+                            ds = None
+                        Module("db.in.ogr", input=options[key], output=key, **kwargs)
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
 
-    @staticmethod
-    def show_results():
-        import glob
-        from PyQt5.QtGui import QColor
-        from qgis.core import (
-            QgsProject, QgsRasterLayer, QgsRasterShader,
-            QgsSingleBandPseudoColorRenderer, QgsColorRampShader
-        )
-
-        # get colour definitions
-        color_ramp = QgsColorRampShader()
-        color_ramp.setColorRampType(QgsColorRampShader.Interpolated)
-        lst2 = [
-            QgsColorRampShader.ColorRampItem(0, QColor('#0000ff'), '0'),
-            QgsColorRampShader.ColorRampItem(20, QColor('#efefff'), '20')
-        ]
-        color_ramp.setColorRampItemList(lst2)
-        shader = QgsRasterShader()
-        shader.setRasterShaderFunction(color_ramp)
-
-        for map_path in glob.glob(os.path.join(Globals.outdir, '*.asc')):
-            layer = QgsRasterLayer(
-                map_path, os.path.basename(os.path.splitext(map_path)[0])
-            )
-
-            # set colours
-            renderer = QgsSingleBandPseudoColorRenderer(
-                layer.dataProvider(), 1, shader
-            )
-            layer.setRenderer(renderer)
-
-            QgsProject.instance().addMapLayer(layer)
-
-    def export_data(self):
-        pass
-
-    def __del__(self):
-        pass
-
+    def finish(self):
+        from grass.script import setup as gsetup
+        self._grass_session.finish()
 
 class WpsRunner(Runner):
     def __init__(self, **args):

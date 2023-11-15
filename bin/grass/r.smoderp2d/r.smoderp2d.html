@@ -5,7 +5,14 @@ surface and subsurface runoff and erosion (SMODERP2D) in GRASS GIS.
 
 <h2>EXAMPLE</h2>
 
-Run quick test:
+<h3>Nucice dataset</h3>
+
+<div class="code"><pre>
+grass -c EPSG:5514 /tmp/smoderp2d-nucice --exec python3 tests/data/import_grass.py tests/data/nucice
+grass -c /tmp/smoderp2d-nucice/test
+</pre></div>
+
+Perform computation on Nucice dataset:
 
 <div class="code"><pre>
 r.smoderp2d \
@@ -14,12 +21,39 @@ r.smoderp2d \
  soil_type_fieldname=SID \
  vegetation=landuse@PERMANENT \
  vegetation_type_fieldname=LandUse \
- rainfall_file=tests/data/rainfall.txt \
+ rainfall_file=tests/data/rainfall_nucice.txt \
  maxdt=30 end_time=40 \
- points=points@PERMANENT \
+ points=points@PERMANENT points_fieldname=point_id \
  table_soil_vegetation=soil_veg_tab_mean@PERMANENT \
  table_soil_vegetation_fieldname=soilveg \
  streams=stream@PERMANENT \
+ channel_properties_table=stream_shape@PERMANENT \
+ streams_channel_type_fieldname=channel_id \
+ output=tests/data/output
+</pre></div>
+
+<h3>Rain simulation dataset</h3>
+
+<div class="code"><pre>
+grass -c EPSG:5514 /tmp/smoderp2d-rainsim --exec python3 tests/data/import_grass.py tests/data/rain_sim
+grass -c /tmp/smoderp2d-rainsim/test
+</pre></div>
+
+Perform computation on Rain simulation dataset:
+
+<div class="code"><pre>
+r.smoderp2d \
+ elevation=rastr10_05_t2_5@PERMANENT \
+ soil=soil@PERMANENT \
+ soil_type_fieldname=Soil \
+ vegetation=LandUse@PERMANENT \
+ vegetation_type_fieldname=LandUse \
+ rainfall_file=tests/data/rainfall_sim.txt \
+ maxdt=30 end_time=40 \
+ points=ObsPointssel@PERMANENT \
+ table_soil_vegetation=test_soilveg@PERMANENT \
+ table_soil_vegetation_fieldname=soilveg \
+ streams=streams@PERMANENT \
  channel_properties_table=stream_shape@PERMANENT \
  streams_channel_type_fieldname=channel_id \
  output=tests/data/output

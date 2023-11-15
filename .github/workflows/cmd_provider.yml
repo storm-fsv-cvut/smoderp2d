@@ -61,6 +61,19 @@ jobs:
       python-version: ${{ matrix.python-version }}
       pytest-suite: tests/test_cmd.py --config config_files/quicktest_rill_mfda.ini
 
+  smoderp2d-quicktest-stream-rill:
+    strategy:
+      matrix:
+        python-version:
+          # - "2.7"er name should only happen at a major relea
+          - "3.9"
+          - "3.11"
+
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      python-version: ${{ matrix.python-version }}
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_stream_rill.ini
+
   smoderp2d-longtest-sheet:
     strategy:
       matrix:
@@ -112,6 +125,19 @@ jobs:
     with:
       python-version: ${{ matrix.python-version }}
       pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill_mfda.ini
+
+  smoderp2d-longtest-stream-rill:
+    strategy:
+      matrix:
+        python-version:
+          # - "2.7"
+          - "3.9"
+          - "3.11"
+
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      python-version: ${{ matrix.python-version }}
+      pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill.ini
 
   profile1d:
     strategy:

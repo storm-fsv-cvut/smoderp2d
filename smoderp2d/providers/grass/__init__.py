@@ -5,13 +5,11 @@ from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.exceptions import ProviderError
 from smoderp2d.providers.base import BaseProvider, BaseWriter, WorkflowMode
 from smoderp2d.providers.grass.logger import GrassGisLogHandler
-from smoderp2d.providers import Logger
 
 import grass.script as gs
 from grass.pygrass.gis.region import Region
 from grass.pygrass.modules import Module
 from grass.pygrass.raster import numpy2raster
-from grass.pygrass.messages import Messenger
 
 
 class GrassGisWriter(BaseWriter):
@@ -55,12 +53,13 @@ class GrassGisWriter(BaseWriter):
             raster_name, overwrite=True
         )
 
-        Module('r.out.gdal',
-               input=raster_name,
-               output=file_output,
-               format='AAIGrid',
-               nodata=GridGlobals.NoDataValue,
-               overwrite=True
+        Module(
+            'r.out.gdal',
+            input=raster_name,
+            output=file_output,
+            format='AAIGrid',
+            nodata=GridGlobals.NoDataValue,
+            overwrite=True
         )
 
 
@@ -78,7 +77,7 @@ class GrassGisProvider(BaseProvider):
         # logger
         self.add_logging_handler(
             handler=log_handler(),
-            formatter = logging.Formatter("%(message)s")
+            formatter=logging.Formatter("%(message)s")
         )
 
         # check version
@@ -89,7 +88,7 @@ class GrassGisProvider(BaseProvider):
         # force overwrite
         os.environ['GRASS_OVERWRITE'] = '1'
         # be quiet
-        os.environ['GRASS_VERBOSE'] = '-1'
+        os.environ['GRASS_VERBOSE'] = '0'
 
         # define storage writter
         self.storage = GrassGisWriter()

@@ -10,37 +10,12 @@
 
 
 import pickle
-import numpy as np
 import os
 
 from tools import SaveItems
 
 
-class SaveLoad(SaveItems):
-
-    def save_item(self, it):
-        if isinstance(it, list):
-            # if self.countList in [1,2,3,4,5,8] :
-                # print 'int'
-            # else:
-                # print 'float'
-            # print it
-            # print
-            self.savelist(it)
-            self.countList += 1
-        if isinstance(it, float):
-            self.savefloat(it)
-        if isinstance(it, str):
-            self.savestr(it)
-        if isinstance(it, np.ndarray):
-            self.savenumpy(it)
-        if isinstance(it, unicode):
-            self.saveunicode(it)
-        if isinstance(it, int):
-            self.saveint(it)
-
-
-sl = SaveLoad()
+sl = SaveItems()
 
 
 for file in os.listdir("./"):

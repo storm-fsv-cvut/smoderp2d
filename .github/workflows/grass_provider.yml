@@ -15,15 +15,15 @@ jobs:
 
     runs-on: ubuntu-22.04
     container:
-      image: mundialis/grass-py3-pdal:latest-debian
+      image: osgeo/grass-gis:releasebranch_8_3-debian
 
     steps:
       - uses: actions/checkout@v3
 
       - name: Install Python dependencies
         run: |
-          pip3 install -r .github/workflows/requirements.txt          
-          pip3 install -r .github/workflows/requirements3.11.txt
+          pip3 install --break-system-packages -r .github/workflows/requirements.txt
+          pip3 install --break-system-packages -r .github/workflows/requirements3.11.txt
 
       - name: Run GRASS test suite
         run: |
