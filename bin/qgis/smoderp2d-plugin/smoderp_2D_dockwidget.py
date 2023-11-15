@@ -679,9 +679,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self.table_stream_shape_code_comboBox.setLayer(None)
                 self.table_stream_shape_code_comboBox.setField("")
         elif self.points_comboBox.currentLayer() is not None and t == 'points':
-            self.points_field_comboBox.setLayer(self.points_comboBox.currentLayer())
+            points_cur_layer = self.points_comboBox.currentLayer()
+            self.points_field_comboBox.setLayer(points_cur_layer)
             self.points_field_comboBox.setField(
-                self.points_comboBox.currentLayer().fields()[0].name()
+                points_cur_layer.fields()[0].name()
             )
         else:
             pass
