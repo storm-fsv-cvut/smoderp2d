@@ -190,12 +190,17 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                         self.__class__.__name__, arguments[argument_id].label
                     )
                 )
-                section_tab_layout.addWidget(argument_label)
 
                 # create empty layout for the specific widget
                 argument_widget = QtWidgets.QWidget()
                 argument_widget_layout = QtWidgets.QHBoxLayout()
                 argument_widget.setLayout(argument_widget_layout)
+
+                if section.label != 'Advanced':
+                    section_tab_layout.addWidget(argument_label)
+                else:
+                    # so far, all Advanced tab widgets should be horizontal
+                    argument_widget_layout.addWidget(argument_label)
                 section_tab_layout.addWidget(argument_widget)
 
                 self.arguments.update({argument_id: argument_widget_layout})
