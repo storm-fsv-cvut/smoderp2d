@@ -24,13 +24,14 @@ PARAMETER_MAX_DELTA_T = 6
 PARAMETER_END_TIME = 7
 #PARAMETER_SURFACE_RETENTION = 6  # nula jen docasne, typ vypoctu se resi jinak
 PARAMETER_POINTS = 8
-PARAMETER_SOILVEGTABLE = 9
-PARAMETER_SOILVEGTABLE_TYPE = 10
-PARAMETER_STREAM = 11
-PARAMETER_CHANNEL_TYPE = 12
-PARAMETER_CHANNEL_PROPS_TABLE = 13
-PARAMETER_DATAPREP_ONLY = 14
-PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 15
+PARAMETER_POINTS_ID = 9
+PARAMETER_SOILVEGTABLE = 10
+PARAMETER_SOILVEGTABLE_TYPE = 11
+PARAMETER_STREAM = 12
+PARAMETER_CHANNEL_TYPE = 13
+PARAMETER_CHANNEL_PROPS_TABLE = 14
+PARAMETER_DATAPREP_ONLY = 15
+PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 16
 
 class Toolbox(object):
     def __init__(self):
@@ -135,6 +136,15 @@ class SMODERP2D(object):
         )
         inputPoints.filter.list = ["Point"]
 
+        inputPointsFieldName = arcpy.Parameter(
+           displayName="Field with the input points identifier",
+           name="inputPointsFieldName",
+           datatype="Field",
+           parameterType="Optional",
+           direction="Input"
+        )
+        inputPointsFieldName.parameterDependencies = [inputPoints.name]
+
         soilvegPropertiesTable = arcpy.Parameter(
            displayName="Soils and Landuse parameters table",
            name="soilvegPropertiesTable",
@@ -199,7 +209,7 @@ class SMODERP2D(object):
         return [
             inputSurfaceRaster, inputSoilPolygons, soilTypefieldName,
             inputLUPolygons, LUtypeFieldName, inputRainfall,
-            maxTimeStep, totalRunTime, inputPoints,
+            maxTimeStep, totalRunTime, inputPoints, inputPointsFieldName,
             soilvegPropertiesTable, soilvegIDfieldName, streamNetwork, streamChannelShapeIDfieldName,
             channelPropertiesTable, dataprepOnly, outDir,
         ]
@@ -245,6 +255,7 @@ class SMODERP2D(object):
             'maxdt': float(parameters[PARAMETER_MAX_DELTA_T].valueAsText),
             'end_time': float(parameters[PARAMETER_END_TIME].valueAsText),
             'points': parameters[PARAMETER_POINTS].valueAsText,
+            'points_fieldname': parameters[PARAMETER_POINTS_ID].valueAsText,
             'table_soil_vegetation': parameters[PARAMETER_SOILVEGTABLE].valueAsText,
             'table_soil_vegetation_fieldname': parameters[PARAMETER_SOILVEGTABLE_TYPE].valueAsText,
             'streams': parameters[PARAMETER_STREAM].valueAsText,

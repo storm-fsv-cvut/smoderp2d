@@ -1,7 +1,7 @@
-COMMAND: v.in.ogr --overwrite input="data/points.shp" output="points" min_area=0.0001 type="" snap=-1
+COMMAND: v.in.ogr --overwrite input="../../data/nucice/points.shp" output="points" min_area=0.0001 type="" snap=-1
 GISDBASE: /home/martin/git/storm-fsv-cvut/smoderp2d/tests/grassdata
-LOCATION: tmp_v_import_location_b802_01_143357 MAPSET: PERMANENT USER: martin DATE: Wed Oct 18 18:07:57 2023
+LOCATION: tmp_v_import_location_debianpc_18003 MAPSET: PERMANENT USER: martin DATE: Sun Nov 12 21:23:59 2023
 ---------------------------------------------------------------------------------
-COMMAND: v.proj --overwrite location="tmp_v_import_location_b802_01_143357" mapset="PERMANENT" input="points" smax=10000
+COMMAND: v.proj --overwrite location="tmp_v_import_location_debianpc_18003" mapset="PERMANENT" input="points" smax=10000
 GISDBASE: /home/martin/git/storm-fsv-cvut/smoderp2d/tests/grassdata
-LOCATION: smoderp2d-location MAPSET: PERMANENT USER: martin DATE: Wed Oct 18 18:07:57 2023
+LOCATION: smoderp2d-location MAPSET: PERMANENT USER: martin DATE: Sun Nov 12 21:23:59 2023

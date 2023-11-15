@@ -130,6 +130,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.vegetation_toolButton = QtWidgets.QToolButton()
         self.points_comboBox = QgsMapLayerComboBox()
         self.points_toolButton = QtWidgets.QToolButton()
+        self.points_field_comboBox = QgsFieldComboBox()
         self.stream_comboBox = QgsMapLayerComboBox()
         self.stream_toolButton = QtWidgets.QToolButton()
         self.rainfall_lineEdit = QtWidgets.QLineEdit()
@@ -210,6 +211,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.arguments['landuse'].addWidget(self.vegetation_toolButton)
         self.arguments['points'].addWidget(self.points_comboBox)
         self.arguments['points'].addWidget(self.points_toolButton)
+        self.arguments['points_field'].addWidget(self.points_field_comboBox)
         self.arguments['stream'].addWidget(self.stream_comboBox)
         self.arguments['stream'].addWidget(self.stream_toolButton)
         self.arguments['rainfall'].addWidget(self.rainfall_lineEdit)
@@ -276,6 +278,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.vegetation_comboBox.layerChanged.connect(
             lambda: self.setFields('vegetation')
         )
+        self.points_comboBox.layerChanged.connect(
+            lambda: self.setFields('points')
+        )
 
         # 2nd tab - Computation
         self.rainfall_toolButton.clicked.connect(
@@ -316,6 +321,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         self.setFields('soil')
         self.setFields('vegetation')
+        self.setFields('points')
 
         # 3rd tab - Settings
         self.table_soil_vegetation_comboBox.setFilters(
@@ -454,6 +460,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             'vegetation_type_fieldname':
                 self.vegetation_type_comboBox.currentText(),
             'points': self.points_comboBox.currentText(),
+            'points_fieldname': self.points_field_comboBox.currentText(),
             # 'output': self.output_lineEdit.text().strip(),
             'streams': self.stream_comboBox.currentText(),
             'rainfall_file': self.rainfall_lineEdit.text(),
@@ -642,7 +649,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     def setFields(self, t):
         """Set fields of soil and vegetation type."""
-
         if self.soil_comboBox.currentLayer() is not None and t == 'soil':
             self.soil_type_comboBox.setLayer(self.soil_comboBox.currentLayer())
             self.soil_type_comboBox.setField(
@@ -672,7 +678,12 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             else:
                 self.table_stream_shape_code_comboBox.setLayer(None)
                 self.table_stream_shape_code_comboBox.setField("")
-
+        elif self.points_comboBox.currentLayer() is not None and t == 'points':
+            points_cur_layer = self.points_comboBox.currentLayer()
+            self.points_field_comboBox.setLayer(points_cur_layer)
+            self.points_field_comboBox.setField(
+                points_cur_layer.fields()[0].name()
+            )
         else:
             pass
 
@@ -705,6 +716,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             self.points_comboBox.setLayer(
                 QgsProject.instance().mapLayersByName('points')[0]
             )
+            self.points_field_comboBox.setCurrentText('point_id')
             self.stream_comboBox.setLayer(
                 QgsProject.instance().mapLayersByName('stream')[0]
             )

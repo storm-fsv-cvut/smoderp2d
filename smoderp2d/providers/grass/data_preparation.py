@@ -402,7 +402,7 @@ class PrepareData(PrepareDataGISBase):
             self.soilveg_fields[field] = self._rst2np(output)
             self._check_soilveg_dim(field)
 
-    def _get_points_location(self, points_layer):
+    def _get_points_location(self, points_layer, points_fieldname):
         """See base method for description."""
         points_array = None
         if points_layer:
@@ -413,10 +413,10 @@ class PrepareData(PrepareDataGISBase):
             if count > 0:
                 points_array = np.zeros([int(count), 5], float)
                 # get the points geometry and IDs into array
-                with Vector(**points_map) as vmap:
+                with VectorTopo(**points_map) as vmap:
                     i = 0
                     for p in vmap:
-                        fid = p.cat
+                        fid = p.attrs[points_fieldname]
                         x, y = p.x, p.y
                         if self._get_points_dem_coords(x, y):
                             r, c = self._get_points_dem_coords(x, y)

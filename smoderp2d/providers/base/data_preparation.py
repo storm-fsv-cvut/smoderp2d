@@ -404,7 +404,7 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _get_points_location(self, points_layer):
+    def _get_points_location(self, points_layer, points_fieldname):
         """Get array of points locations.
 
         X and Y coordinates are obtained from the input points geometry
@@ -561,7 +561,10 @@ class PrepareDataGISBase(PrepareDataBase):
                 self._input_params['points'], aoi_polygon, 'points_aoi'
             )
             Logger.info("Preparing points for hydrographs...")
-            self.data['array_points'] = self._get_points_location(points_aoi)
+            self.data['array_points'] = self._get_points_location(
+                points_aoi,
+                self._input_params['points_fieldname']
+            )
 
         #   join the attributes to soil_veg intersect and check the table
         #   consistency
@@ -832,6 +835,18 @@ class PrepareDataGISBase(PrepareDataBase):
             self._input_params['soil'],
             self._input_params['soil_type_fieldname']
         )
+
+        if self._input_params['points']:
+            if not self._input_params['points_fieldname']:
+                raise DataPreparationInvalidInput(
+                    "Input parameter 'Points code fieldname' must be "
+                    "defined!"
+                )
+
+            self._check_empty_values(
+                self._input_params['points'],
+                self._input_params['points_fieldname']
+            )
 
         if self._input_params['streams'] or \
            self._input_params['channel_properties_table'] or \
