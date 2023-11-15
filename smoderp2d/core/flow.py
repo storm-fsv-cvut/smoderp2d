@@ -115,17 +115,17 @@ class Mfda(object):
             inflows_up = np.array([[0,] * 8,] * GridGlobals.c)
             inflows_down = self.inflows[i + 1]
             vol_runoff_up = np.array([0,] * GridGlobals.c)
-            vol_runoff_down = self.arr.vol_runoff[i + 1]
+            vol_runoff_down = self.arr.vol_runoff.data[i + 1]
         elif i == GridGlobals.r - 1:
             inflows_up = self.inflows[i - 1]
             inflows_down = np.array([[0,] * 8,] * GridGlobals.c)
-            vol_runoff_up = self.arr.vol_runoff[i - 1]
+            vol_runoff_up = self.arr.vol_runoff.data[i - 1]
             vol_runoff_down = np.array([0,] * GridGlobals.c)
         else:
             inflows_up = self.inflows[i - 1]
             inflows_down = self.inflows[i + 1]
-            vol_runoff_up = self.arr.vol_runoff[i - 1]
-            vol_runoff_down = self.arr.vol_runoff[i + 1]
+            vol_runoff_up = self.arr.vol_runoff.data[i - 1]
+            vol_runoff_down = self.arr.vol_runoff.data[i + 1]
 
         if j == 0:
             inflows_leftup = 0
@@ -138,7 +138,7 @@ class Mfda(object):
             vol_runoff_left = 0
             vol_runoff_leftdown = 0
             vol_runoff_rightup = vol_runoff_up[j + 1]
-            vol_runoff_right = self.arr.vol_runoff[i][j + 1]
+            vol_runoff_right = self.arr.vol_runoff.data[i][j + 1]
             vol_runoff_rightdown = vol_runoff_down[j + 1]
         elif j == GridGlobals.c - 1:
             inflows_leftup = inflows_up[j - 1][1]
@@ -148,7 +148,7 @@ class Mfda(object):
             inflows_right = 0
             inflows_rightdown = 0
             vol_runoff_leftup = vol_runoff_up[j - 1]
-            vol_runoff_left = self.arr.vol_runoff[i][j - 1]
+            vol_runoff_left = self.arr.vol_runoff.data[i][j - 1]
             vol_runoff_leftdown = vol_runoff_down[j - 1]
             vol_runoff_rightup = 0
             vol_runoff_right = 0
@@ -161,10 +161,10 @@ class Mfda(object):
             inflows_right = self.inflows[i][j + 1][4]
             inflows_rightdown = inflows_down[j + 1][5]
             vol_runoff_leftup = vol_runoff_up[j - 1]
-            vol_runoff_left = self.arr.vol_runoff[i][j - 1]
+            vol_runoff_left = self.arr.vol_runoff.data[i][j - 1]
             vol_runoff_leftdown = vol_runoff_down[j - 1]
             vol_runoff_rightup = vol_runoff_up[j + 1]
-            vol_runoff_right = self.arr.vol_runoff[i][j + 1]
+            vol_runoff_right = self.arr.vol_runoff.data[i][j + 1]
             vol_runoff_rightdown = vol_runoff_down[j + 1]
 
         inflow_from_cells = \
