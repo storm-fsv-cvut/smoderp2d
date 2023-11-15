@@ -114,7 +114,7 @@ class Mfda(object):
         if i == 0:
             inflows_up = np.array([[0,] * 8,] * GridGlobals.c)
             inflows_down = self.inflows[i + 1]
-            vol_runoff_up = np.array([[0,] * 8,] * GridGlobals.c)
+            vol_runoff_up = np.array([0,] * GridGlobals.c)
             vol_runoff_down = self.arr.vol_runoff[i + 1]
         elif i == GridGlobals.r - 1:
             inflows_up = self.inflows[i - 1]
