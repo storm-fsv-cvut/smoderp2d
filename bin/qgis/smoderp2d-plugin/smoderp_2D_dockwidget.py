@@ -460,6 +460,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         if self._input_params['t']is True:
             temp_group = group.addGroup('temp')
+            temp_group.setItemVisibilityChecked(False)
             import_group_layers(temp_group, os.path.join(outdir, 'temp'))
             import_group_layers(temp_group, os.path.join(outdir, 'temp'), 'gml')
 
