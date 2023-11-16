@@ -16,7 +16,7 @@ Perform computation on Nucice dataset:
 
 <div class="code"><pre>
 ./bin/grass/r.smoderp2d/r.smoderp2d.py \
- elevation=dem10m@PERMANENT \
+ elevation=dem@PERMANENT \
  soil=soils@PERMANENT \
  soil_type_fieldname=SID \
  vegetation=landuse@PERMANENT \
@@ -24,10 +24,10 @@ Perform computation on Nucice dataset:
  rainfall_file=tests/data/rainfall_nucice.txt \
  maxdt=30 end_time=40 \
  points=points@PERMANENT points_fieldname=point_id \
- table_soil_vegetation=soil_veg_tab_mean@PERMANENT \
+ table_soil_vegetation=soil_veg_tab@PERMANENT \
  table_soil_vegetation_fieldname=soilveg \
  streams=stream@PERMANENT \
- channel_properties_table=stream_shape@PERMANENT \
+ channel_properties_table=streams_shape@PERMANENT \
  streams_channel_type_fieldname=channel_id \
  output=tests/data/output
 </pre></div>
@@ -43,18 +43,18 @@ Perform computation on Rain simulation dataset:
 
 <div class="code"><pre>
 ./bin/grass/r.smoderp2d/r.smoderp2d.py \
- elevation=rastr10_05_t2_5@PERMANENT \
- soil=soil@PERMANENT \
+ elevation=dem@PERMANENT \
+ soil=soils@PERMANENT \
  soil_type_fieldname=Soil \
- vegetation=LandUse@PERMANENT \
+ vegetation=landuse@PERMANENT \
  vegetation_type_fieldname=LandUse \
  rainfall_file=tests/data/rainfall_sim.txt \
  maxdt=30 end_time=40 \
- points=ObsPointssel@PERMANENT points_fieldname=point_id \
- table_soil_vegetation=test_soilveg@PERMANENT \
+ points=points@PERMANENT points_fieldname=point_id \
+ table_soil_vegetation=soil_veg_tab@PERMANENT \
  table_soil_vegetation_fieldname=soilveg \
  streams=streams@PERMANENT \
- channel_properties_table=stream_shape@PERMANENT \
+ channel_properties_table=streams_shape@PERMANENT \
  streams_channel_type_fieldname=channel_id \
  output=tests/data/output
 </pre></div>
