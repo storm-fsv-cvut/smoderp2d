@@ -48,6 +48,20 @@ jobs:
       python-version: ${{ matrix.python-version }}
       pytest-suite: tests/test_cmd.py --config config_files/quicktest_sheet_stream.ini
 
+  smoderp2d-quicktest-rill-mfda:
+    strategy:
+      matrix:
+        python-version:
+          # - "2.7"
+          - "3.9"
+          - "3.11"
+
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      python-version: ${{ matrix.python-version }}
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_rill.ini --reference_dir=data/reference/quicktest_rill_mfda
+      mfda: true
+
   smoderp2d-quicktest-stream-rill:
     strategy:
       matrix:
@@ -99,6 +113,20 @@ jobs:
     with:
       python-version: ${{ matrix.python-version }}
       pytest-suite: tests/test_cmd.py --config config_files/test_sheet_stream.ini
+
+  smoderp2d-longtest-stream-rill-mfda:
+    strategy:
+      matrix:
+        python-version:
+          # - "2.7"
+          - "3.9"
+          - "3.11"
+
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      python-version: ${{ matrix.python-version }}
+      pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill.ini --reference_dir=data/reference/test_stream_rill_mfda
+      mfda: true
 
   smoderp2d-longtest-stream-rill:
     strategy:
