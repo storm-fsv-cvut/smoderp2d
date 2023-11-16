@@ -60,12 +60,11 @@ jobs:
     with:
       python-version: ${{ matrix.python-version }}
       pytest-suite: tests/test_cmd.py --config config_files/quicktest_rill_mfda.ini
-
-    steps:
-      - name: Run command test suite
-        run: |
-          mv tests/config_files/mfda_config.ini smoderpsd/.config.ini
-          pytest ${{ inputs.pytest-suite }}
+      steps:
+        - name: Run command test suite
+          run: |
+            mv tests/config_files/mfda_config.ini smoderpsd/.config.ini
+            pytest ${{ inputs.pytest-suite }}
 
   smoderp2d-quicktest-stream-rill:
     strategy:
