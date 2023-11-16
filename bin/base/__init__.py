@@ -42,6 +42,7 @@ arguments = {
     ),
     'channel_properties': Argument('Channel properties table'),
     'preparation_only': Argument('Do the data preparation only'),
+    'generate_temporary': Argument('Generate also temporary data'),
 }
 
 
@@ -64,5 +65,8 @@ sections = [
         'Computation options',
         ('output', 'max_time_step', 'total_time')
     ),
-    Section('Advanced', ())  # TODO: Add ('preparation_only',))
+    Section(
+        'Advanced',
+        ('generate_temporary', )
+    )  # TODO: Add ('preparation_only',))
 ]

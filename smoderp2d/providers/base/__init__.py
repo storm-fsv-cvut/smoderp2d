@@ -48,6 +48,8 @@ class WorkflowMode:
 
 
 class BaseWriter(object):
+    _raster_extension = '.asc'
+
     def __init__(self):
         self._data_target = None
 
@@ -58,22 +60,30 @@ class BaseWriter(object):
         """
         self._data_target = data
 
-    @staticmethod
-    def _raster_output_path(output, directory='core'):
-        """Get output raster path.
-
-        :param output: raster output name
-        :param directory: target directory (temp, control)
+    def output_filepath(self, name, data_type=None, dirname_only=False):
         """
-        dir_name = os.path.join(Globals.outdir, directory) if directory != 'core' else Globals.outdir
+        Get correct path to store dataset 'name'.
 
-        if not os.path.exists(dir_name):
-            os.makedirs(dir_name)
+        :param name: layer name to be saved
+        :param data_type: None to determine target subdirectory from self._data_target
+        :param dirname_only: True to return only path to parent directory
 
-        return os.path.join(
-            dir_name,
-            output + '.asc'
-        )
+        :return: full path to the dataset
+        """
+        if data_type is None:
+            data_type = self._data_target.get(name)
+            if data_type is None or data_type not in ("temp", "control", "core"):
+                raise ProviderError(
+                    "Unable to define target in output_filepath: {}".format(name)
+                )
+
+        path = os.path.join(Globals.outdir, data_type) if data_type != 'core' else Globals.outdir
+        if not os.path.exists(path):
+            os.makedirs(path)
+        if dirname_only:
+            return path
+
+        return os.path.join(path, name)
 
     @staticmethod
     def _print_array_stats(arr, file_output):
@@ -100,7 +110,7 @@ class BaseWriter(object):
         :param output_name: output filename
         :param data_type: directory where to write output file
         """
-        file_output = self._raster_output_path(output_name, data_type)
+        file_output = BaseWriter.output_filepath(self, output_name, data_type)
 
         self._print_array_stats(
             array, file_output

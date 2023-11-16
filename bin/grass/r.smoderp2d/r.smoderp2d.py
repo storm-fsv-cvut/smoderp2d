@@ -26,6 +26,10 @@
 # % key: d
 # % description: Perform data preparation only and exit
 # %end
+# %flag
+# % key: t
+# % description: Export temporary data
+# %end
 # %option G_OPT_R_ELEV
 # % description: Input surface raster
 # % guisection: Data preparation
@@ -128,6 +132,7 @@ from smoderp2d.exceptions import ProviderError
 
 if __name__ == "__main__":
     options, flags = gs.parser()
+    options['t'] = flags['t']
 
     try:
         runner = GrassGisRunner()

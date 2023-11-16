@@ -193,38 +193,44 @@ class PrepareDataBase(ABC):
 
 
 class PrepareDataGISBase(PrepareDataBase):
+
+    # complete dictionary of datasets and their type
+    data_layers = {
+        'dem_slope_mask': 'temp',
+        'dem_polygon': 'temp',
+        'aoi': 'temp',
+        'aoi_polygon': 'core',
+        'aoi_mask': 'temp',
+        'dem_filled': 'temp',
+        'dem_flowdir': 'temp',
+        'dem_flowacc': 'temp',
+        'dem_slope': 'temp',
+        'dem_aspect': 'temp',
+        'dem_aoi': 'temp',
+        'dem_slope_aoi': 'temp',
+        'dem_flowdir_aoi': 'temp',
+        'dem_flowacc_aoi': 'temp',
+        'dem_aspect_aoi': 'temp',
+        'points_aoi': 'temp',
+        'soil_veg': 'temp',
+        'soilveg_aoi': 'temp',
+        'aoi_buffer': 'temp',
+        'stream_aoi': 'temp',
+        "stream_aoi_z": 'temp',
+        'stream_start': 'temp',
+        'stream_end': 'temp',
+        'stream_seg': 'temp',
+        'ratio_cell': 'temp',
+        'effect_cont': 'temp',
+    }
+
+    soilveg_fields = {
+        "k": None, "s": None, "n": None, "pi": None, "ppl": None,
+        "ret": None, "b": None, "x": None, "y": None, "tau": None, "v": None
+    }
     def __init__(self, writter):
         self.storage = writter
 
-        # complete dictionary of datasets and their type
-        self._data_layers = {
-            'dem_slope_mask': 'temp',
-            'dem_polygon': 'temp',
-            'aoi': 'temp',
-            'aoi_polygon': 'core',
-            'aoi_mask': 'temp',
-            'dem_filled': 'temp',
-            'dem_flowdir': 'temp',
-            'dem_flowacc': 'temp',
-            'dem_slope': 'temp',
-            'dem_aspect': 'temp',
-            'dem_aoi': 'temp',
-            'dem_slope_aoi': 'temp',
-            'dem_flowdir_aoi': 'temp',
-            'dem_flowacc_aoi': 'temp',
-            'dem_aspect_aoi': 'temp',
-            'points_aoi': 'temp',
-            'soil_veg': 'temp',
-            'soilveg_aoi': 'temp',
-            'aoi_buffer': 'temp',
-            'stream_aoi': 'temp',
-            "stream_z": 'temp',
-            'stream_start': 'temp',
-            'stream_end': 'temp',
-            'stream_seg': 'temp',
-            'ratio_cell': 'temp',
-            'effect_cont': 'temp',
-        }
         # complete list of field names that are supposed not to be changed,
         # e.g. in properties tables
         self.fieldnames = {
@@ -247,13 +253,9 @@ class PrepareDataGISBase(PrepareDataBase):
             'channel_q365': 'q365'
         }
 
-        self.soilveg_fields = {
-            "k": None, "s": None, "n": None, "pi": None, "ppl": None,
-            "ret": None, "b": None, "x": None, "y": None, "tau": None, "v": None
-        }
         for sv in self.soilveg_fields.keys():
-            self._data_layers["soilveg_aoi_{}".format(sv)] = 'temp'
-        self.storage.set_data_layers(self._data_layers)
+            self.data_layers["soilveg_aoi_{}".format(sv)] = 'temp'
+        self.storage.set_data_layers(self.data_layers)
 
         self.stream_shape_fields = [
             self.fieldnames['channel_profile'],
