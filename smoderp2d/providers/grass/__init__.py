@@ -13,20 +13,25 @@ from grass.pygrass.raster import numpy2raster
 
 
 class GrassGisWriter(BaseWriter):
+    _vector_extension = '.gml'
+
     def __init__(self):
         super(GrassGisWriter, self).__init__()
 
         # primary key
         self.primary_key = "cat"
 
-    def output_filepath(self, name):
+    def output_filepath(self, name, full_path=False):
         """
         Get correct path to store dataset 'name'.
 
         :param name: layer name to be saved
+        :param full_path: True return full path otherwise only dataset name
+
         :return: full path to the dataset
         """
-        # TODO: how to deal with temp/core...?
+        if full_path:
+            return BaseWriter.output_filepath(self, name)
         return name
 
     def _write_raster(self, array, file_output):
@@ -53,15 +58,37 @@ class GrassGisWriter(BaseWriter):
             raster_name, overwrite=True
         )
 
+        self.export_raster(raster_name, file_output)
+
+    def export_raster(self, raster_name, file_output):
+        """Export GRASS raster map to output data format.
+
+        :param raster_name: GRASS raster map name
+        :param file_output: Target file path
+        """
         Module(
             'r.out.gdal',
             input=raster_name,
-            output=file_output,
+            output=file_output + self._raster_extension,
             format='AAIGrid',
             nodata=GridGlobals.NoDataValue,
-            overwrite=True
+            type='Float64',
+            overwrite=True,
         )
 
+    def export_vector(self, raster_name, file_output):
+        """Export GRASS vector map to output data format.
+
+        :param raster_name: GRASS raster map name
+        :param file_output: Target file path
+        """
+        Module(
+            'v.out.ogr',
+            input=raster_name,
+            output=file_output + self._vector_extension,
+            format='GML',
+            overwrite=True,
+        )
 
 class GrassGisProvider(BaseProvider):
 

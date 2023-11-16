@@ -32,9 +32,11 @@ from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication, Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QFileDialog, QProgressBar, QMenu
 
-from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, \
-    QgsRasterLayer, QgsTask, QgsApplication, Qgis, QgsProject, \
-    QgsRasterBandStats, QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp
+from qgis.core import (
+    QgsProviderRegistry, QgsMapLayerProxyModel, QgsRasterLayer, QgsTask,
+    QgsApplication, Qgis, QgsProject, QgsRasterBandStats,
+    QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp, QgsVectorLayer
+)
 from qgis.utils import iface
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
 
@@ -146,6 +148,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.table_stream_shape_code_comboBox = QgsFieldComboBox()
         self.table_stream_shape_comboBox = QgsMapLayerComboBox()
         self.table_stream_shape_toolButton = QtWidgets.QToolButton()
+        self.generate_temporary_checkBox = QtWidgets.QCheckBox()
         self.run_button = QtWidgets.QPushButton(self.dockWidgetContents)
 
         # set default values
@@ -188,12 +191,17 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                         self.__class__.__name__, arguments[argument_id].label
                     )
                 )
-                section_tab_layout.addWidget(argument_label)
 
                 # create empty layout for the specific widget
                 argument_widget = QtWidgets.QWidget()
                 argument_widget_layout = QtWidgets.QHBoxLayout()
                 argument_widget.setLayout(argument_widget_layout)
+
+                if section.label != 'Advanced':
+                    section_tab_layout.addWidget(argument_label)
+                else:
+                    # so far, all Advanced tab widgets should be horizontal
+                    argument_widget_layout.addWidget(argument_label)
                 section_tab_layout.addWidget(argument_widget)
 
                 self.arguments.update({argument_id: argument_widget_layout})
@@ -242,6 +250,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.arguments['channel_properties'].addWidget(
             self.table_stream_shape_toolButton
         )
+        self.arguments['generate_temporary'].insertWidget(
+            0, self.generate_temporary_checkBox
+        )  # checkbox should be before label
+        self.arguments['generate_temporary'].addStretch()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -374,7 +386,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             # Get input parameters
             self._getInputParams()
 
-            smoderp_task = SmoderpTask(self._input_params, self._input_maps, self._grass_bin_path)
+            smoderp_task = SmoderpTask(
+                self._input_params, self._input_maps, self._grass_bin_path
+            )
 
             # prepare the progress bar
             self.progress_bar = QProgressBar()
@@ -424,26 +438,59 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         return renderer
 
     def computationFinished(self):
-        # show results
+        def import_group_layers(group, outdir, ext='asc', show=False):
+            for map_path in glob.glob(os.path.join(outdir, f'*.{ext}')):
+                if ext == 'asc':
+                    # raster
+                    layer = QgsRasterLayer(
+                        map_path,
+                        os.path.basename(os.path.splitext(map_path)[0])
+                    )
+
+                    # set symbology
+                    layer.setRenderer(self._layerColorRamp(layer))
+                else:
+                    # vector
+                    layer = QgsVectorLayer(
+                        map_path,
+                        os.path.basename(os.path.splitext(map_path)[0])
+                    )
+
+                # add layer into group
+                QgsProject.instance().addMapLayer(layer, False)
+                node = group.addLayer(layer)
+                node.setExpanded(False)
+                node.setItemVisibilityChecked(show is True)
+                show = False
+
+        # show main results
         root = QgsProject.instance().layerTreeRoot()
         group = root.insertGroup(0, self._result_group_name)
 
         outdir = self.main_output_lineEdit.text().strip()
-        first = True
-        for map_path in glob.glob(os.path.join(outdir, '*.asc')):
-            layer = QgsRasterLayer(
-                map_path, os.path.basename(os.path.splitext(map_path)[0])
-            )
+        import_group_layers(group, outdir, show=True)
 
-            # set symbology
-            layer.setRenderer(self._layerColorRamp(layer))
+        # import control results
+        ctrl_group = group.addGroup('control')
+        ctrl_group.setExpanded(False)
+        ctrl_group.setItemVisibilityChecked(False)
+        import_group_layers(ctrl_group, os.path.join(outdir, 'control'))
 
-            # add layer into group
-            QgsProject.instance().addMapLayer(layer, False)
-            node = group.addLayer(layer)
-            node.setExpanded(False)
-            node.setItemVisibilityChecked(first is True)
-            first = False
+        # import control points
+        ctrl_group = group.addGroup('control_point')
+        ctrl_group.setExpanded(False)
+        ctrl_group.setItemVisibilityChecked(False)
+        import_group_layers(
+            ctrl_group, os.path.join(outdir, 'control_point'), 'csv'
+        )
+
+        if self._input_params['t'] is True:
+            # import temp results
+            temp_group = group.addGroup('temp')
+            temp_group.setExpanded(False)
+            temp_group.setItemVisibilityChecked(False)
+            import_group_layers(temp_group, os.path.join(outdir, 'temp'))
+            import_group_layers(temp_group, os.path.join(outdir, 'temp'), 'gml')
 
         # QGIS bug: group must be collapsed and then expanded
         group.setExpanded(False)
@@ -474,6 +521,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self.table_stream_shape_comboBox.currentText(),
             'streams_channel_type_fieldname':
                 self.table_stream_shape_code_comboBox.currentText(),
+            't': bool(self.generate_temporary_checkBox.checkState()),
             'output': self.main_output_lineEdit.text().strip()
         }
 
