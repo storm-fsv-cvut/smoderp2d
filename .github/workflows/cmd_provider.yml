@@ -65,7 +65,7 @@ jobs:
     strategy:
       matrix:
         python-version:
-          # - "2.7"er name should only happen at a major relea
+          # - "2.7"
           - "3.9"
           - "3.11"
 
