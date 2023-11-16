@@ -12,6 +12,7 @@ on:
       mfda:
         required: false
         type: boolean
+        default: false
 
 jobs:
   consistency_test:
