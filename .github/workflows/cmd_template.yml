@@ -34,8 +34,8 @@ jobs:
           pip install -r .github/workflows/requirements.txt          
           pip install -r .github/workflows/requirements${{ inputs.python-version }}.txt
 
-      - name: Replace the hidden config by the MFDA one
-        if: ${{ inputs.mfda == true }}
+      - if: ${{ inputs.mfda == true }}
+        name: Replace the hidden config by the MFDA one
         run: |
           mv tests/config_files/mfda_config.ini smoderp2d/.config.ini
 
