@@ -34,7 +34,7 @@ jobs:
           pip install -r .github/workflows/requirements.txt          
           pip install -r .github/workflows/requirements${{ inputs.python-version }}.txt
         if: ${{ inputs.mfda == true }}
-          echo "yes"
+          echo "yes yes" "yes yes" "yes yes" "yes yes" "yes yes" "yes yes" "yes yes"
 #          mv tests/config_files/mfda_config.ini smoderpsd/.config.ini
 
       - name: Run command test suite
