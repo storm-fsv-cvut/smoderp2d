@@ -37,7 +37,7 @@ jobs:
       - name: Replace the hidden config by the MFDA one
         if: ${{ inputs.mfda == true }}
         run: |
-          mv tests/config_files/mfda_config.ini smoderpsd/.config.ini
+          mv tests/config_files/mfda_config.ini smoderp2d/.config.ini
 
       - name: Run command test suite
         run: |
