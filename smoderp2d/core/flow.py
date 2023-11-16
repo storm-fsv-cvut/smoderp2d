@@ -44,6 +44,7 @@ class D8(object):
     def __init__(self):
         Logger.info("D8 flow algorithm")
         self.inflows = D8_.new_inflows(Globals.get_mat_fd())
+        print('*** ' * 120)
 
     # updates #inflows list if the diffuse approach is used.
     #
@@ -105,6 +106,7 @@ class Mfda(object):
             Globals.mat_dem, Globals.mat_nan, Globals.mat_fd
         )
         self.inflowsRill = D8_.new_inflows(fd_rill)
+        print('### ' * 120)
 
     def update_inflows(self, fd):
         self.inflows, fd_rill = mfd.new_mfda(self.H, Globals.mat_nan, fd)
