@@ -37,8 +37,8 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip3 install -r .github/workflows/requirements.txt
-          pip3 install -r .github/workflows/requirements${{ inputs.python-version }}.txt
+          pip install -r .github/workflows/requirements.txt &&
+          pip install -r .github/workflows/requirements${{ inputs.python-version }}.txt
 
       - name: Set up hidden config
         if: ${{ inputs.mfda == true }}
@@ -47,4 +47,4 @@ jobs:
 
       - name: Run command test suite
         run: |
-          python3 -m pytest ${{ inputs.pytest-suite }}
+          pytest ${{ inputs.pytest-suite }}
