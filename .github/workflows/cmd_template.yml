@@ -3,9 +3,6 @@ name: CMD provider consistency test reusable workflow
 on:
   workflow_call:
     inputs:
-      python-version:
-        required: true
-        type: string
       pytest-suite:
         required: true
         type: string
@@ -37,8 +34,8 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip install -r .github/workflows/requirements.txt          
-          pip install -r .github/workflows/requirements${{ inputs.python-version }}.txt
+          pip install -r .github/workflows/requirements.txt
+          pip install -r .github/workflows/requirements${{ matrix.python-version }}.txt
 
       - name: Set up hidden config
         if: ${{ inputs.mfda == true }}
