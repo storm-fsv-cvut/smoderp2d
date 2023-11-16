@@ -165,8 +165,9 @@ def are_dir_trees_equal(dir1, dir2):
     return True
 
 
-def _setup(request, config_file):
+def _setup(request, config_file, reference_dir=None):
     request.cls.config_file = config_file
+    request.cls.reference_dir = reference_dir
 
 
 def _is_on_github_action():
@@ -189,12 +190,14 @@ class PerformTest:
             self._params = {
                 "soil_type_fieldname": "SID",
                 "vegetation_type_fieldname": "LandUse",
-                "rainfall_file": os.path.join(data_dir, "rainfall.txt"),
+                "points_fieldname": "point_id",
+                "rainfall_file": os.path.join(data_dir, "rainfall_nucice.txt"),
                 "maxdt": 30,
                 "end_time": 40,
                 "table_soil_vegetation_fieldname": "soilveg",
                 "streams_channel_type_fieldname": "channel_id",
                 "output": self._output_dir,
+                't': False
             }
             self._params.update(params_fn())
         else:
@@ -316,12 +319,11 @@ class PerformTest:
             dataprep_filepath, reference_filepath
         ), self.report_pickle_difference(dataprep_filepath, reference_filepath)
 
-    def run_roff(self, config_file):
+    def run_roff(self, config_file, reference_dir=None):
         assert os.path.exists(config_file)
 
         config = configparser.ConfigParser()
         config.read(config_file)
-        assert config.get("data", "rainfall") == "tests/data/rainfall.txt"
 
         os.environ["SMODERP2D_CONFIG_FILE"] = str(config_file)
         self._run()
@@ -329,8 +331,9 @@ class PerformTest:
         assert os.path.isdir(self._output_dir)
 
         testcase = os.path.splitext(os.path.basename(config_file))[0]
-        reference_dir = os.path.join(os.path.dirname(__file__),
-                                     "data", "reference", testcase)
+        if reference_dir is None:
+            reference_dir = os.path.join(os.path.dirname(__file__),
+                                         "data", "reference", testcase)
         if testcase == "gistest":
             reference_dir = os.path.join(reference_dir, "full")
 

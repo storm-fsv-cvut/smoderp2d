@@ -24,6 +24,7 @@ arguments = {
     'soil': Argument('Soil polygons feature layer'),
     'landuse': Argument('Landuse polygons feature layer'),
     'points': Argument('Input points feature layer'),
+    'points_field': Argument('Field with the input points identifier'),
     'stream': Argument('Stream network feature layer'),
     'rainfall': Argument('Definition of the rainfall event'),
     'output': Argument('Output directory'),
@@ -41,6 +42,7 @@ arguments = {
     ),
     'channel_properties': Argument('Channel properties table'),
     'preparation_only': Argument('Do the data preparation only'),
+    'generate_temporary': Argument('Generate also temporary data'),
 }
 
 
@@ -49,7 +51,7 @@ sections = [
         'Spatial data',
         (
             'elevation', 'soil', 'soil_type_field', 'landuse',
-            'landuse_type_field', 'points', 'stream', 'rainfall'
+            'landuse_type_field', 'points', 'points_field', 'stream', 'rainfall'
         )
     ),
     Section(
@@ -63,5 +65,8 @@ sections = [
         'Computation options',
         ('output', 'max_time_step', 'total_time')
     ),
-    Section('Advanced', ())  # TODO: Add ('preparation_only',))
+    Section(
+        'Advanced',
+        ('generate_temporary', )
+    )  # TODO: Add ('preparation_only',))
 ]

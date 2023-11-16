@@ -150,7 +150,7 @@ class PrepareData(PrepareDataGISBase):
     def _rst2np(self, raster):
         """See base method for description.
         """
-        arr =  arcpy.RasterToNumPyArray(
+        arr = arcpy.RasterToNumPyArray(
             raster, nodata_to_value=GridGlobals.NoDataValue
         )
         self._check_rst2np(arr)
@@ -240,7 +240,8 @@ class PrepareData(PrepareDataGISBase):
 
         arcpy.management.AddField(soilveg_aoi_path, soilveg_code, "TEXT")
 
-        # calculate "soil_veg" values (soil_type_fieldname + vegetation_type_fieldname)
+        # calculate "soil_veg" values
+        # = (soil_type_fieldname + vegetation_type_fieldname)
         with arcpy.da.UpdateCursor(soilveg_aoi_path, [soil_type_fieldname, veg_fieldname, soilveg_code]) as table:
             for row in table:
                 row[2] = row[0] + row[1]
@@ -274,11 +275,14 @@ class PrepareData(PrepareDataGISBase):
             )
             aoi_mask = self.storage.output_filepath('aoi_mask')
             with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=aoi_mask, cellAlignment=aoi_mask, snapRaster=aoi_mask):
-                arcpy.conversion.PolygonToRaster(soilveg_aoi_path, field, output, "MAXIMUM_AREA", "", GridGlobals.dy)
+                arcpy.conversion.PolygonToRaster(
+                    soilveg_aoi_path, field, output, "MAXIMUM_AREA", "",
+                    GridGlobals.dy
+                )
             self.soilveg_fields[field] = self._rst2np(output)
             self._check_soilveg_dim(field)
 
-    def _get_points_location(self, points_layer):
+    def _get_points_location(self, points_layer, points_fieldname):
         """See base method for description.
         """
         points_array = None
@@ -289,7 +293,7 @@ class PrepareData(PrepareDataGISBase):
                 points_array = np.zeros([int(count), 5], float)
                 # get the points geometry and IDs into array
                 desc = arcpy.Describe(points_layer)
-                with arcpy.da.SearchCursor(points_layer, [desc.OIDFieldName, desc.ShapeFieldName]) as table:
+                with arcpy.da.SearchCursor(points_layer, [points_fieldname, desc.ShapeFieldName]) as table:
                     i = 0
                     for row in table:
                         fid = row[0]
@@ -361,12 +365,12 @@ class PrepareData(PrepareDataGISBase):
 
         # extract elevation for the stream segment vertices
         arcpy.ddd.InterpolateShape(
-            dem_aoi, stream, self.storage.output_filepath("stream_z"), "", "",
+            dem_aoi, stream, self.storage.output_filepath("stream_aoi_z"), "", "",
             "CONFLATE_NEAREST", "VERTICES_ONLY"
         )
         shape_fieldname = "SHAPE@"
 
-        with arcpy.da.SearchCursor(self.storage.output_filepath("stream_z"), [shape_fieldname, segment_id_fieldname]) as segments:
+        with arcpy.da.SearchCursor(self.storage.output_filepath("stream_aoi_z"), [shape_fieldname, segment_id_fieldname]) as segments:
             for row in segments:
                 startpt = row[0].firstPoint
                 endpt = row[0].lastPoint

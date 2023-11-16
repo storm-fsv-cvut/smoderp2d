@@ -32,9 +32,11 @@ from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication, Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QFileDialog, QProgressBar, QMenu
 
-from qgis.core import QgsProviderRegistry, QgsMapLayerProxyModel, \
-    QgsRasterLayer, QgsTask, QgsApplication, Qgis, QgsProject, \
-    QgsRasterBandStats, QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp
+from qgis.core import (
+    QgsProviderRegistry, QgsMapLayerProxyModel, QgsRasterLayer, QgsTask,
+    QgsApplication, Qgis, QgsProject, QgsRasterBandStats,
+    QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp, QgsVectorLayer
+)
 from qgis.utils import iface
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
 
@@ -55,22 +57,16 @@ class InputError(Exception):
 
 
 class SmoderpTask(QgsTask):
-    def __init__(self, input_params, input_maps):
+    def __init__(self, input_params, input_maps, grass_bin_path):
         super().__init__()
 
         self.input_params = input_params
         self.input_maps = input_maps
+        self.grass_bin_path = grass_bin_path
         self.error = None
 
     def run(self):
-        # Get GRASS executable
-        try:
-            grass_bin_path = find_grass_bin()
-        except ImportError as e:
-            self.error = e
-            return False
-
-        runner = QGISRunner(self.setProgress, grass_bin_path)
+        runner = QGISRunner(self.setProgress, self.grass_bin_path)
         runner.set_options(self.input_params)
         runner.import_data(self.input_maps)
         try:
@@ -78,6 +74,8 @@ class SmoderpTask(QgsTask):
         except ProviderError as e:
             self.error = e
             return False
+
+        runner.finish()
 
         # resets
         Globals.reset()
@@ -134,6 +132,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.vegetation_toolButton = QtWidgets.QToolButton()
         self.points_comboBox = QgsMapLayerComboBox()
         self.points_toolButton = QtWidgets.QToolButton()
+        self.points_field_comboBox = QgsFieldComboBox()
         self.stream_comboBox = QgsMapLayerComboBox()
         self.stream_toolButton = QtWidgets.QToolButton()
         self.rainfall_lineEdit = QtWidgets.QLineEdit()
@@ -149,6 +148,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.table_stream_shape_code_comboBox = QgsFieldComboBox()
         self.table_stream_shape_comboBox = QgsMapLayerComboBox()
         self.table_stream_shape_toolButton = QtWidgets.QToolButton()
+        self.generate_temporary_checkBox = QtWidgets.QCheckBox()
         self.run_button = QtWidgets.QPushButton(self.dockWidgetContents)
 
         # set default values
@@ -173,6 +173,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.dockWidgetContents.setLayout(self.layout)
         self.setWidget(self.dockWidgetContents)
 
+        self._result_group_name = "SMODERP2D"
+        self._grass_bin_path = None
+
     def retranslateUi(self):
         for section in sections:
             section_tab = QtWidgets.QWidget()
@@ -188,12 +191,17 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                         self.__class__.__name__, arguments[argument_id].label
                     )
                 )
-                section_tab_layout.addWidget(argument_label)
 
                 # create empty layout for the specific widget
                 argument_widget = QtWidgets.QWidget()
                 argument_widget_layout = QtWidgets.QHBoxLayout()
                 argument_widget.setLayout(argument_widget_layout)
+
+                if section.label != 'Advanced':
+                    section_tab_layout.addWidget(argument_label)
+                else:
+                    # so far, all Advanced tab widgets should be horizontal
+                    argument_widget_layout.addWidget(argument_label)
                 section_tab_layout.addWidget(argument_widget)
 
                 self.arguments.update({argument_id: argument_widget_layout})
@@ -211,6 +219,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.arguments['landuse'].addWidget(self.vegetation_toolButton)
         self.arguments['points'].addWidget(self.points_comboBox)
         self.arguments['points'].addWidget(self.points_toolButton)
+        self.arguments['points_field'].addWidget(self.points_field_comboBox)
         self.arguments['stream'].addWidget(self.stream_comboBox)
         self.arguments['stream'].addWidget(self.stream_toolButton)
         self.arguments['rainfall'].addWidget(self.rainfall_lineEdit)
@@ -241,6 +250,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.arguments['channel_properties'].addWidget(
             self.table_stream_shape_toolButton
         )
+        self.arguments['generate_temporary'].insertWidget(
+            0, self.generate_temporary_checkBox
+        )  # checkbox should be before label
+        self.arguments['generate_temporary'].addStretch()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -276,6 +289,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.soil_comboBox.layerChanged.connect(lambda: self.setFields('soil'))
         self.vegetation_comboBox.layerChanged.connect(
             lambda: self.setFields('vegetation')
+        )
+        self.points_comboBox.layerChanged.connect(
+            lambda: self.setFields('points')
         )
 
         # 2nd tab - Computation
@@ -317,6 +333,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         self.setFields('soil')
         self.setFields('vegetation')
+        self.setFields('points')
 
         # 3rd tab - Settings
         self.table_soil_vegetation_comboBox.setFilters(
@@ -347,14 +364,31 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             button.setText('...')
 
     def OnRunButton(self):
+        if not self._grass_bin_path:
+            # Get GRASS executable
+            try:
+                self._grass_bin_path = find_grass_bin()
+            except ImportError as e:
+                self._sendMessage(
+                    "ERROR:",
+                    "GRASS GIS not found.",
+                    "CRITICAL"
+                )
+                return
 
         if self._checkInputDataPrep():
+            # remove previous results
+            root = QgsProject.instance().layerTreeRoot()
+            result_node = root.findGroup(self._result_group_name)
+            if result_node:
+                root.removeChildNode(result_node)
+
             # Get input parameters
             self._getInputParams()
 
-            # TODO: implement data preparation only
-
-            smoderp_task = SmoderpTask(self._input_params, self._input_maps)
+            smoderp_task = SmoderpTask(
+                self._input_params, self._input_maps, self._grass_bin_path
+            )
 
             # prepare the progress bar
             self.progress_bar = QProgressBar()
@@ -404,26 +438,59 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         return renderer
 
     def computationFinished(self):
-        # show results
+        def import_group_layers(group, outdir, ext='asc', show=False):
+            for map_path in glob.glob(os.path.join(outdir, f'*.{ext}')):
+                if ext == 'asc':
+                    # raster
+                    layer = QgsRasterLayer(
+                        map_path,
+                        os.path.basename(os.path.splitext(map_path)[0])
+                    )
+
+                    # set symbology
+                    layer.setRenderer(self._layerColorRamp(layer))
+                else:
+                    # vector
+                    layer = QgsVectorLayer(
+                        map_path,
+                        os.path.basename(os.path.splitext(map_path)[0])
+                    )
+
+                # add layer into group
+                QgsProject.instance().addMapLayer(layer, False)
+                node = group.addLayer(layer)
+                node.setExpanded(False)
+                node.setItemVisibilityChecked(show is True)
+                show = False
+
+        # show main results
         root = QgsProject.instance().layerTreeRoot()
-        group = root.insertGroup(0, "SMODERP2D")
+        group = root.insertGroup(0, self._result_group_name)
 
         outdir = self.main_output_lineEdit.text().strip()
-        first = True
-        for map_path in glob.glob(os.path.join(outdir, '*.asc')):
-            layer = QgsRasterLayer(
-                map_path, os.path.basename(os.path.splitext(map_path)[0])
-            )
+        import_group_layers(group, outdir, show=True)
 
-            # set symbology
-            layer.setRenderer(self._layerColorRamp(layer))
+        # import control results
+        ctrl_group = group.addGroup('control')
+        ctrl_group.setExpanded(False)
+        ctrl_group.setItemVisibilityChecked(False)
+        import_group_layers(ctrl_group, os.path.join(outdir, 'control'))
 
-            # add layer into group
-            QgsProject.instance().addMapLayer(layer, False)
-            node = group.addLayer(layer)
-            node.setExpanded(False)
-            node.setItemVisibilityChecked(first is True)
-            first = False
+        # import control points
+        ctrl_group = group.addGroup('control_point')
+        ctrl_group.setExpanded(False)
+        ctrl_group.setItemVisibilityChecked(False)
+        import_group_layers(
+            ctrl_group, os.path.join(outdir, 'control_point'), 'csv'
+        )
+
+        if self._input_params['t'] is True:
+            # import temp results
+            temp_group = group.addGroup('temp')
+            temp_group.setExpanded(False)
+            temp_group.setItemVisibilityChecked(False)
+            import_group_layers(temp_group, os.path.join(outdir, 'temp'))
+            import_group_layers(temp_group, os.path.join(outdir, 'temp'), 'gml')
 
         # QGIS bug: group must be collapsed and then expanded
         group.setExpanded(False)
@@ -440,6 +507,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             'vegetation_type_fieldname':
                 self.vegetation_type_comboBox.currentText(),
             'points': self.points_comboBox.currentText(),
+            'points_fieldname': self.points_field_comboBox.currentText(),
             # 'output': self.output_lineEdit.text().strip(),
             'streams': self.stream_comboBox.currentText(),
             'rainfall_file': self.rainfall_lineEdit.text(),
@@ -453,6 +521,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self.table_stream_shape_comboBox.currentText(),
             'streams_channel_type_fieldname':
                 self.table_stream_shape_code_comboBox.currentText(),
+            't': bool(self.generate_temporary_checkBox.checkState()),
             'output': self.main_output_lineEdit.text().strip()
         }
 
@@ -628,7 +697,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     def setFields(self, t):
         """Set fields of soil and vegetation type."""
-
         if self.soil_comboBox.currentLayer() is not None and t == 'soil':
             self.soil_type_comboBox.setLayer(self.soil_comboBox.currentLayer())
             self.soil_type_comboBox.setField(
@@ -658,7 +726,12 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             else:
                 self.table_stream_shape_code_comboBox.setLayer(None)
                 self.table_stream_shape_code_comboBox.setField("")
-
+        elif self.points_comboBox.currentLayer() is not None and t == 'points':
+            points_cur_layer = self.points_comboBox.currentLayer()
+            self.points_field_comboBox.setLayer(points_cur_layer)
+            self.points_field_comboBox.setField(
+                points_cur_layer.fields()[0].name()
+            )
         else:
             pass
 
@@ -691,11 +764,12 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             self.points_comboBox.setLayer(
                 QgsProject.instance().mapLayersByName('points')[0]
             )
+            self.points_field_comboBox.setCurrentText('point_id')
             self.stream_comboBox.setLayer(
                 QgsProject.instance().mapLayersByName('stream')[0]
             )
             self.rainfall_lineEdit.setText(
-                os.path.join(dir_path, 'rainfall.txt')
+                os.path.join(dir_path, 'rainfall_nucice.txt')
             )
             self.table_soil_vegetation_comboBox.setLayer(
                 QgsProject.instance().mapLayersByName('soil_veg_tab_mean')[0]
