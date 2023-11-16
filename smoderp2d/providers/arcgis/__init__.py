@@ -1,7 +1,6 @@
 import os
-import sys
 import logging
-import numpy as np
+import numpy.ma as ma
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.providers.base import BaseProvider, BaseWriter, WorkflowMode
@@ -13,6 +12,7 @@ try:
     import arcpy
 except RuntimeError as e:
     raise ProviderError("ArcGIS provider: {}".format(e))
+
 
 class ArcGisWriter(BaseWriter):
     def __init__(self):
@@ -29,7 +29,9 @@ class ArcGisWriter(BaseWriter):
         arcpy.management.CreateFileGDB(os.path.join(outdir, 'temp'), "data.gdb")
 
         # create control ArcGIS File Geodatabase
-        arcpy.management.CreateFileGDB(os.path.join(outdir, 'control'), "data.gdb")
+        arcpy.management.CreateFileGDB(
+            os.path.join(outdir, 'control'), "data.gdb"
+        )
 
     def output_filepath(self, name):
         """
@@ -38,17 +40,7 @@ class ArcGisWriter(BaseWriter):
         :param name: layer name to be saved
         :return: full path to the dataset
         """
-        item = self._data_target.get(name)
-        if item is None or item not in ("temp", "control", "core"):
-            raise ProviderError("Unable to define target in output_filepath: {}".format(name))
-
-        path = Globals.get_outdir()
-        # 'core' datasets don't have directory, only the geodatabase
-        if item in ("temp", "control"):
-            path = os.path.join(path, item)
-
-        path = os.path.join(path, 'data.gdb', name)
-
+        path = os.path.join(BaseWriter.output_filepath(self, name, dirname_only=True), 'data.gdb', name)
         Logger.debug('File path: {}'.format(path))
 
         return path
@@ -64,15 +56,16 @@ class ArcGisWriter(BaseWriter):
         )
 
         raster = arcpy.NumPyArrayToRaster(
-            array.filled(GridGlobals.NoDataValue) if isinstance(array, np.ma.MaskedArray) else array,
+            array.filled(GridGlobals.NoDataValue) if isinstance(array, ma.MaskedArray) else array,
             lower_left, GridGlobals.dx, GridGlobals.dy,
             value_to_nodata=GridGlobals.NoDataValue
         )
 
         arcpy.RasterToASCII_conversion(
             raster,
-            file_output
+            file_output + self._raster_extension
         )
+
 
 class ArcGisProvider(BaseProvider):
     def __init__(self, log_handler=ArcPyLogHandler):

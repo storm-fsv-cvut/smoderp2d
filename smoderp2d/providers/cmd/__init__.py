@@ -13,7 +13,7 @@ class CmdWriter(BaseWriter):
     def _write_raster(self, array, file_output):
         """See base method for description.
         """
-        np.savetxt(file_output, array, fmt='%.6e')
+        np.savetxt(file_output + self._raster_extension, array, fmt='%.6e')
 
 
 class CmdArgumentParser(object):

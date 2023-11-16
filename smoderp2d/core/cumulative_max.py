@@ -33,8 +33,7 @@ class CumulativeSubsurfacePass(object):
 
 
 class CumulativeSubsurface(CumulativeSubsurfacePass):
-    """
-    Max and cumulative values of the subsurface flow
+    """Max and cumulative values of the subsurface flow.
 
     Stores arrays of max or cumulative values of important variables of
     the subsurface flow.

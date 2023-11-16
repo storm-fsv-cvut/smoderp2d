@@ -79,7 +79,7 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
         :param vg_n: TODO
         :param vg_l: TODO
         """
-        GridGlobals.__init__()
+        GridGlobals.__init__(self)
 
         self.arr = SubArrs(
             L_sub,
@@ -162,11 +162,11 @@ class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
 
         return bil, exfilt
 
-    def runoff(self, delta_t, efect_vrst):
+    def runoff(self, delta_t, effect_vrst):
 
         arr = self.arr
         # print arr .Ks
-        self.q_subsurface = self.darcy(arr, efect_vrst)
+        self.q_subsurface = self.darcy(arr, effect_vrst)
         # print arr.h
         arr.vol_runoff = delta_t * self.q_subsurface
         arr.vol_rest = arr.h * self.pixel_area - delta_t * self.q_subsurface
@@ -222,7 +222,7 @@ class SubsurfacePass(GridGlobals):
     def bilance(self, infilt, inflow, dt):
         pass
 
-    def runoff(self, delta_t, efect_vrst):
+    def runoff(self, delta_t, effect_vrst):
         pass
 
     def runoff_stream_cell(self, indices):

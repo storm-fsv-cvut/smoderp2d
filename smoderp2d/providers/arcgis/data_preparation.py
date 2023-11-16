@@ -58,8 +58,7 @@ class PrepareData(PrepareDataGISBase):
         with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=dem_mask, cellAlignment=dem_mask, snapRaster=dem_mask):
             field = arcpy.Describe(aoi_polygon).OIDFieldName
             arcpy.conversion.PolygonToRaster(
-                aoi_polygon, field, aoi_mask, "MAXIMUM_AREA", "",
-                GridGlobals.dy
+                aoi_polygon, field, aoi_mask, "MAXIMUM_AREA"
             )
 
         # return aoi_polygon
@@ -137,40 +136,39 @@ class PrepareData(PrepareDataGISBase):
             for row in table:
                 outsideList.append(row[0])
 
-        # report them to the user
-        Logger.info(
-            "\t{} record points outside of "
-            "the area of interest ({}: {})".format(
-                len(outsideList), pointsOID, ",".join(map(str, outsideList))
+        if outsideList:
+            # report them to the user
+            Logger.info(
+                "\t{} record points outside of "
+                "the area of interest ({}: {})".format(
+                    len(outsideList), pointsOID, ",".join(map(str, outsideList))
+                )
             )
-        )
 
         return points_clipped
 
     def _rst2np(self, raster):
         """See base method for description.
         """
-        return arcpy.RasterToNumPyArray(
+        arr = arcpy.RasterToNumPyArray(
             raster, nodata_to_value=GridGlobals.NoDataValue
         )
+        self._check_rst2np(arr)
 
-    def _update_grid_globals(self, reference):
+        return arr
+
+    def _update_grid_globals(self, reference, reference_cellsize):
         """See base method for description.
         """
         desc = arcpy.Describe(reference)
+        desc_cellsize = arcpy.Describe(reference_cellsize)
 
-        # check data consistency
-        if desc.height != GridGlobals.r or \
-                desc.width != GridGlobals.c:
-            raise DataPreparationError(
-                "Data inconsistency ({},{}) vs ({},{})".format(
-                    desc.height, desc.width,
-                    GridGlobals.r, GridGlobals.c)
-            )
+        GridGlobals.r = desc.height
+        GridGlobals.c = desc.width
 
         # lower left corner coordinates
         GridGlobals.set_llcorner((desc.Extent.XMin, desc.Extent.YMin))
-        GridGlobals.set_size((desc.MeanCellWidth, desc.MeanCellHeight))
+        GridGlobals.set_size((desc_cellsize.MeanCellWidth, desc_cellsize.MeanCellHeight))
         inp = arcpy.Describe(self._input_params['elevation'])
         self._check_resolution_consistency(
             inp.meanCellWidth, inp.meanCellHeight
@@ -178,9 +176,9 @@ class PrepareData(PrepareDataGISBase):
 
         # set arcpy environment (needed for rasterization)
         arcpy.env.extent = desc.Extent
-        arcpy.env.snapRaster = reference
+        arcpy.env.snapRaster = reference_cellsize
 
-    def _compute_efect_cont(self, dem, asp):
+    def _compute_effect_cont(self, dem, asp):
         """See base method for description.
         """
         pii = math.pi / 180.0
@@ -192,10 +190,10 @@ class PrepareData(PrepareDataGISBase):
         times1 = arcpy.sa.Plus(cosslope, sinslope)
         times1.save(self.storage.output_filepath('ratio_cell'))
 
-        efect_cont = arcpy.sa.Times(times1, GridGlobals.dx)
-        efect_cont.save(self.storage.output_filepath('efect_cont'))
+        effect_cont = arcpy.sa.Times(times1, GridGlobals.dx)
+        effect_cont.save(self.storage.output_filepath('effect_cont'))
 
-        return self._rst2np(efect_cont)
+        return self._rst2np(effect_cont)
 
     def _prepare_soilveg(self, soil, soil_type_fieldname, vegetation,
                          vegetation_type_fieldname, aoi_polygon,
@@ -242,7 +240,8 @@ class PrepareData(PrepareDataGISBase):
 
         arcpy.management.AddField(soilveg_aoi_path, soilveg_code, "TEXT")
 
-        # calculate "soil_veg" values (soil_type_fieldname + vegetation_type_fieldname)
+        # calculate "soil_veg" values
+        # = (soil_type_fieldname + vegetation_type_fieldname)
         with arcpy.da.UpdateCursor(soilveg_aoi_path, [soil_type_fieldname, veg_fieldname, soilveg_code]) as table:
             for row in table:
                 row[2] = row[0] + row[1]
@@ -271,14 +270,19 @@ class PrepareData(PrepareDataGISBase):
 
         # generate numpy array of soil and vegetation attributes
         for field in self.soilveg_fields.keys():
-            output = self.storage.output_filepath("soilveg_aoi_{}".format(field))
+            output = self.storage.output_filepath(
+                "soilveg_aoi_{}".format(field)
+            )
             aoi_mask = self.storage.output_filepath('aoi_mask')
             with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=aoi_mask, cellAlignment=aoi_mask, snapRaster=aoi_mask):
-                arcpy.conversion.PolygonToRaster(soilveg_aoi_path, field, output, "MAXIMUM_AREA", "", GridGlobals.dy)
+                arcpy.conversion.PolygonToRaster(
+                    soilveg_aoi_path, field, output, "MAXIMUM_AREA", "",
+                    GridGlobals.dy
+                )
             self.soilveg_fields[field] = self._rst2np(output)
             self._check_soilveg_dim(field)
 
-    def _get_points_location(self, points_layer):
+    def _get_points_location(self, points_layer, points_fieldname):
         """See base method for description.
         """
         points_array = None
@@ -289,7 +293,7 @@ class PrepareData(PrepareDataGISBase):
                 points_array = np.zeros([int(count), 5], float)
                 # get the points geometry and IDs into array
                 desc = arcpy.Describe(points_layer)
-                with arcpy.da.SearchCursor(points_layer, [desc.OIDFieldName, desc.ShapeFieldName]) as table:
+                with arcpy.da.SearchCursor(points_layer, [points_fieldname, desc.ShapeFieldName]) as table:
                     i = 0
                     for row in table:
                         fid = row[0]
@@ -361,12 +365,12 @@ class PrepareData(PrepareDataGISBase):
 
         # extract elevation for the stream segment vertices
         arcpy.ddd.InterpolateShape(
-            dem_aoi, stream, self.storage.output_filepath("stream_z"), "", "",
+            dem_aoi, stream, self.storage.output_filepath("stream_aoi_z"), "", "",
             "CONFLATE_NEAREST", "VERTICES_ONLY"
         )
         shape_fieldname = "SHAPE@"
 
-        with arcpy.da.SearchCursor(self.storage.output_filepath("stream_z"), [shape_fieldname, segment_id_fieldname]) as segments:
+        with arcpy.da.SearchCursor(self.storage.output_filepath("stream_aoi_z"), [shape_fieldname, segment_id_fieldname]) as segments:
             for row in segments:
                 startpt = row[0].firstPoint
                 endpt = row[0].lastPoint
@@ -407,12 +411,13 @@ class PrepareData(PrepareDataGISBase):
                                             end_elev_fieldname, inclination_fieldname, next_down_id_fieldname,
                                             segment_length_fieldname, length_fieldname]) as table:
             for row in table:
-                segment_inclination = segment_props.get(row[0]).get('inclination')
+                segment_props_row0 = segment_props.get(row[0])
+                segment_inclination = segment_props_row0.get('inclination')
                 row[1] = row[1] if segment_inclination < 0 else self._reverse_line_direction(row[1])
-                row[2] = segment_props.get(row[0]).get('start_point').Z
-                row[3] = segment_props.get(row[0]).get('end_point').Z
+                row[2] = segment_props_row0.get('start_point').Z
+                row[3] = segment_props_row0.get('end_point').Z
                 row[4] = abs(segment_inclination)
-                row[6] = segment_props.get(row[0]).get("length")
+                row[6] = segment_props_row0.get("length")
 
                 # find the next down segment by comparing the points distance
                 next_down_id = Globals.streamsNextDownIdNoSegment
@@ -437,7 +442,8 @@ class PrepareData(PrepareDataGISBase):
                     row[5] = next_down_id
                 table.updateRow(row)
 
-    def _reverse_line_direction(self, line):
+    @staticmethod
+    def _reverse_line_direction(line):
         """Flip the order of points if a line to change its direction.
 
         If the geometry is multipart the parts are dissolved into single part
@@ -496,7 +502,9 @@ class PrepareData(PrepareDataGISBase):
                         if row[i] in (" ", None):
                             raise DataPreparationError(
                                 "Empty value in {} ({}) found.".format(
-                                    self._input_params["channel_properties_table"],
+                                    self._input_params[
+                                        "channel_properties_table"
+                                    ],
                                     fields[i])
                             )
                         stream_attr[fields[i]].append(row[i])
@@ -513,51 +521,24 @@ class PrepareData(PrepareDataGISBase):
 
         return self._decode_stream_attr(stream_attr)
 
+    def _check_empty_values(self, table, field):
+        """See base method for description.
+        """
+        oidfn = arcpy.Describe(table).OIDFieldName
+        with arcpy.da.SearchCursor(table, [field, oidfn]) as cursor:
+            for row in cursor:
+                if row[0] in (None, ""):
+                    raise DataPreparationInvalidInput(
+                        "'{}' values in '{}' table are not correct, "
+                        "empty value found in row {})".format(
+                            field, table, row[1]
+                        )
+                    )
+
     def _check_input_data(self):
         """See base method for description.
         """
-        def _check_empty_values(table, field):
-            oidfn = arcpy.Describe(table).OIDFieldName
-            with arcpy.da.SearchCursor(table, [field, oidfn]) as cursor:
-                for row in cursor:
-                    if row[0] in (None, ""):
-                        raise DataPreparationInvalidInput(
-                            "'{}' values in '{}' table are not correct, "
-                            "empty value found in row {})".format(
-                                field, table, row[1]
-                            )
-                        )
-
         self._check_input_data_()
-
-        _check_empty_values(
-            self._input_params['vegetation'],
-            self._input_params['vegetation_type_fieldname']
-        )
-        _check_empty_values(
-            self._input_params['soil'],
-            self._input_params['soil_type_fieldname']
-        )
-
-        # check presence of needed fields in stream shape properties table
-        if self._input_params['channel_properties_table']:
-            fields = self._get_field_names(
-                self._input_params['channel_properties_table']
-            )
-            for f in self.stream_shape_fields:
-                if f not in fields:
-                    raise DataPreparationInvalidInput(
-                        "Field '{}' not found in <{}>\nNeeded fields "
-                        "are: {}".format(
-                            f, self._input_params['channel_properties_table'],
-                            ', '.join(
-                                map(
-                                    lambda x: "'{}'".format(x),
-                                    self.stream_shape_fields
-                                )
-                            )
-                        )
-                    )
 
     def _get_field_names(self, ds):
         """See base method for description.
