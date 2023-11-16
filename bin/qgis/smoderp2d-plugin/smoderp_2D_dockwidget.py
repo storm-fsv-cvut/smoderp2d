@@ -469,6 +469,14 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         ctrl_group.setItemVisibilityChecked(False)
         import_group_layers(ctrl_group, os.path.join(outdir, 'control'))
 
+        # import control points
+        ctrl_group = group.addGroup('control_point')
+        ctrl_group.setExpanded(False)
+        ctrl_group.setItemVisibilityChecked(False)
+        import_group_layers(
+            ctrl_group, os.path.join(outdir, 'control_point'), 'csv'
+        )
+
         if self._input_params['t'] is True:
             # import temp results
             temp_group = group.addGroup('temp')
@@ -476,7 +484,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             temp_group.setItemVisibilityChecked(False)
             import_group_layers(temp_group, os.path.join(outdir, 'temp'))
             import_group_layers(temp_group, os.path.join(outdir, 'temp'), 'gml')
-
 
         # QGIS bug: group must be collapsed and then expanded
         group.setExpanded(False)
