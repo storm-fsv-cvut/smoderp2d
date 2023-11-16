@@ -197,10 +197,6 @@ class BaseProvider(object):
 
         # set logging level
         Logger.setLevel(config.get('logging', 'level', fallback=logging.INFO))
-        # sys.stderr logging
-        self.add_logging_handler(
-            logging.StreamHandler(stream=sys.stderr)
-        )
 
         return config
 
@@ -237,6 +233,11 @@ class BaseProvider(object):
             raise ConfigError('Config file {}: {}'.format(
                 self.args.config_file, e
             ))
+
+        # sys.stderr logging
+        self.add_logging_handler(
+            logging.StreamHandler(stream=sys.stderr)
+        )
 
         return config
 
