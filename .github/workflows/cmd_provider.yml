@@ -38,7 +38,7 @@ jobs:
     uses: ./.github/workflows/cmd_template.yml
     with:
       python-version: ${{ matrix.python-version }}
-      pytest-suite: tests/test_cmd.py --config config_files/quicktest_rill.ini --reference_dir=data/reference/quicktest_rill_mfda
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_rill.ini --reference_dir data/reference/quicktest_rill_mfda
       mfda: true
 
   smoderp2d-quicktest-stream-rill:
@@ -76,7 +76,7 @@ jobs:
     uses: ./.github/workflows/cmd_template.yml
     with:
       python-version: ${{ matrix.python-version }}
-      pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill.ini --reference_dir=data/reference/test_stream_rill_mfda
+      pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill.ini --reference_dir data/reference/test_stream_rill_mfda
       mfda: true
 
   smoderp2d-longtest-stream-rill:
