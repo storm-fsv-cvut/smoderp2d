@@ -756,7 +756,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         )
         try:
             self.elevation_comboBox.setLayer(
-                QgsProject.instance().mapLayersByName('dem10m')[0]
+                QgsProject.instance().mapLayersByName('dem')[0]
             )
             self.soil_comboBox.setLayer(
                 QgsProject.instance().mapLayersByName('soils')[0]
@@ -766,24 +766,24 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             )
             self.points_field_comboBox.setCurrentText('point_id')
             self.stream_comboBox.setLayer(
-                QgsProject.instance().mapLayersByName('stream')[0]
+                QgsProject.instance().mapLayersByName('streams')[0]
             )
             self.rainfall_lineEdit.setText(
                 os.path.join(dir_path, 'rainfall_nucice.txt')
             )
             self.table_soil_vegetation_comboBox.setLayer(
-                QgsProject.instance().mapLayersByName('soil_veg_tab_mean')[0]
+                QgsProject.instance().mapLayersByName('soil_veg_tab')[0]
             )
             self.table_stream_shape_comboBox.setLayer(
-                QgsProject.instance().mapLayersByName('stream_shape')[0]
+                QgsProject.instance().mapLayersByName('streams_shape')[0]
             )
             self.table_stream_shape_code_comboBox.setCurrentText('channel_id')
             with tempfile.NamedTemporaryFile() as temp_dir:
                 self.main_output_lineEdit.setText(temp_dir.name)
             self.end_time_lineEdit.setValue(5)
-        except IndexError:
+        except IndexError as e:
             self._sendMessage(
                 'Error',
-                'Unable to set test parameters. Load demo QGIS project first.',
+                f'Unable to set test parameters: {e}. Load demo QGIS project first.',
                 'CRITICAL'
             )
