@@ -248,9 +248,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.arguments['channel_properties'].addWidget(
             self.table_stream_shape_toolButton
         )
-        self.arguments['generate_temporary'].addWidget(
-            self.generate_temporary_checkBox
-        )
+        self.arguments['generate_temporary'].insertWidget(
+            0, self.generate_temporary_checkBox
+        )  # checkbox should be before label
+        self.arguments['generate_temporary'].addStretch()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
