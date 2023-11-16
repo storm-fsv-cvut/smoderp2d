@@ -37,7 +37,7 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip install -r .github/workflows/requirements.txt &&
+          pip install -r .github/workflows/requirements.txt          
           pip install -r .github/workflows/requirements${{ inputs.python-version }}.txt
 
       - name: Set up hidden config
