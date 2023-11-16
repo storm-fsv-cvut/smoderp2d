@@ -187,10 +187,10 @@ class PerformTest:
 
         if params_fn:
             self._params = {
-                "soil_type_fieldname": "SID",
+                "soil_type_fieldname": "Soil",
                 "vegetation_type_fieldname": "LandUse",
                 "points_fieldname": "point_id",
-                "rainfall_file": os.path.join(data_dir, "rainfall_nucice.txt"),
+                "rainfall_file": os.path.join(data_dir, "rainfall_rain_sim.txt"),
                 "maxdt": 30,
                 "end_time": 40,
                 "table_soil_vegetation_fieldname": "soilveg",
@@ -301,7 +301,7 @@ class PerformTest:
 
         runner.run()
 
-    def run_dpre(self):
+    def run_dpre(self, dataset):
         self._run(WorkflowMode.dpre)
 
         dataprep_filepath = os.path.join(self._output_dir, "dpre.save")
@@ -309,7 +309,7 @@ class PerformTest:
             self._output_dir,
             "..",
             "reference",
-            "gistest",
+            "gistest_{}".format(dataset),
             "dpre",
             "arcgis" if "GRASS_OVERWRITE" not in os.environ else "grass",
             "dpre.save",

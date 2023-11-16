@@ -1,5 +1,6 @@
 import os
 import sys
+import pytest
 
 from test_utils import PerformTest
 
@@ -9,19 +10,25 @@ from smoderp2d import GrassGisRunner
 
 def params():
     return {
-        'elevation': "dem10m@PERMANENT",
+        'elevation': "dem@PERMANENT",
         'soil': "soils@PERMANENT",
         'vegetation': "landuse@PERMANENT",
         'points': "points@PERMANENT",
-        'table_soil_vegetation': "soil_veg_tab_mean@PERMANENT",
-        'streams': "stream@PERMANENT",
-        'channel_properties_table': "stream_shape@PERMANENT"
+        'table_soil_vegetation': "soil_veg_tab@PERMANENT",
+        'streams': "streams@PERMANENT",
+        'channel_properties_table': "streams_shape@PERMANENT"
     }
 
 
+@pytest.fixture(scope='class')
+def class_manager(request, pytestconfig):
+    request.cls.dataset = pytestconfig.getoption("dataset") # TODO: reference dir
+    yield
+
+@pytest.mark.usefixtures('class_manager')
 class TestGrass:
     def test_001_dpre(self):
-        PerformTest(GrassGisRunner, params).run_dpre()
+        PerformTest(GrassGisRunner, params).run_dpre(self.dataset)
 
     def test_002_roff(self):
         # https://github.com/storm-fsv-cvut/smoderp2d/issues/199
