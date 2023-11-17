@@ -418,6 +418,9 @@ class BaseProvider(object):
             ret['sheet_only'] = True
         elif itc == CompType.rill:
             ret['rill'] = True
+        elif itc == CompType.sheet_stream:
+            ret['sheet_only'] = True
+            ret['stream'] = True
         elif itc == CompType.stream_rill:
             ret['stream'] = True
             ret['rill'] = True
