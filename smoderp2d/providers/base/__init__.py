@@ -408,7 +408,6 @@ class BaseProvider(object):
         ret = {}
         for item in ('sheet_only',
                      'rill',
-                     'sheet_stream',
                      'stream',
                      'subflow_rill',
                      'stream_subflow_rill'):
