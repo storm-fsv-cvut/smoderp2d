@@ -2,6 +2,7 @@ import os
 import numpy as np
 import sqlite3
 import tempfile
+from subprocess import PIPE
 
 from smoderp2d.core.general import GridGlobals, Globals
 
@@ -17,6 +18,7 @@ from grass.pygrass.raster import RasterRow, raster2numpy
 from grass.pygrass.gis import Mapset
 from grass.pygrass.gis.region import Region
 from grass.exceptions import CalledModuleError, OpenError
+from grass.script.core import parse_key_val
 
 
 class PrepareData(PrepareDataGISBase):
@@ -132,6 +134,15 @@ class PrepareData(PrepareDataGISBase):
             'v.to.rast', input=aoi_polygon, type='area', use='cat',
             output=aoi_mask
         )
+
+        # perform mask_aoi postprocessing - only cells with value of 1 are valid
+        s = Module('r.info', flags='s', map=aoi_mask, stdout_=PIPE)
+        stats = parse_key_val(s.outputs.stdout)
+        if int(stats['n']) > 0:
+            self._run_grass_module('g.rename', raster=[aoi_mask, aoi_mask + '1'])
+            self._run_grass_module('g.region', zoom=aoi_mask+'1')
+            self._run_grass_module('r.mapcalc', expression=f'{aoi_mask} = {aoi_mask}1')
+            self.__remove_temp_data({'name': aoi_mask+'1', 'type': 'raster'})
 
         return aoi_polygon, aoi_mask
 
