@@ -200,10 +200,9 @@ class BaseProvider(object):
 
         return config
 
-    def _load_data_from_hidden_config(self, config, ignore=[]):
+    def _load_data_from_hidden_config(self, ignore=[]):
         """Load data from hidden config.
 
-        :param ConfigParser config: loaded config file
         :param list ignore: list of options to me ignored
 
         :return dict
@@ -293,8 +292,7 @@ class BaseProvider(object):
         data['dx'] = data['dy'] = math.sqrt(data['pixel_area'])
 
         # load hidden config
-        data.update(self._load_data_from_hidden_config(
-            self._hidden_config))
+        data.update(self._load_data_from_hidden_config())
 
         return data
 
@@ -347,7 +345,7 @@ class BaseProvider(object):
         Globals.isStream = comp_type['stream']
 
         # load hidden config
-        hidden_config = self._load_data_from_hidden_config(self._hidden_config)
+        hidden_config = self._load_data_from_hidden_config()
         if 'prtTimes' in data:
             Globals.prtTimes = data['prtTimes']
         else:
