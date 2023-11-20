@@ -709,14 +709,7 @@ class PrepareDataGISBase(PrepareDataBase):
         # if point is not on the edge of raster or its
         # neighbours are not "NoDataValue", it will be returned
         nv = GridGlobals.NoDataValue
-        if r != 0 and r != GridGlobals.r \
-            and c != 0 and c != GridGlobals.c and \
-            self.data['mat_dem'][r][c] != nv and \
-            self.data['mat_dem'][r-1][c] != nv and \
-            self.data['mat_dem'][r+1][c] != nv and \
-            self.data['mat_dem'][r][c-1] != nv and \
-            self.data['mat_dem'][r][c+1] != nv:
-
+        if self.data['mat_dem'][r][c] != nv:
             return r, c
         else:
             return None
