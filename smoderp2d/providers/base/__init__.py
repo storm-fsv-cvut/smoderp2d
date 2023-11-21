@@ -73,7 +73,7 @@ class BaseWriter(object):
         if data_type is None:
             data_type = self._data_target.get(name)
             if data_type is None or data_type not in ("temp", "control", "core"):
-                Logger.info(
+                Logger.debug(
                    "Unable to define target in output_filepath for {}. Assuming temp.".format(name)
                 )
                 data_type = "temp"
