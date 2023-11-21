@@ -33,11 +33,10 @@ def new_inflows(mat_fd):
         inflows.append([])
 
         for j in range(c):
-            inflows[i].append([])
             in_dir = __smeryInflow(mat_fd, i, j)
             in_fldir[i][j] = in_dir
             intok = __smery(in_dir, smer)
-            inflows[i][j] = intok
+            inflows[i].append(intok)
 
     # for item in inflows :
         # print item
