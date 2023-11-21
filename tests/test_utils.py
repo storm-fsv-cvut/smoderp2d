@@ -5,6 +5,7 @@ import filecmp
 import logging
 import glob
 import pickle
+import math
 import pytest
 from shutil import rmtree
 from difflib import unified_diff
@@ -28,7 +29,10 @@ def write_array_diff_png(diff, target_path):
 
     vmax = diff.max()
     vcenter = 0 if vmax > 0 else (vmax - abs(vmin)) / 2
-    norm = mcolors.TwoSlopeNorm(vmin=vmin, vcenter=vcenter, vmax=vmax)
+    if not math.isclose(vmin, vmax):
+        norm = mcolors.TwoSlopeNorm(vmin=vmin, vcenter=vcenter, vmax=vmax)
+    else:
+        norm = None
     plt.imshow(diff.astype(int), cmap="bwr", norm=norm)
     plt.colorbar()
     plt.savefig(os.path.join(target_path + ".diff.png"))
@@ -46,8 +50,8 @@ def write_array_diff(arr1, arr2, target_path):
         return
 
     # print statistics
-    sys.stdout.writelines("\tdiff_stats min: {} max: {} mean:{}\n".format(
-        diff.min(), diff.max(), diff.mean()))
+    sys.stdout.writelines("\tdiff_stats ({}) min: {} max: {} mean:{}\n".format(
+        os.path.basename(target_path), diff.min(), diff.max(), diff.mean()))
 
     with open(target_path + ".diff", "w") as fd:
         numpy.savetxt(fd, diff)
