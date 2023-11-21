@@ -25,7 +25,9 @@ def write_array_diff_png(diff, target_path):
     elif vmin == 0:
         vmin = -1 * diff.max()
 
-    norm = mcolors.TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=diff.max())
+    vmax = diff.max()
+    vcenter = 0 if vmax > 0 else (vmax - abs(vmin)) / 2
+    norm = mcolors.TwoSlopeNorm(vmin=vmin, vcenter=vcenter, vmax=vmax)
     plt.imshow(diff.astype(int), cmap="bwr", norm=norm)
     plt.colorbar()
     plt.savefig(os.path.join(target_path + ".diff.png"))
