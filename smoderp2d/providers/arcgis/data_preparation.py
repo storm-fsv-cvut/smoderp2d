@@ -61,7 +61,7 @@ class PrepareData(PrepareDataGISBase):
                 aoi_polygon, field, aoi_mask+"1", "MAXIMUM_AREA"
             )
 
-        # perform mask_aoi postprocessing - remove no-data cells on the edges
+        # perform aoi_mask postprocessing - remove no-data cells on the edges
         arcpy.conversion.RasterToPolygon(aoi_mask+"1", "aoi_mask_fc", "NO_SIMPLIFY")
         arcpy.env.extent = "aoi_mask_fc"
         arcpy.management.Clip(aoi_mask+"1", out_raster=aoi_mask, nodata_value=GridGlobals.NoDataValue)
