@@ -58,8 +58,14 @@ class PrepareData(PrepareDataGISBase):
         with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=dem_mask, cellAlignment=dem_mask, snapRaster=dem_mask):
             field = arcpy.Describe(aoi_polygon).OIDFieldName
             arcpy.conversion.PolygonToRaster(
-                aoi_polygon, field, aoi_mask, "MAXIMUM_AREA"
+                aoi_polygon, field, aoi_mask+"1", "MAXIMUM_AREA"
             )
+
+        # perform mask_aoi postprocessing - remove no-data cells on the edges
+        arcpy.conversion.RasterToPolygon(aoi_mask+"1", "aoi_mask_fc", "NO_SIMPLIFY")
+        arcpy.env.extent = "aoi_mask_fc"
+        arcpy.management.Clip(aoi_mask+"1", out_raster=aoi_mask, nodata_value=GridGlobals.NoDataValue)
+        arcpy.management.Delete(aoi_mask+"1")
 
         # return aoi_polygon
         return aoi_polygon, aoi_mask
