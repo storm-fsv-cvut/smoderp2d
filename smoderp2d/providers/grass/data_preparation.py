@@ -687,7 +687,6 @@ class PrepareData(PrepareDataGISBase):
             return 0
 
         export_layers = PrepareDataGISBase.data_layers.keys()
-        do_export = False
         if m.name == 'r.mapcalc':
             map_name = m.inputs.expression.split('=')[0].strip()
             if map_name in export_layers:

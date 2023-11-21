@@ -250,8 +250,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['slope_width'] = slope_width
 
         # load hidden config
-        data.update(self._load_data_from_hidden_config(
-            self._hidden_config, ignore=['mfda']))
+        data.update(self._load_data_from_hidden_config(ignore=['mfda']))
 
         return data
 
