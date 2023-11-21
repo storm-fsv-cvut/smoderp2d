@@ -5,6 +5,7 @@ import filecmp
 import logging
 import glob
 import pickle
+import pytest
 from shutil import rmtree
 from difflib import unified_diff
 
@@ -45,7 +46,7 @@ def write_array_diff(arr1, arr2, target_path):
         return
 
     # print statistics
-    sys.stdout.writelines("\tdiff_stats min: {} max: {} mean:{}".format(
+    sys.stdout.writelines("\tdiff_stats min: {} max: {} mean:{}\n".format(
         diff.min(), diff.max(), diff.mean()))
 
     with open(target_path + ".diff", "w") as fd:
@@ -170,6 +171,10 @@ def are_dir_trees_equal(dir1, dir2):
 def _setup(request, config_file):
     request.cls.config_file = config_file
 
+@pytest.fixture(scope='class')
+def class_manager(request, pytestconfig):
+    request.cls.dataset = pytestconfig.getoption("dataset") # TODO: reference dir
+    yield 
 
 def _is_on_github_action():
     # https://docs.github.com/en/actions/learn-github-actions/variables
@@ -341,12 +346,12 @@ class PerformTest:
             self._output_dir, reference_dir
         )
 
-    def run_full(self):
+    def run_full(self, dataset):
         self._run(WorkflowMode.full)
 
         assert os.path.isdir(self._output_dir)
 
         assert are_dir_trees_equal(
             self._output_dir,
-            os.path.join(data_dir, "reference", "gistest", "full"),
+            os.path.join(data_dir, "reference", "gistest_{}".format(dataset), "full"),
         )

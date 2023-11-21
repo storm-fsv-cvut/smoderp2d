@@ -2,7 +2,7 @@ import os
 import sys
 import pytest
 
-from test_utils import PerformTest
+from test_utils import PerformTest, class_manager
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from smoderp2d import GrassGisRunner
@@ -20,11 +20,6 @@ def params():
     }
 
 
-@pytest.fixture(scope='class')
-def class_manager(request, pytestconfig):
-    request.cls.dataset = pytestconfig.getoption("dataset") # TODO: reference dir
-    yield
-
 @pytest.mark.usefixtures('class_manager')
 class TestGrass:
     def test_001_dpre(self):
@@ -38,4 +33,4 @@ class TestGrass:
         pass
 
     def test_003_full(self):
-        PerformTest(GrassGisRunner, params).run_full()
+        PerformTest(GrassGisRunner, params).run_full(self.dataset)
