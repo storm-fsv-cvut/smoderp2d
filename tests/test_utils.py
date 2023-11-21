@@ -188,11 +188,11 @@ data_dir = os.path.join(os.path.dirname(__file__), "data")
 
 class PerformTest:
 
-    def __init__(self, runner, params_fn=None):
+    def __init__(self, runner, params=None):
         self.runner = runner
         self._output_dir = os.path.join(data_dir, "output")
 
-        if params_fn:
+        if params:
             self._params = {
                 "soil_type_fieldname": "Soil",
                 "vegetation_type_fieldname": "LandUse",
@@ -205,7 +205,7 @@ class PerformTest:
                 "output": self._output_dir,
                 't': False
             }
-            self._params.update(params_fn())
+            self._params.update(params)
         else:
             self._params = None
 
