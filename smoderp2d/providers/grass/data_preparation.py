@@ -132,17 +132,13 @@ class PrepareData(PrepareDataGISBase):
         self._run_grass_module('g.region', vector=aoi_polygon, align=elevation)
         self._run_grass_module(
             'v.to.rast', input=aoi_polygon, type='area', use='cat',
-            output=aoi_mask
+            output=aoi_mask+'1'
         )
 
-        # perform mask_aoi postprocessing - only cells with value of 1 are valid
-        s = Module('r.info', flags='s', map=aoi_mask, stdout_=PIPE)
-        stats = parse_key_val(s.outputs.stdout)
-        if int(stats['n']) > 0:
-            self._run_grass_module('g.rename', raster=[aoi_mask, aoi_mask + '1'])
-            self._run_grass_module('g.region', zoom=aoi_mask+'1')
-            self._run_grass_module('r.mapcalc', expression=f'{aoi_mask} = {aoi_mask}1')
-            self.__remove_temp_data({'name': aoi_mask+'1', 'type': 'raster'})
+        # perform aoi_mask postprocessing - remove no-data cells on the edges
+        self._run_grass_module('g.region', zoom=aoi_mask+'1')
+        self._run_grass_module('r.mapcalc', expression=f'{aoi_mask} = {aoi_mask}1')
+        self.__remove_temp_data({'name': aoi_mask+'1', 'type': 'raster'})
 
         return aoi_polygon, aoi_mask
 
