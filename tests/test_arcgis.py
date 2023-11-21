@@ -13,7 +13,7 @@ def params(dataset):
         'vegetation': os.path.join(data_dir, dataset, "landuse.shp"),
         'points': os.path.join(data_dir, dataset, "points.shp"),
         'table_soil_vegetation': os.path.join(
-            data_dir, dataset, "soil_veg_tab.dbf"
+            data_dir, dataset, "soil_veg_tab.{}".format("dbf" if dataset == "nucice" else "csv")
         ),
         'streams': os.path.join(data_dir, dataset, "streams.shp"),
         'channel_properties_table':  os.path.join(data_dir, dataset, "streams_shape.dbf")
