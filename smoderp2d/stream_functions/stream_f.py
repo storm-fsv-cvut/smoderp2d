@@ -47,11 +47,10 @@ def compute_h(A, m, b, err=0.0001, max_iter=20):
         h_pre = ma.copy(h)
         if iter_ >= max_iter:
             Logger.error(
-                "if file {} near line {} \n\t newton solver didnt converge "
-                "after {max_iter} iterations (max_iter={max_iter})",
-                frameinfo.filename,
-                frameinfo.lineno,
-                max_iter=max_iter)
+                f"if file {frameinfo.filename} near line {frameinfo.lineno} "
+                f"\n\t newton solver did not converge after {max_iter} "
+                f"iterations (max_iter={max_iter})"
+            )
             break
         iter_ += 1
 
