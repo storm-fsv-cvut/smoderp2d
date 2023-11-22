@@ -87,8 +87,8 @@ class LoadItems:
         return n[0]
 
     def loadnpy(self):
-
-        n = len(self.lines[2:])
+        rows = self.lines[2:]
+        n = len(rows)
         m = len(self.lines[2].split(';'))
         type_ = self.lines[1]
         arr = np.zeros([n, m], float)
@@ -98,7 +98,7 @@ class LoadItems:
         if 'float' in type_:
             self.npyel = self.__float
 
-        for i, line in enumerate(self.lines[2:]):
+        for i, line in enumerate(rows):
             for j, el in enumerate(line.split(';')):
                 arr[i, j] = self.npyel(el)
 
