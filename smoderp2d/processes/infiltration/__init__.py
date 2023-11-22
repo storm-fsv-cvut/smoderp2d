@@ -52,8 +52,8 @@ def phlilip(k, s, deltaT, totalT, NoDataValue):
     else:
         infiltration1 = ma.where(
             totalT == 0,
-            s * (0.0000001      )**0.5 + k * (0.0000001      ),
-            s * (totalT         )**0.5 + k * (totalT         )
+            s * 0.0000001 ** 0.5 + k * 0.0000001,
+            s * totalT ** 0.5 + k * totalT
         )
         infiltration2 = s * (totalT + deltaT)**0.5 + k * (totalT + deltaT)
         
