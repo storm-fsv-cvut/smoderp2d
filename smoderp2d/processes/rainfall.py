@@ -124,13 +124,13 @@ def load_precipitation(fh):
         raise
 
 
-def timestepRainfall(iterace, total_time, delta_t, tz, sr):
+def timestepRainfall(itera, total_time, delta_t, tz, sr):
     """Return a rainfall amount for current time step.
 
     If two or more rainfall records belongs to one time step the function
     integrates the rainfall amount.
 
-    :param iterace: TODO
+    :param itera: TODO
     :param total_time: TODO
     :param delta_t: TODO
     :param tz: TODO
@@ -139,7 +139,7 @@ def timestepRainfall(iterace, total_time, delta_t, tz, sr):
     """
     z = tz
     # skontroluje jestli neni mimo srazkovy zaznam
-    if z > (iterace - 1):
+    if z > (itera - 1):
         rainfall = ma.zeros((GridGlobals.r, GridGlobals.c))
     else:
         # skontroluje jestli casovy krok, ktery prave resi, je stale vramci
@@ -155,7 +155,7 @@ def timestepRainfall(iterace, total_time, delta_t, tz, sr):
             # skoci do dalsiho zaznamu
             z += 1
             # koukne jestli ten uz neni mimo
-            if z > (iterace - 1):
+            if z > (itera - 1):
                 rainfall += 0
             else:
                 # pokud je total_time + delta_t stale dal nez konec posunuteho
@@ -167,12 +167,12 @@ def timestepRainfall(iterace, total_time, delta_t, tz, sr):
                         0
                     )
                     z += 1
-                    if z > (iterace - 1):
+                    if z > (itera - 1):
                         break
                 # nakonec pricte to co je v poslednim zaznamu kde je
                 # total_time + delta_t pred konce zaznamu
                 # nebo pricte nulu pokud uz tam zadny zaznam neni
-                if z > (iterace - 1):
+                if z > (itera - 1):
                     rainfall += 0
                 else:
                     rainfall += sr[z][1] * (
