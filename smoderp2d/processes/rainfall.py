@@ -214,14 +214,14 @@ def current_rain(rain, rainfallm, sum_interception):
         ma.where(
             sum_interception >= rain_pi,
             rainfallm - (rain_pi - sum_interception_pre),
-            # rest of intercetpion, netto rainfallm
+            # rest of interception, netto rainfallm
             rainfallm - interc  # netto rainfallm
         ),
         rainfallm
     )
     rain_veg = ma.where(
         ma.logical_and(ma.logical_not(rain_veg), sum_interception >= rain_pi),
-        True,  # as vegetatio interception is full
+        True,  # as vegetation, interception is full
         rain_veg
     )
 
