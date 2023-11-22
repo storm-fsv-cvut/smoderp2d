@@ -50,6 +50,11 @@ class ErrorInRainfallRecord(Error):
 
 
 def load_precipitation(fh):
+    """TODO.
+
+    :param fh: TODO
+    :return: TODO
+    """
     y2 = 0
     try:
         fh = open(fh, "r")
@@ -184,6 +189,13 @@ def timestepRainfall(itera, total_time, delta_t, tz, sr):
 
 
 def current_rain(rain, rainfallm, sum_interception):
+    """TODO.
+
+    :param rain: TODO
+    :param rainfallm: TODO
+    :param sum_interception: TODO
+    :return: TODO
+    """
     # jj
     rain_veg = rain.veg
     rain_ppl = rain.ppl
