@@ -73,30 +73,31 @@ class PrepareData(PrepareDataGISBase):
     def _create_DEM_derivatives(self, dem):
         """See base method for description.
         """
-        # calculate the depressionless DEM
-        dem_filled_path = self.storage.output_filepath('dem_filled')
-        dem_filled = arcpy.sa.Fill(dem)
-        dem_filled.save(dem_filled_path)
+        with arcpy.EnvManager(extent=dem):
+            # calculate the depressionless DEM
+            dem_filled_path = self.storage.output_filepath('dem_filled')
+            dem_filled = arcpy.sa.Fill(dem)
+            dem_filled.save(dem_filled_path)
 
-        # calculate the flow direction
-        dem_flowdir_path = self.storage.output_filepath('dem_flowdir')
-        flowdir = arcpy.sa.FlowDirection(dem_filled)
-        flowdir.save(dem_flowdir_path)
+            # calculate the flow direction
+            dem_flowdir_path = self.storage.output_filepath('dem_flowdir')
+            flowdir = arcpy.sa.FlowDirection(dem_filled)
+            flowdir.save(dem_flowdir_path)
 
-        # calculate flow accumulation
-        dem_flowacc_path = self.storage.output_filepath('dem_flowacc')
-        flowacc = arcpy.sa.FlowAccumulation(flowdir)
-        flowacc.save(dem_flowacc_path)
+            # calculate flow accumulation
+            dem_flowacc_path = self.storage.output_filepath('dem_flowacc')
+            flowacc = arcpy.sa.FlowAccumulation(flowdir)
+            flowacc.save(dem_flowacc_path)
 
-        # calculate slope
-        dem_slope_path = self.storage.output_filepath('dem_slope')
-        dem_slope = arcpy.sa.Slope(dem, "PERCENT_RISE")
-        dem_slope.save(dem_slope_path)
+            # calculate slope
+            dem_slope_path = self.storage.output_filepath('dem_slope')
+            dem_slope = arcpy.sa.Slope(dem, "PERCENT_RISE")
+            dem_slope.save(dem_slope_path)
 
-        # calculate aspect
-        dem_aspect_path = self.storage.output_filepath('dem_aspect')
-        dem_aspect = arcpy.sa.Aspect(dem)
-        dem_aspect.save(dem_aspect_path)
+            # calculate aspect
+            dem_aspect_path = self.storage.output_filepath('dem_aspect')
+            dem_aspect = arcpy.sa.Aspect(dem)
+            dem_aspect.save(dem_aspect_path)
 
         return (
             dem_filled_path, dem_flowdir_path, dem_flowacc_path,
