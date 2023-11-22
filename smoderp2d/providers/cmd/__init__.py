@@ -56,5 +56,5 @@ class CmdProvider(BaseProvider):
         except KeyError:
             raise ConfigError("No pickle defined")
 
-        # define storage writter
+        # define storage writer
         self.storage = CmdWriter()

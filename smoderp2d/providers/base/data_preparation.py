@@ -228,8 +228,9 @@ class PrepareDataGISBase(PrepareDataBase):
         "k": None, "s": None, "n": None, "pi": None, "ppl": None,
         "ret": None, "b": None, "x": None, "y": None, "tau": None, "v": None
     }
-    def __init__(self, writter):
-        self.storage = writter
+
+    def __init__(self, writer):
+        self.storage = writer
 
         # complete list of field names that are supposed not to be changed,
         # e.g. in properties tables
@@ -371,7 +372,8 @@ class PrepareDataGISBase(PrepareDataBase):
         time.
 
         :param reference: reference raster layer
-        :param reference_cellsize: reference raster layer for cell size (see https://github.com/storm-fsv-cvut/smoderp2d/issues/256)
+        :param reference_cellsize: reference raster layer for cell size
+            (see https://github.com/storm-fsv-cvut/smoderp2d/issues/256)
         """
         pass
 
@@ -775,9 +777,7 @@ class PrepareDataGISBase(PrepareDataBase):
         return mat_boundary
 
     def _convert_slope_units(self):
-        """
-        Converts slope units from % to 0-1 range in the mask.
-        """
+        """Convert slope units from % to 0-1 range in the mask."""
         self.data['mat_slope'] = np.where(
             self.data['mat_slope'] != GridGlobals.NoDataValue,
             self.data['mat_slope'] / 100.,
@@ -796,6 +796,10 @@ class PrepareDataGISBase(PrepareDataBase):
         )
 
     def _check_soilveg_dim(self, field):
+        """TODO.
+
+        :param field: TODO
+        """
         if self.soilveg_fields[field].shape[0] != GridGlobals.r or \
            self.soilveg_fields[field].shape[1] != GridGlobals.c:
             raise DataPreparationError(
@@ -806,6 +810,7 @@ class PrepareDataGISBase(PrepareDataBase):
             )
 
     def _get_streams_attr_(self):
+        """Get stream attributes."""
         fields = [
             self.fieldnames['stream_segment_id'],
             self._input_params['streams_channel_type_fieldname'],
@@ -821,6 +826,7 @@ class PrepareDataGISBase(PrepareDataBase):
         return stream_attr
 
     def _check_input_data_(self):
+        """Check input data."""
         self._check_empty_values(
             self._input_params['vegetation'],
             self._input_params['vegetation_type_fieldname']
@@ -891,7 +897,11 @@ class PrepareDataGISBase(PrepareDataBase):
 
     @staticmethod
     def _check_resolution_consistency(ewres, nsres):
-        """Raise DataPreparationInvalidInput on different spatial resolution."""
+        """Raise DataPreparationInvalidInput on different spatial resolution.
+
+        :param ewres: TODO
+        :param nsres: TODO
+        """
         if not math.isclose(GridGlobals.dx, ewres) or not math.isclose(GridGlobals.dy, nsres):
             raise DataPreparationInvalidInput(
                 "Input DEM spatial resolution ({}, {}) differs from processing "
@@ -901,9 +911,12 @@ class PrepareDataGISBase(PrepareDataBase):
 
     @staticmethod
     def _check_rst2np(arr):
-        """Check numpy array consistency with GridGlobals
+        """Check numpy array consistency with GridGlobals.
         
-        Raise DataPreparationError() if array's shape is different from GridGlobals.
+        Raise DataPreparationError() if array's shape is different from
+        GridGlobals.
+
+        :param arr: TODO
         """
         if arr.shape[0] != GridGlobals.r or arr.shape[1] != GridGlobals.c:
             raise DataPreparationError(
@@ -913,7 +926,11 @@ class PrepareDataGISBase(PrepareDataBase):
             )
 
     def _decode_stream_attr(self, attr):
-        """Decode attribute names to fieldnames keys"""
+        """Decode attribute names to fieldnames keys.
+
+        :param attr: TODO
+        :return: TODO
+        """
         attr_decoded = {}
         for k, v in attr.items():
             key_decoded = list(self.fieldnames.keys())[
@@ -924,6 +941,11 @@ class PrepareDataGISBase(PrepareDataBase):
         return attr_decoded
 
     def _stream_check_fields(self, stream_aoi):
+        """TODO.
+
+        :param stream_aoi: TODO
+        :return: TODO
+        """
         fields = self._get_field_names(stream_aoi)
         duplicated_fields = []
         for f in fields:
@@ -951,7 +973,16 @@ class PrepareDataGISBase(PrepareDataBase):
 
     @staticmethod
     def _update_points_array(array_points, i, fid, r, c, x, y):
-        """Update array of points"""
+        """Update array of points.
+
+        :param array_points: TODO
+        :param i: TODO
+        :param fid: TODO
+        :param r: TODO
+        :param c: TODO
+        :param x: TODO
+        :param y: TODO
+        """
         array_points[i][0] = fid
         array_points[i][1] = r
         array_points[i][2] = c

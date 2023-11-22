@@ -29,7 +29,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             "Run PROFILE1D.", workflow_mode='roff')
         self._config = self._load_config()
 
-        # define storage writter
+        # define storage writer
         self.storage = CmdWriter()
 
     def _load_input_data(self, filename_indata, filename_soil_types):

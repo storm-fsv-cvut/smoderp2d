@@ -238,6 +238,7 @@ class QGISRunner(GrassGisRunner):
         from grass.script import setup as gsetup
         self._grass_session.finish()
 
+
 class WpsRunner(Runner):
     def __init__(self, **args):
         provider_class = self._provider_factory()

@@ -65,16 +65,20 @@ class BaseWriter(object):
         Get correct path to store dataset 'name'.
 
         :param name: layer name to be saved
-        :param data_type: None to determine target subdirectory from self._data_target
+        :param data_type: None to determine target subdirectory
+            from self._data_target
         :param dirname_only: True to return only path to parent directory
 
         :return: full path to the dataset
         """
         if data_type is None:
             data_type = self._data_target.get(name)
-            if data_type is None or data_type not in ("temp", "control", "core"):
+            defined_targets = ("temp", "control", "core")
+            if data_type is None or data_type not in defined_targets:
                 raise ProviderError(
-                    "Unable to define target in output_filepath: {}".format(name)
+                    "Unable to define target in output_filepath: {}".format(
+                        name
+                    )
                 )
 
         path = os.path.join(Globals.outdir, data_type) if data_type != 'core' else Globals.outdir
@@ -153,7 +157,7 @@ class BaseProvider(object):
         # default logging level (can be modified by provider)
         Logger.setLevel(logging.INFO)
 
-        # storage writter must be defined
+        # storage writer must be defined
         self.storage = None
         self._hidden_config = self.__load_hidden_config()
 
@@ -209,10 +213,16 @@ class BaseProvider(object):
         :return dict
         """
         data = {}
-        data['prtTimes'] = self._hidden_config.get('output', 'printtimes', fallback=None)
-        data['extraout'] = self._hidden_config.getboolean('output', 'extraout', fallback=False)
+        data['prtTimes'] = self._hidden_config.get(
+            'output', 'printtimes', fallback=None
+        )
+        data['extraout'] = self._hidden_config.getboolean(
+            'output', 'extraout', fallback=False
+        )
         if 'mfda' not in ignore:
-            data['mfda'] = self._hidden_config.getboolean('processes', 'mfda', fallback=False)
+            data['mfda'] = self._hidden_config.getboolean(
+                'processes', 'mfda', fallback=False
+            )
 
         return data
 
@@ -356,13 +366,13 @@ class BaseProvider(object):
         else:
             Globals.extraOut = hidden_config.get('extraout', False)
 
-        Globals.end_time *= 60 # convert min to sec
+        Globals.end_time *= 60  # convert min to sec
 
         # If profile1d provider is used the values
         # should be set in the loop at the beginning
         # of this method since it is part of the
         # data dict (only in profile1d provider).
-        # Otherwise, is has to be set to 1.
+        # Otherwise, it has to be set to 1.
         if Globals.slope_width is None:
             Globals.slope_width = 1
 

@@ -21,7 +21,7 @@ from grass.exceptions import CalledModuleError, OpenError
 
 class PrepareData(PrepareDataGISBase):
 
-    def __init__(self, options, writter):
+    def __init__(self, options, writer):
         # defile input parameters
         self._set_input_params(options)
         # TODO: output directory not defined by GRASS (data are written into
@@ -29,7 +29,7 @@ class PrepareData(PrepareDataGISBase):
         self._input_params['output'] = None
         # os.path.join(Location().path(), "output")
 
-        super(PrepareData, self).__init__(writter)
+        super(PrepareData, self).__init__(writer)
 
     def __del__(self):
         # remove mask

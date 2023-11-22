@@ -11,7 +11,7 @@ from smoderp2d.providers.base.exceptions import DataPreparationError, \
 
 
 class PrepareData(PrepareDataGISBase):
-    def __init__(self, options, writter):
+    def __init__(self, options, writer):
         # define input parameters
         self._set_input_params(options)
 
@@ -24,7 +24,7 @@ class PrepareData(PrepareDataGISBase):
             )
 
         arcpy.env.XYTolerance = "0.01 Meters"
-        super(PrepareData, self).__init__(writter)
+        super(PrepareData, self).__init__(writer)
 
     def _create_AoI_outline(self, elevation, soil, vegetation):
         """See base method for description.

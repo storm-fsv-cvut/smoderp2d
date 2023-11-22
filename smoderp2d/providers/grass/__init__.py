@@ -90,6 +90,7 @@ class GrassGisWriter(BaseWriter):
             overwrite=True,
         )
 
+
 class GrassGisProvider(BaseProvider):
 
     def __init__(self, log_handler=GrassGisLogHandler):
@@ -117,7 +118,7 @@ class GrassGisProvider(BaseProvider):
         # be quiet
         os.environ['GRASS_VERBOSE'] = '0'
 
-        # define storage writter
+        # define storage writer
         self.storage = GrassGisWriter()
 
     def set_options(self, options):
