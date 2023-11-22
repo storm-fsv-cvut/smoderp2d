@@ -201,7 +201,7 @@ class BaseProvider(object):
 
         return config
 
-    def _load_data_from_hidden_config(self, ignore=[]):
+    def _load_data_from_hidden_config(self, ignore=()):
         """Load data from hidden config.
 
         :param list ignore: list of options to me ignored
