@@ -162,8 +162,15 @@ class PrepareDataBase(ABC):
 
     @staticmethod
     def _get_rr_rc(r, c, mat_boundary):
-        """Create list rr and list of lists rc which contain i and j index of
-        elements inside the compuation domain."""
+        """Create list rr and list of lists rc.
+
+        They contain i and j indexes of elements inside the computation domain.
+
+        :param r: TODO
+        :param c: TODO
+        :param mat_boundary: TODO
+        :return: TODO
+        """
         nr = range(r)
         nc = range(c)
 
