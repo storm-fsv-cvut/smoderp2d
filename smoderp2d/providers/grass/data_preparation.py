@@ -253,7 +253,7 @@ class PrepareData(PrepareDataGISBase):
         region.set_raster_region()
         array = raster2numpy(raster)
         if np.issubdtype(array.dtype, np.integer):
-            array[array == array.min()] = GridGlobals.NoDataValue
+            array[array == -2**31] = GridGlobals.NoDataValue
         else:
             np.nan_to_num(array, copy=False, nan=GridGlobals.NoDataValue)
 
