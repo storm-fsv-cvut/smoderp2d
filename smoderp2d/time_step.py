@@ -1,5 +1,5 @@
-# @package smoderp2d.time_step methods to performe
-#  time step, and to store intermeriate variables
+# @package smoderp2d.time_step methods to perform
+#  time step, and to store intermediate variables
 
 from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
@@ -26,6 +26,14 @@ class TimeStep:
 
     @staticmethod
     def do_flow(surface, subsurface, delta_t, flow_control, courant):
+        """TODO.
+
+        :param surface: TODO
+        :param subsurface: TODO
+        :param delta_t: TODO
+        :param flow_control: TODO
+        :param courant: TODO
+        """
         mat_effect_cont = Globals.get_mat_effect_cont()
         fc = flow_control
         sr = Globals.get_sr()
@@ -103,7 +111,18 @@ class TimeStep:
     @staticmethod
     def do_next_h(surface, subsurface, rain_arr, cumulative, hydrographs,
                   flow_control, courant, potRain, delta_t):
+        """TODO.
 
+        :param surface: TODO
+        :param subsurface: TODO
+        :param rain_arr: TODO
+        :param cumulative: TODO
+        :param hydrographs: TODO
+        :param flow_control: TODO
+        :param courant: TODO
+        :param potRain: TODO
+        :param delta_t: TODO
+        """
         global infilt_capa
         global max_infilt_capa
         global infilt_time

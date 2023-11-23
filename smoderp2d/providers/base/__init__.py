@@ -20,6 +20,7 @@ from smoderp2d.providers.base.exceptions import DataPreparationError
 
 
 class Args:
+    """TODO."""
 
     # type of computation (CompType)
     workflow_mode = None
@@ -31,6 +32,7 @@ class Args:
 
 
 class WorkflowMode:
+    """TODO."""
 
     # type of computation
     dpre = 0  # data preparation only
@@ -48,6 +50,7 @@ class WorkflowMode:
 
 
 class BaseWriter(object):
+    """TODO."""
     _raster_extension = '.asc'
 
     def __init__(self):
@@ -92,6 +95,8 @@ class BaseWriter(object):
     @staticmethod
     def _print_array_stats(arr, file_output):
         """Print array stats.
+
+        :param file_output: TODO
         """
 
         Logger.info("Raster ASCII output file <{}> saved".format(
@@ -123,6 +128,10 @@ class BaseWriter(object):
         self._write_raster(array, file_output)
 
     def create_storage(self, outdir):
+        """TODO.
+
+        :param outdir: TODO
+        """
         pass
 
     @abstractmethod
@@ -148,6 +157,7 @@ class BaseWriter(object):
 
 
 class BaseProvider(object):
+    """TODO."""
 
     def __init__(self):
         self.args = Args()
@@ -208,9 +218,9 @@ class BaseProvider(object):
     def _load_data_from_hidden_config(self, ignore=()):
         """Load data from hidden config.
 
-        :param list ignore: list of options to me ignored
+        :param tuple ignore: list of options to me ignored
 
-        :return dict
+        :return: dict
         """
         data = {}
         data['prtTimes'] = self._hidden_config.get(
@@ -227,6 +237,7 @@ class BaseProvider(object):
         return data
 
     def _load_config(self):
+        """TODO."""
         # load configuration
         if not os.path.exists(self.args.config_file):
             raise ConfigError("{} does not exist".format(
@@ -412,7 +423,6 @@ class BaseProvider(object):
         :param CompType itc: type of computation
 
         :return dict:
-
         """
         ret = {}
         for item in ('sheet_only',
@@ -443,7 +453,7 @@ class BaseProvider(object):
         return ret
 
     def logo(self):
-        """Print Smoderp2d ascii-style logo."""
+        """Print SMODERP2D ascii-style logo."""
         logo_file = os.path.join(os.path.dirname(__file__), 'txtlogo.txt')
         with open(logo_file, 'r') as fd:
             self._print_logo_fn(fd.read())
@@ -452,6 +462,8 @@ class BaseProvider(object):
     @staticmethod
     def _save_data(data, filename):
         """Save data into pickle.
+
+        :param filename: TODO
         """
         if filename is None:
             raise ProviderError('Output file for saving data not defined')
@@ -470,6 +482,7 @@ class BaseProvider(object):
         """Load data from pickle.
 
         :param str filename: file to be loaded
+        :return: TODO
         """
         if filename is None:
             raise ProviderError('Input file for loading data not defined')
@@ -489,6 +502,12 @@ class BaseProvider(object):
         return data
 
     def postprocessing(self, cumulative, surface_array, stream):
+        """TODO.
+
+        :param cumulative: TODO
+        :param surface_array: TODO
+        :param stream: TODO
+        """
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
 
@@ -625,7 +644,6 @@ class BaseProvider(object):
 
         :param arr: numpy array
         """
-
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
 
