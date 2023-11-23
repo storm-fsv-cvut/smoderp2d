@@ -115,6 +115,13 @@
 # % description: Reach shape table code
 # % guisection: Settings
 # %end
+# %option
+# % key: flow_direction
+# % description: Flow direction
+# % guisection: Settings
+# % options: single,multiple
+# % answer: single
+# %end
 # %option G_OPT_M_DIR
 # % key: output
 # % description: Name for output directory where to store results

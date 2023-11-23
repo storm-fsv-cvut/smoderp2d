@@ -229,10 +229,6 @@ class BaseProvider(object):
         data['extraout'] = self._hidden_config.getboolean(
             'output', 'extraout', fallback=False
         )
-        if 'mfda' not in ignore:
-            data['mfda'] = self._hidden_config.getboolean(
-                'processes', 'mfda', fallback=False
-            )
 
         return data
 
