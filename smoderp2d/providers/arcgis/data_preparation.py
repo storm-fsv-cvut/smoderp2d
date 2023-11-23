@@ -23,7 +23,7 @@ class PrepareData(PrepareDataGISBase):
                 "Spatial Analysis extension for ArcGIS is not available"
             )
 
-        arcpy.env.XYTolerance = "0.01 Meters"
+        arcpy.env.XYTolerance = "0.000001 Meters" # increased because of GRASS tests
         super(PrepareData, self).__init__(writter)
 
     def _create_AoI_outline(self, elevation, soil, vegetation):
