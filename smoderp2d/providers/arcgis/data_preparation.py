@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import math
 import arcpy
@@ -48,24 +49,25 @@ class PrepareData(PrepareDataGISBase):
             [dem_polygon, soil, vegetation], aoi, "NO_FID"
         )
 
-        aoi_polygon = self.storage.output_filepath('aoi_polygon')
-        arcpy.management.Dissolve(aoi, aoi_polygon)
+        aoi_polygon_mem = os.path.join("in_memory", "aoi_polygon")
+        arcpy.management.Dissolve(aoi, aoi_polygon_mem)
 
-        if int(arcpy.management.GetCount(aoi_polygon).getOutput(0)) == 0:
+        if int(arcpy.management.GetCount(aoi_polygon_mem).getOutput(0)) == 0:
             raise DataPreparationNoIntersection()
 
-        aoi_mask = self.storage.output_filepath('aoi_mask')
+        aoi_mask_mem = os.path.join("in_memory", "aoi_mask")
         with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=dem_mask, cellAlignment=dem_mask, snapRaster=dem_mask):
-            field = arcpy.Describe(aoi_polygon).OIDFieldName
+            field = arcpy.Describe(aoi_polygon_mem).OIDFieldName
             arcpy.conversion.PolygonToRaster(
-                aoi_polygon, field, aoi_mask+"1", "MAXIMUM_AREA"
+                aoi_polygon_mem, field, aoi_mask_mem, "MAXIMUM_AREA"
             )
 
         # perform aoi_mask postprocessing - remove no-data cells on the edges
-        arcpy.conversion.RasterToPolygon(aoi_mask+"1", aoi_mask+"_fc", "NO_SIMPLIFY")
-        arcpy.env.extent = aoi_mask + "_fc"
-        arcpy.management.Clip(aoi_mask+"1", out_raster=aoi_mask, nodata_value=GridGlobals.NoDataValue)
-        arcpy.management.Delete(aoi_mask+"1")
+        aoi_polygon = self.storage.output_filepath('aoi_polygon')
+        aoi_mask = self.storage.output_filepath('aoi_mask')
+        arcpy.conversion.RasterToPolygon(aoi_mask_mem, aoi_polygon, "NO_SIMPLIFY")
+        arcpy.env.extent = aoi_polygon
+        arcpy.management.Clip(aoi_mask_mem, out_raster=aoi_mask, nodata_value=GridGlobals.NoDataValue)
 
         # return aoi_polygon
         return aoi_polygon, aoi_mask
@@ -327,15 +329,15 @@ class PrepareData(PrepareDataGISBase):
         """See base method for description.
         """
         # AoI slighty smaller due to start/end elevation extraction
-        aoi_buffer = arcpy.analysis.Buffer(
-            aoi_polygon,
-            self.storage.output_filepath('aoi_buffer'),
-            -GridGlobals.dx / 3,
-            "FULL", "ROUND",
-        )
+        # aoi_buffer = arcpy.analysis.Buffer(
+        #     aoi_polygon,
+        #     self.storage.output_filepath('aoi_buffer'),
+        #     -GridGlobals.dx / 3,
+        #     "FULL", "ROUND",
+        # )
 
         stream_aoi = self.storage.output_filepath('stream_aoi')
-        arcpy.analysis.Clip(stream, aoi_buffer, stream_aoi)
+        arcpy.analysis.Clip(stream, aoi_polygon, stream_aoi)
 
         # make sure that no of the stream properties fields are in the stream
         # feature class
