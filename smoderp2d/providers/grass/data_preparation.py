@@ -431,13 +431,6 @@ class PrepareData(PrepareDataGISBase):
 
     def _stream_clip(self, stream, aoi_polygon):
         """See base method for description."""
-        # AoI slighty smaller due to start/end elevation extraction
-        # aoi_buffer = self.storage.output_filepath('aoi_buffer')
-        # self._run_grass_module(
-        #     'v.buffer', input=aoi_polygon, output='aoi_buffer',
-        #     distance=-GridGlobals.dx / 3
-        # )
-
         stream_aoi = self.storage.output_filepath('stream_aoi')
         self._run_grass_module(
             'v.clip', input=stream, clip=aoi_polygon, output=stream_aoi
@@ -511,6 +504,7 @@ class PrepareData(PrepareDataGISBase):
                     segment_props.get(segment_id).update({'start_point': endpt})
                     segment_props.get(segment_id).update({'end_point': startpt})
 
+                print(elev_change, endpt.z, startpt.z)
                 inclination = elev_change/segment_props.get(segment_id).get(
                     'length'
                 )

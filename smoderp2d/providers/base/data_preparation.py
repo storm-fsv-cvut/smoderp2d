@@ -214,7 +214,6 @@ class PrepareDataGISBase(PrepareDataBase):
         'points_aoi': 'temp',
         'soil_veg': 'temp',
         'soilveg_aoi': 'temp',
-        'aoi_buffer': 'temp',
         'stream_aoi': 'temp',
         "stream_aoi_z": 'temp',
         'stream_start': 'temp',

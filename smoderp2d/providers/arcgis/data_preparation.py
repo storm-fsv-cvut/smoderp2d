@@ -328,14 +328,6 @@ class PrepareData(PrepareDataGISBase):
     def _stream_clip(self, stream, aoi_polygon):
         """See base method for description.
         """
-        # AoI slighty smaller due to start/end elevation extraction
-        # aoi_buffer = arcpy.analysis.Buffer(
-        #     aoi_polygon,
-        #     self.storage.output_filepath('aoi_buffer'),
-        #     -GridGlobals.dx / 3,
-        #     "FULL", "ROUND",
-        # )
-
         stream_aoi = self.storage.output_filepath('stream_aoi')
         arcpy.analysis.Clip(stream, aoi_polygon, stream_aoi)
 
