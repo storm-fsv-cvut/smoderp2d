@@ -138,6 +138,10 @@ class PrepareData(PrepareDataGISBase):
         # perform aoi_mask postprocessing - remove no-data cells on the edges
         self._run_grass_module('g.region', zoom=aoi_mask+'1')
         self._run_grass_module('r.mapcalc', expression=f'{aoi_mask} = {aoi_mask}1')
+        self._run_grass_module(
+            'r.to.vect', input=aoi_mask, output=aoi_polygon,
+            flags="v", type="area"
+        )
         self.__remove_temp_data({'name': aoi_mask+'1', 'type': 'raster'})
 
         return aoi_polygon, aoi_mask
@@ -428,15 +432,15 @@ class PrepareData(PrepareDataGISBase):
     def _stream_clip(self, stream, aoi_polygon):
         """See base method for description."""
         # AoI slighty smaller due to start/end elevation extraction
-        aoi_buffer = self.storage.output_filepath('aoi_buffer')
-        self._run_grass_module(
-            'v.buffer', input=aoi_polygon, output='aoi_buffer',
-            distance=-GridGlobals.dx / 3
-        )
+        # aoi_buffer = self.storage.output_filepath('aoi_buffer')
+        # self._run_grass_module(
+        #     'v.buffer', input=aoi_polygon, output='aoi_buffer',
+        #     distance=-GridGlobals.dx / 3
+        # )
 
         stream_aoi = self.storage.output_filepath('stream_aoi')
         self._run_grass_module(
-            'v.clip', input=stream, clip=aoi_buffer, output=stream_aoi
+            'v.clip', input=stream, clip=aoi_polygon, output=stream_aoi
         )
 
         drop_fields = self._stream_check_fields(stream_aoi)
