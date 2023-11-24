@@ -37,9 +37,9 @@ def new_inflows(mat_fd):
         inflows.append([])
 
         for j in range(c):
-            in_dir = __smeryInflow(mat_fd, i, j)
+            in_dir = __directionsInflow(mat_fd, i, j)
             in_fldir[i][j] = in_dir
-            intok = __smery(in_dir, smer)
+            intok = __directions(in_dir, smer)
             inflows[i].append(intok)
 
     # for item in inflows :
@@ -50,7 +50,7 @@ def new_inflows(mat_fd):
     return inflows
 
 
-def __smeryInflow(mat_fd, i, j):
+def __directionsInflow(mat_fd, i, j):
     """TODO.
 
     :param mat_fd: TODO
@@ -73,7 +73,7 @@ def __smeryInflow(mat_fd, i, j):
     return pritok
 
 
-def __smery(inflow, smer):
+def __directions(inflow, smer):
     """TODO.
 
     :param inflow: TODO
