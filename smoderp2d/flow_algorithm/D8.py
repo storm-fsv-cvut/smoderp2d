@@ -20,6 +20,10 @@ from smoderp2d.core.general import GridGlobals
 # \image html inflows.png "meaning of #inflows list elements" width=2cm
 #
 def new_inflows(mat_fd):
+    """TODO.
+
+    :param mat_fd: TODO
+    """
     smer = [128, 64, 32, 16, 8, 4, 2, 1]
 
     r = mat_fd.shape[0]
@@ -47,6 +51,12 @@ def new_inflows(mat_fd):
 
 
 def __smeryInflow(mat_fd, i, j):
+    """TODO.
+
+    :param mat_fd: TODO
+    :param i: TODO
+    :param j: TODO
+    """
     coco = [[-1, 1, 8], [-1, 0, 4], [-1, -1, 2], [0, -1, 1],
             [1, -1, 128], [1, 0, 64], [1, 1, 32], [0, 1, 16]]
     pritok = 0
@@ -64,6 +74,11 @@ def __smeryInflow(mat_fd, i, j):
 
 
 def __smery(inflow, smer):
+    """TODO.
+
+    :param inflow: TODO
+    :param smer: TODO
+    """
     y = 0
     co = [[1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1]]
     cellin = []
