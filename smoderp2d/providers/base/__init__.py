@@ -290,6 +290,11 @@ class BaseProvider(object):
         if self._config.get('time', 'endtime'):
             data['end_time'] = self._config.getfloat('time', 'endtime')
 
+        if self._config.get('processes', 'mfda'):
+            data['mfda'] = self._config.getboolean(
+                'processes', 'mfda', fallback=False
+            )
+
         # type of computing
         data['type_of_computing'] = CompType()[
             self._config.get('processes', 'typecomp', fallback='stream_rill')
