@@ -178,7 +178,7 @@ def _setup(request, config_file, reference_dir=None):
 
 @pytest.fixture(scope='class')
 def class_manager(request, pytestconfig):
-    request.cls.dataset = pytestconfig.getoption("dataset") # TODO: reference dir
+    request.cls.reference_dir = pytestconfig.getoption("reference_dir")
     yield 
 
 def _is_on_github_action():

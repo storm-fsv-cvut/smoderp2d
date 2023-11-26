@@ -23,7 +23,7 @@ def params():
 @pytest.mark.usefixtures('class_manager')
 class TestGrass:
     def test_001_dpre(self):
-        PerformTest(GrassGisRunner, params()).run_dpre(self.dataset)
+        PerformTest(GrassGisRunner, params()).run_dpre(self.reference_dir)
 
     def test_002_roff(self):
         # https://github.com/storm-fsv-cvut/smoderp2d/issues/199
@@ -33,4 +33,4 @@ class TestGrass:
         pass
 
     def test_003_full(self):
-        PerformTest(GrassGisRunner, params()).run_full(self.dataset)
+        PerformTest(GrassGisRunner, params()).run_full(self.reference_dir)
