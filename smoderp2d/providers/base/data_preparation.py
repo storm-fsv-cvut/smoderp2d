@@ -623,7 +623,7 @@ class PrepareDataGISBase(PrepareDataBase):
                 self._input_params['streams'],
                 self._input_params['channel_properties_table'],
                 self._input_params['streams_channel_type_fieldname'],
-                dem_filled,
+                dem_aoi,
                 # provide unclipped DEM to avoid stream vertices placed
                 # outside DEM
                 aoi_polygon

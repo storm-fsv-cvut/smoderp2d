@@ -365,16 +365,18 @@ class PrepareData(PrepareDataGISBase):
                 segment_id += 1
 
         # extract elevation for the stream segment vertices
-        arcpy.ddd.InterpolateShape(
-            dem_aoi, stream, self.storage.output_filepath("stream_aoi_z"), "", "",
-            "CONFLATE_NEAREST", "VERTICES_ONLY"
-        )
-        shape_fieldname = "SHAPE@"
+        dem_array = self._rst2np(dem_aoi)
 
-        with arcpy.da.SearchCursor(self.storage.output_filepath("stream_aoi_z"), [shape_fieldname, segment_id_fieldname]) as segments:
+        shape_fieldname = arcpy.Describe(stream).shapeFieldName + "@"
+        with arcpy.da.SearchCursor(stream, [shape_fieldname, segment_id_fieldname]) as segments:
             for row in segments:
                 startpt = row[0].firstPoint
+                r, c = self._get_points_dem_coords(startpt.X, startpt.Y)
+                startpt.Z = float(dem_array[r][c])
                 endpt = row[0].lastPoint
+                r, c = self._get_points_dem_coords(endpt.X, endpt.Y)
+                endpt.Z = float(dem_array[r][c])
+
                 # negative elevation change is the correct direction for
                 # stream segments
                 elev_change = endpt.Z - startpt.Z
