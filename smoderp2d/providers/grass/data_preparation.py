@@ -583,7 +583,7 @@ class PrepareData(PrepareDataGISBase):
         self._run_grass_module(
             'v.to.rast', input=stream, type='line', use='attr',
             attribute_column=self.fieldnames['stream_segment_id'],
-            output=stream_seg
+            output=stream_seg, flags='d'
         )
 
         mat_stream_seg = self._rst2np(stream_seg)
