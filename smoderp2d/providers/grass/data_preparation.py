@@ -473,16 +473,18 @@ class PrepareData(PrepareDataGISBase):
             vmap.table.conn.commit()
 
         # extract elevation for the stream segment vertices
-        self._run_grass_module('g.region', raster=dem)
-        self._run_grass_module(
-            'v.drape', input=stream, elevation=dem, output=stream+'_z'
-        )
+        dem_array = self._rst2np(dem)
 
         to_reverse = []
-        with Vector(stream+'_z') as vmap:
+        with Vector(stream) as vmap:
             for seg in vmap:
                 startpt = seg[0]
+                r, c = self._get_points_dem_coords(startpt.x, startpt.y)
+                startpt.z = float(dem_array[r][c])
                 endpt = seg[-1]
+                r, c = self._get_points_dem_coords(endpt.x, endpt.y)
+                endpt.z = float(dem_array[r][c])
+
                 # negative elevation change is the correct direction for stream
                 # segments
                 elev_change = endpt.z - startpt.z
@@ -504,7 +506,6 @@ class PrepareData(PrepareDataGISBase):
                     segment_props.get(segment_id).update({'start_point': endpt})
                     segment_props.get(segment_id).update({'end_point': startpt})
 
-                print(elev_change, endpt.z, startpt.z)
                 inclination = elev_change/segment_props.get(segment_id).get(
                     'length'
                 )
