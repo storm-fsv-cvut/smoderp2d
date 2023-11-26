@@ -222,7 +222,6 @@ class PrepareDataGISBase(PrepareDataBase):
         'soil_veg': 'temp',
         'soilveg_aoi': 'temp',
         'stream_aoi': 'temp',
-        "stream_aoi_z": 'temp',
         'stream_start': 'temp',
         'stream_end': 'temp',
         'stream_seg': 'temp',
