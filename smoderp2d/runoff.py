@@ -17,7 +17,7 @@ import numpy.ma as ma
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
-from smoderp2d.core.surface import Surface
+from smoderp2d.core.surface import get_surface
 from smoderp2d.core.subsurface import Subsurface
 from smoderp2d.core.cumulative_max import Cumulative
 
@@ -153,7 +153,7 @@ class Runoff(object):
         self.rain_arr = Vegetation()
 
         # handling the surface processes
-        self.surface = Surface()
+        self.surface = get_surface()()
 
         # class handling the subsurface processes if desir
         # TODO: include in data preprocessing

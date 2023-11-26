@@ -4,7 +4,7 @@ import math
 
 
 from smoderp2d.core.general import GridGlobals, Globals
-from smoderp2d.core.kinematic_diffuse import Diffuse, Kinematic
+from smoderp2d.core.kinematic_diffuse import get_diffuse, get_kinematic
 from smoderp2d.providers import Logger
 
 import smoderp2d.processes.subsurface as darcy
@@ -70,7 +70,7 @@ class SubArrs:
         )
 
 
-class SubsurfaceC(GridGlobals, Diffuse if Globals.diffuse else Kinematic):
+class SubsurfaceC(GridGlobals, get_diffuse() if Globals.diffuse else get_kinematic()):
     def __init__(self, L_sub, Ks, vg_n, vg_l):
         """TODO.
 
