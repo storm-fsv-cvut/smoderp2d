@@ -12,7 +12,7 @@ from smoderp2d.providers.base.exceptions import DataPreparationError, \
 
 
 class PrepareData(PrepareDataGISBase):
-    def __init__(self, options, writter):
+    def __init__(self, options, writer):
         # define input parameters
         self._set_input_params(options)
 

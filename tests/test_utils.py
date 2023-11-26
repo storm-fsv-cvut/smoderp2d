@@ -172,8 +172,9 @@ def are_dir_trees_equal(dir1, dir2):
     return True
 
 
-def _setup(request, config_file):
+def _setup(request, config_file, reference_dir=None):
     request.cls.config_file = config_file
+    request.cls.reference_dir = reference_dir
 
 @pytest.fixture(scope='class')
 def class_manager(request, pytestconfig):
@@ -329,7 +330,7 @@ class PerformTest:
             dataprep_filepath, reference_filepath
         ), self.report_pickle_difference(dataprep_filepath, reference_filepath)
 
-    def run_roff(self, config_file):
+    def run_roff(self, config_file, reference_dir=None):
         assert os.path.exists(config_file)
 
         config = configparser.ConfigParser()
@@ -341,8 +342,9 @@ class PerformTest:
         assert os.path.isdir(self._output_dir)
 
         testcase = os.path.splitext(os.path.basename(config_file))[0]
-        reference_dir = os.path.join(os.path.dirname(__file__),
-                                     "data", "reference", testcase)
+        if reference_dir is None:
+            reference_dir = os.path.join(os.path.dirname(__file__),
+                                         "data", "reference", testcase)
         if testcase == "gistest":
             reference_dir = os.path.join(reference_dir, "full")
 

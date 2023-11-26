@@ -20,6 +20,10 @@ from smoderp2d.core.general import GridGlobals
 # \image html inflows.png "meaning of #inflows list elements" width=2cm
 #
 def new_inflows(mat_fd):
+    """TODO.
+
+    :param mat_fd: TODO
+    """
     smer = [128, 64, 32, 16, 8, 4, 2, 1]
 
     r = mat_fd.shape[0]
@@ -32,16 +36,11 @@ def new_inflows(mat_fd):
     for i in range(r):
         inflows.append([])
 
-    for i in range(r):
         for j in range(c):
-            inflows[i].append([])
-
-    for i in range(r):
-        for j in range(c):
-            in_dir = __smeryInflow(mat_fd, i, j)
+            in_dir = __directionsInflow(mat_fd, i, j)
             in_fldir[i][j] = in_dir
-            intok = __smery(in_dir, smer)
-            inflows[i][j] = intok
+            intok = __directions(in_dir, smer)
+            inflows[i].append(intok)
 
     # for item in inflows :
         # print item
@@ -51,7 +50,13 @@ def new_inflows(mat_fd):
     return inflows
 
 
-def __smeryInflow(mat_fd, i, j):
+def __directionsInflow(mat_fd, i, j):
+    """TODO.
+
+    :param mat_fd: TODO
+    :param i: TODO
+    :param j: TODO
+    """
     coco = [[-1, 1, 8], [-1, 0, 4], [-1, -1, 2], [0, -1, 1],
             [1, -1, 128], [1, 0, 64], [1, 1, 32], [0, 1, 16]]
     pritok = 0
@@ -68,7 +73,12 @@ def __smeryInflow(mat_fd, i, j):
     return pritok
 
 
-def __smery(inflow, smer):
+def __directions(inflow, smer):
+    """TODO.
+
+    :param inflow: TODO
+    :param smer: TODO
+    """
     y = 0
     co = [[1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1]]
     cellin = []

@@ -20,6 +20,7 @@ from smoderp2d.providers.base.exceptions import DataPreparationError
 
 
 class Args:
+    """TODO."""
 
     # type of computation (CompType)
     workflow_mode = None
@@ -31,6 +32,7 @@ class Args:
 
 
 class WorkflowMode:
+    """TODO."""
 
     # type of computation
     dpre = 0  # data preparation only
@@ -48,6 +50,7 @@ class WorkflowMode:
 
 
 class BaseWriter(object):
+    """TODO."""
     _raster_extension = '.asc'
 
     def __init__(self):
@@ -65,14 +68,16 @@ class BaseWriter(object):
         Get correct path to store dataset 'name'.
 
         :param name: layer name to be saved
-        :param data_type: None to determine target subdirectory from self._data_target
+        :param data_type: None to determine target subdirectory
+            from self._data_target
         :param dirname_only: True to return only path to parent directory
 
         :return: full path to the dataset
         """
         if data_type is None:
-            data_type = self._data_target.get(name)
-            if data_type is None or data_type not in ("temp", "control", "core"):
+            data_type = self._data_target.get(name) 
+            defined_targets = ("temp", "control", "core")           
+            if data_type is None or data_type not in defined_targets:
                 Logger.debug(
                    "Unable to define target in output_filepath for {}. Assuming temp.".format(name)
                 )
@@ -89,6 +94,8 @@ class BaseWriter(object):
     @staticmethod
     def _print_array_stats(arr, file_output):
         """Print array stats.
+
+        :param file_output: TODO
         """
 
         Logger.info("Raster ASCII output file <{}> saved".format(
@@ -120,6 +127,10 @@ class BaseWriter(object):
         self._write_raster(array, file_output)
 
     def create_storage(self, outdir):
+        """TODO.
+
+        :param outdir: TODO
+        """
         pass
 
     @abstractmethod
@@ -145,6 +156,7 @@ class BaseWriter(object):
 
 
 class BaseProvider(object):
+    """TODO."""
 
     def __init__(self):
         self.args = Args()
@@ -154,7 +166,7 @@ class BaseProvider(object):
         # default logging level (can be modified by provider)
         Logger.setLevel(logging.INFO)
 
-        # storage writter must be defined
+        # storage writer must be defined
         self.storage = None
         self._hidden_config = self.__load_hidden_config()
 
@@ -180,7 +192,8 @@ class BaseProvider(object):
                 # avoid duplicated handlers (e.g. in case of ArcGIS)
                 Logger.addHandler(handler)
 
-    def __load_hidden_config(self):
+    @staticmethod
+    def __load_hidden_config():
         """Load hidden configuration with advanced settings.
 
         return ConfigParser: object
@@ -201,23 +214,29 @@ class BaseProvider(object):
 
         return config
 
-    def _load_data_from_hidden_config(self, config, ignore=[]):
+    def _load_data_from_hidden_config(self, ignore=()):
         """Load data from hidden config.
 
-        :param ConfigParser config: loaded config file
-        :param list ignore: list of options to me ignored
+        :param tuple ignore: list of options to me ignored
 
-        :return dict
+        :return: dict
         """
         data = {}
-        data['prtTimes'] = self._hidden_config.get('output', 'printtimes', fallback=None)
-        data['extraout'] = self._hidden_config.getboolean('output', 'extraout', fallback=False)
+        data['prtTimes'] = self._hidden_config.get(
+            'output', 'printtimes', fallback=None
+        )
+        data['extraout'] = self._hidden_config.getboolean(
+            'output', 'extraout', fallback=False
+        )
         if 'mfda' not in ignore:
-            data['mfda'] = self._hidden_config.getboolean('processes', 'mfda', fallback=False)
+            data['mfda'] = self._hidden_config.getboolean(
+                'processes', 'mfda', fallback=False
+            )
 
         return data
 
     def _load_config(self):
+        """TODO."""
         # load configuration
         if not os.path.exists(self.args.config_file):
             raise ConfigError("{} does not exist".format(
@@ -294,8 +313,7 @@ class BaseProvider(object):
         data['dx'] = data['dy'] = math.sqrt(data['pixel_area'])
 
         # load hidden config
-        data.update(self._load_data_from_hidden_config(
-            self._hidden_config))
+        data.update(self._load_data_from_hidden_config())
 
         return data
 
@@ -348,7 +366,7 @@ class BaseProvider(object):
         Globals.isStream = comp_type['stream']
 
         # load hidden config
-        hidden_config = self._load_data_from_hidden_config(self._hidden_config)
+        hidden_config = self._load_data_from_hidden_config()
         if 'prtTimes' in data:
             Globals.prtTimes = data['prtTimes']
         else:
@@ -358,13 +376,13 @@ class BaseProvider(object):
         else:
             Globals.extraOut = hidden_config.get('extraout', False)
 
-        Globals.end_time *= 60 # convert min to sec
+        Globals.end_time *= 60  # convert min to sec
 
         # If profile1d provider is used the values
         # should be set in the loop at the beginning
         # of this method since it is part of the
         # data dict (only in profile1d provider).
-        # Otherwise, is has to be set to 1.
+        # Otherwise, it has to be set to 1.
         if Globals.slope_width is None:
             Globals.slope_width = 1
 
@@ -404,12 +422,10 @@ class BaseProvider(object):
         :param CompType itc: type of computation
 
         :return dict:
-
         """
         ret = {}
         for item in ('sheet_only',
                      'rill',
-                     'sheet_stream',
                      'stream',
                      'subflow_rill',
                      'stream_subflow_rill'):
@@ -419,6 +435,9 @@ class BaseProvider(object):
             ret['sheet_only'] = True
         elif itc == CompType.rill:
             ret['rill'] = True
+        elif itc == CompType.sheet_stream:
+            ret['sheet_only'] = True
+            ret['stream'] = True
         elif itc == CompType.stream_rill:
             ret['stream'] = True
             ret['rill'] = True
@@ -433,7 +452,7 @@ class BaseProvider(object):
         return ret
 
     def logo(self):
-        """Print Smoderp2d ascii-style logo."""
+        """Print SMODERP2D ascii-style logo."""
         logo_file = os.path.join(os.path.dirname(__file__), 'txtlogo.txt')
         with open(logo_file, 'r') as fd:
             self._print_logo_fn(fd.read())
@@ -442,6 +461,8 @@ class BaseProvider(object):
     @staticmethod
     def _save_data(data, filename):
         """Save data into pickle.
+
+        :param filename: TODO
         """
         if filename is None:
             raise ProviderError('Output file for saving data not defined')
@@ -460,6 +481,7 @@ class BaseProvider(object):
         """Load data from pickle.
 
         :param str filename: file to be loaded
+        :return: TODO
         """
         if filename is None:
             raise ProviderError('Input file for loading data not defined')
@@ -479,6 +501,12 @@ class BaseProvider(object):
         return data
 
     def postprocessing(self, cumulative, surface_array, stream):
+        """TODO.
+
+        :param cumulative: TODO
+        :param surface_array: TODO
+        :param stream: TODO
+        """
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
 
@@ -615,7 +643,6 @@ class BaseProvider(object):
 
         :param arr: numpy array
         """
-
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
 

@@ -29,7 +29,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             "Run PROFILE1D.", workflow_mode='roff')
         self._config = self._load_config()
 
-        # define storage writter
+        # define storage writer
         self.storage = CmdWriter()
 
     def _load_input_data(self, filename_indata, filename_soil_types):
@@ -250,8 +250,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['slope_width'] = slope_width
 
         # load hidden config
-        data.update(self._load_data_from_hidden_config(
-            self._hidden_config, ignore=['mfda']))
+        data.update(self._load_data_from_hidden_config(ignore=['mfda']))
 
         return data
 

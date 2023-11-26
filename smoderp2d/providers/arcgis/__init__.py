@@ -40,7 +40,11 @@ class ArcGisWriter(BaseWriter):
         :param name: layer name to be saved
         :return: full path to the dataset
         """
-        path = os.path.join(BaseWriter.output_filepath(self, name, dirname_only=True), 'data.gdb', name)
+        path = os.path.join(
+            BaseWriter.output_filepath(self, name, dirname_only=True),
+            'data.gdb',
+            name
+        )
         Logger.debug('File path: {}'.format(path))
 
         return path
@@ -83,7 +87,7 @@ class ArcGisProvider(BaseProvider):
             formatter=logging.Formatter("%(levelname)-8s %(message)s")
         )
 
-        # define storage writter
+        # define storage writer
         self.storage = ArcGisWriter()
 
     def set_options(self, options):

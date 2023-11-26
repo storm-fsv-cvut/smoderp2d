@@ -291,7 +291,7 @@ class Runoff(object):
 
                 # if current time plus timestep is in next minute
                 # of computation the dt is reduced so the next
-                # coputed time is exactli at the top of each minute
+                # computed time is exactly at the top of each minute
                 oldtime_minut = self.flow_control.total_time/60
                 newtime_minut = (self.flow_control.total_time+self.delta_t)/60
                 if ma.any(ma.floor(newtime_minut) > ma.floor(oldtime_minut)):

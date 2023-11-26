@@ -10,10 +10,16 @@ VE = 4  # variable exponent
 
 
 def neighbors(i, j, array, x, y):
-    """Return all neigbours to actuall cell in the raster dataset.
+    """Return all neighbours to actual cell in the raster dataset.
 
     A function to determine all neighbor cell to actual cell in the raster
     dataset.
+
+    :param i: TODO
+    :param j: TODO
+    :param array: TODO
+    :param x: TODO
+    :param y: TODO
     """
     nb1 = -1
     nb2 = -1
@@ -123,8 +129,13 @@ def removeCellsWithSameHeightNeighborhood(mat_dem, mat_nan, rows, cols):
 
     A function determines if cell neighborhood has exactly same values of
     height, and then it save that cell as NoData.
+
+    :param mat_dem: TODO
+    :param mat_nan: TODO
+    :param rows: TODO
+    :param cols: TODO
     """
-    # finding problem cells with same height neigbourhood
+    # finding problem cells with same height neighbourhood
     # run only for non-edge cells - edge cells are excluded thanks to slope
     # trimming
     for i in range(1, rows - 1):
@@ -163,12 +174,24 @@ def dirSlope(point_m, nbrs, dy, dx):
     """Return a list of direction a slope values for each triangular facet.
 
     A function calculates for each triangular facet outflow direction and slope.
+
+    :param point_m: TODO
+    :param nbrs: TODO
+    :param dy: TODO
+    :param dx: TODO
     """
     def compute_individual_dir_slope(x1, y1, z1, x2, y2, z2):
         """Compute direction and slope from given coordinates.
 
         It is a pure coordinate-based computation. Some if-else magic is done to
         the results after the calls.
+
+        :param x1: TODO
+        :param y1: TODO
+        :param z1: TODO
+        :param x2: TODO
+        :param y2: TODO
+        :param z2: TODO
         """
         # the normal vector
         nx = z1 * y2 - z2 * y1
@@ -528,8 +551,11 @@ def dirSlope(point_m, nbrs, dy, dx):
     return direction, slope
 
 
-def boolToInt(x):  # function creates a bit value from vector of ones and zeros
-    """Return int value."""
+def boolToInt(x):
+    """Create a bit value from vector of ones and zeros.
+
+    :param x: TODO
+    """
     y = 0
     for i, j in enumerate(x):
         if j:

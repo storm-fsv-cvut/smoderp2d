@@ -23,7 +23,7 @@ from grass.script.core import parse_key_val
 
 class PrepareData(PrepareDataGISBase):
 
-    def __init__(self, options, writter):
+    def __init__(self, options, writer):
         # defile input parameters
         self._set_input_params(options)
         # TODO: output directory not defined by GRASS (data are written into
@@ -31,7 +31,7 @@ class PrepareData(PrepareDataGISBase):
         self._input_params['output'] = None
         # os.path.join(Location().path(), "output")
 
-        super(PrepareData, self).__init__(writter)
+        super(PrepareData, self).__init__(writer)
 
     def __del__(self):
         # remove mask
@@ -693,7 +693,6 @@ class PrepareData(PrepareDataGISBase):
             return 0
 
         export_layers = PrepareDataGISBase.data_layers.keys()
-        do_export = False
         if m.name == 'r.mapcalc':
             map_name = m.inputs.expression.split('=')[0].strip()
             if map_name in export_layers:
