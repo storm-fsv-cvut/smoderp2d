@@ -249,16 +249,15 @@ def new_mfda(mat_dem, mat_nan, mat_fd):
 
                     if abs(sum(flprop) - 1.0) > 1e-5:
                         Logger.info(
-                            "Error - sum of flow proportions is not equal "
-                            "to 1.0"
+                            f"Error - sum of flow proportions {sum(flprop)} in"
+                            f"cell ({i}, {j}) is not equal to 1.0"
                         )
-                        Logger.info(sum(flprop), i, j)
                     if abs(sum(flow_amount_cell) - 1.0) > 1e-5:
                         Logger.info(
-                            "Error - sum of flow amount in cell is not eqaul "
-                            "to 1.0"
+                            f"Error - sum of flow amount "
+                            f"{sum(flow_amount_cell)} in cell ({i}, {j}) is "
+                            f"not equal to 1.0"
                         )
-                        Logger.info(sum(flow_amount_cell), i, j)
 
                     # same direction as in ArcGIS
                     flow_direction = [
