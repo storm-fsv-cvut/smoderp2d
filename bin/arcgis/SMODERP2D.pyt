@@ -32,6 +32,8 @@ PARAMETER_CHANNEL_TYPE = 13
 PARAMETER_CHANNEL_PROPS_TABLE = 14
 PARAMETER_DATAPREP_ONLY = 15
 PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 16
+PARAMETER_FLOW_ALGORHYTM = 17
+PARAMETER_GENERATE_TEMPDATA = 18
 
 class Toolbox(object):
     def __init__(self):
@@ -113,7 +115,7 @@ class SMODERP2D(object):
            datatype="GPDouble",
            parameterType="Optional",
            direction="Input",
-           category="Settings"
+           category="Computation options"
         )
         maxTimeStep.value = 30
 
@@ -123,7 +125,7 @@ class SMODERP2D(object):
            datatype="GPDouble",
            parameterType="Optional",
            direction="Input",
-           category="Settings"
+           category="Computation options"
         )
         totalRunTime.value = 40
 
@@ -193,7 +195,7 @@ class SMODERP2D(object):
            datatype="GPBoolean",
            parameterType="Optional",
            direction="Input",
-           category="Settings"
+           category="Computation options"
         )
         dataprepOnly.value = False
 
@@ -206,12 +208,34 @@ class SMODERP2D(object):
         )
         outDir.filter.list = ["File System"]
 
+        flowRoutingType = arcpy.Parameter(
+            displayName = "Flow routing algorithm",
+            name = "flowRoutingType",
+            datatype = "GPString",
+            parameterType = "Required",
+            direction = "Input",
+            category = "Advanced"
+            )
+        flowRoutingType.value = "constant"
+        flowRoutingType.filter.type = "ValueList"
+        flowRoutingType.filter.list = ["single", ""]
+
+        generateTempData = arcpy.Parameter(
+            displayName = "Generate also temporary data",
+            name = "generateTempData",
+            datatype = "GPBoolean",
+            parameterType = "Optional",
+            direction = "Input",
+            category = "Advanced"
+            )
+        generateTempData.value = False
+
         return [
             inputSurfaceRaster, inputSoilPolygons, soilTypefieldName,
             inputLUPolygons, LUtypeFieldName, inputRainfall,
             maxTimeStep, totalRunTime, inputPoints, inputPointsFieldName,
             soilvegPropertiesTable, soilvegIDfieldName, streamNetwork, streamChannelShapeIDfieldName,
-            channelPropertiesTable, dataprepOnly, outDir,
+            channelPropertiesTable, dataprepOnly, outDir, flowRoutingType, generateTempData
         ]
 
     def updateParameters(self, parameters):
@@ -262,4 +286,6 @@ class SMODERP2D(object):
             'streams_channel_type_fieldname': parameters[PARAMETER_CHANNEL_TYPE].valueAsText,
             'channel_properties_table': parameters[PARAMETER_CHANNEL_PROPS_TABLE].valueAsText,
             'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
+            'flow_algorithm': parameters[PARAMETER_FLOW_ALGORHYTM].valueAsText,
+            'generate_temporary_data': parameters[PARAMETER_GENERATE_TEMPDATA].value
         }
