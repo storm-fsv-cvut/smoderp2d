@@ -75,8 +75,8 @@ class BaseWriter(object):
         :return: full path to the dataset
         """
         if data_type is None:
-            data_type = self._data_target.get(name) 
-            defined_targets = ("temp", "control", "core")           
+            data_type = self._data_target.get(name)
+            defined_targets = ("temp", "control", "core")
             if data_type is None or data_type not in defined_targets:
                 Logger.debug(
                    "Unable to define target in output_filepath for {}. Assuming temp.".format(name)
