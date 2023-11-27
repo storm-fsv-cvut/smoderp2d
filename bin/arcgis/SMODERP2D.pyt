@@ -31,8 +31,9 @@ PARAMETER_STREAM = 12
 PARAMETER_CHANNEL_TYPE = 13
 PARAMETER_CHANNEL_PROPS_TABLE = 14
 PARAMETER_DATAPREP_ONLY = 15
-PARAMETER_FLOW_DIRECTION = 16
-PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 17
+PARAMETER_FLOW_ALGORITHM = 16
+PARAMETER_GENERATE_TEMPDATA = 17
+PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 18
 
 class Toolbox(object):
     def __init__(self):
@@ -114,7 +115,7 @@ class SMODERP2D(object):
            datatype="GPDouble",
            parameterType="Optional",
            direction="Input",
-           category="Settings"
+           category="Computation options"
         )
         maxTimeStep.value = 30
 
@@ -124,7 +125,7 @@ class SMODERP2D(object):
            datatype="GPDouble",
            parameterType="Optional",
            direction="Input",
-           category="Settings"
+           category="Computation options"
         )
         totalRunTime.value = 40
 
@@ -194,7 +195,7 @@ class SMODERP2D(object):
            datatype="GPBoolean",
            parameterType="Optional",
            direction="Input",
-           category="Settings"
+           category="Computation options"
         )
         dataprepOnly.value = False
 
@@ -218,12 +219,34 @@ class SMODERP2D(object):
         )
         outDir.filter.list = ["File System"]
 
+        flowRoutingType = arcpy.Parameter(
+            displayName = "Flow routing algorithm",
+            name = "flowRoutingType",
+            datatype = "GPString",
+            parameterType = "Required",
+            direction = "Input",
+            category = "Advanced"
+            )
+        flowRoutingType.value = "single"
+        flowRoutingType.filter.type = "ValueList"
+        flowRoutingType.filter.list = ["single", "multiple"]
+
+        generateTempData = arcpy.Parameter(
+            displayName = "Generate also temporary data",
+            name = "generateTempData",
+            datatype = "GPBoolean",
+            parameterType = "Optional",
+            direction = "Input",
+            category = "Advanced"
+            )
+        generateTempData.value = False
+
         return [
             inputSurfaceRaster, inputSoilPolygons, soilTypefieldName,
             inputLUPolygons, LUtypeFieldName, inputRainfall,
             maxTimeStep, totalRunTime, inputPoints, inputPointsFieldName,
             soilvegPropertiesTable, soilvegIDfieldName, streamNetwork, streamChannelShapeIDfieldName,
-            channelPropertiesTable, dataprepOnly, flowDirection, outDir,
+            channelPropertiesTable, dataprepOnly, flowRoutingType, generateTempData, outDir,
         ]
 
     def updateParameters(self, parameters):
@@ -275,4 +298,6 @@ class SMODERP2D(object):
             'channel_properties_table': parameters[PARAMETER_CHANNEL_PROPS_TABLE].valueAsText,
             'flow_direction': parameter[PARAMETER_FLOW_DIRECTION].valueAsText,
             'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
+            'flow_algorithm': parameters[PARAMETER_FLOW_ALGORITHM].valueAsText,
+            'generate_temporary_data': parameters[PARAMETER_GENERATE_TEMPDATA].value
         }
