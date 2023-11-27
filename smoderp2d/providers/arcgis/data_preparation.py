@@ -25,7 +25,7 @@ class PrepareData(PrepareDataGISBase):
             )
 
         arcpy.env.XYTolerance = "0.000001 Meters" # increased because of GRASS GIS data comparision
-        super(PrepareData, self).__init__(writter)
+        super(PrepareData, self).__init__(writer)
 
     def _create_AoI_outline(self, elevation, soil, vegetation):
         """See base method for description.
