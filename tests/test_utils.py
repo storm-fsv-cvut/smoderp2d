@@ -313,7 +313,7 @@ class PerformTest:
 
         runner.run()
 
-    def run_dpre(self, dataset):
+    def run_dpre(self, reference_dir):
         self._run(WorkflowMode.dpre)
 
         dataprep_filepath = os.path.join(self._output_dir, "dpre.save")
@@ -321,7 +321,7 @@ class PerformTest:
             self._output_dir,
             "..",
             "reference",
-            "gistest_{}".format(dataset),
+            "gistest_{}".format(reference_dir),
             "dpre",
             "arcgis" if "GRASS_OVERWRITE" not in os.environ else "grass",
             "dpre.save",
@@ -352,12 +352,12 @@ class PerformTest:
             self._output_dir, reference_dir
         )
 
-    def run_full(self, dataset):
+    def run_full(self, reference_dir):
         self._run(WorkflowMode.full)
 
         assert os.path.isdir(self._output_dir)
 
         assert are_dir_trees_equal(
             self._output_dir,
-            os.path.join(data_dir, "reference", "gistest_{}".format(dataset), "full"),
+            os.path.join(data_dir, "reference", "gistest_{}".format(reference_dir), "full"),
         )

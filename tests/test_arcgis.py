@@ -6,23 +6,23 @@ from test_utils import PerformTest, data_dir, class_manager
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from smoderp2d import ArcGisRunner
 
-def params(dataset):
+def params(reference_dir):
     return {
-        'elevation': os.path.join(data_dir, dataset, "dem.tif"),
-        'soil': os.path.join(data_dir, dataset, "soils.shp"),
-        'vegetation': os.path.join(data_dir, dataset, "landuse.shp"),
-        'points': os.path.join(data_dir, dataset, "points.shp"),
+        'elevation': os.path.join(data_dir, reference_dir, "dem.tif"),
+        'soil': os.path.join(data_dir, reference_dir, "soils.shp"),
+        'vegetation': os.path.join(data_dir, reference_dir, "landuse.shp"),
+        'points': os.path.join(data_dir, reference_dir, "points.shp"),
         'table_soil_vegetation': os.path.join(
-            data_dir, dataset, "soil_veg_tab.{}".format("dbf" if dataset == "nucice" else "csv")
+            data_dir, reference_dir, "soil_veg_tab.{}".format("dbf" if reference_dir == "nucice" else "csv")
         ),
-        'streams': os.path.join(data_dir, dataset, "streams.shp"),
-        'channel_properties_table':  os.path.join(data_dir, dataset, "streams_shape.dbf")
+        'streams': os.path.join(data_dir, reference_dir, "streams.shp"),
+        'channel_properties_table':  os.path.join(data_dir, reference_dir, "streams_shape.dbf")
     }
 
 @pytest.mark.usefixtures('class_manager')
 class TestArcGis:
     def test_001_dpre(self):
-        PerformTest(ArcGisRunner, params(self.dataset)).run_dpre(self.dataset)
+        PerformTest(ArcGisRunner, params(self.reference_dir)).run_dpre(self.reference_dir)
 
     def test_002_roff(self):
         # https://github.com/storm-fsv-cvut/smoderp2d/issues/199
