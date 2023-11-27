@@ -31,7 +31,7 @@ PARAMETER_STREAM = 12
 PARAMETER_CHANNEL_TYPE = 13
 PARAMETER_CHANNEL_PROPS_TABLE = 14
 PARAMETER_DATAPREP_ONLY = 15
-PARAMETER_FLOW_ALGORITHM = 16
+PARAMETER_FLOW_DIRECTION = 16
 PARAMETER_GENERATE_TEMPDATA = 17
 PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 18
 
@@ -296,8 +296,7 @@ class SMODERP2D(object):
             'streams': parameters[PARAMETER_STREAM].valueAsText,
             'streams_channel_type_fieldname': parameters[PARAMETER_CHANNEL_TYPE].valueAsText,
             'channel_properties_table': parameters[PARAMETER_CHANNEL_PROPS_TABLE].valueAsText,
-            'flow_direction': parameter[PARAMETER_FLOW_DIRECTION].valueAsText,
-            'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
-            'flow_algorithm': parameters[PARAMETER_FLOW_ALGORITHM].valueAsText,
-            'generate_temporary_data': parameters[PARAMETER_GENERATE_TEMPDATA].value
+            'flow_direction': parameters[PARAMETER_FLOW_DIRECTION].valueAsText,
+            'generate_temporary_data': parameters[PARAMETER_GENERATE_TEMPDATA].value,
+            'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText
         }
