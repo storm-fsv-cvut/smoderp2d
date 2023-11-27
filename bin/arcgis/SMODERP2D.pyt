@@ -218,7 +218,7 @@ class SMODERP2D(object):
             )
         flowRoutingType.value = "constant"
         flowRoutingType.filter.type = "ValueList"
-        flowRoutingType.filter.list = ["single", ""]
+        flowRoutingType.filter.list = ["single", "multiple"]
 
         generateTempData = arcpy.Parameter(
             displayName = "Generate also temporary data",
