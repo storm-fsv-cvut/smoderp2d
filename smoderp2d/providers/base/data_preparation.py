@@ -206,6 +206,7 @@ class PrepareDataGISBase(PrepareDataBase):
         'dem_slope_mask': 'temp',
         'dem_polygon': 'temp',
         'aoi': 'temp',
+        'aoi_buffer': 'temp',
         'aoi_polygon': 'core',
         'aoi_mask': 'temp',
         'dem_filled': 'temp',

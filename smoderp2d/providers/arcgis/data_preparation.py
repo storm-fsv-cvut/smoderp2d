@@ -63,13 +63,17 @@ class PrepareData(PrepareDataGISBase):
             )
 
         # perform aoi_mask postprocessing - remove no-data cells on the edges
-        aoi_polygon = self.storage.output_filepath('aoi_polygon')
+        arcpy.conversion.RasterToPolygon(aoi_mask_mem, aoi_polygon_mem, "NO_SIMPLIFY")
         aoi_mask = self.storage.output_filepath('aoi_mask')
-        arcpy.conversion.RasterToPolygon(aoi_mask_mem, aoi_polygon, "NO_SIMPLIFY")
+        with arcpy.EnvManager(extent=aoi_polygon_mem):
+            arcpy.management.Clip(aoi_mask_mem, out_raster=aoi_mask, nodata_value=GridGlobals.NoDataValue)
+        # generate aoi_polygon to be snapped to aoi_mask
+        aoi_polygon = self.storage.output_filepath('aoi_polygon')
+        with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=aoi_mask, cellAlignment=aoi_mask,
+                              snapRaster=aoi_mask):
+            arcpy.conversion.RasterToPolygon(aoi_mask, aoi_polygon, "NO_SIMPLIFY")
         arcpy.env.extent = aoi_polygon
-        arcpy.management.Clip(aoi_mask_mem, out_raster=aoi_mask, nodata_value=GridGlobals.NoDataValue)
 
-        # return aoi_polygon
         return aoi_polygon, aoi_mask
 
     def _create_DEM_derivatives(self, dem):
@@ -328,8 +332,16 @@ class PrepareData(PrepareDataGISBase):
     def _stream_clip(self, stream, aoi_polygon):
         """See base method for description.
         """
+        #  AoI slighty smaller due to start/end elevation extraction
+        aoi_buffer = arcpy.analysis.Buffer(
+            aoi_polygon,
+            self.storage.output_filepath('aoi_buffer'),
+            -GridGlobals.dx / 3,
+            "FULL", "ROUND",
+        )
+
         stream_aoi = self.storage.output_filepath('stream_aoi')
-        arcpy.analysis.Clip(stream, aoi_polygon, stream_aoi)
+        arcpy.analysis.Clip(stream, aoi_buffer, stream_aoi)
 
         # make sure that no of the stream properties fields are in the stream
         # feature class

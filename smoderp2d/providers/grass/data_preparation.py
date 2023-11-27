@@ -431,9 +431,16 @@ class PrepareData(PrepareDataGISBase):
 
     def _stream_clip(self, stream, aoi_polygon):
         """See base method for description."""
+        # AoI slighty smaller due to start/end elevation extraction
+        aoi_buffer = self.storage.output_filepath('aoi_buffer')
+        self._run_grass_module(
+            'v.buffer', input=aoi_polygon, output='aoi_buffer',
+            distance=-GridGlobals.dx / 3
+        )
+
         stream_aoi = self.storage.output_filepath('stream_aoi')
         self._run_grass_module(
-            'v.clip', input=stream, clip=aoi_polygon, output=stream_aoi
+            'v.clip', input=stream, clip=aoi_buffer, output=stream_aoi
         )
 
         drop_fields = self._stream_check_fields(stream_aoi)
