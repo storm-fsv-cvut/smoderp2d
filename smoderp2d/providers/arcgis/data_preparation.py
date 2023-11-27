@@ -307,10 +307,10 @@ class PrepareData(PrepareDataGISBase):
                     for row in table:
                         fid = row[0]
                         x, y = row[1]
-                        if self._get_points_dem_coords(x, y):
-                            r, c = self._get_points_dem_coords(x, y)
+                        rc = self._get_point_dem_coords(x, y)
+                        if rc:
                             self._update_points_array(
-                                points_array, i, fid, r, c, x, y
+                                points_array, i, fid, rc[0], rc[1], x, y
                             )
                         else:
                             Logger.info(
@@ -371,10 +371,10 @@ class PrepareData(PrepareDataGISBase):
         with arcpy.da.SearchCursor(stream, [shape_fieldname, segment_id_fieldname]) as segments:
             for row in segments:
                 startpt = row[0].firstPoint
-                r, c = self._get_points_dem_coords(startpt.X, startpt.Y)
+                r, c = self._get_point_dem_coords(startpt.X, startpt.Y)
                 startpt.Z = float(dem_array[r][c])
                 endpt = row[0].lastPoint
-                r, c = self._get_points_dem_coords(endpt.X, endpt.Y)
+                r, c = self._get_point_dem_coords(endpt.X, endpt.Y)
                 endpt.Z = float(dem_array[r][c])
 
                 # negative elevation change is the correct direction for

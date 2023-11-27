@@ -410,10 +410,10 @@ class PrepareData(PrepareDataGISBase):
                     for p in vmap:
                         fid = p.attrs[points_fieldname]
                         x, y = p.x, p.y
-                        if self._get_points_dem_coords(x, y):
-                            r, c = self._get_points_dem_coords(x, y)
+                        rc = self._get_point_dem_coords(x, y)
+                        if rc:
                             self._update_points_array(
-                                points_array, i, fid, r, c, x, y
+                                points_array, i, fid, rc[0], rc[1], x, y
                             )
                         else:
                             Logger.info(
@@ -479,10 +479,10 @@ class PrepareData(PrepareDataGISBase):
         with Vector(stream) as vmap:
             for seg in vmap:
                 startpt = seg[0]
-                r, c = self._get_points_dem_coords(startpt.x, startpt.y)
+                r, c = self._get_point_dem_coords(startpt.x, startpt.y)
                 startpt.z = float(dem_array[r][c])
                 endpt = seg[-1]
-                r, c = self._get_points_dem_coords(endpt.x, endpt.y)
+                r, c = self._get_point_dem_coords(endpt.x, endpt.y)
                 endpt.z = float(dem_array[r][c])
 
                 # negative elevation change is the correct direction for stream
