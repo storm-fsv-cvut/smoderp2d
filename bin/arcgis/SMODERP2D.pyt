@@ -216,7 +216,7 @@ class SMODERP2D(object):
             direction = "Input",
             category = "Advanced"
             )
-        flowRoutingType.value = "constant"
+        flowRoutingType.value = "single"
         flowRoutingType.filter.type = "ValueList"
         flowRoutingType.filter.list = ["single", "multiple"]
 
