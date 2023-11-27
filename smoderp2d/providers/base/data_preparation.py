@@ -699,7 +699,7 @@ class PrepareDataGISBase(PrepareDataBase):
 
         self.storage.create_storage(self._input_params['output'])
 
-    def _get_points_dem_coords(self, x, y):
+    def _get_point_dem_coords(self, x, y):
         """ Finds the raster row and column index for input x, y coordinates
         :param x: X coordinate of the point
         :param y: Y coordinate of the point
