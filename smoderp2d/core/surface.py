@@ -108,8 +108,7 @@ class SurArrs(object):
 
 def get_surface():
     class Surface(GridGlobals, Stream, get_kinematic()):
-        """Contains data and methods to calculate the surface and rill runoff.
-        """
+        """Contains data and methods to calculate the surface and rill runoff."""
         def __init__(self):
             """The constructor
 

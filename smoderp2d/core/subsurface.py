@@ -95,6 +95,12 @@ class SubsurfaceC(GridGlobals, get_diffuse() if Globals.diffuse else get_kinemat
         self.darcy = darcy.darcy
 
     def slope_(self, i, j):
+        """TODO.
+
+        :param i: TODO
+        :param j: TODO
+        :return: TODO
+        """
         a = self.arr.H[i - 1, j - 1]
         b = self.arr.H[i - 1, j]
         c = self.arr.H[i - 1, j + 1]
@@ -113,13 +119,20 @@ class SubsurfaceC(GridGlobals, get_diffuse() if Globals.diffuse else get_kinemat
         return diffslope
 
     def fill_slope(self):
+        """TODO."""
         self.update_H()
 
     def get_exfiltration(self):
+        """TODO."""
         return self.arr.exfiltration
 
     def bilance(self, infilt, inflow, dt):
+        """TODO.
 
+        :param infilt: TODO
+        :param inflow: TODO
+        :param dt: TODO
+        """
         arr = self.arr
         bil = infilt + arr.vol_rest / self.pixel_area + inflow
 
@@ -134,7 +147,11 @@ class SubsurfaceC(GridGlobals, get_diffuse() if Globals.diffuse else get_kinemat
         # print arr.h, infilt, arr.vol_rest/self.pixel_area, inflow
 
     def calc_percolation(self, bil, dt):
+        """TODO.
 
+        :param bil: TODO
+        :param dt: TODO
+        """
         arr = self.arr
 
         if bil > arr.L_sub:
@@ -150,7 +167,10 @@ class SubsurfaceC(GridGlobals, get_diffuse() if Globals.diffuse else get_kinemat
         return perc
 
     def calc_exfiltration(self, bil):
+        """TODO.
 
+        :param bil: TODO
+        """
         arr = self.arr
         if bil > arr.L_sub:
             # print bil
@@ -163,7 +183,11 @@ class SubsurfaceC(GridGlobals, get_diffuse() if Globals.diffuse else get_kinemat
         return bil, exfilt
 
     def runoff(self, delta_t, effect_vrst):
+        """TODO.
 
+        :param delta_t: TODO
+        :param effect_vrst: TODO
+        """
         arr = self.arr
         # print arr .Ks
         self.q_subsurface = self.darcy(arr, effect_vrst)
@@ -172,14 +196,27 @@ class SubsurfaceC(GridGlobals, get_diffuse() if Globals.diffuse else get_kinemat
         arr.vol_rest = arr.h * self.pixel_area - delta_t * self.q_subsurface
 
     def runoff_stream_cell(self, indices):
+        """TODO.
+
+        :param indices: TODO
+        """
         self.arr.vol_runoff[indices] = 0.0
         self.arr.vol_rest[indices] = 0.0
         return ma.where(indices, self.arr.h, 0)
 
     def curr_to_pre(self):
+        """TODO."""
         self.arr.vol_runoff_pre = self.arr.vol_runoff
 
     def return_str_vals(self, i, j, sep, dt):
+        """TODO.
+
+        :param i: TODO
+        :param j: TODO
+        :param sep: TODO
+        :param dt: TODO
+        :return: TODO
+        """
         arr = self.arr
         #  ';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[],exfiltration[];'
         line = str(
@@ -195,8 +232,16 @@ class SubsurfaceC(GridGlobals, get_diffuse() if Globals.diffuse else get_kinemat
 # Class
 #  empty class if no subsurface flow is considered
 class SubsurfacePass(GridGlobals):
+    """TODO."""
 
     def __init__(self, L_sub, Ks, vg_n, vg_l):
+        """TODO.
+
+        :param L_sub: TODO
+        :param Ks: TODO
+        :param vg_n: TODO
+        :param vg_l: TODO
+        """
         super(SubsurfacePass, self).__init__()
         # jj
         self.n = 0
@@ -206,38 +251,79 @@ class SubsurfacePass(GridGlobals):
         Logger.info("Subsurface: OFF")
 
     def new_inflows(self):
+        """TODO."""
         pass
 
     def cell_runoff(self, i, j, sur):
+        """TODO.
+
+        :param i: TODO
+        :param j: TODO
+        :param sur: TODO
+        """
         return 0
 
     def fill_slope(self):
+        """TODO."""
         pass
 
     def get_exfiltration(self):
+        """TODO."""
         return ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
 
     def bilance(self, infilt, inflow, dt):
+        """TODO.
+
+        :param infilt: TODO
+        :param inflow: TODO
+        :param dt: TODO
+        """
         pass
 
     def runoff(self, delta_t, effect_vrst):
+        """TODO.
+
+        :param delta_t: TODO
+        :param effect_vrst: TODO
+        """
         pass
 
     def runoff_stream_cell(self, indices):
+        """TODO.
+
+        :param indices: TODO
+        """
         return 0.0
 
     def return_str_vals(self, i, j, sep, dt):
+        """TODO.
+
+        :param i: TODO
+        :param j: TODO
+        :param sep: TODO
+        :param dt: TODO
+        :return: TODO
+        """
         return ''
 
     def curr_to_pre(self):
+        """TODO."""
         pass
 
 
 class Subsurface(SubsurfaceC if Globals.subflow else SubsurfacePass):
+    """TODO."""
 
     def __init__(self, L_sub=0.010, Ks=0.001, vg_n=1.5, vg_l=0.5):
+        """TODO.
+
+        :param L_sub: TODO
+        :param Ks: TODO
+        :param vg_n: TODO
+        :param vg_l: TODO
+        """
         Logger.info("Subsurface:")
         super(Subsurface, self).__init__(
             L_sub=L_sub,

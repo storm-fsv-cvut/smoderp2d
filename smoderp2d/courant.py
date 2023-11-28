@@ -13,6 +13,7 @@ from smoderp2d.core.general import Globals as Gl, GridGlobals
 
 
 class Courant:
+    """TODO."""
 
     # constructor
     #
@@ -37,8 +38,9 @@ class Courant:
 
     #
     def reset(self):
-        """Resets the cour_most and cour_speed after each time stop
-        computation is successfully completed.
+        """Reset the cour_most and cour_speed.
+
+        Happens after each time ste p computation is successfully completed.
         """
         self.cour_most = 0
         self.cour_speed = 0
@@ -52,6 +54,7 @@ class Courant:
     # m by default
     @staticmethod
     def initial_time_step():
+        """TODO."""
         # sumA = sumB = sumHCrit = 0
         # count = 0
         # only_surface = comp_type('surface')
@@ -82,8 +85,15 @@ class Courant:
 
     #
     def CFL(self, v, delta_t, effect_cont, co, rill_courant):
-        """Checks and store in each computational cell the maximum velocity
-        and maximum Courant coefficient.
+        """Check the maximum velocity and maximum Courant coefficient.
+
+        Store it in each computational cell.
+
+        :param v: TODO
+        :param delta_t: TODO
+        :param effect_cont: TODO
+        :param co: TODO
+        :param rill_courant: TODO
         """
         cour = v / self.cour_coef * delta_t / effect_cont
         cour = ma.maximum(cour, rill_courant)
@@ -103,6 +113,12 @@ class Courant:
     #  Also returns the ratio for the rill computation division.
     #
     def courant(self, delta_t, ratio):
+        """TODO.
+
+        :param delta_t: TODO
+        :param ration: TODO
+        :return: TODO
+        """
         # ratio se muze zmensit  a max_delta_t_mult zvetsit
         # pokud je courant v ryhach <= 0.2
         #
