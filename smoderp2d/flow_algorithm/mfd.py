@@ -16,6 +16,12 @@ from smoderp2d.providers import Logger
 
 
 def new_mfda(mat_dem, mat_nan, mat_fd):
+    """TODO.
+
+    :param mat_dem: TODO
+    :param mat_nan: TODO
+    :param mat_fd: TODO
+    """
     state = 0
     state2 = 0
 
