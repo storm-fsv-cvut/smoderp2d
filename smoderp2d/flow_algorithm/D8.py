@@ -39,8 +39,8 @@ def new_inflows(mat_fd):
         for j in range(c):
             in_dir = __directionsInflow(mat_fd, i, j)
             in_fldir[i][j] = in_dir
-            intok = __directions(in_dir, direction)
-            inflows[i].append(intok)
+            inflow = __directions(in_dir, direction)
+            inflows[i].append(inflow)
 
     # for item in inflows :
         # print item
