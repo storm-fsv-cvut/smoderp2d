@@ -60,8 +60,8 @@ def __directionsInflow(mat_fd, i, j):
     coco = [[-1, 1, 8], [-1, 0, 4], [-1, -1, 2], [0, -1, 1],
             [1, -1, 128], [1, 0, 64], [1, 1, 32], [0, 1, 16]]
     pritok = 0
-    pocet = len(coco)
-    for k in range(pocet):
+
+    for k in range(len(coco)):
         a = i + coco[k][0]
         b = j + coco[k][1]
         try:
@@ -70,6 +70,7 @@ def __directionsInflow(mat_fd, i, j):
             value = -1
         if value == coco[k][2]:
             pritok = pritok + value
+
     return pritok
 
 
