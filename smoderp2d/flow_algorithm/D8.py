@@ -59,7 +59,7 @@ def __directionsInflow(mat_fd, i, j):
     """
     coco = [[-1, 1, 8], [-1, 0, 4], [-1, -1, 2], [0, -1, 1],
             [1, -1, 128], [1, 0, 64], [1, 1, 32], [0, 1, 16]]
-    pritok = 0
+    inflows = 0
 
     for k in range(len(coco)):
         a = i + coco[k][0]
@@ -69,9 +69,9 @@ def __directionsInflow(mat_fd, i, j):
         except IndexError:
             value = -1
         if value == coco[k][2]:
-            pritok = pritok + value
+            inflows = inflows + value
 
-    return pritok
+    return inflows
 
 
 def __directions(inflow, direction):
