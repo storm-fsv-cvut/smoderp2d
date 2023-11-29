@@ -250,7 +250,10 @@ class QGISRunner(GrassGisRunner):
                             if ds.GetDriver().GetName() == 'CSV':
                                 kwargs['gdal_doo'] = 'AUTODETECT_TYPE=YES'
                             ds = None
-                        Module("db.in.ogr", input=options[key], output=key, **kwargs)
+                        Module(
+                            "db.in.ogr", input=options[key], output=key,
+                            **kwargs
+                        )
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
 
