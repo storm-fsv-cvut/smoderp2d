@@ -43,18 +43,10 @@ def new_mfda(mat_dem, mat_nan, mat_fd):
 
     Logger.info("Computing multiple flow direction algorithm...")
 
-    # for i in range(rows):
-    #     for j in range(cols):
-    #         print i,j,mat_dem[i][j]
-
     # function determines if cell neighborhood has miltiple cell with exactly
     # same values of height, and then it saves that cell as NoData
     mat_dem, mat_nan = removeCellsWithSameHeightNeighborhood(
         mat_dem, mat_nan, rows, cols)
-
-    # for i in range(rows):
-    #   for j in range(cols):
-    #       print i,j,mat_dem[i][j]
 
     # main multiple-flow direction algorithm calculation
     for i in range(rows):

@@ -138,15 +138,11 @@ class SubsurfaceC(GridGlobals, get_diffuse() if Globals.diffuse else get_kinemat
         arr = self.arr
         bil = infilt + arr.vol_rest / self.pixel_area + inflow
 
-        # print bil, infilt , arr.vol_rest/self.pixel_area , inflow
         percolation = self.calc_percolation(bil, dt)
         arr.cum_percolation += percolation
         bil -= percolation
-        # print bil,
         arr.percolation = percolation
         arr.h, arr.exfiltration = self.calc_exfiltration(bil)
-        # print arr.h
-        # print arr.h, infilt, arr.vol_rest/self.pixel_area, inflow
 
     def calc_percolation(self, bil, dt):
         """TODO.
@@ -175,10 +171,8 @@ class SubsurfaceC(GridGlobals, get_diffuse() if Globals.diffuse else get_kinemat
         """
         arr = self.arr
         if bil > arr.L_sub:
-            # print bil
             exfilt = bil - arr.L_sub
             bil = arr.L_sub
-            # print exfilt
         else:
             exfilt = 0
 
@@ -191,9 +185,7 @@ class SubsurfaceC(GridGlobals, get_diffuse() if Globals.diffuse else get_kinemat
         :param effect_vrst: TODO
         """
         arr = self.arr
-        # print arr .Ks
         self.q_subsurface = self.darcy(arr, effect_vrst)
-        # print arr.h
         arr.vol_runoff = delta_t * self.q_subsurface
         arr.vol_rest = arr.h * self.pixel_area - delta_t * self.q_subsurface
 

@@ -98,7 +98,6 @@ class Courant:
         """
         cour = v / self.cour_coef * delta_t / effect_cont
         cour = ma.maximum(cour, rill_courant)
-        # print cour
         if ma.any(cour > self.cour_most):
             self.i = np.unravel_index(ma.argmax(cour), cour.shape)[0]
             self.j = np.unravel_index(ma.argmax(cour), cour.shape)[1]
@@ -168,7 +167,6 @@ class Courant:
 
             # return dt*self.max_delta_t_mult, ratio
             # return min(dt,self.max_delta_t*self.max_delta_t_mult), ratio
-            # print 'asdf', self.cour_speed, dt, self.max_delta_t_mult
             dt_min = ma.minimum(
                 self.max_delta_t_mult * dt,
                 self.max_delta_t * self.max_delta_t_mult
@@ -179,9 +177,7 @@ class Courant:
             # skontrolje se pouze pokud neni vetsi nez maxdt * max_delta_t_mult
             # max_delta_t_mult se meni podle ryh, vyse v teto funkci
         else:
-            # print 'fdafdsfasdfadsfadsfadsfaf'
             # return delta_t, ratio
-            # print 'asdf', dt, dt*self.max_delta_t_mult, ratio
             if ma.all(ratio <= self.maxratio) and (self.cour_most_rill < 0.5):
                 return delta_t, ratio
             else:

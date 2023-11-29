@@ -42,11 +42,6 @@ def new_inflows(mat_fd):
             inflow = __directions(in_dir, direction)
             inflows[i].append(inflow)
 
-    # for item in inflows :
-        # print item
-        # for item2 in item :
-            # print item2
-    # raw_input()
     return inflows
 
 

@@ -107,7 +107,6 @@ class SaveItems:
         if not os.path.exists(dir_):
             os.makedirs(dir_)
         for id_, it in enumerate(data):
-            # print "%02d" % (id_)
             with open(dir_ + os.sep + "%02d" % id_, 'w') as self.f:
                 self.f.writelines(str(type(it)) + '\n')
                 self.save_item(it)
