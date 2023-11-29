@@ -206,6 +206,7 @@ class PrepareDataGISBase(PrepareDataBase):
         'dem_slope_mask': 'temp',
         'dem_polygon': 'temp',
         'aoi': 'temp',
+        'aoi_buffer': 'temp',
         'aoi_polygon': 'core',
         'aoi_mask': 'temp',
         'dem_filled': 'temp',
@@ -221,9 +222,7 @@ class PrepareDataGISBase(PrepareDataBase):
         'points_aoi': 'temp',
         'soil_veg': 'temp',
         'soilveg_aoi': 'temp',
-        'aoi_buffer': 'temp',
         'stream_aoi': 'temp',
-        "stream_aoi_z": 'temp',
         'stream_start': 'temp',
         'stream_end': 'temp',
         'stream_seg': 'temp',
@@ -633,7 +632,7 @@ class PrepareDataGISBase(PrepareDataBase):
                 self._input_params['streams'],
                 self._input_params['channel_properties_table'],
                 self._input_params['streams_channel_type_fieldname'],
-                dem_filled,
+                dem_aoi,
                 # provide unclipped DEM to avoid stream vertices placed
                 # outside DEM
                 aoi_polygon
@@ -700,7 +699,7 @@ class PrepareDataGISBase(PrepareDataBase):
 
         self.storage.create_storage(self._input_params['output'])
 
-    def _get_points_dem_coords(self, x, y):
+    def _get_point_dem_coords(self, x, y):
         """ Finds the raster row and column index for input x, y coordinates
         :param x: X coordinate of the point
         :param y: Y coordinate of the point

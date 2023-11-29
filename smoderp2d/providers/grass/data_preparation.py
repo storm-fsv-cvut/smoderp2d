@@ -2,6 +2,7 @@ import os
 import numpy as np
 import sqlite3
 import tempfile
+from subprocess import PIPE
 
 from smoderp2d.core.general import GridGlobals, Globals
 
@@ -17,6 +18,7 @@ from grass.pygrass.raster import RasterRow, raster2numpy
 from grass.pygrass.gis import Mapset
 from grass.pygrass.gis.region import Region
 from grass.exceptions import CalledModuleError, OpenError
+from grass.script.core import parse_key_val
 
 
 class PrepareData(PrepareDataGISBase):
@@ -130,8 +132,17 @@ class PrepareData(PrepareDataGISBase):
         self._run_grass_module('g.region', vector=aoi_polygon, align=elevation)
         self._run_grass_module(
             'v.to.rast', input=aoi_polygon, type='area', use='cat',
-            output=aoi_mask
+            output=aoi_mask+'1'
         )
+
+        # perform aoi_mask postprocessing - remove no-data cells on the edges
+        self._run_grass_module('g.region', zoom=aoi_mask+'1')
+        self._run_grass_module('r.mapcalc', expression=f'{aoi_mask} = {aoi_mask}1')
+        self._run_grass_module(
+            'r.to.vect', input=aoi_mask, output=aoi_polygon,
+            flags="v", type="area"
+        )
+        self.__remove_temp_data({'name': aoi_mask+'1', 'type': 'raster'})
 
         return aoi_polygon, aoi_mask
 
@@ -246,7 +257,7 @@ class PrepareData(PrepareDataGISBase):
         region.set_raster_region()
         array = raster2numpy(raster)
         if np.issubdtype(array.dtype, np.integer):
-            array[array == array.min()] = GridGlobals.NoDataValue
+            array[array == -2**31] = GridGlobals.NoDataValue
         else:
             np.nan_to_num(array, copy=False, nan=GridGlobals.NoDataValue)
 
@@ -399,10 +410,10 @@ class PrepareData(PrepareDataGISBase):
                     for p in vmap:
                         fid = p.attrs[points_fieldname]
                         x, y = p.x, p.y
-                        if self._get_points_dem_coords(x, y):
-                            r, c = self._get_points_dem_coords(x, y)
+                        rc = self._get_point_dem_coords(x, y)
+                        if rc:
                             self._update_points_array(
-                                points_array, i, fid, r, c, x, y
+                                points_array, i, fid, rc[0], rc[1], x, y
                             )
                         else:
                             Logger.info(
@@ -469,16 +480,18 @@ class PrepareData(PrepareDataGISBase):
             vmap.table.conn.commit()
 
         # extract elevation for the stream segment vertices
-        self._run_grass_module('g.region', raster=dem)
-        self._run_grass_module(
-            'v.drape', input=stream, elevation=dem, output=stream+'_z'
-        )
+        dem_array = self._rst2np(dem)
 
         to_reverse = []
-        with Vector(stream+'_z') as vmap:
+        with Vector(stream) as vmap:
             for seg in vmap:
                 startpt = seg[0]
+                r, c = self._get_point_dem_coords(startpt.x, startpt.y)
+                startpt.z = float(dem_array[r][c])
                 endpt = seg[-1]
+                r, c = self._get_point_dem_coords(endpt.x, endpt.y)
+                endpt.z = float(dem_array[r][c])
+
                 # negative elevation change is the correct direction for stream
                 # segments
                 elev_change = endpt.z - startpt.z
@@ -577,7 +590,7 @@ class PrepareData(PrepareDataGISBase):
         self._run_grass_module(
             'v.to.rast', input=stream, type='line', use='attr',
             attribute_column=self.fieldnames['stream_segment_id'],
-            output=stream_seg
+            output=stream_seg, flags='d'
         )
 
         mat_stream_seg = self._rst2np(stream_seg)

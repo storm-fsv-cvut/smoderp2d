@@ -78,11 +78,10 @@ class BaseWriter(object):
             data_type = self._data_target.get(name)
             defined_targets = ("temp", "control", "core")
             if data_type is None or data_type not in defined_targets:
-                raise ProviderError(
-                    "Unable to define target in output_filepath: {}".format(
-                        name
-                    )
+                Logger.debug(
+                   "Unable to define target in output_filepath for {}. Assuming temp.".format(name)
                 )
+                data_type = "temp"
 
         path = os.path.join(Globals.outdir, data_type) if data_type != 'core' else Globals.outdir
         if not os.path.exists(path):
