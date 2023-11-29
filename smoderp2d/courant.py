@@ -19,6 +19,7 @@ class Courant:
     #
 
     def __init__(self):
+        """TODO."""
         self.cour_speed = 0
         # citical courant value
         self.cour_crit = 0.95

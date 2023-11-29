@@ -11,6 +11,8 @@ import smoderp2d.processes.subsurface as darcy
 
 
 class SubArrs:
+    """TODO."""
+
     def __init__(self, L_sub, Ks, vg_n, vg_l, z, ele):
         """Subsurface attributes.
 
