@@ -208,7 +208,8 @@ class PerformTest:
                 "table_soil_vegetation_fieldname": "soilveg",
                 "streams_channel_type_fieldname": "channel_id",
                 "output": self._output_dir,
-                't': False
+                't': False,
+                'flow_direction': 'single'
             }
             self._params.update(params)
         else:

@@ -16,8 +16,7 @@ def params():
         'points': "points@PERMANENT",
         'table_soil_vegetation': "soil_veg_tab@PERMANENT",
         'streams': "streams@PERMANENT",
-        'channel_properties_table': "streams_shape@PERMANENT",
-        'flow_direction': 'single'
+        'channel_properties_table': "streams_shape@PERMANENT"
     }
 
 
