@@ -119,7 +119,6 @@ def load_precipitation(fh):
                     sr[i][1] = sr_int
 
         # for  i, item in enumerate(sr):
-        # print item[0], '\t', item[1]
         return sr, itera
 
     except IOError:

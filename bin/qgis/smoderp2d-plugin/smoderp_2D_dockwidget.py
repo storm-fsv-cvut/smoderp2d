@@ -148,6 +148,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.table_stream_shape_code_comboBox = QgsFieldComboBox()
         self.table_stream_shape_comboBox = QgsMapLayerComboBox()
         self.table_stream_shape_toolButton = QtWidgets.QToolButton()
+        self.flow_direction_comboBox = QtWidgets.QComboBox()
         self.generate_temporary_checkBox = QtWidgets.QCheckBox()
         self.run_button = QtWidgets.QPushButton(self.dockWidgetContents)
 
@@ -250,6 +251,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.arguments['channel_properties'].addWidget(
             self.table_stream_shape_toolButton
         )
+        self.arguments['flow_direction'].addWidget(
+            self.flow_direction_comboBox
+        )
         self.arguments['generate_temporary'].insertWidget(
             0, self.generate_temporary_checkBox
         )  # checkbox should be before label
@@ -345,6 +349,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         self.setFields('table_soil_veg')
         self.setFields('table_stream_shape')
+
+        # 4th tab - Advanced
+        self.flow_direction_comboBox.addItems(('single', 'multiple'))
 
     def set_allow_empty(self):
         self.points_comboBox.setAllowEmptyLayer(True)
@@ -521,6 +528,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self.table_stream_shape_comboBox.currentText(),
             'streams_channel_type_fieldname':
                 self.table_stream_shape_code_comboBox.currentText(),
+            'flow_direction':
+                self.flow_direction_comboBox.currentText(),
             't': bool(self.generate_temporary_checkBox.checkState()),
             'output': self.main_output_lineEdit.text().strip()
         }

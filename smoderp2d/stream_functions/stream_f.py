@@ -134,7 +134,6 @@ def trapezoid(reach, dt):
     reach.Q_out = reach.V_out / dt
     reach.h = H
 
-    # raw_input()
     # prt.mujout.writelines(str(reach.id_) + ';' + str(reach.h) + ';' +
     # str(reach.V_in_from_field) + ';' + str(reach.vol_rest) + ';' + str(
     # reach.V_in_from_reach) + ';' + str(reach.V_out) + ';' +

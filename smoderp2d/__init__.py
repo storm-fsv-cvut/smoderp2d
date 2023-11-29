@@ -38,6 +38,7 @@ class Runner(object):
     """TODO."""
 
     def __init__(self):
+        """TODO."""
         self._provider = self._provider_factory()
 
     def _provider_factory(self):
@@ -130,6 +131,10 @@ class Runner(object):
         return 0
 
     def set_options(self, options):
+        """TODO.
+
+        :param options: TODO
+        """
         self._provider.set_options(options)
 
 
@@ -151,6 +156,11 @@ class QGISRunner(GrassGisRunner):
     """TODO."""
 
     def __init__(self, progress_reporter, grass_bin_path='grass'):
+        """TODO.
+
+        :param progress_reporter: TODO
+        :param grass_bin_path: TODO
+        """
         self.progress_reporter = progress_reporter
 
         # create temp GRASS location
@@ -240,7 +250,10 @@ class QGISRunner(GrassGisRunner):
                             if ds.GetDriver().GetName() == 'CSV':
                                 kwargs['gdal_doo'] = 'AUTODETECT_TYPE=YES'
                             ds = None
-                        Module("db.in.ogr", input=options[key], output=key, **kwargs)
+                        Module(
+                            "db.in.ogr", input=options[key], output=key,
+                            **kwargs
+                        )
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
 
@@ -254,5 +267,6 @@ class WpsRunner(Runner):
     """TODO."""
 
     def __init__(self, **args):
+        """TODO."""
         provider_class = self._provider_factory()
         self._provider = provider_class(**args)

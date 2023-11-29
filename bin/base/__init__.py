@@ -41,6 +41,7 @@ arguments = {
         'Field with the channel type identifier'
     ),
     'channel_properties': Argument('Channel properties table'),
+    'flow_direction': Argument('Flow direction'),
     'preparation_only': Argument('Do the data preparation only'),
     'generate_temporary': Argument('Generate also temporary data'),
 }
@@ -67,6 +68,6 @@ sections = [
     ),
     Section(
         'Advanced',
-        ('generate_temporary', )
+        ('flow_direction', 'generate_temporary', )
     )  # TODO: Add ('preparation_only',))
 ]

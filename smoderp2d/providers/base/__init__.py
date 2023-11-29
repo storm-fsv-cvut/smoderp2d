@@ -228,10 +228,6 @@ class BaseProvider(object):
         data['extraout'] = self._hidden_config.getboolean(
             'output', 'extraout', fallback=False
         )
-        if 'mfda' not in ignore:
-            data['mfda'] = self._hidden_config.getboolean(
-                'processes', 'mfda', fallback=False
-            )
 
         return data
 
@@ -292,6 +288,11 @@ class BaseProvider(object):
         # pickle.dump such as end time of simulation
         if self._config.get('time', 'endtime'):
             data['end_time'] = self._config.getfloat('time', 'endtime')
+
+        if self._config.get('processes', 'mfda'):
+            data['mfda'] = self._config.getboolean(
+                'processes', 'mfda', fallback=False
+            )
 
         # type of computing
         data['type_of_computing'] = CompType()[

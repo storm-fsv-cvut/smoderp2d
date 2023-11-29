@@ -112,15 +112,15 @@ class Mfda(object):
 
     def cell_runoff(self, i, j, sur=True):
         if i == 0:
-            inflows_up = np.array([[0,] * 8,] * GridGlobals.c)
+            inflows_up = np.zeros((GridGlobals.c, 8))
             inflows_down = self.inflows[i + 1]
-            vol_runoff_up = np.array([0,] * GridGlobals.c)
+            vol_runoff_up = np.zeros(GridGlobals.c)
             vol_runoff_down = self.arr.vol_runoff.data[i + 1]
         elif i == GridGlobals.r - 1:
             inflows_up = self.inflows[i - 1]
-            inflows_down = np.array([[0,] * 8,] * GridGlobals.c)
+            inflows_down = np.zeros((GridGlobals.c, 8))
             vol_runoff_up = self.arr.vol_runoff.data[i - 1]
-            vol_runoff_down = np.array([0,] * GridGlobals.c)
+            vol_runoff_down = np.zeros(GridGlobals.c)
         else:
             inflows_up = self.inflows[i - 1]
             inflows_down = self.inflows[i + 1]

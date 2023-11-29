@@ -298,7 +298,7 @@ class PrepareDataGISBase(PrepareDataBase):
             'end_time': self._input_params['end_time'],
             'state_cell': None,
             'type_of_computing': None,
-            'mfda': None,
+            'mfda': self._input_params['flow_direction'] == 'multiple',
             'sr': None,
             'itera': None,
             'streams': None,
@@ -655,7 +655,6 @@ class PrepareDataGISBase(PrepareDataBase):
             GridGlobals.r, GridGlobals.c, self.data['mat_boundary']
         )
 
-        self.data['mfda'] = False  # ML: ???
         self.data['mat_boundary'] = None  # ML: -> JJ ???
 
         Logger.info("Data preparation has been finished")
