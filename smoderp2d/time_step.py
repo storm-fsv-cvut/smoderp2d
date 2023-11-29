@@ -1,11 +1,10 @@
-# @package smoderp2d.time_step methods to performe
-#  time step, and to store intermeriate variables
+# @package smoderp2d.time_step methods to perform
+#  time step, and to store intermediate variables
 
 from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.processes.infiltration as infilt
 
-import copy
 import numpy as np
 import numpy.ma as ma
 
@@ -20,13 +19,23 @@ max_infilt_capa = 0.000  # [m]
 
 # Class manages the one time step operation
 #
-#  the class also contains methods to store the important arrays to reload that if the time step is adjusted
+#  the class also contains methods to store the important arrays to reload that
+#  if the time step is adjusted
 #
 class TimeStep:
+    """TODO."""
 
-    def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
-        rr, rc = GridGlobals.get_region_dim()
-        mat_efect_cont = Globals.get_mat_efect_cont()
+    @staticmethod
+    def do_flow(surface, subsurface, delta_t, flow_control, courant):
+        """TODO.
+
+        :param surface: TODO
+        :param subsurface: TODO
+        :param delta_t: TODO
+        :param flow_control: TODO
+        :param courant: TODO
+        """
+        mat_effect_cont = Globals.get_mat_effect_cont()
         fc = flow_control
         sr = Globals.get_sr()
         itera = Globals.get_itera()
@@ -36,20 +45,17 @@ class TimeStep:
         )
 
         surface_state = surface.arr.state
-        h_total_pre = surface.arr.h_total_pre
 
         runoff_return = runoff(
-            surface.arr, delta_t, mat_efect_cont, fc.ratio
+            surface.arr, delta_t, mat_effect_cont, fc.ratio
         )
 
         cond_state_flow = surface_state > Globals.streams_flow_inc
-        q_sheet = ma.where(cond_state_flow, 0, runoff_return[0])
-        v_sheet = ma.where(cond_state_flow, 0, runoff_return[1])
-        q_rill = ma.where(cond_state_flow, 0, runoff_return[2])
-        v_rill = ma.where(cond_state_flow, 0, runoff_return[3])
+        v_sheet = ma.where(cond_state_flow, 0, runoff_return[0])
+        v_rill = ma.where(cond_state_flow, 0, runoff_return[1])
         if ma.all(cond_state_flow):
-            subrunoff_return = subsurface.runoff(
-                delta_t, mat_efect_cont
+            subsurface.runoff(
+                delta_t, mat_effect_cont
             )
         if ma.any(cond_state_flow):
             fc.ratio = ma.masked_array(
@@ -58,57 +64,66 @@ class TimeStep:
             )
         else:
             # TODO: Better way to make it just a number
-            fc.ratio = runoff_return[4]
-        rill_courant = ma.where(cond_state_flow, 0, runoff_return[5])
+            fc.ratio = runoff_return[2]
+        rill_courant = ma.where(cond_state_flow, 0, runoff_return[3])
         surface.arr.h_sheet = ma.where(
-            cond_state_flow, surface.arr.h_sheet, runoff_return[6]
+            cond_state_flow, surface.arr.h_sheet, runoff_return[4]
         )
         surface.arr.h_rill = ma.where(
-            cond_state_flow, surface.arr.h_rill, runoff_return[7]
+            cond_state_flow, surface.arr.h_rill, runoff_return[5]
         )
         surface.arr.h_rillPre = ma.where(
-            cond_state_flow, surface.arr.h_rillPre, runoff_return[8]
+            cond_state_flow, surface.arr.h_rillPre, runoff_return[6]
         )
         surface.arr.vol_runoff = ma.where(
-            cond_state_flow, surface.arr.vol_runoff, runoff_return[9]
+            cond_state_flow, surface.arr.vol_runoff, runoff_return[7]
         )
         surface.arr.vol_rest = ma.where(
-            cond_state_flow, surface.arr.vol_rest, runoff_return[10]
+            cond_state_flow, surface.arr.vol_rest, runoff_return[8]
         )
         surface.arr.v_rill_rest = ma.where(
-            cond_state_flow, surface.arr.v_rill_rest, runoff_return[11]
+            cond_state_flow, surface.arr.v_rill_rest, runoff_return[9]
         )
         surface.arr.vol_runoff_rill = ma.where(
-            cond_state_flow, surface.arr.vol_runoff_rill, runoff_return[12]
+            cond_state_flow, surface.arr.vol_runoff_rill, runoff_return[10]
         )
         surface.arr.vel_rill = ma.where(
-            cond_state_flow, surface.arr.vel_rill, runoff_return[13]
+            cond_state_flow, surface.arr.vel_rill, runoff_return[11]
         )
 
-        q_surface = q_sheet + q_rill
         v = ma.maximum(v_sheet, v_rill)
         co = 'sheet'
         courant.CFL(
-            surface.arr.h_total_pre,
             v,
             delta_t,
-            mat_efect_cont,
+            mat_effect_cont,
             co,
             rill_courant
         )
-        rill_courant = 0.
-                # w1 = surface.arr.get_item([i, j]).vol_runoff_rill
-                # w2 = surface.arr.get_item([i, j]).v_rill_rest
+        # w1 = surface.arr.get_item([i, j]).vol_runoff_rill
+        # w2 = surface.arr.get_item([i, j]).v_rill_rest
 
         return potRain
 
+    # self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
+    # courant, total_time, delta_t, combinatIndex, NoDataValue,
+    # sum_interception, mat_effect_cont, ratio, iter_
 
-# self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
-# courant, total_time, delta_t, combinatIndex, NoDataValue,
-# sum_interception, mat_efect_cont, ratio, iter_
-    def do_next_h(self, surface, subsurface, rain_arr, cumulative,
-                  hydrographs, flow_control, courant, potRain, delta_t):
+    @staticmethod
+    def do_next_h(surface, subsurface, rain_arr, cumulative, hydrographs,
+                  flow_control, courant, potRain, delta_t):
+        """TODO.
 
+        :param surface: TODO
+        :param subsurface: TODO
+        :param rain_arr: TODO
+        :param cumulative: TODO
+        :param hydrographs: TODO
+        :param flow_control: TODO
+        :param courant: TODO
+        :param potRain: TODO
+        :param delta_t: TODO
+        """
         global infilt_capa
         global max_infilt_capa
         global infilt_time
@@ -125,9 +140,6 @@ class TimeStep:
             actRain = ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
             )
-            potRain = ma.masked_array(
-                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-            )
             hydrographs.write_hydrographs_record(
                 None,
                 None,
@@ -135,14 +147,11 @@ class TimeStep:
                 courant,
                 delta_t,
                 surface,
-                subsurface,
                 cumulative,
                 actRain)
             return actRain
 
         for iii in combinatIndex:
-            # TODO: variable not used. Should we delete it?
-            index = iii[0]
             k = iii[1]
             s = iii[2]
             # jj * 100.0 !!! smazat
@@ -181,9 +190,13 @@ class TimeStep:
         #
         # Surface BILANCE
         #
-        surBIL = surface.arr.h_total_pre + actRain + surface.arr.inflow_tm / \
-                 pixel_area - (surface.arr.vol_runoff / pixel_area +
-                               surface.arr.vol_runoff_rill / pixel_area)
+        surBIL = (
+            surface.arr.h_total_pre + actRain + surface.arr.inflow_tm /
+            pixel_area - (
+                surface.arr.vol_runoff / pixel_area +
+                surface.arr.vol_runoff_rill / pixel_area
+            )
+        )
 
         #
         # infiltration
@@ -231,12 +244,10 @@ class TimeStep:
                 state_condition
             )
 
-        surface_state = surface.arr.state
-
         # subsurface inflow
         """
         inflow_sub = subsurface.cell_runoff(i,j,False)
-        subsurface.bilance(i,j,infiltration,inflow_sub/pixel_area,delta_t)
+        subsurface.bilance(infiltration,inflow_sub/pixel_area,delta_t)
         subsurface.fill_slope()
         """
 
@@ -251,7 +262,6 @@ class TimeStep:
             courant,
             delta_t,
             surface,
-            subsurface.arr,
             cumulative,
             actRain)
 

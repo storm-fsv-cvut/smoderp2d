@@ -22,7 +22,8 @@ class CumulativeSubsurfacePass(object):
     """
     Empty (pass) Class
 
-    Class is inherited by the class Cumulative if the subsurface flow is not desired.
+    Class is inherited by the class Cumulative if the subsurface flow is not
+    desired.
     """
     def __init__(self):
         self.data = {}
@@ -32,8 +33,7 @@ class CumulativeSubsurfacePass(object):
 
 
 class CumulativeSubsurface(CumulativeSubsurfacePass):
-    """
-    Max and cumulative values of the subsurface flow
+    """Max and cumulative values of the subsurface flow.
 
     Stores arrays of max or cumulative values of important variables of
     the subsurface flow.
@@ -94,7 +94,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             # cumulative precipitation volume [m3]
             'precipitation': CumulativeData('control', 'crain_m3'),
             # maximum surface water level [m]
-            'h_sur_tot'    : CumulativeData('core',    'mwlevel_m'),  
+            'h_sur_tot'    : CumulativeData('core',    'mwlevel_m'),
             # maximum sheet discharge [m3s-1]
             'q_sheet_tot'  : CumulativeData('control', 'mqsheet_m3_s'),
             # cumulative sheet runoff volume [m3]
@@ -199,5 +199,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         """ returns the cumulative precipitation in mm and cumulative runoff
         at a given cell"""
         sw = Globals.slope_width
-        return '{:.4e}'.format(self.precipitation[i][j]/GridGlobals.pixel_area), \
+        return (
+            '{:.4e}'.format(self.precipitation[i][j]/GridGlobals.pixel_area),
             '{:.4e}'.format(self.vol_sur_tot[i][j] * sw)
+        )

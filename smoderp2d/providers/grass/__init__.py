@@ -3,31 +3,35 @@ import logging
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.exceptions import ProviderError
-from smoderp2d.providers.base import BaseProvider, BaseWritter, WorkflowMode
+from smoderp2d.providers.base import BaseProvider, BaseWriter, WorkflowMode
 from smoderp2d.providers.grass.logger import GrassGisLogHandler
-from smoderp2d.providers import Logger
 
 import grass.script as gs
 from grass.pygrass.gis.region import Region
 from grass.pygrass.modules import Module
 from grass.pygrass.raster import numpy2raster
-from grass.pygrass.messages import Messenger
 
-class GrassGisWritter(BaseWritter):
+
+class GrassGisWriter(BaseWriter):
+    _vector_extension = '.gml'
+
     def __init__(self):
-        super(GrassGisWritter, self).__init__()
+        super(GrassGisWriter, self).__init__()
 
         # primary key
         self.primary_key = "cat"
 
-    def output_filepath(self, name):
+    def output_filepath(self, name, full_path=False):
         """
         Get correct path to store dataset 'name'.
 
         :param name: layer name to be saved
+        :param full_path: True return full path otherwise only dataset name
+
         :return: full path to the dataset
         """
-        # TODO: how to deal with temp/core...?
+        if full_path:
+            return BaseWriter.output_filepath(self, name)
         return name
 
     def _write_raster(self, array, file_output):
@@ -48,22 +52,48 @@ class GrassGisWritter(BaseWritter):
             region.write()
 
         raster_name = os.path.splitext(os.path.basename(file_output))[0]
-        
+
         numpy2raster(
             array, "FCELL",
             raster_name, overwrite=True
         )
 
-        Module('r.out.gdal',
-               input=raster_name,
-               output=file_output,
-               format='AAIGrid',
-               nodata=GridGlobals.NoDataValue,
-               overwrite=True
+        self.export_raster(raster_name, file_output)
+
+    def export_raster(self, raster_name, file_output):
+        """Export GRASS raster map to output data format.
+
+        :param raster_name: GRASS raster map name
+        :param file_output: Target file path
+        """
+        Module(
+            'r.out.gdal',
+            input=raster_name,
+            output=file_output + self._raster_extension,
+            format='AAIGrid',
+            nodata=GridGlobals.NoDataValue,
+            type='Float64',
+            overwrite=True,
         )
 
+    def export_vector(self, raster_name, file_output):
+        """Export GRASS vector map to output data format.
+
+        :param raster_name: GRASS raster map name
+        :param file_output: Target file path
+        """
+        Module(
+            'v.out.ogr',
+            input=raster_name,
+            output=file_output + self._vector_extension,
+            format='GML',
+            overwrite=True,
+        )
+
+
 class GrassGisProvider(BaseProvider):
-    def __init__(self):
+
+    def __init__(self, log_handler=GrassGisLogHandler):
         super(GrassGisProvider, self).__init__()
 
         # type of computation (default)
@@ -74,8 +104,8 @@ class GrassGisProvider(BaseProvider):
 
         # logger
         self.add_logging_handler(
-            handler=GrassGisLogHandler(),
-            formatter = logging.Formatter("%(message)s")
+            handler=log_handler(),
+            formatter=logging.Formatter("%(message)s")
         )
 
         # check version
@@ -86,10 +116,10 @@ class GrassGisProvider(BaseProvider):
         # force overwrite
         os.environ['GRASS_OVERWRITE'] = '1'
         # be quiet
-        os.environ['GRASS_VERBOSE'] = '-1'
+        os.environ['GRASS_VERBOSE'] = '0'
 
-        # define storage writter
-        self.storage = GrassGisWritter()
+        # define storage writer
+        self.storage = GrassGisWriter()
 
     def set_options(self, options):
         """Set input paramaters.
