@@ -117,7 +117,7 @@ class Courant:
         """TODO.
 
         :param delta_t: TODO
-        :param ration: TODO
+        :param ratio: TODO
         :return: TODO
         """
         # ratio se muze zmensit  a max_delta_t_mult zvetsit
