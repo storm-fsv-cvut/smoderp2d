@@ -31,9 +31,9 @@ PARAMETER_STREAM = 12
 PARAMETER_CHANNEL_TYPE = 13
 PARAMETER_CHANNEL_PROPS_TABLE = 14
 PARAMETER_DATAPREP_ONLY = 15
-PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 16
-PARAMETER_FLOW_ALGORHYTM = 17
-PARAMETER_GENERATE_TEMPDATA = 18
+PARAMETER_FLOW_DIRECTION = 16
+PARAMETER_GENERATE_TEMPDATA = 17
+PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 18
 
 class Toolbox(object):
     def __init__(self):
@@ -199,6 +199,17 @@ class SMODERP2D(object):
         )
         dataprepOnly.value = False
 
+        flowDirection = arcpy.Parameter(
+           displayName="Flow direction",
+           name="flowDirection",
+           datatype="String",
+           parameterType="Optional",
+           direction="Input",
+           category="Settings"
+        )
+        #flowDirection.values(["single","multiple"])
+        #flowDirection.value("single")
+
         outDir = arcpy.Parameter(
            displayName="Output folder",
            name="outDir",
@@ -235,7 +246,7 @@ class SMODERP2D(object):
             inputLUPolygons, LUtypeFieldName, inputRainfall,
             maxTimeStep, totalRunTime, inputPoints, inputPointsFieldName,
             soilvegPropertiesTable, soilvegIDfieldName, streamNetwork, streamChannelShapeIDfieldName,
-            channelPropertiesTable, dataprepOnly, outDir, flowRoutingType, generateTempData
+            channelPropertiesTable, dataprepOnly, flowRoutingType, generateTempData, outDir,
         ]
 
     def updateParameters(self, parameters):
@@ -285,7 +296,7 @@ class SMODERP2D(object):
             'streams': parameters[PARAMETER_STREAM].valueAsText,
             'streams_channel_type_fieldname': parameters[PARAMETER_CHANNEL_TYPE].valueAsText,
             'channel_properties_table': parameters[PARAMETER_CHANNEL_PROPS_TABLE].valueAsText,
-            'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
-            'flow_algorithm': parameters[PARAMETER_FLOW_ALGORHYTM].valueAsText,
-            'generate_temporary_data': parameters[PARAMETER_GENERATE_TEMPDATA].value
+            'flow_direction': parameters[PARAMETER_FLOW_DIRECTION].valueAsText,
+            'generate_temporary_data': parameters[PARAMETER_GENERATE_TEMPDATA].value,
+            'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText
         }
