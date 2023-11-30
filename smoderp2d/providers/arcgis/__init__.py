@@ -112,14 +112,7 @@ class ArcGisProvider(BaseProvider):
         prep = PrepareData(self._options, self.storage)
         return prep.run()
 
-    def postprocessing(self, cumulative, surface_array, stream):
-        """Perform postprocessing steps. Store results.
-
-        :param cumulative: Cumulative object
-        :param surface_array: numpy array
-        :param stream: stream array (reach)
-        """
-        super().postprocessing(cumulative, surface_array, stream)
-
+    def _postprocessing(self):
+        """See base method for description."""
         # here ArcGIS-specific postprocessing starts...
         Logger.debug('ArcGIS-specific postprocessing')

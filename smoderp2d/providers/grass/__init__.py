@@ -5,6 +5,7 @@ from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.exceptions import ProviderError
 from smoderp2d.providers.base import BaseProvider, BaseWriter, WorkflowMode
 from smoderp2d.providers.grass.logger import GrassGisLogHandler
+from smoderp2d.providers import Logger
 
 import grass.script as gs
 from grass.pygrass.gis.region import Region
@@ -143,14 +144,7 @@ class GrassGisProvider(BaseProvider):
         prep = PrepareData(self._options, self.storage)
         return prep.run()
 
-    def postprocessing(self, cumulative, surface_array, stream):
-        """Perform postprocessing steps. Store results.
-
-        :param cumulative: Cumulative object
-        :param surface_array: numpy array
-        :param stream: stream array (reach)
-        """
-        super().postprocessing(cumulative, surface_array, stream)
-
+    def _postprocessing(self):
+        """See base method for description."""
         # here GRASS-specific postprocessing starts...
         Logger.debug('GRASS-specific postprocessing')
