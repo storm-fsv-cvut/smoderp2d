@@ -5,6 +5,8 @@ import filecmp
 import logging
 import glob
 import pickle
+import math
+import pytest
 from shutil import rmtree
 from difflib import unified_diff
 
@@ -13,6 +15,7 @@ import numpy
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.providers import Logger
+
 
 def write_array_diff_png(diff, target_path):
     import matplotlib.pyplot as plt
@@ -24,25 +27,37 @@ def write_array_diff_png(diff, target_path):
     elif vmin == 0:
         vmin = -1 * diff.max()
 
-    norm = mcolors.TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=diff.max())
+    vmax = diff.max()
+    vcenter = 0 if vmax > 0 else (vmax - abs(vmin)) / 2
+    if not math.isclose(vmin, vmax):
+        norm = mcolors.TwoSlopeNorm(vmin=vmin, vcenter=vcenter, vmax=vmax)
+    else:
+        norm = None
     plt.imshow(diff.astype(int), cmap="bwr", norm=norm)
     plt.colorbar()
     plt.savefig(os.path.join(target_path + ".diff.png"))
     plt.clf()
 
+
 def write_array_diff(arr1, arr2, target_path):
-    diff = arr1 - arr2
+    try:
+        diff = arr1 - arr2
+    except ValueError as e:
+        print(f"Unable to compute array diff: {e}")
+        return
+
     if not diff.any():
         return
 
     # print statistics
-    sys.stdout.writelines("\tdiff_stats min: {} max: {} mean:{}".format(
-        diff.min(), diff.max(), diff.mean()))
+    sys.stdout.writelines("\tdiff_stats ({}) min: {} max: {} mean:{}\n".format(
+        os.path.basename(target_path), diff.min(), diff.max(), diff.mean()))
 
     with open(target_path + ".diff", "w") as fd:
         numpy.savetxt(fd, diff)
 
     write_array_diff_png(diff, target_path)
+
 
 def are_dir_trees_equal(dir1, dir2):
     """
@@ -157,9 +172,14 @@ def are_dir_trees_equal(dir1, dir2):
     return True
 
 
-def _setup(request, config_file):
+def _setup(request, config_file, reference_dir=None):
     request.cls.config_file = config_file
+    request.cls.reference_dir = reference_dir
 
+@pytest.fixture(scope='class')
+def class_manager(request, pytestconfig):
+    request.cls.reference_dir = pytestconfig.getoption("reference_dir")
+    yield 
 
 def _is_on_github_action():
     # https://docs.github.com/en/actions/learn-github-actions/variables
@@ -167,26 +187,31 @@ def _is_on_github_action():
         return True
     return False
 
+
 data_dir = os.path.join(os.path.dirname(__file__), "data")
+
 
 class PerformTest:
 
-    def __init__(self, runner, params_fn=None):
+    def __init__(self, runner, params=None):
         self.runner = runner
         self._output_dir = os.path.join(data_dir, "output")
 
-        if params_fn:
+        if params:
             self._params = {
-                "soil_type_fieldname": "SID",
+                "soil_type_fieldname": "Soil",
                 "vegetation_type_fieldname": "LandUse",
-                "rainfall_file": os.path.join(data_dir, "rainfall.txt"),
+                "points_fieldname": "point_id",
+                "rainfall_file": os.path.join(data_dir, "rainfall_rain_sim.txt"),
                 "maxdt": 30,
                 "end_time": 40,
                 "table_soil_vegetation_fieldname": "soilveg",
                 "streams_channel_type_fieldname": "channel_id",
                 "output": self._output_dir,
+                't': False,
+                'flow_direction': 'single'
             }
-            self._params.update(params_fn())
+            self._params.update(params)
         else:
             self._params = None
 
@@ -289,7 +314,7 @@ class PerformTest:
 
         runner.run()
 
-    def run_dpre(self):
+    def run_dpre(self, reference_dir):
         self._run(WorkflowMode.dpre)
 
         dataprep_filepath = os.path.join(self._output_dir, "dpre.save")
@@ -297,7 +322,7 @@ class PerformTest:
             self._output_dir,
             "..",
             "reference",
-            "gistest",
+            "gistest_{}".format(reference_dir),
             "dpre",
             "arcgis" if "GRASS_OVERWRITE" not in os.environ else "grass",
             "dpre.save",
@@ -306,12 +331,11 @@ class PerformTest:
             dataprep_filepath, reference_filepath
         ), self.report_pickle_difference(dataprep_filepath, reference_filepath)
 
-    def run_roff(self, config_file):
+    def run_roff(self, config_file, reference_dir=None):
         assert os.path.exists(config_file)
 
         config = configparser.ConfigParser()
         config.read(config_file)
-        assert config.get("data", "rainfall") == "tests/data/rainfall.txt"
 
         os.environ["SMODERP2D_CONFIG_FILE"] = str(config_file)
         self._run()
@@ -319,8 +343,9 @@ class PerformTest:
         assert os.path.isdir(self._output_dir)
 
         testcase = os.path.splitext(os.path.basename(config_file))[0]
-        reference_dir = os.path.join(os.path.dirname(__file__),
-                                     "data", "reference", testcase)
+        if reference_dir is None:
+            reference_dir = os.path.join(os.path.dirname(__file__),
+                                         "data", "reference", testcase)
         if testcase == "gistest":
             reference_dir = os.path.join(reference_dir, "full")
 
@@ -328,12 +353,12 @@ class PerformTest:
             self._output_dir, reference_dir
         )
 
-    def run_full(self):
+    def run_full(self, reference_dir):
         self._run(WorkflowMode.full)
 
         assert os.path.isdir(self._output_dir)
 
         assert are_dir_trees_equal(
             self._output_dir,
-            os.path.join(data_dir, "reference", "gistest", "full"),
+            os.path.join(data_dir, "reference", "gistest_{}".format(reference_dir), "full"),
         )

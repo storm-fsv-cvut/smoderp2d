@@ -35,10 +35,14 @@ __version__ = "2.0.dev"
 
 
 class Runner(object):
+    """TODO."""
+
     def __init__(self):
+        """TODO."""
         self._provider = self._provider_factory()
 
     def _provider_factory(self):
+        """TODO."""
         # initialize provider
         if isinstance(self, ArcGisRunner):
             from smoderp2d.providers.arcgis import ArcGisProvider
@@ -62,6 +66,7 @@ class Runner(object):
 
     @property
     def workflow_mode(self):
+        """TODO."""
         return self._provider.args.workflow_mode
 
     @workflow_mode.setter
@@ -77,6 +82,7 @@ class Runner(object):
             )
 
     def run(self):
+        """TODO."""
         # print logo
         self._provider.logo()
 
@@ -102,7 +108,7 @@ class Runner(object):
             return 1
 
         if self._provider.args.workflow_mode == WorkflowMode.dpre:
-            # data prepararation only requested
+            # data preparation only requested
             return
 
         # must be called after initialization (!)
@@ -125,10 +131,15 @@ class Runner(object):
         return 0
 
     def set_options(self, options):
+        """TODO.
+
+        :param options: TODO
+        """
         self._provider.set_options(options)
 
 
 class ArcGisRunner(Runner):
+    """TODO."""
 
     def __init__(self):
         os.environ['ESRIACTIVEINSTALLATION'] = '1'
@@ -136,11 +147,20 @@ class ArcGisRunner(Runner):
 
 
 class GrassGisRunner(Runner):
+    """TODO."""
+
     pass
 
 
 class QGISRunner(GrassGisRunner):
+    """TODO."""
+
     def __init__(self, progress_reporter, grass_bin_path='grass'):
+        """TODO.
+
+        :param progress_reporter: TODO
+        :param grass_bin_path: TODO
+        """
         self.progress_reporter = progress_reporter
 
         # create temp GRASS location
@@ -173,7 +193,7 @@ class QGISRunner(GrassGisRunner):
         #     raise SmoderpError('{}'.format(e))
 
         # initialize GRASS session
-        gsetup.init(gisdb, location, 'PERMANENT', os.environ['GISBASE'])
+        self._grass_session = gsetup.init(gisdb, location, 'PERMANENT')
         # calling gsetup.init() is not enough for PyGRASS
         Mapset('PERMANENT', location, gisdb).current()
 
@@ -185,8 +205,7 @@ class QGISRunner(GrassGisRunner):
 
     @staticmethod
     def import_data(options):
-        """
-        Import files to grass
+        """Import files to grass.
 
         :param options: dictionary of input data
         """
@@ -201,7 +220,7 @@ class QGISRunner(GrassGisRunner):
 
                     ds = gdal.Open(options[key])
                     proj = osr.SpatialReference(wkt=ds.GetProjection())
-                    srs = proj.GetAttrValue('AUTHORITY',1)
+                    srs = proj.GetAttrValue('AUTHORITY', 1)
 
                     project_projection = QgsProject.instance().crs().authid()
 
@@ -214,57 +233,40 @@ class QGISRunner(GrassGisRunner):
                         Module("r.import", input=options[key], output=key)
                 # import vectors
                 elif key in ["soil", "vegetation", "points", "streams"]:
-                    Module(
-                        "v.import", input=options[key], output=key
-                    )
+                    if options[key] != '':
+                        # points and streams are optional
+                        Module(
+                            "v.import", input=options[key], output=key
+                        )
                 # import tables
                 elif key in ["table_soil_vegetation",
                              "channel_properties_table"]:
-                    Module("db.in.ogr", input=options[key], output=key)
+                    if options[key] != '':
+                        # channel_properties_table is optional
+                        from osgeo import ogr
+                        kwargs = {}
+                        ds = ogr.Open(options[key])
+                        if ds:
+                            if ds.GetDriver().GetName() == 'CSV':
+                                kwargs['gdal_doo'] = 'AUTODETECT_TYPE=YES'
+                            ds = None
+                        Module(
+                            "db.in.ogr", input=options[key], output=key,
+                            **kwargs
+                        )
             except SmoderpError as e:
                 raise SmoderpError('{}'.format(e))
 
-    @staticmethod
-    def show_results():
-        import glob
-        from PyQt5.QtGui import QColor
-        from qgis.core import (
-            QgsProject, QgsRasterLayer, QgsRasterShader,
-            QgsSingleBandPseudoColorRenderer, QgsColorRampShader
-        )
-
-        # get colour definitions
-        color_ramp = QgsColorRampShader()
-        color_ramp.setColorRampType(QgsColorRampShader.Interpolated)
-        lst2 = [
-            QgsColorRampShader.ColorRampItem(0, QColor('#0000ff'), '0'),
-            QgsColorRampShader.ColorRampItem(20, QColor('#efefff'), '20')
-        ]
-        color_ramp.setColorRampItemList(lst2)
-        shader = QgsRasterShader()
-        shader.setRasterShaderFunction(color_ramp)
-
-        for map_path in glob.glob(os.path.join(Globals.outdir, '*.asc')):
-            layer = QgsRasterLayer(
-                map_path, os.path.basename(os.path.splitext(map_path)[0])
-            )
-
-            # set colours
-            renderer = QgsSingleBandPseudoColorRenderer(
-                layer.dataProvider(), 1, shader
-            )
-            layer.setRenderer(renderer)
-
-            QgsProject.instance().addMapLayer(layer)
-
-    def export_data(self):
-        pass
-
-    def __del__(self):
-        pass
+    def finish(self):
+        """TODO."""
+        from grass.script import setup as gsetup
+        self._grass_session.finish()
 
 
 class WpsRunner(Runner):
+    """TODO."""
+
     def __init__(self, **args):
+        """TODO."""
         provider_class = self._provider_factory()
         self._provider = provider_class(**args)
