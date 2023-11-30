@@ -1,6 +1,6 @@
 <PAMDataset>
   <Metadata>
-    <MDI key="SOFTWARE">GRASS GIS 8.3.1 with GDAL 3.7.2</MDI>
+    <MDI key="SOFTWARE">GRASS GIS 8.3.1 with GDAL 3.8.0</MDI>
   </Metadata>
   <PAMRasterBand band="1">
     <Description>hcrit</Description>

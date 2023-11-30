@@ -22,7 +22,9 @@ def params(reference_dir):
 @pytest.mark.usefixtures('class_manager')
 class TestArcGis:
     def test_001_dpre(self):
-        PerformTest(ArcGisRunner, params(self.reference_dir)).run_dpre(self.reference_dir)
+        PerformTest(
+            ArcGisRunner, self.reference_dir, params(self.reference_dir)
+        ).run_dpre()
 
     def test_002_roff(self):
         # https://github.com/storm-fsv-cvut/smoderp2d/issues/199
