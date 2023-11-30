@@ -5,8 +5,13 @@ tests/data/log
 tests/data/output*
 tests/data/reference/gistest_*/*/dpre.extracted/
 tests/data/reference/gistest_*/*/*/dpre.extracted/
+tests/data/reference/gistest_*/full/temp/
 tests/data/reference/gistest_*/full/*.aux.xml
-tests/data/reference/gistest_*/full/control/*.aux.xml
+tests/data/reference/gistest_*/full/*.prj
+tests/data/reference/gistest_*/*/control/*.aux.xml
+tests/data/reference/gistest_*/*/temp/*.aux.xml
+tests/data/reference/gistest_*/*/control/*.prj
+tests/data/reference/gistest_*/*/temp/*.prj
 tests/grassdata/smoderp2d-location/test/
 tests/grassdata/smoderp2d-location/PERMANENT/.bash_history
 tests/grassdata/smoderp2d-location/PERMANENT/.bashrc

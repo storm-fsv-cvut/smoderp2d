@@ -25,6 +25,6 @@ def class_manager(request, pytestconfig):
 @pytest.mark.usefixtures('class_manager')
 class TestCmd:
     def test_001_roff(self):
-        PerformTest(Runner).run_roff(
-            self.config_file, self.reference_dir
+        PerformTest(Runner, self.reference_dir).run_roff(
+            self.config_file
         )
