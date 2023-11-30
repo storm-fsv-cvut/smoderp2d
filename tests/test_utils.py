@@ -193,7 +193,7 @@ data_dir = os.path.join(os.path.dirname(__file__), "data")
 
 class PerformTest:
 
-    def __init__(self, runner, reference_dir, params=None):
+    def __init__(self, runner, reference_dir=None, params=None):
         self.runner = runner
         self.reference_dir = reference_dir
         self._output_dir = os.path.join(data_dir, "output")
