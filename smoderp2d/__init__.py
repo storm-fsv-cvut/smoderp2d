@@ -212,50 +212,47 @@ class QGISRunner(GrassGisRunner):
         from grass.pygrass.modules import Module
 
         for key in options:
-            try:
-                # import rasters
-                if key == "elevation":
-                    from osgeo import gdal, osr
-                    from qgis.core import QgsProject
+            # import rasters
+            if key == "elevation":
+                from osgeo import gdal, osr
+                from qgis.core import QgsProject
 
-                    ds = gdal.Open(options[key])
-                    proj = osr.SpatialReference(wkt=ds.GetProjection())
-                    srs = proj.GetAttrValue('AUTHORITY', 1)
+                ds = gdal.Open(options[key])
+                proj = osr.SpatialReference(wkt=ds.GetProjection())
+                srs = proj.GetAttrValue('AUTHORITY', 1)
 
-                    project_projection = QgsProject.instance().crs().authid()
+                project_projection = QgsProject.instance().crs().authid()
 
-                    if srs == project_projection.split(':')[1]:
-                        Module(
-                            "r.import", input=options[key], output=key,
-                            flags='o'
-                        )
-                    else:
-                        Module("r.import", input=options[key], output=key)
-                # import vectors
-                elif key in ["soil", "vegetation", "points", "streams"]:
-                    if options[key] != '':
-                        # points and streams are optional
-                        Module(
-                            "v.import", input=options[key], output=key
-                        )
-                # import tables
-                elif key in ["table_soil_vegetation",
-                             "channel_properties_table"]:
-                    if options[key] != '':
-                        # channel_properties_table is optional
-                        from osgeo import ogr
-                        kwargs = {}
-                        ds = ogr.Open(options[key])
-                        if ds:
-                            if ds.GetDriver().GetName() == 'CSV':
-                                kwargs['gdal_doo'] = 'AUTODETECT_TYPE=YES'
-                            ds = None
-                        Module(
-                            "db.in.ogr", input=options[key], output=key,
-                            **kwargs
-                        )
-            except SmoderpError as e:
-                raise SmoderpError('{}'.format(e))
+                if srs == project_projection.split(':')[1]:
+                    Module(
+                        "r.import", input=options[key], output=key,
+                        flags='o'
+                    )
+                else:
+                    Module("r.import", input=options[key], output=key)
+            # import vectors
+            elif key in ["soil", "vegetation", "points", "streams"]:
+                if options[key] != '':
+                    # points and streams are optional
+                    Module(
+                        "v.import", input=options[key], output=key
+                    )
+            # import tables
+            elif key in ["table_soil_vegetation",
+                         "channel_properties_table"]:
+                if options[key] != '':
+                    # channel_properties_table is optional
+                    from osgeo import ogr
+                    kwargs = {}
+                    ds = ogr.Open(options[key])
+                    if ds:
+                        if ds.GetDriver().GetName() == 'CSV':
+                            kwargs['gdal_doo'] = 'AUTODETECT_TYPE=YES'
+                        ds = None
+                    Module(
+                        "db.in.ogr", input=options[key], output=key,
+                        **kwargs
+                    )
 
     def finish(self):
         """TODO."""
