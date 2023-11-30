@@ -5,6 +5,7 @@ tests/data/log
 tests/data/output*
 tests/data/reference/gistest_*/*/dpre.extracted/
 tests/data/reference/gistest_*/*/*/dpre.extracted/
+tests/data/reference/gistest_*/full/temp/
 tests/data/reference/gistest_*/full/*.aux.xml
 tests/data/reference/gistest_*/full/*.prj
 tests/data/reference/gistest_*/*/control/*.aux.xml
