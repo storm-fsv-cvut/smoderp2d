@@ -174,6 +174,12 @@ class BaseProvider(object):
     def workflow_mode(self):
         return self.args.workflow_mode
 
+    @abstractmethod
+    def _postprocessing(self):
+        """Perform provider-specific postprocessing.
+        """
+        pass
+
     @staticmethod
     def add_logging_handler(handler, formatter=None):
         """Register new logging handler.
@@ -502,11 +508,11 @@ class BaseProvider(object):
         return data
 
     def postprocessing(self, cumulative, surface_array, stream):
-        """TODO.
+        """Perform postprocessing steps. Store results.
 
-        :param cumulative: TODO
-        :param surface_array: TODO
-        :param stream: TODO
+        :param cumulative: Cumulative object
+        :param surface_array: numpy array
+        :param stream: stream array (reach)
         """
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
@@ -636,6 +642,9 @@ class BaseProvider(object):
                               'q365_m3_s{sep}V_out_cum_m3{sep}'
                               'Q_max_m3_s'.format(sep=';'))
 
+        # perform provider-specific postprocessing
+        self._postprocessing()
+
     @staticmethod
     def _make_mask(arr):
         """ Assure that the no data value is outside the
@@ -655,11 +664,3 @@ class BaseProvider(object):
                 arr[i, j] = copy_arr[i, j]
 
         return arr
-
-        # TODO
-        # if not Globals.extraOut:
-        #     if os.path.exists(output + os.sep + 'temp'):
-        #         shutil.rmtree(output + os.sep + 'temp')
-        #     if os.path.exists(output + os.sep + 'temp_dp'):
-        #         shutil.rmtree(output + os.sep + 'temp_dp')
-        #     return 1

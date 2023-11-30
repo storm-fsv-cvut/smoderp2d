@@ -111,3 +111,8 @@ class ArcGisProvider(BaseProvider):
         from smoderp2d.providers.arcgis.data_preparation import PrepareData
         prep = PrepareData(self._options, self.storage)
         return prep.run()
+
+    def _postprocessing(self):
+        """See base method for description."""
+        # here ArcGIS-specific postprocessing starts...
+        Logger.debug('ArcGIS-specific postprocessing')
