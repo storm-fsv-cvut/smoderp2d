@@ -141,8 +141,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.rainfall_toolButton = QtWidgets.QToolButton()
         self.main_output_lineEdit = QtWidgets.QLineEdit()
         self.main_output_toolButton = QtWidgets.QToolButton()
-        self.maxdt_lineEdit = QtWidgets.QSpinBox()
-        self.end_time_lineEdit = QtWidgets.QSpinBox()
+        self.maxdt_lineEdit = QtWidgets.QDoubleSpinBox()
+        self.end_time_lineEdit = QtWidgets.QDoubleSpinBox()
         self.vegetation_type_comboBox = QgsFieldComboBox()
         self.table_soil_vegetation_comboBox = QgsMapLayerComboBox()
         self.table_soil_vegetation_toolButton = QtWidgets.QToolButton()
@@ -531,8 +531,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             # 'output': self.output_lineEdit.text().strip(),
             'streams': self.stream_comboBox.currentText(),
             'rainfall_file': self.rainfall_lineEdit.text(),
-            'end_time': float(self.end_time_lineEdit.text()),
-            'maxdt': float(self.maxdt_lineEdit.text()),
+            'end_time': self.end_time_lineEdit.value(),
+            'maxdt': self.maxdt_lineEdit.value(),
             'table_soil_vegetation':
                 self.table_soil_vegetation_comboBox.currentText(),
             'table_soil_vegetation_fieldname':
@@ -602,13 +602,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self.rainfall_lineEdit.text().strip(),
                 self.end_time_lineEdit.text().strip(),
                 self.main_output_lineEdit.text().strip()):
-            # Check if maxdt and end_time are numbers
-            try:
-                float(self.maxdt_lineEdit.text())
-                float(self.end_time_lineEdit.text())
-                return True
-            except ValueError:
-                return False
+            return True
         else:
             return False
 
@@ -790,7 +784,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                     'channel_properties_table': instance.mapLayersByName('streams_shape')[0],
                     'streams_channel_type_fieldname': 'channel_id',
                     'output': temp_dir.name,
-                    'end_time': 5
+                    'end_time': 5,
+                    'flow_direction': 'single',
+                    't': True
                 }
             self._loadParams(param_dict)
         except IndexError as e:
@@ -805,6 +801,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         :param historical_widget:
         """
+        self._loadParams(historical_widget.params_dict)
 
     def _loadParams(self, param_dict):
         """Load parameters from a dictionary into the GUI.
@@ -830,4 +827,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         )
         self.main_output_lineEdit.setText(param_dict['output'])
         self.end_time_lineEdit.setValue(param_dict['end_time'])
+        self.flow_direction_comboBox.setCurrentText(param_dict['flow_direction'])
+        self.generate_temporary_checkBox.setChecked(param_dict['t'])
 
