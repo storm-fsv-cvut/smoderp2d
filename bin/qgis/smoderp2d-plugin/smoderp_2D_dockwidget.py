@@ -91,7 +91,9 @@ class SmoderpTask(QgsTask):
         Globals.reset()
         GridGlobals.reset()
 
+        iface.messageBar().findChildren(QtWidgets.QToolButton)[0].setHidden(False)
         iface.messageBar().clearWidgets()
+
         if result:
             iface.messageBar().pushMessage(
                 'Computation successfully completed', '',
@@ -159,7 +161,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.flow_direction_comboBox = QtWidgets.QComboBox()
         self.generate_temporary_checkBox = QtWidgets.QCheckBox()
         self.run_button = QtWidgets.QPushButton(self.dockWidgetContents)
-        self.abort_button = QtWidgets.QPushButton(self.dockWidgetContents)
 
         # set default values
         self.maxdt_lineEdit.setProperty("value", 5)
@@ -177,11 +178,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.setupCombos()
 
         self.run_button.setText('Run')
-        self.abort_button.setText('Abort the process')
 
         self.layout.addWidget(self.tabWidget)
         self.layout.addWidget(self.run_button)
-        self.layout.addWidget(self.abort_button)
         self.dockWidgetContents.setLayout(self.layout)
         self.setWidget(self.dockWidgetContents)
 
@@ -281,7 +280,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         #  (txt), currently works for dbf
 
         self.run_button.clicked.connect(self.OnRunButton)
-        self.abort_button.clicked.connect(self.abort_computation)
 
         # 1st tab - Data preparation
         self.elevation_toolButton.clicked.connect(
@@ -414,10 +412,19 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             self.progress_bar.setMaximum(100)
             self.progress_bar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
             messageBar = self.iface.messageBar()
+
+            messageBar.findChildren(QtWidgets.QToolButton)[0].setHidden(True)
+
             progress_msg = messageBar.createMessage(
                 "Computation progress: "
             )
             progress_msg.layout().addWidget(self.progress_bar)
+
+            abort_button = QtWidgets.QPushButton(self.dockWidgetContents)
+            abort_button.setText('Abort the process')
+            abort_button.clicked.connect(self.abort_computation)
+            progress_msg.layout().addWidget(abort_button)
+
             messageBar.pushWidget(progress_msg, Qgis.Info)
 
             smoderp_task.begun.connect(
