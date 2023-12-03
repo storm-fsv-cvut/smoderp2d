@@ -1,5 +1,7 @@
 import os
 import logging
+import shutil
+
 import numpy.ma as ma
 
 from smoderp2d.core.general import Globals, GridGlobals
@@ -116,3 +118,8 @@ class ArcGisProvider(BaseProvider):
         """See base method for description."""
         # here ArcGIS-specific postprocessing starts...
         Logger.debug('ArcGIS-specific postprocessing')
+        if not self._options['generate_temporary_data']:
+            # delete temporary data
+            shutil.rmtree(
+                os.path.join(Globals.outdir, 'temp')
+            )
