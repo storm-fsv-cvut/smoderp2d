@@ -435,6 +435,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             )
 
     def _loadHistory(self):
+        """Load historical runs into History tab.
+
+        If there is no history, set setting[historical_runs] to an empty list.
+        """
         # uncomment the following line to reset the history pane
         # self.settings.setValue('historical_runs', None)
         runs = self.settings.value('historical_runs')
@@ -446,8 +450,14 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self._addHistoryItem(run)
 
     def _addCurrentHistoryItem(self):
+        """Add the current run into settings[historical_runs].
+
+        Control that there is no more than 15 historical items holded.
+
+        Then call _addHistoryItem to add the widget to the pane.
+        """
         timestamp = str(datetime.datetime.now())
-        run = [timestamp, self._input_params, self._input_maps]
+        run = (timestamp, self._input_params, self._input_maps)
 
         runs = self.settings.value('historical_runs')
         runs.insert(0, run)
@@ -460,7 +470,11 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self._addHistoryItem(run)
 
     def _addHistoryItem(self, run):
-        this_run = HistoryWidget(run[0])
+        """Add the historical item to the history pane.
+
+        :param run: The current run info in format (timestamp, params, maps)
+        """
+        this_run = HistoryWidget(f'{run[1]["output"]} -- {run[0]}')
         this_run.saveHistory(run[1], run[2])
         self.history_widget.insertItem(0, this_run)
         self.history_widget.itemDoubleClicked.connect(
