@@ -216,6 +216,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         # history tab
         self.history_widget = QtWidgets.QListWidget()
         self.tabWidget.addTab(self.history_widget, 'History')
+        self._loadHistory()
 
     def set_widgets(self):
         self.arguments['elevation'].addWidget(self.elevation_comboBox)
@@ -425,18 +426,46 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             # start the task
             self.task_manager.addTask(smoderp_task)
 
-            this_run = HistoryWidget(str(datetime.datetime.now()))
-            this_run.saveHistory(self._input_params, self._input_maps)
-            self.history_widget.addItem(this_run)
-            self.history_widget.itemDoubleClicked.connect(
-                self._loadHistoricalParameters
-            )
+            self._addCurrentHistoryItem()
         else:
             self._sendMessage(
                 "Input parameters error:",
                 "Some of mandatory fields are not filled correctly.",
                 "CRITICAL"
             )
+
+    def _loadHistory(self):
+        # uncomment the following line to reset the history pane
+        # self.settings.setValue('historical_runs', None)
+        runs = self.settings.value('historical_runs')
+
+        if runs is None:
+            self.settings.setValue('historical_runs', [])
+        else:
+            for run in runs:
+                self._addHistoryItem(run)
+
+    def _addCurrentHistoryItem(self):
+        timestamp = str(datetime.datetime.now())
+        run = [timestamp, self._input_params, self._input_maps]
+
+        runs = self.settings.value('historical_runs')
+        runs.insert(0, run)
+
+        if len(runs) > 15:
+            runs.pop(15)
+
+        self.settings.setValue('historical_runs', runs)
+
+        self._addHistoryItem(run)
+
+    def _addHistoryItem(self, run):
+        this_run = HistoryWidget(run[0])
+        this_run.saveHistory(run[1], run[2])
+        self.history_widget.insertItem(0, this_run)
+        self.history_widget.itemDoubleClicked.connect(
+            self._loadHistoricalParameters
+        )
 
     @staticmethod
     def _layerColorRamp(layer):

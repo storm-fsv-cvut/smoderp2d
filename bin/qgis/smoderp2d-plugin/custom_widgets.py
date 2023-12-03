@@ -43,4 +43,3 @@ class HistoryWidget(QListWidgetItem):
             'flow_direction': params['flow_direction'],
             't': params['t']
         })
-
