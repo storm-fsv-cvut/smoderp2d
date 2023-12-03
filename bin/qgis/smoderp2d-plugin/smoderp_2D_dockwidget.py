@@ -45,7 +45,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
 from smoderp2d import QGISRunner
 from smoderp2d.core.general import Globals, GridGlobals
-from smoderp2d.exceptions import ProviderError
+from smoderp2d.providers import Logger
+from smoderp2d.exceptions import ProviderError, ComputationAborted
 from bin.base import arguments, sections
 
 from .connect_grass import find_grass_bin
@@ -64,27 +65,35 @@ class SmoderpTask(QgsTask):
         self.input_maps = input_maps
         self.grass_bin_path = grass_bin_path
         self.error = None
+        self.finish_msg_level = Qgis.Info
+        self.runner = None
 
     def run(self):
-        runner = QGISRunner(self.setProgress, self.grass_bin_path)
-        runner.set_options(self.input_params)
-        runner.import_data(self.input_maps)
         try:
-            runner.run()
+            self.runner = QGISRunner(self.setProgress, self.grass_bin_path)
+            self.runner.set_options(self.input_params)
+            self.runner.import_data(self.input_maps)
+            self.runner.run()
         except ProviderError as e:
             self.error = e
+            self.finish_msg_level = Qgis.Critical
+            return False
+        except ComputationAborted:
+            self.error = 'Computation was manually aborted.'
             return False
 
-        runner.finish()
+        return True
+
+    def finished(self, result):
+        self.runner.finish()
 
         # resets
         Globals.reset()
         GridGlobals.reset()
 
-        return True
-
-    def finished(self, result):
+        iface.messageBar().findChildren(QtWidgets.QToolButton)[0].setHidden(False)
         iface.messageBar().clearWidgets()
+
         if result:
             iface.messageBar().pushMessage(
                 'Computation successfully completed', '',
@@ -98,7 +107,8 @@ class SmoderpTask(QgsTask):
                 fail_reason = "reason unknown (see SMODERP2D log messages)"
 
             iface.messageBar().pushMessage(
-                'Computation failed: ', str(fail_reason), level=Qgis.Critical
+                'Computation failed: ', str(fail_reason),
+                level=self.finish_msg_level
             )
 
 
@@ -402,10 +412,19 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             self.progress_bar.setMaximum(100)
             self.progress_bar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
             messageBar = self.iface.messageBar()
+
+            messageBar.findChildren(QtWidgets.QToolButton)[0].setHidden(True)
+
             progress_msg = messageBar.createMessage(
                 "Computation progress: "
             )
             progress_msg.layout().addWidget(self.progress_bar)
+
+            abort_button = QtWidgets.QPushButton(self.dockWidgetContents)
+            abort_button.setText('Abort the process')
+            abort_button.clicked.connect(self.abort_computation)
+            progress_msg.layout().addWidget(abort_button)
+
             messageBar.pushWidget(progress_msg, Qgis.Info)
 
             smoderp_task.begun.connect(
@@ -796,3 +815,13 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 f'Unable to set test parameters: {e}. Load demo QGIS project first.',
                 'CRITICAL'
             )
+
+    def abort_computation(self):
+        """Abort the computation."""
+        tasks = self.task_manager.tasks()
+        if len(tasks) > 0:
+            iface.messageBar().pushMessage(
+                'Computation aborted. Stopping the process...',
+                level=Qgis.Info
+            )
+            Logger.aborted = True
