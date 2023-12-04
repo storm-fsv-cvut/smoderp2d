@@ -139,7 +139,7 @@ from smoderp2d.exceptions import ProviderError
 
 if __name__ == "__main__":
     options, flags = gs.parser()
-    options['t'] = flags['t']
+    options['generate_temporary'] = flags['t']
 
     try:
         runner = GrassGisRunner()

@@ -24,8 +24,9 @@
 
 import os
 import sys
-import tempfile
 import glob
+import datetime
+import tempfile
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication, Qt
@@ -50,6 +51,7 @@ from smoderp2d.exceptions import ProviderError, ComputationAborted
 from bin.base import arguments, sections
 
 from .connect_grass import find_grass_bin
+from .custom_widgets import HistoryWidget
 
 
 class InputError(Exception):
@@ -149,8 +151,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.rainfall_toolButton = QtWidgets.QToolButton()
         self.main_output_lineEdit = QtWidgets.QLineEdit()
         self.main_output_toolButton = QtWidgets.QToolButton()
-        self.maxdt_lineEdit = QtWidgets.QSpinBox()
-        self.end_time_lineEdit = QtWidgets.QSpinBox()
+        self.maxdt_lineEdit = QtWidgets.QDoubleSpinBox()
+        self.end_time_lineEdit = QtWidgets.QDoubleSpinBox()
         self.vegetation_type_comboBox = QgsFieldComboBox()
         self.table_soil_vegetation_comboBox = QgsMapLayerComboBox()
         self.table_soil_vegetation_toolButton = QtWidgets.QToolButton()
@@ -221,6 +223,21 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
             section_tab.setLayout(section_tab_layout)
 
+        # history tab
+        section_tab = QtWidgets.QWidget()
+        section_tab_layout = QtWidgets.QVBoxLayout()
+        self.history_tab = QtWidgets.QListWidget()
+        section_tab_layout.addWidget(
+            QtWidgets.QLabel(
+                '25 last calls -- load historical settings by double-click'
+            )
+        )
+        section_tab_layout.addWidget(self.history_tab)
+        self._loadHistory()
+        section_tab.setLayout(section_tab_layout)
+
+        self.tabWidget.addTab(section_tab, 'History')
+
     def set_widgets(self):
         self.arguments['elevation'].addWidget(self.elevation_comboBox)
         self.arguments['elevation'].addWidget(self.elevation_toolButton)
@@ -230,11 +247,11 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.arguments['landuse'].addWidget(self.vegetation_toolButton)
         self.arguments['points'].addWidget(self.points_comboBox)
         self.arguments['points'].addWidget(self.points_toolButton)
-        self.arguments['points_field'].addWidget(self.points_field_comboBox)
-        self.arguments['stream'].addWidget(self.stream_comboBox)
-        self.arguments['stream'].addWidget(self.stream_toolButton)
-        self.arguments['rainfall'].addWidget(self.rainfall_lineEdit)
-        self.arguments['rainfall'].addWidget(self.rainfall_toolButton)
+        self.arguments['points_fieldname'].addWidget(self.points_field_comboBox)
+        self.arguments['streams'].addWidget(self.stream_comboBox)
+        self.arguments['streams'].addWidget(self.stream_toolButton)
+        self.arguments['rainfall_file'].addWidget(self.rainfall_lineEdit)
+        self.arguments['rainfall_file'].addWidget(self.rainfall_toolButton)
         self.arguments['output'].addWidget(self.main_output_lineEdit)
         self.arguments['output'].addWidget(self.main_output_toolButton)
         self.arguments['max_time_step'].addWidget(self.maxdt_lineEdit)
@@ -252,13 +269,13 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.arguments['soil_landuse_field'].addWidget(
             self.table_soil_vegetation_field_comboBox
         )
-        self.arguments['channel_type_identifier'].addWidget(
+        self.arguments['streams_channel_type_fieldname'].addWidget(
             self.table_stream_shape_code_comboBox
         )
-        self.arguments['channel_properties'].addWidget(
+        self.arguments['channel_properties_table'].addWidget(
             self.table_stream_shape_comboBox
         )
-        self.arguments['channel_properties'].addWidget(
+        self.arguments['channel_properties_table'].addWidget(
             self.table_stream_shape_toolButton
         )
         self.arguments['flow_direction'].addWidget(
@@ -332,7 +349,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             lambda: self.setFields('table_soil_veg')
         )
         self.table_stream_shape_comboBox.layerChanged.connect(
-            lambda: self.setFields('table_stream_shape')
+            lambda: self.setFields('channel_properties_table')
         )
 
     def setupCombos(self):
@@ -358,7 +375,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         )
 
         self.setFields('table_soil_veg')
-        self.setFields('table_stream_shape')
+        self.setFields('channel_properties_table')
 
         # 4th tab - Advanced
         self.flow_direction_comboBox.addItems(('single', 'multiple'))
@@ -437,12 +454,61 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
             # start the task
             self.task_manager.addTask(smoderp_task)
+
+            self._addCurrentHistoryItem()
         else:
             self._sendMessage(
                 "Input parameters error:",
                 "Some of mandatory fields are not filled correctly.",
                 "CRITICAL"
             )
+
+    def _loadHistory(self):
+        """Load historical runs into History tab.
+
+        If there is no history, set setting[historical_runs] to an empty list.
+        """
+        # uncomment the following line to reset the history pane
+        # self.settings.setValue('historical_runs', None)
+        runs = self.settings.value('historical_runs')
+
+        if runs is None:
+            self.settings.setValue('historical_runs', [])
+        else:
+            for run in reversed(runs):
+                self._addHistoryItem(run)
+
+    def _addCurrentHistoryItem(self):
+        """Add the current run into settings[historical_runs].
+
+        Control that there is no more than 15 historical items holded.
+
+        Then call _addHistoryItem to add the widget to the pane.
+        """
+        timestamp = str(datetime.datetime.now())
+        run = (timestamp, dict(self._input_params), dict(self._input_maps))
+
+        runs = self.settings.value('historical_runs')
+        runs.insert(0, run)
+
+        if len(runs) > 25:
+            runs.pop(-1)
+
+        self.settings.setValue('historical_runs', runs)
+
+        self._addHistoryItem(run)
+
+    def _addHistoryItem(self, run):
+        """Add the historical item to the history pane.
+
+        :param run: The current run info in format (timestamp, params, maps)
+        """
+        this_run = HistoryWidget(f'{run[1]["output"]} -- {run[0]}')
+        this_run.saveHistory(run[1], run[2])
+        self.history_tab.insertItem(0, this_run)
+        self.history_tab.itemDoubleClicked.connect(
+            self._loadHistoricalParameters
+        )
 
     @staticmethod
     def _layerColorRamp(layer):
@@ -510,7 +576,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             ctrl_group, os.path.join(outdir, 'control_point'), 'csv'
         )
 
-        if self._input_params['t'] is True:
+        if self._input_params['generate_temporary'] is True:
             # import temp results
             temp_group = group.addGroup('temp')
             temp_group.setExpanded(False)
@@ -537,8 +603,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             # 'output': self.output_lineEdit.text().strip(),
             'streams': self.stream_comboBox.currentText(),
             'rainfall_file': self.rainfall_lineEdit.text(),
-            'end_time': float(self.end_time_lineEdit.text()),
-            'maxdt': float(self.maxdt_lineEdit.text()),
+            'end_time': self.end_time_lineEdit.value(),
+            'maxdt': self.maxdt_lineEdit.value(),
             'table_soil_vegetation':
                 self.table_soil_vegetation_comboBox.currentText(),
             'table_soil_vegetation_fieldname':
@@ -549,7 +615,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self.table_stream_shape_code_comboBox.currentText(),
             'flow_direction':
                 self.flow_direction_comboBox.currentText(),
-            't': bool(self.generate_temporary_checkBox.checkState()),
+            'generate_temporary': bool(self.generate_temporary_checkBox.checkState()),
             'output': self.main_output_lineEdit.text().strip()
         }
 
@@ -608,19 +674,12 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self.rainfall_lineEdit.text().strip(),
                 self.end_time_lineEdit.text().strip(),
                 self.main_output_lineEdit.text().strip()):
-            # Check if maxdt and end_time are numbers
-            try:
-                float(self.maxdt_lineEdit.text())
-                float(self.end_time_lineEdit.text())
-                return True
-            except ValueError:
-                return False
+            return True
         else:
             return False
 
     def openFileDialog(self, t, widget):
         """Open file dialog, load layer and set path/name to widget."""
-
         # TODO: what format can tables have?
         # TODO: set layers srs on loading
 
@@ -744,7 +803,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             self.table_soil_vegetation_field_comboBox.setField(
                 self.table_soil_vegetation_comboBox.currentLayer().fields()[0].name()
             )
-        elif t == 'table_stream_shape':
+        elif t == 'channel_properties_table':
             if self.table_stream_shape_comboBox.currentLayer() is not None:
                 self.table_stream_shape_code_comboBox.setLayer(
                     self.table_stream_shape_comboBox.currentLayer()
@@ -779,42 +838,69 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             self._loadTestParams()
 
     def _loadTestParams(self):
+        """Load test parameters into the GUI."""
         dir_path = os.path.join(
             os.path.dirname(__file__), '..', '..', '..', 'tests', 'data'
         )
         try:
-            self.elevation_comboBox.setLayer(
-                QgsProject.instance().mapLayersByName('dem')[0]
-            )
-            self.soil_comboBox.setLayer(
-                QgsProject.instance().mapLayersByName('soils')[0]
-            )
-            self.points_comboBox.setLayer(
-                QgsProject.instance().mapLayersByName('points')[0]
-            )
-            self.points_field_comboBox.setCurrentText('point_id')
-            self.stream_comboBox.setLayer(
-                QgsProject.instance().mapLayersByName('streams')[0]
-            )
-            self.rainfall_lineEdit.setText(
-                os.path.join(dir_path, 'rainfall_nucice.txt')
-            )
-            self.table_soil_vegetation_comboBox.setLayer(
-                QgsProject.instance().mapLayersByName('soil_veg_tab')[0]
-            )
-            self.table_stream_shape_comboBox.setLayer(
-                QgsProject.instance().mapLayersByName('streams_shape')[0]
-            )
-            self.table_stream_shape_code_comboBox.setCurrentText('channel_id')
+            instance = QgsProject.instance()
             with tempfile.NamedTemporaryFile() as temp_dir:
-                self.main_output_lineEdit.setText(temp_dir.name)
-            self.end_time_lineEdit.setValue(5)
+                param_dict = {
+                    'elevation': instance.mapLayersByName('dem')[0],
+                    'soil': instance.mapLayersByName('soils')[0],
+                    'points': instance.mapLayersByName('points')[0],
+                    'points_fieldname': 'point_id',
+                    'streams': instance.mapLayersByName('streams')[0],
+                    'rainfall_file': os.path.join(dir_path, 'rainfall_nucice.txt'),
+                    'table_soil_vegetation': instance.mapLayersByName('soil_veg_tab')[0],
+                    'channel_properties_table': instance.mapLayersByName('streams_shape')[0],
+                    'streams_channel_type_fieldname': 'channel_id',
+                    'output': temp_dir.name,
+                    'end_time': 5,
+                    'flow_direction': 'single',
+                    'generate_temporary': True
+                }
+            self._loadParams(param_dict)
         except IndexError as e:
             self._sendMessage(
                 'Error',
                 f'Unable to set test parameters: {e}. Load demo QGIS project first.',
                 'CRITICAL'
             )
+
+    def _loadHistoricalParameters(self, historical_widget):
+        """Load historical parameters into the GUI.
+
+        :param historical_widget:
+        """
+        self._loadParams(historical_widget.params_dict)
+
+    def _loadParams(self, param_dict):
+        """Load parameters from a dictionary into the GUI.
+
+        :param param_dict: dict in form {parameter_name: parameter_value}
+        """
+        self.elevation_comboBox.setLayer(param_dict['elevation'])
+        self.soil_comboBox.setLayer(param_dict['soil'])
+        self.points_comboBox.setLayer(param_dict['points'])
+        self.points_field_comboBox.setCurrentText(
+            param_dict['points_fieldname']
+        )
+        self.stream_comboBox.setLayer(param_dict['streams'])
+        self.rainfall_lineEdit.setText(param_dict['rainfall_file'])
+        self.table_soil_vegetation_comboBox.setLayer(
+            param_dict['table_soil_vegetation']
+        )
+        self.table_stream_shape_comboBox.setLayer(
+            param_dict['channel_properties_table']
+        )
+        self.table_stream_shape_code_comboBox.setCurrentText(
+            param_dict['streams_channel_type_fieldname']
+        )
+        self.main_output_lineEdit.setText(param_dict['output'])
+        self.end_time_lineEdit.setValue(param_dict['end_time'])
+        self.flow_direction_comboBox.setCurrentText(param_dict['flow_direction'])
+        self.generate_temporary_checkBox.setChecked(param_dict['generate_temporary'])
 
     def abort_computation(self):
         """Abort the computation."""
