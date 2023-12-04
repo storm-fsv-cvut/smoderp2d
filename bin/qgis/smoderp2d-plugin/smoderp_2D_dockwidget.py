@@ -446,7 +446,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         if runs is None:
             self.settings.setValue('historical_runs', [])
         else:
-            for run in runs:
+            for run in reversed(runs):
                 self._addHistoryItem(run)
 
     def _addCurrentHistoryItem(self):
