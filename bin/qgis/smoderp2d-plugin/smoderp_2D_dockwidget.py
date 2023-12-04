@@ -469,7 +469,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         If there is no history, set setting[historical_runs] to an empty list.
         """
         # uncomment the following line to reset the history pane
-        self.settings.setValue('historical_runs', None)
+        # self.settings.setValue('historical_runs', None)
         runs = self.settings.value('historical_runs')
 
         if runs is None:
