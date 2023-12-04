@@ -43,3 +43,5 @@ class HistoryWidget(QListWidgetItem):
             'flow_direction': params['flow_direction'],
             't': params['t']
         })
+
+        self.setToolTip(str(self.params_dict))
