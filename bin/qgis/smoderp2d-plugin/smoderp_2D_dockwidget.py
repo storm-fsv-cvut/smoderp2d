@@ -462,8 +462,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         runs = self.settings.value('historical_runs')
         runs.insert(0, run)
 
-        if len(runs) > 15:
-            runs.pop(15)
+        if len(runs) > 25:
+            runs.pop(-1)
 
         self.settings.setValue('historical_runs', runs)
 
