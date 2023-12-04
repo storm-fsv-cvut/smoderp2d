@@ -214,9 +214,19 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             section_tab.setLayout(section_tab_layout)
 
         # history tab
+        section_tab = QtWidgets.QWidget()
+        section_tab_layout = QtWidgets.QVBoxLayout()
         self.history_tab = QtWidgets.QListWidget()
-        self.tabWidget.addTab(self.history_tab, 'History')
+        section_tab_layout.addWidget(
+            QtWidgets.QLabel(
+                '25 last calls -- load historical settings by double-click'
+            )
+        )
+        section_tab_layout.addWidget(self.history_tab)
         self._loadHistory()
+        section_tab.setLayout(section_tab_layout)
+
+        self.tabWidget.addTab(section_tab, 'History')
 
     def set_widgets(self):
         self.arguments['elevation'].addWidget(self.elevation_comboBox)
