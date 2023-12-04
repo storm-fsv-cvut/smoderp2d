@@ -469,7 +469,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         If there is no history, set setting[historical_runs] to an empty list.
         """
         # uncomment the following line to reset the history pane
-        # self.settings.setValue('historical_runs', None)
+        self.settings.setValue('historical_runs', None)
         runs = self.settings.value('historical_runs')
 
         if runs is None:
@@ -576,7 +576,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             ctrl_group, os.path.join(outdir, 'control_point'), 'csv'
         )
 
-        if self._input_params['t'] is True:
+        if self._input_params['generate_temporary'] is True:
             # import temp results
             temp_group = group.addGroup('temp')
             temp_group.setExpanded(False)
@@ -615,7 +615,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self.table_stream_shape_code_comboBox.currentText(),
             'flow_direction':
                 self.flow_direction_comboBox.currentText(),
-            't': bool(self.generate_temporary_checkBox.checkState()),
+            'generate_temporary': bool(self.generate_temporary_checkBox.checkState()),
             'output': self.main_output_lineEdit.text().strip()
         }
 
@@ -858,7 +858,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                     'output': temp_dir.name,
                     'end_time': 5,
                     'flow_direction': 'single',
-                    't': True
+                    'generate_temporary': True
                 }
             self._loadParams(param_dict)
         except IndexError as e:
@@ -900,7 +900,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.main_output_lineEdit.setText(param_dict['output'])
         self.end_time_lineEdit.setValue(param_dict['end_time'])
         self.flow_direction_comboBox.setCurrentText(param_dict['flow_direction'])
-        self.generate_temporary_checkBox.setChecked(param_dict['t'])
+        self.generate_temporary_checkBox.setChecked(param_dict['generate_temporary'])
 
     def abort_computation(self):
         """Abort the computation."""

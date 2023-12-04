@@ -696,7 +696,7 @@ class PrepareData(PrepareDataGISBase):
             Logger.error(f"Data preparation failed:\n{e}\n{error_msg}")
             raise DataPreparationError(f"Data preparation failed: {error_msg}")
 
-        if self._input_params['t'] is False:
+        if self._input_params['generate_temporary'] is False:
             return 0
 
         export_layers = PrepareDataGISBase.data_layers.keys()

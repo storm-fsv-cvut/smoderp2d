@@ -37,7 +37,7 @@ class HistoryWidget(QListWidgetItem):
             'output': params['output'],
             'end_time': params['end_time'],
             'flow_direction': params['flow_direction'],
-            't': params['t']
+            'generate_temporary': params['generate_temporary']
         })
 
         self.setToolTip(str(self.params_dict))
