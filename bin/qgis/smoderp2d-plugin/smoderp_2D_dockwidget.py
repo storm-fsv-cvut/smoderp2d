@@ -214,8 +214,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             section_tab.setLayout(section_tab_layout)
 
         # history tab
-        self.history_widget = QtWidgets.QListWidget()
-        self.tabWidget.addTab(self.history_widget, 'History')
+        self.history_tab = QtWidgets.QListWidget()
+        self.tabWidget.addTab(self.history_tab, 'History')
         self._loadHistory()
 
     def set_widgets(self):
@@ -476,8 +476,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         """
         this_run = HistoryWidget(f'{run[1]["output"]} -- {run[0]}')
         this_run.saveHistory(run[1], run[2])
-        self.history_widget.insertItem(0, this_run)
-        self.history_widget.itemDoubleClicked.connect(
+        self.history_tab.insertItem(0, this_run)
+        self.history_tab.itemDoubleClicked.connect(
             self._loadHistoricalParameters
         )
 
