@@ -457,7 +457,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         Then call _addHistoryItem to add the widget to the pane.
         """
         timestamp = str(datetime.datetime.now())
-        run = (timestamp, self._input_params, self._input_maps)
+        run = (timestamp, dict(self._input_params), dict(self._input_maps))
 
         runs = self.settings.value('historical_runs')
         runs.insert(0, run)
