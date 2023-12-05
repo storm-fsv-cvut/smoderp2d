@@ -850,7 +850,8 @@ class PrepareDataGISBase(PrepareDataBase):
 
             self._check_empty_values(
                 self._input_params['points'],
-                self._input_params['points_fieldname']
+                self._input_params['points_fieldname'],
+                unique=True
             )
 
         if self._input_params['streams'] or \

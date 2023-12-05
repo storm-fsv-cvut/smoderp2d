@@ -632,19 +632,26 @@ class PrepareData(PrepareDataGISBase):
 
         return self._decode_stream_attr(stream_attr)
 
-    def _check_empty_values(self, table, field):
+    def _check_empty_values(self, table, field, unique=False):
         """See base method for description."""
         try:
+            values = []
             with Vector(**self.__qualified_name(table)) as vmap:
                 vmap.table.filters.select(field, self.storage.primary_key)
                 for row in vmap.table:
+                    values.append(row[0])
                     if row[0] in (None, ""):
                         raise DataPreparationInvalidInput(
-                            "'{}' values in '{}' table are not correct, "
-                            "empty value found in row {})".format(
-                                field, table, row[1]
-                            )
+                            "Incorrect values in field '{}': "
+                            "empty values are not allowed".format(field)
                         )
+
+            if unique:
+                if len(values) != len(set(values)):
+                    raise DataPreparationInvalidInput(
+                        "Incorrect values in field '{}': "
+                        "duplicated values are not allowed".format(field)
+                    )
         except OpenError as e:
             raise DataPreparationInvalidInput(e)
 
