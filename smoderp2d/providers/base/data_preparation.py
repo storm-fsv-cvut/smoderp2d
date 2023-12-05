@@ -493,9 +493,36 @@ class PrepareDataGISBase(PrepareDataBase):
         """Get field names for vector layer."""
         pass
 
+
+    def _check_empty_values(self, table, field, unique=False):
+        """Check empty values in fields.
+
+        :param table: name of table to be checked
+        :param field: name of field to be checked
+        :param unique: True for testing also unique values
+        """
+        values = self._get_field_values(table, field)
+
+        for v in values:
+            if v in (None, ""):
+                raise DataPreparationInvalidInput(
+                    "Incorrect values in field '{}': "
+                    "empty values are not allowed".format(field)
+                )
+
+        if unique:
+            if len(values) != len(set(values)):
+                raise DataPreparationInvalidInput(
+                    "Incorrect values in field '{}': "
+                    "duplicated values are not allowed".format(field)
+                )
     @abstractmethod
-    def _check_empty_values(self, table, field):
-        """Check empty values in fields."""
+    def _get_field_values(self, table, field):
+        """Check empty values in fields.
+
+        :param table: name of table
+        :param field: name of field
+        """
         pass
 
     def run(self):

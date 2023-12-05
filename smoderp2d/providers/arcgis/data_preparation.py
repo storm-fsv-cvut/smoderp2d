@@ -535,19 +535,14 @@ class PrepareData(PrepareDataGISBase):
 
         return self._decode_stream_attr(stream_attr)
 
-    def _check_empty_values(self, table, field):
+    def _get_field_values(self, table, field):
         """See base method for description.
         """
-        oidfn = arcpy.Describe(table).OIDFieldName
-        with arcpy.da.SearchCursor(table, [field, oidfn]) as cursor:
+        with arcpy.da.SearchCursor(table, [field]) as cursor:
+            values = []
             for row in cursor:
-                if row[0] in (None, ""):
-                    raise DataPreparationInvalidInput(
-                        "'{}' values in '{}' table are not correct, "
-                        "empty value found in row {})".format(
-                            field, table, row[1]
-                        )
-                    )
+                values.append(row[0])
+        return values
 
     def _check_input_data(self):
         """See base method for description.
