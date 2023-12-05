@@ -504,7 +504,7 @@ class PrepareDataGISBase(PrepareDataBase):
         values = self._get_field_values(table, field)
 
         for v in values:
-             if v is None or (isinstance(v, str) and v.strip() == ""):
+            if v is None or (isinstance(v, str) and v.strip() == ""):
                 raise DataPreparationInvalidInput(
                     "Incorrect values in field '{}': "
                     "empty values are not allowed".format(field)
