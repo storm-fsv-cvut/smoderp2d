@@ -9,6 +9,11 @@ class HistoryWidget(QListWidgetItem):
     """QListWidget that is able to hold info on historical parameterization."""
 
     def __init__(self, *args, **kwargs):
+        """Initialize an instance.
+
+        Create and empty self.params_dict dictionary and then do
+        the QListWidgetItem things.
+        """
         self.params_dict = {}
         super().__init__(*args, **kwargs)
 
