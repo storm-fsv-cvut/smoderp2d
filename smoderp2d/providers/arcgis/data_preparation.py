@@ -63,6 +63,7 @@ class PrepareData(PrepareDataGISBase):
             )
 
         # perform aoi_mask postprocessing - remove no-data cells on the edges
+        arcpy.conversion.RasterToPolygon(aoi_mask_mem, aoi_polygon_mem, "NO_SIMPLIFY")
         aoi_mask = self.storage.output_filepath('aoi_mask')
         with arcpy.EnvManager(extent=aoi_polygon_mem):
             arcpy.management.Clip(aoi_mask_mem, out_raster=aoi_mask, nodata_value=GridGlobals.NoDataValue)
