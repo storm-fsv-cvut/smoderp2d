@@ -27,8 +27,7 @@ jobs:
 
       - name: Run GRASS test suite (rain_sim)
         run: |
-          grass -c EPSG:5514 /tmp/smoderp2d-rainsim --exec python3 tests/data/import_grass.py tests/data/rain_sim
-          grass -c /tmp/smoderp2d-rainsim/test --exec pytest tests/test_grass.py --reference_dir rain_sim
+          ./tests/run_grass_gistest.sh rain_sim
 
   consistency-longtest:
     strategy:
@@ -48,5 +47,4 @@ jobs:
 
       - name: Run GRASS test suite
         run: |
-          grass -c EPSG:5514 /tmp/smoderp2d-nucice --exec python3 tests/data/import_grass.py tests/data/nucice
-          grass -c /tmp/smoderp2d-nucice/test --exec pytest tests/test_grass.py --reference_dir nucice
+          ./tests/run_grass_gistest.sh nucice

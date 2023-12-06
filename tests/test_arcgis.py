@@ -26,13 +26,13 @@ class TestArcGis:
             ArcGisRunner, self.reference_dir, params(self.reference_dir)
         ).run_dpre()
 
-    def test_002_roff(self):
-        # https://github.com/storm-fsv-cvut/smoderp2d/issues/199
-        # PerformTest(Runner).run_roff(
-        #     os.path.join(os.path.dirname(__file__), "gistest.ini")
-        # )
-        pass
+    # def test_002_roff(self):
+    #     # https://github.com/storm-fsv-cvut/smoderp2d/issues/199
+    #     # PerformTest(Runner).run_roff(
+    #     #     os.path.join(os.path.dirname(__file__), "gistest.ini")
+    #     # )
+    #     pass
 
-    def test_003_full(self):
-        # PerformTest(ArcGisRunner, params).run_full()
-        pass
+    # def test_003_full(self):
+    #     # PerformTest(ArcGisRunner, params).run_full()
+    #     pass
