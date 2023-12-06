@@ -504,8 +504,14 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         :param run: The current run info in format (timestamp, params, maps)
         """
         this_run = HistoryWidget(f'{run[1]["output"]} -- {run[0]}')
-        this_run.saveHistory(run[1], run[2])
-        self.history_tab.insertItem(0, this_run)
+        try:
+            this_run.saveHistory(run[1], run[2])
+            self.history_tab.insertItem(0, this_run)
+        except (KeyError, IndexError) as e:
+            iface.messageBar().pushMessage(
+                f'Failed to add historical item {run[0]}: ', str(e),
+                level=Qgis.Warning
+            )
         self.history_tab.itemDoubleClicked.connect(
             self._loadHistoricalParameters
         )
