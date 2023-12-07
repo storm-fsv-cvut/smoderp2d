@@ -44,9 +44,9 @@ class Module:
         mapset = genv['MAPSET']
         with open(tmp_fn, "w") as tmp:
             tmp.write(f"chcp {self._getWindowsCodePage()}>NUL\n")
-            #tmp.write(f'g.gisenv set="GISDBASE={gisdbase}"\n')
-            #tmp.write(f'g.gisenv set="LOCATION_NAME={location_name}"\n')
-            #tmp.write(f'g.gisenv set="MAPSET={mapset}"\n')
+            tmp.write(r'C:\OSGeo4W\apps\grass\grass83\bin\g.gisenv set="GISDBASE={}"'.format(gisdbase) + "\n")
+            tmp.write(r'C:\OSGeo4W\apps\grass\grass83\bin\g.gisenv set="LOCATION_NAME={}"'.format(location_name) + "\n")
+            tmp.write(r'C:\OSGeo4W\apps\grass\grass83\bin\g.gisenv set="MAPSET={}"'.format(mapset) + "\n")
             tmp.write(' '.join(cmd))
         Popen(tmp_fn, shell=False, env=genv)
         #with Popen(tmp_fn, shell=False, stderr=subprocess.PIPE) as po:
