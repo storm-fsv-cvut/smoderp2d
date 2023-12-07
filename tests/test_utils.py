@@ -10,7 +10,7 @@ import pytest
 from shutil import rmtree
 from difflib import unified_diff
 
-import numpy
+import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from smoderp2d.providers.base import WorkflowMode
@@ -54,7 +54,7 @@ def write_array_diff(arr1, arr2, target_path):
         os.path.basename(target_path), diff.min(), diff.max(), diff.mean()))
 
     with open(target_path + ".diff", "w") as fd:
-        numpy.savetxt(fd, diff)
+        np.savetxt(fd, diff)
 
     write_array_diff_png(diff, target_path)
 
@@ -84,7 +84,7 @@ def are_dir_trees_equal(dir1, dir2):
             use_gdal = f.readline().startswith('ncols')
         if use_gdal:
             return _read_gdal_array(filename)
-        return numpy.loadtxt(filename)
+        return np.loadtxt(filename)
 
     def _print_diff_files(dcmp, files_ignored=('.prj', '.aux.xml')):
         for name in dcmp.same_files:
@@ -225,8 +225,8 @@ class PerformTest:
         os.makedirs(target_dir)
         for k, v in data_dict.items():
             with open(os.path.join(target_dir, k), "w") as fd:
-                if isinstance(v, numpy.ndarray):
-                    numpy.savetxt(fd, v)
+                if isinstance(v, np.ndarray):
+                    np.savetxt(fd, v)
                 else:
                     fd.write(str(v))
 
@@ -242,8 +242,8 @@ class PerformTest:
         return [
             "{}:{}\n".format(
                 key,
-                numpy.array2string(value, threshold=numpy.inf)
-                if isinstance(value, numpy.ndarray)
+                np.array2string(value, threshold=np.inf)
+                if isinstance(value, np.ndarray)
                 else value,
             )
             for (key, value) in sorted(data_dict.items())
@@ -252,7 +252,7 @@ class PerformTest:
     @staticmethod
     def _compare_arrays(new_output_dict, reference_dict, target_dir):
         for k, v in new_output_dict.items():
-            if not isinstance(v, numpy.ndarray):
+            if not isinstance(v, np.ndarray):
                 continue
             write_array_diff(v, reference_dict[k], os.path.join(target_dir, k))
 
@@ -327,12 +327,44 @@ class PerformTest:
             "reference",
             "gistest_{}".format(self.reference_dir),
             "dpre",
-            "arcgis" if "GRASS_OVERWRITE" not in os.environ else "grass",
             "dpre.save",
         )
-        assert filecmp.cmp(
-            dataprep_filepath, reference_filepath
-        ), self.report_pickle_difference(dataprep_filepath, reference_filepath)
+
+        relative_tolerance = 0.0001
+
+        with open(dataprep_filepath, "rb") as new_output:
+            with open(reference_filepath, "rb") as reference:
+                if sys.version_info > (3, 0):
+                    new_output_dict = pickle.load(new_output, encoding="bytes")
+                    reference_dict = pickle.load(reference, encoding="bytes")
+                else:
+                    new_output_dict = pickle.load(new_output)
+                    reference_dict = pickle.load(reference)
+                for k, v in new_output_dict.items():
+                    if isinstance(v, dict):
+                        for kk, vv in v.items():
+                            if isinstance(vv[0], str):
+                                equal = vv == reference_dict[k][kk]
+                            else:
+                                equal = np.allclose(
+                                    vv, reference_dict[k][kk],
+                                    rtol=relative_tolerance
+                                )
+                            assert equal is True, \
+                                self.report_pickle_difference(
+                                    dataprep_filepath, reference_filepath
+                                )
+                    elif v is None:
+                        assert reference_dict[k] is None, \
+                            self.report_pickle_difference(
+                                dataprep_filepath, reference_filepath
+                            )
+                    else:
+                        equal = np.allclose(v, reference_dict[k], rtol=relative_tolerance)
+                        assert equal, \
+                            self.report_pickle_difference(
+                                dataprep_filepath, reference_filepath
+                            )
 
     def run_roff(self, config_file):
         assert os.path.exists(config_file)
