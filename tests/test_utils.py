@@ -80,11 +80,19 @@ def are_dir_trees_equal(dir1, dir2):
         return array
 
     def _read_data(filename):
+        header_rows = 0
+        delimiter = None
         with open(filename) as f:
-            use_gdal = f.readline().startswith('ncols')
+            first_line = f.readline()
+            use_gdal = first_line.startswith('ncols')
+            is_point_csv = first_line.startswith('# Hydro')
         if use_gdal:
             return _read_gdal_array(filename)
-        return np.loadtxt(filename)
+        elif is_point_csv:
+            header_rows = 3
+            delimiter = ';'
+
+        return np.loadtxt(filename, skiprows=header_rows, delimiter=delimiter)
 
     def _print_diff_files(dcmp, files_ignored=('.prj', '.aux.xml')):
         for name in dcmp.same_files:
@@ -144,31 +152,35 @@ def are_dir_trees_equal(dir1, dir2):
             ignore_list.extend(ignore_right)
         return ignore_list
 
-    dirs_cmp = filecmp.dircmp(dir1, dir2, ignore=_ignore_list(dir1, dir2))
-    _print_diff_files(dirs_cmp)
-    if (
-        len(dirs_cmp.left_only) > 0
-        or len(dirs_cmp.right_only) > 0
-        or len(dirs_cmp.funny_files) > 0
-    ):
-        print("Left only: {} Right only: {} Funny files: {}".format(
-            dirs_cmp.left_only, dirs_cmp.right_only, dirs_cmp.funny_files))
-        return False
-    (_, mismatch, errors) = filecmp.cmpfiles(
-        dir1, dir2, dirs_cmp.common_files, shallow=False
-    )
+    relative_tolerance = 0.0001
 
-    if len(mismatch) > 0 or len(errors) > 0:
-        if len(mismatch) > 0:
-            print("Mismatch: {}".format(mismatch))
-        if len(errors) > 0:
-            print("Errors: {}".format(errors))
-        return False
-    for common_dir in dirs_cmp.common_dirs:
-        new_dir1 = os.path.join(dir1, common_dir)
-        new_dir2 = os.path.join(dir2, common_dir)
-        if not are_dir_trees_equal(new_dir1, new_dir2):
-            return False
+    for i in glob.glob(os.path.join(dir1, '*.asc')):
+        new_output = _read_data(i)
+        reference = _read_data(os.path.join(dir2, os.path.split(i)[1]))
+        equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+        assert equal, \
+            _print_diff_files(
+                filecmp.dircmp(dir1, dir2, ignore=_ignore_list(dir1, dir2))
+            )
+    for i in glob.glob(os.path.join(dir1, 'control', '*.asc')):
+        new_output = _read_data(i)
+        reference = _read_data(
+            os.path.join(dir2, 'control', os.path.split(i)[1])
+        )
+        equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+        assert equal, \
+            _print_diff_files(
+                filecmp.dircmp(dir1, dir2, ignore=_ignore_list(dir1, dir2))
+            )
+    for i in glob.glob(os.path.join(dir1, 'control_point', '*.csv')):
+        new_output = _read_data(i)
+        reference = _read_data(os.path.join(dir2, 'control_point', os.path.split(i)[1]))
+        equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+        assert equal, \
+            _print_diff_files(
+                filecmp.dircmp(dir1, dir2, ignore=_ignore_list(dir1, dir2))
+            )
+
     return True
 
 
