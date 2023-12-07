@@ -12,7 +12,7 @@ fi
 LOCATION=/tmp/smoderp2d-$1
 
 rm -rf $LOCATION
-grass -c EPSG:5514 $LOCATION --exec python3 tests/data/import_grass.py tests/data/rain_sim
+grass -c EPSG:5514 $LOCATION --exec python3 tests/data/import_grass.py tests/data/$1
 
 grass -c $LOCATION/test --exec python3 -m pytest tests/test_grass.py -v $k_flag --reference_dir $1
 returncode=$?
