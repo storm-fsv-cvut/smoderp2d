@@ -5,6 +5,7 @@ from smoderp2d.core.general import Globals
 
 
 class TimesPrt(object):
+    """TODO."""
     def __init__(self):
         if not Globals.prtTimes:
             self.fTimes = None
@@ -31,6 +32,12 @@ class TimesPrt(object):
         self.times.sort()
 
     def prt(self, time, dt, sur):
+        """TODO.
+
+        :param time: TODO
+        :param dt: TODO
+        :param sur: TODO
+        """
         if not self.fTimes:
             return
 
@@ -38,11 +45,11 @@ class TimesPrt(object):
             return
 
         if (time < self.times[self.__n]) and (self.times[self.__n] <= time + dt):
-
             cas = '%015.2f' % (time + dt)
-            filein = os.path.join(Globals.outdir,
-                                 self.outsubrid,
-                                 'H' + str(cas).replace('.', '_') + '.asc')
+            filein = os.path.join(
+                Globals.outdir, self.outsubrid,
+                'H' + str(cas).replace('.', '_') + '.asc'
+            )
             Logger.info("Printing total H into file {}".format(filein))
 
             tmp = sur.arr.h_total_new

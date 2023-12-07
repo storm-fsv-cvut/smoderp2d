@@ -13,28 +13,39 @@ from smoderp2d.core.general import GridGlobals, Globals
 
 
 class CumulativeData:
+    """TODO."""
+
     def __init__(self, data_type, file_name):
+        """TODO.
+
+        :param data_type: TODO
+        :param file_name: TODO
+        """
         self.data_type = data_type
         self.file_name = file_name
 
 
 class CumulativeSubsurfacePass(object):
-    """
-    Empty (pass) Class
+    """Empty (pass) Class.
 
     Class is inherited by the class Cumulative if the subsurface flow is not
     desired.
     """
+
     def __init__(self):
+        """TODO."""
         self.data = {}
 
     def update_cumulative_sur(self, subsurface):
+        """TODO.
+
+        :param subsurface: TODO
+        """
         pass
 
 
 class CumulativeSubsurface(CumulativeSubsurfacePass):
-    """
-    Max and cumulative values of the subsurface flow
+    """Max and cumulative values of the subsurface flow.
 
     Stores arrays of max or cumulative values of important variables of
     the subsurface flow.
@@ -44,6 +55,7 @@ class CumulativeSubsurface(CumulativeSubsurfacePass):
     """
 
     def __init__(self):
+        """TODO."""
         super(CumulativeSubsurface, self).__init__()
 
         Logger.info('Subsurface')
@@ -62,8 +74,14 @@ class CumulativeSubsurface(CumulativeSubsurfacePass):
         })
 
     def update_cumulative_subsur(self, i, j, sub, q_subsur):
-        """
-        Method is used after each time step to save the desired variables.
+        """Save the desired variables.
+
+        Method is used after each time step.
+
+        :param i: TODO
+        :param j: TODO
+        :param sub: TODO
+        :param q_subsur: TODO
         """
         self.exfiltration[i][j] += sub.exfiltration * GridGlobals.pixel_area
         self.percolation[i][j] += sub.percolation * GridGlobals.pixel_area
@@ -76,14 +94,14 @@ class CumulativeSubsurface(CumulativeSubsurfacePass):
 
 
 class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfacePass):
-    """
-    Max and Cumulative values
+    """Max and Cumulative values.
 
     Stores array of max or cumulative values at of important variables from
     the surface and rill flow.
     """
 
     def __init__(self):
+        """TODO."""
         super(Cumulative, self).__init__()
 
         Logger.info('Save cumulative and maximum values from: Surface')
@@ -197,8 +215,13 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         self.shear_sheet = self.h_sheet_tot * 9807 * Globals.mat_slope
 
     def return_str_val(self, i, j):
-        """ returns the cumulative precipitation in mm and cumulative runoff
-        at a given cell"""
+        """Return the cumulative precipitation in mm and cumulative runoff.
+
+        Returns the values at a given cell.
+
+        :param i: TODO
+        :param j: TODO
+        """
         sw = Globals.slope_width
         return (
             '{:.4e}'.format(self.precipitation[i][j]/GridGlobals.pixel_area),

@@ -26,6 +26,10 @@
 # % key: d
 # % description: Perform data preparation only and exit
 # %end
+# %flag
+# % key: t
+# % description: Export temporary data
+# %end
 # %option G_OPT_R_ELEV
 # % description: Input surface raster
 # % guisection: Data preparation
@@ -79,6 +83,12 @@
 # % required: no
 # % guisection: Data preparation
 # %end
+# %option G_OPT_DB_COLUMN
+# % key: points_fieldname
+# % description: Field with the input points idenfifier
+# % required: no
+# % guisection: Settings
+# %end
 # %option G_OPT_DB_TABLE
 # % key: table_soil_vegetation
 # % description: Table of soil and land use information
@@ -105,6 +115,13 @@
 # % description: Reach shape table code
 # % guisection: Settings
 # %end
+# %option
+# % key: flow_direction
+# % description: Flow direction
+# % guisection: Settings
+# % options: single,multiple
+# % answer: single
+# %end
 # %option G_OPT_M_DIR
 # % key: output
 # % description: Name for output directory where to store results
@@ -122,6 +139,7 @@ from smoderp2d.exceptions import ProviderError
 
 if __name__ == "__main__":
     options, flags = gs.parser()
+    options['generate_temporary'] = flags['t']
 
     try:
         runner = GrassGisRunner()

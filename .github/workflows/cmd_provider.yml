@@ -10,65 +10,57 @@ on:
 
 jobs:
   smoderp2d-quicktest-sheet:
-    strategy:
-      matrix:
-        python-version:
-          # - "2.7"
-          - "3.8"
-          - "3.11.2"
-
     uses: ./.github/workflows/cmd_template.yml
     with:
-      python-version: ${{ matrix.python-version }}
-      pytest-suite: tests/test_cmd.py --config quicktest_sheet.ini
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_sheet.ini
 
   smoderp2d-quicktest-rill:
-    strategy:
-      matrix:
-        python-version:
-          # - "2.7"
-          - "3.8"
-          - "3.11.2"
-
     uses: ./.github/workflows/cmd_template.yml
     with:
-      python-version: ${{ matrix.python-version }}
-      pytest-suite: tests/test_cmd.py --config quicktest_rill.ini
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_rill.ini
+
+  smoderp2d-quicktest-sheet-stream:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_sheet_stream.ini
+
+  smoderp2d-quicktest-rill-mfda:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_rill_mfda.ini
+
+  smoderp2d-quicktest-stream-rill:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_stream_rill.ini
 
   smoderp2d-longtest-sheet:
-    strategy:
-      matrix:
-        python-version:
-          # - "2.7"
-          - "3.8"
-          - "3.11.2"
-
     uses: ./.github/workflows/cmd_template.yml
     with:
-      python-version: ${{ matrix.python-version }}
-      pytest-suite: tests/test_cmd.py --config test_sheet.ini
+      pytest-suite: tests/test_cmd.py --config config_files/test_sheet.ini
 
   smoderp2d-longtest-rill:
-    strategy:
-      matrix:
-        python-version:
-          # - "2.7"
-          - "3.8"
-          - "3.11.2"
-
     uses: ./.github/workflows/cmd_template.yml
     with:
-      python-version: ${{ matrix.python-version }}
-      pytest-suite: tests/test_cmd.py --config test_rill.ini
+      pytest-suite: tests/test_cmd.py --config config_files/test_rill.ini
+
+  smoderp2d-longtest-sheet-stream:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/test_sheet_stream.ini
+
+  smoderp2d-longtest-stream-rill-mfda:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill_mfda.ini
+
+  smoderp2d-longtest-stream-rill:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill.ini
 
   profile1d:
-    strategy:
-      matrix:
-        python-version:
-          - "3.8"
-          - "3.11.2"
-
     uses: ./.github/workflows/cmd_template.yml
     with:
-      python-version: ${{ matrix.python-version }}
       pytest-suite: tests/test_profile1d.py
+ 

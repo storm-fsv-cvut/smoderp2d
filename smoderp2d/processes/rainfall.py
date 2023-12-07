@@ -50,6 +50,11 @@ class ErrorInRainfallRecord(Error):
 
 
 def load_precipitation(fh):
+    """TODO.
+
+    :param fh: TODO
+    :return: TODO
+    """
     y2 = 0
     try:
         fh = open(fh, "r")
@@ -114,7 +119,6 @@ def load_precipitation(fh):
                     sr[i][1] = sr_int
 
         # for  i, item in enumerate(sr):
-        # print item[0], '\t', item[1]
         return sr, itera
 
     except IOError:
@@ -124,14 +128,22 @@ def load_precipitation(fh):
         raise
 
 
-def timestepRainfall(iterace, total_time, delta_t, tz, sr):
-    """Function returns a rainfall amount for current time step if two or
-       more rainfall records belongs to one time step the function
-       integrates the rainfall amount.
+def timestepRainfall(itera, total_time, delta_t, tz, sr):
+    """Return a rainfall amount for current time step.
+
+    If two or more rainfall records belongs to one time step the function
+    integrates the rainfall amount.
+
+    :param itera: TODO
+    :param total_time: TODO
+    :param delta_t: TODO
+    :param tz: TODO
+    :param sr: TODO
+    :return: TODO
     """
     z = tz
     # skontroluje jestli neni mimo srazkovy zaznam
-    if z > (iterace - 1):
+    if z > (itera - 1):
         rainfall = ma.zeros((GridGlobals.r, GridGlobals.c))
     else:
         # skontroluje jestli casovy krok, ktery prave resi, je stale vramci
@@ -147,7 +159,7 @@ def timestepRainfall(iterace, total_time, delta_t, tz, sr):
             # skoci do dalsiho zaznamu
             z += 1
             # koukne jestli ten uz neni mimo
-            if z > (iterace - 1):
+            if z > (itera - 1):
                 rainfall += 0
             else:
                 # pokud je total_time + delta_t stale dal nez konec posunuteho
@@ -159,12 +171,12 @@ def timestepRainfall(iterace, total_time, delta_t, tz, sr):
                         0
                     )
                     z += 1
-                    if z > (iterace - 1):
+                    if z > (itera - 1):
                         break
                 # nakonec pricte to co je v poslednim zaznamu kde je
                 # total_time + delta_t pred konce zaznamu
                 # nebo pricte nulu pokud uz tam zadny zaznam neni
-                if z > (iterace - 1):
+                if z > (itera - 1):
                     rainfall += 0
                 else:
                     rainfall += sr[z][1] * (
@@ -176,6 +188,13 @@ def timestepRainfall(iterace, total_time, delta_t, tz, sr):
 
 
 def current_rain(rain, rainfallm, sum_interception):
+    """TODO.
+
+    :param rain: TODO
+    :param rainfallm: TODO
+    :param sum_interception: TODO
+    :return: TODO
+    """
     # jj
     rain_veg = rain.veg
     rain_ppl = rain.ppl
@@ -194,14 +213,14 @@ def current_rain(rain, rainfallm, sum_interception):
         ma.where(
             sum_interception >= rain_pi,
             rainfallm - (rain_pi - sum_interception_pre),
-            # rest of intercetpion, netto rainfallm
+            # rest of interception, netto rainfallm
             rainfallm - interc  # netto rainfallm
         ),
         rainfallm
     )
     rain_veg = ma.where(
         ma.logical_and(ma.logical_not(rain_veg), sum_interception >= rain_pi),
-        True,  # as vegetatio interception is full
+        True,  # as vegetation, interception is full
         rain_veg
     )
 

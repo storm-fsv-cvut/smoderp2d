@@ -15,12 +15,24 @@ from smoderp2d.core.general import GridGlobals
 from smoderp2d.providers import Logger
 
 
-def new_mfda(mat_dem, mat_nan, mat_fd, dy, dx, rows, cols):
+def new_mfda(mat_dem, mat_nan, mat_fd):
+    """TODO.
+
+    :param mat_dem: TODO
+    :param mat_nan: TODO
+    :param mat_fd: TODO
+    """
     state = 0
     state2 = 0
 
+    rows = GridGlobals.r
+    cols = GridGlobals.c
+    dy = GridGlobals.dy
+    dx = GridGlobals.dx
+
     val_array = ma.masked_array(
-        np.zeros([rows, cols, 8], float), mask=GridGlobals.masks
+        np.zeros([rows, cols, 8], float),
+        mask=np.stack((GridGlobals.masks,) * 8, 2)
     )
     val_array2 = ma.masked_array(
         np.zeros([rows, cols], float), mask=GridGlobals.masks
@@ -31,18 +43,10 @@ def new_mfda(mat_dem, mat_nan, mat_fd, dy, dx, rows, cols):
 
     Logger.info("Computing multiple flow direction algorithm...")
 
-    # for i in range(rows):
-    #     for j in range(cols):
-    #         print i,j,mat_dem[i][j]
-
     # function determines if cell neighborhood has miltiple cell with exactly
     # same values of height, and then it saves that cell as NoData
     mat_dem, mat_nan = removeCellsWithSameHeightNeighborhood(
         mat_dem, mat_nan, rows, cols)
-
-    # for i in range(rows):
-    #   for j in range(cols):
-    #       print i,j,mat_dem[i][j]
 
     # main multiple-flow direction algorithm calculation
     for i in range(rows):
@@ -243,16 +247,15 @@ def new_mfda(mat_dem, mat_nan, mat_fd, dy, dx, rows, cols):
 
                     if abs(sum(flprop) - 1.0) > 1e-5:
                         Logger.info(
-                            "Error - sum of flow proportions is not equal "
-                            "to 1.0"
+                            f"Error - sum of flow proportions {sum(flprop)} in"
+                            f"cell ({i}, {j}) is not equal to 1.0"
                         )
-                        Logger.info(sum(flprop), i, j)
                     if abs(sum(flow_amount_cell) - 1.0) > 1e-5:
                         Logger.info(
-                            "Error - sum of flow amount in cell is not eqaul "
-                            "to 1.0"
+                            f"Error - sum of flow amount "
+                            f"{sum(flow_amount_cell)} in cell ({i}, {j}) is "
+                            f"not equal to 1.0"
                         )
-                        Logger.info(sum(flow_amount_cell), i, j)
 
                     # same direction as in ArcGIS
                     flow_direction = [
