@@ -13,6 +13,6 @@ gsetup.init(gisdb, "world_latlong_wgs84", 'PERMANENT')
 from grass.pygrass.modules import Module
 
 from subprocess import PIPE
-m = Module("g.gisenv", stdout_=PIPE)
-print(m.outputs.stdout)
+Module("g.region", n=90, s=0, w=0, e=100, res=0.03)
+Module("r.random.surface", output="x", overwrite=True)
 print("done")
