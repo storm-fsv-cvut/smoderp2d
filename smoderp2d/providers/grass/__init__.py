@@ -1,6 +1,9 @@
 import os
 import sys
 import logging
+import subprocess
+import tempfile
+import shutil
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.exceptions import ProviderError
@@ -10,51 +13,52 @@ from smoderp2d.providers import Logger
 
 import grass.script as gs
 from grass.pygrass.gis.region import Region
-from grass.pygrass.modules import Module as GrassModule
 from grass.pygrass.raster import numpy2raster
+from grass.pygrass.modules import Module as GrassModule
 
-
-class Module:
+class Popen(subprocess.Popen):
     def __init__(self, *args, **kwargs):
         if sys.platform == 'win32':
-            import subprocess
-            import time
-            import shutil
-            from qgis.core import Qgis, QgsMessageLog
-
-            #si = subprocess.STARTUPINFO()
-            #si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            #si.wShowWindow = subprocess.SW_HIDE
             si = subprocess.STARTUPINFO()
             si.dwFlags = subprocess.CREATE_NEW_CONSOLE | subprocess.STARTF_USESHOWWINDOW
             si.wShowWindow = subprocess.SW_HIDE
-            m = GrassModule(*args, **kwargs, run_=False)
-            # very ugly hack of m.run()
-            #m._finished = False
-            #if m.inputs["stdin"].value:
-            #    m.stdin = m.inputs["stdin"].value
-            #    m.stdin_ = subprocess.PIPE
-            #m.start_time = time.time()
-            cmd = m.make_cmd()
-            cmd = [shutil.which(cmd[0])] + cmd[1:]
-            with open(r"C:\users\martin\cmd.bat", "w") as fd:
-                fd.write("chcp {self._getWindowsCodePage()}>NUL\n")
-                fd.write(' '.join(cmd))
-            with subprocess.Popen( #gs.core.Popen(
-                r"C:\users\martin\cmd.bat",
-                shell=False,
-                universal_newlines=True,
-                stdin=subprocess.DEVNULL,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                env=m.env_,
-                startupinfo=si
-            ) as m._popen:
-                for line in iter(lambda: self._readline_with_recover(m._popen.stdout), ''):
-                    QgsMessageLog.logMessage(line, 'SMODERP2D', level=Qgis.Info)
+            kwargs['startupinfo'] = si
+        super().__init__(*args, **kwargs)
 
-        else:
-            GrassModule(*args, **kwargs)
+class Module:
+    def __init__(self, *args, **kwargs):
+        cmd = [shutil.which(args[0])]
+        for p, v in kwargs.items():
+            if p == 'overwrite' and v is True:
+                cmd.append(f'--{p}')
+            elif p == "flags":
+                cmd.append(f"-{v}")
+            else:
+                cmd.append(f"{p}={v}")
+        Logger.info(' '.join(cmd))
+        tmp_fn = os.path.join(tempfile.gettempdir(), "cmd.bat") # TODO: better name
+        genv = gs.gisenv()
+        Logger.info(str(genv))
+        gisdbase = genv['GISDBASE']
+        location_name = genv['LOCATION_NAME']
+        mapset = genv['MAPSET']
+        with open(tmp_fn, "w") as tmp:
+            tmp.write(f"chcp {self._getWindowsCodePage()}>NUL\n")
+            #tmp.write(f'g.gisenv set="GISDBASE={gisdbase}"\n')
+            #tmp.write(f'g.gisenv set="LOCATION_NAME={location_name}"\n')
+            #tmp.write(f'g.gisenv set="MAPSET={mapset}"\n')
+            tmp.write(' '.join(cmd))
+        Popen(tmp_fn, shell=False, env=genv)
+        #with Popen(tmp_fn, shell=False, stderr=subprocess.PIPE) as po:
+        #    for line in iter(lambda: self._readline_with_recover(po.stderr), ''):
+        #        Logger.info(str(line))
+
+    @staticmethod
+    def _readline_with_recover(stdout):
+        try:
+            return stdout.readline()
+        except UnicodeDecodeError:
+            return ''  # replaced-text
 
     @staticmethod
     def _getWindowsCodePage():
@@ -64,13 +68,6 @@ class Module:
         """
         from ctypes import cdll
         return str(cdll.kernel32.GetACP())
-
-    @staticmethod
-    def _readline_with_recover(stdout):
-        try:
-            return stdout.readline()
-        except UnicodeDecodeError:
-            return ''  # replaced-text
 
 class GrassGisWriter(BaseWriter):
     _vector_extension = '.gml'

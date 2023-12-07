@@ -677,23 +677,17 @@ class PrepareData(PrepareDataGISBase):
         return fields
 
     def _run_grass_module(self, *args, **kwargs):
-        # if sys.platform == 'win32':
-        #     si = subprocess.STARTUPINFO()
-        #     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        #     si.wShowWindow = subprocess.SW_HIDE
-        #     Module(*args, env_={'startupinfo': si}, **kwargs)
-        # else:
-        try:
-            with tempfile.NamedTemporaryFile(delete=False) as tmp:
-                kwargs['stderr_'] = tmp
-                tmp_fn = tmp.name
-                m = Module(*args, **kwargs)
-        except CalledModuleError as e:
-            with open(tmp_fn) as fd:
-                error_msg = fd.read()
-            Logger.error(f"Data preparation failed:\n{e}\n{error_msg}")
-            raise DataPreparationError(f"Data preparation failed: {error_msg}")
-
+        # try:
+        #     with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        #         kwargs['stderr_'] = tmp
+        #         tmp_fn = tmp.name
+        #         m = Module(*args, **kwargs)
+        # except CalledModuleError as e:
+        #     with open(tmp_fn) as fd:
+        #         error_msg = fd.read()
+        #     Logger.error(f"Data preparation failed:\n{e}\n{error_msg}")
+        #     raise DataPreparationError(f"Data preparation failed: {error_msg}")
+        Module(*args, **kwargs)
         if self._input_params['generate_temporary'] is False:
             return 0
 
