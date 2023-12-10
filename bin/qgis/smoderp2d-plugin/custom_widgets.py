@@ -1,7 +1,6 @@
 import os
 
 from PyQt5.QtWidgets import QListWidgetItem
-
 from qgis.core import QgsProject
 
 
