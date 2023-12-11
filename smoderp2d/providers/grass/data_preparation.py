@@ -10,7 +10,6 @@ from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput, \
     DataPreparationError, DataPreparationNoIntersection
 from smoderp2d.providers.base.data_preparation import PrepareDataGISBase
-from smoderp2d.providers.grass import Module
 
 from grass.pygrass.modules import Module
 from grass.pygrass.vector import VectorTopo, Vector
@@ -20,6 +19,7 @@ from grass.pygrass.gis import Mapset
 from grass.pygrass.gis.region import Region
 from grass.exceptions import CalledModuleError, OpenError
 from grass.script.core import parse_key_val
+
 
 class PrepareData(PrepareDataGISBase):
 
@@ -677,17 +677,23 @@ class PrepareData(PrepareDataGISBase):
         return fields
 
     def _run_grass_module(self, *args, **kwargs):
-        # try:
-        #     with tempfile.NamedTemporaryFile(delete=False) as tmp:
-        #         kwargs['stderr_'] = tmp
-        #         tmp_fn = tmp.name
-        #         m = Module(*args, **kwargs)
-        # except CalledModuleError as e:
-        #     with open(tmp_fn) as fd:
-        #         error_msg = fd.read()
-        #     Logger.error(f"Data preparation failed:\n{e}\n{error_msg}")
-        #     raise DataPreparationError(f"Data preparation failed: {error_msg}")
-        Module(*args, **kwargs)
+        # if sys.platform == 'win32':
+        #     si = subprocess.STARTUPINFO()
+        #     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        #     si.wShowWindow = subprocess.SW_HIDE
+        #     Module(*args, env_={'startupinfo': si}, **kwargs)
+        # else:
+        try:
+            with tempfile.NamedTemporaryFile(delete=False) as tmp:
+                kwargs['stderr_'] = tmp
+                tmp_fn = tmp.name
+                m = Module(*args, **kwargs)
+        except CalledModuleError as e:
+            with open(tmp_fn) as fd:
+                error_msg = fd.read()
+            Logger.error(f"Data preparation failed:\n{e}\n{error_msg}")
+            raise DataPreparationError(f"Data preparation failed: {error_msg}")
+
         if self._input_params['generate_temporary'] is False:
             return 0
 

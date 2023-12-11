@@ -1,8 +1,7 @@
 import os
 import sys
-from subprocess import PIPE
+import subprocess
 
-from smoderp2d.providers.grass import Popen
 
 def find_grass_bin():
     """Find GRASS binary."""
@@ -36,9 +35,8 @@ def _grass_loc():
 
     startcmd = [grass_bin_path, '--config', 'path']
 
-    p = Popen(startcmd,
-              stdout=PIPE, stderr=PIPE
-    )
+    p = subprocess.Popen(startcmd,
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
 
     if p.returncode != 0:

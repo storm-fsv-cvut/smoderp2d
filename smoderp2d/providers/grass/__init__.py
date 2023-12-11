@@ -1,9 +1,5 @@
 import os
-import sys
 import logging
-import subprocess
-import tempfile
-import shutil
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.exceptions import ProviderError
@@ -13,61 +9,9 @@ from smoderp2d.providers import Logger
 
 import grass.script as gs
 from grass.pygrass.gis.region import Region
+from grass.pygrass.modules import Module
 from grass.pygrass.raster import numpy2raster
-from grass.pygrass.modules import Module as GrassModule
 
-class Popen(subprocess.Popen):
-    def __init__(self, *args, **kwargs):
-        if sys.platform == 'win32':
-            si = subprocess.STARTUPINFO()
-            si.dwFlags = subprocess.CREATE_NEW_CONSOLE | subprocess.STARTF_USESHOWWINDOW
-            si.wShowWindow = subprocess.SW_HIDE
-            kwargs['startupinfo'] = si
-        super().__init__(*args, **kwargs)
-
-class Module:
-    def __init__(self, *args, **kwargs):
-        cmd = [shutil.which(args[0])]
-        for p, v in kwargs.items():
-            if p == 'overwrite' and v is True:
-                cmd.append(f'--{p}')
-            elif p == "flags":
-                cmd.append(f"-{v}")
-            else:
-                cmd.append(f"{p}={v}")
-        Logger.info(' '.join(cmd))
-        tmp_fn = os.path.join(tempfile.gettempdir(), "cmd.bat") # TODO: better name
-        genv = gs.gisenv()
-        Logger.info(str(genv))
-        gisdbase = genv['GISDBASE']
-        location_name = genv['LOCATION_NAME']
-        mapset = genv['MAPSET']
-        with open(tmp_fn, "w") as tmp:
-            tmp.write(f"chcp {self._getWindowsCodePage()}>NUL\n")
-            tmp.write(r'C:\OSGeo4W\apps\grass\grass83\bin\g.gisenv set="GISDBASE={}"'.format(gisdbase) + "\n")
-            tmp.write(r'C:\OSGeo4W\apps\grass\grass83\bin\g.gisenv set="LOCATION_NAME={}"'.format(location_name) + "\n")
-            tmp.write(r'C:\OSGeo4W\apps\grass\grass83\bin\g.gisenv set="MAPSET={}"'.format(mapset) + "\n")
-            tmp.write(' '.join(cmd))
-        Popen(tmp_fn, shell=False, env=genv)
-        #with Popen(tmp_fn, shell=False, stderr=subprocess.PIPE) as po:
-        #    for line in iter(lambda: self._readline_with_recover(po.stderr), ''):
-        #        Logger.info(str(line))
-
-    @staticmethod
-    def _readline_with_recover(stdout):
-        try:
-            return stdout.readline()
-        except UnicodeDecodeError:
-            return ''  # replaced-text
-
-    @staticmethod
-    def _getWindowsCodePage():
-        """
-        Determines MS-Windows CMD.exe shell codepage.
-        Used into GRASS exec script under MS-Windows.
-        """
-        from ctypes import cdll
-        return str(cdll.kernel32.GetACP())
 
 class GrassGisWriter(BaseWriter):
     _vector_extension = '.gml'
