@@ -104,11 +104,11 @@ or define `QGIS_PLUGINPATH` in `Settings -> Options -> System` and restart QGIS:
 
 And enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
 
-#### Known issues
+#### Known issue
 
 On MS Windows QGIS plugin suffers by blinking windows when starting computation.
-This can be solved by copying ``core.py`` from ``smoderp2d\bin\qgis\smoderp2d-plugin\grass_patch``
-to GRASS target directory and overwrite existing file.
+This can be solved by copying ``core.py`` file located in ``smoderp2d\bin\qgis\smoderp2d-plugin\grass_patch``
+to GRASS target directory.
 
 The GRASS target directory is typically located in:
 
