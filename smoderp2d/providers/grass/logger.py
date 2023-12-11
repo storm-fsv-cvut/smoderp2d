@@ -25,6 +25,7 @@ class GrassGisLogHandler(logging.Handler):
         if not record.msg:
             return
 
+        verbose_level = os.environ['GRASS_VERBOSE']
         os.environ['GRASS_VERBOSE'] = '1'  # show message
 
         if record.levelno >= PROGRESS:
@@ -39,7 +40,7 @@ class GrassGisLogHandler(logging.Handler):
         elif record.levelno >= logging.DEBUG:
             debug(record.msg)
 
-        os.environ['GRASS_VERBOSE'] = '-1'  # hide module messages
+        os.environ['GRASS_VERBOSE'] = verbose_level  # hide module messages
 
 
 class QGisLogHandler(logging.Handler):
