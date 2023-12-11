@@ -1,5 +1,7 @@
 import os
+import sys
 import logging
+import subprocess
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.exceptions import ProviderError
@@ -12,6 +14,14 @@ from grass.pygrass.gis.region import Region
 from grass.pygrass.modules import Module
 from grass.pygrass.raster import numpy2raster
 
+class Popen(subprocess.Popen):
+    def __init__(self, *args, **kwargs):
+        if sys.platform == 'win32':
+            si = subprocess.STARTUPINFO()
+            si.dwFlags = subprocess.CREATE_NEW_CONSOLE | subprocess.STARTF_USESHOWWINDOW
+            si.wShowWindow = subprocess.SW_HIDE
+            kwargs['startupinfo'] = si
+        super().__init__(*args, **kwargs)
 
 class GrassGisWriter(BaseWriter):
     _vector_extension = '.gml'

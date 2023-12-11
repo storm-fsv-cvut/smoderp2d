@@ -171,6 +171,8 @@ class QGISRunner(GrassGisRunner):
         from grass.pygrass.gis import Mapset
         from qgis.core import QgsProject
 
+        from smoderp2d.providers.grass import Popen
+
         epsg = QgsProject.instance().crs().authid()
 
         # path to temp location
@@ -182,9 +184,10 @@ class QGISRunner(GrassGisRunner):
         string_length = 16
         location = binascii.hexlify(os.urandom(string_length)).decode("utf-8")
 
-        subprocess.call(
+        p = Popen(
             [grass_bin_path, '-e', f'-c {epsg}', os.path.join(gisdb, location)]
         )
+        p.wait()
 
         # # create location
         # try:
