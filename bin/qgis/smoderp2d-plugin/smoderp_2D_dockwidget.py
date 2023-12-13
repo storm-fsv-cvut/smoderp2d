@@ -44,7 +44,7 @@ from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
 # ONLY FOR TESTING PURPOSES (!!!)
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-from smoderp2d import QGISRunner
+from smoderp2d.runners.qgis import QGISRunner
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.providers import Logger
 from smoderp2d.exceptions import ProviderError, ComputationAborted
