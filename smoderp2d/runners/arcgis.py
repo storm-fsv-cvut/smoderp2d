@@ -1,3 +1,4 @@
+import os
 from smoderp2d.runners.base import Runner
 
 class ArcGisRunner(Runner):
