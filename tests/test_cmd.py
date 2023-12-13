@@ -5,7 +5,7 @@ import sys
 from test_utils import PerformTest, _setup
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from smoderp2d.runners.base import Runner
+from smoderp2d import Runner
 
 
 @pytest.fixture(scope='class')
