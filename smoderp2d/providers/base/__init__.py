@@ -418,14 +418,14 @@ class BaseProvider(object):
                     elif os.path.isdir(file_path):
                         shutil.rmtree(file_path)
             except PermissionError as e:
-                raise SmoderpError(
+                raise ProviderError(
                     f"Unable to cleanup output directory: {e}"
                 )
         else:
             try:
                 os.makedirs(output_dir)
             except PermissionError as e:
-                raise SmoderpError(
+                raise ProviderError(
                     f"Unable to create output directory: {e}"
                 )
 
