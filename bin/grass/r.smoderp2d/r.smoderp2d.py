@@ -133,7 +133,7 @@ import sys
 import grass.script as gs
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from smoderp2d import GrassGisRunner
+from smoderp2d.runners.grass import GrassGisRunner
 from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.exceptions import ProviderError
 

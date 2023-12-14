@@ -9,7 +9,7 @@ if py3:
     from importlib import reload
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-from smoderp2d import ArcGisRunner
+from smoderp2d.runners.arcgis import ArcGisRunner
 from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.exceptions import ProviderError
 

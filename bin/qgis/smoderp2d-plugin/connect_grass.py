@@ -2,7 +2,7 @@ import os
 import sys
 import subprocess
 
-from smoderp2d.providers.grass import Popen
+from smoderp2d.runners.qgis import Popen
 
 def find_grass_bin():
     """Find GRASS binary."""

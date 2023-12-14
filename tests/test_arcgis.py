@@ -4,7 +4,7 @@ import pytest
 from test_utils import PerformTest, data_dir, class_manager
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-from smoderp2d import ArcGisRunner
+from smoderp2d.runners.arcgis import ArcGisRunner
 
 def params(reference_dir):
     return {
