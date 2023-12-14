@@ -7,6 +7,7 @@ import binascii
 from smoderp2d.runners.grass import GrassGisRunner
 
 class Popen(subprocess.Popen):
+    """Avoid displaying cmd windows on MS Windows."""
     def __init__(self, *args, **kwargs):
         if sys.platform == 'win32':
             si = subprocess.STARTUPINFO()
@@ -16,10 +17,9 @@ class Popen(subprocess.Popen):
         super().__init__(*args, **kwargs)
 
 class QGISRunner(GrassGisRunner):
-    """TODO."""
-
+    """Run SMODERP2D in QGIS environment."""
     def __init__(self, progress_reporter, grass_bin_path='grass'):
-        """TODO.
+        """Initialize runner.
 
         :param progress_reporter: TODO
         :param grass_bin_path: TODO
@@ -31,7 +31,6 @@ class QGISRunner(GrassGisRunner):
         self.progress_reporter = progress_reporter
 
         # create temp GRASS location
-
         epsg = QgsProject.instance().crs().authid()
 
         # path to temp location
@@ -66,6 +65,8 @@ class QGISRunner(GrassGisRunner):
         super().__init__()
 
     def _get_provider(self):
+        """See base method for description.
+        """
         from smoderp2d.providers.grass import GrassGisProvider
         from smoderp2d.providers.grass.logger import QGisLogHandler
         

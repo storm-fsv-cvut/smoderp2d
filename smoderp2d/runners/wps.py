@@ -1,9 +1,8 @@
 from smoderp2d.runners.base import Runner
 
 class WpsRunner(Runner):
-    """TODO."""
-
+    """Run SMODERP2D as WPS process."""
     def __init__(self, **args):
-        """TODO."""
+        """Initialize runner."""
         provider_class = self._provider_factory()
         self._provider = provider_class(**args)

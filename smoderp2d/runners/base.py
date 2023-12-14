@@ -12,13 +12,16 @@ __version__ = "2.0.dev"
 
 
 class Runner(object):
-    """TODO."""
+    """Run SMODERP2D."""
 
     def __init__(self):
-        """TODO."""
         self._provider = self._get_provider()
 
     def _get_provider(self):
+        """Get provider object instace.
+
+        :return provider class instance
+        """
         if os.getenv('SMODERP2D_PROFILE1D'):
             from smoderp2d.providers.profile1d import Profile1DProvider
             provider_class = Profile1DProvider()
@@ -30,7 +33,7 @@ class Runner(object):
 
     @property
     def workflow_mode(self):
-        """TODO."""
+        """Get workflow mode."""
         return self._provider.args.workflow_mode
 
     @workflow_mode.setter
@@ -46,7 +49,7 @@ class Runner(object):
             )
 
     def run(self):
-        """TODO."""
+        """Perform computation."""
         # print logo
         self._provider.logo()
 
@@ -95,10 +98,8 @@ class Runner(object):
         return 0
 
     def set_options(self, options):
-        """TODO.
+        """Set options.
 
-        :param options: TODO
+        :param options: options to be set by provider
         """
         self._provider.set_options(options)
-
-
