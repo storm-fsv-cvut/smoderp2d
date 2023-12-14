@@ -30,10 +30,9 @@ PARAMETER_SOILVEGTABLE_TYPE = 11
 PARAMETER_STREAM = 12
 PARAMETER_CHANNEL_TYPE = 13
 PARAMETER_CHANNEL_PROPS_TABLE = 14
-PARAMETER_DATAPREP_ONLY = 15
-PARAMETER_FLOW_DIRECTION = 16
-PARAMETER_GENERATE_TEMPDATA = 17
-PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 18
+PARAMETER_FLOW_DIRECTION = 15
+PARAMETER_GENERATE_TEMPDATA = 16
+PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 17
 
 class Toolbox(object):
     def __init__(self):
@@ -189,16 +188,6 @@ class SMODERP2D(object):
            direction="Input"
         )
 
-        dataprepOnly = arcpy.Parameter(
-           displayName="Do the data preparation only",
-           name="dataprepOnly",
-           datatype="GPBoolean",
-           parameterType="Optional",
-           direction="Input",
-           category="Computation options"
-        )
-        dataprepOnly.value = False
-
         flowDirection = arcpy.Parameter(
            displayName="Flow direction",
            name="flowDirection",
@@ -246,7 +235,7 @@ class SMODERP2D(object):
             inputLUPolygons, LUtypeFieldName, inputRainfall,
             maxTimeStep, totalRunTime, inputPoints, inputPointsFieldName,
             soilvegPropertiesTable, soilvegIDfieldName, streamNetwork, streamChannelShapeIDfieldName,
-            channelPropertiesTable, dataprepOnly, flowRoutingType, generateTempData, outDir,
+            channelPropertiesTable, flowRoutingType, generateTempData, outDir,
         ]
 
     def updateParameters(self, parameters):
@@ -267,8 +256,6 @@ class SMODERP2D(object):
             runner.set_options(
                 self._get_input_params(parameters)
             )
-            if parameters[PARAMETER_DATAPREP_ONLY].value:
-                runner.workflow_mode = WorkflowMode.dpre
 
             runner.run()
         except ProviderError as e:

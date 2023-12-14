@@ -234,6 +234,9 @@ class BaseProvider(object):
         data['extraout'] = self._hidden_config.getboolean(
             'output', 'extraout', fallback=False
         )
+        self.args.workflow_mode = WorkflowMode()[self._hidden_config.get(
+            'processes', 'workflow_mode', fallback="full"
+        )]
 
         return data
 

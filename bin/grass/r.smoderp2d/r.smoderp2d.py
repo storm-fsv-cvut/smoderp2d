@@ -23,10 +23,6 @@
 # % keyword: erosion
 # %end
 # %flag
-# % key: d
-# % description: Perform data preparation only and exit
-# %end
-# %flag
 # % key: t
 # % description: Export temporary data
 # %end
@@ -145,8 +141,6 @@ if __name__ == "__main__":
         runner = GrassGisRunner()
 
         runner.set_options(options)
-        if flags['d']:
-            runner.workflow_mode = WorkflowMode.dpre
 
         sys.exit(
             runner.run()
