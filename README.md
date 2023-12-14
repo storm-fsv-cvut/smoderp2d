@@ -49,7 +49,7 @@ docker run -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
 ### From command line locally
 
 ```sh
-./bin/start-smoderp2d.py --config tests/config_files/quicktest.ini
+./bin/start-smoderp2d.py --config tests/config_files/quicktest_stream_rill.ini
 ```
 
 ### From GRASS GIS
