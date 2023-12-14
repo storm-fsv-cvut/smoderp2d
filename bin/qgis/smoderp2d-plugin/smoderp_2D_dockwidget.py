@@ -65,14 +65,15 @@ class InputError(Exception):
 class SmoderpTask(QgsTask):
     """TODO."""
 
-    def __init__(self, input_params, input_maps, grass_bin_path):
+    def __init__(self, input_params, input_maps, grass_bin_path, *args,
+                 **kwargs):
         """TODO.
 
         :param input_params: TODO
         :param input_maps: TODO
         :param grass_bin_path: TODO
         """
-        super().__init__()
+        super().__init__(*args, **kwargs)
 
         self.input_params = input_params
         self.input_maps = input_maps
