@@ -254,7 +254,7 @@ class Globals:
     mat_stream_reach = None
     # ???
     STREAM_RATIO = None
-    # maximum allowed time step during compuation
+    # maximum allowed time step during computation
     maxdt = None
     # if true extra data are stores in the point*.dat files
     extraOut = None
@@ -495,7 +495,7 @@ class Globals:
         cls.mat_stream_reach = None
         # ???
         cls.STREAM_RATIO = None
-        # maximum allowed time step during compuation
+        # maximum allowed time step during computation
         cls.maxdt = None
         # if true extra data are stores in the point*.dat files
         cls.extraOut = None
