@@ -12,10 +12,6 @@ import numpy.ma as ma
 from smoderp2d.core.surface import runoff
 from smoderp2d.core.surface import surface_retention
 
-infilt_capa = 0
-infilt_time = 0
-max_infilt_capa = 0.000  # [m]
-
 
 # Class manages the one time step operation
 #
@@ -24,6 +20,12 @@ max_infilt_capa = 0.000  # [m]
 #
 class TimeStep:
     """TODO."""
+
+    def __init__(self):
+        """Set the class variables to default values."""
+        self.infilt_capa = 0
+        self.infilt_time = 0
+        self.max_infilt_capa = 0.000  # [m]
 
     @staticmethod
     def do_flow(surface, subsurface, delta_t, flow_control, courant):
@@ -109,8 +111,7 @@ class TimeStep:
     # courant, total_time, delta_t, combinatIndex, NoDataValue,
     # sum_interception, mat_effect_cont, ratio, iter_
 
-    @staticmethod
-    def do_next_h(surface, subsurface, rain_arr, cumulative, hydrographs,
+    def do_next_h(self, surface, subsurface, rain_arr, cumulative, hydrographs,
                   flow_control, courant, potRain, delta_t):
         """TODO.
 
@@ -124,19 +125,15 @@ class TimeStep:
         :param potRain: TODO
         :param delta_t: TODO
         """
-        global infilt_capa
-        global max_infilt_capa
-        global infilt_time
-
         rr, rc = GridGlobals.get_region_dim()
         pixel_area = GridGlobals.get_pixel_area()
         fc = flow_control
         combinatIndex = Globals.get_combinatIndex()
         NoDataValue = GridGlobals.get_no_data()
 
-        infilt_capa += potRain
-        if ma.all(infilt_capa < max_infilt_capa):
-            infilt_time += delta_t
+        self.infilt_capa += potRain
+        if ma.all(self.infilt_capa < self.max_infilt_capa):
+            self.infilt_time += delta_t
             actRain = ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
             )
@@ -159,7 +156,7 @@ class TimeStep:
                 k,
                 s,
                 delta_t,
-                fc.total_time - infilt_time,
+                fc.total_time - self.infilt_time,
                 NoDataValue)
 
         infilt.set_combinatIndex(combinatIndex)
