@@ -55,23 +55,12 @@ from .custom_widgets import HistoryWidget
 
 
 class InputError(Exception):
-    """TODO."""
-
     def __init__(self):
-        """TODO."""
         pass
 
 
 class SmoderpTask(QgsTask):
-    """TODO."""
-
     def __init__(self, input_params, input_maps, grass_bin_path):
-        """TODO.
-
-        :param input_params: TODO
-        :param input_maps: TODO
-        :param grass_bin_path: TODO
-        """
         super().__init__()
 
         self.input_params = input_params
@@ -82,7 +71,6 @@ class SmoderpTask(QgsTask):
         self.runner = None
 
     def run(self):
-        """TODO."""
         try:
             self.runner = QGISRunner(self.setProgress, self.grass_bin_path)
             self.runner.set_options(self.input_params)
@@ -99,10 +87,6 @@ class SmoderpTask(QgsTask):
         return True
 
     def finished(self, result):
-        """TODO.
-
-        :param result: TODO
-        """
         self.runner.finish()
 
         # resets
@@ -131,15 +115,11 @@ class SmoderpTask(QgsTask):
 
 
 class Smoderp2DDockWidget(QtWidgets.QDockWidget):
-    """TODO."""
 
     closingPlugin = pyqtSignal()
 
     def __init__(self, parent=None):
-        """Constructor.
-
-        :param parent: TODO
-        """
+        """Constructor."""
         super(Smoderp2DDockWidget, self).__init__(parent)
 
         self.iface = iface
@@ -210,8 +190,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self._grass_bin_path = None
 
     def retranslateUi(self):
-        """TODO."""
-        # TODO: The method should be absolutely called something else
         for section in sections:
             section_tab = QtWidgets.QWidget()
             self.tabWidget.addTab(section_tab, section.label)
@@ -261,7 +239,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.tabWidget.addTab(section_tab, 'History')
 
     def set_widgets(self):
-        """TODO."""
         self.arguments['elevation'].addWidget(self.elevation_comboBox)
         self.arguments['elevation'].addWidget(self.elevation_toolButton)
         self.arguments['soil'].addWidget(self.soil_comboBox)
@@ -310,10 +287,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.arguments['generate_temporary'].addStretch()
 
     def closeEvent(self, event):
-        """TODO.
-
-        :param event: TODO
-        """
         self.closingPlugin.emit()
         event.accept()
 
@@ -381,6 +354,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     def setupCombos(self):
         """Setup combo boxes."""
+
         # 1st tab - Data preparation
         self.elevation_comboBox.setFilters(QgsMapLayerProxyModel.RasterLayer)
         self.soil_comboBox.setFilters(QgsMapLayerProxyModel.VectorLayer)
@@ -407,13 +381,11 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.flow_direction_comboBox.addItems(('single', 'multiple'))
 
     def set_allow_empty(self):
-        """TODO."""
         self.points_comboBox.setAllowEmptyLayer(True)
         self.stream_comboBox.setAllowEmptyLayer(True)
         self.table_stream_shape_comboBox.setAllowEmptyLayer(True)
 
     def set_button_texts(self):
-        """TODO."""
         buttons = (
             self.elevation_toolButton, self.soil_toolButton,
             self.vegetation_toolButton, self.points_toolButton,
@@ -426,7 +398,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             button.setText('...')
 
     def OnRunButton(self):
-        """Run the processing when the run button was pushed."""
         if not self._grass_bin_path:
             # Get GRASS executable
             try:
@@ -547,7 +518,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     @staticmethod
     def _layerColorRamp(layer):
-        """TODO."""
         # get min/max values
         data_provider = layer.dataProvider()
         stats = data_provider.bandStatistics(
@@ -566,15 +536,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         return renderer
 
     def computationFinished(self):
-        """TODO."""
         def import_group_layers(group, outdir, ext='asc', show=False):
-            """TODO.
-
-            :param group: TODO
-            :param outdir: TODO
-            :param ext: TODO
-            :param show: TODO
-            """
             for map_path in glob.glob(os.path.join(outdir, f'*.{ext}')):
                 if ext == 'asc':
                     # raster
@@ -634,6 +596,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     def _getInputParams(self):
         """Get input parameters from QGIS plugin."""
+
         self._input_params = {
             'elevation': self.elevation_comboBox.currentText(),
             'soil': self.soil_comboBox.currentText(),
@@ -697,10 +660,11 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             self._input_maps["streams_channel_type_fieldname"] = self.table_stream_shape_code_comboBox.currentText()
 
     def _checkInputDataPrep(self):
-        """Check mandatory fields.
+        """Check mandatory field.
 
         Check if all mandatory fields are filled correctly for data preparation.
         """
+
         # Check if none of fields are empty
         if None not in (
                 self.elevation_comboBox.currentLayer(),
@@ -721,11 +685,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             return False
 
     def openFileDialog(self, t, widget):
-        """Open file dialog, load layer and set path/name to widget.
-
-        :param t: layer type (raster or vector)
-        :param widget: TODO
-        """
+        """Open file dialog, load layer and set path/name to widget."""
         # TODO: what format can tables have?
         # TODO: set layers srs on loading
 
@@ -829,10 +789,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             pass
 
     def setFields(self, t):
-        """Set fields of soil and vegetation type.
-
-        :param t: TODO
-        """
+        """Set fields of soil and vegetation type."""
         if self.soil_comboBox.currentLayer() is not None and t == 'soil':
             self.soil_type_comboBox.setLayer(self.soil_comboBox.currentLayer())
             self.soil_type_comboBox.setField(
@@ -872,12 +829,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             pass
 
     def _sendMessage(self, caption, message, t):
-        """TODO.
-
-        :param caption: TODO
-        :param message: message to be shown
-        :param t: type of message (CRITICAL, INFO)
-        """
         if t == 'CRITICAL':
             self.iface.messageBar().pushCritical(self.tr(u'{}').format(caption),
                                                  self.tr(u'{}').format(message))
@@ -886,10 +837,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                                              self.tr(u'{}').format(message))
 
     def contextMenuEvent(self, event):
-        """TODO.
-
-        :param event: TODO
-        """
         menu = QMenu(self)
         testAction = menu.addAction("Load test parameters")
         action = menu.exec_(self.mapToGlobal(event.pos()))
@@ -962,10 +909,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.generate_temporary_checkBox.setChecked(param_dict['generate_temporary'])
 
     def abort_computation(self):
-        """Abort the computation.
-
-        Sets Logger.aborted to True
-        """
+        """Abort the computation."""
         tasks = self.task_manager.tasks()
         if len(tasks) > 0:
             iface.messageBar().pushMessage(
