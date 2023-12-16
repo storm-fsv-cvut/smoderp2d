@@ -234,6 +234,9 @@ class BaseProvider(object):
         data['extraout'] = self._hidden_config.getboolean(
             'output', 'extraout', fallback=False
         )
+        self.args.workflow_mode = WorkflowMode()[self._hidden_config.get(
+            'processes', 'workflow_mode', fallback="full"
+        )]
 
         return data
 
@@ -410,14 +413,24 @@ class BaseProvider(object):
             # no output directory defined
             return
         if os.path.exists(output_dir):
-            for filename in os.listdir(output_dir):
-                file_path = os.path.join(output_dir, filename)
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
+            try:
+                for filename in os.listdir(output_dir):
+                    file_path = os.path.join(output_dir, filename)
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+            except PermissionError as e:
+                raise ProviderError(
+                    f"Unable to cleanup output directory: {e}"
+                )
         else:
-            os.makedirs(output_dir)
+            try:
+                os.makedirs(output_dir)
+            except PermissionError as e:
+                raise ProviderError(
+                    f"Unable to create output directory: {e}"
+                )
 
     @staticmethod
     def _comp_type(itc):

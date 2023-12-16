@@ -1,4 +1,5 @@
 import os
+import sys
 import logging
 
 from smoderp2d.core.general import Globals, GridGlobals
@@ -11,7 +12,6 @@ import grass.script as gs
 from grass.pygrass.gis.region import Region
 from grass.pygrass.modules import Module
 from grass.pygrass.raster import numpy2raster
-
 
 class GrassGisWriter(BaseWriter):
     _vector_extension = '.gml'

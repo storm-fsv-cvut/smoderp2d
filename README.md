@@ -49,7 +49,7 @@ docker run -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
 ### From command line locally
 
 ```sh
-./bin/start-smoderp2d.py --config tests/config_files/quicktest.ini
+./bin/start-smoderp2d.py --config tests/config_files/quicktest_stream_rill.ini
 ```
 
 ### From GRASS GIS
@@ -102,5 +102,16 @@ or define `QGIS_PLUGINPATH` in `Settings -> Options -> System` and restart QGIS:
 
 ![SMODERP2D QGIS settings](img/qgis_settings.png?raw=true "QGIS settings")
 
-
 And enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
+
+#### Known issue
+
+On MS Windows QGIS plugin suffers by blinking windows when starting computation.
+This can be solved by copying ``core.py`` file located in ``smoderp2d\bin\qgis\grass_patch``
+to a GRASS target directory.
+
+GRASS target directory is typically located in:
+
+- ``C:\Program Files\QGIS 3.**.*\apps\grass\grass83\etc\python\grass\script`` in the case that QGIS has been installed by standalone installer, or
+- ``C:\OSGeo4W\apps\grass\grass83\etc\python\grass\script`` in the case that QGIS has been installed by OSGeo4W network installer.
+

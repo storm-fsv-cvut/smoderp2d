@@ -44,7 +44,7 @@ from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
 # ONLY FOR TESTING PURPOSES (!!!)
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-from smoderp2d import QGISRunner
+from smoderp2d.runners.qgis import QGISRunner
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.providers import Logger
 from smoderp2d.exceptions import ProviderError, ComputationAborted
@@ -60,8 +60,22 @@ class InputError(Exception):
 
 
 class SmoderpTask(QgsTask):
+<<<<<<< HEAD
     def __init__(self, input_params, input_maps, grass_bin_path):
         super().__init__()
+=======
+    """TODO."""
+
+    def __init__(self, input_params, input_maps, grass_bin_path, *args,
+                 **kwargs):
+        """TODO.
+
+        :param input_params: TODO
+        :param input_maps: TODO
+        :param grass_bin_path: TODO
+        """
+        super().__init__(*args, **kwargs)
+>>>>>>> master
 
         self.input_params = input_params
         self.input_maps = input_maps

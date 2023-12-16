@@ -677,12 +677,6 @@ class PrepareData(PrepareDataGISBase):
         return fields
 
     def _run_grass_module(self, *args, **kwargs):
-        # if sys.platform == 'win32':
-        #     si = subprocess.STARTUPINFO()
-        #     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        #     si.wShowWindow = subprocess.SW_HIDE
-        #     Module(*args, env_={'startupinfo': si}, **kwargs)
-        # else:
         try:
             with tempfile.NamedTemporaryFile(delete=False) as tmp:
                 kwargs['stderr_'] = tmp
