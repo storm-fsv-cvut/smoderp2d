@@ -118,8 +118,13 @@ class ArcGisProvider(BaseProvider):
         """See base method for description."""
         # here ArcGIS-specific postprocessing starts...
         Logger.debug('ArcGIS-specific postprocessing')
-        if not self._options['generate_temporary_data']:
-            # delete temporary data
-            shutil.rmtree(
-                os.path.join(Globals.outdir, 'temp')
-            )
+        if not self._options['generate_temporary']:
+            try:
+                # delete temporary data
+                data_dir = os.path.join(Globals.outdir, 'temp')
+                arcpy.Delete_management(os.path.join(data_dir, "data.gdb"))
+                shutil.rmtree(data_dir)
+            except PermissionError as e:
+                raise ProviderError(
+                    f"Unable to cleanup output temporary directory: {e}"
+                )
