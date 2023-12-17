@@ -284,6 +284,6 @@ class SMODERP2D(object):
             'streams_channel_type_fieldname': parameters[PARAMETER_CHANNEL_TYPE].valueAsText,
             'channel_properties_table': parameters[PARAMETER_CHANNEL_PROPS_TABLE].valueAsText,
             'flow_direction': parameters[PARAMETER_FLOW_DIRECTION].valueAsText,
-            'generate_temporary_data': parameters[PARAMETER_GENERATE_TEMPDATA].value,
+            'generate_temporary': parameters[PARAMETER_GENERATE_TEMPDATA].value,
             'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText
         }
