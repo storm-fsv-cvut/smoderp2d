@@ -86,7 +86,7 @@ class Courant:
         and maximum Courant coefficient.
         """
         cour = v / self.cour_coef * delta_t / effect_cont
-        cour = ma.maximum(cour, rill_courant)
+
         # print cour
         if ma.any(cour > self.cour_most):
             self.i = np.unravel_index(ma.argmax(cour), cour.shape)[0]
