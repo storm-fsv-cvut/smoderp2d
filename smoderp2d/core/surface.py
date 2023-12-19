@@ -151,6 +151,7 @@ class Surface(GridGlobals, Stream, Kinematic):
         arr = self.arr
         sw = Globals.slope_width
 
+
         vol_runoff = arr.vol_runoff[i, j]
         vol_runoff_rill = arr.vol_runoff_rill[i, j]
 
@@ -164,11 +165,14 @@ class Surface(GridGlobals, Stream, Kinematic):
             )
             bil_ = ''
         else:
+            h_sheet = min(arr.h_total_new[i,j],arr.h_crit[i,j])
+            h_rill = max(arr.h_total_new[i,j]-arr.h_crit[i,j],0)
             velocity = ma.where(
                 arr.h_sheet == 0,
                 0,
-                arr.vol_runoff / dt / (arr.h_sheet*GridGlobals.dx)
+                arr.vol_runoff / dt / (h_sheet*GridGlobals.dx)
             )
+
             # if profile1d provider - the data in extra output are the unit
             #                          width data
             #                     if you need runoff from non-unit slope and
@@ -176,7 +180,7 @@ class Surface(GridGlobals, Stream, Kinematic):
             line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}' \
                    '{sep}{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}' \
                    '{9:.4e}'.format(
-                arr.h_sheet[i, j],
+                h_sheet,
                 vol_runoff / dt[i, j],
                 vol_runoff,
                 velocity[i, j],
@@ -193,7 +197,7 @@ class Surface(GridGlobals, Stream, Kinematic):
                 line += '{sep}{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}' \
                         '{sep}{4:.4e}{sep}{5:.4e}{sep}{6:.4e}{sep}' \
                         '{7:.4e}'.format(
-                    arr.h_rill[i, j],
+                    h_rill,
                     arr.rillWidth[i, j],
                     vol_runoff_rill / dt[i, j],
                     vol_runoff_rill,
