@@ -112,7 +112,7 @@ class Hydrographs:
                               '{linesep}'.format(sep=SEP, linesep=os.linesep)
                 else:
                     header += 'time[s]{sep}deltaTime[s]{sep}rainfall[m]{sep}'\
-                              'waterLevel[m]{sep}sheetFlow[m3/s]{sep}' \
+                              'sheetWaterLevel[m]{sep}sheetFlow[m3/s]{sep}' \
                               'sheetVRunoff[m3]{sep}sheetFlowVelocity[m/s]' \
                               '{sep}sheetVRest[m3]{sep}infiltration[m]{sep}' \
                               'surfaceRetetion[m]{sep}state{sep}vInflow[m3]' \
