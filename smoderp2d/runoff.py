@@ -18,6 +18,7 @@ import numpy.ma as ma
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
 from smoderp2d.core.surface import Surface
+from smoderp2d.core.surface import runoff
 from smoderp2d.core.subsurface import Subsurface
 from smoderp2d.core.cumulative_max import Cumulative
 
@@ -262,7 +263,10 @@ class Runoff(object):
             self.flow_control.refresh_iter()
 
             # iteration loop
+            print ('=++++++++++++++++++++++++++++++')
             while self.flow_control.max_iter_reached():
+
+                print ('                        ')
 
                 self.flow_control.update_iter()
                 self.flow_control.restore_vars()
@@ -280,6 +284,54 @@ class Runoff(object):
                     self.courant
                 )
 
+
+
+                print ('dt            {}'.format(self.delta_t[6,2]))
+                print ('time          {}'.format(self.flow_control.total_time[6,2]))
+                print ('iter          {}'.format(self.flow_control.iter_))
+                print ('hcir          {}'.format(self.surface.arr.h_crit[6,2]))
+                print ('courant       {}'.format(self.courant.cour_most))
+                print ('cour_speed    {}'.format(self.courant.cour_speed))
+
+
+
+                # Calculate actual rainfall and adds up interception todo:
+                # AP - actual is not storred in hydrographs
+                actRain = self.time_step.do_next_h(
+                    self.surface,
+                    self.subsurface,
+                    self.rain_arr,
+                    self.cumulative,
+                    self.hydrographs,
+                    self.flow_control,
+                    self.courant,
+                    potRain,
+                    self.delta_t
+                )
+
+                #runoff_returns = Surface.runoff
+                #print (self.surface.arr.b)
+                #print (self.surface.arr.a)
+                #print (self.surface.arr.h_sheet)
+                #print (self.surface.arr.a*self.surface.arr.h_sheet**self.surface.arr.b)
+                #input('....')
+                runoff_return = runoff(
+                    self.surface.arr, self.delta_t,
+                    Globals.get_mat_effect_cont(), self.flow_control.ratio
+                )
+
+
+                v = ma.maximum(runoff_return[0], runoff_return[1])
+                self.courant.CFL(
+                    v, self.delta_t,
+                    Globals.get_mat_effect_cont(),
+                    '---',
+                    None
+                )
+                print ('courant       {}'.format(self.courant.cour_most))
+                #print ('runoff_return[0][6,2] ---- {}'.format(runoff_return[0][6,2]))
+                #input()
+                
                 # stores current time step
                 delta_t_tmp = self.delta_t
 
@@ -305,19 +357,10 @@ class Runoff(object):
                 ):
                     break
 
-            # Calculate actual rainfall and adds up interception todo:
-            # AP - actual is not storred in hydrographs
-            actRain = self.time_step.do_next_h(
-                self.surface,
-                self.subsurface,
-                self.rain_arr,
-                self.cumulative,
-                self.hydrographs,
-                self.flow_control,
-                self.courant,
-                potRain,
-                self.delta_t
-            )
+            
+
+
+
 
             # if the iteration exceed the maximal amount of iteration
             # last results are stored in hydrographs
@@ -417,6 +460,23 @@ class Runoff(object):
                 self.surface.arr.state
             )
 
+            self.cumulative.update_cumulative(
+                self.surface.arr,
+                self.subsurface.arr,
+                self.delta_t)
+            self.hydrographs.write_hydrographs_record(
+                None,
+                None,
+                self.flow_control,
+                self.courant,
+                self.delta_t,
+                self.surface,
+                self.cumulative,
+                actRain)
+
+            print (self.surface.arr.h_total_pre[6,2])
+            print (self.surface.arr.h_total_new[6,2])
+            #input('stop 2')
             self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / end_time
