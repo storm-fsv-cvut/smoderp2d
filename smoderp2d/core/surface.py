@@ -230,7 +230,7 @@ def __runoff(sur, dt, effect_vrst, ratio):
 
     :return: TODO
     """
-    h_total_pre = sur.h_total_pre
+    h_total_pre = sur.h_total_new.copy()
     h_crit = sur.h_crit
     state = sur.state  # da se tady podivat v jakym jsem casovym kroku a jak
     # se a
