@@ -27,8 +27,7 @@ jobs:
   smoderp2d-quicktest-rill-mfda:
     uses: ./.github/workflows/cmd_template.yml
     with:
-      pytest-suite: tests/test_cmd.py --config config_files/quicktest_rill.ini --reference_dir data/reference/quicktest_rill_mfda
-      mfda: true
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_rill_mfda.ini
 
   smoderp2d-quicktest-stream-rill:
     uses: ./.github/workflows/cmd_template.yml
@@ -53,8 +52,7 @@ jobs:
   smoderp2d-longtest-stream-rill-mfda:
     uses: ./.github/workflows/cmd_template.yml
     with:
-      pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill.ini --reference_dir data/reference/test_stream_rill_mfda
-      mfda: true
+      pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill_mfda.ini
 
   smoderp2d-longtest-stream-rill:
     uses: ./.github/workflows/cmd_template.yml

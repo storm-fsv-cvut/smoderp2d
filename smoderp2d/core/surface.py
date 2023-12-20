@@ -9,7 +9,7 @@ if Globals.isStream:
     from smoderp2d.core.stream import Stream
 else:
     from smoderp2d.core.stream import StreamPass as Stream
-from smoderp2d.core.kinematic_diffuse import Kinematic
+from smoderp2d.core.kinematic_diffuse import get_kinematic
 import smoderp2d.processes.rill as rill
 import smoderp2d.processes.surface as surfacefce
 
@@ -106,23 +106,23 @@ class SurArrs(object):
         )
 
 
-class Surface(GridGlobals, Stream, Kinematic):
-    """Contains data and methods to calculate the surface and rill runoff.
-    """
-    def __init__(self):
-        """The constructor
+def get_surface():
+    class Surface(GridGlobals, Stream, get_kinematic()):
+        """Contains data and methods to calculate the surface and rill runoff."""
+        def __init__(self):
+            """The constructor
 
-        Make all numpy arrays and establish the inflow procedure based
-        on D8 or Multi Flow Direction Algorithm method.
-        """
-        GridGlobals.__init__(self)
+            Make all numpy arrays and establish the inflow procedure based
+            on D8 or Multi Flow Direction Algorithm method.
+            """
+            GridGlobals.__init__(self)
 
-        Logger.info("Surface: ON")
+            Logger.info("Surface: ON")
 
-        self.n = 15
+            self.n = 15
 
-        # set array outsides to zeros
-        self.arr.set_outsides(SurArrs)
+            # set array outsides to zeros
+            self.arr.set_outsides(SurArrs)
 
         # assign array objects
         self.arr = SurArrs(
@@ -208,17 +208,34 @@ class Surface(GridGlobals, Stream, Kinematic):
                     sep=sep
                 )
 
-            bil_ = arr.h_total_pre[i, j] * self.pixel_area + \
-                   arr.cur_rain[i, j] * self.pixel_area + \
-                   arr.inflow_tm[i, j] - \
-                   (vol_runoff + vol_runoff_rill +
-                    arr.infiltration[i, j] * self.pixel_area) - \
-                    (arr.cur_sur_ret[i, j] * self.pixel_area) - \
-                    arr.h_total_new[i, j] * self.pixel_area
-            # << + arr.vol_rest + arr.v_rill_rest) +
-            # (arr.vol_rest_pre + arr.v_rill_rest_pre)
+                if Globals.isRill:
+                    line += '{sep}{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}' \
+                            '{sep}{4:.4e}{sep}{5:.4e}{sep}{6:.4e}{sep}' \
+                            '{7:.4e}'.format(
+                        arr.h_rill[i, j],
+                        arr.rillWidth[i, j],
+                        vol_runoff_rill / dt[i, j],
+                        vol_runoff_rill,
+                        arr.vel_rill[i, j],
+                        arr.v_rill_rest[i, j],
+                        vol_runoff / dt[i, j] + vol_runoff_rill / dt[i, j],
+                        vol_runoff + vol_runoff_rill,
+                        sep=sep
+                    )
 
-        return line, bil_
+                bil_ = arr.h_total_pre[i, j] * self.pixel_area + \
+                       arr.cur_rain[i, j] * self.pixel_area + \
+                       arr.inflow_tm[i, j] - \
+                       (vol_runoff + vol_runoff_rill +
+                        arr.infiltration[i, j] * self.pixel_area) - \
+                        (arr.cur_sur_ret[i, j] * self.pixel_area) - \
+                        arr.h_total_new[i, j] * self.pixel_area
+                # << + arr.vol_rest + arr.v_rill_rest) +
+                # (arr.vol_rest_pre + arr.v_rill_rest_pre)
+
+            return line, bil_
+
+    return Surface
 
 
 def __runoff(sur, dt, effect_vrst, ratio):

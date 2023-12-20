@@ -6,10 +6,6 @@ on:
       pytest-suite:
         required: true
         type: string
-      mfda:
-        required: false
-        type: boolean
-        default: false
 
 jobs:
   consistency_test:
@@ -36,11 +32,6 @@ jobs:
         run: |
           pip install -r .github/workflows/requirements.txt
           pip install -r .github/workflows/requirements${{ matrix.python-version }}.txt
-
-      - name: Set up hidden config
-        if: ${{ inputs.mfda == true }}
-        run: |
-          mv tests/config_files/mfda_config.ini smoderp2d/.config.ini
 
       - name: Run command test suite
         run: |

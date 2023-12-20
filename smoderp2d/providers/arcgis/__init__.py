@@ -1,5 +1,7 @@
 import os
 import logging
+import shutil
+
 import numpy.ma as ma
 
 from smoderp2d.core.general import Globals, GridGlobals
@@ -40,7 +42,11 @@ class ArcGisWriter(BaseWriter):
         :param name: layer name to be saved
         :return: full path to the dataset
         """
-        path = os.path.join(BaseWriter.output_filepath(self, name, dirname_only=True), 'data.gdb', name)
+        path = os.path.join(
+            BaseWriter.output_filepath(self, name, dirname_only=True),
+            'data.gdb',
+            name
+        )
         Logger.debug('File path: {}'.format(path))
 
         return path
@@ -83,7 +89,7 @@ class ArcGisProvider(BaseProvider):
             formatter=logging.Formatter("%(levelname)-8s %(message)s")
         )
 
-        # define storage writter
+        # define storage writer
         self.storage = ArcGisWriter()
 
     def set_options(self, options):
@@ -107,3 +113,18 @@ class ArcGisProvider(BaseProvider):
         from smoderp2d.providers.arcgis.data_preparation import PrepareData
         prep = PrepareData(self._options, self.storage)
         return prep.run()
+
+    def _postprocessing(self):
+        """See base method for description."""
+        # here ArcGIS-specific postprocessing starts...
+        Logger.debug('ArcGIS-specific postprocessing')
+        if not self._options['generate_temporary']:
+            try:
+                # delete temporary data
+                data_dir = os.path.join(Globals.outdir, 'temp')
+                arcpy.Delete_management(os.path.join(data_dir, "data.gdb"))
+                shutil.rmtree(data_dir)
+            except PermissionError as e:
+                raise ProviderError(
+                    f"Unable to cleanup output temporary directory: {e}"
+                )
