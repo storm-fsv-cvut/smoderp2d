@@ -341,11 +341,6 @@ class Runoff(object):
                 ):
                     break
 
-            
-
-
-
-
             # if the iteration exceed the maximal amount of iteration
             # last results are stored in hydrographs
             # and error is raised
