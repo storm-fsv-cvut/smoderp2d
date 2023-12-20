@@ -271,7 +271,11 @@ class Runoff(object):
             self.flow_control.refresh_iter()
 
             # iteration loop
+            print ('=++++++++++++++++++++++++++++++')
             while self.flow_control.max_iter_reached():
+
+                print ('                        ')
+
                 self.flow_control.update_iter()
                 self.flow_control.restore_vars()
 
@@ -287,6 +291,17 @@ class Runoff(object):
                     self.flow_control,
                     self.courant
                 )
+
+
+
+                print ('dt            {}'.format(self.delta_t[6,2]))
+                print ('time          {}'.format(self.flow_control.total_time[6,2]))
+                print ('iter          {}'.format(self.flow_control.iter_))
+                print ('hcir          {}'.format(self.surface.arr.h_crit[6,2]))
+                print ('courant       {}'.format(self.courant.cour_most))
+                print ('cour_speed    {}'.format(self.courant.cour_speed))
+
+
 
                 # Calculate actual rainfall and adds up interception todo:
                 # AP - actual is not storred in hydrographs
@@ -315,6 +330,9 @@ class Runoff(object):
                     '---',
                     None
                 )
+                print ('courant       {}'.format(self.courant.cour_most))
+                #print ('runoff_return[0][6,2] ---- {}'.format(runoff_return[0][6,2]))
+                #input()
                 
                 # stores current time step
                 delta_t_tmp = self.delta_t
@@ -453,6 +471,9 @@ class Runoff(object):
                 self.cumulative,
                 actRain)
 
+            print (self.surface.arr.h_total_pre[6,2])
+            print (self.surface.arr.h_total_new[6,2])
+            #input('stop 2')
             self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / end_time
