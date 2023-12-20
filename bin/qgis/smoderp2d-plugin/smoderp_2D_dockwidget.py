@@ -832,7 +832,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
     def setFields(self, t):
         """Set fields of soil and vegetation type.
 
-        :param t: TODO
+        :param t: type of field to be set
         """
         if self.soil_comboBox.currentLayer() is not None and t == 'soil':
             self.soil_type_comboBox.setLayer(self.soil_comboBox.currentLayer())
@@ -863,12 +863,16 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             else:
                 self.table_stream_shape_code_comboBox.setLayer(None)
                 self.table_stream_shape_code_comboBox.setField("")
-        elif self.points_comboBox.currentLayer() is not None and t == 'points':
+        elif t == 'points':
             points_cur_layer = self.points_comboBox.currentLayer()
-            self.points_field_comboBox.setLayer(points_cur_layer)
-            self.points_field_comboBox.setField(
-                points_cur_layer.fields()[0].name()
-            )
+            if points_cur_layer is not None:
+                self.points_field_comboBox.setLayer(points_cur_layer)
+                self.points_field_comboBox.setField(
+                    points_cur_layer.fields()[0].name()
+                )
+            else:
+                self.points_field_comboBox.setLayer(None)
+                self.points_field_comboBox.setField(None)
         else:
             pass
 
