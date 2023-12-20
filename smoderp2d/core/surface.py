@@ -151,7 +151,6 @@ def get_surface():
             arr = self.arr
             sw = Globals.slope_width
 
-
             vol_runoff = arr.vol_runoff[i, j]
             vol_runoff_rill = arr.vol_runoff_rill[i, j]
 
