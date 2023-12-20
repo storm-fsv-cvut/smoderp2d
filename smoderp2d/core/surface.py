@@ -124,87 +124,72 @@ def get_surface():
             # set array outsides to zeros
             self.arr.set_outsides(SurArrs)
 
-        # assign array objects
-        self.arr = SurArrs(
-            Globals.get_mat_reten(),
-            Globals.get_mat_inf_index(),
-            Globals.get_mat_hcrit(),
-            Globals.get_mat_aa(),
-            Globals.get_mat_b()
-        )
-
-        Stream.__init__(self)
-
-        Logger.info("\tRill flow: {}".format('ON' if Globals.isRill else 'OFF'))
-
-    def return_str_vals(self, i, j, sep, dt, extra_out):
-        """TODO.
-
-        :param i: row index
-        :param j: col index
-        :param sep: separator
-        :param dt: TODO
-        :param extra_out: append extra output
-
-        :return: TODO
-        """
-        arr = self.arr
-        sw = Globals.slope_width
-
-
-        vol_runoff = arr.vol_runoff[i, j]
-        vol_runoff_rill = arr.vol_runoff_rill[i, j]
-
-        # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
-        if not extra_out:
-            line = '{0:.4e}{sep}{1:.4e}'.format(
-                arr.h_total_new[i, j],
-                (vol_runoff / dt[i, j] + vol_runoff_rill / dt[i, j]) *
-                sw,
-                sep=sep
-            )
-            bil_ = ''
-        else:
-            h_sheet = min(arr.h_total_new[i,j],arr.h_crit[i,j])
-            h_rill = max(arr.h_total_new[i,j]-arr.h_crit[i,j],0)
-            velocity = ma.where(
-                arr.h_sheet == 0,
-                0,
-                arr.vol_runoff / dt / (h_sheet*GridGlobals.dx)
+            # assign array objects
+            self.arr = SurArrs(
+                Globals.get_mat_reten(),
+                Globals.get_mat_inf_index(),
+                Globals.get_mat_hcrit(),
+                Globals.get_mat_aa(),
+                Globals.get_mat_b()
             )
 
-            # if profile1d provider - the data in extra output are the unit
-            #                          width data
-            #                     if you need runoff from non-unit slope and
-            #                     with extra output calculate it yourself
-            line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}' \
-                   '{sep}{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}' \
-                   '{9:.4e}'.format(
-                h_sheet,
-                vol_runoff / dt[i, j],
-                vol_runoff,
-                velocity[i, j],
-                arr.vol_rest[i, j],
-                arr.infiltration[i, j],
-                arr.cur_sur_ret[i, j],
-                arr.state[i, j],
-                arr.inflow_tm[i, j],
-                arr.h_total_new[i, j],
-                sep=sep
-            )
+            Stream.__init__(self)
 
-            if Globals.isRill:
-                line += '{sep}{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}' \
-                        '{sep}{4:.4e}{sep}{5:.4e}{sep}{6:.4e}{sep}' \
-                        '{7:.4e}'.format(
-                    h_rill,
-                    arr.rillWidth[i, j],
-                    vol_runoff_rill / dt[i, j],
-                    vol_runoff_rill,
-                    arr.vel_rill[i, j],
-                    arr.v_rill_rest[i, j],
-                    vol_runoff / dt[i, j] + vol_runoff_rill / dt[i, j],
-                    vol_runoff + vol_runoff_rill,
+            Logger.info("\tRill flow: {}".format('ON' if Globals.isRill else 'OFF'))
+
+        def return_str_vals(self, i, j, sep, dt, extra_out):
+            """TODO.
+
+            :param i: row index
+            :param j: col index
+            :param sep: separator
+            :param dt: TODO
+            :param extra_out: append extra output
+
+            :return: TODO
+            """
+            arr = self.arr
+            sw = Globals.slope_width
+
+
+            vol_runoff = arr.vol_runoff[i, j]
+            vol_runoff_rill = arr.vol_runoff_rill[i, j]
+
+            # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
+            if not extra_out:
+                line = '{0:.4e}{sep}{1:.4e}'.format(
+                    arr.h_total_new[i, j],
+                    (vol_runoff / dt[i, j] + vol_runoff_rill / dt[i, j]) *
+                    sw,
+                    sep=sep
+                )
+                bil_ = ''
+            else:
+                h_sheet = min(arr.h_total_new[i,j],arr.h_crit[i,j])
+                h_rill = max(arr.h_total_new[i,j]-arr.h_crit[i,j],0)
+                velocity = ma.where(
+                    arr.h_sheet == 0,
+                    0,
+                    arr.vol_runoff / dt / (h_sheet*GridGlobals.dx)
+                )
+
+                # if profile1d provider - the data in extra output are the unit
+                #                          width data
+                #                     if you need runoff from non-unit slope and
+                #                     with extra output calculate it yourself
+                line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}' \
+                       '{sep}{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}' \
+                       '{9:.4e}'.format(
+                    h_sheet,
+                    vol_runoff / dt[i, j],
+                    vol_runoff,
+                    velocity[i, j],
+                    arr.vol_rest[i, j],
+                    arr.infiltration[i, j],
+                    arr.cur_sur_ret[i, j],
+                    arr.state[i, j],
+                    arr.inflow_tm[i, j],
+                    arr.h_total_new[i, j],
                     sep=sep
                 )
 
@@ -212,7 +197,7 @@ def get_surface():
                     line += '{sep}{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}' \
                             '{sep}{4:.4e}{sep}{5:.4e}{sep}{6:.4e}{sep}' \
                             '{7:.4e}'.format(
-                        arr.h_rill[i, j],
+                        h_rill,
                         arr.rillWidth[i, j],
                         vol_runoff_rill / dt[i, j],
                         vol_runoff_rill,
