@@ -493,7 +493,6 @@ class PrepareDataGISBase(PrepareDataBase):
         """Get field names for vector layer."""
         pass
 
-
     def _check_empty_values(self, table, field, unique=False):
         """Check empty values in fields.
 
@@ -516,6 +515,7 @@ class PrepareDataGISBase(PrepareDataBase):
                     "Incorrect values in field '{}': "
                     "duplicated values are not allowed".format(field)
                 )
+
     @abstractmethod
     def _get_field_values(self, table, field):
         """Check empty values in fields.
@@ -749,7 +749,8 @@ class PrepareDataGISBase(PrepareDataBase):
 
     def _prepare_streams(self, stream, stream_shape_tab, stream_shape_code,
                          dem, aoi_polygon):
-        if self.data['type_of_computing'] in (CompType.stream_rill, CompType.stream_subflow_rill):
+        rill_comptypes = (CompType.stream_rill, CompType.stream_subflow_rill)
+        if self.data['type_of_computing'] in rill_comptypes:
             Logger.info("Clipping stream to AoI outline ...")
             stream_aoi = self._stream_clip(stream, aoi_polygon)
             Logger.progress(70)
