@@ -497,7 +497,6 @@ class Runoff(object):
             self.flow_control.update_total_time(self.delta_t)
 
             print (time.time() - time_)
-            input()
             time_ = time.time()
 
     def save_output(self):
