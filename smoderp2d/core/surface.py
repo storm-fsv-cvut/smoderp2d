@@ -3,6 +3,7 @@
 
 import numpy as np
 import numpy.ma as ma
+import numpy.ma as ma
 
 from smoderp2d.core.general import Globals, GridGlobals
 if Globals.isStream:
@@ -231,7 +232,7 @@ def __runoff(sur, dt, effect_vrst, ratio):
 
     :return: TODO
     """
-    h_total_pre = sur.h_total_new.copy()
+    h_total_pre = ma.copy(sur.h_total_new)
     h_crit = sur.h_crit
     state = sur.state  # da se tady podivat v jakym jsem casovym kroku a jak
     # se a

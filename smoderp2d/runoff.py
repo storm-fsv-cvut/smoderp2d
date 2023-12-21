@@ -265,7 +265,10 @@ class Runoff(object):
             self.delta_t, mask=GridGlobals.masks
         )
 
+        time_ = time.time()
         while ma.any(self.flow_control.compare_time(end_time)):
+
+
 
             self.flow_control.save_vars()
             self.flow_control.refresh_iter()
@@ -301,8 +304,6 @@ class Runoff(object):
                 print ('courant       {}'.format(self.courant.cour_most))
                 print ('cour_speed    {}'.format(self.courant.cour_speed))
 
-
-
                 # Calculate actual rainfall and adds up interception todo:
                 # AP - actual is not storred in hydrographs
                 actRain = self.time_step.do_next_h(
@@ -331,8 +332,6 @@ class Runoff(object):
                     None
                 )
                 print ('courant       {}'.format(self.courant.cour_most))
-                #print ('runoff_return[0][6,2] ---- {}'.format(runoff_return[0][6,2]))
-                #input()
                 
                 # stores current time step
                 delta_t_tmp = self.delta_t
@@ -357,6 +356,13 @@ class Runoff(object):
                     ma.logical_and(delta_t_tmp == self.delta_t,
                                    self.flow_control.compare_ratio())
                 ):
+                    potRain = self.time_step.do_flow(
+                        self.surface,
+                        self.subsurface,
+                        self.delta_t,
+                        self.flow_control,
+                        self.courant
+                    )
                     break
 
             # if the iteration exceed the maximal amount of iteration
@@ -471,9 +477,9 @@ class Runoff(object):
                 self.cumulative,
                 actRain)
 
-            print (self.surface.arr.h_total_pre[6,2])
-            print (self.surface.arr.h_total_new[6,2])
-            #input('stop 2')
+            #print (self.surface.arr.h_total_pre[6,2])
+            #print (self.surface.arr.h_total_new[6,2])
+
             self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / end_time
@@ -489,6 +495,10 @@ class Runoff(object):
 
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
+
+            print (time.time() - time_)
+            input()
+            time_ = time.time()
 
     def save_output(self):
         """TODO."""
