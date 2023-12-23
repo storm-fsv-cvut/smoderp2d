@@ -45,6 +45,10 @@ jobs:
           pip3 install --break-system-packages -r .github/workflows/requirements.txt
           pip3 install --break-system-packages -r .github/workflows/requirements3.11.txt
 
+      - name: Install smoderp2d
+        run: |
+          pip3 install .
+
       - name: Run GRASS test suite
         run: |
           ./tests/run_grass_gistest.sh nucice

@@ -33,6 +33,10 @@ jobs:
           pip install -r .github/workflows/requirements.txt
           pip install -r .github/workflows/requirements${{ matrix.python-version }}.txt
 
+      - name: Install smoderp2d
+        run: |
+          pip install .
+
       - name: Run command test suite
         run: |
           pytest ${{ inputs.pytest-suite }}
