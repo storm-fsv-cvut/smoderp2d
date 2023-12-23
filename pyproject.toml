@@ -27,7 +27,7 @@ version = '2.0.0'
 where = [""]
 
 [tool.setuptools.package-data]
-"*" = [".config.ini"]
+"*" = [".config.ini", "txtlogo.txt"]
 
 [project]
 name = 'smoderp2d'
