@@ -25,6 +25,7 @@ version = '2.0.0'
 
 [tool.setuptools.packages.find]
 where = [""]
+exclude = ["bin*", "utils*", "tests*"]
 
 [tool.setuptools.package-data]
 "*" = [".config.ini", "txtlogo.txt"]
