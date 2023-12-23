@@ -27,7 +27,8 @@ jobs:
 
       - name: Install smoderp2d
         run: |
-          pip3 install .
+          pip3 wheel .
+          pip3 install smoderp2d-*.whl
 
       - name: Run GRASS test suite (rain_sim)
         run: |
@@ -51,7 +52,8 @@ jobs:
 
       - name: Install smoderp2d
         run: |
-          pip3 install .
+          pip3 wheel .
+          pip3 install smoderp2d-*.whl
 
       - name: Run GRASS test suite
         run: |

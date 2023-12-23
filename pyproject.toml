@@ -1,0 +1,49 @@
+# Author(s): Petr Kavka, Karel Vrana
+# Copyright (C) TODO
+#
+# This file is part of smoderp2d.
+#
+# smoderp2d is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# smoderp2d is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with smoderp2d.  If not, see <https://www.gnu.org/licenses/>.
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[metadata]
+name = 'smoderp2d'
+version = '2.0.0'
+
+[tool.setuptools.packages]
+
+find = {}  # Scan the project directory with the default parameters
+# include = ["*.py"]
+# exclude = ["docker", "tests"]
+
+[project]
+name = 'smoderp2d'
+version = '2.0.0'
+description = 'Distributed event-based model for surface and subsurface runoff and erosion.'
+authors = [
+    {name = "Petr Kavka", email = "petr.kavka@fsv.cvut.cz"},
+    {name = "Jakub Jeřábek", email = "jakub.jerabek@fsv.cvut.cz"},
+    {name = "Martin Landa", email = "martin.landa@fsv.cvut.cz"},
+    {name = "Ondřej Pešek", email = "ondrej.pesek@fsv.cvut.cz"},
+    {name = "Jan Devátý", email = "jan.devaty@fsv.cvut.cz"},
+]
+requires-python = ">=3.8"
+license = {text = "GPLv3"}
+dependencies = ['numpy']
+
+[project.urls]
+documentation = 'https://storm.fsv.cvut.cz/cinnost-katedry/volne-stazitelne-vysledky/smoderp/?lang=en'
+repository = 'https://github.com/storm-fsv-cvut/smoderp2d'
