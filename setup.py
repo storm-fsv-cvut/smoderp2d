@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='smoderp2d',
-    version='0.1',
+    version='2.0',
     packages=find_packages(),
     description='Simulacni model odtokovych a eroznich procesosu',
     author='Vrana, Kavka',

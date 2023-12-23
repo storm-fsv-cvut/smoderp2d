@@ -12,7 +12,6 @@ from difflib import unified_diff
 
 import numpy
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.providers import Logger
 

@@ -6,7 +6,6 @@ import shutil
 import argparse
 import pickle
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from smoderp2d.providers.base import BaseProvider
 
 
