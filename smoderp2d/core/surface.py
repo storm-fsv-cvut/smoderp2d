@@ -413,7 +413,8 @@ def compute_h_hrill(h_total, h_crit, state,h_rillPre):
     )
     
     return h_sheet, h_rill
-    
+
+
 def compute_h_rillPre( h_rillPre,h_rill,state): #h_rillPre is depth of rill
     h_rillPre = ma.where(
         state == 0,
@@ -426,18 +427,24 @@ def compute_h_rillPre( h_rillPre,h_rill,state): #h_rillPre is depth of rill
             )
     return h_rillPre
 
-    
 
-
-def sheet_runoff( a, b, h_sheet):
+def sheet_runoff(a, b, h_sheet):
     
     q_sheet = surfacefce.shallowSurfaceKinematic(a, b, h_sheet)
 
-    vol_runoff = q_sheet  * GridGlobals.get_size()[0]
+    vol_runoff = q_sheet * GridGlobals.get_size()[0]
     
     return vol_runoff
 
-def rill_runoff(dt,   h_rill, efect_vrst, rillWidth ):
+def rill_runoff(dt,   h_rill, effect_vrst, rillWidth ):
+    """TODO.
+
+    :param dt: TODO
+    :param effect_vrst: TODO
+    :param ratio: TODO
+
+    :return: TODO
+    """
     n = Globals.get_mat_n()
     slope = Globals.get_mat_slope()
 
