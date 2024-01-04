@@ -299,7 +299,7 @@ class TimeStepImplicit:
             # calcualting rill runoff
             vol_to_rill = h_rill * GridGlobals.get_pixel_area()
             RILL_RATIO = 0.7
-            efect_vrst = Globals.get_mat_efect_cont()
+            efect_vrst = Globals.get_mat_effect_cont()
             
 
             surface.arr.vol_runoff_rill = rill_runoff(dt, 
