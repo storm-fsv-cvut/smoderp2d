@@ -192,16 +192,25 @@ def current_rain(rain, rainfallm, sum_interception):
     rain_ppl = rain.ppl
     rain_pi = rain.pi
     sum_interception_pre = ma.copy(sum_interception)
-    if not ma.all(rain_veg):
-        interc = rain_ppl * rainfallm  # interception is konstant
-        sum_interception += interc  # sum of intercepcion
 
-        NS = ma.where(
+    interc = rain_ppl * rainfallm  # interception is constant
+
+    sum_interception += ma.where(
+        ma.logical_not(rain_veg),
+        interc,
+        0
+    )
+
+    NS = ma.where(
+        ma.logical_not(rain_veg),
+        ma.where(
             sum_interception >= rain_pi,
             rainfallm - (rain_pi - sum_interception_pre),
             # rest of interception, netto rainfallm
             rainfallm - interc  # netto rainfallm
-            )
+        ),
+        rainfallm
+    )
 
     rain_veg = ma.where(
         ma.logical_and(ma.logical_not(rain_veg), sum_interception >= rain_pi),
