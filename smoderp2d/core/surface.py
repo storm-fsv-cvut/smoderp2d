@@ -9,7 +9,7 @@ if Globals.isStream:
     from smoderp2d.core.stream import Stream
 else:
     from smoderp2d.core.stream import StreamPass as Stream
-from smoderp2d.core.kinematic_diffuse import Kinematic
+from smoderp2d.core.kinematic_diffuse import get_kinematic
 import smoderp2d.processes.rill as rill
 import smoderp2d.processes.surface as surfacefce
 
@@ -105,126 +105,127 @@ class SurArrs(object):
         )
 
 
-class Surface(GridGlobals, Stream, Kinematic):
-    """Contains data and methods to calculate the surface and rill runoff.
-    """
-    def __init__(self):
-        """The constructor
+def get_surface():
+    class Surface(GridGlobals, Stream, get_kinematic()):
+        """Contains data and methods to calculate the surface and rill runoff."""
+        def __init__(self):
+            """The constructor
 
-        Make all numpy arrays and establish the inflow procedure based
-        on D8 or Multi Flow Direction Algorithm method.
-        """
-        GridGlobals.__init__(self)
+            Make all numpy arrays and establish the inflow procedure based
+            on D8 or Multi Flow Direction Algorithm method.
+            """
+            GridGlobals.__init__(self)
 
-        Logger.info("Surface: ON")
+            Logger.info("Surface: ON")
 
-        self.n = 15
+            self.n = 15
 
-        # set array outsides to zeros
-        self.arr.set_outsides(SurArrs)
+            # set array outsides to zeros
+            self.arr.set_outsides(SurArrs)
 
-        # assign array objects
-        self.arr = SurArrs(
-            Globals.get_mat_reten(),
-            Globals.get_mat_inf_index(),
-            Globals.get_mat_hcrit(),
-            Globals.get_mat_aa(),
-            Globals.get_mat_b()
-        )
-
-        Stream.__init__(self)
-
-        Logger.info("\tRill flow: {}".format('ON' if Globals.isRill else 'OFF'))
-
-    def return_str_vals(self, i, j, sep, dt, extra_out):
-        """TODO.
-
-        :param i: row index
-        :param j: col index
-        :param sep: separator
-        :param dt: TODO
-        :param extra_out: append extra output
-
-        :return: TODO
-        """
-        arr = self.arr
-        sw = Globals.slope_width
-
-        vol_runoff = arr.vol_runoff[i, j]
-        vol_runoff_rill = arr.vol_runoff_rill[i, j]
-
-        # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
-        if not extra_out:
-            line = '{0:.4e}{sep}{1:.4e}'.format(
-                arr.h_total_new[i, j],
-
-                (vol_runoff / dt + arr.vol_runoff_rill[i, j] / dt) * sw,
-
-                sep=sep
+            # assign array objects
+            self.arr = SurArrs(
+                Globals.get_mat_reten(),
+                Globals.get_mat_inf_index(),
+                Globals.get_mat_hcrit(),
+                Globals.get_mat_aa(),
+                Globals.get_mat_b()
             )
-            bil_ = ''
-        else:
-            velocity = ma.where(
-                arr.h_sheet == 0,
-                0,
-                arr.vol_runoff / dt / (arr.h_sheet*GridGlobals.dx)
-            )
-            # if profile1d provider - the data in extra output are the unit
-            #                          width data
-            #                     if you need runoff from non-unit slope and
-            #                     with extra output calculate it yourself
-            line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}' \
-                   '{sep}{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}' \
-                   '{9:.4e}'.format(
-                arr.h_sheet[i, j],
-                vol_runoff / dt[i, j],
-                vol_runoff,
-                velocity[i, j],
-                arr.vol_rest[i, j],
-                arr.infiltration[i, j],
-                arr.cur_sur_ret[i, j],
-                arr.state[i, j],
-                arr.inflow_tm[i, j],
-                arr.h_total_new[i, j],
-                sep=sep
-            )
-            
 
-            if Globals.isRill:
-                arr.vel_rill = arr.vol_runoff/arr.rillWidth/arr.h_rill/dt
-                line += '{sep}{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}' \
-                        '{sep}{4:.4e}{sep}{5:.4e}{sep}{6:.4e}{sep}' \
-                        '{7:.4e}'.format(
-                    arr.h_rill[i, j],
-                    arr.rillWidth[i, j],
-                    vol_runoff_rill / dt[i, j],
-                    vol_runoff_rill,
-                    arr.vel_rill[i, j],
-                    arr.v_rill_rest[i, j],
-                    vol_runoff / dt[i, j] + vol_runoff_rill / dt[i, j],
-                    vol_runoff + vol_runoff_rill,
+            Stream.__init__(self)
+
+            Logger.info("\tRill flow: {}".format('ON' if Globals.isRill else 'OFF'))
+
+        def return_str_vals(self, i, j, sep, dt, extra_out):
+            """TODO.
+
+            :param i: row index
+            :param j: col index
+            :param sep: separator
+            :param dt: TODO
+            :param extra_out: append extra output
+
+            :return: TODO
+            """
+            arr = self.arr
+            sw = Globals.slope_width
+
+            vol_runoff = arr.vol_runoff[i, j]
+            vol_runoff_rill = arr.vol_runoff_rill[i, j]
+
+            # Water_level_[m];Flow_[m3/s];v_runoff[m3];v_rest[m3];Infiltration[];surface_retention[l]
+            if not extra_out:
+                line = '{0:.4e}{sep}{1:.4e}'.format(
+                    arr.h_total_new[i, j],
+                    (vol_runoff / dt + vol_runoff_rill / dt) *
+                    sw,
+                    sep=sep
+                )
+                bil_ = ''
+            else:
+                velocity = ma.where(
+                    arr.h_sheet == 0,
+                    0,
+                    arr.vol_runoff / dt / (arr.h_sheet*GridGlobals.dx)
+                )
+                # if profile1d provider - the data in extra output are the unit
+                #                          width data
+                #                     if you need runoff from non-unit slope and
+                #                     with extra output calculate it yourself
+                line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}' \
+                       '{sep}{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}' \
+                       '{9:.4e}'.format(
+                    arr.h_sheet[i, j],
+                    vol_runoff / dt[i, j],
+                    vol_runoff,
+                    velocity[i, j],
+                    arr.vol_rest[i, j],
+                    arr.infiltration[i, j],
+                    arr.cur_sur_ret[i, j],
+                    arr.state[i, j],
+                    arr.inflow_tm[i, j],
+                    arr.h_total_new[i, j],
                     sep=sep
                 )
                 
 
-            bil_ = arr.h_total_pre[i, j] * self.pixel_area + \
-                   arr.cur_rain[i, j] * self.pixel_area + \
-                   arr.inflow_tm[i, j] - \
-                   (vol_runoff + vol_runoff_rill +
-                    arr.infiltration[i, j] * self.pixel_area) - \
-                    (arr.cur_sur_ret[i, j] * self.pixel_area) - \
-                    arr.h_total_new[i, j] * self.pixel_area
-            # << + arr.vol_rest + arr.v_rill_rest) +
-            # (arr.vol_rest_pre + arr.v_rill_rest_pre)
-        
-        return line, bil_
+
+                if Globals.isRill:
+                    arr.vel_rill = arr.vol_runoff/arr.rillWidth/arr.h_rill/dt
+                    line += '{sep}{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}' \
+                            '{sep}{4:.4e}{sep}{5:.4e}{sep}{6:.4e}{sep}' \
+                            '{7:.4e}'.format(
+                        arr.h_rill[i, j],
+                        arr.rillWidth[i, j],
+                        vol_runoff_rill / dt[i, j],
+                        vol_runoff_rill,
+                        arr.vel_rill[i, j],
+                        arr.v_rill_rest[i, j],
+                        vol_runoff / dt[i, j] + vol_runoff_rill / dt[i, j],
+                        vol_runoff + vol_runoff_rill,
+                        sep=sep
+                    )
+
+                bil_ = arr.h_total_pre[i, j] * self.pixel_area + \
+                       arr.cur_rain[i, j] * self.pixel_area + \
+                       arr.inflow_tm[i, j] - \
+                       (vol_runoff + vol_runoff_rill +
+                        arr.infiltration[i, j] * self.pixel_area) - \
+                        (arr.cur_sur_ret[i, j] * self.pixel_area) - \
+                        arr.h_total_new[i, j] * self.pixel_area
+                # << + arr.vol_rest + arr.v_rill_rest) +
+                # (arr.vol_rest_pre + arr.v_rill_rest_pre)
+
+            return line, bil_
+
+    return Surface
 
 
-# def __runoff(sur, dt, efect_vrst, ratio):
+# def __runoff(sur, dt, effect_vrst, ratio):
 #     """Calculates the sheet and rill flow.
 
 #     :param dt: TODO
-#     :param efect_vrst: TODO
+#     :param effect_vrst: TODO
 #     :param ratio: TODO
 
 #     :return: TODO
@@ -242,39 +243,33 @@ class Surface(GridGlobals, Stream, Kinematic):
 
 #     v_sheet = ma.where(h_sheet > 0, q_sheet / h_sheet, 0)
 
-
 #     # rill runoff
 #     rill_runoff_results = rill_runoff(
-#         dt, efect_vrst, ratio, h_rill, sur.rillWidth, sur.v_rill_rest,
+#         dt, effect_vrst, ratio, h_rill, sur.rillWidth, sur.v_rill_rest,
 #         sur.vol_runoff_rill
 #     )
-#     q_rill = ma.where(sur.state > 0, rill_runoff_results[0], 0)
-#     v_rill = ma.where(sur.state > 0, rill_runoff_results[1], 0)
-#     v_rill_rest = ma.where(sur.state > 0, rill_runoff_results[2],
+#     v_rill = ma.where(sur.state > 0, rill_runoff_results[0], 0)
+#     v_rill_rest = ma.where(sur.state > 0, rill_runoff_results[1],
 #                                sur.v_rill_rest)
-#     vol_runoff_rill = ma.where(sur.state > 0, rill_runoff_results[3],
+#     vol_runoff_rill = ma.where(sur.state > 0, rill_runoff_results[2],
 #                                    sur.vol_runoff_rill)
-#     ratio = ma.where(sur.state > 0, rill_runoff_results[4], ratio)
-#     rill_courant = ma.where(sur.state > 0, rill_runoff_results[5], 0)
-#     sur.vol_to_rill = ma.where(sur.state > 0, rill_runoff_results[6],
+#     ratio = ma.where(sur.state > 0, rill_runoff_results[3], ratio)
+#     rill_courant = ma.where(sur.state > 0, rill_runoff_results[4], 0)
+#     sur.vol_to_rill = ma.where(sur.state > 0, rill_runoff_results[5],
 #                                sur.vol_to_rill)
-#     sur.rillWidth = ma.where(sur.state > 0, rill_runoff_results[7],
+#     sur.rillWidth = ma.where(sur.state > 0, rill_runoff_results[6],
 #                              sur.rillWidth)
 
-
-#     return q_sheet, v_sheet, q_rill, v_rill, ratio, rill_courant, h_sheet, \
-#            h_rill, h_rillPre, vol_runoff, vol_rest, v_rill_rest, \
-#            vol_runoff_rill, v_rill
+#     return (v_sheet, v_rill, ratio, rill_courant, h_sheet, h_rill, h_rillPre,
+#             vol_runoff, vol_rest, v_rill_rest, vol_runoff_rill, v_rill)
 
 
-# def __runoff_zero_comp_type(i, j, sur, dt, efect_vrst, ratio):
+# def __runoff_zero_comp_type(sur, dt, effect_vrst, ratio):
 #     """TODO.
 
-#     :param i: row index
-#     :param j: col index
 #     :param sur: TOD
 #     :param dt: TODO
-#     :param efect_vrst: TODO
+#     :param effect_vrst: TODO
 #     :param ratio: TODO
 
 #     :return: TODO
@@ -351,7 +346,7 @@ def update_state(h_tot_new,h_crit,h_tot_pre,state,h_last_state1):
         1,
         state
     )   
-    return state               
+    return state             
 
 # # def compute_h_hrill(h_total_pre, h_crit, state,  h_rill_pre):
 #     #"""TODO.
@@ -449,7 +444,7 @@ def rill_runoff(dt,   h_rill, efect_vrst, rillWidth ):
     vol_to_rill = h_rill * GridGlobals.get_pixel_area()
 
     h, b = rill.update_hb(
-        vol_to_rill, RILL_RATIO, efect_vrst, rillWidth
+        vol_to_rill, RILL_RATIO, effect_vrst, rillWidth
     )
     r_rill = (h * b) / (b + 2 * h)
 
@@ -458,7 +453,6 @@ def rill_runoff(dt,   h_rill, efect_vrst, rillWidth ):
     q_rill = v_rill * h * b
 
     vol_rill = q_rill * dt
-
 
     vol_runoff_rill = ma.where(
         vol_rill > vol_to_rill, vol_to_rill, vol_rill
