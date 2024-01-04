@@ -6,9 +6,7 @@ import time
 
 
 def logger():
-    """
-    Return a logger.
-    """
+    """Return a logger."""
     from smoderp2d.providers.logger import BaseLogger
 
     logging.setLoggerClass(BaseLogger)
