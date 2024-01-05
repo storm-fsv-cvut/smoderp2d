@@ -10,6 +10,7 @@ import numpy.ma as ma
 from smoderp2d.providers import Logger
 from smoderp2d.core.general import GridGlobals
 
+
 # definice erroru  na urovni modulu
 #
 
@@ -67,11 +68,11 @@ def load_precipitation(fh):
             else:
                 if len(z) == 0:  # if raw in text file is empty
                     continue
-                elif (float(z[0])==0) & (float(z[1])>0):
+                elif (float(z[0]) == 0) & (float(z[1]) > 0):
                     # if the record start with zero minutes the line has to
                     # be corrected
                     raise ErrorInRainfallRecord()
-                elif (float(z[0])==0) & (float(z[1])==0):
+                elif (float(z[0]) == 0) & (float(z[1]) == 0):
                     # if the record start with zero minutes and rainfall
                     # the line is ignored
                     continue
@@ -171,13 +172,14 @@ def timestepRainfall(itera, total_time, delta_t, tz, sr):
                     z += 1
                     if z > (itera - 1):
                         break
-                # nakonec pricte to co je v poslednim zaznamu kde je total_time + delta_t pred konce zaznamu
+                # nakonec pricte to co je v poslednim zaznamu kde je
+                # total_time + delta_t pred konce zaznamu
                 # nebo pricte nulu pokud uz tam zadny zaznam neni
                 if z > (itera - 1):
                     rainfall += 0
                 else:
                     rainfall += sr[z][1] * (
-                        total_time + delta_t - sr[z - 1][0])
+                            total_time + delta_t - sr[z - 1][0])
 
             tz = z
 
@@ -205,7 +207,6 @@ def current_rain(rain, rainfallm, sum_interception):
         interc,
         0
     )
-
     NS = ma.where(
         ma.logical_not(rain_veg),
         ma.where(
@@ -216,7 +217,6 @@ def current_rain(rain, rainfallm, sum_interception):
         ),
         rainfallm
     )
-
     rain_veg = ma.where(
         ma.logical_and(ma.logical_not(rain_veg), sum_interception >= rain_pi),
         True,  # as vegetation, interception is full

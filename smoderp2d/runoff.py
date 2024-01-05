@@ -142,6 +142,7 @@ class FlowControl(object):
         """
         return self.total_time < end_time
 
+
 class Runoff(object):
     """Performs the calculation.
 
@@ -185,7 +186,6 @@ class Runoff(object):
         # maximal and cumulative values of resulting variables
         self.cumulative = Cumulative()
 
-
         # In EXPLICIT version - handle times step changes based on Courant condition 
         # in implicit version - courant condition is not used, used for setting time step 
         self.courant = Courant()
@@ -193,7 +193,6 @@ class Runoff(object):
 
         self.courant.set_time_step(self.delta_t)
         Logger.info('Corrected time step is {} [s]'.format(self.delta_t))
-
 
         # opens files for storing hydrographs 
         if Globals.points and Globals.points != "#":
@@ -209,7 +208,6 @@ class Runoff(object):
             #             ))
         else:
             self.hydrographs = wf.HydrographsPass()
-
 
         # method for single time step calculation
         
@@ -250,7 +248,6 @@ class Runoff(object):
         # list of flewdirection vectors - incialization
         self.r,self.c = GridGlobals.get_dim()
         self.list_fd = [[] for i in range(self.r*self.c)]
-        
 
     def run(self):
         """Perform the computation of the water level development.
@@ -282,9 +279,6 @@ class Runoff(object):
         Logger.start_time = time.time()
         end_time = Globals.end_time
 
-        
-        
-       
         self.flow_control.save_vars()
         # main loop: until the end time
 
@@ -316,13 +310,8 @@ class Runoff(object):
                 self.list_fd    
             )
 
-            
-           
-            
             # print raster results in given time steps
             self.times_prt.prt(self.flow_control.total_time, self.delta_t, self.surface)
-
-            
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / Globals.end_time
             Logger.progress(
@@ -332,9 +321,7 @@ class Runoff(object):
                 self.flow_control.total_time + self.delta_t
             )
 
-           
-
-            # record values into hydrographs
+            # write hydrographs of reaches
             self.hydrographs.write_hydrographs_record(
                 None,
                 None,
@@ -350,7 +337,6 @@ class Runoff(object):
              # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
             self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
-        
 
     def save_output(self):
         """TODO."""
@@ -358,7 +344,7 @@ class Runoff(object):
         # perform postprocessing - store results
         self.provider.postprocessing(self.cumulative, self.surface.arr,
                                      self.surface.reach)
-        #Logger.progress(100)
+        # Logger.progress(100)
 
         # TODO
         # post_proc.stream_table(Globals.outdir + os.sep, self.surface,

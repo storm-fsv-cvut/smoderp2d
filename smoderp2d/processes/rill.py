@@ -6,6 +6,7 @@ from smoderp2d.providers import Logger
 
 courantMax = 1.0
 
+
 def update_hb(loc_V_to_rill, rillRatio, l, b):
     V = loc_V_to_rill
     # if ma.any(V < 0):
@@ -43,14 +44,13 @@ def rill(V_to_rill, rillRatio, l, b, delta_t,
         R_rill = (h * b) / (b + 2 * h)
         v[k] = ma.pow(
             R_rill,
-            (2.0 / 3.0)) * 1 / n * ma.pow(slope / 100,
-                                            0.5)  # m/s
+            (2.0 / 3.0)) * 1 / n * ma.pow(slope / 100, 0.5)  # m/s
 
         q[k] = v[k] * rillRatio * b * b  # [m3/s]
         V = q[k] * loc_delta_t
         courant = v[k] / 0.5601 * loc_delta_t / l
 
-        if (courant <= courantMax):
+        if courant <= courantMax:
 
             if V > (loc_V_to_rill + V_rill_rest):
                 V_rill_rest = 0
@@ -77,16 +77,18 @@ def rill(V_to_rill, rillRatio, l, b, delta_t,
 #  @param n roughness of the rill
 #  @param slope slope of the computational cell
 #  @param delta_t  time step
-#  @param ratio  ratio to make the time division to satisfy the the courant condition
+#  @param ratio  ratio to make the time division to satisfy the courant condition
 #
 #
 #  \image html rill_schema.png "The rill shape and dimension" width=5cm
 #
-#  First the function calculates the inflow from the adjecent cells together with the water volume from the previous time step \n
+#  First the function calculates the inflow from the adjecent cells together
+#  with the water volume from the previous time step \n
 #  \f$ V_{to\ rill} = h_{rill} \ pixelArea + V_{rill\ rest} \f$
 #
 #
-#  Next step is to chech weather or not is the rill large enough to caputre the volume of the water \n
+#  Next step is to chech weather or not is the rill large enough to capture
+#  the volume of the water \n
 #  \b if \f$V_{to\ rill}\f$ > \f$V_{rill}\f$ \n
 #    \f$ V_{rill} = y^{2} \ rillRatio \ length \f$ \n
 #  \n

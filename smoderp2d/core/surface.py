@@ -18,6 +18,7 @@ from smoderp2d.providers import Logger
 courantMax = 1.0
 RILL_RATIO = 0.7
 
+
 class SurArrs(object):
     """Surface attributes."""
     def __init__(self, sur_ret, inf_index, hcrit, a, b):
@@ -187,8 +188,6 @@ def get_surface():
                     arr.h_total_new[i, j],
                     sep=sep
                 )
-                
-
 
                 if Globals.isRill:
                     arr.vel_rill = arr.vol_runoff/arr.rillWidth/arr.h_rill/dt
@@ -303,7 +302,6 @@ def update_state1(ht_1, hcrit, state):
     :param ht_1: TODO
     :param hcrit: TODO
     :param state: TODO (not used)
-    :patam rill_width: TODO (not used)
 
     :return: TODO
     """
@@ -442,6 +440,10 @@ def rill_runoff(dt,   h_rill, effect_vrst, rillWidth ):
     :param dt: TODO
     :param effect_vrst: TODO
     :param ratio: TODO
+    :param h_rill: TODO
+    :param rillWidth: TODO
+    :param v_rill_rest: TODO
+    :param vol_runoff_rill: TODO
 
     :return: TODO
     """
@@ -449,7 +451,6 @@ def rill_runoff(dt,   h_rill, effect_vrst, rillWidth ):
     slope = Globals.get_mat_slope()
 
     vol_to_rill = h_rill * GridGlobals.get_pixel_area()
-
     h, b = rill.update_hb(
         vol_to_rill, RILL_RATIO, effect_vrst, rillWidth
     )
@@ -519,7 +520,7 @@ def surface_retention(bil, sur):
     """TODO.
 
     :param bil: TODO
-    param sur: TODO
+    :param sur: TODO
     """
     reten = sur.sur_ret
     pre_reten = reten

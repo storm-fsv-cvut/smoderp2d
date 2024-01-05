@@ -19,6 +19,7 @@ class Courant:
     #
 
     def __init__(self):
+        """TODO."""
         self.orig_dt = 0  # to be set during set_time_step(dt)
         self.maxh = 0
         self.cour_speed = 0
@@ -93,8 +94,7 @@ class Courant:
 
     #
     def CFL(self, h0, v, delta_t, efect_cont, co, rill_courant):
-        """Checks and store in each computational cell the maximum velocity
-        and maximum Courant coefficient.
+        """Check the maximum velocity and maximum Courant coefficient.
 
         Store it in each computational cell.
 
