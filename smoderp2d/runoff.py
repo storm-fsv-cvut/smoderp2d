@@ -11,6 +11,7 @@ Classes:
 
 """
 
+import sys
 import time
 import numpy as np
 import numpy.ma as ma
@@ -275,9 +276,11 @@ class Runoff(object):
 
             # iteration loop
             print ('=++++++++++++++++++++++++++++++')
+            timepreiter = time.time()
             while self.flow_control.max_iter_reached():
 
-                print ('                        ')
+                viter1 = time.time()
+                #print ('                        ')
 
                 self.flow_control.update_iter()
                 self.flow_control.restore_vars()
@@ -297,12 +300,13 @@ class Runoff(object):
 
 
 
-                print ('dt            {}'.format(self.delta_t[6,2]))
-                print ('time          {}'.format(self.flow_control.total_time[6,2]))
-                print ('iter          {}'.format(self.flow_control.iter_))
-                print ('hcir          {}'.format(self.surface.arr.h_crit[6,2]))
-                print ('courant       {}'.format(self.courant.cour_most))
-                print ('cour_speed    {}'.format(self.courant.cour_speed))
+                viter2 = time.time()
+                #print ('dt            {}'.format(self.delta_t[6,2]))
+                #print ('time          {}'.format(self.flow_control.total_time[6,2]))
+                #print ('iter          {}'.format(self.flow_control.iter_))
+                #print ('hcir          {}'.format(self.surface.arr.h_crit[6,2]))
+                #print ('courant       {}'.format(self.courant.cour_most))
+                #print ('cour_speed    {}'.format(self.courant.cour_speed))
 
                 # Calculate actual rainfall and adds up interception todo:
                 # AP - actual is not storred in hydrographs
@@ -318,12 +322,14 @@ class Runoff(object):
                     self.delta_t
                 )
 
+                viter3 = time.time()
                 runoff_return = runoff(
                     self.surface.arr, self.delta_t,
                     Globals.get_mat_effect_cont(), self.flow_control.ratio
                 )
 
 
+                viter4 = time.time()
                 v = ma.maximum(runoff_return[0], runoff_return[1])
                 self.courant.CFL(
                     v, self.delta_t,
@@ -331,7 +337,7 @@ class Runoff(object):
                     '---',
                     None
                 )
-                print ('courant       {}'.format(self.courant.cour_most))
+                # print ('courant       {}'.format(self.courant.cour_most))
                 
                 # stores current time step
                 delta_t_tmp = self.delta_t
@@ -363,7 +369,19 @@ class Runoff(object):
                         self.flow_control,
                         self.courant
                     )
+                    viter5 = time.time()
+                    print (viter2-viter1, viter3-viter2, viter4-viter3,
+                            viter5-viter4)
                     break
+                viter5 = time.time()
+                print (viter2-viter1, viter3-viter2, viter4-viter3,
+                        viter5-viter4)
+
+            timepostiter = time.time()
+
+            print ('iter          {}'.format(self.flow_control.iter_))
+            print ('dt            {}'.format(self.delta_t[6,2]))
+            print ('vsechny iterace   {}'.format(timepostiter - timepreiter))
 
             # if the iteration exceed the maximal amount of iteration
             # last results are stored in hydrographs
@@ -496,8 +514,9 @@ class Runoff(object):
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
 
-            print (time.time() - time_)
+            print ('jeden krok v case {}'.format(time.time() - time_))
             time_ = time.time()
+            if self.flow_control.total_time[6,2] > 300 : sys.exit()
 
     def save_output(self):
         """TODO."""
