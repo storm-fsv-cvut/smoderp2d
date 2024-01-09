@@ -35,24 +35,32 @@ git clone https://github.com/storm-fsv-cvut/smoderp2d.git
 Build an image:
 
 ```sh
-docker build -t smoderp docker/
+docker build -t smoderp2d docker/
 ```
 
 Run SMODERP command line tool from Docker container:
 
 ```sh
 docker run -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
- ./bin/start-smoderp2d.py smoderp \
+ ./bin/start-smoderp2d.py smoderp2d \
  --config tests/config_files/quicktest.ini
 ```
 
-### From command line locally
+### Run locally
+
+Build and install SMODERP2D Python package:
+
+```sh
+pip install .
+```
+
+#### Command line
 
 ```sh
 ./bin/start-smoderp2d.py --config tests/config_files/quicktest_stream_rill.ini
 ```
 
-### From GRASS GIS
+#### GRASS GIS
 
 Note: GRASS GIS 8.3+ required
 
@@ -82,27 +90,27 @@ Run `r.smoderp2d` module:
     output=tests/data/output
 ```
 
-### From ArcGIS 10.x or Pro
+#### ArcGIS Pro
 
 Launch SMODERP2D ArcToolbox from `bin\arcgis` directory.
 
 ![SMODERP2D ArcToolbox in action](img/arctoolbox.png?raw=true "SMODERP2D ArcToolbox in action")
 
-### From QGIS
+#### QGIS
 
 Requirements: QGIS 3.28.10 and higher
 
-Set path to the plugin from command line:
-
-```sh
-QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/nucice/qgis_project.qgz
-```
-
-or define `QGIS_PLUGINPATH` in `Settings -> Options -> System` and restart QGIS:
+Define `QGIS_PLUGINPATH` in `Settings -> Options -> System` and restart QGIS:
 
 ![SMODERP2D QGIS settings](img/qgis_settings.png?raw=true "QGIS settings")
 
 And enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
+
+For development purposes:
+
+```sh
+PYTHONPATH=`pwd` QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/nucice/qgis_project.qgz
+```
 
 #### Known issue
 
