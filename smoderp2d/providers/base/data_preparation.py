@@ -15,7 +15,7 @@ from smoderp2d.providers.base.exceptions import DataPreparationError, \
 
 class PrepareDataBase(ABC):
     @staticmethod
-    def _get_a(mat_n, mat_x, mat_y, r, c, no_data, mat_slope):
+    def _get_a(mat_nsheet, mat_y, r, c, no_data, mat_slope):
         """Build 'a' and 'aa' arrays.
 
         :param mat_n:
@@ -38,24 +38,20 @@ class PrepareDataBase(ABC):
         for i in range(r):
             for j in range(c):
                 slope = mat_slope[i][j]
-                par_x = mat_x[i][j]
+                par_nsheet = mat_nsheet[i][j]
                 par_y = mat_y[i][j]
 
                 if par_x == no_data or par_y == no_data or slope == no_data:
-                    par_a = no_data
                     par_aa = no_data
                 elif par_x == no_data or par_y == no_data or slope == 0.0:
-                    par_a = 0.0001
-                    par_aa = par_a / mat_n[i][j]
+                    par_aa = 0.0001
                 else:
                     exp = np.power(slope, par_y)
-                    par_a = par_x * exp
-                    par_aa = par_a / mat_n[i][j]
+                    par_aa = 1 / mat_nsheet[i][j] * exp
 
-                mat_a[i][j] = par_a
                 mat_aa[i][j] = par_aa
 
-        return mat_a, mat_aa
+        return mat_aa
 
     @staticmethod
     def _get_crit_water(mat_b, mat_tau, mat_v, r, c, mat_slope,
@@ -632,11 +628,10 @@ class PrepareDataGISBase(PrepareDataBase):
                               self.data['mat_dem'])
 
         # build a/aa arrays
-        self.data['mat_a'], self.data['mat_aa'] = self._get_a(
-            self.soilveg_fields['n'], self.soilveg_fields['x'],
-            self.soilveg_fields['y'], GridGlobals.r,
-            GridGlobals.c, GridGlobals.NoDataValue, self.data['mat_slope']
-        )
+        self.data['mat_aa'] = self._get_a(
+                self.soilveg_fields['nsheet'], self.soilveg_fields['y'],
+                GridGlobals.r, GridGlobals.c, GridGlobals.NoDataValue,
+                self.data['mat_slope'])
         Logger.progress(50)
 
         Logger.info("Computing critical level...")
