@@ -103,7 +103,6 @@ class Courant:
             self.j = np.unravel_index(ma.argmax(cour), cour.shape)[1]
             self.co = co
             self.cour_most = cour[self.i, self.j]
-            self.maxh = h0[self.i, self.j]
             self.cour_speed = v[self.i, self.j]
         # if rill_courant > self.cour_most_rill:
             # self.cour_most_rill = rill_courant

@@ -222,6 +222,11 @@ class Hydrographs:
                 line += os.linesep
                 self.files[ip].writelines(line)
 
+    def __del__(self):
+        for fd in self.files:
+            Logger.debug('Hydrographs file "{}" closed'.format(fd.name))
+            fd.close()
+
 
 class HydrographsPass:
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface,
