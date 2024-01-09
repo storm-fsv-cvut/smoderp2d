@@ -39,7 +39,7 @@ def new_inflows(mat_fd):
         for j in range(c):
             in_dir = __directionsInflow(mat_fd, i, j)
             in_fldir[i][j] = in_dir
-            inflow = __directions(in_dir, i, j, direction)
+            inflow = __directions(in_dir, direction)
             inflows[i].append(inflow)
 
     return inflows
@@ -69,7 +69,7 @@ def __directionsInflow(mat_fd, i, j):
     return inflows
 
 
-def __directions(inflow, i, j, direction):
+def __directions(inflow, direction):
     """TODO.
 
     :param inflow: TODO

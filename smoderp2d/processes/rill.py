@@ -1,4 +1,3 @@
-import numpy as np
 import numpy.ma as ma
 
 from smoderp2d.exceptions import SmoderpError
@@ -24,7 +23,7 @@ def update_hb(loc_V_to_rill, rillRatio, l, b):
 
 
 def rill(V_to_rill, rillRatio, l, b, delta_t,
-         ratio, n, slope, pixelArea, ppp=False):
+         ratio, n, slope):
 
     V_rill_runoff = 0
     V_rill_rest = 0     # vrillrest z predchoziho kroku je zapocten v vtorill
@@ -39,7 +38,7 @@ def rill(V_to_rill, rillRatio, l, b, delta_t,
     for k in range(ratio):
 
         h, b = update_hb(
-            loc_V_to_rill + V_rill_rest, rillRatio, l, b, ratio, ppp)
+            loc_V_to_rill + V_rill_rest, rillRatio, l, b)
 
         R_rill = (h * b) / (b + 2 * h)
         v[k] = ma.pow(
