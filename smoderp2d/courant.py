@@ -20,8 +20,6 @@ class Courant:
 
     def __init__(self):
         """TODO."""
-        self.orig_dt = 0  # to be set during set_time_step(dt)
-        self.maxh = 0
         self.cour_speed = 0
         # citical courant value
         self.cour_crit = 0.95
@@ -32,18 +30,12 @@ class Courant:
         self.i = -1
         self.j = -1
         self.co = 'sheet'
-        self.co_pre = 'sheet'
         self.maxratio = 10
         self.max_delta_t = ma.masked_array(
             np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt,
             mask=GridGlobals.masks
         )
         self.max_delta_t_mult = 1.0
-
-    # Store the original guess time step
-    #
-    def set_time_step(self, dt):
-        self.orig_dt = dt
 
     #
     def reset(self):
@@ -93,7 +85,7 @@ class Courant:
         )
 
     #
-    def CFL(self, h0, v, delta_t, efect_cont, co, rill_courant):
+    def CFL(self, v, delta_t, effect_cont, co, rill_courant):
         """Check the maximum velocity and maximum Courant coefficient.
 
         Store it in each computational cell.

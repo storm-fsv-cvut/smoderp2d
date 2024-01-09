@@ -191,7 +191,6 @@ class Runoff(object):
         self.courant = Courant()
         self.delta_t = self.courant.initial_time_step()
 
-        self.courant.set_time_step(self.delta_t)
         Logger.info('Corrected time step is {} [s]'.format(self.delta_t))
 
         # opens files for storing hydrographs 
@@ -223,7 +222,6 @@ class Runoff(object):
             self.courant,
             self.delta_t,
             self.surface,
-            self.subsurface,
             self.cumulative,
             ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
@@ -329,7 +327,6 @@ class Runoff(object):
                 self.courant,
                 self.delta_t,
                 self.surface,
-                self.subsurface,
                 self.cumulative,
                 actRain,
             )

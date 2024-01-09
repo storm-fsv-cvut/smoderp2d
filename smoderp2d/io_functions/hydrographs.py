@@ -8,7 +8,7 @@ os.linesep = '\n'
 
 
 class Hydrographs:
-    def __init__(self, item='core'):
+    def __init__(self):
         points = Globals.get_array_points()
         ipi = points.shape[0]
         jpj = 5
@@ -79,7 +79,6 @@ class Hydrographs:
 
         self.header = []
 
-        # input('sep={sep}'.format(sep=SEP))
         for i in range(self.n):
             # for correct opening in e.g. excel
             header = 'sep={sep}{line}'.format(sep=SEP,line= os.linesep)
@@ -160,7 +159,6 @@ class Hydrographs:
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface,
                                  cumulative, currRain, inStream=False, sep=SEP):
 
-
         ratio = fc.ratio
         total_time = fc.total_time + dt
         iter_ = fc.iter_
@@ -224,32 +222,8 @@ class Hydrographs:
                 line += os.linesep
                 self.files[ip].writelines(line)
 
-    def _output_path(self, output, directory='core'):
-        dir_name = os.path.join(
-            Globals.outdir,
-            directory
-            )
-
-        if not os.path.exists(dir_name):
-           os.makedirs(dir_name)
-
-        return os.path.join(
-            dir_name,
-            output
-        )
-
-    def __del__(self):
-        for fd in self.files:
-            Logger.debug('Hydrographs file "{}" closed'.format(fd.name))
-            fd.close()
-
 
 class HydrographsPass:
-    def write_hydrographs_record(self, i, j, fc, courant, dt, surface, subsurface,
+    def write_hydrographs_record(self, i, j, fc, courant, dt, surface,
                                  currRain, inStream=False, sep=SEP):
         pass
-
-
-    def _output_path(self, output, directory='core'):
-        pass
-
