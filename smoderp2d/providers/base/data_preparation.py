@@ -615,7 +615,7 @@ class PrepareDataGISBase(PrepareDataBase):
         )
         Logger.progress(40)
 
-        self.data['mat_n'] = self.soilveg_fields['n']
+        self.data['mat_n'] = self.soilveg_fields['nrill']
         self.data['mat_pi'] = self.soilveg_fields['pi']
         self.data['mat_ppl'] = self.soilveg_fields['ppl']
         self.data['mat_reten'] = self.soilveg_fields['ret']
