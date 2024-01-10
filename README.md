@@ -35,15 +35,17 @@ git clone https://github.com/storm-fsv-cvut/smoderp2d.git
 Build an image:
 
 ```sh
-docker build -t smoderp2d docker/
+docker build \
+ --tag smoderp2d:latest --file docker/Dockerfile .
 ```
 
 Run SMODERP command line tool from Docker container:
 
 ```sh
-docker run -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
+docker run \
+ -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
  ./bin/start-smoderp2d.py smoderp2d \
- --config tests/config_files/quicktest.ini
+ --config tests/config_files/quicktest_stream_rill.ini
 ```
 
 ### Run locally
