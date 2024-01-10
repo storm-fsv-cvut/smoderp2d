@@ -290,7 +290,7 @@ class PrepareDataGISBase(PrepareDataBase):
             'mat_slope': None,
             'mat_nan': None,
             'mat_a': None,
-            'mat_n': None,
+            'mat_nrill': None,
             'end_time': self._input_params['end_time'],
             'state_cell': None,
             'type_of_computing': None,
@@ -611,7 +611,7 @@ class PrepareDataGISBase(PrepareDataBase):
         )
         Logger.progress(40)
 
-        self.data['mat_n'] = self.soilveg_fields['nrill']
+        self.data['mat_nrill'] = self.soilveg_fields['nrill']
         self.data['mat_pi'] = self.soilveg_fields['pi']
         self.data['mat_ppl'] = self.soilveg_fields['ppl']
         self.data['mat_reten'] = self.soilveg_fields['ret']
