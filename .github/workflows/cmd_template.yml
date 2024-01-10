@@ -35,8 +35,7 @@ jobs:
 
       - name: Install smoderp2d
         run: |
-          pip wheel .
-          pip install smoderp2d-*.whl
+          pip install .
 
       - name: Run command test suite
         run: |
