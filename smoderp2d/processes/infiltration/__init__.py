@@ -14,8 +14,7 @@ def set_combinatIndex(newCombinatIndex):
     combinatIndex = newCombinatIndex
 
 
-def philip_infiltration(soil,bil):
-    # print 'bil v infiltraci', bil
+def philip_infiltration(soil, bil):
     infiltration = combinatIndex[0][3]
     for z in combinatIndex:
         if ma.all(bil < 0):
@@ -36,13 +35,20 @@ def phlilip(k, s, deltaT, totalT, NoDataValue):
     if k and s == NoDataValue:
         infiltration = NoDataValue
     # elif totalT == 0:
-        # infiltration = k*deltaT  ## toto je chyba, infiltrace se rovna k az po ustaleni. Na zacatku je teoreticky nekonecno
+        # infiltration = k*deltaT
+        # toto je chyba, infiltrace se rovna k az po ustaleni.
+        # Na zacatku je teoreticky nekonecno
     # else:
         # try:
     else:
-
-        infiltration = (0.5 * s / ma.sqrt(totalT+deltaT) + k) 
+        infiltration1 = ma.where(
+            totalT == 0,
+            s * 0.0000001 ** 0.5 + k * 0.0000001,
+            s * totalT ** 0.5 + k * totalT
+        )
+        infiltration2 = s * (totalT + deltaT)**0.5 + k * (totalT + deltaT)
         
+        infiltration = infiltration2 - infiltration1
+
         # except ValueError:
-    # print k, s
     return infiltration

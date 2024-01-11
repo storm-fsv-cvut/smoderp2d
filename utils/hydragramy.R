@@ -10,17 +10,19 @@ library('manipulate')
 # install package is missing with: install.packages("manipulate")
 #
 # root dir
-root  <-  "d:/0_Smoderp/02_AGPro_provider/out2_AG"
-root  <-  "d:/2_granty_projekty/2_Bezici/2022_RAGO/01_reseni_projektu/00_test_Smoderp/out2"
+root  <-  "d:/0_Smoderp/00_QGtest_ds_plocha/out2"
+root  <-  "d:/0_Smoderp/02_AGPro_provider/out19_AG"
+
+#root  <-  "d:/2_granty_projekty/2_Bezici/2022_RAGO/01_reseni_projektu/00_test_Smoderp/out2"
 # output dir
 outdir <- 'control_point'
 # choose points to be printed (*.dat file v output dir)
 # point000.dat -> id = 1
 # point001.dat -> id = 2
 # atd...
-id1_ = 1
-id2_ = 2
-#
+id1_ = 2
+id2_ = 5
+#2+6;1+4
 # End setting  
 #
 #

@@ -189,7 +189,6 @@ class Stream(object):
     def return_stream_str_vals(self, i, j, sep, extraOut):
         fid = int(self.arr.state[i, j] - Gl.streams_flow_inc)
         # Time;   V_runoff  ;   Q   ;    V_from_field  ;  V_rests_in_stream
-        # print fid, self.reach[fid].Q_out, str(self.reach[fid].V_out)
         r = self.reach[fid]
         if not extraOut:
             line = '{h:.4e}{sep}{q:.4e}{sep}{cumvol:.4e}'.format(

@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import math
 import arcpy
@@ -11,7 +12,7 @@ from smoderp2d.providers.base.exceptions import DataPreparationError, \
 
 
 class PrepareData(PrepareDataGISBase):
-    def __init__(self, options, writter):
+    def __init__(self, options, writer):
         # define input parameters
         self._set_input_params(options)
 
@@ -23,8 +24,8 @@ class PrepareData(PrepareDataGISBase):
                 "Spatial Analysis extension for ArcGIS is not available"
             )
 
-        arcpy.env.XYTolerance = "0.01 Meters"
-        super(PrepareData, self).__init__(writter)
+        arcpy.env.XYTolerance = "0.000001 Meters" # increased because of GRASS GIS data comparision
+        super(PrepareData, self).__init__(writer)
 
     def _create_AoI_outline(self, elevation, soil, vegetation):
         """See base method for description.
@@ -48,50 +49,61 @@ class PrepareData(PrepareDataGISBase):
             [dem_polygon, soil, vegetation], aoi, "NO_FID"
         )
 
-        aoi_polygon = self.storage.output_filepath('aoi_polygon')
-        arcpy.management.Dissolve(aoi, aoi_polygon)
+        aoi_polygon_mem = os.path.join("in_memory", "aoi_polygon")
+        arcpy.management.Dissolve(aoi, aoi_polygon_mem)
 
-        if int(arcpy.management.GetCount(aoi_polygon).getOutput(0)) == 0:
+        if int(arcpy.management.GetCount(aoi_polygon_mem).getOutput(0)) == 0:
             raise DataPreparationNoIntersection()
 
-        aoi_mask = self.storage.output_filepath('aoi_mask')
+        aoi_mask_mem = os.path.join("in_memory", "aoi_mask")
         with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=dem_mask, cellAlignment=dem_mask, snapRaster=dem_mask):
-            field = arcpy.Describe(aoi_polygon).OIDFieldName
+            field = arcpy.Describe(aoi_polygon_mem).OIDFieldName
             arcpy.conversion.PolygonToRaster(
-                aoi_polygon, field, aoi_mask, "MAXIMUM_AREA", "",
-                GridGlobals.dy
+                aoi_polygon_mem, field, aoi_mask_mem, "MAXIMUM_AREA"
             )
 
-        # return aoi_polygon
+        # perform aoi_mask postprocessing - remove no-data cells on the edges
+        arcpy.conversion.RasterToPolygon(aoi_mask_mem, aoi_polygon_mem, "NO_SIMPLIFY")
+        aoi_mask = self.storage.output_filepath('aoi_mask')
+        with arcpy.EnvManager(extent=aoi_polygon_mem):
+            arcpy.management.Clip(aoi_mask_mem, out_raster=aoi_mask, nodata_value=GridGlobals.NoDataValue)
+        # generate aoi_polygon to be snapped to aoi_mask
+        aoi_polygon = self.storage.output_filepath('aoi_polygon')
+        with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, extent=aoi_mask, cellSize=aoi_mask, cellAlignment=aoi_mask,
+                              snapRaster=aoi_mask):
+            arcpy.conversion.RasterToPolygon(aoi_mask, aoi_polygon, "NO_SIMPLIFY")
+        arcpy.env.extent = aoi_polygon
+
         return aoi_polygon, aoi_mask
 
     def _create_DEM_derivatives(self, dem):
         """See base method for description.
         """
-        # calculate the depressionless DEM
-        dem_filled_path = self.storage.output_filepath('dem_filled')
-        dem_filled = arcpy.sa.Fill(dem)
-        dem_filled.save(dem_filled_path)
+        with arcpy.EnvManager(extent=dem):
+            # calculate the depressionless DEM
+            dem_filled_path = self.storage.output_filepath('dem_filled')
+            dem_filled = arcpy.sa.Fill(dem)
+            dem_filled.save(dem_filled_path)
 
-        # calculate the flow direction
-        dem_flowdir_path = self.storage.output_filepath('dem_flowdir')
-        flowdir = arcpy.sa.FlowDirection(dem_filled)
-        flowdir.save(dem_flowdir_path)
+            # calculate the flow direction
+            dem_flowdir_path = self.storage.output_filepath('dem_flowdir')
+            flowdir = arcpy.sa.FlowDirection(dem_filled)
+            flowdir.save(dem_flowdir_path)
 
-        # calculate flow accumulation
-        dem_flowacc_path = self.storage.output_filepath('dem_flowacc')
-        flowacc = arcpy.sa.FlowAccumulation(flowdir)
-        flowacc.save(dem_flowacc_path)
+            # calculate flow accumulation
+            dem_flowacc_path = self.storage.output_filepath('dem_flowacc')
+            flowacc = arcpy.sa.FlowAccumulation(flowdir)
+            flowacc.save(dem_flowacc_path)
 
-        # calculate slope
-        dem_slope_path = self.storage.output_filepath('dem_slope')
-        dem_slope = arcpy.sa.Slope(dem, "PERCENT_RISE")
-        dem_slope.save(dem_slope_path)
+            # calculate slope
+            dem_slope_path = self.storage.output_filepath('dem_slope')
+            dem_slope = arcpy.sa.Slope(dem, "PERCENT_RISE")
+            dem_slope.save(dem_slope_path)
 
-        # calculate aspect
-        dem_aspect_path = self.storage.output_filepath('dem_aspect')
-        dem_aspect = arcpy.sa.Aspect(dem)
-        dem_aspect.save(dem_aspect_path)
+            # calculate aspect
+            dem_aspect_path = self.storage.output_filepath('dem_aspect')
+            dem_aspect = arcpy.sa.Aspect(dem)
+            dem_aspect.save(dem_aspect_path)
 
         return (
             dem_filled_path, dem_flowdir_path, dem_flowacc_path,
@@ -151,27 +163,25 @@ class PrepareData(PrepareDataGISBase):
     def _rst2np(self, raster):
         """See base method for description.
         """
-        return arcpy.RasterToNumPyArray(
+        arr = arcpy.RasterToNumPyArray(
             raster, nodata_to_value=GridGlobals.NoDataValue
         )
+        self._check_rst2np(arr)
 
-    def _update_grid_globals(self, reference):
+        return arr
+
+    def _update_grid_globals(self, reference, reference_cellsize):
         """See base method for description.
         """
         desc = arcpy.Describe(reference)
+        desc_cellsize = arcpy.Describe(reference_cellsize)
 
-        # check data consistency
-        if desc.height != GridGlobals.r or \
-                desc.width != GridGlobals.c:
-            raise DataPreparationError(
-                "Data inconsistency ({},{}) vs ({},{})".format(
-                    desc.height, desc.width,
-                    GridGlobals.r, GridGlobals.c)
-            )
+        GridGlobals.r = desc.height
+        GridGlobals.c = desc.width
 
         # lower left corner coordinates
         GridGlobals.set_llcorner((desc.Extent.XMin, desc.Extent.YMin))
-        GridGlobals.set_size((desc.MeanCellWidth, desc.MeanCellHeight))
+        GridGlobals.set_size((desc_cellsize.MeanCellWidth, desc_cellsize.MeanCellHeight))
         inp = arcpy.Describe(self._input_params['elevation'])
         self._check_resolution_consistency(
             inp.meanCellWidth, inp.meanCellHeight
@@ -179,9 +189,9 @@ class PrepareData(PrepareDataGISBase):
 
         # set arcpy environment (needed for rasterization)
         arcpy.env.extent = desc.Extent
-        arcpy.env.snapRaster = reference
+        arcpy.env.snapRaster = reference_cellsize
 
-    def _compute_efect_cont(self, dem, asp):
+    def _compute_effect_cont(self, dem, asp):
         """See base method for description.
         """
         pii = math.pi / 180.0
@@ -193,10 +203,10 @@ class PrepareData(PrepareDataGISBase):
         times1 = arcpy.sa.Plus(cosslope, sinslope)
         times1.save(self.storage.output_filepath('ratio_cell'))
 
-        efect_cont = arcpy.sa.Times(times1, GridGlobals.dx)
-        efect_cont.save(self.storage.output_filepath('efect_cont'))
+        effect_cont = arcpy.sa.Times(times1, GridGlobals.dx)
+        effect_cont.save(self.storage.output_filepath('effect_cont'))
 
-        return self._rst2np(efect_cont)
+        return self._rst2np(effect_cont)
 
     def _prepare_soilveg(self, soil, soil_type_fieldname, vegetation,
                          vegetation_type_fieldname, aoi_polygon,
@@ -243,7 +253,8 @@ class PrepareData(PrepareDataGISBase):
 
         arcpy.management.AddField(soilveg_aoi_path, soilveg_code, "TEXT")
 
-        # calculate "soil_veg" values (soil_type_fieldname + vegetation_type_fieldname)
+        # calculate "soil_veg" values
+        # = (soil_type_fieldname + vegetation_type_fieldname)
         with arcpy.da.UpdateCursor(soilveg_aoi_path, [soil_type_fieldname, veg_fieldname, soilveg_code]) as table:
             for row in table:
                 row[2] = row[0] + row[1]
@@ -277,11 +288,14 @@ class PrepareData(PrepareDataGISBase):
             )
             aoi_mask = self.storage.output_filepath('aoi_mask')
             with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=aoi_mask, cellAlignment=aoi_mask, snapRaster=aoi_mask):
-                arcpy.conversion.PolygonToRaster(soilveg_aoi_path, field, output, "MAXIMUM_AREA", "", GridGlobals.dy)
+                arcpy.conversion.PolygonToRaster(
+                    soilveg_aoi_path, field, output, "MAXIMUM_AREA", "",
+                    GridGlobals.dy
+                )
             self.soilveg_fields[field] = self._rst2np(output)
             self._check_soilveg_dim(field)
 
-    def _get_points_location(self, points_layer):
+    def _get_points_location(self, points_layer, points_fieldname):
         """See base method for description.
         """
         points_array = None
@@ -292,15 +306,15 @@ class PrepareData(PrepareDataGISBase):
                 points_array = np.zeros([int(count), 5], float)
                 # get the points geometry and IDs into array
                 desc = arcpy.Describe(points_layer)
-                with arcpy.da.SearchCursor(points_layer, [desc.OIDFieldName, desc.ShapeFieldName]) as table:
+                with arcpy.da.SearchCursor(points_layer, [points_fieldname, desc.ShapeFieldName]) as table:
                     i = 0
                     for row in table:
                         fid = row[0]
                         x, y = row[1]
-                        if self._get_points_dem_coords(x, y):
-                            r, c = self._get_points_dem_coords(x, y)
+                        rc = self._get_point_dem_coords(x, y)
+                        if rc:
                             self._update_points_array(
-                                points_array, i, fid, r, c, x, y
+                                points_array, i, fid, rc[0], rc[1], x, y
                             )
                         else:
                             Logger.info(
@@ -318,7 +332,7 @@ class PrepareData(PrepareDataGISBase):
     def _stream_clip(self, stream, aoi_polygon):
         """See base method for description.
         """
-        # AoI slighty smaller due to start/end elevation extraction
+        #  AoI slighty smaller due to start/end elevation extraction
         aoi_buffer = arcpy.analysis.Buffer(
             aoi_polygon,
             self.storage.output_filepath('aoi_buffer'),
@@ -363,16 +377,18 @@ class PrepareData(PrepareDataGISBase):
                 segment_id += 1
 
         # extract elevation for the stream segment vertices
-        arcpy.ddd.InterpolateShape(
-            dem_aoi, stream, self.storage.output_filepath("stream_z"), "", "",
-            "CONFLATE_NEAREST", "VERTICES_ONLY"
-        )
-        shape_fieldname = "SHAPE@"
+        dem_array = self._rst2np(dem_aoi)
 
-        with arcpy.da.SearchCursor(self.storage.output_filepath("stream_z"), [shape_fieldname, segment_id_fieldname]) as segments:
+        shape_fieldname = arcpy.Describe(stream).shapeFieldName + "@"
+        with arcpy.da.SearchCursor(stream, [shape_fieldname, segment_id_fieldname]) as segments:
             for row in segments:
                 startpt = row[0].firstPoint
+                r, c = self._get_point_dem_coords(startpt.X, startpt.Y)
+                startpt.Z = float(dem_array[r][c])
                 endpt = row[0].lastPoint
+                r, c = self._get_point_dem_coords(endpt.X, endpt.Y)
+                endpt.Z = float(dem_array[r][c])
+
                 # negative elevation change is the correct direction for
                 # stream segments
                 elev_change = endpt.Z - startpt.Z
@@ -520,19 +536,14 @@ class PrepareData(PrepareDataGISBase):
 
         return self._decode_stream_attr(stream_attr)
 
-    def _check_empty_values(self, table, field):
+    def _get_field_values(self, table, field):
         """See base method for description.
         """
-        oidfn = arcpy.Describe(table).OIDFieldName
-        with arcpy.da.SearchCursor(table, [field, oidfn]) as cursor:
+        with arcpy.da.SearchCursor(table, [field]) as cursor:
+            values = []
             for row in cursor:
-                if row[0] in (None, ""):
-                    raise DataPreparationInvalidInput(
-                        "'{}' values in '{}' table are not correct, "
-                        "empty value found in row {})".format(
-                            field, table, row[1]
-                        )
-                    )
+                values.append(row[0])
+        return values
 
     def _check_input_data(self):
         """See base method for description.

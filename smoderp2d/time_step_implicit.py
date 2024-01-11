@@ -62,7 +62,7 @@ class TimeStepImplicit:
         # Calculating infiltration  - function which does not allow negative levels
         infilt_buf = infiltration.philip_infiltration(soil_type,h_new/dt)
         infilt = ma.filled(infilt_buf,fill_value=0)
-        efect_vrst = Globals.get_mat_efect_cont()
+        efect_vrst = Globals.get_mat_effect_cont()
         # Calculating surface retention
         sur_ret = ma.filled(surface_retention_impl(h_new,sur_ret_old),fill_value=0) 
         # updating rill surface state
@@ -299,7 +299,7 @@ class TimeStepImplicit:
             # calcualting rill runoff
             vol_to_rill = h_rill * GridGlobals.get_pixel_area()
             RILL_RATIO = 0.7
-            efect_vrst = Globals.get_mat_efect_cont()
+            efect_vrst = Globals.get_mat_effect_cont()
             
 
             surface.arr.vol_runoff_rill = rill_runoff(dt, 

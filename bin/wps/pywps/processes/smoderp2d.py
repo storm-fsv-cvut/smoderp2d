@@ -68,7 +68,7 @@ surface and subsurface runoff and erosion
     
     def _handler(self, request, response):
         sys.path.insert(0, "/opt/smoderp2d")
-        from smoderp2d import WpsRunner
+        from smoderp2d.runner.wps import WpsRunner
         from smoderp2d.exceptions import ProviderError, ConfigError
         from smoderp2d.core.general import Globals
         from smoderp2d.providers.wps.logger import WpsLogHandler

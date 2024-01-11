@@ -1,5 +1,5 @@
-# @package smoderp2d.time_step methods to performe
-#  time step, and to store intermeriate variables
+# @package smoderp2d.time_step methods to perform
+#  time step, and to store intermediate variables
 
 from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
@@ -12,10 +12,6 @@ import numpy.ma as ma
 from smoderp2d.core.surface import runoff
 from smoderp2d.core.surface import surface_retention
 
-infilt_capa = 0
-infilt_time = 0
-max_infilt_capa = 0.000  # [m]
-
 
 # Class manages the one time step operation
 #
@@ -23,10 +19,25 @@ max_infilt_capa = 0.000  # [m]
 #  if the time step is adjusted
 #
 class TimeStep:
+    """TODO."""
+
+    def __init__(self):
+        """Set the class variables to default values."""
+        self.infilt_capa = 0
+        self.infilt_time = 0
+        self.max_infilt_capa = 0.000  # [m]
 
     @staticmethod
     def do_flow(surface, subsurface, delta_t, flow_control, courant):
-        mat_efect_cont = Globals.get_mat_efect_cont()
+        """TODO.
+
+        :param surface: TODO
+        :param subsurface: TODO
+        :param delta_t: TODO
+        :param flow_control: TODO
+        :param courant: TODO
+        """
+        mat_effect_cont = Globals.get_mat_effect_cont()
         fc = flow_control
         sr = Globals.get_sr()
         itera = Globals.get_itera()
@@ -38,7 +49,7 @@ class TimeStep:
         surface_state = surface.arr.state
 
         runoff_return = runoff(
-            surface.arr, delta_t, mat_efect_cont, fc.ratio
+            surface.arr, delta_t, mat_effect_cont, fc.ratio
         )
 
         cond_state_flow = surface_state > Globals.streams_flow_inc
@@ -46,7 +57,7 @@ class TimeStep:
         v_rill = ma.where(cond_state_flow, 0, runoff_return[1])
         if ma.all(cond_state_flow):
             subsurface.runoff(
-                delta_t, mat_efect_cont
+                delta_t, mat_effect_cont
             )
         if ma.any(cond_state_flow):
             fc.ratio = ma.masked_array(
@@ -85,10 +96,9 @@ class TimeStep:
         v = ma.maximum(v_sheet, v_rill)
         co = 'sheet'
         courant.CFL(
-            surface.arr.h_total_pre,
             v,
             delta_t,
-            mat_efect_cont,
+            mat_effect_cont,
             co,
             rill_courant
         )
@@ -99,25 +109,31 @@ class TimeStep:
 
     # self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
     # courant, total_time, delta_t, combinatIndex, NoDataValue,
-    # sum_interception, mat_efect_cont, ratio, iter_
+    # sum_interception, mat_effect_cont, ratio, iter_
 
-    @staticmethod
-    def do_next_h(surface, subsurface, rain_arr, cumulative, hydrographs,
+    def do_next_h(self, surface, subsurface, rain_arr, cumulative, hydrographs,
                   flow_control, courant, potRain, delta_t):
+        """TODO.
 
-        global infilt_capa
-        global max_infilt_capa
-        global infilt_time
-
+        :param surface: TODO
+        :param subsurface: TODO
+        :param rain_arr: TODO
+        :param cumulative: TODO
+        :param hydrographs: TODO
+        :param flow_control: TODO
+        :param courant: TODO
+        :param potRain: TODO
+        :param delta_t: TODO
+        """
         rr, rc = GridGlobals.get_region_dim()
         pixel_area = GridGlobals.get_pixel_area()
         fc = flow_control
         combinatIndex = Globals.get_combinatIndex()
         NoDataValue = GridGlobals.get_no_data()
 
-        infilt_capa += potRain
-        if ma.all(infilt_capa < max_infilt_capa):
-            infilt_time += delta_t
+        self.infilt_capa += potRain
+        if ma.all(self.infilt_capa < self.max_infilt_capa):
+            self.infilt_time += delta_t
             actRain = ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
             )
@@ -140,7 +156,7 @@ class TimeStep:
                 k,
                 s,
                 delta_t,
-                fc.total_time - infilt_time,
+                fc.total_time - self.infilt_time,
                 NoDataValue)
 
         infilt.set_combinatIndex(combinatIndex)

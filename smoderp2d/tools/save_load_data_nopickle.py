@@ -87,8 +87,8 @@ class LoadItems:
         return n[0]
 
     def loadnpy(self):
-
-        n = len(self.lines[2:])
+        rows = self.lines[2:]
+        n = len(rows)
         m = len(self.lines[2].split(';'))
         type_ = self.lines[1]
         arr = np.zeros([n, m], float)
@@ -98,7 +98,7 @@ class LoadItems:
         if 'float' in type_:
             self.npyel = self.__float
 
-        for i, line in enumerate(self.lines[2:]):
+        for i, line in enumerate(rows):
             for j, el in enumerate(line.split(';')):
                 arr[i, j] = self.npyel(el)
 
@@ -141,7 +141,6 @@ class SaveLoad(SaveItems, LoadItems):
         fs = sorted(os.listdir(dir_))
         listOut = []
         for fi in fs:
-            # print fi
             with open(dir_ + os.sep + fi, 'r') as f:
                 self.lines = f.readlines()
             listOut.append(self.load_item())
@@ -176,17 +175,9 @@ class SaveLoad(SaveItems, LoadItems):
 #sl = SaveLoad()
 
 #sl.save(dataList,sys.argv[1])
-##print dataList
-
-
 
 #del dataList
 
-
-
 #dataList = sl.load(sys.argv[1])
 
-
-#for item in dataList :
-  #print item
 """
