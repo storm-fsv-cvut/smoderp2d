@@ -23,6 +23,10 @@ tests/grassdata/smoderp2d-location/stream_prep/
 tests/grassdata/smoderp2d-location/water
 tests/log
 
+# build files
+build
+smoderp2d.egg-info
+
 /bin/arcgis/old/
 
 # jetbrains
