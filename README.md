@@ -102,7 +102,8 @@ Launch SMODERP2D ArcToolbox from `bin\arcgis` directory.
 
 Requirements: QGIS 3.28.10 and higher
 
-Define `QGIS_PLUGINPATH` and `PYTHONPATH` in `Settings -> Options -> System` and restart QGIS:
+Define `QGIS_PLUGINPATH` and `PYTHONPATH` environmental variables in
+`Settings -> Options -> System` and restart QGIS:
 
 ![SMODERP2D QGIS settings](img/qgis_settings.png?raw=true "QGIS settings")
 
