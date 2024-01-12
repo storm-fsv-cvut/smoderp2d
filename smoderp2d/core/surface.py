@@ -236,7 +236,7 @@ def get_surface():
 
 #     # sur.arr.state               = update_state1(h_total_pre,h_crit,state)
 #     h_sheet, h_rill, h_rillPre = compute_h_hrill(
-#         h_total_pre, h_crit, state, sur.rillWidth, sur.h_rillPre)
+#         h_total_pre, h_crit, state, sur.h_rillPre)
 
 #     q_sheet, vol_runoff, vol_rest = sheet_runoff(dt, sur.a, sur.b, h_sheet)
 
@@ -388,7 +388,7 @@ def update_state(h_tot_new,h_crit,h_tot_pre,state,h_last_state1):
 
 
 # New version for implicit scheme
-def compute_h_hrill(h_total, h_crit, state,h_rillPre):
+def compute_h_hrill(h_total, h_crit, state,h_rill_pre):
     
     h_rill = ma.where(
         state == 0,
@@ -396,7 +396,7 @@ def compute_h_hrill(h_total, h_crit, state,h_rillPre):
         ma.where(
             state == 1,
             ma.maximum(h_total - h_crit, 0),
-            ma.where(h_total > h_rillPre, h_rillPre, h_total)
+            ma.where(h_total > h_rill_pre, h_rill_pre, h_total)
         )
     )
     
@@ -406,24 +406,24 @@ def compute_h_hrill(h_total, h_crit, state,h_rillPre):
         ma.where(
             state == 1,
             ma.minimum(h_crit, h_total),
-            ma.where(h_total > h_rillPre, h_total - h_rillPre, 0)
+            ma.where(h_total > h_rill_pre, h_total - h_rill_pre, 0)
         )
     )
     
     return h_sheet, h_rill
 
 
-def compute_h_rillPre( h_rillPre,h_rill,state): #h_rillPre is depth of rill
-    h_rillPre = ma.where(
+def compute_h_rill_pre( h_rill_pre,h_rill,state): #h_rill_pre is depth of rill
+    h_rill_pre = ma.where(
         state == 0,
         0,
         ma.where(
             state == 1,
             h_rill,
-            h_rillPre
+            h_rill_pre
         )
             )
-    return h_rillPre
+    return h_rill_pre
 
 
 def sheet_runoff(a, b, h_sheet):
