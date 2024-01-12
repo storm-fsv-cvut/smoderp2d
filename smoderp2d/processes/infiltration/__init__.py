@@ -8,6 +8,9 @@ from smoderp2d.exceptions import NegativeWaterLevel
 # promenna nastavena. mene ifu v main loop
 combinatIndex = []
 
+# set error level of numpy float underflow only to warning instead of errors
+np.seterr(under='warn')
+
 
 def set_combinatIndex(newCombinatIndex):
     global combinatIndex
