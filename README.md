@@ -108,7 +108,7 @@ Define `QGIS_PLUGINPATH` and `PYTHONPATH` in `Settings -> Options -> System` and
 
 Than enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
 
-Alternatively set up environment variable in command line before starting QGIS:
+Alternatively set up environment variables in command line before starting QGIS:
 
 ```sh
 PYTHONPATH=`pwd` QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/nucice/qgis_project.qgz
