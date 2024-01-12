@@ -102,13 +102,13 @@ Launch SMODERP2D ArcToolbox from `bin\arcgis` directory.
 
 Requirements: QGIS 3.28.10 and higher
 
-Define `QGIS_PLUGINPATH` in `Settings -> Options -> System` and restart QGIS:
+Define `QGIS_PLUGINPATH` and `PYTHONPATH` in `Settings -> Options -> System` and restart QGIS:
 
 ![SMODERP2D QGIS settings](img/qgis_settings.png?raw=true "QGIS settings")
 
-And enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
+Than enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
 
-For development purposes:
+Alternatively set up environment variable in command line before starting QGIS:
 
 ```sh
 PYTHONPATH=`pwd` QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/nucice/qgis_project.qgz
