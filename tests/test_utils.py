@@ -380,7 +380,13 @@ class PerformTest:
                                 dataprep_filepath, reference_filepath
                             )
                     else:
-                        equal = np.allclose(v, reference_dict[k], rtol=relative_tolerance)
+                        if k != 'rc':
+                            equal = np.allclose(
+                                v, reference_dict[k], rtol=relative_tolerance
+                            )
+                        else:
+                            # cannot create an array from inhomogeneous list
+                            equal = v == reference_dict[k]
                         assert equal, \
                             self.report_pickle_difference(
                                 dataprep_filepath, reference_filepath
