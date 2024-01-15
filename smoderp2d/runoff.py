@@ -23,7 +23,7 @@ from smoderp2d.core.cumulative_max import Cumulative
 
 # from smoderp2d.time_step import TimeStep
 from smoderp2d.courant import Courant
-from smoderp2d.time_step_implicit import TimeStepImplicit
+from smoderp2d.time_step import TimeStep
 
 from smoderp2d.tools.times_prt import TimesPrt
 from smoderp2d.io_functions import hydrographs as wf
@@ -205,7 +205,7 @@ class Runoff(object):
             self.hydrographs = wf.HydrographsPass()
 
         # method for single time step calculation
-        self.time_step_implicit = TimeStepImplicit()
+        self.time_step = TimeStep()
 
         # record values into hydrographs at time zero
         self.hydrographs.write_hydrographs_record(
@@ -220,19 +220,7 @@ class Runoff(object):
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
             )
         )
-        # record values into stream hydrographs at time zero
-        # self.hydrographs.write_hydrographs_record(
-        #     None,
-        #     None,
-        #     self.flow_control,
-        #     self.courant,
-        #     self.delta_t,
-        #     self.surface,
-        #     self.subsurface,
-        #     self.cumulative,
-        #     0.0,
-        #     True
-        # )
+        
 
         Logger.info('-' * 80)
 
@@ -289,7 +277,7 @@ class Runoff(object):
             # ----------------------------------------------
             # Calculate 
            
-            actRain = self.time_step_implicit.do_next_h(
+            actRain = self.time_step.do_next_h(
                 self.surface,
                 self.subsurface,
                 self.rain_arr,
