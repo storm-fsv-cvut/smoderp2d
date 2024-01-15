@@ -152,6 +152,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.tabWidget = QtWidgets.QTabWidget()
         self.layout = QtWidgets.QVBoxLayout()
 
+        # tabs that need to be kept as self
+        self.history_tab = QtWidgets.QListWidget()
+
         # widgets
         self.elevation_comboBox = QgsMapLayerComboBox()
         self.elevation_toolButton = QtWidgets.QToolButton()
@@ -248,7 +251,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         # history tab
         section_tab = QtWidgets.QWidget()
         section_tab_layout = QtWidgets.QVBoxLayout()
-        self.history_tab = QtWidgets.QListWidget()
         section_tab_layout.addWidget(
             QtWidgets.QLabel(
                 '25 last calls -- load historical settings by double-click'
