@@ -18,7 +18,7 @@ class PrepareDataBase(ABC):
     def _get_a(mat_nsheet, mat_y, r, c, no_data, mat_slope):
         """Build 'a' and 'aa' arrays.
 
-        :param mat_n:
+        :param mat_nsheet:
         :param mat_x:
         :param mat_y:
         :param r: number of rows
