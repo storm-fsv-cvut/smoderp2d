@@ -837,47 +837,49 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         :param t: type of field to be set
         """
-        if self.soil_comboBox.currentLayer() is not None and t == 'soil':
-            self.soil_type_comboBox.setLayer(self.soil_comboBox.currentLayer())
-            self.soil_type_comboBox.setField(
-                self.soil_comboBox.currentLayer().fields()[0].name()
+        if t == 'soil':
+            self.setField(
+                self.soil_comboBox.currentLayer(), self.soil_type_comboBox
             )
-        elif self.vegetation_comboBox.currentLayer() is not None and t == 'vegetation':
-            self.vegetation_type_comboBox.setLayer(
-                self.vegetation_comboBox.currentLayer()
+        elif t == 'vegetation':
+            self.setField(
+                self.vegetation_comboBox.currentLayer(),
+                self.vegetation_type_comboBox
             )
-            self.vegetation_type_comboBox.setField(
-                self.vegetation_comboBox.currentLayer().fields()[0].name()
+        elif t == 'table_soil_veg':
+            self.setField(
+                self.table_soil_vegetation_comboBox.currentLayer(),
+                self.table_soil_vegetation_field_comboBox
             )
-        elif self.table_soil_vegetation_comboBox.currentLayer() is not None and t == 'table_soil_veg':
-            self.table_soil_vegetation_field_comboBox.setLayer(
-                self.table_soil_vegetation_comboBox.currentLayer()
-            )
-            self.table_soil_vegetation_field_comboBox.setField(
-                self.table_soil_vegetation_comboBox.currentLayer().fields()[0].name()
+        elif t == 'vegetation':
+            self.setField(
+                self.vegetation_comboBox.currentLayer(),
+                self.vegetation_type_comboBox
             )
         elif t == 'channel_properties_table':
-            if self.table_stream_shape_comboBox.currentLayer() is not None:
-                self.table_stream_shape_code_comboBox.setLayer(
-                    self.table_stream_shape_comboBox.currentLayer()
-                )
-                self.table_stream_shape_code_comboBox.setField(
-                    self.table_stream_shape_comboBox.currentLayer().fields()[0].name())
-            else:
-                self.table_stream_shape_code_comboBox.setLayer(None)
-                self.table_stream_shape_code_comboBox.setField("")
+            self.setField(
+                self.table_stream_shape_comboBox.currentLayer(),
+                self.table_stream_shape_code_comboBox
+            )
         elif t == 'points':
-            points_cur_layer = self.points_comboBox.currentLayer()
-            if points_cur_layer is not None:
-                self.points_field_comboBox.setLayer(points_cur_layer)
-                self.points_field_comboBox.setField(
-                    points_cur_layer.fields()[0].name()
-                )
-            else:
-                self.points_field_comboBox.setLayer(None)
-                self.points_field_comboBox.setField(None)
+            self.setField(
+                self.points_comboBox.currentLayer(),
+                self.points_field_comboBox
+            )
+
+    @staticmethod
+    def setField(current_layer, widget):
+        """Set a widget to the first field from the current layer.
+
+        :param current_layer: layer from which the fields are read
+        :param widget: widget where the field should be set as a value
+        """
+        if current_layer is not None:
+            widget.setLayer(current_layer)
+            widget.setField(current_layer.fields()[0].name())
         else:
-            pass
+            widget.setLayer(None)
+            widget.setField(None)
 
     def _sendMessage(self, caption, message, t):
         """TODO.
