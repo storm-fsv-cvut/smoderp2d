@@ -230,8 +230,6 @@ class Globals:
     # raster labels not a number cells
     mat_nan = None
     # raster contains parameters ...
-    mat_a = None
-    # raster contains parameters ...
     mat_nrill = None
     # ???
     points = None
@@ -359,11 +357,6 @@ class Globals:
     def get_mat_nan(cls):
         """TODO."""
         return cls.mat_nan
-
-    @classmethod
-    def get_mat_a(cls):
-        """TODO."""
-        return cls.mat_a
 
     @classmethod
     def get_mat_nrill(cls):
