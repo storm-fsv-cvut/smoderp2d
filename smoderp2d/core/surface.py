@@ -108,9 +108,10 @@ class SurArrs(object):
 
 def get_surface():
     class Surface(GridGlobals, Stream, get_kinematic()):
-        """Contains data and methods to calculate the surface and rill runoff."""
+        """Data and methods to calculate the surface and rill runoff."""
+
         def __init__(self):
-            """The constructor
+            """The constructor.
 
             Make all numpy arrays and establish the inflow procedure based
             on D8 or Multi Flow Direction Algorithm method.
@@ -135,7 +136,9 @@ def get_surface():
 
             Stream.__init__(self)
 
-            Logger.info("\tRill flow: {}".format('ON' if Globals.isRill else 'OFF'))
+            Logger.info(
+                "\tRill flow: {}".format('ON' if Globals.isRill else 'OFF')
+            )
 
         def return_str_vals(self, i, j, sep, dt, extra_out):
             """TODO.
@@ -173,9 +176,9 @@ def get_surface():
                 #                          width data
                 #                     if you need runoff from non-unit slope and
                 #                     with extra output calculate it yourself
-                line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}' \
-                       '{sep}{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}' \
-                       '{9:.4e}'.format(
+                line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}' \
+                       '{4:.4e}{sep}{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}' \
+                       '{8:.4e}{sep}{9:.4e}'.format(
                     arr.h_sheet[i, j],
                     vol_runoff / dt[i, j],
                     vol_runoff,
@@ -221,7 +224,7 @@ def get_surface():
 
 
 # def __runoff(sur, dt, effect_vrst, ratio):
-#     """Calculates the sheet and rill flow.
+#     """Calculate the sheet and rill flow.
 
 #     :param dt: TODO
 #     :param effect_vrst: TODO
@@ -236,7 +239,7 @@ def get_surface():
 
 #     # sur.arr.state               = update_state1(h_total_pre,h_crit,state)
 #     h_sheet, h_rill, h_rillPre = compute_h_hrill(
-#         h_total_pre, h_crit, state, sur.rillWidth, sur.h_rillPre)
+#         h_total_pre, h_crit, state, sur.h_rillPre)
 
 #     q_sheet, vol_runoff, vol_rest = sheet_runoff(dt, sur.a, sur.b, h_sheet)
 
@@ -388,7 +391,7 @@ def update_state(h_tot_new,h_crit,h_tot_pre,state,h_last_state1):
 
 
 # New version for implicit scheme
-def compute_h_hrill(h_total, h_crit, state,h_rillPre):
+def compute_h_hrill(h_total, h_crit, state,h_rill_pre):
     
     h_rill = ma.where(
         state == 0,
@@ -396,7 +399,7 @@ def compute_h_hrill(h_total, h_crit, state,h_rillPre):
         ma.where(
             state == 1,
             ma.maximum(h_total - h_crit, 0),
-            ma.where(h_total > h_rillPre, h_rillPre, h_total)
+            ma.where(h_total > h_rill_pre, h_rill_pre, h_total)
         )
     )
     
@@ -406,24 +409,24 @@ def compute_h_hrill(h_total, h_crit, state,h_rillPre):
         ma.where(
             state == 1,
             ma.minimum(h_crit, h_total),
-            ma.where(h_total > h_rillPre, h_total - h_rillPre, 0)
+            ma.where(h_total > h_rill_pre, h_total - h_rill_pre, 0)
         )
     )
     
     return h_sheet, h_rill
 
 
-def compute_h_rillPre( h_rillPre,h_rill,state): #h_rillPre is depth of rill
-    h_rillPre = ma.where(
+def compute_h_rill_pre( h_rill_pre,h_rill,state): #h_rill_pre is depth of rill
+    h_rill_pre = ma.where(
         state == 0,
         0,
         ma.where(
             state == 1,
             h_rill,
-            h_rillPre
+            h_rill_pre
         )
             )
-    return h_rillPre
+    return h_rill_pre
 
 
 def sheet_runoff(a, b, h_sheet):

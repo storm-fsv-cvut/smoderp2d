@@ -13,6 +13,7 @@ library('manipulate')
 root  <-  "d:/0_Smoderp/00_QGtest_ds_plocha/out2"
 root  <-  "d:/0_Smoderp/02_AGPro_provider/out19_AG"
 
+root  <-  "tests/data/output/"
 #root  <-  "d:/2_granty_projekty/2_Bezici/2022_RAGO/01_reseni_projektu/00_test_Smoderp/out2"
 # output dir
 outdir <- 'control_point'
@@ -20,7 +21,7 @@ outdir <- 'control_point'
 # point000.dat -> id = 1
 # point001.dat -> id = 2
 # atd...
-id1_ = 2
+id1_ = 5
 id2_ = 5
 #2+6;1+4
 # End setting  
@@ -124,11 +125,22 @@ for (idir_ in dir_) {
 
 pixel = read.table(paste(files[1],sep = ''),skip=1,nrows = 1,comment.char = '')
 pixel = as.numeric(pixel[7])
-pixel = H = list()
+H = list()
 for (file_ in files) {
   name_ = substr(file_,1,8)
   name_ = file_
-  H[[name_]] = read.table(file_, sep = sep_, header = TRUE, skip=skip_, comment.char = '#')
+  d = read.table(file_, sep = sep_, header = TRUE, skip=skip_, comment.char = '#')
+  # print (grepl('infiltration.m.', x = names(d)))
+  if (any(grepl('infiltration.m.', x = names(d)))){
+    
+    d$cumRainfall_m3 = cumsum(d$rainfall.m.*pixel)
+    d$cumInfiltration_m3 = cumsum(d$infiltration.m.*pixel)
+    d$cumSheetRunoff_m3 = cumsum(d$sheetVRunoff.m3.)
+    d$cumRillRunoff_m3 = cumsum(d$rillVRunoff.m3.)
+    d$cumInflows_m3 = cumsum(d$vInflow.m3.)
+    d$cumSurfaceRunoff_m3 = cumsum(d$surfaceVRunoff.m3.)
+  }
+  H[[name_]] = d
 }
 
 plot_(id1_,id2_)

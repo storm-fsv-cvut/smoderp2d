@@ -8,7 +8,7 @@ py3 = sys.version_info[0] == 3
 if py3:
     from importlib import reload
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..")) # To be removed when building Toolbox package
 from smoderp2d.runners.arcgis import ArcGisRunner
 from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.exceptions import ProviderError

@@ -28,7 +28,7 @@ from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.surface import sheet_runoff
 from smoderp2d.core.surface import rill_runoff
 from smoderp2d.core.surface import compute_h_hrill
-from smoderp2d.core.surface import compute_h_rillPre
+from smoderp2d.core.surface import compute_h_rill_pre
 
 infilt_capa = 0
 infilt_time = 0
@@ -291,7 +291,7 @@ class TimeStepImplicit:
 
             surface.arr.h_sheet = h_sheet 
             # Updating the information about rill depth
-            surface.arr.h_rillPre = compute_h_rillPre(surface.arr.h_rillPre,h_rill ,surface.arr.state)
+            surface.arr.h_rillPre = compute_h_rill_pre(surface.arr.h_rillPre,h_rill ,surface.arr.state)
             
 
                 

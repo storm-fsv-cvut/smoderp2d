@@ -41,9 +41,6 @@ from qgis.core import (
 from qgis.utils import iface
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
 
-# ONLY FOR TESTING PURPOSES (!!!)
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-
 from smoderp2d.runners.qgis import QGISRunner
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.providers import Logger
@@ -172,8 +169,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.rainfall_toolButton = QtWidgets.QToolButton()
         self.main_output_lineEdit = QtWidgets.QLineEdit()
         self.main_output_toolButton = QtWidgets.QToolButton()
-        self.maxdt_lineEdit = QtWidgets.QDoubleSpinBox()
-        self.end_time_lineEdit = QtWidgets.QDoubleSpinBox()
+        self.maxdt_spinBox = QtWidgets.QDoubleSpinBox()
+        self.end_time_spinBox = QtWidgets.QDoubleSpinBox()
         self.vegetation_type_comboBox = QgsFieldComboBox()
         self.table_soil_vegetation_comboBox = QgsMapLayerComboBox()
         self.table_soil_vegetation_toolButton = QtWidgets.QToolButton()
@@ -186,8 +183,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.run_button = QtWidgets.QPushButton(self.dockWidgetContents)
 
         # set default values
-        self.maxdt_lineEdit.setProperty("value", 5)
-        self.end_time_lineEdit.setProperty("value", 30)
+        self.maxdt_spinBox.setValue(5)
+        self.maxdt_spinBox.setMaximum(99999999999999999999999999)
+        self.end_time_spinBox.setValue(30)
+        self.end_time_spinBox.setMaximum(99999999999999999999999999)
 
         self.retranslateUi()
 
@@ -278,8 +277,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.arguments['rainfall_file'].addWidget(self.rainfall_toolButton)
         self.arguments['output'].addWidget(self.main_output_lineEdit)
         self.arguments['output'].addWidget(self.main_output_toolButton)
-        self.arguments['max_time_step'].addWidget(self.maxdt_lineEdit)
-        self.arguments['total_time'].addWidget(self.end_time_lineEdit)
+        self.arguments['max_time_step'].addWidget(self.maxdt_spinBox)
+        self.arguments['total_time'].addWidget(self.end_time_spinBox)
         self.arguments['soil_type_field'].addWidget(self.soil_type_comboBox)
         self.arguments['landuse_type_field'].addWidget(
             self.vegetation_type_comboBox
@@ -647,8 +646,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             # 'output': self.output_lineEdit.text().strip(),
             'streams': self.stream_comboBox.currentText(),
             'rainfall_file': self.rainfall_lineEdit.text(),
-            'end_time': self.end_time_lineEdit.value(),
-            'maxdt': self.maxdt_lineEdit.value(),
+            'end_time': self.end_time_spinBox.value(),
+            'maxdt': self.maxdt_spinBox.value(),
             'table_soil_vegetation':
                 self.table_soil_vegetation_comboBox.currentText(),
             'table_soil_vegetation_fieldname':
@@ -713,9 +712,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 # self.table_soil_vegetation_code_comboBox.currentText(),
                 ) and "" not in (
                 # self.output_lineEdit.text().strip(),
-                self.maxdt_lineEdit.text().strip(),
+                self.maxdt_spinBox.text().strip(),
                 self.rainfall_lineEdit.text().strip(),
-                self.end_time_lineEdit.text().strip(),
+                self.end_time_spinBox.text().strip(),
                 self.main_output_lineEdit.text().strip()):
             return True
         else:
@@ -962,7 +961,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             param_dict['streams_channel_type_fieldname']
         )
         self.main_output_lineEdit.setText(param_dict['output'])
-        self.end_time_lineEdit.setValue(param_dict['end_time'])
+        self.end_time_spinBox.setValue(param_dict['end_time'])
         self.flow_direction_comboBox.setCurrentText(param_dict['flow_direction'])
         self.generate_temporary_checkBox.setChecked(param_dict['generate_temporary'])
 
