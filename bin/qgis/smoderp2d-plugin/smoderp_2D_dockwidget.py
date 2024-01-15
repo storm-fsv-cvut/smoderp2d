@@ -457,9 +457,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             )
 
             # prepare the progress bar
-            self.progress_bar = QProgressBar()
-            self.progress_bar.setMaximum(100)
-            self.progress_bar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            progress_bar = QProgressBar()
+            progress_bar.setMaximum(100)
+            progress_bar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
             messageBar = self.iface.messageBar()
 
             messageBar.findChildren(QtWidgets.QToolButton)[0].setHidden(True)
@@ -467,7 +467,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             progress_msg = messageBar.createMessage(
                 "Computation progress: "
             )
-            progress_msg.layout().addWidget(self.progress_bar)
+            progress_msg.layout().addWidget(progress_bar)
 
             abort_button = QtWidgets.QPushButton(self.dockWidgetContents)
             abort_button.setText('Abort the process')
@@ -477,10 +477,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             messageBar.pushWidget(progress_msg, Qgis.Info)
 
             smoderp_task.begun.connect(
-                lambda: self.progress_bar.setValue(0)
+                lambda: progress_bar.setValue(0)
             )
             smoderp_task.progressChanged.connect(
-                lambda a: self.progress_bar.setValue(int(a))
+                lambda a: progress_bar.setValue(int(a))
             )
             smoderp_task.taskCompleted.connect(self.computationFinished)
 
