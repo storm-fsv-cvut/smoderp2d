@@ -10,6 +10,8 @@ from smoderp2d.core.surface import surface_retention_update
 from smoderp2d.core.surface import update_state1
 from smoderp2d.core.surface import update_state
 
+from smoderp2d.exceptions import NegativeWaterLevel
+
 import numpy as np
 import numpy.ma as ma
 import scipy as sp
@@ -54,7 +56,7 @@ class TimeStep:
               h_rillPre,
               h_last_state1):
         
-        h_new = h_new.reshape(r,c)
+        h_new = ma.masked_array(h_new.reshape(r,c),mask=GridGlobals.masks)
         h_old = h_old.reshape(r,c)
 
         # Calculating infiltration  - function which does not allow negative levels
@@ -259,7 +261,9 @@ class TimeStep:
                                             surface.arr.h_rillPre,
                                             surface.arr.h_last_state1)))
             print("h_new = ",h_new)
-            
+        # Checking solution for negative values
+        if ma.all(h_new < 0):
+            raise NegativeWaterLevel()    
         # Saving the new water level
         surface.arr.h_total_new = ma.array(h_new.reshape(r,c),mask=GridGlobals.masks) 
         

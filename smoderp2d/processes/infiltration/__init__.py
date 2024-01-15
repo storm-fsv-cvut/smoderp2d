@@ -1,6 +1,6 @@
 import numpy as np
 import numpy.ma as ma
-from smoderp2d.exceptions import NegativeWaterLevel
+# from smoderp2d.exceptions import NegativeWaterLevel
 
 # combinatIndex muze byt tady jako globalni
 # primenna, main loop bude pro infiltraci volat
@@ -20,8 +20,8 @@ def set_combinatIndex(newCombinatIndex):
 def philip_infiltration(soil, bil):
     infiltration = combinatIndex[0][3]
     for z in combinatIndex:
-        if ma.all(bil < 0):
-            raise NegativeWaterLevel()
+        # if ma.all(bil < 0):
+        #     raise NegativeWaterLevel()
 
         infilt_bil_cond = z[3] > bil
 
