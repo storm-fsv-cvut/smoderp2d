@@ -81,8 +81,8 @@ class Hydrographs:
 
         for i in range(self.n):
             # for correct opening in e.g. excel
-            header = 'sep={sep}{line}'.format(sep=SEP,line= os.linesep)
-            header += '#Hydrograph at the point with coordinates: {:.8} {:.8}{}'.format(
+            # header = 'sep={sep}{line}'.format(sep=SEP,line= os.linesep)
+            header = '#Hydrograph at the point with coordinates: {:.8} {:.8}{}'.format(
                 float(self.point_int[i][3]), float(self.point_int[i][4]),
                 os.linesep
             )
