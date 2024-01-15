@@ -35,7 +35,7 @@ class TimeStep:
         self.infilt_time = 0
         self.max_infilt_capa = 0.000  # [m]
 
-    @staticmethod
+    # @staticmethod
      # objective function  
     def model(self,
                 h_new,
@@ -161,9 +161,9 @@ class TimeStep:
     def do_next_h(self, surface, subsurface, rain_arr, cumulative, 
                   hydrographs, flow_control,  potRain, delta_t,list_fd):
         # global variables for infilitration
-        global infilt_capa
-        global max_infilt_capa
-        global infilt_time
+        # class infilt_capa
+        # global max_infilt_capa
+        # global infilt_time
         # parameters
         r, c = GridGlobals.r, GridGlobals.c
         pixel_area = GridGlobals.get_pixel_area()
@@ -172,9 +172,9 @@ class TimeStep:
         NoDataValue = GridGlobals.get_no_data()
         # Calculating the infiltration
         # Until the max_infilt_capa
-        infilt_capa += potRain
-        if ma.all(infilt_capa < max_infilt_capa):
-            infilt_time += delta_t
+        self.infilt_capa += potRain
+        if ma.all(self.infilt_capa < self.max_infilt_capa):
+            self.infilt_time += delta_t
             actRain = ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
             )
@@ -195,7 +195,7 @@ class TimeStep:
                 k,
                 s,
                 delta_t,
-                fc.total_time + delta_t -  infilt_time,
+                fc.total_time + delta_t -  self.infilt_time,
                 NoDataValue)
         
         infiltration.set_combinatIndex(combinatIndex)
