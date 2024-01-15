@@ -19,7 +19,6 @@ class PrepareDataBase(ABC):
         """Build 'a' and 'aa' arrays.
 
         :param mat_nsheet:
-        :param mat_x:
         :param mat_y:
         :param r: number of rows
         :param c: number of columns
