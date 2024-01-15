@@ -24,11 +24,8 @@ class PrepareDataBase(ABC):
         :param c: number of columns
         :param no_data: no data value
         :param mat_slope:
-        :return: np ndarray for mat_a and for mat_aa
+        :return: np ndarray for mat_aa
         """
-        mat_a = np.zeros(
-            [r, c], float
-        )
         mat_aa = np.zeros(
             [r, c], float
         )
@@ -288,7 +285,6 @@ class PrepareDataGISBase(PrepareDataBase):
             'mat_effect_cont': None,
             'mat_slope': None,
             'mat_nan': None,
-            'mat_a': None,
             'mat_nrill': None,
             'end_time': self._input_params['end_time'],
             'state_cell': None,
