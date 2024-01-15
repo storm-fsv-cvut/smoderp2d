@@ -106,7 +106,9 @@ class SmoderpTask(QgsTask):
         Globals.reset()
         GridGlobals.reset()
 
-        iface.messageBar().findChildren(QtWidgets.QToolButton)[0].setHidden(False)
+        iface.messageBar().findChildren(QtWidgets.QToolButton)[0].setHidden(
+            False
+        )
         iface.messageBar().clearWidgets()
 
         if result:
@@ -324,7 +326,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         # TODO: what if tables are in format that cannot be added to map?
         #  (txt), currently works for dbf
 
-        self.run_button.clicked.connect(self.OnRunButton)
+        self.run_button.clicked.connect(self.onRunButton)
 
         # 1st tab - Data preparation
         self.elevation_toolButton.clicked.connect(
@@ -426,13 +428,13 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         for button in buttons:
             button.setText('...')
 
-    def OnRunButton(self):
+    def onRunButton(self):
         """Run the processing when the run button was pushed."""
         if not self._grass_bin_path:
             # Get GRASS executable
             try:
                 self._grass_bin_path = find_grass_bin()
-            except ImportError as e:
+            except ImportError:
                 self._sendMessage(
                     "ERROR:",
                     "GRASS GIS not found.",
@@ -659,7 +661,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self.table_stream_shape_code_comboBox.currentText(),
             'flow_direction':
                 self.flow_direction_comboBox.currentText(),
-            'generate_temporary': bool(self.generate_temporary_checkBox.checkState()),
+            'generate_temporary':
+                bool(self.generate_temporary_checkBox.checkState()),
             'output': self.main_output_lineEdit.text().strip()
         }
 
