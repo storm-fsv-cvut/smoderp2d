@@ -22,10 +22,10 @@ from smoderp2d.core.surface import compute_h_rill_pre
 
 
 # Class manages the one time step operation
-#
+
+##
 #  the class also contains methods to store the important arrays to reload that
 #  if the time step is adjusted
-#
 class TimeStep:
     """TODO."""
 
