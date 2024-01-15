@@ -37,9 +37,9 @@ class PrepareDataBase(ABC):
                 par_nsheet = mat_nsheet[i][j]
                 par_y = mat_y[i][j]
 
-                if par_x == no_data or par_y == no_data or slope == no_data:
+                if par_nsheet == no_data or par_y == no_data or slope == no_data:
                     par_aa = no_data
-                elif par_x == no_data or par_y == no_data or slope == 0.0:
+                elif par_nsheet == no_data or par_y == no_data or slope == 0.0:
                     par_aa = 0.0001
                 else:
                     exp = np.power(slope, par_y)

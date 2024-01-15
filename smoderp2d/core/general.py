@@ -464,8 +464,6 @@ class Globals:
         # raster labels not a number cells
         cls.mat_nan = None
         # raster contains parameters ...
-        cls.mat_a = None
-        # raster contains parameters ...
         cls.mat_nrill = None
         # ???
         cls.points = None
