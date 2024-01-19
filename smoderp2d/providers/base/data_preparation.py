@@ -247,7 +247,6 @@ class PrepareDataGISBase(PrepareDataBase):
             'channel_shape_id':  self._input_params[
                 'streams_channel_type_fieldname'
             ],
-            'channel_profile': 'profile',
             'channel_shapetype': 'shapetype',
             'channel_bottom_width': 'b',
             'channel_bank_steepness': 'm',
@@ -260,7 +259,6 @@ class PrepareDataGISBase(PrepareDataBase):
         self.storage.set_data_layers(self.data_layers)
 
         self.stream_shape_fields = [
-            self.fieldnames['channel_profile'],
             self.fieldnames['channel_shapetype'],
             self.fieldnames['channel_bottom_width'],
             self.fieldnames['channel_bank_steepness'],
