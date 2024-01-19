@@ -14,6 +14,7 @@ if [[ "$1" == gistest ]]; then
 	  rm -r tests/data/reference/${1}_${setting}/*/*
 	  ./tests/run_grass_gistest.sh $setting dpre
 	  cp -r tests/data/output/* tests/data/reference/${1}_${setting}/dpre/
+	  cp -r tests/data/reference/${1}_${setting}/dpre/dpre.save tests/data/${setting}.save
 	  ./tests/run_grass_gistest.sh $setting
 	  cp -r tests/data/output/* tests/data/reference/${1}_${setting}/full/
 	done
