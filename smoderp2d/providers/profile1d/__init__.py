@@ -195,7 +195,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         # set values to parameter matrics
         data['mat_nrill'] = parsed_data['nrill'].reshape((data['r'], data['c']))
         data['mat_b'] = parsed_data['b'].reshape((data['r'], data['c']))
-        data['mat_a'], data['mat_aa'] = self._get_a(
+        data['mat_aa'] = self._get_a(
             data['nsheet'],
             data['y'],
             data['r'],
