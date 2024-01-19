@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if test -z "$1"; then
-    echo "Usage: $0 quicktest|test|gistest"
+    echo "Usage: $0 quicktest|test|gistest|profile1d"
     exit 1
 fi
 
@@ -18,6 +18,11 @@ if [[ "$1" == gistest ]]; then
 	  ./tests/run_grass_gistest.sh $setting
 	  cp -r tests/data/output/* tests/data/reference/${1}_${setting}/full/
 	done
+elif [[ "$1" == profile1d ]]; then
+	echo "tests/data/reference/profile1d"
+	rm -r tests/data/reference/profile1d/*
+	pytest tests/test_profile1d.py
+	cp -r tests/data/output/* tests/data/reference/profile1d/
 else
 	settings=("sheet" "rill" "sheet_stream" "stream_rill")
 	for setting in ${settings[*]}
