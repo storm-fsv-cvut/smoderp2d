@@ -48,10 +48,7 @@ def load_data(filename):
     :param str filename: file to be loaded
     """
     with open(filename, 'rb') as fd:
-        if sys.version_info > (3, 0):
-            data = pickle.load(fd, encoding='bytes')
-        else:
-            data = pickle.load(fd)
+        data = pickle.load(fd, encoding='bytes')
 
     return data
 
