@@ -23,7 +23,6 @@
 """
 
 import os
-import sys
 import glob
 import datetime
 import tempfile
@@ -40,9 +39,6 @@ from qgis.core import (
 )
 from qgis.utils import iface
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
-
-# ONLY FOR TESTING PURPOSES (!!!)
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
 from smoderp2d.runners.qgis import QGISRunner
 from smoderp2d.core.general import Globals, GridGlobals
@@ -110,7 +106,9 @@ class SmoderpTask(QgsTask):
         Globals.reset()
         GridGlobals.reset()
 
-        iface.messageBar().findChildren(QtWidgets.QToolButton)[0].setHidden(False)
+        iface.messageBar().findChildren(QtWidgets.QToolButton)[0].setHidden(
+            False
+        )
         iface.messageBar().clearWidgets()
 
         if result:
@@ -155,39 +153,44 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.tabWidget = QtWidgets.QTabWidget()
         self.layout = QtWidgets.QVBoxLayout()
 
+        # tabs that need to be kept as self
+        self.history_tab = QtWidgets.QListWidget()
+
         # widgets
-        self.elevation_comboBox = QgsMapLayerComboBox()
+        self.elevation = QgsMapLayerComboBox()
         self.elevation_toolButton = QtWidgets.QToolButton()
-        self.soil_comboBox = QgsMapLayerComboBox()
+        self.soil = QgsMapLayerComboBox()
         self.soil_toolButton = QtWidgets.QToolButton()
-        self.soil_type_comboBox = QgsFieldComboBox()
-        self.vegetation_comboBox = QgsMapLayerComboBox()
+        self.soil_type = QgsFieldComboBox()
+        self.vegetation = QgsMapLayerComboBox()
         self.vegetation_toolButton = QtWidgets.QToolButton()
-        self.points_comboBox = QgsMapLayerComboBox()
+        self.points = QgsMapLayerComboBox()
         self.points_toolButton = QtWidgets.QToolButton()
-        self.points_field_comboBox = QgsFieldComboBox()
-        self.stream_comboBox = QgsMapLayerComboBox()
+        self.points_field = QgsFieldComboBox()
+        self.stream = QgsMapLayerComboBox()
         self.stream_toolButton = QtWidgets.QToolButton()
-        self.rainfall_lineEdit = QtWidgets.QLineEdit()
+        self.rainfall = QtWidgets.QLineEdit()
         self.rainfall_toolButton = QtWidgets.QToolButton()
-        self.main_output_lineEdit = QtWidgets.QLineEdit()
+        self.main_output = QtWidgets.QLineEdit()
         self.main_output_toolButton = QtWidgets.QToolButton()
-        self.maxdt_lineEdit = QtWidgets.QDoubleSpinBox()
-        self.end_time_lineEdit = QtWidgets.QDoubleSpinBox()
-        self.vegetation_type_comboBox = QgsFieldComboBox()
-        self.table_soil_vegetation_comboBox = QgsMapLayerComboBox()
+        self.maxdt = QtWidgets.QDoubleSpinBox()
+        self.end_time = QtWidgets.QDoubleSpinBox()
+        self.vegetation_type = QgsFieldComboBox()
+        self.table_soil_vegetation = QgsMapLayerComboBox()
         self.table_soil_vegetation_toolButton = QtWidgets.QToolButton()
-        self.table_soil_vegetation_field_comboBox = QgsFieldComboBox()
-        self.table_stream_shape_code_comboBox = QgsFieldComboBox()
-        self.table_stream_shape_comboBox = QgsMapLayerComboBox()
+        self.table_soil_vegetation_field = QgsFieldComboBox()
+        self.table_stream_shape_code = QgsFieldComboBox()
+        self.table_stream_shape = QgsMapLayerComboBox()
         self.table_stream_shape_toolButton = QtWidgets.QToolButton()
-        self.flow_direction_comboBox = QtWidgets.QComboBox()
-        self.generate_temporary_checkBox = QtWidgets.QCheckBox()
+        self.flow_direction = QtWidgets.QComboBox()
+        self.generate_temporary = QtWidgets.QCheckBox()
         self.run_button = QtWidgets.QPushButton(self.dockWidgetContents)
 
         # set default values
-        self.maxdt_lineEdit.setProperty("value", 5)
-        self.end_time_lineEdit.setProperty("value", 30)
+        self.maxdt.setValue(5)
+        self.maxdt.setMaximum(99999999999999999999999999)
+        self.end_time.setValue(30)
+        self.end_time.setMaximum(99999999999999999999999999)
 
         self.retranslateUi()
 
@@ -249,7 +252,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         # history tab
         section_tab = QtWidgets.QWidget()
         section_tab_layout = QtWidgets.QVBoxLayout()
-        self.history_tab = QtWidgets.QListWidget()
         section_tab_layout.addWidget(
             QtWidgets.QLabel(
                 '25 last calls -- load historical settings by double-click'
@@ -263,50 +265,50 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     def set_widgets(self):
         """TODO."""
-        self.arguments['elevation'].addWidget(self.elevation_comboBox)
+        self.arguments['elevation'].addWidget(self.elevation)
         self.arguments['elevation'].addWidget(self.elevation_toolButton)
-        self.arguments['soil'].addWidget(self.soil_comboBox)
+        self.arguments['soil'].addWidget(self.soil)
         self.arguments['soil'].addWidget(self.soil_toolButton)
-        self.arguments['landuse'].addWidget(self.vegetation_comboBox)
+        self.arguments['landuse'].addWidget(self.vegetation)
         self.arguments['landuse'].addWidget(self.vegetation_toolButton)
-        self.arguments['points'].addWidget(self.points_comboBox)
+        self.arguments['points'].addWidget(self.points)
         self.arguments['points'].addWidget(self.points_toolButton)
-        self.arguments['points_fieldname'].addWidget(self.points_field_comboBox)
-        self.arguments['streams'].addWidget(self.stream_comboBox)
+        self.arguments['points_fieldname'].addWidget(self.points_field)
+        self.arguments['streams'].addWidget(self.stream)
         self.arguments['streams'].addWidget(self.stream_toolButton)
-        self.arguments['rainfall_file'].addWidget(self.rainfall_lineEdit)
+        self.arguments['rainfall_file'].addWidget(self.rainfall)
         self.arguments['rainfall_file'].addWidget(self.rainfall_toolButton)
-        self.arguments['output'].addWidget(self.main_output_lineEdit)
+        self.arguments['output'].addWidget(self.main_output)
         self.arguments['output'].addWidget(self.main_output_toolButton)
-        self.arguments['max_time_step'].addWidget(self.maxdt_lineEdit)
-        self.arguments['total_time'].addWidget(self.end_time_lineEdit)
-        self.arguments['soil_type_field'].addWidget(self.soil_type_comboBox)
+        self.arguments['max_time_step'].addWidget(self.maxdt)
+        self.arguments['total_time'].addWidget(self.end_time)
+        self.arguments['soil_type_field'].addWidget(self.soil_type)
         self.arguments['landuse_type_field'].addWidget(
-            self.vegetation_type_comboBox
+            self.vegetation_type
         )
         self.arguments['soil_landuse_table'].addWidget(
-            self.table_soil_vegetation_comboBox
+            self.table_soil_vegetation
         )
         self.arguments['soil_landuse_table'].addWidget(
             self.table_soil_vegetation_toolButton
         )
         self.arguments['soil_landuse_field'].addWidget(
-            self.table_soil_vegetation_field_comboBox
+            self.table_soil_vegetation_field
         )
         self.arguments['streams_channel_type_fieldname'].addWidget(
-            self.table_stream_shape_code_comboBox
+            self.table_stream_shape_code
         )
         self.arguments['channel_properties_table'].addWidget(
-            self.table_stream_shape_comboBox
+            self.table_stream_shape
         )
         self.arguments['channel_properties_table'].addWidget(
             self.table_stream_shape_toolButton
         )
         self.arguments['flow_direction'].addWidget(
-            self.flow_direction_comboBox
+            self.flow_direction
         )
         self.arguments['generate_temporary'].insertWidget(
-            0, self.generate_temporary_checkBox
+            0, self.generate_temporary
         )  # checkbox should be before label
         self.arguments['generate_temporary'].addStretch()
 
@@ -324,80 +326,80 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         # TODO: what if tables are in format that cannot be added to map?
         #  (txt), currently works for dbf
 
-        self.run_button.clicked.connect(self.OnRunButton)
+        self.run_button.clicked.connect(self.onRunButton)
 
         # 1st tab - Data preparation
         self.elevation_toolButton.clicked.connect(
-            lambda: self.openFileDialog('raster', self.elevation_comboBox)
+            lambda: self.openFileDialog('raster', self.elevation)
         )
         self.soil_toolButton.clicked.connect(
-            lambda: self.openFileDialog('vector', self.soil_comboBox)
+            lambda: self.openFileDialog('vector', self.soil)
         )
         self.vegetation_toolButton.clicked.connect(
-            lambda: self.openFileDialog('vector', self.vegetation_comboBox)
+            lambda: self.openFileDialog('vector', self.vegetation)
         )
         self.points_toolButton.clicked.connect(
-            lambda: self.openFileDialog('vector', self.points_comboBox)
+            lambda: self.openFileDialog('vector', self.points)
         )
         # self.output_toolButton.clicked.connect(
         #        lambda: self.openFileDialog('folder', self.output_lineEdit))
         self.stream_toolButton.clicked.connect(
-            lambda: self.openFileDialog('vector', self.stream_comboBox)
+            lambda: self.openFileDialog('vector', self.stream)
         )
 
-        self.soil_comboBox.layerChanged.connect(lambda: self.setFields('soil'))
-        self.vegetation_comboBox.layerChanged.connect(
+        self.soil.layerChanged.connect(lambda: self.setFields('soil'))
+        self.vegetation.layerChanged.connect(
             lambda: self.setFields('vegetation')
         )
-        self.points_comboBox.layerChanged.connect(
+        self.points.layerChanged.connect(
             lambda: self.setFields('points')
         )
 
         # 2nd tab - Computation
         self.rainfall_toolButton.clicked.connect(
-            lambda: self.openFileDialog('file', self.rainfall_lineEdit)
+            lambda: self.openFileDialog('file', self.rainfall)
         )
 
         # 3rd tab - Settings
         self.table_soil_vegetation_toolButton.clicked.connect(
             lambda: self.openFileDialog(
-                'table', self.table_soil_vegetation_comboBox
+                'table', self.table_soil_vegetation
             )
         )
         self.table_stream_shape_toolButton.clicked.connect(
             lambda: self.openFileDialog(
-                'table', self.table_stream_shape_comboBox
+                'table', self.table_stream_shape
             )
         )
         self.main_output_toolButton.clicked.connect(
-            lambda: self.openFileDialog('folder', self.main_output_lineEdit)
+            lambda: self.openFileDialog('folder', self.main_output)
         )
 
-        self.table_soil_vegetation_comboBox.layerChanged.connect(
+        self.table_soil_vegetation.layerChanged.connect(
             lambda: self.setFields('table_soil_veg')
         )
-        self.table_stream_shape_comboBox.layerChanged.connect(
+        self.table_stream_shape.layerChanged.connect(
             lambda: self.setFields('channel_properties_table')
         )
 
     def setupCombos(self):
         """Setup combo boxes."""
         # 1st tab - Data preparation
-        self.elevation_comboBox.setFilters(QgsMapLayerProxyModel.RasterLayer)
-        self.soil_comboBox.setFilters(QgsMapLayerProxyModel.VectorLayer)
-        self.vegetation_comboBox.setFilters(QgsMapLayerProxyModel.VectorLayer)
-        self.points_comboBox.setFilters(QgsMapLayerProxyModel.VectorLayer)
-        self.stream_comboBox.setFilters(QgsMapLayerProxyModel.VectorLayer)
+        self.elevation.setFilters(QgsMapLayerProxyModel.RasterLayer)
+        self.soil.setFilters(QgsMapLayerProxyModel.VectorLayer)
+        self.vegetation.setFilters(QgsMapLayerProxyModel.VectorLayer)
+        self.points.setFilters(QgsMapLayerProxyModel.VectorLayer)
+        self.stream.setFilters(QgsMapLayerProxyModel.VectorLayer)
 
         self.setFields('soil')
         self.setFields('vegetation')
         self.setFields('points')
 
         # 3rd tab - Settings
-        self.table_soil_vegetation_comboBox.setFilters(
+        self.table_soil_vegetation.setFilters(
             QgsMapLayerProxyModel.VectorLayer
         )
-        self.table_stream_shape_comboBox.setFilters(
+        self.table_stream_shape.setFilters(
             QgsMapLayerProxyModel.VectorLayer
         )
 
@@ -405,13 +407,13 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.setFields('channel_properties_table')
 
         # 4th tab - Advanced
-        self.flow_direction_comboBox.addItems(('single', 'multiple'))
+        self.flow_direction.addItems(('single', 'multiple'))
 
     def set_allow_empty(self):
         """TODO."""
-        self.points_comboBox.setAllowEmptyLayer(True)
-        self.stream_comboBox.setAllowEmptyLayer(True)
-        self.table_stream_shape_comboBox.setAllowEmptyLayer(True)
+        self.points.setAllowEmptyLayer(True)
+        self.stream.setAllowEmptyLayer(True)
+        self.table_stream_shape.setAllowEmptyLayer(True)
 
     def set_button_texts(self):
         """TODO."""
@@ -426,13 +428,13 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         for button in buttons:
             button.setText('...')
 
-    def OnRunButton(self):
+    def onRunButton(self):
         """Run the processing when the run button was pushed."""
         if not self._grass_bin_path:
             # Get GRASS executable
             try:
                 self._grass_bin_path = find_grass_bin()
-            except ImportError as e:
+            except ImportError:
                 self._sendMessage(
                     "ERROR:",
                     "GRASS GIS not found.",
@@ -455,9 +457,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             )
 
             # prepare the progress bar
-            self.progress_bar = QProgressBar()
-            self.progress_bar.setMaximum(100)
-            self.progress_bar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            progress_bar = QProgressBar()
+            progress_bar.setMaximum(100)
+            progress_bar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
             messageBar = self.iface.messageBar()
 
             messageBar.findChildren(QtWidgets.QToolButton)[0].setHidden(True)
@@ -465,7 +467,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             progress_msg = messageBar.createMessage(
                 "Computation progress: "
             )
-            progress_msg.layout().addWidget(self.progress_bar)
+            progress_msg.layout().addWidget(progress_bar)
 
             abort_button = QtWidgets.QPushButton(self.dockWidgetContents)
             abort_button.setText('Abort the process')
@@ -475,10 +477,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             messageBar.pushWidget(progress_msg, Qgis.Info)
 
             smoderp_task.begun.connect(
-                lambda: self.progress_bar.setValue(0)
+                lambda: progress_bar.setValue(0)
             )
             smoderp_task.progressChanged.connect(
-                lambda a: self.progress_bar.setValue(int(a))
+                lambda a: progress_bar.setValue(int(a))
             )
             smoderp_task.taskCompleted.connect(self.computationFinished)
 
@@ -604,7 +606,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         root = QgsProject.instance().layerTreeRoot()
         group = root.insertGroup(0, self._result_group_name)
 
-        outdir = self.main_output_lineEdit.text().strip()
+        outdir = self.main_output.text().strip()
         import_group_layers(group, outdir, show=True)
 
         # import control results
@@ -636,44 +638,40 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
     def _getInputParams(self):
         """Get input parameters from QGIS plugin."""
         self._input_params = {
-            'elevation': self.elevation_comboBox.currentText(),
-            'soil': self.soil_comboBox.currentText(),
-            'soil_type_fieldname': self.soil_type_comboBox.currentText(),
-            'vegetation': self.vegetation_comboBox.currentText(),
-            'vegetation_type_fieldname':
-                self.vegetation_type_comboBox.currentText(),
-            'points': self.points_comboBox.currentText(),
-            'points_fieldname': self.points_field_comboBox.currentText(),
+            'elevation': self.elevation.currentText(),
+            'soil': self.soil.currentText(),
+            'soil_type_fieldname': self.soil_type.currentText(),
+            'vegetation': self.vegetation.currentText(),
+            'vegetation_type_fieldname': self.vegetation_type.currentText(),
+            'points': self.points.currentText(),
+            'points_fieldname': self.points_field.currentText(),
             # 'output': self.output_lineEdit.text().strip(),
-            'streams': self.stream_comboBox.currentText(),
-            'rainfall_file': self.rainfall_lineEdit.text(),
-            'end_time': self.end_time_lineEdit.value(),
-            'maxdt': self.maxdt_lineEdit.value(),
-            'table_soil_vegetation':
-                self.table_soil_vegetation_comboBox.currentText(),
+            'streams': self.stream.currentText(),
+            'rainfall_file': self.rainfall.text(),
+            'end_time': self.end_time.value(),
+            'maxdt': self.maxdt.value(),
+            'table_soil_vegetation': self.table_soil_vegetation.currentText(),
             'table_soil_vegetation_fieldname':
-                self.table_soil_vegetation_field_comboBox.currentText(),
-            'channel_properties_table':
-                self.table_stream_shape_comboBox.currentText(),
+                self.table_soil_vegetation_field.currentText(),
+            'channel_properties_table': self.table_stream_shape.currentText(),
             'streams_channel_type_fieldname':
-                self.table_stream_shape_code_comboBox.currentText(),
-            'flow_direction':
-                self.flow_direction_comboBox.currentText(),
-            'generate_temporary': bool(self.generate_temporary_checkBox.checkState()),
-            'output': self.main_output_lineEdit.text().strip()
+                self.table_stream_shape_code.currentText(),
+            'flow_direction': self.flow_direction.currentText(),
+            'generate_temporary': bool(self.generate_temporary.checkState()),
+            'output': self.main_output.text().strip()
         }
 
         self._input_maps = {
             'elevation':
-                self.elevation_comboBox.currentLayer().dataProvider().dataSourceUri(),
+                self.elevation.currentLayer().dataProvider().dataSourceUri(),
             'soil':
-                self.soil_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
+                self.soil.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
             'vegetation':
-                self.vegetation_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
+                self.vegetation.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
             'points': "",
             'streams': "",
             'table_soil_vegetation':
-                self.table_soil_vegetation_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
+                self.table_soil_vegetation.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
             'channel_properties_table': ""
         }
 
@@ -684,18 +682,18 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self._input_params[key] = key
 
         # optional inputs
-        if self.points_comboBox.currentLayer() is not None:
+        if self.points.currentLayer() is not None:
             self._input_maps["points"] = \
-                self.points_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
+                self.points.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
 
-        if self.stream_comboBox.currentLayer() is not None:
+        if self.stream.currentLayer() is not None:
             self._input_maps["streams"] = \
-                self.stream_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
+                self.stream.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
 
-        if self.table_stream_shape_comboBox.currentLayer() is not None:
+        if self.table_stream_shape.currentLayer() is not None:
             self._input_maps['channel_properties_table'] = \
-                self.table_stream_shape_comboBox.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
-            self._input_maps["streams_channel_type_fieldname"] = self.table_stream_shape_code_comboBox.currentText()
+                self.table_stream_shape.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
+            self._input_maps["streams_channel_type_fieldname"] = self.table_stream_shape_code.currentText()
 
     def _checkInputDataPrep(self):
         """Check mandatory fields.
@@ -704,19 +702,19 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         """
         # Check if none of fields are empty
         if None not in (
-                self.elevation_comboBox.currentLayer(),
-                self.soil_comboBox.currentLayer(),
-                self.soil_type_comboBox.currentText(),
-                self.vegetation_comboBox.currentLayer(),
-                self.vegetation_type_comboBox.currentText(),
-                self.table_soil_vegetation_comboBox.currentLayer(),
-                # self.table_soil_vegetation_code_comboBox.currentText(),
+                self.elevation.currentLayer(),
+                self.soil.currentLayer(),
+                self.soil_type.currentText(),
+                self.vegetation.currentLayer(),
+                self.vegetation_type.currentText(),
+                self.table_soil_vegetation.currentLayer(),
+                # self.table_soil_vegetation_field_comboBox.currentText(),
                 ) and "" not in (
                 # self.output_lineEdit.text().strip(),
-                self.maxdt_lineEdit.text().strip(),
-                self.rainfall_lineEdit.text().strip(),
-                self.end_time_lineEdit.text().strip(),
-                self.main_output_lineEdit.text().strip()):
+                self.maxdt.text().strip(),
+                self.rainfall.text().strip(),
+                self.end_time.text().strip(),
+                self.main_output.text().strip()):
             return True
         else:
             return False
@@ -834,47 +832,49 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         :param t: type of field to be set
         """
-        if self.soil_comboBox.currentLayer() is not None and t == 'soil':
-            self.soil_type_comboBox.setLayer(self.soil_comboBox.currentLayer())
-            self.soil_type_comboBox.setField(
-                self.soil_comboBox.currentLayer().fields()[0].name()
+        if t == 'soil':
+            self.setField(
+                self.soil.currentLayer(), self.soil_type
             )
-        elif self.vegetation_comboBox.currentLayer() is not None and t == 'vegetation':
-            self.vegetation_type_comboBox.setLayer(
-                self.vegetation_comboBox.currentLayer()
+        elif t == 'vegetation':
+            self.setField(
+                self.vegetation.currentLayer(),
+                self.vegetation_type
             )
-            self.vegetation_type_comboBox.setField(
-                self.vegetation_comboBox.currentLayer().fields()[0].name()
+        elif t == 'table_soil_veg':
+            self.setField(
+                self.table_soil_vegetation.currentLayer(),
+                self.table_soil_vegetation_field
             )
-        elif self.table_soil_vegetation_comboBox.currentLayer() is not None and t == 'table_soil_veg':
-            self.table_soil_vegetation_field_comboBox.setLayer(
-                self.table_soil_vegetation_comboBox.currentLayer()
-            )
-            self.table_soil_vegetation_field_comboBox.setField(
-                self.table_soil_vegetation_comboBox.currentLayer().fields()[0].name()
+        elif t == 'vegetation':
+            self.setField(
+                self.vegetation.currentLayer(),
+                self.vegetation_type
             )
         elif t == 'channel_properties_table':
-            if self.table_stream_shape_comboBox.currentLayer() is not None:
-                self.table_stream_shape_code_comboBox.setLayer(
-                    self.table_stream_shape_comboBox.currentLayer()
-                )
-                self.table_stream_shape_code_comboBox.setField(
-                    self.table_stream_shape_comboBox.currentLayer().fields()[0].name())
-            else:
-                self.table_stream_shape_code_comboBox.setLayer(None)
-                self.table_stream_shape_code_comboBox.setField("")
+            self.setField(
+                self.table_stream_shape.currentLayer(),
+                self.table_stream_shape_code
+            )
         elif t == 'points':
-            points_cur_layer = self.points_comboBox.currentLayer()
-            if points_cur_layer is not None:
-                self.points_field_comboBox.setLayer(points_cur_layer)
-                self.points_field_comboBox.setField(
-                    points_cur_layer.fields()[0].name()
-                )
-            else:
-                self.points_field_comboBox.setLayer(None)
-                self.points_field_comboBox.setField(None)
+            self.setField(
+                self.points.currentLayer(),
+                self.points_field
+            )
+
+    @staticmethod
+    def setField(current_layer, widget):
+        """Set a widget to the first field from the current layer.
+
+        :param current_layer: layer from which the fields are read
+        :param widget: widget where the field should be set as a value
+        """
+        if current_layer is not None:
+            widget.setLayer(current_layer)
+            widget.setField(current_layer.fields()[0].name())
         else:
-            pass
+            widget.setLayer(None)
+            widget.setField(None)
 
     def _sendMessage(self, caption, message, t):
         """TODO.
@@ -944,27 +944,27 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         :param param_dict: dict in form {parameter_name: parameter_value}
         """
-        self.elevation_comboBox.setLayer(param_dict['elevation'])
-        self.soil_comboBox.setLayer(param_dict['soil'])
-        self.points_comboBox.setLayer(param_dict['points'])
-        self.points_field_comboBox.setCurrentText(
+        self.elevation.setLayer(param_dict['elevation'])
+        self.soil.setLayer(param_dict['soil'])
+        self.points.setLayer(param_dict['points'])
+        self.points_field.setCurrentText(
             param_dict['points_fieldname']
         )
-        self.stream_comboBox.setLayer(param_dict['streams'])
-        self.rainfall_lineEdit.setText(param_dict['rainfall_file'])
-        self.table_soil_vegetation_comboBox.setLayer(
+        self.stream.setLayer(param_dict['streams'])
+        self.rainfall.setText(param_dict['rainfall_file'])
+        self.table_soil_vegetation.setLayer(
             param_dict['table_soil_vegetation']
         )
-        self.table_stream_shape_comboBox.setLayer(
+        self.table_stream_shape.setLayer(
             param_dict['channel_properties_table']
         )
-        self.table_stream_shape_code_comboBox.setCurrentText(
+        self.table_stream_shape_code.setCurrentText(
             param_dict['streams_channel_type_fieldname']
         )
-        self.main_output_lineEdit.setText(param_dict['output'])
-        self.end_time_lineEdit.setValue(param_dict['end_time'])
-        self.flow_direction_comboBox.setCurrentText(param_dict['flow_direction'])
-        self.generate_temporary_checkBox.setChecked(param_dict['generate_temporary'])
+        self.main_output.setText(param_dict['output'])
+        self.end_time.setValue(param_dict['end_time'])
+        self.flow_direction.setCurrentText(param_dict['flow_direction'])
+        self.generate_temporary.setChecked(param_dict['generate_temporary'])
 
     def abort_computation(self):
         """Abort the computation.

@@ -3,7 +3,6 @@ import sys
 import pytest
 from test_utils import PerformTest, data_dir, class_manager
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from smoderp2d.runners.arcgis import ArcGisRunner
 
 def params(reference_dir):
@@ -33,6 +32,7 @@ class TestArcGis:
     #     # )
     #     pass
 
-    # def test_003_full(self):
-    #     # PerformTest(ArcGisRunner, params).run_full()
-    #     pass
+    def test_002_full(self):
+        PerformTest(
+            ArcGisRunner, self.reference_dir, params(self.reference_dir)
+        ).run_full()
