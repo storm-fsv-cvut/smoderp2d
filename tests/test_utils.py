@@ -289,12 +289,8 @@ class PerformTest:
 
         with open(new_output, "rb") as left:
             with open(reference, "rb") as right:
-                if sys.version_info > (3, 0):
-                    new_output_dict = pickle.load(left, encoding="bytes")
-                    reference_dict = pickle.load(right, encoding="bytes")
-                else:
-                    new_output_dict = pickle.load(left)
-                    reference_dict = pickle.load(right)
+                new_output_dict = pickle.load(left, encoding="bytes")
+                reference_dict = pickle.load(right, encoding="bytes")
 
                 if not _is_on_github_action():
                     self._extract_pickle_data(
@@ -353,12 +349,8 @@ class PerformTest:
 
         with open(dataprep_filepath, "rb") as new_output:
             with open(reference_filepath, "rb") as reference:
-                if sys.version_info > (3, 0):
-                    new_output_dict = pickle.load(new_output, encoding="bytes")
-                    reference_dict = pickle.load(reference, encoding="bytes")
-                else:
-                    new_output_dict = pickle.load(new_output)
-                    reference_dict = pickle.load(reference)
+                new_output_dict = pickle.load(new_output, encoding="bytes")
+                reference_dict = pickle.load(reference, encoding="bytes")
                 for k, v in new_output_dict.items():
                     if isinstance(v, dict):
                         for kk, vv in v.items():

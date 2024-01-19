@@ -3,10 +3,7 @@ import sys
 import csv
 import numpy as np
 
-if sys.version_info.major >= 3:
-    from configparser import NoSectionError, NoOptionError
-else:
-    from ConfigParser import NoSectionError, NoOptionError
+from configparser import NoSectionError, NoOptionError
 
 from smoderp2d.core.general import Globals
 from smoderp2d.core import CompType
