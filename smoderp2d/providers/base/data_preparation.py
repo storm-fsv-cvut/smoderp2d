@@ -262,7 +262,6 @@ class PrepareDataGISBase(PrepareDataBase):
             self.fieldnames['channel_shapetype'],
             self.fieldnames['channel_bottom_width'],
             self.fieldnames['channel_bank_steepness'],
-            self.fieldnames['channel_bank_steepness'],
             self.fieldnames['channel_bed_roughness'],
             self.fieldnames['channel_q365']
         ]
