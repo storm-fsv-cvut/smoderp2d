@@ -23,4 +23,3 @@ deactivate
 rm -rf $VENV
 
 exit 0
- 
