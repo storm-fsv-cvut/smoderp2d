@@ -23,10 +23,6 @@
 # % keyword: erosion
 # %end
 # %flag
-# % key: d
-# % description: Perform data preparation only and exit
-# %end
-# %flag
 # % key: t
 # % description: Export temporary data
 # %end
@@ -132,21 +128,18 @@ import os
 import sys
 import grass.script as gs
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from smoderp2d import GrassGisRunner
+from smoderp2d.runners.grass import GrassGisRunner
 from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.exceptions import ProviderError
 
 if __name__ == "__main__":
     options, flags = gs.parser()
-    options['t'] = flags['t']
+    options['generate_temporary'] = flags['t']
 
     try:
         runner = GrassGisRunner()
 
         runner.set_options(options)
-        if flags['d']:
-            runner.workflow_mode = WorkflowMode.dpre
 
         sys.exit(
             runner.run()

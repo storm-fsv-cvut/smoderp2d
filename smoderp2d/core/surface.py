@@ -108,9 +108,10 @@ class SurArrs(object):
 
 def get_surface():
     class Surface(GridGlobals, Stream, get_kinematic()):
-        """Contains data and methods to calculate the surface and rill runoff."""
+        """Data and methods to calculate the surface and rill runoff."""
+
         def __init__(self):
-            """The constructor
+            """The constructor.
 
             Make all numpy arrays and establish the inflow procedure based
             on D8 or Multi Flow Direction Algorithm method.
@@ -135,7 +136,9 @@ def get_surface():
 
             Stream.__init__(self)
 
-            Logger.info("\tRill flow: {}".format('ON' if Globals.isRill else 'OFF'))
+            Logger.info(
+                "\tRill flow: {}".format('ON' if Globals.isRill else 'OFF')
+            )
 
         def return_str_vals(self, i, j, sep, dt, extra_out):
             """TODO.
@@ -173,9 +176,9 @@ def get_surface():
                 #                          width data
                 #                     if you need runoff from non-unit slope and
                 #                     with extra output calculate it yourself
-                line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}{4:.4e}' \
-                       '{sep}{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}' \
-                       '{9:.4e}'.format(
+                line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}' \
+                       '{4:.4e}{sep}{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}' \
+                       '{8:.4e}{sep}{9:.4e}'.format(
                     arr.h_sheet[i, j],
                     vol_runoff / dt[i, j],
                     vol_runoff,
@@ -220,7 +223,7 @@ def get_surface():
 
 
 def __runoff(sur, dt, effect_vrst, ratio):
-    """Calculates the sheet and rill flow.
+    """Calculate the sheet and rill flow.
 
     :param dt: TODO
     :param effect_vrst: TODO
@@ -376,7 +379,7 @@ def rill_runoff(dt, effect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
 
     :return: TODO
     """
-    n = Globals.get_mat_n()
+    nrill = Globals.get_mat_nrill()
     slope = Globals.get_mat_slope()
 
     vol_to_rill = h_rill * GridGlobals.get_pixel_area()
@@ -385,7 +388,7 @@ def rill_runoff(dt, effect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
     )
     r_rill = (h * b) / (b + 2 * h)
 
-    v_rill = ma.power(r_rill, (2.0 / 3.0)) * 1. / n * ma.power(slope, 0.5)
+    v_rill = ma.power(r_rill, (2.0 / 3.0)) * 1. / nrill * ma.power(slope, 0.5)
 
     q_rill = v_rill * h * b
 

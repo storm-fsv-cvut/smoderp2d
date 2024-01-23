@@ -4,12 +4,10 @@ import arcpy
 import sys
 import os
 
-py3 = sys.version_info[0] == 3
-if py3:
-    from importlib import reload
+from importlib import reload
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
-from smoderp2d import ArcGisRunner
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..")) # To be removed when building Toolbox package
+from smoderp2d.runners.arcgis import ArcGisRunner
 from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.exceptions import ProviderError
 
@@ -30,10 +28,9 @@ PARAMETER_SOILVEGTABLE_TYPE = 11
 PARAMETER_STREAM = 12
 PARAMETER_CHANNEL_TYPE = 13
 PARAMETER_CHANNEL_PROPS_TABLE = 14
-PARAMETER_DATAPREP_ONLY = 15
-PARAMETER_FLOW_DIRECTION = 16
-PARAMETER_GENERATE_TEMPDATA = 17
-PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 18
+PARAMETER_FLOW_DIRECTION = 15
+PARAMETER_GENERATE_TEMPDATA = 16
+PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 17
 
 class Toolbox(object):
     def __init__(self):
@@ -189,16 +186,6 @@ class SMODERP2D(object):
            direction="Input"
         )
 
-        dataprepOnly = arcpy.Parameter(
-           displayName="Do the data preparation only",
-           name="dataprepOnly",
-           datatype="GPBoolean",
-           parameterType="Optional",
-           direction="Input",
-           category="Computation options"
-        )
-        dataprepOnly.value = False
-
         flowDirection = arcpy.Parameter(
            displayName="Flow direction",
            name="flowDirection",
@@ -246,7 +233,7 @@ class SMODERP2D(object):
             inputLUPolygons, LUtypeFieldName, inputRainfall,
             maxTimeStep, totalRunTime, inputPoints, inputPointsFieldName,
             soilvegPropertiesTable, soilvegIDfieldName, streamNetwork, streamChannelShapeIDfieldName,
-            channelPropertiesTable, dataprepOnly, flowRoutingType, generateTempData, outDir,
+            channelPropertiesTable, flowRoutingType, generateTempData, outDir,
         ]
 
     def updateParameters(self, parameters):
@@ -267,8 +254,6 @@ class SMODERP2D(object):
             runner.set_options(
                 self._get_input_params(parameters)
             )
-            if parameters[PARAMETER_DATAPREP_ONLY].value:
-                runner.workflow_mode = WorkflowMode.dpre
 
             runner.run()
         except ProviderError as e:
@@ -297,6 +282,6 @@ class SMODERP2D(object):
             'streams_channel_type_fieldname': parameters[PARAMETER_CHANNEL_TYPE].valueAsText,
             'channel_properties_table': parameters[PARAMETER_CHANNEL_PROPS_TABLE].valueAsText,
             'flow_direction': parameters[PARAMETER_FLOW_DIRECTION].valueAsText,
-            'generate_temporary_data': parameters[PARAMETER_GENERATE_TEMPDATA].value,
+            'generate_temporary': parameters[PARAMETER_GENERATE_TEMPDATA].value,
             'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText
         }

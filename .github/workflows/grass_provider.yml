@@ -9,7 +9,7 @@ on:
       - master
 
 jobs:
-  consistency_test:
+  consistency-quicktest:
     strategy:
       fail-fast: false
 
@@ -25,6 +25,34 @@ jobs:
           pip3 install --break-system-packages -r .github/workflows/requirements.txt
           pip3 install --break-system-packages -r .github/workflows/requirements3.11.txt
 
+      - name: Install smoderp2d
+        run: |
+          pip3 install --break-system-packages .
+
+      - name: Run GRASS test suite (rain_sim)
+        run: |
+          ./tests/run_grass_gistest.sh rain_sim
+
+  consistency-longtest:
+    strategy:
+      fail-fast: false
+
+    runs-on: ubuntu-22.04
+    container:
+      image: osgeo/grass-gis:releasebranch_8_3-debian
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Python dependencies
+        run: |
+          pip3 install --break-system-packages -r .github/workflows/requirements.txt
+          pip3 install --break-system-packages -r .github/workflows/requirements3.11.txt
+
+      - name: Install smoderp2d
+        run: |
+          pip3 install --break-system-packages .
+
       - name: Run GRASS test suite
         run: |
-          grass -c tests/grassdata/smoderp2d-location/test/ --exec pytest tests/test_grass.py
+          ./tests/run_grass_gistest.sh nucice

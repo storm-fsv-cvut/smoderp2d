@@ -10,9 +10,8 @@ from smoderp2d.exceptions import ProviderError
 class Reach(object):
     def __init__(self, stream_segment_id, stream_segment_next_down_id,
                  stream_segment_length, stream_segment_inclination,
-                 channel_profile, channel_shape_id, channel_shapetype,
-                 channel_bottom_width, channel_bank_steepness,
-                 channel_bed_roughness, channel_q365):
+                 channel_shape_id, channel_shapetype, channel_bottom_width,
+                 channel_bank_steepness, channel_bed_roughness, channel_q365):
 
         self.segment_id = stream_segment_id
         self.next_down_id = stream_segment_next_down_id
@@ -23,7 +22,6 @@ class Reach(object):
                 "stream".format(stream_segment_id)
             )
         self.inclination = abs(stream_segment_inclination)
-        self.profile = channel_profile
         self.shape_id = channel_shape_id
         self.shapetype = channel_shapetype
 
