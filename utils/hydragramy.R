@@ -12,6 +12,7 @@ library('manipulate')
 # root dir
 root  <-  c("tests/data/output/", 'tests/data/output-PR321/')
 
+root  <-  "tests/data/output/"
 #root  <-  "d:/2_granty_projekty/2_Bezici/2022_RAGO/01_reseni_projektu/00_test_Smoderp/out2"
 # output dir
 outdir <- 'control_point'
@@ -125,11 +126,25 @@ for (idir_ in dir_) {
 
 pixel = read.table(paste(files[1],sep = ''),skip=1,nrows = 1,comment.char = '')
 pixel = as.numeric(pixel[7])
-pixel = H = list()
+H = list()
 for (file_ in files) {
+  
+  print (file_)
   name_ = substr(file_,1,8)
   name_ = file_
-  H[[name_]] = read.table(file_, sep = sep_, header = TRUE, skip=skip_, comment.char = '#')
+  skip_ = 1
+  d = read.table(file_, sep = sep_, header = TRUE, skip=skip_, comment.char = '#')
+  # print (grepl('infiltration.m.', x = names(d)))
+  if (any(grepl('infiltration.m.', x = names(d)))){
+    
+    d$cumRainfall_m3 = cumsum(d$rainfall.m.*pixel)
+    d$cumInfiltration_m3 = cumsum(d$infiltration.m.*pixel)
+    d$cumSheetRunoff_m3 = cumsum(d$sheetVRunoff.m3.)
+    # d$cumRillRunoff_m3 = cumsum(d$)
+    # d$cumInflows_m3 = cumsum(d$vInflow.m3.)
+    # d$cumSurfaceRunoff_m3 = cumsum(d$surfa)
+  }
+  H[[name_]] = d
 }
 
 plot_(id1_,id2_)

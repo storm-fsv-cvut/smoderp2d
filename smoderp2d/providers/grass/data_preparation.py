@@ -371,14 +371,17 @@ class PrepareData(PrepareDataGISBase):
 
         # check for empty values
         with Vector(soilveg_aoi) as vmap:
-            vmap.table.filters.select(*list(self.soilveg_fields.keys()))
+            soilveg_fields = list(self.soilveg_fields.keys())
+            vmap.table.filters.select(*soilveg_fields)
             for row in vmap.table:
                 for i in range(len(row)):
                     if row[i] in ("", " ", None):
                         raise DataPreparationInvalidInput(
                             "Values in soilveg table are not correct "
-                            "(field '{}': empty value found in row {})".format(
-                                self.sfield[i], i
+                            "(field '{}': empty value found in row {}). It is"
+                            "recommended to check if the {} code is present in"
+                            " soil and landuse parameter table".format(
+                                soilveg_fields[i], i, soilveg_code
                             )
                         )
 

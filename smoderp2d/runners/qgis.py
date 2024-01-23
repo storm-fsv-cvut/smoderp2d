@@ -93,7 +93,7 @@ class QGISRunner(GrassGisRunner):
 
                 project_projection = QgsProject.instance().crs().authid()
 
-                if srs == project_projection.split(':')[1]:
+                if srs is None or srs == project_projection.split(':')[1]:
                     Module(
                         "r.import", input=options[key], output=key,
                         flags='o'

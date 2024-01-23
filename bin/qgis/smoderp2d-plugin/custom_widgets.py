@@ -26,15 +26,18 @@ class HistoryWidget(QListWidgetItem):
         map_names = {
             i: instance.mapLayersByName(os.path.split(os.path.splitext(j)[0])[1]) for i, j in maps.items()
         }
+        map_names = {
+            i: None if len(j) == 0 else j[0] for i, j in map_names.items()
+        }
         self.params_dict.update({
-            'elevation': map_names['elevation'][0],
-            'soil': map_names['soil'][0],
-            'points': map_names['points'][0],
+            'elevation': map_names['elevation'],
+            'soil': map_names['soil'],
+            'points': map_names['points'],
             'points_fieldname': params['points_fieldname'],
-            'streams': map_names['streams'][0],
+            'streams': map_names['streams'],
             'rainfall_file': params['rainfall_file'],
-            'table_soil_vegetation': map_names['table_soil_vegetation'][0],
-            'channel_properties_table': map_names['channel_properties_table'][0],
+            'table_soil_vegetation': map_names['table_soil_vegetation'],
+            'channel_properties_table': map_names['channel_properties_table'],
             'streams_channel_type_fieldname': params[
                 'streams_channel_type_fieldname'
             ],

@@ -14,7 +14,6 @@ jobs:
 
       matrix:
         python-version:
-          # - "2.7"
           - "3.9"
           - "3.11"
 
@@ -32,6 +31,10 @@ jobs:
         run: |
           pip install -r .github/workflows/requirements.txt
           pip install -r .github/workflows/requirements${{ matrix.python-version }}.txt
+
+      - name: Install smoderp2d
+        run: |
+          pip install .
 
       - name: Run command test suite
         run: |
