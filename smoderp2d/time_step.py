@@ -5,7 +5,7 @@ from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.processes.infiltration as infiltration
 import smoderp2d.processes.rill as rill
-from smoderp2d.core.surface import surface_retention_impl
+from smoderp2d.core.surface import inflows_comp, surface_retention_impl
 from smoderp2d.core.surface import surface_retention_update
 from smoderp2d.core.surface import update_state1
 from smoderp2d.core.surface import update_state
@@ -328,8 +328,12 @@ class TimeStep:
             
         #calculating sheet runoff
         surface.arr.vol_runoff = sheet_runoff(aa, b, surface.arr.h_sheet)*dt #[m]
+        # Saving the inflows
+        tot_flow = (surface.arr.vol_runoff + surface.arr.vol_runoff_rill).ravel()
+        surface.arr.inflow_tm =ma.array(inflows_comp(tot_flow, list_fd),mask=GridGlobals.masks)
         # Calculating the infiltration
         surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type, surface.arr.h_total_new)*dt #[m]    
+        
         # Updating surface retention
         h_ret = actRain - surface.arr.infiltration
         surface_retention_update(h_ret,surface.arr)

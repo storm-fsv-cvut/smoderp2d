@@ -564,7 +564,53 @@ def surface_retention_update(h_sur, sur):
     sur.sur_ret = reten_new
     sur.cur_sur_ret = reten_new - reten
     
-    
+def inflows_comp(tot_flow, list_fd):
+    inflow = ma.array(ma.zeros((GridGlobals.r, GridGlobals.c)),mask=GridGlobals.masks)
+    r = GridGlobals.r
+    c = GridGlobals.c
+    for i in range(r):
+            for j in range(c):
+                try:
+                    inflow[i][j] +=  list_fd[j+i][0]*tot_flow[(i-1)*c+j+1] #NE
+                    
+                except IndexError:
+                    pass   
+                try:
+                    inflow[i][j]  +=  list_fd[j+i*c][1]*tot_flow[(i-1)*c+j] #N
+                    
+                except IndexError:
+                    pass 
+                try:
+                   inflow[i][j]  +=  list_fd[j+i*c][2]*tot_flow[(i-1)*c+j-1] #NW
+                    
+                except IndexError:
+                    pass
+                try:
+                    inflow[i][j]  +=  list_fd[j+i*c][3]*tot_flow[(i)*c+j-1] #W
+                   
+                except  IndexError:
+                    pass
+                try:
+                    inflow[i][j]  +=  list_fd[j+i*c][4]*tot_flow[(i+1)*c+j-1] #SW
+                    
+                except  IndexError:
+                    pass
+                try:
+                    inflow[i][j] +=  list_fd[j+i*c][5]*tot_flow[(i+1)*c+j] #S
+                       
+                except  IndexError:
+                    pass
+                try:
+                    inflow[i][j] +=  list_fd[j+i*c][6]*tot_flow[(i+1)*c+j+1] #SE
+                    
+                except  IndexError:
+                    pass
+                try:
+                    inflow[i][j]  +=  list_fd[j+i*c][7]*tot_flow[(i)*c+j+1] #E
+                    
+                except  IndexError:
+                    pass
+    return inflow                
 # if Globals.isRill:
 #     runoff = __runoff
 # else:
