@@ -193,7 +193,6 @@ def get_surface():
                 )
 
                 if Globals.isRill:
-                    arr.vel_rill = arr.vol_runoff/arr.rillWidth/arr.h_rill/dt
                     line += '{sep}{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}' \
                             '{sep}{4:.4e}{sep}{5:.4e}{sep}{6:.4e}{sep}' \
                             '{7:.4e}'.format(

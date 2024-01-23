@@ -310,6 +310,8 @@ class TimeStep:
             surface.arr.vol_runoff_rill = rill_runoff(dt, 
                                                     h_rill,  efect_vrst, 
                                                     surface.arr.rillWidth) *dt # [m]
+            # print("rill runoff",surface.arr.vol_runoff_rill)
+            # input()
             # Calculating the rill width
             rill_h, rill_b = rill.update_hb(
             vol_to_rill, RILL_RATIO, efect_vrst, surface.arr.rillWidth)
@@ -319,8 +321,10 @@ class TimeStep:
 
             surface.arr.vol_to_rill = ma.where(surface.arr.state > 0,vol_to_rill,
                                surface.arr.vol_to_rill)
+            surface.arr.vel_rill = surface.arr.vol_runoff_rill/surface.arr.rillWidth/surface.arr.h_rill/dt
         else: 
             surface.arr.h_sheet = surface.arr.h_total_new
+            
             
         #calculating sheet runoff
         surface.arr.vol_runoff = sheet_runoff(aa, b, surface.arr.h_sheet)*dt #[m]
