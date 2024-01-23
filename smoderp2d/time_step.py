@@ -292,8 +292,8 @@ class TimeStep:
                                                         surface.arr.state,
                                                         surface.arr.h_rillPre)
             
-            surface.arr.h_rill = h_rill
-
+            surface.arr.h_rill = ma.array(h_rill,mask=GridGlobals.masks)
+            
             surface.arr.h_sheet = h_sheet 
             # Updating the information about rill depth
             surface.arr.h_rillPre = compute_h_rill_pre(surface.arr.h_rillPre,h_rill ,surface.arr.state)
@@ -307,21 +307,21 @@ class TimeStep:
             efect_vrst = Globals.get_mat_effect_cont()
             
 
-            surface.arr.vol_runoff_rill = rill_runoff(dt, 
-                                                    h_rill,  efect_vrst, 
-                                                    surface.arr.rillWidth) *dt # [m]
-            # print("rill runoff",surface.arr.vol_runoff_rill)
-            # input()
+           
             # Calculating the rill width
             rill_h, rill_b = rill.update_hb(
             vol_to_rill, RILL_RATIO, efect_vrst, surface.arr.rillWidth)
-            surface.arr.rillWidth = ma.where(surface.arr.state > 0, rill_b,
-                                            surface.arr.rillWidth) #[m]
+            surface.arr.rillWidth = ma.array(ma.where(surface.arr.state > 0, rill_b,
+                                            surface.arr.rillWidth),
+                                            mask=GridGlobals.masks) #[m]
             
+            surface.arr.vol_runoff_rill = rill_runoff(dt, 
+                                                    h_rill,  efect_vrst, 
+                                                    surface.arr.rillWidth) *dt # [m]
 
             surface.arr.vol_to_rill = ma.where(surface.arr.state > 0,vol_to_rill,
                                surface.arr.vol_to_rill)
-            surface.arr.vel_rill = surface.arr.vol_runoff_rill/surface.arr.rillWidth/surface.arr.h_rill/dt
+            surface.arr.vel_rill = ma.filled(surface.arr.vol_runoff_rill/surface.arr.rillWidth/surface.arr.h_rill/dt,0.0)
         else: 
             surface.arr.h_sheet = surface.arr.h_total_new
             

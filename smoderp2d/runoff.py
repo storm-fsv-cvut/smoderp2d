@@ -206,7 +206,6 @@ class Runoff(object):
 
         # method for single time step calculation
         self.time_step = TimeStep()
-
         # record values into hydrographs at time zero
         self.hydrographs.write_hydrographs_record(
             None,
@@ -301,7 +300,7 @@ class Runoff(object):
                 self.flow_control.iter_,
                 self.flow_control.total_time + self.delta_t
             )
-
+            
             # write hydrographs of reaches
             self.hydrographs.write_hydrographs_record(
                 None,

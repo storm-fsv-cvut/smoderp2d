@@ -466,8 +466,8 @@ def rill_runoff(dt,   h_rill, effect_vrst, rillWidth ):
 
     vol_runoff_rill = ma.where(
         vol_rill > vol_to_rill, vol_to_rill, vol_rill
-        )/dt
-    
+        )/dt    
+    vol_runoff_rill = ma.filled(vol_runoff_rill,0)
         
     return vol_runoff_rill
 
