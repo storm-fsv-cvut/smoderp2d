@@ -21,8 +21,8 @@ outdir <- 'control_point'
 # point000.dat -> id = 1
 # point001.dat -> id = 2
 # atd...
-id1_ = 5
-id2_ = 5
+id1_ = 1
+id2_ = 3
 #2+6;1+4
 # End setting  
 #
@@ -95,11 +95,11 @@ plot_ = function(id1,id2,title='')
   n2 = length(t2[1,])
   manipulate(pp(t1,t2,sel,add_,sel2,od,do,stejny,titles),
              # sel = slider(initial = 5,1,n1,label = 'spoupec v levem grafu'),
-             sel = picker(as.list(names1_)), #initial = 'Surface_Flow.m3.s.'),
+             sel = picker(as.list(names1_), initial = 'wLevelTotal.m.'),
              add_= checkbox(TRUE,'pridat druhy graf'),
              stejny= checkbox(FALSE,'stejny meritka'),
              # sel2 = slider(initial = n2, 1,n2,label = 'spoupec v pravem grafu'),
-             sel2 = picker(as.list(names2_)),#initial = 'ratio'),
+             sel2 = picker(as.list(names2_),initial = 'wLevelTotal.m.'),
              od = slider(initial = 0     ,0,maxCas,label = 'cas od'),
              do = slider(initial = maxCas,0,maxCas,label = 'cas do')
              )
@@ -127,8 +127,11 @@ pixel = read.table(paste(files[1],sep = ''),skip=1,nrows = 1,comment.char = '')
 pixel = as.numeric(pixel[7])
 H = list()
 for (file_ in files) {
+  
+  print (file_)
   name_ = substr(file_,1,8)
   name_ = file_
+  skip_ = 1
   d = read.table(file_, sep = sep_, header = TRUE, skip=skip_, comment.char = '#')
   # print (grepl('infiltration.m.', x = names(d)))
   if (any(grepl('infiltration.m.', x = names(d)))){
@@ -136,9 +139,9 @@ for (file_ in files) {
     d$cumRainfall_m3 = cumsum(d$rainfall.m.*pixel)
     d$cumInfiltration_m3 = cumsum(d$infiltration.m.*pixel)
     d$cumSheetRunoff_m3 = cumsum(d$sheetVRunoff.m3.)
-    d$cumRillRunoff_m3 = cumsum(d$rillVRunoff.m3.)
-    d$cumInflows_m3 = cumsum(d$vInflow.m3.)
-    d$cumSurfaceRunoff_m3 = cumsum(d$surfaceVRunoff.m3.)
+    # d$cumRillRunoff_m3 = cumsum(d$)
+    # d$cumInflows_m3 = cumsum(d$vInflow.m3.)
+    # d$cumSurfaceRunoff_m3 = cumsum(d$surfa)
   }
   H[[name_]] = d
 }

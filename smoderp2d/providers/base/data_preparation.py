@@ -15,21 +15,17 @@ from smoderp2d.providers.base.exceptions import DataPreparationError, \
 
 class PrepareDataBase(ABC):
     @staticmethod
-    def _get_a(mat_n, mat_x, mat_y, r, c, no_data, mat_slope):
+    def _get_a(mat_nsheet, mat_y, r, c, no_data, mat_slope):
         """Build 'a' and 'aa' arrays.
 
-        :param mat_n:
-        :param mat_x:
+        :param mat_nsheet:
         :param mat_y:
         :param r: number of rows
         :param c: number of columns
         :param no_data: no data value
         :param mat_slope:
-        :return: np ndarray for mat_a and for mat_aa
+        :return: np ndarray for mat_aa
         """
-        mat_a = np.zeros(
-            [r, c], float
-        )
         mat_aa = np.zeros(
             [r, c], float
         )
@@ -38,24 +34,20 @@ class PrepareDataBase(ABC):
         for i in range(r):
             for j in range(c):
                 slope = mat_slope[i][j]
-                par_x = mat_x[i][j]
+                par_nsheet = mat_nsheet[i][j]
                 par_y = mat_y[i][j]
 
-                if par_x == no_data or par_y == no_data or slope == no_data:
-                    par_a = no_data
+                if par_nsheet == no_data or par_y == no_data or slope == no_data:
                     par_aa = no_data
-                elif par_x == no_data or par_y == no_data or slope == 0.0:
-                    par_a = 0.0001
-                    par_aa = par_a / mat_n[i][j]
+                elif par_nsheet == no_data or par_y == no_data or slope == 0.0:
+                    par_aa = 0.0001
                 else:
                     exp = np.power(slope, par_y)
-                    par_a = par_x * exp
-                    par_aa = par_a / mat_n[i][j]
+                    par_aa = 1 / mat_nsheet[i][j] * exp
 
-                mat_a[i][j] = par_a
                 mat_aa[i][j] = par_aa
 
-        return mat_a, mat_aa
+        return mat_aa
 
     @staticmethod
     def _get_crit_water(mat_b, mat_tau, mat_v, r, c, mat_slope,
@@ -121,18 +113,13 @@ class PrepareDataBase(ABC):
                     kkk = mat_k[i][j]
                     sss = mat_s[i][j]
                     ccc = [kkk, sss]
-                    try:
-                        if combinat.index(ccc):
-                            mat_inf_index[i][j] = combinat.index(ccc)
-                    except ValueError:
-                        # ccc not in combinat
+                    if ccc not in combinat:
                         combinat.append(ccc)
                         combinatIndex.append(
                             [combinat.index(ccc), kkk, sss, 0]
                         )
-                        mat_inf_index[i][j] = combinat.index(
-                            ccc
-                        )
+
+                    mat_inf_index[i][j] = combinat.index(ccc)
 
         return mat_inf_index, combinatIndex
 
@@ -231,8 +218,8 @@ class PrepareDataGISBase(PrepareDataBase):
     }
 
     soilveg_fields = {
-        "k": None, "s": None, "n": None, "pi": None, "ppl": None,
-        "ret": None, "b": None, "x": None, "y": None, "tau": None, "v": None
+        "k": None, "s": None, "nrill": None, "pi": None, "ppl": None,
+        "ret": None, "b": None, "nsheet": None, "y": None, "tau": None, "v": None
     }
 
     def __init__(self, writer):
@@ -252,7 +239,6 @@ class PrepareDataGISBase(PrepareDataBase):
             'channel_shape_id':  self._input_params[
                 'streams_channel_type_fieldname'
             ],
-            'channel_profile': 'profile',
             'channel_shapetype': 'shapetype',
             'channel_bottom_width': 'b',
             'channel_bank_steepness': 'm',
@@ -265,10 +251,8 @@ class PrepareDataGISBase(PrepareDataBase):
         self.storage.set_data_layers(self.data_layers)
 
         self.stream_shape_fields = [
-            self.fieldnames['channel_profile'],
             self.fieldnames['channel_shapetype'],
             self.fieldnames['channel_bottom_width'],
-            self.fieldnames['channel_bank_steepness'],
             self.fieldnames['channel_bank_steepness'],
             self.fieldnames['channel_bed_roughness'],
             self.fieldnames['channel_q365']
@@ -293,8 +277,7 @@ class PrepareDataGISBase(PrepareDataBase):
             'mat_effect_cont': None,
             'mat_slope': None,
             'mat_nan': None,
-            'mat_a': None,
-            'mat_n': None,
+            'mat_nrill': None,
             'end_time': self._input_params['end_time'],
             'state_cell': None,
             'type_of_computing': None,
@@ -615,7 +598,7 @@ class PrepareDataGISBase(PrepareDataBase):
         )
         Logger.progress(40)
 
-        self.data['mat_n'] = self.soilveg_fields['n']
+        self.data['mat_nrill'] = self.soilveg_fields['nrill']
         self.data['mat_pi'] = self.soilveg_fields['pi']
         self.data['mat_ppl'] = self.soilveg_fields['ppl']
         self.data['mat_reten'] = self.soilveg_fields['ret']
@@ -632,11 +615,10 @@ class PrepareDataGISBase(PrepareDataBase):
                               self.data['mat_dem'])
 
         # build a/aa arrays
-        self.data['mat_a'], self.data['mat_aa'] = self._get_a(
-            self.soilveg_fields['n'], self.soilveg_fields['x'],
-            self.soilveg_fields['y'], GridGlobals.r,
-            GridGlobals.c, GridGlobals.NoDataValue, self.data['mat_slope']
-        )
+        self.data['mat_aa'] = self._get_a(
+                self.soilveg_fields['nsheet'], self.soilveg_fields['y'],
+                GridGlobals.r, GridGlobals.c, GridGlobals.NoDataValue,
+                self.data['mat_slope'])
         Logger.progress(50)
 
         Logger.info("Computing critical level...")

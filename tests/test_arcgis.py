@@ -32,6 +32,7 @@ class TestArcGis:
     #     # )
     #     pass
 
-    # def test_003_full(self):
-    #     # PerformTest(ArcGisRunner, params).run_full()
-    #     pass
+    def test_002_full(self):
+        PerformTest(
+            ArcGisRunner, self.reference_dir, params(self.reference_dir)
+        ).run_full()

@@ -449,7 +449,7 @@ def rill_runoff(dt,   h_rill, effect_vrst, rillWidth ):
 
     :return: TODO
     """
-    n = Globals.get_mat_n()
+    nrill = Globals.get_mat_nrill()
     slope = Globals.get_mat_slope()
 
     vol_to_rill = h_rill * GridGlobals.get_pixel_area()
@@ -458,7 +458,7 @@ def rill_runoff(dt,   h_rill, effect_vrst, rillWidth ):
     )
     r_rill = (h * b) / (b + 2 * h)
 
-    v_rill = ma.power(r_rill, (2.0 / 3.0)) * 1. / n * ma.power(slope, 0.5)
+    v_rill = ma.power(r_rill, (2.0 / 3.0)) * 1. / nrill * ma.power(slope, 0.5)
 
     q_rill = v_rill * h * b
 

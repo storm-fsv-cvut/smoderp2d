@@ -193,10 +193,9 @@ class BaseProvider(object):
                 "- [%(module)s:%(lineno)s]"
             )
         handler.setFormatter(formatter)
-        if sys.version_info.major >= 3:
-            if len(Logger.handlers) == 0:
-                # avoid duplicated handlers (e.g. in case of ArcGIS)
-                Logger.addHandler(handler)
+        if len(Logger.handlers) == 0:
+            # avoid duplicated handlers (e.g. in case of ArcGIS)
+            Logger.addHandler(handler)
 
     @staticmethod
     def __load_hidden_config():
@@ -506,14 +505,11 @@ class BaseProvider(object):
         if filename is None:
             raise ProviderError('Input file for loading data not defined')
         with open(filename, 'rb') as fd:
-            if sys.version_info > (3, 0):
-                data = {
-                    key.decode() if isinstance(key, bytes) else key:
-                    val.decode() if isinstance(val, bytes) else val
-                    for key, val in pickle.load(fd, encoding='bytes').items()
-                }
-            else:
-                data = pickle.load(fd)
+            data = {
+                key.decode() if isinstance(key, bytes) else key:
+                val.decode() if isinstance(val, bytes) else val
+                for key, val in pickle.load(fd, encoding='bytes').items()
+            }
         Logger.debug('Size of loaded data is {} bytes'.format(
             sys.getsizeof(data))
         )

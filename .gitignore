@@ -5,6 +5,8 @@ tests/data/log
 tests/data/output*
 tests/data/reference/gistest_*/*/dpre.extracted/
 tests/data/reference/gistest_*/*/*/dpre.extracted/
+tests/data/reference/gistest_*/dpre/control/
+tests/data/reference/gistest_*/dpre/temp/
 tests/data/reference/gistest_*/full/temp/
 tests/data/reference/gistest_*/full/*.aux.xml
 tests/data/reference/gistest_*/full/*.prj
@@ -12,15 +14,6 @@ tests/data/reference/gistest_*/*/control/*.aux.xml
 tests/data/reference/gistest_*/*/temp/*.aux.xml
 tests/data/reference/gistest_*/*/control/*.prj
 tests/data/reference/gistest_*/*/temp/*.prj
-tests/grassdata/smoderp2d-location/test/
-tests/grassdata/smoderp2d-location/PERMANENT/.bash_history
-tests/grassdata/smoderp2d-location/PERMANENT/.bashrc
-tests/grassdata/smoderp2d-location/PERMANENT/.gislock
-tests/grassdata/smoderp2d-location/PERMANENT/.sudo_as_admin_successful
-tests/grassdata/smoderp2d-location/PERMANENT/cell_misc/w001001/reclassed_to
-tests/grassdata/smoderp2d-location/PERMANENT/hist
-tests/grassdata/smoderp2d-location/stream_prep/
-tests/grassdata/smoderp2d-location/water
 tests/log
 
 # build files
