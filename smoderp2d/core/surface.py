@@ -108,7 +108,7 @@ class SurArrs(object):
 
 def get_surface():
     class Surface(GridGlobals, Stream,
-                  get_diffuse() if Globals.diffuse else get_kinematic()):
+                  get_diffuse() if Globals.wave == 'diffusion' else get_kinematic()):
         """Data and methods to calculate the surface and rill runoff."""
 
         def __init__(self):

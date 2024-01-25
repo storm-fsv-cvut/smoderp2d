@@ -231,6 +231,8 @@ class Globals:
     # bool variable for flow direction algorithm (false=one direction, true
     # multiple flow direction)
     mfda = None
+    # variable for wave algorithm (kinematic, diffuse)
+    wave = None
     # list contains the precipitation data
     sr = None
     # counter of precipitation intervals
@@ -380,6 +382,11 @@ class Globals:
         return cls.mfda
 
     @classmethod
+    def get_wave(cls):
+        """TODO."""
+        return cls.wave
+
+    @classmethod
     def get_sr(cls):
         """TODO."""
         return cls.sr
@@ -465,6 +472,8 @@ class Globals:
         # bool variable for flow direction algorithm (false=one direction, true
         # multiple flow direction)
         cls.mfda = None
+        # variable for wave algorithm (kinematic, diffuse)
+        cls.wave = None
         # list contains the precipitation data
         cls.sr = None
         # counter of precipitation intervals
