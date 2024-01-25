@@ -302,10 +302,9 @@ class BaseProvider(object):
                 'processes', 'mfda', fallback=False
             )
 
-        if self._config.get('processes', 'wave'):
-            data['wave'] = self._config.getboolean(
-                'processes', 'wave', fallback='Kinematic'
-            )
+        data['wave'] = self._config.get(
+            'processes', 'wave', fallback='kinematic'
+        )
 
         # type of computing
         data['type_of_computing'] = CompType()[
