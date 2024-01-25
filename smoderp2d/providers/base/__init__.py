@@ -302,6 +302,11 @@ class BaseProvider(object):
                 'processes', 'mfda', fallback=False
             )
 
+        if self._config.get('processes', 'wave'):
+            data['wave'] = self._config.getboolean(
+                'processes', 'wave', fallback='Kinematic'
+            )
+
         # type of computing
         data['type_of_computing'] = CompType()[
             self._config.get('processes', 'typecomp', fallback='stream_rill')
@@ -369,7 +374,6 @@ class BaseProvider(object):
 
         Globals.mat_reten = -1.0 * data['mat_reten'] / 1000  # converts mm to m
         comp_type = self._comp_type(data['type_of_computing'])
-        Globals.diffuse = False  # not implemented yet
         Globals.subflow = comp_type['subflow_rill']
         Globals.isRill = comp_type['rill']
         Globals.isStream = comp_type['stream']

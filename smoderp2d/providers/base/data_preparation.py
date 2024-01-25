@@ -282,6 +282,7 @@ class PrepareDataGISBase(PrepareDataBase):
             'state_cell': None,
             'type_of_computing': None,
             'mfda': self._input_params['flow_direction'] == 'multiple',
+            'wave': self._input_params['wave'],
             'sr': None,
             'itera': None,
             'streams': None,
