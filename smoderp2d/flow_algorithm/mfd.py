@@ -53,8 +53,6 @@ def new_mfda(mat_dem, mat_nan, mat_fd):
         for j in range(cols):
 
             point_m = mat_dem[i][j]
-            if ma.is_masked(point_m):
-                point_m = point_m.data
 
             if point_m < 0 or i == 0 or j == 0 or i == (rows - 1) or j == (cols - 1):
                 # jj nemely by ty byt nuly?
@@ -65,7 +63,9 @@ def new_mfda(mat_dem, mat_nan, mat_fd):
             else:
                 possible_circulation = 0
 
-                nbrs = neighbors(i, j, mat_dem.data, rows, cols)
+                nbrs = neighbors(i, j, mat_dem, rows, cols)
+                if any([ma.is_masked(nbr) for nbr in nbrs]):
+                    continue
                 fldir, flsp = dirSlope(point_m, nbrs, dy, dx)
 
                 flprop = np.zeros(8, float)
