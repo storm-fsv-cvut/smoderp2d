@@ -102,11 +102,6 @@ class GridGlobals(object):
         return cls.rr, cls.rc
 
     @classmethod
-    def get_border_dim(cls):
-        """TODO."""
-        return cls.br, cls.bc
-
-    @classmethod
     def get_llcorner(cls):
         """TODO."""
         return cls.xllcorner, cls.yllcorner
@@ -155,10 +150,6 @@ class GridGlobals(object):
         # id of columns in computational domain (list of lists)
         # row out of computational domain is empty list
         cls.rc = None
-        # id of rows in at the boundary of computational domain
-        cls.br = None
-        # id of columns in at the boundary of computational domain
-        cls.bc = None
         # left bottom corner x coordinate of raster
         cls.xllcorner = None
         # left bottom corner y coordinate of raster
