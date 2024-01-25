@@ -30,11 +30,11 @@ def get_diffuse():
         def __init__(self):
             Logger.info("Diffuse approach")
 
-            r = Globals.r
-            c = Globals.c
+            r = GridGlobals.r
+            c = GridGlobals.c
 
             if r is None or c is None:
-                exit("Global variables are not assigned")
+                exit("GridGlobal variables are not assigned")
 
             self.H = ma.masked_array(
                 np.zeros([r, c], float), mask=GridGlobals.masks
