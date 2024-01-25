@@ -5,7 +5,7 @@ import math
 from smoderp2d.core.general import GridGlobals
 
 
-def flow_direction(dem, rr, rc, br, bc, pixel_size):
+def flow_direction(dem, rr, rc, pixel_size):
 
     dist = [math.sqrt(pixel_size),
             math.sqrt(pixel_size * pixel_size)]

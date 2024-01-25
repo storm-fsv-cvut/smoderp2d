@@ -45,8 +45,6 @@ def get_diffuse():
                 self.H,
                 self.rr,
                 self.rc,
-                self.br,
-                self.bc,
                 self.pixel_area)
             self.update_inflows(fd)
 
