@@ -231,7 +231,8 @@ class PerformTest:
                 "streams_channel_type_fieldname": "channel_id",
                 "output": self._output_dir,
                 'generate_temporary': False,
-                'flow_direction': 'single'
+                'flow_direction': 'single',
+                'wave': 'kinematic'
             }
             self._params.update(params)
         else:
