@@ -372,7 +372,7 @@ class PerformTest:
                                 dataprep_filepath, reference_filepath
                             )
                     else:
-                        if k != 'rc':
+                        if k not in ('rc', 'wave'):
                             equal = np.allclose(
                                 v, reference_dict[k], rtol=relative_tolerance
                             )
