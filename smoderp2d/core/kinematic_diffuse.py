@@ -42,7 +42,7 @@ def get_diffuse():
 
         def new_inflows(self):
             fd = flow_direction.flow_direction(
-                self.H,
+                self.arr.h_total_pre + Globals.mat_dem,
                 self.rr,
                 self.rc,
                 self.pixel_area)
