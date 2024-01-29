@@ -103,50 +103,34 @@ class TimeStep:
                 # sheet inflows from neigbouring cells (try is used to avoid out of range errors)
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][0]*tot_flow[(i-1)*c+j+1] #NE
-                    # print(i,j,list_fd[j+i*c][0],tot_flow[(i-1)*c+j+1],"NE")
-                    # input()
                 except IndexError:
                     pass   
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][1]*tot_flow[(i-1)*c+j] #N
-                    # print(i,j,list_fd[j+i*c][1],tot_flow[(i-1)*c+j],"N")
-                    # input()
                 except IndexError:
                     pass 
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][2]*tot_flow[(i-1)*c+j-1] #NW
-                    # print(i,j,list_fd[j+i*c][2],tot_flow[(i-1)*c+j-1],"NW")
-                    # input()
                 except IndexError:
                     pass
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][3]*tot_flow[(i)*c+j-1] #W
-                    # print(i,j,list_fd[j+i*c][3],tot_flow[(i)*c+j-1],"W")
-                    # input()
                 except  IndexError:
                     pass
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][4]*tot_flow[(i+1)*c+j-1] #SW
-                    # print(i,j,list_fd[j+i*c][4],tot_flow[(i+1)*c+j-1],"SW")
-                    # input()
                 except  IndexError:
                     pass
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][5]*tot_flow[(i+1)*c+j] #S
-                    # print(i,j,list_fd[j+i*c][5],tot_flow[(i+1)*c+j],"S")
-                    # input()    
+                    res[j+i*c] +=  list_fd[j+i*c][5]*tot_flow[(i+1)*c+j] #S  
                 except  IndexError:
                     pass
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][6]*tot_flow[(i+1)*c+j+1] #SE
-                    # print(i,j,list_fd[j+i*c][6],tot_flow[(i+1)*c+j+1],    "SE")
-                    # input()
                 except  IndexError:
                     pass
                 try:
                     res[j+i*c] +=  list_fd[j+i*c][7]*tot_flow[(i)*c+j+1] #E
-                    # print(i,j,list_fd[j+i*c][7],tot_flow[(i)*c+j+1],"E")
-                    # input()
                 except  IndexError:
                     pass
                     
