@@ -55,7 +55,7 @@ class TimeStep:
         h_old = h_old.reshape(r,c)
 
         # Calculating infiltration  - function which does not allow negative levels
-        infilt_buf = infiltration.philip_infiltration(soil_type,h_new/dt)
+        infilt_buf = infiltration.philip_infiltration(soil_type,h_new)/dt #[m/s]
         infilt = ma.filled(infilt_buf,fill_value=0)
         efect_vrst = Globals.get_mat_effect_cont()
         # Calculating surface retention
@@ -172,7 +172,7 @@ class TimeStep:
             k = iii[1]
             s = iii[2]
             
-            iii[3] = infiltration.phlilip(
+            iii[3] = infiltration.philip_implicit(
                 k,
                 s,
                 delta_t,
@@ -314,7 +314,7 @@ class TimeStep:
         surface.arr.inflow_tm =ma.array(inflows_comp(tot_flow, list_fd),mask=GridGlobals.masks)
         # Calculating the infiltration
         surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type,
-                                                                    surface.arr.h_total_new/dt)*dt #[m]    
+                                                                    surface.arr.h_total_new) #[m]    
         
         # Updating surface retention
         h_ret = actRain - surface.arr.infiltration

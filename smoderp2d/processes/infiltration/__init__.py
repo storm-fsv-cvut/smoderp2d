@@ -55,3 +55,11 @@ def phlilip(k, s, deltaT, totalT, NoDataValue):
 
         # except ValueError:
     return infiltration
+
+def philip_implicit(k, s, deltaT, totalT, NoDataValue):
+    if k and s == NoDataValue:
+        infiltration = NoDataValue
+    else:
+        infiltration = (0.5 * ma.divide(s, ma.sqrt(totalT + deltaT)) + k) * \
+                deltaT
+    return infiltration 
