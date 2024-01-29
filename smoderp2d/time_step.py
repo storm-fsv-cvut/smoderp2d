@@ -314,7 +314,7 @@ class TimeStep:
         surface.arr.inflow_tm =ma.array(inflows_comp(tot_flow, list_fd),mask=GridGlobals.masks)
         # Calculating the infiltration
         surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type,
-                                                                    surface.arr.h_total_new)*dt #[m]    
+                                                                    surface.arr.h_total_new/dt)*dt #[m]    
         
         # Updating surface retention
         h_ret = actRain - surface.arr.infiltration
