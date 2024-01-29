@@ -25,12 +25,7 @@ from smoderp2d.core.surface import compute_h_rill_pre
 
 # Class manages the one time step operation
 
-##
-#  the class also contains methods to store the important arrays to reload that
-#  if the time step is adjusted
 class TimeStep:
-    """TODO."""
-
     def __init__(self):
         """Set the class variables to default values."""
         self.infilt_capa = 0
@@ -280,7 +275,8 @@ class TimeStep:
             
             surface.arr.h_sheet = h_sheet 
             # Updating the information about rill depth
-            surface.arr.h_rillPre = compute_h_rill_pre(surface.arr.h_rillPre,h_rill ,surface.arr.state)
+            surface.arr.h_rillPre = compute_h_rill_pre(surface.arr.h_rillPre,h_rill,
+                                                       surface.arr.state)
             
 
                 
@@ -305,7 +301,8 @@ class TimeStep:
 
             surface.arr.vol_to_rill = ma.where(surface.arr.state > 0,vol_to_rill,
                                surface.arr.vol_to_rill)
-            surface.arr.vel_rill = ma.filled(surface.arr.vol_runoff_rill/surface.arr.rillWidth/surface.arr.h_rill/dt,0.0)
+            surface.arr.vel_rill = ma.filled(surface.arr.vol_runoff_rill/surface.arr.rillWidth/surface.arr.h_rill/dt,
+                                             0.0)
         else: 
             surface.arr.h_sheet = surface.arr.h_total_new
             
@@ -316,7 +313,8 @@ class TimeStep:
         tot_flow = (surface.arr.vol_runoff + surface.arr.vol_runoff_rill).ravel()
         surface.arr.inflow_tm =ma.array(inflows_comp(tot_flow, list_fd),mask=GridGlobals.masks)
         # Calculating the infiltration
-        surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type, surface.arr.h_total_new)*dt #[m]    
+        surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type,
+                                                                    surface.arr.h_total_new)*dt #[m]    
         
         # Updating surface retention
         h_ret = actRain - surface.arr.infiltration
