@@ -83,6 +83,8 @@ class SubsurfaceC(GridGlobals, get_diffuse() if Globals.diffuse else get_kinemat
         """
         GridGlobals.__init__(self)
 
+        Logger.info("Subsurface: ON")
+
         self.arr = SubArrs(
             L_sub,
             Ks,
