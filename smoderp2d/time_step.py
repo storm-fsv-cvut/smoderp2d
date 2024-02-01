@@ -1,32 +1,43 @@
-# @package smoderp2d.time_step methods to performe
-#  time step, and to store intermeriate variables
+# @package smoderp2d.time_step methods to perform
+#  time step, and to store intermediate variables
 
-import math
 from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.processes.infiltration as infilt
 
-import copy
 import numpy as np
+import numpy.ma as ma
 
 
 from smoderp2d.core.surface import runoff
 from smoderp2d.core.surface import surface_retention
 
-infilt_capa = 0
-infilt_time = 0
-max_infilt_capa = 0.000  # [m]
-
 
 # Class manages the one time step operation
 #
-#  the class also contains methods to store the important arrays to reload that if the time step is adjusted
+#  the class also contains methods to store the important arrays to reload that
+#  if the time step is adjusted
 #
 class TimeStep:
+    """TODO."""
 
-    def do_flow(self, surface, subsurface, delta_t, flow_control, courant):
-        rr, rc = GridGlobals.get_region_dim()
-        mat_efect_cont = Globals.get_mat_efect_cont()
+    def __init__(self):
+        """Set the class variables to default values."""
+        self.infilt_capa = 0
+        self.infilt_time = 0
+        self.max_infilt_capa = 0.000  # [m]
+
+    @staticmethod
+    def do_flow(surface, subsurface, delta_t, flow_control, courant):
+        """TODO.
+
+        :param surface: TODO
+        :param subsurface: TODO
+        :param delta_t: TODO
+        :param flow_control: TODO
+        :param courant: TODO
+        """
+        mat_effect_cont = Globals.get_mat_effect_cont()
         fc = flow_control
         sr = Globals.get_sr()
         itera = Globals.get_itera()
@@ -35,13 +46,13 @@ class TimeStep:
             itera, fc.total_time, delta_t, fc.tz, sr
         )
 
-        for i in rr:
-            for j in rc[i]:
-                # TODO: variable not used. Should we delete it?
-                h_total_pre = surface.arr.get_item([i, j]).h_total_pre
+        surface_state = surface.arr.state
 
-                surface_state = surface.arr.get_item([i, j]).state
+        runoff_return = runoff(
+            surface.arr, delta_t, mat_effect_cont, fc.ratio
+        )
 
+<<<<<<< HEAD
                 if surface_state > Globals.streams_flow_inc:
                     q_sheet = 0.0
                     v_sheet = 0.0
@@ -54,68 +65,105 @@ class TimeStep:
                             [i, j]), delta_t, mat_efect_cont[i][j], fc.ratio
                     )
                     subsurface.runoff(i, j, delta_t, mat_efect_cont[i][j])
+=======
+        cond_state_flow = surface_state > Globals.streams_flow_inc
+        v_sheet = ma.where(cond_state_flow, 0, runoff_return[0])
+        v_rill = ma.where(cond_state_flow, 0, runoff_return[1])
+        if ma.all(cond_state_flow):
+            subsurface.runoff(
+                delta_t, mat_effect_cont
+            )
+        if ma.any(cond_state_flow):
+            fc.ratio = ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)),
+                mask=GridGlobals.masks
+            )
+        else:
+            # TODO: Better way to make it just a number
+            fc.ratio = runoff_return[2]
+        rill_courant = ma.where(cond_state_flow, 0, runoff_return[3])
+        surface.arr.h_sheet = ma.where(
+            cond_state_flow, surface.arr.h_sheet, runoff_return[4]
+        )
+        surface.arr.h_rill = ma.where(
+            cond_state_flow, surface.arr.h_rill, runoff_return[5]
+        )
+        surface.arr.h_rillPre = ma.where(
+            cond_state_flow, surface.arr.h_rillPre, runoff_return[6]
+        )
+        surface.arr.vol_runoff = ma.where(
+            cond_state_flow, surface.arr.vol_runoff, runoff_return[7]
+        )
+        surface.arr.vol_rest = ma.where(
+            cond_state_flow, surface.arr.vol_rest, runoff_return[8]
+        )
+        surface.arr.v_rill_rest = ma.where(
+            cond_state_flow, surface.arr.v_rill_rest, runoff_return[9]
+        )
+        surface.arr.vol_runoff_rill = ma.where(
+            cond_state_flow, surface.arr.vol_runoff_rill, runoff_return[10]
+        )
+        surface.arr.vel_rill = ma.where(
+            cond_state_flow, surface.arr.vel_rill, runoff_return[11]
+        )
+>>>>>>> master
 
-                # TODO: variable not used. Should we delete it?
-                q_surface = q_sheet + q_rill
-                v = max(v_sheet, v_rill)
-                co = 'sheet'
-                courant.CFL(
-                    i,
-                    j,
-                    surface.arr.get_item([i, j]).h_total_pre,
-                    v,
-                    delta_t,
-                    mat_efect_cont[i][j],
-                    co,
-                    rill_courant)
-                # TODO: variable not used. Should we delet it?
-                rill_courant = 0.
-
-                # w1 = surface.arr.get_item([i, j]).vol_runoff_rill
-                # w2 = surface.arr.get_item([i, j]).v_rill_rest
+        v = ma.maximum(v_sheet, v_rill)
+        co = 'sheet'
+        courant.CFL(
+            v,
+            delta_t,
+            mat_effect_cont,
+            co,
+            rill_courant
+        )
+        # w1 = surface.arr.get_item([i, j]).vol_runoff_rill
+        # w2 = surface.arr.get_item([i, j]).v_rill_rest
 
         return potRain
 
+    # self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
+    # courant, total_time, delta_t, combinatIndex, NoDataValue,
+    # sum_interception, mat_effect_cont, ratio, iter_
 
-# self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
-# courant, total_time, delta_t, combinatIndex, NoDataValue,
-# sum_interception, mat_efect_cont, ratio, iter_
-    def do_next_h(self, surface, subsurface, rain_arr, cumulative,
-                  hydrographs, flow_control, courant, potRain, delta_t):
+    def do_next_h(self, surface, subsurface, rain_arr, cumulative, hydrographs,
+                  flow_control, courant, potRain, delta_t):
+        """TODO.
 
-        global infilt_capa
-        global max_infilt_capa
-        global infilt_time
-
+        :param surface: TODO
+        :param subsurface: TODO
+        :param rain_arr: TODO
+        :param cumulative: TODO
+        :param hydrographs: TODO
+        :param flow_control: TODO
+        :param courant: TODO
+        :param potRain: TODO
+        :param delta_t: TODO
+        """
         rr, rc = GridGlobals.get_region_dim()
         pixel_area = GridGlobals.get_pixel_area()
         fc = flow_control
         combinatIndex = Globals.get_combinatIndex()
         NoDataValue = GridGlobals.get_no_data()
 
-        infilt_capa += potRain
-        if (infilt_capa < max_infilt_capa):
-            infilt_time += delta_t
-            actRain = 0.0
-            # TODO: variable not used. Should we delete it?
-            potRain = 0.0
-            for i in rr:
-                for j in rc[i]:
-                    hydrographs.write_hydrographs_record(
-                        i,
-                        j,
-                        flow_control,
-                        courant,
-                        delta_t,
-                        surface,
-                        subsurface,
-                        cumulative,
-                        actRain)
+        self.infilt_capa += potRain
+        if ma.all(self.infilt_capa < self.max_infilt_capa):
+            self.infilt_time += delta_t
+            actRain = ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+            )
+            hydrographs.write_hydrographs_record(
+                None,
+                None,
+                flow_control,
+                courant,
+                delta_t,
+                surface,
+                cumulative,
+                actRain)
             return actRain
 
         for iii in combinatIndex:
-            # TODO: variable not used. Should we delete it?
-            index = iii[0]
             k = iii[1]
             s = iii[2]
             # jj * 100.0 !!! smazat
@@ -123,7 +171,7 @@ class TimeStep:
                 k,
                 s,
                 delta_t,
-                fc.total_time - infilt_time,
+                fc.total_time - self.infilt_time,
                 NoDataValue)
 
         infilt.set_combinatIndex(combinatIndex)
@@ -138,15 +186,21 @@ class TimeStep:
         #subsurface.reset_inflows()
         #subsurface.new_inflows()
 
+        #
+        # current cell precipitation
+        #
+        actRain, fc.sum_interception, rain_arr.arr.veg = \
+            rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
+        surface.arr.cur_rain = actRain
+
+        #
+        # Inflows from surroundings cells
+        #
         for i in rr:
             for j in rc[i]:
-                #
-                # current cell precipitation
-                #
-                actRain, fc.sum_interception[i][j], rain_arr.arr.get_item([i, j]).veg = rain_f.current_rain(
-                    rain_arr.arr.get_item([i, j]), potRain, fc.sum_interception[i][j])
-                surface.arr.get_item([i, j]).cur_rain = actRain
+                surface.arr.inflow_tm[i, j] = surface.cell_runoff(i, j)
 
+<<<<<<< HEAD
                 #
                 # Inflows from surroundings cells
                 #
@@ -163,27 +217,55 @@ class TimeStep:
                        surface.arr.get_item([i, j]).vol_runoff / pixel_area + \
                        surface.arr.get_item([i, j]).vol_runoff_rill / pixel_area \
                     )
+=======
+        #
+        # Surface BILANCE
+        #
+        surBIL = (
+            surface.arr.h_total_pre + actRain + surface.arr.inflow_tm /
+            pixel_area - (
+                surface.arr.vol_runoff / pixel_area +
+                surface.arr.vol_runoff_rill / pixel_area
+            )
+        )
 
-                #
-                # infiltration
-                #
-                if subsurface.get_exfiltration(i, j) > 0:
-                    surface.arr.get_item([i, j]).infiltration = 0.0
-                    infiltration = 0.0
-                else:
-                    surBIL, infiltration = infilt.philip_infiltration(
-                        surface.arr.get_item([i, j]).soil_type, surBIL)
-                    surface.arr.get_item([i, j]).infiltration = infiltration
+        #
+        # infiltration
+        #
+        philip_infiltration = infilt.philip_infiltration(
+            surface.arr.soil_type, surBIL
+        )
+        surBIL = ma.where(
+            subsurface.get_exfiltration() > 0,
+            surBIL,
+            philip_infiltration[0]
+        )
+        surface.arr.infiltration = ma.where(
+            subsurface.get_exfiltration() > 0,
+            0,
+            philip_infiltration[1]
+        )
+>>>>>>> master
 
+        #
+        # surface retention
+        #
+        surBIL = surface_retention(surBIL, surface.arr)
+
+<<<<<<< HEAD
                 #
                 # surface retention
                 #
                 surBIL = surface_retention(
                     surBIL, surface.arr.get_item([i, j]))
+=======
+        # add exfiltration
+        surBIL += subsurface.get_exfiltration()
+>>>>>>> master
 
-                # add exfiltration
-                surBIL += subsurface.get_exfiltration(i, j)
+        surface_state = surface.arr.state
 
+<<<<<<< HEAD
                 surface_state = surface.arr.get_item([i, j]).state
 
                 if surface_state > Globals.streams_flow_inc:
@@ -225,5 +307,46 @@ class TimeStep:
                     subsurface,
                     cumulative,
                     actRain)
+=======
+        state_condition = surface_state > Globals.streams_flow_inc
+        surface.arr.h_total_new = ma.where(
+            state_condition,  # stream flow in the cell
+            0,
+            surBIL
+        )
+        if ma.any(surface_state > Globals.streams_flow_inc):
+            h_sub = subsurface.runoff_stream_cell(state_condition)
+            inflowToReach = ma.where(
+                state_condition,
+                h_sub * pixel_area + surBIL * pixel_area,
+                0
+            )
+            surface.reach_inflows(
+                surface_state - Globals.streams_flow_inc,
+                inflowToReach,
+                state_condition
+            )
+
+        # subsurface inflow
+        """
+        inflow_sub = subsurface.cell_runoff(i,j,False)
+        subsurface.bilance(infiltration,inflow_sub/pixel_area,delta_t)
+        subsurface.fill_slope()
+        """
+
+        cumulative.update_cumulative(
+            surface.arr,
+            subsurface.arr,
+            delta_t)
+        hydrographs.write_hydrographs_record(
+            None,
+            None,
+            flow_control,
+            courant,
+            delta_t,
+            surface,
+            cumulative,
+            actRain)
+>>>>>>> master
 
         return actRain

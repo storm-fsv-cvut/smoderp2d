@@ -1,51 +1,63 @@
-from smoderp2d.core.general import Globals
+import numpy as np
+import numpy.ma as ma
+
+from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.flow import *
 from smoderp2d.providers import Logger
 
 import smoderp2d.flow_algorithm.flow_direction as flow_direction
 
-class Kinematic(Mfda if Globals.mfda else D8):
 
-    def __init__(self):
-        Logger.info("Kinematic approach")
-        super(Kinematic, self).__init__()
+def get_kinematic():
+    class Kinematic(Mfda if Globals.mfda else D8):
 
-    def new_inflows(self):
-        pass
+        def __init__(self):
+            Logger.info("Kinematic approach")
+            super(Kinematic, self).__init__()
 
-    def update_H(self):
-        pass
+        def new_inflows(self):
+            pass
+
+        def update_H(self):
+            pass
+
+    return Kinematic
 
 
-class Diffuse(Mfda if Globals.mfda else D8):
+def get_diffuse():
+    class Diffuse(Mfda if Globals.mfda else D8):
 
-    def __init__(self):
-        Logger.info("Diffuse approach")
-        if (Globals.r is None or Globals.r is None):
-            exit("Global variables are not assigned")
-        r = Globals.r
-        c = Globals.c
+        def __init__(self):
+            Logger.info("Diffuse approach")
 
-        self.H = np.zeros([r, c], float)
+            r = Globals.r
+            c = Globals.c
 
-    def new_inflows(self):
-        fd = flow_direction.flow_direction(
-            self.H,
-            self.rr,
-            self.rc,
-            self.br,
-            self.bc,
-            self.pixel_area)
-        self.update_inflows(fd)
+            if r is None or c is None:
+                exit("Global variables are not assigned")
 
-    def update_H(self):
+            self.H = ma.masked_array(
+                np.zeros([r, c], float), mask=GridGlobals.masks
+            )
 
-        arr = self.arr
+        def new_inflows(self):
+            fd = flow_direction.flow_direction(
+                self.H,
+                self.rr,
+                self.rc,
+                self.br,
+                self.bc,
+                self.pixel_area)
+            self.update_inflows(fd)
 
-        for i in self.rr:
-            for j in self.rc[i]:
-                arr.H[i][j] = arr.h[i][j] + arr.z[i][j]
+        def update_H(self):
 
-        for i in self.rr:
-            for j in self.rc[i]:
-                arr.slope = self.slope_(i, j)
+            arr = self.arr
+
+            arr.H = arr.h + arr.z
+
+            for i in self.rr:
+                for j in self.rc[i]:
+                    arr.slope = self.slope_(i, j)
+
+    return  Diffuse

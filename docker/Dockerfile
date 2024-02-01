@@ -1,6 +1,5 @@
-FROM ubuntu:18.04
+FROM python:3.12-slim-bookworm
 
 # install requirements
-COPY requirements.txt /tmp/requirements.txt
-RUN apt-get update && apt-get install --yes python3-pip
-RUN python3 -m pip install -r /tmp/requirements.txt
+COPY . /src/smoderp2d
+RUN python3 -m pip install /src/smoderp2d/
