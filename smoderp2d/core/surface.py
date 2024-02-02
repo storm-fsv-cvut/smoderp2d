@@ -3,6 +3,7 @@
 
 import numpy as np
 import numpy.ma as ma
+import numpy.ma as ma
 
 from smoderp2d.core.general import Globals, GridGlobals
 if Globals.isStream:
@@ -167,11 +168,14 @@ def get_surface():
                 )
                 bil_ = ''
             else:
+                h_sheet = min(arr.h_total_new[i,j],arr.h_crit[i,j])
+                h_rill = max(arr.h_total_new[i,j]-arr.h_crit[i,j],0)
                 velocity = ma.where(
                     arr.h_sheet == 0,
                     0,
-                    arr.vol_runoff / dt / (arr.h_sheet*GridGlobals.dx)
+                    arr.vol_runoff / dt / (h_sheet*GridGlobals.dx)
                 )
+
                 # if profile1d provider - the data in extra output are the unit
                 #                          width data
                 #                     if you need runoff from non-unit slope and
@@ -179,7 +183,7 @@ def get_surface():
                 line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}{sep}' \
                        '{4:.4e}{sep}{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}' \
                        '{8:.4e}{sep}{9:.4e}'.format(
-                    arr.h_sheet[i, j],
+                    h_sheet,
                     vol_runoff / dt[i, j],
                     vol_runoff,
                     velocity[i, j],
@@ -196,7 +200,7 @@ def get_surface():
                     line += '{sep}{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3:.4e}' \
                             '{sep}{4:.4e}{sep}{5:.4e}{sep}{6:.4e}{sep}' \
                             '{7:.4e}'.format(
-                        arr.h_rill[i, j],
+                        h_rill,
                         arr.rillWidth[i, j],
                         vol_runoff_rill / dt[i, j],
                         vol_runoff_rill,
@@ -231,7 +235,7 @@ def __runoff(sur, dt, effect_vrst, ratio):
 
     :return: TODO
     """
-    h_total_pre = sur.h_total_pre
+    h_total_pre = ma.copy(sur.h_total_new)
     h_crit = sur.h_crit
     state = sur.state  # da se tady podivat v jakym jsem casovym kroku a jak
     # se a

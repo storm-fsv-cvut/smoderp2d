@@ -22,7 +22,7 @@ class Courant:
         """TODO."""
         self.cour_speed = 0
         # citical courant value
-        self.cour_crit = 0.95
+        self.cour_crit = 0.3
         self.cour_most = self.cour_crit + 1
         self.cour_most_rill = self.cour_crit + 1.0
         self.cour_coef = 0.5601
@@ -97,7 +97,6 @@ class Courant:
         :param rill_courant: TODO
         """
         cour = v / self.cour_coef * delta_t / effect_cont
-        cour = ma.maximum(cour, rill_courant)
         if ma.any(cour > self.cour_most):
             self.i = np.unravel_index(ma.argmax(cour), cour.shape)[0]
             self.j = np.unravel_index(ma.argmax(cour), cour.shape)[1]

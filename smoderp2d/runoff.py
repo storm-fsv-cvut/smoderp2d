@@ -11,12 +11,14 @@ Classes:
 
 """
 
+import sys
 import time
 import numpy as np
 import numpy.ma as ma
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
+from smoderp2d.core.surface import runoff
 from smoderp2d.core.surface import get_surface
 from smoderp2d.core.subsurface import Subsurface
 from smoderp2d.core.cumulative_max import Cumulative
@@ -264,13 +266,21 @@ class Runoff(object):
             self.delta_t, mask=GridGlobals.masks
         )
 
+        time_ = time.time()
         while ma.any(self.flow_control.compare_time(end_time)):
+
+
 
             self.flow_control.save_vars()
             self.flow_control.refresh_iter()
 
             # iteration loop
+            print ('=++++++++++++++++++++++++++++++')
+            timepreiter = time.time()
             while self.flow_control.max_iter_reached():
+
+                viter1 = time.time()
+                #print ('                        ')
 
                 self.flow_control.update_iter()
                 self.flow_control.restore_vars()
@@ -288,6 +298,47 @@ class Runoff(object):
                     self.courant
                 )
 
+
+
+                viter2 = time.time()
+                #print ('dt            {}'.format(self.delta_t[6,2]))
+                #print ('time          {}'.format(self.flow_control.total_time[6,2]))
+                #print ('iter          {}'.format(self.flow_control.iter_))
+                #print ('hcir          {}'.format(self.surface.arr.h_crit[6,2]))
+                #print ('courant       {}'.format(self.courant.cour_most))
+                #print ('cour_speed    {}'.format(self.courant.cour_speed))
+
+                # Calculate actual rainfall and adds up interception todo:
+                # AP - actual is not storred in hydrographs
+                actRain = self.time_step.do_next_h(
+                    self.surface,
+                    self.subsurface,
+                    self.rain_arr,
+                    self.cumulative,
+                    self.hydrographs,
+                    self.flow_control,
+                    self.courant,
+                    potRain,
+                    self.delta_t
+                )
+
+                viter3 = time.time()
+                runoff_return = runoff(
+                    self.surface.arr, self.delta_t,
+                    Globals.get_mat_effect_cont(), self.flow_control.ratio
+                )
+
+
+                viter4 = time.time()
+                v = ma.maximum(runoff_return[0], runoff_return[1])
+                self.courant.CFL(
+                    v, self.delta_t,
+                    Globals.get_mat_effect_cont(),
+                    '---',
+                    None
+                )
+                # print ('courant       {}'.format(self.courant.cour_most))
+                
                 # stores current time step
                 delta_t_tmp = self.delta_t
 
@@ -311,21 +362,26 @@ class Runoff(object):
                     ma.logical_and(delta_t_tmp == self.delta_t,
                                    self.flow_control.compare_ratio())
                 ):
+                    potRain = self.time_step.do_flow(
+                        self.surface,
+                        self.subsurface,
+                        self.delta_t,
+                        self.flow_control,
+                        self.courant
+                    )
+                    viter5 = time.time()
+                    print (viter2-viter1, viter3-viter2, viter4-viter3,
+                            viter5-viter4)
                     break
+                viter5 = time.time()
+                print (viter2-viter1, viter3-viter2, viter4-viter3,
+                        viter5-viter4)
 
-            # Calculate actual rainfall and adds up interception todo:
-            # AP - actual is not storred in hydrographs
-            actRain = self.time_step.do_next_h(
-                self.surface,
-                self.subsurface,
-                self.rain_arr,
-                self.cumulative,
-                self.hydrographs,
-                self.flow_control,
-                self.courant,
-                potRain,
-                self.delta_t
-            )
+            timepostiter = time.time()
+
+            print ('iter          {}'.format(self.flow_control.iter_))
+            print ('dt            {}'.format(self.delta_t[6,2]))
+            print ('vsechny iterace   {}'.format(timepostiter - timepreiter))
 
             # if the iteration exceed the maximal amount of iteration
             # last results are stored in hydrographs
@@ -425,6 +481,23 @@ class Runoff(object):
                 self.surface.arr.state
             )
 
+            self.cumulative.update_cumulative(
+                self.surface.arr,
+                self.subsurface.arr,
+                self.delta_t)
+            self.hydrographs.write_hydrographs_record(
+                None,
+                None,
+                self.flow_control,
+                self.courant,
+                self.delta_t,
+                self.surface,
+                self.cumulative,
+                actRain)
+
+            #print (self.surface.arr.h_total_pre[6,2])
+            #print (self.surface.arr.h_total_new[6,2])
+
             self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / end_time
@@ -440,6 +513,10 @@ class Runoff(object):
 
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
+
+            print ('jeden krok v case {}'.format(time.time() - time_))
+            time_ = time.time()
+            if self.flow_control.total_time[6,2] > 300 : sys.exit()
 
     def save_output(self):
         """TODO."""

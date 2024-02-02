@@ -51,6 +51,7 @@ class TimeStep:
         runoff_return = runoff(
             surface.arr, delta_t, mat_effect_cont, fc.ratio
         )
+       
 
         cond_state_flow = surface_state > Globals.streams_flow_inc
         v_sheet = ma.where(cond_state_flow, 0, runoff_return[0])
@@ -93,11 +94,13 @@ class TimeStep:
             cond_state_flow, surface.arr.vel_rill, runoff_return[11]
         )
 
+        #print ('vel_sheet {}'.format(v_sheet[6,2]))
+        #print ('vel_rill {}'.format(v_rill[6,2]))
+
         v = ma.maximum(v_sheet, v_rill)
-        co = 'sheet'
+        co = '---'
         courant.CFL(
-            v,
-            delta_t,
+            v, delta_t,
             mat_effect_cont,
             co,
             rill_courant
@@ -248,18 +251,10 @@ class TimeStep:
         subsurface.fill_slope()
         """
 
-        cumulative.update_cumulative(
-            surface.arr,
-            subsurface.arr,
-            delta_t)
-        hydrographs.write_hydrographs_record(
-            None,
-            None,
-            flow_control,
-            courant,
-            delta_t,
-            surface,
-            cumulative,
-            actRain)
+        #print ('h_sheet       {}'.format(surface.arr.h_sheet[6,2]))
+        #print ('h_rill        {}'.format(surface.arr.h_rill[6,2]))
+        #print ('h_total_pre   {}'.format(surface.arr.h_total_pre[6,2]))
+        #print ('h_total_new   {}'.format(surface.arr.h_total_new[6,2]))
+        # input('press')
 
         return actRain
