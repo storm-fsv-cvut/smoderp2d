@@ -79,7 +79,9 @@ class TimeStep:
 
             tot_flow += rill_flow
             
-        tot_flow = np.nan_to_num(tot_flow,posinf=0,neginf=0).ravel()    
+        tot_flow = ma.array(tot_flow,mask=GridGlobals.masks) 
+        
+        
             
         h_new = ma.filled(h_new,fill_value=0.0)
         # setting all residuals to zero
@@ -93,39 +95,39 @@ class TimeStep:
                 # rain 
                 res[j+i*c] += act_rain[i][j] #m/s
                 # sheet runoff
-                res[j+i*c] += - tot_flow[j+i*c] 
+                res[j+i*c] += - tot_flow[i][j]
                 
                 # sheet inflows from neigbouring cells (try is used to avoid out of range errors)
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][0]*tot_flow[(i-1)*c+j+1] #NE
+                    res[j+i*c] +=  list_fd[j+i*c][0]*tot_flow[i-1][j+1] #NE
                 except IndexError:
                     pass   
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][1]*tot_flow[(i-1)*c+j] #N
+                    res[j+i*c] +=  list_fd[j+i*c][1]*tot_flow[i-1][j] #N                   
                 except IndexError:
                     pass 
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][2]*tot_flow[(i-1)*c+j-1] #NW
+                    res[j+i*c] +=  list_fd[j+i*c][2]*tot_flow[i-1][j-1]#NW
                 except IndexError:
                     pass
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][3]*tot_flow[(i)*c+j-1] #W
+                    res[j+i*c] +=  list_fd[j+i*c][3]*tot_flow[i][j-1] #W
                 except  IndexError:
                     pass
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][4]*tot_flow[(i+1)*c+j-1] #SW
+                    res[j+i*c] +=  list_fd[j+i*c][4]*tot_flow[i+1][j-1] #SW
                 except  IndexError:
                     pass
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][5]*tot_flow[(i+1)*c+j] #S  
+                    res[j+i*c] +=  list_fd[j+i*c][5]*tot_flow[i+1][j] #S  
                 except  IndexError:
                     pass
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][6]*tot_flow[(i+1)*c+j+1] #SE
+                    res[j+i*c] +=  list_fd[j+i*c][6]*tot_flow[i+1][j+1] #SE
                 except  IndexError:
                     pass
                 try:
-                    res[j+i*c] +=  list_fd[j+i*c][7]*tot_flow[(i)*c+j+1] #E
+                    res[j+i*c] +=  list_fd[j+i*c][7]*tot_flow[i][j+1] #E
                 except  IndexError:
                     pass
                     
@@ -306,11 +308,10 @@ class TimeStep:
         else: 
             surface.arr.h_sheet = surface.arr.h_total_new
             
-            
         #calculating sheet runoff
         surface.arr.vol_runoff = sheet_runoff(aa, b, surface.arr.h_sheet)*dt #[m]
         # Saving the inflows
-        tot_flow = (surface.arr.vol_runoff + surface.arr.vol_runoff_rill).ravel()
+        tot_flow = (surface.arr.vol_runoff + surface.arr.vol_runoff_rill)
         surface.arr.inflow_tm =ma.array(inflows_comp(tot_flow, list_fd),mask=GridGlobals.masks)
         # Calculating the infiltration
         surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type,
