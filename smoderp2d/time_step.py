@@ -103,24 +103,7 @@ class TimeStep:
         res += sur_ret/dt
         
         res = res.reshape(r*c)
-        # for i in range(r):
-        #     for j in range(c):
-        #         # acumulation 
-        #         res[j+i*c] += - (h_new[i][j] - h_old[i][j])/dt #m/s
-    
-        #         # rain 
-        #         res[j+i*c] += act_rain[i][j] #m/s
-        #         # sheet runoff
-        #         res[j+i*c] += - tot_flow[i][j]
-                
-        #         # sheet inflows from neigbouring cells (try is used to avoid out of range errors)
-        #         res[j+i*c] += inflow[i][j]
-                    
-        #         # infiltration 
-        #         res[j+i*c] += - infilt[i][j] 
-        #         # Surface retention
-        #         res[j+i*c] +=  sur_ret[i][j]/dt   
-                
+                  
         return res
 
     # self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
