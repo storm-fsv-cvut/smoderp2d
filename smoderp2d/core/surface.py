@@ -319,6 +319,8 @@ def sheet_runoff(a, b, h_sheet):
 
     vol_runoff = q_sheet * GridGlobals.get_size()[0]
     
+    vol_runoff = np.nan_to_num(vol_runoff, 0.0)
+    
     return vol_runoff
 
 def rill_runoff(dt,   h_rill, effect_vrst, rillWidth ):

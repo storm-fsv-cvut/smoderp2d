@@ -278,9 +278,10 @@ class TimeStep:
             surface.arr.h_sheet = surface.arr.h_total_new
             
         #calculating sheet runoff
-        surface.arr.vol_runoff = sheet_runoff(aa, b, surface.arr.h_sheet)*dt #[m]
+        surface.arr.vol_runoff = ma.filled(sheet_runoff(aa, b, surface.arr.h_sheet),fill_value=0.0)*dt #[m]
         # Saving the inflows
         tot_flow = (surface.arr.vol_runoff + surface.arr.vol_runoff_rill)
+        
         surface.arr.inflow_tm =ma.array(inflows_comp(tot_flow, list_fd),mask=GridGlobals.masks)
         # Calculating the infiltration
         surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type,
