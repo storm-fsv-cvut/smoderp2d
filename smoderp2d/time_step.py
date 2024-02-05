@@ -79,62 +79,48 @@ class TimeStep:
 
             tot_flow += rill_flow
             
-        tot_flow = ma.array(tot_flow,mask=GridGlobals.masks) 
+        tot_flow = np.nan_to_num(tot_flow,0.0)
         
-        
+        # calculating inflows from neigbouring cells
+        inflow = inflows_comp(tot_flow, list_fd)
             
         h_new = ma.filled(h_new,fill_value=0.0)
         # setting all residuals to zero
-        res = np.zeros((r*c))
-        # calculating residual for each cell
-        for i in range(r):
-            for j in range(c):
-                # acumulation 
-                res[j+i*c] += - (h_new[i][j] - h_old[i][j])/dt #m/s
+        res = np.zeros((r,c))
+        # calculating residual for each cell - adding contributions from all processes
+        
+        # acumulation
+        res = - (h_new - h_old)/dt #m/s
+        # rain
+        res += act_rain
+        # runoff - outflow
+        res += - tot_flow
+        # inflow from neigbouring cells
+        res += inflow
+        # infiltration
+        res += - infilt
+        # Surface retention
+        res += sur_ret/dt
+        
+        res = res.reshape(r*c)
+        # for i in range(r):
+        #     for j in range(c):
+        #         # acumulation 
+        #         res[j+i*c] += - (h_new[i][j] - h_old[i][j])/dt #m/s
     
-                # rain 
-                res[j+i*c] += act_rain[i][j] #m/s
-                # sheet runoff
-                res[j+i*c] += - tot_flow[i][j]
+        #         # rain 
+        #         res[j+i*c] += act_rain[i][j] #m/s
+        #         # sheet runoff
+        #         res[j+i*c] += - tot_flow[i][j]
                 
-                # sheet inflows from neigbouring cells (try is used to avoid out of range errors)
-                try:
-                    res[j+i*c] +=  list_fd[j+i*c][0]*tot_flow[i-1][j+1] #NE
-                except IndexError:
-                    pass   
-                try:
-                    res[j+i*c] +=  list_fd[j+i*c][1]*tot_flow[i-1][j] #N                   
-                except IndexError:
-                    pass 
-                try:
-                    res[j+i*c] +=  list_fd[j+i*c][2]*tot_flow[i-1][j-1]#NW
-                except IndexError:
-                    pass
-                try:
-                    res[j+i*c] +=  list_fd[j+i*c][3]*tot_flow[i][j-1] #W
-                except  IndexError:
-                    pass
-                try:
-                    res[j+i*c] +=  list_fd[j+i*c][4]*tot_flow[i+1][j-1] #SW
-                except  IndexError:
-                    pass
-                try:
-                    res[j+i*c] +=  list_fd[j+i*c][5]*tot_flow[i+1][j] #S  
-                except  IndexError:
-                    pass
-                try:
-                    res[j+i*c] +=  list_fd[j+i*c][6]*tot_flow[i+1][j+1] #SE
-                except  IndexError:
-                    pass
-                try:
-                    res[j+i*c] +=  list_fd[j+i*c][7]*tot_flow[i][j+1] #E
-                except  IndexError:
-                    pass
+        #         # sheet inflows from neigbouring cells (try is used to avoid out of range errors)
+        #         res[j+i*c] += inflow[i][j]
                     
-                # infiltration 
-                res[j+i*c] += - infilt[i][j] 
-                # Surface retention
-                res[j+i*c] +=  sur_ret[i][j]/dt   
+        #         # infiltration 
+        #         res[j+i*c] += - infilt[i][j] 
+        #         # Surface retention
+        #         res[j+i*c] +=  sur_ret[i][j]/dt   
+                
         return res
 
     # self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
