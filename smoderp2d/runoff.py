@@ -264,16 +264,13 @@ class Runoff(object):
 
             self.flow_control.save_vars()
             # self.flow_control.refresh_iter()
-            # Very paskvil job 
-            #TODO: AP - probably this is not the best way to do it    
-            # ----------------------------------------------
+            # Potential rainfall for the current time step
             sr = Globals.get_sr()
             itera = Globals.get_itera()
             potRain, self.flow_control.tz = rain_f.timestepRainfall(
             itera, self.flow_control.total_time+self.delta_t, self.delta_t, self.flow_control.tz, sr
             )
             
-            # ----------------------------------------------
             # Calculate 
            
             actRain = self.time_step.do_next_h(
