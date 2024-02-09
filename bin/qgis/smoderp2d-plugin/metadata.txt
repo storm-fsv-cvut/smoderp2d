@@ -10,7 +10,7 @@
 name=SMODERP2D
 qgisMinimumVersion=3.0
 description=This plugin computes hydrological erosion model.
-version=0.1
+version=2.0.0rc1
 author=CTU
 email=petr.kavka@fsv.cvut.cz
 
