@@ -177,7 +177,7 @@ class TimeStep:
         
         # Calculating the new water level
         try:
-            soulution = sp.optimize.root(self.model, h_0, 
+            solution = sp.optimize.root(self.model, h_0, 
                                         args=(dt,
                                                 h_old,
                                                 list_fd,
@@ -194,9 +194,9 @@ class TimeStep:
                                                 surface.arr.h_last_state1),
                                             method='krylov')
             
-            h_new = soulution.x
+            h_new = solution.x
             
-            if soulution.success == False:
+            if solution.success == False:
                 print("Error: The solver did not converge")
                 print("Objective function (worst residual) = ", max(self.model(h_new,dt,
                                                 h_old,
@@ -213,7 +213,7 @@ class TimeStep:
                                                 surface.arr.h_rillPre,
                                                 surface.arr.h_last_state1)))
                 print("h_new = ",h_new)
-        except:
+        except ZeroDivisionError:
             raise Error("Error: The nonlinear solver did not converge. Try to change the time step")
  
         # Checking solution for negative values
