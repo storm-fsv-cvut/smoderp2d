@@ -114,7 +114,7 @@ class TimeStep:
     # sum_interception, mat_effect_cont, ratio, iter_
 
     def do_next_h(self, surface, subsurface, rain_arr, cumulative, 
-                  hydrographs, flow_control,  potRain, delta_t,list_fd):
+                  hydrographs, flow_control,   delta_t,list_fd):
         # global variables for infilitration
         # class infilt_capa
         # global max_infilt_capa
@@ -126,7 +126,13 @@ class TimeStep:
         combinatIndex = Globals.get_combinatIndex()
         NoDataValue = GridGlobals.get_no_data()
         # Calculating the infiltration
+        sr = Globals.get_sr()
+        itera = Globals.get_itera()
+        
         # Until the max_infilt_capa
+        potRain, tz_temp = rain_f.timestepRainfall(
+            itera, flow_control.total_time+delta_t, delta_t, flow_control.tz, sr
+            )
         self.infilt_capa += potRain
         if ma.all(self.infilt_capa < self.max_infilt_capa):
             self.infilt_time += delta_t
@@ -138,36 +144,12 @@ class TimeStep:
             )
             return actRain
 
-        # After the max_infilt_capa is filled       
-        for iii in combinatIndex:
-            # TODO: variable not used. Should we delete it?
-            index = iii[0]
-            k = iii[1]
-            s = iii[2]
-            
-            iii[3] = infiltration.philip_implicit(
-                k,
-                s,
-                delta_t,
-                fc.total_time + delta_t -  self.infilt_time,
-                NoDataValue)
         
-        infiltration.set_combinatIndex(combinatIndex)
 
 
-       # Calculating the actual rain
-        actRain, fc.sum_interception, rain_arr.arr.veg = \
-            rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
         
-        surface.arr.cur_rain = actRain
-
         # Upacking the old water level
         h_old = np.ravel(surface.arr.h_total_pre.tolist(0))
-       
-        
-        # Changing the actRain to a list - inserting 0 for the NoDataValues	
-        act_rain = (actRain/delta_t).tolist(0)
-        
 
         # Preparing the matrixes of flow parameters
         aa = ma.array(Globals.get_mat_aa(),mask=GridGlobals.masks)
@@ -175,11 +157,40 @@ class TimeStep:
         # Setting the initial guess for the solver
         h_0 = h_old 
         
+        
         # setting the limit for maximal growth of the water level
-        dh_max = 2e-5 # [m]
+        dh_max = 1e-5 # [m]
         
         # Calculating the new water level
         for i in range(1, fc.max_iter ):
+            # Calcualting the potenial rain
+            potRain, tz_temp = rain_f.timestepRainfall(
+            itera, flow_control.total_time+delta_t, delta_t, flow_control.tz, sr
+            )
+            
+            # Calculating the actual rain
+            actRain, sum_interception_temp, vegaarr_temp = \
+                rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
+            
+            # Changing the actRain to a list - inserting 0 for the NoDataValues	
+            act_rain = (actRain/delta_t).tolist(0)
+            # After the max_infilt_capa is filled       
+            for iii in combinatIndex:
+                # TODO: variable not used. Should we delete it?
+                index = iii[0]
+                k = iii[1]
+                s = iii[2]
+                
+                iii[3] = infiltration.philip_implicit(
+                    k,
+                    s,
+                    delta_t,
+                    fc.total_time + delta_t -  self.infilt_time,
+                    NoDataValue)
+            
+            infiltration.set_combinatIndex(combinatIndex)
+             
+           
             # Changing matrix to a single float
             dt = delta_t.mean()
             try:
@@ -215,16 +226,24 @@ class TimeStep:
 
                 
         if i == fc.max_iter-1:
-            
+            print(abs(h_new - h_old))
             raise Error("Error: The nonlinear solver did not meet the requirements after repeated decreasing of the time step. Try to change the maximum time step.")        
             
-            
+          
         # Checking solution for negative values
         if ma.all(h_new < 0):
-            raise NegativeWaterLevel()    
+            raise NegativeWaterLevel()   
+        
+        # saving the actual rain at current time step
+        # Calculating the actual rain
+        actRain, fc.sum_interception, rain_arr.arr.veg = \
+            rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
+        
+        surface.arr.cur_rain = actRain 
         # Saving the new water level
         surface.arr.h_total_new = ma.array(h_new.reshape(r,c),mask=GridGlobals.masks) 
-        
+        # Saving the actual rain
+        surface.arr.cur_rain = actRain  
         if Globals.isRill:
             #saving the last value of the water level in rill during growing phase (state = 1)
             # enables to restart the growing phase (switch from 2 to 1)
@@ -306,4 +325,4 @@ class TimeStep:
             delta_t)
         
 
-        return actRain, delta_t, solution.nit
+        return actRain, delta_t
