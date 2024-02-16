@@ -201,6 +201,7 @@ class TimeStep:
                                                 method='krylov',options = {'maxiter': iter_limit}	)
                 
                 h_new = solution.x
+               
                 if solution.success == False:
                     delta_t = delta_t/2
                     continue
@@ -209,6 +210,9 @@ class TimeStep:
             
             if solution.nit < iter_limit:
                 break
+            else:
+                delta_t = delta_t/2
+                continue
                 
         if i == fc.max_iter-1:
             raise Error("Error: The nonlinear solver did not converge after repeated decrsing of the time step. Try to change the maximum time step.")        
