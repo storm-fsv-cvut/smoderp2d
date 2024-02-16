@@ -1,6 +1,8 @@
 # @package smoderp2d.time_step methods to perform
 #  time step, and to store intermediate variables
 
+from uu import Error
+from matplotlib.pylab import norm
 from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.processes.infiltration as infiltration
@@ -102,8 +104,7 @@ class TimeStep:
         # Surface retention
         res += sur_ret/dt
         
-        res = res.reshape(r*c)
-                  
+        res = res.ravel()         
         return res
 
     # self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
@@ -174,43 +175,47 @@ class TimeStep:
         # Setting the initial guess for the solver
         h_0 = h_old 
         
-         # Calculating the new water level
-        soulution = sp.optimize.root(self.model, h_0, 
-                                     args=(dt,
-                                            h_old,
-                                            list_fd,
-                                            r,c,
-                                            aa,b,
-                                            act_rain,
-                                            surface.arr.soil_type,
-                                            pixel_area,
-                                            surface.arr.sur_ret,
-                                            surface.arr.h_crit,
-                                            surface.arr.state,
-                                            surface.arr.rillWidth,
-                                            surface.arr.h_rillPre,
-                                            surface.arr.h_last_state1),
-                                        method='krylov')
-        
-        h_new = soulution.x
-        
-        if soulution.success == False:
-            print("Error: The solver did not converge")
-            print("Objective function (worst residual) = ", max(self.model(h_new,dt,
-                                            h_old,
-                                            list_fd,
-                                            r,c,
-                                            aa,b,
-                                            act_rain,
-                                            surface.arr.soil_type,
-                                            pixel_area,
-                                            surface.arr.sur_ret,
-                                            surface.arr.h_crit,
-                                            surface.arr.state,
-                                            surface.arr.rillWidth,
-                                            surface.arr.h_rillPre,
-                                            surface.arr.h_last_state1)))
-            print("h_new = ",h_new)
+        # Calculating the new water level
+        try:
+            soulution = sp.optimize.root(self.model, h_0, 
+                                        args=(dt,
+                                                h_old,
+                                                list_fd,
+                                                r,c,
+                                                aa,b,
+                                                act_rain,
+                                                surface.arr.soil_type,
+                                                pixel_area,
+                                                surface.arr.sur_ret,
+                                                surface.arr.h_crit,
+                                                surface.arr.state,
+                                                surface.arr.rillWidth,
+                                                surface.arr.h_rillPre,
+                                                surface.arr.h_last_state1),
+                                            method='krylov')
+            
+            h_new = soulution.x
+            
+            if soulution.success == False:
+                print("Error: The solver did not converge")
+                print("Objective function (worst residual) = ", max(self.model(h_new,dt,
+                                                h_old,
+                                                list_fd,
+                                                r,c,
+                                                aa,b,
+                                                act_rain,
+                                                surface.arr.soil_type,
+                                                pixel_area,
+                                                surface.arr.sur_ret,
+                                                surface.arr.h_crit,
+                                                surface.arr.state,
+                                                surface.arr.rillWidth,
+                                                surface.arr.h_rillPre,
+                                                surface.arr.h_last_state1)))
+                print("h_new = ",h_new)
+        except:
+            raise Error("Error: The nonlinear solver did not converge. Try to change the time step")
+ 
         # Checking solution for negative values
         if ma.all(h_new < 0):
             raise NegativeWaterLevel()    
