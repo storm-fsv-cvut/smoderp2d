@@ -182,11 +182,12 @@ class Runoff(object):
         # maximal and cumulative values of resulting variables
         self.cumulative = Cumulative()
 
-        # In EXPLICIT version - handle times step changes based on Courant condition 
+        
         # in implicit version - courant condition is not used, used for setting time step 
         self.courant = Courant()
-        self.delta_t0 = self.courant.initial_time_step()
-        self.delta_t = self.delta_t0
+        self.delta_tmax = self.courant.initial_time_step()
+        
+        self.delta_t = self.delta_tmax
 
         Logger.info('Corrected time step is {} [s]'.format(self.delta_t))
 
@@ -314,8 +315,11 @@ class Runoff(object):
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
             self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
-            if n_iter < 5 and ma.all(self.delta_t < self.delta_t0):
-                self.delta_t = self.delta_t*2
+            if n_iter <= 2:
+                if ma.all(self.delta_t*2 < self.delta_tmax):
+                    self.delta_t = self.delta_t*2
+                else:
+                    self.delta_t = self.delta_tmax    
 
     def save_output(self):
         """TODO."""

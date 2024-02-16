@@ -136,7 +136,6 @@ class TimeStep:
             potRain = ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
             )
-            
             return actRain
 
         # After the max_infilt_capa is filled       
@@ -176,8 +175,9 @@ class TimeStep:
         # Setting the initial guess for the solver
         h_0 = h_old 
         
-        # setting the limit for the number of iterations of the solver to decrease the time step
-        iter_limit = 5
+        # setting the limit for maximal growth of the water level
+        dh_max = 2e-5 # [m]
+        
         # Calculating the new water level
         for i in range(1, fc.max_iter ):
             # Changing matrix to a single float
@@ -198,7 +198,7 @@ class TimeStep:
                                                     surface.arr.rillWidth,
                                                     surface.arr.h_rillPre,
                                                     surface.arr.h_last_state1),
-                                                method='krylov',options = {'maxiter': iter_limit}	)
+                                                method='krylov')
                 
                 h_new = solution.x
                
@@ -208,14 +208,15 @@ class TimeStep:
             except ZeroDivisionError:
                 raise Error("Error: The nonlinear solver did not converge. Try to change the time step")
             
-            if solution.nit < iter_limit:
-                break
-            else:
+            if ma.any(abs(h_new - h_old) > dh_max):
                 delta_t = delta_t/2
-                continue
+            else:
+                break
+
                 
         if i == fc.max_iter-1:
-            raise Error("Error: The nonlinear solver did not converge after repeated decrsing of the time step. Try to change the maximum time step.")        
+            
+            raise Error("Error: The nonlinear solver did not meet the requirements after repeated decreasing of the time step. Try to change the maximum time step.")        
             
             
         # Checking solution for negative values
