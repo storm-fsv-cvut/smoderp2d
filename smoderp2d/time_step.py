@@ -17,6 +17,7 @@ from smoderp2d.exceptions import NegativeWaterLevel
 import numpy as np
 import numpy.ma as ma
 import scipy as sp
+import scipy.optimize as spopt
 
 
 from smoderp2d.core.surface import sheet_runoff
