@@ -1,6 +1,7 @@
 # @package smoderp2d.time_step methods to perform
 #  time step, and to store intermediate variables
 
+from itertools import cycle
 from uu import Error
 from matplotlib.pylab import norm
 from smoderp2d.core.general import Globals, GridGlobals
@@ -175,8 +176,10 @@ class TimeStep:
         # Setting the initial guess for the solver
         h_0 = h_old 
         
+        # setting the limit for the number of iterations of the solver to decrease the time step
+        iter_limit = 5
         # Calculating the new water level
-        for i in range(1,fc.max_iter):
+        for i in range(1, fc.max_iter ):
             # Changing matrix to a single float
             dt = delta_t.mean()
             try:
@@ -195,35 +198,20 @@ class TimeStep:
                                                     surface.arr.rillWidth,
                                                     surface.arr.h_rillPre,
                                                     surface.arr.h_last_state1),
-                                                method='krylov')
+                                                method='krylov',options = {'maxiter': iter_limit}	)
                 
                 h_new = solution.x
-                print (solution.nit)
                 if solution.success == False:
-                    print("Error: The solver did not converge")
-                    print("Objective function (worst residual) = ", max(self.model(h_new,dt,
-                                                    h_old,
-                                                    list_fd,
-                                                    r,c,
-                                                    aa,b,
-                                                    act_rain,
-                                                    surface.arr.soil_type,
-                                                    pixel_area,
-                                                    surface.arr.sur_ret,
-                                                    surface.arr.h_crit,
-                                                    surface.arr.state,
-                                                    surface.arr.rillWidth,
-                                                    surface.arr.h_rillPre,
-                                                    surface.arr.h_last_state1)))
-                    print("h_new = ",h_new)
+                    delta_t = delta_t/2
+                    continue
             except ZeroDivisionError:
                 raise Error("Error: The nonlinear solver did not converge. Try to change the time step")
             
-            if solution.nit > 5:
-                delta_t = delta_t/2
-            else:    
+            if solution.nit < iter_limit:
                 break
-            
+                
+        if i == fc.max_iter-1:
+            raise Error("Error: The nonlinear solver did not converge after repeated decrsing of the time step. Try to change the maximum time step.")        
             
             
         # Checking solution for negative values
