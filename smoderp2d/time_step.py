@@ -167,8 +167,7 @@ class TimeStep:
         
         # Changing the actRain to a list - inserting 0 for the NoDataValues	
         act_rain = (actRain/delta_t).tolist(0)
-        # Changing matrix to a single float
-        dt = delta_t.mean()
+        
 
         # Preparing the matrixes of flow parameters
         aa = ma.array(Globals.get_mat_aa(),mask=GridGlobals.masks)
@@ -177,46 +176,56 @@ class TimeStep:
         h_0 = h_old 
         
         # Calculating the new water level
-        try:
-            solution = sp.optimize.root(self.model, h_0, 
-                                        args=(dt,
-                                                h_old,
-                                                list_fd,
-                                                r,c,
-                                                aa,b,
-                                                act_rain,
-                                                surface.arr.soil_type,
-                                                pixel_area,
-                                                surface.arr.sur_ret,
-                                                surface.arr.h_crit,
-                                                surface.arr.state,
-                                                surface.arr.rillWidth,
-                                                surface.arr.h_rillPre,
-                                                surface.arr.h_last_state1),
-                                            method='krylov')
+        for i in range(1,fc.max_iter):
+            # Changing matrix to a single float
+            dt = delta_t.mean()
+            try:
+                solution = sp.optimize.root(self.model, h_0, 
+                                            args=(dt,
+                                                    h_old,
+                                                    list_fd,
+                                                    r,c,
+                                                    aa,b,
+                                                    act_rain,
+                                                    surface.arr.soil_type,
+                                                    pixel_area,
+                                                    surface.arr.sur_ret,
+                                                    surface.arr.h_crit,
+                                                    surface.arr.state,
+                                                    surface.arr.rillWidth,
+                                                    surface.arr.h_rillPre,
+                                                    surface.arr.h_last_state1),
+                                                method='krylov')
+                
+                h_new = solution.x
+                print (solution.nit)
+                if solution.success == False:
+                    print("Error: The solver did not converge")
+                    print("Objective function (worst residual) = ", max(self.model(h_new,dt,
+                                                    h_old,
+                                                    list_fd,
+                                                    r,c,
+                                                    aa,b,
+                                                    act_rain,
+                                                    surface.arr.soil_type,
+                                                    pixel_area,
+                                                    surface.arr.sur_ret,
+                                                    surface.arr.h_crit,
+                                                    surface.arr.state,
+                                                    surface.arr.rillWidth,
+                                                    surface.arr.h_rillPre,
+                                                    surface.arr.h_last_state1)))
+                    print("h_new = ",h_new)
+            except ZeroDivisionError:
+                raise Error("Error: The nonlinear solver did not converge. Try to change the time step")
             
-            h_new = solution.x
+            if solution.nit > 5:
+                delta_t = delta_t/2
+            else:    
+                break
             
-            if solution.success == False:
-                print("Error: The solver did not converge")
-                print("Objective function (worst residual) = ", max(self.model(h_new,dt,
-                                                h_old,
-                                                list_fd,
-                                                r,c,
-                                                aa,b,
-                                                act_rain,
-                                                surface.arr.soil_type,
-                                                pixel_area,
-                                                surface.arr.sur_ret,
-                                                surface.arr.h_crit,
-                                                surface.arr.state,
-                                                surface.arr.rillWidth,
-                                                surface.arr.h_rillPre,
-                                                surface.arr.h_last_state1)))
-                print("h_new = ",h_new)
-        except ZeroDivisionError:
-            raise Error("Error: The nonlinear solver did not converge. Try to change the time step")
- 
+            
+            
         # Checking solution for negative values
         if ma.all(h_new < 0):
             raise NegativeWaterLevel()    
@@ -304,4 +313,4 @@ class TimeStep:
             delta_t)
         
 
-        return actRain
+        return actRain, delta_t, solution.nit

@@ -185,7 +185,8 @@ class Runoff(object):
         # In EXPLICIT version - handle times step changes based on Courant condition 
         # in implicit version - courant condition is not used, used for setting time step 
         self.courant = Courant()
-        self.delta_t = self.courant.initial_time_step()
+        self.delta_t0 = self.courant.initial_time_step()
+        self.delta_t = self.delta_t0
 
         Logger.info('Corrected time step is {} [s]'.format(self.delta_t))
 
@@ -273,7 +274,7 @@ class Runoff(object):
             
             # Calculate 
            
-            actRain = self.time_step.do_next_h(
+            actRain, self.delta_t, n_iter = self.time_step.do_next_h(
                 self.surface,
                 self.subsurface,
                 self.rain_arr,
@@ -313,6 +314,8 @@ class Runoff(object):
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
             self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
+            if n_iter < 5 and ma.all(self.delta_t < self.delta_t0):
+                self.delta_t = self.delta_t*2
 
     def save_output(self):
         """TODO."""
