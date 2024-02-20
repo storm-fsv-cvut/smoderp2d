@@ -215,7 +215,7 @@ class TimeStep:
         #
         # surface retention
         #
-        surBIL = surface_retention(surBIL, surface.arr)
+        surface_retention[2, 32](surBIL, surface.arr.sur_ret)
 
         # add exfiltration
         surBIL += subsurface.get_exfiltration()
