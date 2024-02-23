@@ -78,6 +78,7 @@ class TimeStep:
         #calculating rill runoff from all cells
         
         if  Globals.isRill and ma.any(state != 0):
+            # # calcualting rill runoff
             rill_flow = ma.filled(rill_runoff(dt, h_rill,efect_vrst, rillWidth 
                                             ),fill_value=0.0)/pixel_area # [m/s]
 
@@ -159,7 +160,7 @@ class TimeStep:
         
         
         # setting the limit for maximal growth of the water level
-        dh_max = 1e-5 # [m]
+        dh_max = 1e-6 # [m]
         
         # Calculating the new water level
         for i in range(1, fc.max_iter ):
@@ -229,12 +230,16 @@ class TimeStep:
             print(abs(h_new - h_old))
             raise Error("Error: The nonlinear solver did not meet the requirements after repeated decreasing of the time step. Try to change the maximum time step.")        
             
-          
         # Checking solution for negative values
         if ma.all(h_new < 0):
             raise NegativeWaterLevel()   
         
         # saving the actual rain at current time step
+        # save the tz for actual time step
+        
+        potRain, flow_control.tz = rain_f.timestepRainfall(
+        itera, flow_control.total_time+delta_t, delta_t, flow_control.tz, sr
+        )
         # Calculating the actual rain
         actRain, fc.sum_interception, rain_arr.arr.veg = \
             rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
@@ -244,7 +249,11 @@ class TimeStep:
         surface.arr.h_total_new = ma.array(h_new.reshape(r,c),mask=GridGlobals.masks) 
         # Saving the actual rain
         surface.arr.cur_rain = actRain  
+        surface.arr.h_total_new = ma.array(h_new.reshape(r,c),mask=GridGlobals.masks)  
+        # Saving the actual rain
+        surface.arr.cur_rain = actRain  
         if Globals.isRill:
+            last_state1_buf = surface.arr.h_last_state1
             #saving the last value of the water level in rill during growing phase (state = 1)
             # enables to restart the growing phase (switch from 2 to 1)
             state_1_cond = ma.logical_and(
@@ -261,7 +270,7 @@ class TimeStep:
                                                 surface.arr.h_crit,
                                                 surface.arr.h_total_pre,
                                                 surface.arr.state,
-                                                surface.arr.h_last_state1)
+                                                last_state1_buf)
         
             # Saving results to surface structure
             # Saving the new rill water level
@@ -271,7 +280,7 @@ class TimeStep:
             
             surface.arr.h_rill = ma.array(h_rill,mask=GridGlobals.masks)
             
-            surface.arr.h_sheet = h_sheet 
+            surface.arr.h_sheet = ma.array(h_sheet,mask=GridGlobals.masks) 
             # Updating the information about rill depth
             surface.arr.h_rillPre = compute_h_rill_pre(surface.arr.h_rillPre,h_rill,
                                                        surface.arr.state)
@@ -283,9 +292,16 @@ class TimeStep:
             vol_to_rill = h_rill * GridGlobals.get_pixel_area()
             RILL_RATIO = 0.7
             efect_vrst = Globals.get_mat_effect_cont()
-            
 
-           
+            surface.arr.vol_runoff_rill = ma.filled(rill_runoff(dt, 
+                                                    surface.arr.h_rill,  efect_vrst, 
+                                                    surface.arr.rillWidth),
+                                                  0)*dt # [m]
+            
+            surface.arr.vol_to_rill = ma.where(surface.arr.state > 0,vol_to_rill,
+                               surface.arr.vol_to_rill)
+            surface.arr.vel_rill = ma.filled(surface.arr.vol_runoff_rill/surface.arr.rillWidth/surface.arr.h_rill/dt,
+                                             0.0)
             # Calculating the rill width
             rill_h, rill_b = rill.update_hb(
             vol_to_rill, RILL_RATIO, efect_vrst, surface.arr.rillWidth)
@@ -293,23 +309,17 @@ class TimeStep:
                                             surface.arr.rillWidth),
                                             mask=GridGlobals.masks) #[m]
             
-            surface.arr.vol_runoff_rill = rill_runoff(dt, 
-                                                    h_rill,  efect_vrst, 
-                                                    surface.arr.rillWidth) *dt # [m]
-
-            surface.arr.vol_to_rill = ma.where(surface.arr.state > 0,vol_to_rill,
-                               surface.arr.vol_to_rill)
-            surface.arr.vel_rill = ma.filled(surface.arr.vol_runoff_rill/surface.arr.rillWidth/surface.arr.h_rill/dt,
-                                             0.0)
         else: 
             surface.arr.h_sheet = surface.arr.h_total_new
-            
+        
         #calculating sheet runoff
         surface.arr.vol_runoff = ma.filled(sheet_runoff(aa, b, surface.arr.h_sheet),fill_value=0.0)*dt #[m]
+    
         # Saving the inflows
         tot_flow = (surface.arr.vol_runoff + surface.arr.vol_runoff_rill)
         
         surface.arr.inflow_tm =ma.array(inflows_comp(tot_flow, list_fd),mask=GridGlobals.masks)
+        
         # Calculating the infiltration
         surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type,
                                                                     surface.arr.h_total_new) #[m]    

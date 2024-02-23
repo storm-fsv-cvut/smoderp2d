@@ -8,12 +8,9 @@ courantMax = 1.0
 
 def update_hb(loc_V_to_rill, rillRatio, l, b):
     V = loc_V_to_rill
-    # if ma.any(V < 0):
-    #     print(V)
-    #     raise SmoderpError("Negative water volume in rill calculations")
     newb = ma.sqrt(V / (rillRatio * l))
     b = ma.where(
-        V > 0,
+        V >= 0,
         ma.maximum(b, newb),
         b
     )

@@ -277,12 +277,7 @@ class Runoff(object):
                 self.delta_t,
                 self.list_fd    
             )
-            # save the tz for actual time step
-            sr = Globals.get_sr()
-            itera = Globals.get_itera()
-            potRain, self.flow_control.tz = rain_f.timestepRainfall(
-            itera, self.flow_control.total_time+self.delta_t, self.delta_t, self.flow_control.tz, sr
-            )
+            
             
             # print raster results in given time steps
             self.times_prt.prt(
@@ -311,14 +306,16 @@ class Runoff(object):
 
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
-            self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
+            
             h_new = self.surface.arr.h_total_new
             h_old = self.surface.arr.h_total_pre
             if ma.all(abs(h_new - h_old) < 1e-5):
                 if ma.all(self.delta_t*2 < self.delta_tmax):
                     self.delta_t = self.delta_t*2
                 else:
-                    self.delta_t = self.delta_tmax    
+                    self.delta_t = self.delta_tmax
+            self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
+                
 
     def save_output(self):
         """TODO."""

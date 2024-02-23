@@ -324,18 +324,7 @@ def sheet_runoff(a, b, h_sheet):
     return vol_runoff
 
 def rill_runoff(dt,   h_rill, effect_vrst, rillWidth ):
-    """TODO.
 
-    :param dt: TODO
-    :param effect_vrst: TODO
-    :param ratio: TODO
-    :param h_rill: TODO
-    :param rillWidth: TODO
-    :param v_rill_rest: TODO
-    :param vol_runoff_rill: TODO
-
-    :return: TODO
-    """
     nrill = Globals.get_mat_nrill()
     slope = Globals.get_mat_slope()
 
