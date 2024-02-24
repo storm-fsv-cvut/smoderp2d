@@ -1,8 +1,6 @@
-import os
 import numpy as np
 import sqlite3
 import tempfile
-from subprocess import PIPE
 
 from smoderp2d.core.general import GridGlobals, Globals
 
@@ -18,7 +16,6 @@ from grass.pygrass.raster import RasterRow, raster2numpy
 from grass.pygrass.gis import Mapset
 from grass.pygrass.gis.region import Region
 from grass.exceptions import CalledModuleError, OpenError
-from grass.script.core import parse_key_val
 
 
 class PrepareData(PrepareDataGISBase):
