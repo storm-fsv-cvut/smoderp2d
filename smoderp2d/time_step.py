@@ -30,6 +30,7 @@ from smoderp2d.core.surface import compute_h_rill_pre
 # Class manages the one time step operation
 
 class TimeStep:
+    
     def __init__(self):
         """Set the class variables to default values."""
         self.infilt_capa = 0
@@ -157,11 +158,9 @@ class TimeStep:
         b = ma.array(Globals.get_mat_b(),mask=GridGlobals.masks)
         # Setting the initial guess for the solver
         h_0 = h_old 
-        
-        
-        # setting the limit for maximal growth of the water level
-        dh_max = 1e-5 # [m]
-        
+
+        dh_max = 1e-4  # [m]
+
         # Calculating the new water level
         for i in range(1, fc.max_iter ):
             # Calcualting the potenial rain
@@ -210,16 +209,16 @@ class TimeStep:
                                                     surface.arr.rillWidth,
                                                     surface.arr.h_rillPre,
                                                     surface.arr.h_last_state1),
-                                                method='krylov', options={'fatol':1e-7})
+                                                method='krylov', options={'fatol':1e-8})
                 
                 h_new = solution.x
-               
+                
                 if solution.success == False:
                     delta_t = delta_t/2
                     continue
             except ZeroDivisionError:
                 raise Error("Error: The nonlinear solver did not converge. Try to change the time step")
-            
+                
             if ma.any(abs(h_new - h_old) > dh_max):
                 delta_t = delta_t/2
             else:
@@ -229,7 +228,7 @@ class TimeStep:
         if i == fc.max_iter-1:
             print(abs(h_new - h_old))
             raise Error("Error: The nonlinear solver did not meet the requirements after repeated decreasing of the time step. Try to change the maximum time step.")        
-            
+        
         # Checking solution for negative values
         if ma.all(h_new < 0):
             raise NegativeWaterLevel()   
