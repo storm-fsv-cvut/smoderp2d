@@ -167,7 +167,7 @@ class Smoderp2D:
         icon_path = ':/plugins/smoderp_2D/icon.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'Compute hydrological erosion model.'),
+            text=self.tr('SMODERRP2D hydrological erosion model.'),
             callback=self.run,
             parent=self.iface.mainWindow())
 
@@ -190,7 +190,7 @@ class Smoderp2D:
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.tr(u'&SMODERP2D'),
+                self.tr('&SMODERP2D'),
                 action)
             self.iface.removeToolBarIcon(action)
         # remove the toolbar
