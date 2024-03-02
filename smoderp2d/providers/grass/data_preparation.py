@@ -564,7 +564,9 @@ class PrepareData(PrepareDataGISBase):
                 _, end = seg.nodes()
                 seg.attrs[next_down_fieldname] = Globals.streamsNextDownIdNoSegment
                 for start_seg in end.lines():
-                    if start_seg.id != seg.id:
+                    if start_seg.id != seg.id and start_seg[0] == seg[-1]:
+                        # start_seg[0] == seg[-1] -> check only outflowing
+                        # streams, not inflowing
                         if seg.attrs[next_down_fieldname] != Globals.streamsNextDownIdNoSegment:
                             raise DataPreparationError(
                                 'Incorrect stream network topology downstream '
