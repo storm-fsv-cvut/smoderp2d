@@ -167,7 +167,7 @@ class Smoderp2D:
         icon_path = ':/plugins/smoderp_2D/icon.png'
         self.add_action(
             icon_path,
-            text=self.tr('SMODERRP2D hydrological erosion model.'),
+            text=self.tr('SMODERRP2D hydrological erosion model'),
             callback=self.run,
             parent=self.iface.mainWindow())
 
