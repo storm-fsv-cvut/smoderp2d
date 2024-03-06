@@ -215,8 +215,8 @@ class TimeStep:
                                                 method='krylov', options={'fatol':1e-8,'maxiter':max_iter})
                 
                 h_new = solution.x
-                print(solution.nit)
-                if solution.success == False or solution.nit == max_iter-1:
+                
+                if solution.success == False or solution.nit > max_iter-1:
                     delta_t = delta_t/2
                     print('now')
                     continue
