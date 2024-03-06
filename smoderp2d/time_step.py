@@ -160,6 +160,9 @@ class TimeStep:
         h_0 = h_old 
 
         dh_max = 1e-4  # [m]
+        
+        # Setting the maximum number of iterations for the solver
+        max_iter = 20
 
         # Calculating the new water level
         for i in range(1, fc.max_iter ):
@@ -209,12 +212,13 @@ class TimeStep:
                                                     surface.arr.rillWidth,
                                                     surface.arr.h_rillPre,
                                                     surface.arr.h_last_state1),
-                                                method='krylov', options={'fatol':1e-8})
+                                                method='krylov', options={'fatol':1e-8,'maxiter':max_iter})
                 
                 h_new = solution.x
-                
-                if solution.success == False:
+                print(solution.nit)
+                if solution.success == False or solution.nit == max_iter-1:
                     delta_t = delta_t/2
+                    print('now')
                     continue
             except ZeroDivisionError:
                 raise Error("Error: The nonlinear solver did not converge. Try to change the time step")
