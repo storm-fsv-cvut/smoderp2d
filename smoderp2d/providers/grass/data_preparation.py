@@ -440,7 +440,12 @@ class PrepareData(PrepareDataGISBase):
 
         stream_aoi = self.storage.output_filepath('stream_aoi')
         self._run_grass_module(
-            'v.clip', input=stream, clip=aoi_buffer, output=stream_aoi
+            'v.clip', input=stream, clip=aoi_buffer, output='stream_aoi_unclean'
+        )
+        # clean topology
+        # (necessary for stream connection snapped in lines instead of points)
+        self._run_grass_module(
+            'v.clean', input='stream_aoi_unclean', tool='break', output=stream_aoi
         )
 
         drop_fields = self._stream_check_fields(stream_aoi)
