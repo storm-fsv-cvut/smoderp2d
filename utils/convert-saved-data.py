@@ -39,7 +39,7 @@ def main(filename):
         'toky_loc': indata[46]
     }
 
-    BaseProvider._save_data(data, filename)
+    BaseProvider.save_data(data, filename)
 
 
 def load_data(filename):

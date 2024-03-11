@@ -1,8 +1,6 @@
-import os
 import numpy as np
 import sqlite3
 import tempfile
-from subprocess import PIPE
 
 from smoderp2d.core.general import GridGlobals, Globals
 
@@ -18,7 +16,6 @@ from grass.pygrass.raster import RasterRow, raster2numpy
 from grass.pygrass.gis import Mapset
 from grass.pygrass.gis.region import Region
 from grass.exceptions import CalledModuleError, OpenError
-from grass.script.core import parse_key_val
 
 
 class PrepareData(PrepareDataGISBase):
@@ -117,8 +114,12 @@ class PrepareData(PrepareDataGISBase):
         self.__remove_temp_data({'name': aoi+'1', 'type': 'vector'})
 
         aoi_polygon = self.storage.output_filepath('aoi_polygon')
-        self._run_grass_module('v.db.addcolumn', map=aoi, columns="dissolve int")
-        self._run_grass_module('v.db.update', map=aoi, column='dissolve', value=1)
+        self._run_grass_module(
+            'v.db.addcolumn', map=aoi, columns="dissolve int"
+        )
+        self._run_grass_module(
+            'v.db.update', map=aoi, column='dissolve', value=1
+        )
         self._run_grass_module(
             'v.dissolve', input=aoi, column='dissolve', output=aoi_polygon
         )
@@ -137,7 +138,9 @@ class PrepareData(PrepareDataGISBase):
 
         # perform aoi_mask postprocessing - remove no-data cells on the edges
         self._run_grass_module('g.region', zoom=aoi_mask+'1')
-        self._run_grass_module('r.mapcalc', expression=f'{aoi_mask} = {aoi_mask}1')
+        self._run_grass_module(
+            'r.mapcalc', expression=f'{aoi_mask} = {aoi_mask}1'
+        )
         self._run_grass_module(
             'r.to.vect', input=aoi_mask, output=aoi_polygon,
             flags="v", type="area"
@@ -443,7 +446,13 @@ class PrepareData(PrepareDataGISBase):
 
         stream_aoi = self.storage.output_filepath('stream_aoi')
         self._run_grass_module(
-            'v.clip', input=stream, clip=aoi_buffer, output=stream_aoi
+            'v.clip', input=stream, clip=aoi_buffer, output='stream_aoi_unclean'
+        )
+        # clean topology
+        # (necessary for stream connection snapped in lines instead of points)
+        self._run_grass_module(
+            'v.clean', input='stream_aoi_unclean', tool='break',
+            output=stream_aoi
         )
 
         drop_fields = self._stream_check_fields(stream_aoi)
@@ -567,7 +576,9 @@ class PrepareData(PrepareDataGISBase):
                 _, end = seg.nodes()
                 seg.attrs[next_down_fieldname] = Globals.streamsNextDownIdNoSegment
                 for start_seg in end.lines():
-                    if start_seg.id != seg.id:
+                    if start_seg.id != seg.id and start_seg[0] == seg[-1]:
+                        # start_seg[0] == seg[-1] -> check only outflowing
+                        # streams, not inflowing
                         if seg.attrs[next_down_fieldname] != Globals.streamsNextDownIdNoSegment:
                             raise DataPreparationError(
                                 'Incorrect stream network topology downstream '
@@ -724,4 +735,6 @@ class PrepareData(PrepareDataGISBase):
                 output_path
             )
         else:
-            raise DataPreparationError(f"Unsupported data type for export: {mtype}")
+            raise DataPreparationError(
+                f"Unsupported data type for export: {mtype}"
+            )
