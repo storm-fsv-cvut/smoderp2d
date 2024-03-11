@@ -114,8 +114,12 @@ class PrepareData(PrepareDataGISBase):
         self.__remove_temp_data({'name': aoi+'1', 'type': 'vector'})
 
         aoi_polygon = self.storage.output_filepath('aoi_polygon')
-        self._run_grass_module('v.db.addcolumn', map=aoi, columns="dissolve int")
-        self._run_grass_module('v.db.update', map=aoi, column='dissolve', value=1)
+        self._run_grass_module(
+            'v.db.addcolumn', map=aoi, columns="dissolve int"
+        )
+        self._run_grass_module(
+            'v.db.update', map=aoi, column='dissolve', value=1
+        )
         self._run_grass_module(
             'v.dissolve', input=aoi, column='dissolve', output=aoi_polygon
         )
@@ -134,7 +138,9 @@ class PrepareData(PrepareDataGISBase):
 
         # perform aoi_mask postprocessing - remove no-data cells on the edges
         self._run_grass_module('g.region', zoom=aoi_mask+'1')
-        self._run_grass_module('r.mapcalc', expression=f'{aoi_mask} = {aoi_mask}1')
+        self._run_grass_module(
+            'r.mapcalc', expression=f'{aoi_mask} = {aoi_mask}1'
+        )
         self._run_grass_module(
             'r.to.vect', input=aoi_mask, output=aoi_polygon,
             flags="v", type="area"
@@ -445,7 +451,8 @@ class PrepareData(PrepareDataGISBase):
         # clean topology
         # (necessary for stream connection snapped in lines instead of points)
         self._run_grass_module(
-            'v.clean', input='stream_aoi_unclean', tool='break', output=stream_aoi
+            'v.clean', input='stream_aoi_unclean', tool='break',
+            output=stream_aoi
         )
 
         drop_fields = self._stream_check_fields(stream_aoi)
@@ -728,4 +735,6 @@ class PrepareData(PrepareDataGISBase):
                 output_path
             )
         else:
-            raise DataPreparationError(f"Unsupported data type for export: {mtype}")
+            raise DataPreparationError(
+                f"Unsupported data type for export: {mtype}"
+            )
