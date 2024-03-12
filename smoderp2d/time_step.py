@@ -218,7 +218,6 @@ class TimeStep:
                 
                 if solution.success == False or solution.nit > max_iter-1:
                     delta_t = delta_t/2
-                    print('now')
                     continue
             except ZeroDivisionError:
                 raise Error("Error: The nonlinear solver did not converge. Try to change the time step")
