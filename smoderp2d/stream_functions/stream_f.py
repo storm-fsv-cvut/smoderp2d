@@ -32,10 +32,7 @@ def compute_h(A, m, b, err=0.0001, max_iter=20):
         return b + 2.0 * m * h
 
     # first height estimation
-    try:
-        h_pre = A / b
-    except ZeroDivisionError:
-        h_pre = 0.0
+    h_pre = ma.where(b != 0, A / b, 0)
     h = h_pre
     iter_ = 1
     while ma.any(feval(h_pre) > err):
@@ -175,10 +172,7 @@ def triangle(reach, dt):
     S = reach.m * H * H
     # dS = B*reach.h + reach.m*reach.h*reach.h
     # dV = dS*reach.length
-    try:
-        R = S / O
-    except ZeroDivisionError:
-        R = 0.0
+    R = ma.where(O != 0, S / O, 0)
     reach.vs = ma.power(
         R,
         0.6666) * ma.power(
