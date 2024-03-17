@@ -192,29 +192,31 @@ def triangle(reach, dt):
 #
 #
 def parabola(reach, dt):
-    # ToDo - podivat se proc parabola nefunguje, ale to nechme az rozchodime
-    #  vubec toky a Qgis
-    # raise NotImplementedError(
-    #     'Parabola shaped stream reach has not been implemented yet'
-    # )
-    a = reach.b   #vzd ohniska od vrcholu
+    # a = reach.b   #vzd ohniska od vrcholu
     u = 3.0 #(h=B/u  B=f(a))
-    Vp = reach.q365 * dt
-    hp = ma.power(Vp * 3 / (2 * reach.length * u), 0.5)
+    if reach.q365 > 0:
+        Vp = reach.q365 * dt  # objem           : baseflow
+        hp = ma.power(Vp * 3 / (2 * reach.length * u), 0.5)
+        # vyska hladiny   : baseflow
+        reach.h = ma.power(
+            (reach.V_in_from_field + reach.vol_rest) / (2 * reach.length * ma.power(hp, 0.5)) + ma.power(hp, 1.5),
+            0.6666
+        )  # h = (dV/2.L.hp^0,5+hp^1,5)^0,666
+    else:
+        # Vp == 0.0
+        hp = 0.0
+
     B = u*hp #sirka hladiny #b = 3*a/(2*h)
-    reach.h = ma.power(
-        (reach.V_in_from_field + reach.vol_rest) / (2 * reach.length * ma.power(hp, 0.5)) + ma.power(hp, 1.5),
-        0.6666
-    )  # h = (dV/2.L.hp^0,5+hp^1,5)^0,666
     H = hp + reach.h
     Bb = u * H
-    O = Bb + 8 * H * H / (3 * Bb)
+    O = ma.where(Bb != 0, Bb + 8 * H * H / (3 * Bb), 0)
     S = 2 / 3 * Bb * H
     dS = S - 2 / 3 * B * hp
     dV = dS * reach.length
-    R = S / O
+    R = ma.where(O != 0, S / O, 0)
     reach.Q_out = S * ma.power(R, 0.66666) * ma.power(reach.inclination, 0.5) / (reach.roughness) # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
-    reach.V_out = reach.Q_out*dt
+    reach.V_out = reach.Q_out * dt
+
     reach.Q_out = ma.where(reach.V_out > dV, dV / dt, reach.Q_out)
     reach.V_out = ma.where(reach.V_out > dV, dV, reach.V_out)
     reach.vs = ma.power(R, 0.6666) * ma.power(reach.inclination, 0.5) / (reach.roughness) #v
