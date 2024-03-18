@@ -105,6 +105,9 @@ def trapezoid(reach, dt):
         # Vp == 0.0
         hp = 0.0
 
+    # explanation: hp = d
+    #              B = wetted perimeter, p
+    #              reach.m = sqrt(1+Z^2)
     B = reach.b + 2.0 * hp * reach.m  # b pro pocatecni stav (q365)
     # Bb = B + hp * reach.m
     h = compute_h(
@@ -149,6 +152,9 @@ def triangle(reach, dt):
         # Vp == 0.0
         hp = 0.0
 
+    # explanation: hp = d
+    #              B = wetted perimeter, p
+    #              reach.m = sqrt(1+Z^2)
     B = 2.0 * hp * reach.m
     # sirka zakladny  : baseflow \/
     # Bb = B + reach.h*reach.m
