@@ -116,7 +116,7 @@ class TimeStep:
     # sum_interception, mat_effect_cont, ratio, iter_
 
     def do_next_h(self, surface, subsurface, rain_arr, cumulative, 
-                  hydrographs, flow_control,   delta_t,list_fd):
+                  hydrographs, flow_control,   delta_t,  delta_tmax,list_fd):
         # global variables for infilitration
         # class infilt_capa
         # global max_infilt_capa
@@ -159,7 +159,7 @@ class TimeStep:
         # Setting the initial guess for the solver
         h_0 = h_old 
 
-        dh_max = 1e-4  # [m]
+        dh_max = 1e-5  # [m]
         
         # Setting the maximum number of iterations for the solver
         max_iter = 20
@@ -216,19 +216,27 @@ class TimeStep:
                 
                 h_new = solution.x
                 
+                #print ('h_hew {} nit {}'.format(h_new.mean(), solution.nit))
                 if solution.success == False or solution.nit > max_iter-1:
                     delta_t = delta_t/2
                     print('now')
                     continue
             except ZeroDivisionError:
                 raise Error("Error: The nonlinear solver did not converge. Try to change the time step")
-                
-            if ma.any(abs(h_new - h_old) > dh_max):
+            if solution.nit > 4 :
+            #if ma.any(abs(h_new - h_old) > dh_max):
                 delta_t = delta_t/2
             else:
+                # print ('break dt {}'.format(dt))
+                if solution.nit < 3 : 
+                    if ma.all(delta_t*2 < delta_tmax):
+                        delta_t = delta_t*2
+                    else:
+                        delta_t = delta_tmax
                 break
 
                 
+        #input('press...')
         if i == fc.max_iter-1:
             print(abs(h_new - h_old))
             raise Error("Error: The nonlinear solver did not meet the requirements after repeated decreasing of the time step. Try to change the maximum time step.")        

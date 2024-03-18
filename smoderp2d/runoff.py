@@ -275,6 +275,7 @@ class Runoff(object):
                 self.hydrographs,
                 self.flow_control,
                 self.delta_t,
+                self.delta_tmax,
                 self.list_fd    
             )
             
@@ -309,11 +310,11 @@ class Runoff(object):
             
             h_new = self.surface.arr.h_total_new
             h_old = self.surface.arr.h_total_pre
-            if ma.all(abs(h_new - h_old) < 1e-5):
-                if ma.all(self.delta_t*2 < self.delta_tmax):
-                    self.delta_t = self.delta_t*2
-                else:
-                    self.delta_t = self.delta_tmax
+            # if ma.all(abs(h_new - h_old) < 1e-5):
+            #     if ma.all(self.delta_t*2 < self.delta_tmax):
+            #         self.delta_t = self.delta_t*2
+            #     else:
+            #         self.delta_t = self.delta_tmax
             self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
                 
 
