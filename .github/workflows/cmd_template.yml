@@ -3,9 +3,6 @@ name: CMD provider consistency test reusable workflow
 on:
   workflow_call:
     inputs:
-      python-version:
-        required: true
-        type: string
       pytest-suite:
         required: true
         type: string
@@ -15,6 +12,11 @@ jobs:
     strategy:
       fail-fast: false
 
+      matrix:
+        python-version:
+          - "3.9"
+          - "3.11"
+
     runs-on: ubuntu-22.04
 
     steps:
@@ -23,11 +25,16 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ inputs.python-version }}
+          python-version: ${{ matrix.python-version }}
 
       - name: Install Python dependencies
         run: |
-          pip install -r .github/workflows/requirements${{ inputs.python-version }}.txt
+          pip install -r .github/workflows/requirements.txt
+          pip install -r .github/workflows/requirements${{ matrix.python-version }}.txt
+
+      - name: Install smoderp2d
+        run: |
+          pip install .
 
       - name: Run command test suite
         run: |

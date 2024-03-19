@@ -10,63 +10,18 @@ import os
 import sys
 import zipfile
 
-
-# Class to save item of different typy
-#
-class SaveItems:
-
-    def savelist(self, l):
-        a = 0
-        b = []
-        self.f.writelines(str(len(l)) + '\n')
-        for i in range(len(l)):
-            if not l[i]:
-                pass
-            else:
-                if isinstance(l[i], list):
-                    for j in range(len(l[i])):
-                        b.append([a, l[i][j]])
-                else:
-                    b.append([a, l[i]])
-            a += 1
-        for item1 in b:
-            line = ''
-            for item2 in item1:
-                line += str(item2) + ';'
-            line = line[:-1]
-            self.f.writelines(line + '\n')
-
-    def saveint(self, f):
-        self.f.writelines(str(f) + '\n')
-
-    def savefloat(self, f):
-        self.f.writelines(str(f) + '\n')
-
-    def savestr(self, s):
-        self.f.writelines(s + '\n')
-
-    def saveunicode(self, uni):
-        self.f.writelines(uni + '\n')
-
-    def savenumpy(self, npa):
-        type_ = str(type(npa[0][0]))
-        self.f.writelines(type_ + '\n')
-        if 'int' in type_:
-            np.savetxt(self.f, npa, fmt='%15d', delimiter=';')
-        if 'float' in type_:
-            np.savetxt(self.f, npa, fmt='%15.10e', delimiter=';')
+from tools import SaveItems
 
 
-# Class to load item of different typy
-#
+# Class to load items of different types
 class LoadItems:
 
     def loadlist(self, int_):
 
         if int_:
-            self.el = self.__int
+            el = self.__int
         else:
-            self.el = self.__float
+            el = self.__float
 
         nLinesList = self.lines[1].replace('\n', '').split(';')
         nLinesList = int(nLinesList[0])
@@ -91,7 +46,7 @@ class LoadItems:
 
             else:
                 if int(line[iRec][0]) == iLine:
-                    wrk.append(self.el(line[iRec][1]))
+                    wrk.append(el(line[iRec][1]))
 
                 if int(line[iRec + 1][0]) > iLine:
                     if len(wrk) == 1:
@@ -103,7 +58,7 @@ class LoadItems:
                 iRec += 1
 
         if int(line[iRec][0]) == nLinesList - 1:
-            wrk.append(self.el(line[iRec][1]))
+            wrk.append(el(line[iRec][1]))
             if len(wrk) == 1:
                 list_.append(wrk[0])
             else:
@@ -132,8 +87,8 @@ class LoadItems:
         return n[0]
 
     def loadnpy(self):
-
-        n = len(self.lines[2:])
+        rows = self.lines[2:]
+        n = len(rows)
         m = len(self.lines[2].split(';'))
         type_ = self.lines[1]
         arr = np.zeros([n, m], float)
@@ -143,7 +98,7 @@ class LoadItems:
         if 'float' in type_:
             self.npyel = self.__float
 
-        for i, line in enumerate(self.lines[2:]):
+        for i, line in enumerate(rows):
             for j, el in enumerate(line.split(';')):
                 arr[i, j] = self.npyel(el)
 
@@ -162,34 +117,6 @@ class LoadItems:
 #  data returned from the datapreparation
 #  in and from zip archive
 class SaveLoad(SaveItems, LoadItems):
-
-    def save(self, data, zipfname):
-        import shutil
-
-        dir_ = './.save/'
-
-        if '.zip' in zipfname:
-            pass
-        else:
-            zipfname += '.zip'
-
-        zipf = zipfile.ZipFile(zipfname, 'w', zipfile.ZIP_DEFLATED)
-
-        self.countList = 1
-        if not os.path.exists(dir_):
-            os.makedirs(dir_)
-        for id_, it in enumerate(data):
-            # print "%02d" % (id_)
-            with open(dir_ + os.sep + "%02d" % id_, 'w') as self.f:
-                self.f.writelines(str(type(it)) + '\n')
-                self.save_item(it)
-
-        for root, dirs, files in os.walk(dir_):
-            for file in files:
-                # print os.path.join(root, file)
-                zipf.write(os.path.join(root, file))
-
-        shutil.rmtree(dir_)
 
     def load(self, zipfname):
         import shutil
@@ -214,7 +141,6 @@ class SaveLoad(SaveItems, LoadItems):
         fs = sorted(os.listdir(dir_))
         listOut = []
         for fi in fs:
-            # print fi
             with open(dir_ + os.sep + fi, 'r') as f:
                 self.lines = f.readlines()
             listOut.append(self.load_item())
@@ -222,21 +148,6 @@ class SaveLoad(SaveItems, LoadItems):
         shutil.rmtree(dir_)
 
         return listOut
-
-    def save_item(self, it):
-        if isinstance(it, list):
-            self.savelist(it)
-            self.countList += 1
-        if isinstance(it, float):
-            self.savefloat(it)
-        if isinstance(it, str):
-            self.savestr(it)
-        if isinstance(it, np.ndarray):
-            self.savenumpy(it)
-        if isinstance(it, unicode):
-            self.saveunicode(it)
-        if isinstance(it, int):
-            self.saveint(it)
 
     def load_item(self):
         if self.lines[0].replace('\n', '') == str(type(list())):
@@ -264,17 +175,9 @@ class SaveLoad(SaveItems, LoadItems):
 #sl = SaveLoad()
 
 #sl.save(dataList,sys.argv[1])
-##print dataList
-
-
 
 #del dataList
 
-
-
 #dataList = sl.load(sys.argv[1])
 
-
-#for item in dataList :
-  #print item
 """

@@ -2,6 +2,7 @@ import os
 import sys
 import subprocess
 
+from smoderp2d.runners.qgis import Popen
 
 def find_grass_bin():
     """Find GRASS binary."""
@@ -35,8 +36,8 @@ def _grass_loc():
 
     startcmd = [grass_bin_path, '--config', 'path']
 
-    p = subprocess.Popen(startcmd,
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = Popen(startcmd,
+              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
 
     if p.returncode != 0:

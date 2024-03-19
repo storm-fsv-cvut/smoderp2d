@@ -7,6 +7,7 @@ import numpy as np
 PROGRESS = 101
 logging.addLevelName(PROGRESS, "PROGRESS")
 
+
 class BaseLogger(logging.Logger):
     def __init__(self, name):
         super(BaseLogger, self).__init__(name)
@@ -16,12 +17,12 @@ class BaseLogger(logging.Logger):
             'end': 0,
             'range': 0
         }
+        self.aborted = False
 
     def set_progress(self, end):
         """Set percentage progress counter.
 
         :param int end: end value in %
-        :param int start: start value in %
         """
         self._progress_info = {
             'start': self._progress_info['end'],
@@ -31,6 +32,11 @@ class BaseLogger(logging.Logger):
             self._progress_info['end'] - self._progress_info['start']
 
     def progress(self, perc, *args):
+        if self.aborted is True:
+            self.aborted = False
+            self.reset()
+            from smoderp2d.exceptions import ComputationAborted
+            raise ComputationAborted()
         if args:
             self._progress(perc, *args)
         perc_int = int(

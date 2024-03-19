@@ -6,7 +6,6 @@ import shutil
 import argparse
 import pickle
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from smoderp2d.providers.base import BaseProvider
 
 
@@ -26,7 +25,7 @@ def main(filename):
         'mat_inf_index': indata[17], 'mat_hcrit': indata[18],
         'mat_aa': indata[19], 'mat_b': indata[20],
         'mat_reten': indata[21], 'mat_fd': indata[22],
-        'mat_dmt': indata[23], 'mat_efect_cont': indata[24],
+        'mat_dmt': indata[23], 'mat_effect_cont': indata[24],
         'mat_slope': indata[25], 'mat_nan': indata[26],
         'mat_a': indata[27], 'mat_n': indata[28],
         'outdir': indata[29], 'pixel_area': indata[30],
@@ -40,7 +39,7 @@ def main(filename):
         'toky_loc': indata[46]
     }
 
-    BaseProvider._save_data(data, filename)
+    BaseProvider.save_data(data, filename)
 
 
 def load_data(filename):
@@ -49,10 +48,7 @@ def load_data(filename):
     :param str filename: file to be loaded
     """
     with open(filename, 'rb') as fd:
-        if sys.version_info > (3, 0):
-            data = pickle.load(fd, encoding='bytes')
-        else:
-            data = pickle.load(fd)
+        data = pickle.load(fd, encoding='bytes')
 
     return data
 

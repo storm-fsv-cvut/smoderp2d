@@ -3,10 +3,7 @@ import sys
 import csv
 import numpy as np
 
-if sys.version_info.major >= 3:
-    from configparser import NoSectionError, NoOptionError
-else:
-    from ConfigParser import NoSectionError, NoOptionError
+from configparser import NoSectionError, NoOptionError
 
 from smoderp2d.core.general import Globals
 from smoderp2d.core import CompType
@@ -29,7 +26,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             "Run PROFILE1D.", workflow_mode='roff')
         self._config = self._load_config()
 
-        # define storage writter
+        # define storage writer
         self.storage = CmdWriter()
 
     def _load_input_data(self, filename_indata, filename_soil_types):
@@ -163,15 +160,6 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         # Logger.progress(10)
 
         # general settings
-        # some self._configs are not in pickle.dump
-        data['extraOut'] = self._config.getboolean(
-            'output', 'extraout', fallback=False
-        )
-        # rainfall data can be saved
-        data['prtTimes'] = self._config.get(
-            'output', 'printtimes', fallback=None
-        )
-
         resolution = self._config.getfloat('domain', 'res')
         data['r'] = self._compute_rows(joint_data['horizontalProjection[m]'],
                                        resolution)
@@ -196,20 +184,19 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             parsed_data['hor_len'], parsed_data['verticalDistance[m]'])
         # TODO can be probably removed (?) or stay zero
         # data['mat_boundary'] = np.zeros((data['r'], data['c']), float)
-        data['mat_efect_cont'].fill(data['dx'])  # x-axis (EW) resolution
+        data['mat_effect_cont'].fill(data['dx'])  # x-axis (EW) resolution
         # flow direction is always to the south
         data['mat_fd'].fill(4)
 
         # set x and y
-        data['x'] = parsed_data['x'].reshape((data['r'], data['c']))
+        data['nsheet'] = parsed_data['nsheet'].reshape((data['r'], data['c']))
         data['y'] = parsed_data['y'].reshape((data['r'], data['c']))
 
         # set values to parameter matrics
-        data['mat_n'] = parsed_data['n'].reshape((data['r'], data['c']))
+        data['mat_nrill'] = parsed_data['nrill'].reshape((data['r'], data['c']))
         data['mat_b'] = parsed_data['b'].reshape((data['r'], data['c']))
-        data['mat_a'], data['mat_aa'] = self._get_a(
-            data['mat_n'],
-            data['x'],
+        data['mat_aa'] = self._get_a(
+            data['nsheet'],
             data['y'],
             data['r'],
             data['c'],
@@ -257,6 +244,9 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
 
         slope_width = float(self._config.get('domain', 'slope_width'))
         data['slope_width'] = slope_width
+
+        # load hidden config
+        data.update(self._load_data_from_hidden_config())
 
         return data
 
@@ -357,7 +347,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['mat_aa'] = np.zeros((data['r'], data['c']), float)
         data['mat_reten'] = np.zeros((data['r'], data['c']), float)
         data['mat_nan'] = np.zeros((data['r'], data['c']), float)
-        data['mat_efect_cont'] = np.zeros((data['r'], data['c']), float)
+        data['mat_effect_cont'] = np.zeros((data['r'], data['c']), float)
         data['mat_pi'] = np.zeros((data['r'], data['c']), float)
         data['mat_boundary'] = np.zeros((data['r'], data['c']), float)
         data['mat_ppl'] = np.zeros((data['r'], data['c']), float)

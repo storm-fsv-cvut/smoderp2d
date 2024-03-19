@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import os
 import sys
-import glob
 import shutil
 import math
 import pickle
@@ -14,11 +13,15 @@ from abc import abstractmethod
 
 from smoderp2d.core import CompType
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
-from smoderp2d.exceptions import ProviderError, ConfigError, GlobalsNotSet, SmoderpError
+from smoderp2d.exceptions import ProviderError, ConfigError, GlobalsNotSet, \
+    SmoderpError
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError
 
+
 class Args:
+    """TODO."""
+
     # type of computation (CompType)
     workflow_mode = None
     # path to pickle data file
@@ -27,11 +30,14 @@ class Args:
     # config file
     config_file = None
 
+
 class WorkflowMode:
+    """TODO."""
+
     # type of computation
-    dpre = 0 # data preparation only
-    roff = 1 # runoff calculation only
-    full = 2 # dpre + roff
+    dpre = 0  # data preparation only
+    roff = 1  # runoff calculation only
+    full = 2  # dpre + roff
 
     @classmethod
     def __getitem__(cls, key):
@@ -41,8 +47,12 @@ class WorkflowMode:
             return cls.roff
         else:
             return cls.full
-    
+
+
 class BaseWriter(object):
+    """TODO."""
+    _raster_extension = '.asc'
+
     def __init__(self):
         self._data_target = None
 
@@ -53,26 +63,39 @@ class BaseWriter(object):
         """
         self._data_target = data
 
-    @staticmethod
-    def _raster_output_path(output, directory='core'):
-        """Get output raster path.
-
-        :param output: raster output name
-        :param directory: target directory (temp, control)
+    def output_filepath(self, name, data_type=None, dirname_only=False):
         """
-        dir_name = os.path.join(Globals.outdir, directory) if directory != 'core' else Globals.outdir
+        Get correct path to store dataset 'name'.
 
-        if not os.path.exists(dir_name):
-           os.makedirs(dir_name)
+        :param name: layer name to be saved
+        :param data_type: None to determine target subdirectory
+            from self._data_target
+        :param dirname_only: True to return only path to parent directory
 
-        return os.path.join(
-            dir_name,
-            output + '.asc'
-        )
+        :return: full path to the dataset
+        """
+        if data_type is None:
+            data_type = self._data_target.get(name)
+            defined_targets = ("temp", "control", "core")
+            if data_type is None or data_type not in defined_targets:
+                Logger.debug(
+                   "Unable to define target in output_filepath for {}. Assuming temp.".format(name)
+                )
+                data_type = "temp"
+
+        path = os.path.join(Globals.outdir, data_type) if data_type != 'core' else Globals.outdir
+        if not os.path.exists(path):
+            os.makedirs(path)
+        if dirname_only:
+            return path
+
+        return os.path.join(path, name)
 
     @staticmethod
     def _print_array_stats(arr, file_output):
         """Print array stats.
+
+        :param file_output: TODO
         """
 
         Logger.info("Raster ASCII output file <{}> saved".format(
@@ -82,19 +105,20 @@ class BaseWriter(object):
             na_arr = arr[arr != GridGlobals.NoDataValue]
         else:
             na_arr = arr
-        Logger.info("\tArray stats: min={0:.3f} max={1:.3f} mean={2:.3f}".format(
-            na_arr.min(), na_arr.max(), na_arr.mean()
-        ))
+        Logger.info(
+            "\tArray stats: min={0:.3f} max={1:.3f} mean={2:.3f}".format(
+                na_arr.min(), na_arr.max(), na_arr.mean()
+            )
+        )
 
-    @abstractmethod
     def write_raster(self, array, output_name, data_type='core'):
         """Write raster (numpy array) to ASCII file.
 
         :param array: numpy array
         :param output_name: output filename
-        :param date_type: directory where to write output file
+        :param data_type: directory where to write output file
         """
-        file_output = self._raster_output_path(output_name, data_type)
+        file_output = BaseWriter.output_filepath(self, output_name, data_type)
 
         self._print_array_stats(
             array, file_output
@@ -102,8 +126,11 @@ class BaseWriter(object):
 
         self._write_raster(array, file_output)
 
-
     def create_storage(self, outdir):
+        """TODO.
+
+        :param outdir: TODO
+        """
         pass
 
     @abstractmethod
@@ -127,23 +154,31 @@ class BaseWriter(object):
             GridGlobals.dy is None:
             raise GlobalsNotSet()
 
+
 class BaseProvider(object):
+    """TODO."""
+
     def __init__(self):
         self.args = Args()
 
-        self._print_fn = print
         self._print_logo_fn = print
 
         # default logging level (can be modified by provider)
         Logger.setLevel(logging.INFO)
 
-        # storage writter must be defined
+        # storage writer must be defined
         self.storage = None
         self._hidden_config = self.__load_hidden_config()
 
     @property
     def workflow_mode(self):
         return self.args.workflow_mode
+
+    @abstractmethod
+    def _postprocessing(self):
+        """Perform provider-specific postprocessing.
+        """
+        pass
 
     @staticmethod
     def add_logging_handler(handler, formatter=None):
@@ -154,17 +189,23 @@ class BaseProvider(object):
         """
         if not formatter:
             formatter = logging.Formatter(
-                "%(asctime)s - %(name)s - %(levelname)s - %(message)s - [%(module)s:%(lineno)s]"
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s "
+                "- [%(module)s:%(lineno)s]"
             )
         handler.setFormatter(formatter)
-        if sys.version_info.major >= 3:
-            if len(Logger.handlers) == 0:
-                # avoid duplicated handlers (eg. in case of ArcGIS)
-                Logger.addHandler(handler)
+        if len(Logger.handlers) == 0:
+            # avoid duplicated handlers (e.g. in case of ArcGIS)
+            Logger.addHandler(handler)
 
-    def __load_hidden_config(self):
-        # load hidden configuration with advanced settings
-        _path = os.path.join(os.path.dirname(__file__), '..', '..', '.config.ini')
+    @staticmethod
+    def __load_hidden_config():
+        """Load hidden configuration with advanced settings.
+
+        return ConfigParser: object
+        """
+        _path = os.path.join(
+            os.path.dirname(__file__), '..', '..', '.config.ini'
+        )
         if not os.path.exists(_path):
             raise ConfigError("{} does not exist".format(
                 _path
@@ -173,13 +214,33 @@ class BaseProvider(object):
         config = ConfigParser()
         config.read(_path)
 
-        if not config.has_option('outputs', 'extraout'):
-            raise ConfigError('Section "outputs" or option "extraout" is not set properly in file {}'.format( _path))
+        # set logging level
+        Logger.setLevel(config.get('logging', 'level', fallback=logging.INFO))
 
         return config
 
+    def _load_data_from_hidden_config(self, ignore=()):
+        """Load data from hidden config.
+
+        :param tuple ignore: list of options to me ignored
+
+        :return: dict
+        """
+        data = {}
+        data['prtTimes'] = self._hidden_config.get(
+            'output', 'printtimes', fallback=None
+        )
+        data['extraout'] = self._hidden_config.getboolean(
+            'output', 'extraout', fallback=False
+        )
+        self.args.workflow_mode = WorkflowMode()[self._hidden_config.get(
+            'processes', 'workflow_mode', fallback="full"
+        )]
+
+        return data
 
     def _load_config(self):
+        """TODO."""
         # load configuration
         if not os.path.exists(self.args.config_file):
             raise ConfigError("{} does not exist".format(
@@ -190,13 +251,6 @@ class BaseProvider(object):
         config.read(self.args.config_file)
 
         try:
-            # set logging level
-            Logger.setLevel(config.get('logging', 'level', fallback=logging.INFO))
-            # sys.stderr logging
-            self.add_logging_handler(
-                logging.StreamHandler(stream=sys.stderr)
-            )
-
             # must be defined for _cleanup() method
             Globals.outdir = config.get('output', 'outdir')
         except (NoSectionError, NoOptionError) as e:
@@ -204,8 +258,12 @@ class BaseProvider(object):
                 self.args.config_file, e
             ))
 
-        return config
+        # sys.stderr logging
+        self.add_logging_handler(
+            logging.StreamHandler(stream=sys.stderr)
+        )
 
+        return config
 
     def _load_dpre(self):
         """Run data preparation procedure.
@@ -236,15 +294,19 @@ class BaseProvider(object):
 
         # some variables configs can be changes after loading from
         # pickle.dump such as end time of simulation
-
         if self._config.get('time', 'endtime'):
             data['end_time'] = self._config.getfloat('time', 'endtime')
-        #  time of flow algorithm
-        data['mfda'] = self._config.getboolean('processes', 'mfda', fallback=False)
 
-        #  type of computing
-        data['type_of_computing'] = CompType()[self._config.get('processes', 'typecomp', fallback='stream_rill')]
-        
+        if self._config.get('processes', 'mfda'):
+            data['mfda'] = self._config.getboolean(
+                'processes', 'mfda', fallback=False
+            )
+
+        # type of computing
+        data['type_of_computing'] = CompType()[
+            self._config.get('processes', 'typecomp', fallback='stream_rill')
+        ]
+
         #  rainfall data can be saved
         if self._config.get('data', 'rainfall'):
             try:
@@ -254,15 +316,13 @@ class BaseProvider(object):
             except TypeError:
                 raise ProviderError('Invalid rainfall file')
 
-        # some self._configs are not in pickle.dump
-        data['extraOut'] = self._config.getboolean('output', 'extraout', fallback=False)
-        # rainfall data can be saved
-        data['prtTimes'] = self._config.get('output', 'printtimes', fallback=None)
-
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
 
         # ensure that dx and dy are defined
         data['dx'] = data['dy'] = math.sqrt(data['pixel_area'])
+
+        # load hidden config
+        data.update(self._load_data_from_hidden_config())
 
         return data
 
@@ -281,9 +341,10 @@ class BaseProvider(object):
                 # data preparation requested only
                 # add also related information from GridGlobals
                 for k in ('NoDataValue', 'bc', 'br', 'c', 'dx', 'dy',
-                          'pixel_area', 'r', 'rc', 'rr', 'xllcorner', 'yllcorner'):
+                          'pixel_area', 'r', 'rc', 'rr', 'xllcorner',
+                          'yllcorner'):
                     data[k] = getattr(GridGlobals, k)
-                self._save_data(data, self.args.data_file)
+                self.save_data(data, self.args.data_file)
                 return
 
         if self.args.workflow_mode == WorkflowMode.roff:
@@ -306,26 +367,38 @@ class BaseProvider(object):
             elif hasattr(DataGlobals, item):
                 setattr(DataGlobals, item, data[item])
 
-        Globals.mat_reten = -1.0 * data['mat_reten'] / 1000 # converts mm to m
+        Globals.mat_reten = -1.0 * data['mat_reten'] / 1000  # converts mm to m
         comp_type = self._comp_type(data['type_of_computing'])
-        Globals.diffuse = False # not implemented yet
+        Globals.diffuse = False  # not implemented yet
         Globals.subflow = comp_type['subflow_rill']
         Globals.isRill = comp_type['rill']
-        Globals.isStream = comp_type['stream_rill']
-        Globals.prtTimes = data.get('prtTimes', None)
-        Globals.extraOut = self._hidden_config.getboolean('outputs','extraout')
-        Globals.end_time *= 60 # convert min to sec
+        Globals.isStream = comp_type['stream']
+
+        # load hidden config
+        hidden_config = self._load_data_from_hidden_config()
+        if 'prtTimes' in data:
+            Globals.prtTimes = data['prtTimes']
+        else:
+            Globals.prtTimes = hidden_config.get('prtTimes', None)
+        if 'extraout' in data:
+            Globals.extraOut = data['extraout']
+        else:
+            Globals.extraOut = hidden_config.get('extraout', False)
+
+        Globals.end_time *= 60  # convert min to sec
 
         # If profile1d provider is used the values
         # should be set in the loop at the beginning
         # of this method since it is part of the
         # data dict (only in profile1d provider).
-        # Otherwise is has to be set to 1.
+        # Otherwise, it has to be set to 1.
         if Globals.slope_width is None:
             Globals.slope_width = 1
 
         # set masks of the area of interest
-        GridGlobals.masks = [[True] * GridGlobals.c for _ in range(GridGlobals.r)]
+        GridGlobals.masks = [
+            [True] * GridGlobals.c for _ in range(GridGlobals.r)
+        ]
         rr, rc = GridGlobals.get_region_dim()
         for r in rr:
             for c in rc[r]:
@@ -333,23 +406,30 @@ class BaseProvider(object):
 
     @staticmethod
     def _cleanup():
-        """Clean-up output directory.
-
-        :param output_dir: output directory to clean up
-        """
+        """Clean-up output directory."""
         output_dir = Globals.outdir
         if not output_dir:
             # no output directory defined
             return
         if os.path.exists(output_dir):
-            for filename in os.listdir(output_dir):
-                file_path = os.path.join(output_dir, filename)
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
+            try:
+                for filename in os.listdir(output_dir):
+                    file_path = os.path.join(output_dir, filename)
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+            except PermissionError as e:
+                raise ProviderError(
+                    f"Unable to cleanup output directory: {e}"
+                )
         else:
-            os.makedirs(output_dir)
+            try:
+                os.makedirs(output_dir)
+            except PermissionError as e:
+                raise ProviderError(
+                    f"Unable to create output directory: {e}"
+                )
 
     @staticmethod
     def _comp_type(itc):
@@ -358,16 +438,14 @@ class BaseProvider(object):
         Return true/values for rill, subflow, stream,
         presence/non-presence.
 
-        :param CompType tc: type of computation
-        
-        :return dict:
+        :param CompType itc: type of computation
 
+        :return dict:
         """
         ret = {}
         for item in ('sheet_only',
                      'rill',
-                     'sheet_stream',
-                     'stream_rill',
+                     'stream',
                      'subflow_rill',
                      'stream_subflow_rill'):
             ret[item] = False
@@ -376,6 +454,9 @@ class BaseProvider(object):
             ret['sheet_only'] = True
         elif itc == CompType.rill:
             ret['rill'] = True
+        elif itc == CompType.sheet_stream:
+            ret['sheet_only'] = True
+            ret['stream'] = True
         elif itc == CompType.stream_rill:
             ret['stream'] = True
             ret['rill'] = True
@@ -388,17 +469,19 @@ class BaseProvider(object):
             ret['rill'] = True
 
         return ret
-            
+
     def logo(self):
-        """Print Smoderp2d ascii-style logo."""
+        """Print SMODERP2D ascii-style logo."""
         logo_file = os.path.join(os.path.dirname(__file__), 'txtlogo.txt')
         with open(logo_file, 'r') as fd:
             self._print_logo_fn(fd.read())
-        self._print_logo_fn('') # extra line
+        self._print_logo_fn('')  # extra line
 
     @staticmethod
-    def _save_data(data, filename):
+    def save_data(data, filename):
         """Save data into pickle.
+
+        :param filename: TODO
         """
         if filename is None:
             raise ProviderError('Output file for saving data not defined')
@@ -417,18 +500,16 @@ class BaseProvider(object):
         """Load data from pickle.
 
         :param str filename: file to be loaded
+        :return: TODO
         """
         if filename is None:
             raise ProviderError('Input file for loading data not defined')
         with open(filename, 'rb') as fd:
-            if sys.version_info > (3, 0):
-                data = {
-                    key.decode() if isinstance(key, bytes) else key:
-                    val.decode() if isinstance(val, bytes) else val
-                    for key, val in pickle.load(fd, encoding='bytes').items()
-                }
-            else:
-                data = pickle.load(fd)
+            data = {
+                key.decode() if isinstance(key, bytes) else key:
+                val.decode() if isinstance(val, bytes) else val
+                for key, val in pickle.load(fd, encoding='bytes').items()
+            }
         Logger.debug('Size of loaded data is {} bytes'.format(
             sys.getsizeof(data))
         )
@@ -436,10 +517,14 @@ class BaseProvider(object):
         return data
 
     def postprocessing(self, cumulative, surface_array, stream):
+        """Perform postprocessing steps. Store results.
 
+        :param cumulative: Cumulative object
+        :param surface_array: numpy array
+        :param stream: stream array (reach)
+        """
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
-        dx = GridGlobals.get_size()[0]
 
         # compute maximum shear stress and velocity
         cumulative.calculate_vsheet_sheerstress()
@@ -492,7 +577,6 @@ class BaseProvider(object):
             )
 
         finState = np.zeros(np.shape(surface_array.state), np.float32)
-        # TODO: Maybe should be filled with NoDataInt
         finState.fill(GridGlobals.NoDataValue)
         vRest = np.zeros(np.shape(surface_array.state), np.float32)
         vRest.fill(GridGlobals.NoDataValue)
@@ -514,20 +598,26 @@ class BaseProvider(object):
 
         for i in rrows:
             for j in rcols[i]:
-                if  int(surface_array.state.data[i, j]) >= \
-                        Globals.streams_flow_inc :
+                if int(surface_array.state.data[i, j]) >= \
+                        Globals.streams_flow_inc:
                     totalBil[i][j] = GridGlobals.NoDataValue
 
-        self.storage.write_raster(self._make_mask(totalBil), 'massbalance', 'control')
-        self.storage.write_raster(self._make_mask(vRest), 'volrest_m3', 'control')
-        self.storage.write_raster(self._make_mask(finState), 'surfacestate', 'control')
+        self.storage.write_raster(
+            self._make_mask(totalBil), 'massbalance', 'control'
+        )
+        self.storage.write_raster(
+            self._make_mask(vRest), 'volrest_m3', 'control'
+        )
+        self.storage.write_raster(
+            self._make_mask(finState), 'surfacestate', 'control'
+        )
 
         # store stream reaches results to a table
         # if stream is calculated
         if stream:
             n = len(stream)
             m = 7
-            outputtable = np.zeros([n,m])
+            outputtable = np.zeros([n, m])
             fid = list(stream.keys())
             for i in range(n):
                 outputtable[i][0] = stream[fid[i]].segment_id
@@ -556,17 +646,22 @@ class BaseProvider(object):
             if not os.path.isdir(temp_dir):
                 os.makedirs(temp_dir)
             path_ = os.path.join(temp_dir, 'stream.csv')
-            np.savetxt(path_, outputtable, delimiter=';',fmt = '%.3e',
-                       header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}q365_m3_s{sep}V_out_cum_m3{sep}Q_max_m3_s'.format(sep=';'))
+            np.savetxt(path_, outputtable, delimiter=';', fmt='%.3e',
+                       header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}'
+                              'q365_m3_s{sep}V_out_cum_m3{sep}'
+                              'Q_max_m3_s'.format(sep=';'))
 
-    def _make_mask(self, arr):
+        # perform provider-specific postprocessing
+        self._postprocessing()
+
+    @staticmethod
+    def _make_mask(arr):
         """ Assure that the no data value is outside the
         computation region.
         Works only for type float.
 
-        :param arrr: numpy array
+        :param arr: numpy array
         """
-
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
 
@@ -578,12 +673,3 @@ class BaseProvider(object):
                 arr[i, j] = copy_arr[i, j]
 
         return arr
-
-
-        # TODO
-        # if not Globals.extraOut:
-        #     if os.path.exists(output + os.sep + 'temp'):
-        #         shutil.rmtree(output + os.sep + 'temp')
-        #     if os.path.exists(output + os.sep + 'temp_dp'):
-        #         shutil.rmtree(output + os.sep + 'temp_dp')
-        #     return 1

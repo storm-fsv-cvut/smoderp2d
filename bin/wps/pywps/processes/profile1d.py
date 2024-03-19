@@ -1,6 +1,5 @@
 import os
 import sys
-import fileinput
 import logging
 from configparser import ConfigParser
 
@@ -34,8 +33,8 @@ class Profile1d(Process):
             identifier='profile1d',
             version='0.1',
             title="Experimental PROFILE1D process",
-            abstract="""Performs SMODERP distributed event-based model for surface and
-subsurface runoff and erosion
+            abstract="""Performs SMODERP distributed event-based model for
+surface and subsurface runoff and erosion
 (https://github.com/storm-fsv-cvut/smoderp2d) in 1D""",
             inputs=inputs,
             outputs=outputs,
@@ -75,7 +74,7 @@ subsurface runoff and erosion
     def _handler(self, request, response):
         sys.path.insert(0, "/opt/smoderp2d")
 
-        from smoderp2d import WpsRunner
+        from smoderp2d.runners.wps import WpsRunner
         from smoderp2d.exceptions import ProviderError, ConfigError, \
             MaxIterationExceeded
         from smoderp2d.core.general import Globals

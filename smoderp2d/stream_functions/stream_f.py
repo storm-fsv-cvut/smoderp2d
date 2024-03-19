@@ -47,11 +47,10 @@ def compute_h(A, m, b, err=0.0001, max_iter=20):
         h_pre = ma.copy(h)
         if iter_ >= max_iter:
             Logger.error(
-                "if file {} near line {} \n\t newton solver didnt converge "
-                "after {max_iter} iterations (max_iter={max_iter})",
-                frameinfo.filename,
-                frameinfo.lineno,
-                max_iter=max_iter)
+                f"if file {frameinfo.filename} near line {frameinfo.lineno} "
+                f"\n\t newton solver did not converge after {max_iter} "
+                f"iterations (max_iter={max_iter})"
+            )
             break
         iter_ += 1
 
@@ -84,10 +83,9 @@ def rectangle(reach, dt):
         reach.inclination,
         0.5) / (
                    reach.roughness)  # rychlost
-    reach.Q_out = S * \
-                  reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt                   # prutok
-    reach.V_out = reach.Q_out * \
-                  dt  # odtekly objem
+    reach.Q_out = S * reach.vs
+    # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt                   # prutok
+    reach.V_out = reach.Q_out * dt  # odtekly objem
     condition = ma.greater(reach.V_out, dV)
     reach.V_out = ma.where(condition, dV, reach.V_out)
     reach.vol_rest = ma.where(condition, 0, dV - reach.V_out)
@@ -136,7 +134,6 @@ def trapezoid(reach, dt):
     reach.Q_out = reach.V_out / dt
     reach.h = H
 
-    # raw_input()
     # prt.mujout.writelines(str(reach.id_) + ';' + str(reach.h) + ';' +
     # str(reach.V_in_from_field) + ';' + str(reach.vol_rest) + ';' + str(
     # reach.V_in_from_reach) + ';' + str(reach.V_out) + ';' +
