@@ -376,48 +376,15 @@ def inflows_comp(tot_flow, list_fd):
     inflow = ma.array(ma.zeros((GridGlobals.r, GridGlobals.c)),mask=GridGlobals.masks)
     r = GridGlobals.r
     c = GridGlobals.c
+   
+    inflow[1:r,0:c-1] += list_fd[1:r,0:c-1,0]*tot_flow[0:r-1,1:c] #NE
+    inflow[1:r,0:c] += list_fd[1:r,0:c,1]*tot_flow[0:r-1,0:c] #N
+    inflow[1:r,1:c] += list_fd[1:r,1:c,2]*tot_flow[0:r-1,0:c-1] #NW
+    inflow[0:r,1:c] += list_fd[0:r,1:c,3]*tot_flow[0:r,0:c-1] #W
+    inflow[0:r-1,1:c] += list_fd[0:r-1,1:c,4]*tot_flow[1:r,0:c-1] #SW
+    inflow[0:r-1,0:c] += list_fd[0:r-1,0:c,5]*tot_flow[1:r,0:c] #S
+    inflow[0:r-1,0:c-1] += list_fd[0:r-1,0:c-1,6]*tot_flow[1:r,1:c] #SE
+    inflow[0:r,0:c-1] += list_fd[0:r,0:c-1,7]*tot_flow[0:r,1:c] #E
     
-    for i in range(r):
-            for j in range(c):
-                try:
-                    inflow[i][j] +=  list_fd[j+i*c][0]*tot_flow[i-1][j+1] #NE
-                    
-                except IndexError:
-                    pass   
-                try:
-                    inflow[i][j]  +=  list_fd[j+i*c][1]*tot_flow[i-1][j] #N
-                    
-                except IndexError:
-                    pass 
-                try:
-                   inflow[i][j]  +=  list_fd[j+i*c][2]*tot_flow[i-1][j-1]#NW
-                    
-                except IndexError:
-                    pass
-                try:
-                    inflow[i][j]  +=  list_fd[j+i*c][3]*tot_flow[i][j-1] #W
-                   
-                except  IndexError:
-                    pass
-                try:
-                    inflow[i][j]  +=  list_fd[j+i*c][4]*tot_flow[i+1][j-1] #SW
-                    
-                except  IndexError:
-                    pass
-                try:
-                    inflow[i][j] += list_fd[j+i*c][5]*tot_flow[i+1][j] #S
-                       
-                except  IndexError:
-                    pass
-                try:
-                    inflow[i][j] +=  list_fd[j+i*c][6]*tot_flow[i+1][j+1] #SE
-                    
-                except  IndexError:
-                    pass
-                try:
-                    inflow[i][j]  +=  list_fd[j+i*c][7]*tot_flow[i][j+1] #E
-                    
-                except  IndexError:
-                    pass
-    return inflow                
+    return inflow
 

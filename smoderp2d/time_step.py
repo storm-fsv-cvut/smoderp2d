@@ -162,7 +162,7 @@ class TimeStep:
         dh_max = 1e-5  # [m]
         
         # Setting the maximum number of iterations for the solver
-        max_iter = 20
+        max_iter = 5
 
         # Calculating the new water level
         for i in range(1, fc.max_iter ):
@@ -217,7 +217,7 @@ class TimeStep:
                 h_new = solution.x
                 
                 #print ('h_hew {} nit {}'.format(h_new.mean(), solution.nit))
-                if solution.success == False or solution.nit > max_iter-1:
+                if solution.success == False:
                     delta_t = delta_t/2
                     continue
             except ZeroDivisionError:

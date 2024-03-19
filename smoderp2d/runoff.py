@@ -227,7 +227,7 @@ class Runoff(object):
 
         # list of flewdirection vectors - incialization
         self.r,self.c = GridGlobals.get_dim()
-        self.list_fd = [[] for i in range(self.r*self.c)]
+        self.list_fd = np.zeros((self.r,self.c,8),dtype=int)
 
     def run(self):
         """Perform the computation of the water level development.
@@ -248,11 +248,10 @@ class Runoff(object):
         Selected values are stored in at the end of each loop.
         """
         # creates list of flow direction vectors (r*c vectors of length 8 coposed of 1 and 0) 
-        
         for i in range(self.r):
             for j in range(self.c):
-                vec_pos = i * self.c + j
-                self.list_fd[vec_pos] = D8.inflow_dir(Globals.get_mat_fd(),i,j)
+                self.list_fd[i][j] = D8.inflow_dir(Globals.get_mat_fd(),i,j)
+              
 
         # saves time before the main loop
         Logger.info('Start of computing...')
@@ -308,8 +307,8 @@ class Runoff(object):
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
             
-            h_new = self.surface.arr.h_total_new
-            h_old = self.surface.arr.h_total_pre
+            # h_new = self.surface.arr.h_total_new
+            # h_old = self.surface.arr.h_total_pre
             # if ma.all(abs(h_new - h_old) < 1e-5):
             #     if ma.all(self.delta_t*2 < self.delta_tmax):
             #         self.delta_t = self.delta_t*2
