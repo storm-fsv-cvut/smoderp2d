@@ -212,11 +212,11 @@ def parabola(reach, dt):
         # Vp == 0.0
         hp = 0.0
 
-    B = u*hp #sirka hladiny #b = 3*a/(2*h)
-    H = hp + reach.h
-    Bb = u * H
-    O = ma.where(Bb != 0, Bb + 8 * H * H / (3 * Bb), 0)
-    S = 2 / 3 * Bb * H
+    B = u * hp #sirka hladiny #b = 3*a/(2*h)
+    H = hp + reach.h  # D -> vyska hladiny
+    dB = u * H
+    O = ma.where(dB != 0, dB + 8 * H * H / (3 * dB), 0)
+    S = 2 / 3 * dB * H
     dS = S - 2 / 3 * B * hp
     dV = dS * reach.length
     R = ma.where(O != 0, S / O, 0)
