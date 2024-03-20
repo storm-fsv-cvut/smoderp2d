@@ -946,6 +946,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         """
         self.elevation.setLayer(param_dict['elevation'])
         self.soil.setLayer(param_dict['soil'])
+        self.soil_type.setCurrentText(param_dict['soil_type_fieldname'])
         self.points.setLayer(param_dict['points'])
         self.points_field.setCurrentText(
             param_dict['points_fieldname']
