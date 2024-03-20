@@ -9,8 +9,8 @@ from smoderp2d.processes import rainfall
 from smoderp2d.core import CompType
 from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
-from smoderp2d.providers.base.exceptions import DataPreparationError, \
-    DataPreparationInvalidInput
+from smoderp2d.providers.base.exceptions import SmallParameterValueError, \
+    LargeParameterValueError, DataPreparationError, DataPreparationInvalidInput
 
 
 class PrepareDataBase(ABC):
@@ -123,7 +123,6 @@ class PrepareDataBase(ABC):
 
         return mat_inf_index, combinatIndex
 
-    @staticmethod
     def _get_mat_nan(r, c, no_data_value, mat_slope, mat_dem):
         # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u
         # sklonu a acc
@@ -169,7 +168,6 @@ class PrepareDataBase(ABC):
         for i in nr:
             one_col = []
             for j in nc:
-
                 if mat_boundary[i][j] == -99:
                     one_col.append(j)
                     rr_insert = True
@@ -182,6 +180,41 @@ class PrepareDataBase(ABC):
                 rr.append(i)
             rr_insert = False
             rc.append(one_col)
+
+        # all checks must be after rr and rc are created.  check Ks and S for
+        # infiltraiton
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'Ks',
+                all_attrib[0], [0,1])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'S',
+                all_attrib[1], [0,1])
+
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'X',
+                all_attrib[7], [1,200])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'Y',
+                all_attrib[8], [0.01,1])
+        # check the critical tension and velocity
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'tau',
+                all_attrib[9], [1,100])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'v',
+                all_attrib[10], [0.1,5])
+
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'n',
+                self.data['mat_n'], [0,10])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'pi',
+                self.data['mat_pi'], [0,10])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'ppl',
+                self.data['mat_ppl'], [0,1])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'reten',
+                self.data['mat_reten'], [0,100])
+        self._check_parameter_value(self.data['rr'], self.data['rc'], 'b',
+                self.data['mat_b'], [1,2.5])
+
+
+        self.data['mfda'] = False
+        self.data['mat_boundary'] = None
+        self.data['spix'] = None
+        self.data['vpix'] = None
+        #Logger.progress(100)
 
         return rr, rc
 
@@ -258,6 +291,30 @@ class PrepareDataGISBase(PrepareDataBase):
             self.fieldnames['channel_q365']
         ]
 
+    def _check_parameter_value(self, rr, rc, name, arr, range_):
+        """ check the parameter margins 
+
+        :param list rr: list of i indices in the computaion domain
+        :param list rc: list of j indices in the computaion domain
+        :param str name: name of the variable
+        :param np.array arr: the array holding the parameter values 
+        :param list range_: range of appropriate parameters
+        """
+
+        for i in rr:
+            for j in rc[i]:
+                val = arr[i][j]
+                if (range_[0] > val) : raise SmallParameterValueError(name, val, range_[0])
+                if (range_[1] < val) : raise LargeParameterValueError(name, val, range_[1])
+
+        Logger.info('{} parameter values checked.'.format(name))
+
+
+    def _set_output_data(self):
+        """
+        Creates dictionary to which model parameters are computed.
+        """
+        # output data
         self.data = {
             'mat_boundary': None,
             'outletCells': None,
