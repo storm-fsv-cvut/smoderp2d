@@ -513,7 +513,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
     def _addCurrentHistoryItem(self):
         """Add the current run into settings[historical_runs].
 
-        Control that there is no more than 15 historical items holded.
+        Control that there is no more than 25 historical items holded.
 
         Then call _addHistoryItem to add the widget to the pane.
         """
