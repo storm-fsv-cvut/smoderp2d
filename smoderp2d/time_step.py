@@ -162,7 +162,8 @@ class TimeStep:
         dh_max = 1e-5  # [m]
         
         # Setting the maximum number of iterations for the solver
-        max_iter = 5
+        max_iter = 7
+        min_iter = 3
         # parameter for the time step modification  
         modif_up = 2
         modif_down = 2
@@ -231,7 +232,7 @@ class TimeStep:
                 delta_t = delta_t/modif_down
             else:
                 # print ('break dt {}'.format(dt))
-                if solution.nit < 3 : 
+                if solution.nit < min_iter : 
                     if ma.all(delta_t*modif_up < delta_tmax):
                         delta_t = delta_t*modif_up
                     else:
