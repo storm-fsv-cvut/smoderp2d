@@ -10,7 +10,6 @@
 
 
 import pickle
-import numpy as np
 import os
 
 from tools import SaveItems

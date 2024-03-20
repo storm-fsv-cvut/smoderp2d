@@ -70,8 +70,6 @@ class Smoderp2D:
         self.toolbar = self.iface.addToolBar(u'Smoderp2D')
         self.toolbar.setObjectName(u'Smoderp2D')
 
-        # print "** INITIALIZING Smoderp2D"
-
         self.pluginIsActive = False
         self.dockwidget = None
 
@@ -169,7 +167,7 @@ class Smoderp2D:
         icon_path = ':/plugins/smoderp_2D/icon.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'Compute hydrological erosion model.'),
+            text=self.tr('SMODERRP2D hydrological erosion model'),
             callback=self.run,
             parent=self.iface.mainWindow())
 
@@ -177,9 +175,6 @@ class Smoderp2D:
 
     def onClosePlugin(self):
         """Cleanup necessary items here when plugin dockwidget is closed"""
-
-        # print "** CLOSING Smoderp2D"
-
         # disconnects
         self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
 
@@ -193,12 +188,9 @@ class Smoderp2D:
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
-
-        # print "** UNLOAD Smoderp2D"
-
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.tr(u'&SMODERP2D'),
+                self.tr('&SMODERP2D'),
                 action)
             self.iface.removeToolBarIcon(action)
         # remove the toolbar
@@ -208,12 +200,8 @@ class Smoderp2D:
 
     def run(self):
         """Run method that loads and starts the plugin"""
-
         if not self.pluginIsActive:
             self.pluginIsActive = True
-
-            # print "** STARTING Smoderp2D"
-
             # dockwidget may not exist if:
             #    first run of plugin
             #    removed on close (see self.onClosePlugin method)

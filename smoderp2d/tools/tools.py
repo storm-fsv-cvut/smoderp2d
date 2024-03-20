@@ -48,6 +48,9 @@ def make_sub_raster(subArr, G, t, output):
 # Class to save item of different types
 class SaveItems:
 
+    def __init__(self):
+        self.countList = 1
+
     def savelist(self, l):
         a = 0
         b = []
@@ -104,14 +107,12 @@ class SaveItems:
         if not os.path.exists(dir_):
             os.makedirs(dir_)
         for id_, it in enumerate(data):
-            # print "%02d" % (id_)
             with open(dir_ + os.sep + "%02d" % id_, 'w') as self.f:
                 self.f.writelines(str(type(it)) + '\n')
                 self.save_item(it)
 
-        for root, dirs, files in os.walk(dir_):
+        for root, _, files in os.walk(dir_):
             for file in files:
-                # print os.path.join(root, file)
                 zipf.write(os.path.join(root, file))
 
         shutil.rmtree(dir_)

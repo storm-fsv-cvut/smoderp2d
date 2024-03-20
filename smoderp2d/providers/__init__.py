@@ -6,9 +6,7 @@ import time
 
 
 def logger():
-    """
-    Return a logger.
-    """
+    """Return a logger."""
     from smoderp2d.providers.logger import BaseLogger
 
     logging.setLoggerClass(BaseLogger)
@@ -16,9 +14,8 @@ def logger():
     if os.getenv('ESRIACTIVEINSTALLATION'):
         # create unique logger for each run (see ArcGIS issue #22)
         logger_name += '_{}'.format(time.time())
-    logger = logging.getLogger(logger_name)
 
-    return logger
+    return logging.getLogger(logger_name)
 
 
 Logger = logger()

@@ -23,8 +23,8 @@
 # % keyword: erosion
 # %end
 # %flag
-# % key: d
-# % description: Perform data preparation only and exit
+# % key: t
+# % description: Export temporary data
 # %end
 # %option G_OPT_R_ELEV
 # % description: Input surface raster
@@ -79,6 +79,12 @@
 # % required: no
 # % guisection: Data preparation
 # %end
+# %option G_OPT_DB_COLUMN
+# % key: points_fieldname
+# % description: Field with the input points idenfifier
+# % required: no
+# % guisection: Settings
+# %end
 # %option G_OPT_DB_TABLE
 # % key: table_soil_vegetation
 # % description: Table of soil and land use information
@@ -105,6 +111,13 @@
 # % description: Reach shape table code
 # % guisection: Settings
 # %end
+# %option
+# % key: flow_direction
+# % description: Flow direction
+# % guisection: Settings
+# % options: single,multiple
+# % answer: single
+# %end
 # %option G_OPT_M_DIR
 # % key: output
 # % description: Name for output directory where to store results
@@ -115,20 +128,18 @@ import os
 import sys
 import grass.script as gs
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-from smoderp2d import GrassGisRunner
+from smoderp2d.runners.grass import GrassGisRunner
 from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.exceptions import ProviderError
 
 if __name__ == "__main__":
     options, flags = gs.parser()
+    options['generate_temporary'] = flags['t']
 
     try:
         runner = GrassGisRunner()
 
         runner.set_options(options)
-        if flags['d']:
-            runner.workflow_mode = WorkflowMode.dpre
 
         sys.exit(
             runner.run()

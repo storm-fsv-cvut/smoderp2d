@@ -2,6 +2,7 @@ import numpy as np
 
 from smoderp2d.exceptions import SmoderpError
 
+
 class GridGlobalsArray(np.ndarray):
     """Class overriding np.ndarray to handle SMODERP border problems."""
 
@@ -40,6 +41,8 @@ class GridGlobalsArray(np.ndarray):
 
 
 class GridGlobals(object):
+    """TODO."""
+
     # number of raster rows (int)
     r = None
     # number of raster columns (int)
@@ -61,8 +64,6 @@ class GridGlobals(object):
     yllcorner = None
     # no data value for raster
     NoDataValue = -9999
-    # no data integer value for raster
-    NoDataInt = None
     # size of raster cell
     dx = None
     # size of raster cell
@@ -71,6 +72,7 @@ class GridGlobals(object):
     masks = None
 
     def __init__(self):
+        """TODO."""
         if self.r is None or self.c is None:
             raise SmoderpError("Global variables are not assigned")
 
@@ -78,52 +80,70 @@ class GridGlobals(object):
 
     @classmethod
     def get_dim(cls):
-        return (cls.r, cls.c)
+        """TODO."""
+        return cls.r, cls.c
 
     @classmethod
     def get_pixel_area(cls):
+        """TODO."""
         return cls.pixel_area
 
     @classmethod
     def set_pixel_area(cls, pa):
+        """TODO.
+
+        :param pa: TODO
+        """
         cls.pixel_area = pa
 
     @classmethod
     def get_region_dim(cls):
-        return (cls.rr, cls.rc)
+        """TODO."""
+        return cls.rr, cls.rc
 
     @classmethod
     def get_border_dim(cls):
-        return (cls.br, cls.bc)
+        """TODO."""
+        return cls.br, cls.bc
 
     @classmethod
     def get_llcorner(cls):
-        return (cls.xllcorner, cls.yllcorner)
+        """TODO."""
+        return cls.xllcorner, cls.yllcorner
 
     @classmethod
     def set_llcorner(cls, xy):
+        """TODO.
+
+        :param xy: TODO
+        """
         cls.xllcorner = xy[0]
         cls.yllcorner = xy[1]
 
     @classmethod
     def get_size(cls):
-        return (cls.dx, cls.dy)
+        """TODO."""
+        return cls.dx, cls.dy
 
     @classmethod
     def set_size(cls, dxdy):
+        """TODO.
+
+        :param dxdy: TODO
+        """
         cls.dx = dxdy[0]
         cls.dy = dxdy[1]
         cls.pixel_area = cls.dx * cls.dy
 
     @classmethod
     def get_no_data(cls):
+        """TODO."""
         # TODO: int?
         return cls.NoDataValue
 
     @classmethod
     def reset(cls):
         """Reset static variables to their default values."""
-
         # number of raster rows (int)
         cls.r = None
         # number of raster columns (int)
@@ -145,8 +165,6 @@ class GridGlobals(object):
         cls.yllcorner = None
         # no data value for raster
         cls.NoDataValue = -9999
-        # no data integer value for raster
-        cls.NoDataInt = None
         # size of raster cell
         cls.dx = None
         # size of raster cell
@@ -154,19 +172,25 @@ class GridGlobals(object):
         # masks
         cls.masks = None
 
+
 class DataGlobals:
+    """TODO."""
+
     # raster contains leaf area data
     mat_ppl = None
 
     @classmethod
     def get_mat_ppl(cls):
+        """TODO."""
         return cls.mat_ppl
 
+
 class Globals:
-    """Globals contains global variables from data_preparation, in
-    instance of class needed the data are taken from import of this
-    class.
+    """Globals contains global variables from data_preparation.
+
+    In instance of class needed the data are taken from import of this class.
     """
+
     # type of computation
     type_of_computing = None
     # path to an output directory
@@ -199,16 +223,14 @@ class Globals:
     mat_fd = None
     # raster contains digital elevation model
     mat_dem = None
-    # raster contains efective couterline data
-    mat_efect_cont = None
+    # raster contains effective couterline data
+    mat_effect_cont = None
     # raster contains surface slopes data
     mat_slope = None
     # raster labels not a number cells
     mat_nan = None
     # raster contains parameters ...
-    mat_a = None
-    # raster contains parameters ...
-    mat_n = None
+    mat_nrill = None
     # ???
     points = None
     # end time of computation
@@ -230,7 +252,7 @@ class Globals:
     mat_stream_reach = None
     # ???
     STREAM_RATIO = None
-    # maximum allowed time step during compuation
+    # maximum allowed time step during computation
     maxdt = None
     # if true extra data are stores in the point*.dat files
     extraOut = None
@@ -243,131 +265,161 @@ class Globals:
 
     @classmethod
     def get_type_of_computing(cls):
+        """TODO."""
         return cls.type_of_computing
 
     @classmethod
     def get_outdir(cls):
+        """TODO."""
         return cls.outdir
 
     @classmethod
     def get_mat_boundary(cls):
+        """TODO."""
         return cls.mat_boundary
 
     @classmethod
     def get_outletCells(cls):
+        """TODO."""
         return cls.outletCells
 
     @classmethod
     def get_array_points(cls):
+        """TODO."""
         return cls.array_points
 
     @classmethod
     def get_combinatIndex(cls):
+        """TODO."""
         return cls.combinatIndex
 
     @classmethod
     def get_delta_t(cls):
+        """TODO."""
         return cls.delta_t
 
     @classmethod
     def get_mat_pi(cls):
+        """TODO."""
         return cls.mat_pi
-
 
     @classmethod
     def get_surface_retention(cls):
+        """TODO."""
         return cls.surface_retention
 
     @classmethod
     def get_mat_inf_index(cls):
+        """TODO."""
         return cls.mat_inf_index
 
     @classmethod
     def get_mat_hcrit(cls):
+        """TODO."""
         return cls.mat_hcrit
 
     @classmethod
     def get_mat_aa(cls):
+        """TODO."""
         return cls.mat_aa
 
     @classmethod
     def get_mat_b(cls):
+        """TODO."""
         return cls.mat_b
 
     @classmethod
     def get_mat_reten(cls):
+        """TODO."""
         return cls.mat_reten
 
     @classmethod
     def get_mat_fd(cls):
+        """TODO."""
         return cls.mat_fd
 
     @classmethod
     def get_mat_dem(cls):
+        """TODO."""
         return cls.mat_dem
 
     @classmethod
-    def get_mat_efect_cont(cls):
-        return cls.mat_efect_cont
+    def get_mat_effect_cont(cls):
+        """TODO."""
+        return cls.mat_effect_cont
 
     @classmethod
     def get_mat_slope(cls):
+        """TODO."""
         return cls.mat_slope
 
     @classmethod
     def get_mat_nan(cls):
+        """TODO."""
         return cls.mat_nan
 
     @classmethod
-    def get_mat_a(cls):
-        return cls.mat_a
-
-    @classmethod
-    def get_mat_n(cls):
-        return cls.mat_n
+    def get_mat_nrill(cls):
+        """TODO."""
+        return cls.mat_nrill
 
     @classmethod
     def get_points(cls):
+        """TODO."""
         return cls.points
 
     @classmethod
     def get_end_tim(cls):
+        """TODO."""
         return cls.end_time
 
     @classmethod
     def get_state_cell(cls):
+        """TODO."""
         return cls.state_cell
 
     @classmethod
     def get_temp(cls):
+        """TODO."""
         return cls.temp
 
     @classmethod
     def get_mfda(cls):
+        """TODO."""
         return cls.mfda
 
     @classmethod
     def get_sr(cls):
+        """TODO."""
         return cls.sr
 
     @classmethod
     def get_itera(cls):
+        """TODO."""
         return cls.itera
 
     @classmethod
     def get_streams(cls):
+        """TODO."""
         return cls.streams
 
     @classmethod
     def get_cell_stream(cls):
+        """TODO."""
         return cls.cell_stream
 
     @classmethod
     def get_mat_stream_reach(cls, i, j):
+        """TODO.
+
+        :param i: TODO
+        :param j: TODO
+        """
         return cls.mat_stream_reach[i][j]
 
     @classmethod
     def get_STREAM_RATIO(cls):
+        """TODO."""
         return cls.STREAM_RATIO
 
     @classmethod
@@ -405,16 +457,14 @@ class Globals:
         cls.mat_fd = None
         # raster contains digital elevation model
         cls.mat_dem = None
-        # raster contains efective couterline data
-        cls.mat_efect_cont = None
+        # raster contains effective couterline data
+        cls.mat_effect_cont = None
         # raster contains surface slopes data
         cls.mat_slope = None
         # raster labels not a number cells
         cls.mat_nan = None
         # raster contains parameters ...
-        cls.mat_a = None
-        # raster contains parameters ...
-        cls.mat_n = None
+        cls.mat_nrill = None
         # ???
         cls.points = None
         # end time of computation
@@ -436,7 +486,7 @@ class Globals:
         cls.mat_stream_reach = None
         # ???
         cls.STREAM_RATIO = None
-        # maximum allowed time step during compuation
+        # maximum allowed time step during computation
         cls.maxdt = None
         # if true extra data are stores in the point*.dat files
         cls.extraOut = None
