@@ -163,7 +163,9 @@ class TimeStep:
         
         # Setting the maximum number of iterations for the solver
         max_iter = 5
-
+        # parameter for the time step modification  
+        modif_up = 2
+        modif_down = 2
         # Calculating the new water level
         for i in range(1, fc.max_iter ):
             # Calcualting the potenial rain
@@ -222,14 +224,16 @@ class TimeStep:
                     continue
             except ZeroDivisionError:
                 raise Error("Error: The nonlinear solver did not converge. Try to change the time step")
-            if solution.nit > 4 :
+  
+            
+            if solution.nit >= max_iter:
             #if ma.any(abs(h_new - h_old) > dh_max):
-                delta_t = delta_t/2
+                delta_t = delta_t/modif_down
             else:
                 # print ('break dt {}'.format(dt))
                 if solution.nit < 3 : 
-                    if ma.all(delta_t*2 < delta_tmax):
-                        delta_t = delta_t*2
+                    if ma.all(delta_t*modif_up < delta_tmax):
+                        delta_t = delta_t*modif_up
                     else:
                         delta_t = delta_tmax
                 break
@@ -237,7 +241,6 @@ class TimeStep:
                 
         #input('press...')
         if i == fc.max_iter-1:
-            print(abs(h_new - h_old))
             raise Error("Error: The nonlinear solver did not meet the requirements after repeated decreasing of the time step. Try to change the maximum time step.")        
         
         # Checking solution for negative values
