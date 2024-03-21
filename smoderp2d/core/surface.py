@@ -3,6 +3,7 @@
 
 import numpy as np
 import numpy.ma as ma
+from numba import jit, cuda
 
 from smoderp2d.core.general import Globals, GridGlobals
 if Globals.isStream:
@@ -416,29 +417,29 @@ def rill_runoff(dt, effect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
     )
 
 
-def surface_retention(bil, sur):
+@cuda.jit('void(float32[:,:], float32[:,:])')
+def surface_retention(bil, sur_ret):
     """TODO.
 
     :param bil: TODO
     :param sur: TODO
     """
-    reten = sur.sur_ret
+    reten = sur_ret
     pre_reten = reten
-    bil_new = ma.where(
-        reten < 0,
-        ma.where(bil + reten > 0, bil + reten, 0),
-        bil
-    )
-    reten_new = ma.where(
-        reten < 0,
-        ma.where(bil + reten > 0, 0, bil + reten),
-        reten
-    )
+    i = cuda.grid(2)
 
-    sur.sur_ret = reten_new
-    sur.cur_sur_ret = reten_new - pre_reten
+    if reten[i] < 0:
+        if bil[i] + reten[i] > 0:
+            bil[i] = bil[i] + reten[i]
+            sur_ret[i] = 0
+        else:
+            bil[i] = 0
+            sur_ret[i] = bil[i] + reten[i]
+    else:
+        bil[i] = bil[i]
+        sur_ret[i] = reten[i]
 
-    return bil_new
+    # cur_sur_ret[i] = reten_new[i] - pre_reten[i]
 
 
 if Globals.isRill:
