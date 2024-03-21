@@ -1,4 +1,3 @@
-import os
 import numpy as np
 import sqlite3
 import tempfile
@@ -21,7 +20,7 @@ from grass.exceptions import CalledModuleError, OpenError
 
 class PrepareData(PrepareDataGISBase):
 
-    def __init__(self, options, writter):
+    def __init__(self, options, writer):
         # defile input parameters
         self._set_input_params(options)
         # TODO: output directory not defined by GRASS (data are written into
@@ -29,7 +28,7 @@ class PrepareData(PrepareDataGISBase):
         self._input_params['output'] = None
         # os.path.join(Location().path(), "output")
 
-        super(PrepareData, self).__init__(writter)
+        super(PrepareData, self).__init__(writer)
 
     def __del__(self):
         # remove mask
@@ -115,8 +114,12 @@ class PrepareData(PrepareDataGISBase):
         self.__remove_temp_data({'name': aoi+'1', 'type': 'vector'})
 
         aoi_polygon = self.storage.output_filepath('aoi_polygon')
-        self._run_grass_module('v.db.addcolumn', map=aoi, columns="dissolve int")
-        self._run_grass_module('v.db.update', map=aoi, column='dissolve', value=1)
+        self._run_grass_module(
+            'v.db.addcolumn', map=aoi, columns="dissolve int"
+        )
+        self._run_grass_module(
+            'v.db.update', map=aoi, column='dissolve', value=1
+        )
         self._run_grass_module(
             'v.dissolve', input=aoi, column='dissolve', output=aoi_polygon
         )
@@ -130,8 +133,19 @@ class PrepareData(PrepareDataGISBase):
         self._run_grass_module('g.region', vector=aoi_polygon, align=elevation)
         self._run_grass_module(
             'v.to.rast', input=aoi_polygon, type='area', use='cat',
-            output=aoi_mask
+            output=aoi_mask+'1'
         )
+
+        # perform aoi_mask postprocessing - remove no-data cells on the edges
+        self._run_grass_module('g.region', zoom=aoi_mask+'1')
+        self._run_grass_module(
+            'r.mapcalc', expression=f'{aoi_mask} = {aoi_mask}1'
+        )
+        self._run_grass_module(
+            'r.to.vect', input=aoi_mask, output=aoi_polygon,
+            flags="v", type="area"
+        )
+        self.__remove_temp_data({'name': aoi_mask+'1', 'type': 'raster'})
 
         return aoi_polygon, aoi_mask
 
@@ -246,7 +260,7 @@ class PrepareData(PrepareDataGISBase):
         region.set_raster_region()
         array = raster2numpy(raster)
         if np.issubdtype(array.dtype, np.integer):
-            array[array == array.min()] = GridGlobals.NoDataValue
+            array[array == -2**31] = GridGlobals.NoDataValue
         else:
             np.nan_to_num(array, copy=False, nan=GridGlobals.NoDataValue)
 
@@ -360,14 +374,17 @@ class PrepareData(PrepareDataGISBase):
 
         # check for empty values
         with Vector(soilveg_aoi) as vmap:
-            vmap.table.filters.select(*list(self.soilveg_fields.keys()))
+            soilveg_fields = list(self.soilveg_fields.keys())
+            vmap.table.filters.select(*soilveg_fields)
             for row in vmap.table:
                 for i in range(len(row)):
                     if row[i] in ("", " ", None):
                         raise DataPreparationInvalidInput(
                             "Values in soilveg table are not correct "
-                            "(field '{}': empty value found in row {})".format(
-                                self.sfield[i], i
+                            "(field '{}': empty value found in row {}). It is"
+                            "recommended to check if the {} code is present in"
+                            " soil and landuse parameter table".format(
+                                soilveg_fields[i], i, soilveg_code
                             )
                         )
 
@@ -399,10 +416,10 @@ class PrepareData(PrepareDataGISBase):
                     for p in vmap:
                         fid = p.attrs[points_fieldname]
                         x, y = p.x, p.y
-                        if self._get_points_dem_coords(x, y):
-                            r, c = self._get_points_dem_coords(x, y)
+                        rc = self._get_point_dem_coords(x, y)
+                        if rc:
                             self._update_points_array(
-                                points_array, i, fid, r, c, x, y
+                                points_array, i, fid, rc[0], rc[1], x, y
                             )
                         else:
                             Logger.info(
@@ -429,7 +446,13 @@ class PrepareData(PrepareDataGISBase):
 
         stream_aoi = self.storage.output_filepath('stream_aoi')
         self._run_grass_module(
-            'v.clip', input=stream, clip=aoi_buffer, output=stream_aoi
+            'v.clip', input=stream, clip=aoi_buffer, output='stream_aoi_unclean'
+        )
+        # clean topology
+        # (necessary for stream connection snapped in lines instead of points)
+        self._run_grass_module(
+            'v.clean', input='stream_aoi_unclean', tool='break',
+            output=stream_aoi
         )
 
         drop_fields = self._stream_check_fields(stream_aoi)
@@ -469,16 +492,18 @@ class PrepareData(PrepareDataGISBase):
             vmap.table.conn.commit()
 
         # extract elevation for the stream segment vertices
-        self._run_grass_module('g.region', raster=dem)
-        self._run_grass_module(
-            'v.drape', input=stream, elevation=dem, output=stream+'_z'
-        )
+        dem_array = self._rst2np(dem)
 
         to_reverse = []
-        with Vector(stream+'_z') as vmap:
+        with Vector(stream) as vmap:
             for seg in vmap:
                 startpt = seg[0]
+                r, c = self._get_point_dem_coords(startpt.x, startpt.y)
+                startpt.z = float(dem_array[r][c])
                 endpt = seg[-1]
+                r, c = self._get_point_dem_coords(endpt.x, endpt.y)
+                endpt.z = float(dem_array[r][c])
+
                 # negative elevation change is the correct direction for stream
                 # segments
                 elev_change = endpt.z - startpt.z
@@ -551,7 +576,9 @@ class PrepareData(PrepareDataGISBase):
                 _, end = seg.nodes()
                 seg.attrs[next_down_fieldname] = Globals.streamsNextDownIdNoSegment
                 for start_seg in end.lines():
-                    if start_seg.id != seg.id:
+                    if start_seg.id != seg.id and start_seg[0] == seg[-1]:
+                        # start_seg[0] == seg[-1] -> check only outflowing
+                        # streams, not inflowing
                         if seg.attrs[next_down_fieldname] != Globals.streamsNextDownIdNoSegment:
                             raise DataPreparationError(
                                 'Incorrect stream network topology downstream '
@@ -577,7 +604,7 @@ class PrepareData(PrepareDataGISBase):
         self._run_grass_module(
             'v.to.rast', input=stream, type='line', use='attr',
             attribute_column=self.fieldnames['stream_segment_id'],
-            output=stream_seg
+            output=stream_seg, flags='d'
         )
 
         mat_stream_seg = self._rst2np(stream_seg)
@@ -619,21 +646,19 @@ class PrepareData(PrepareDataGISBase):
 
         return self._decode_stream_attr(stream_attr)
 
-    def _check_empty_values(self, table, field):
-        """See base method for description."""
+    def _get_field_values(self, table, field):
+        """See base method for description.
+        """
         try:
+            values = []
             with Vector(**self.__qualified_name(table)) as vmap:
-                vmap.table.filters.select(field, self.storage.primary_key)
+                vmap.table.filters.select(field)
                 for row in vmap.table:
-                    if row[0] in (None, ""):
-                        raise DataPreparationInvalidInput(
-                            "'{}' values in '{}' table are not correct, "
-                            "empty value found in row {})".format(
-                                field, table, row[1]
-                            )
-                        )
+                    values.append(row[0])
         except OpenError as e:
             raise DataPreparationInvalidInput(e)
+
+        return values
 
     def _check_input_data(self):
         """See base method for description."""
@@ -666,12 +691,6 @@ class PrepareData(PrepareDataGISBase):
         return fields
 
     def _run_grass_module(self, *args, **kwargs):
-        # if sys.platform == 'win32':
-        #     si = subprocess.STARTUPINFO()
-        #     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        #     si.wShowWindow = subprocess.SW_HIDE
-        #     Module(*args, env_={'startupinfo': si}, **kwargs)
-        # else:
         try:
             with tempfile.NamedTemporaryFile(delete=False) as tmp:
                 kwargs['stderr_'] = tmp
@@ -683,7 +702,7 @@ class PrepareData(PrepareDataGISBase):
             Logger.error(f"Data preparation failed:\n{e}\n{error_msg}")
             raise DataPreparationError(f"Data preparation failed: {error_msg}")
 
-        if self._input_params['t'] is False:
+        if self._input_params['generate_temporary'] is False:
             return 0
 
         export_layers = PrepareDataGISBase.data_layers.keys()
@@ -716,4 +735,6 @@ class PrepareData(PrepareDataGISBase):
                 output_path
             )
         else:
-            raise DataPreparationError(f"Unsupported data type for export: {mtype}")
+            raise DataPreparationError(
+                f"Unsupported data type for export: {mtype}"
+            )

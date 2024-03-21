@@ -3,10 +3,7 @@ import sys
 import csv
 import numpy as np
 
-if sys.version_info.major >= 3:
-    from configparser import NoSectionError, NoOptionError
-else:
-    from ConfigParser import NoSectionError, NoOptionError
+from configparser import NoSectionError, NoOptionError
 
 from smoderp2d.core.general import Globals
 from smoderp2d.core import CompType
@@ -29,7 +26,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             "Run PROFILE1D.", workflow_mode='roff')
         self._config = self._load_config()
 
-        # define storage writter
+        # define storage writer
         self.storage = CmdWriter()
 
     def _load_input_data(self, filename_indata, filename_soil_types):
@@ -192,15 +189,14 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['mat_fd'].fill(4)
 
         # set x and y
-        data['x'] = parsed_data['x'].reshape((data['r'], data['c']))
+        data['nsheet'] = parsed_data['nsheet'].reshape((data['r'], data['c']))
         data['y'] = parsed_data['y'].reshape((data['r'], data['c']))
 
         # set values to parameter matrics
-        data['mat_n'] = parsed_data['n'].reshape((data['r'], data['c']))
+        data['mat_nrill'] = parsed_data['nrill'].reshape((data['r'], data['c']))
         data['mat_b'] = parsed_data['b'].reshape((data['r'], data['c']))
-        data['mat_a'], data['mat_aa'] = self._get_a(
-            data['mat_n'],
-            data['x'],
+        data['mat_aa'] = self._get_a(
+            data['nsheet'],
             data['y'],
             data['r'],
             data['c'],
@@ -250,7 +246,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['slope_width'] = slope_width
 
         # load hidden config
-        data.update(self._load_data_from_hidden_config(ignore=['mfda']))
+        data.update(self._load_data_from_hidden_config())
 
         return data
 

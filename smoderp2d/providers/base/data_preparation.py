@@ -15,21 +15,17 @@ from smoderp2d.providers.base.exceptions import DataPreparationError, \
 
 class PrepareDataBase(ABC):
     @staticmethod
-    def _get_a(mat_n, mat_x, mat_y, r, c, no_data, mat_slope):
+    def _get_a(mat_nsheet, mat_y, r, c, no_data, mat_slope):
         """Build 'a' and 'aa' arrays.
 
-        :param mat_n:
-        :param mat_x:
+        :param mat_nsheet:
         :param mat_y:
         :param r: number of rows
         :param c: number of columns
         :param no_data: no data value
         :param mat_slope:
-        :return: np ndarray for mat_a and for mat_aa
+        :return: np ndarray for mat_aa
         """
-        mat_a = np.zeros(
-            [r, c], float
-        )
         mat_aa = np.zeros(
             [r, c], float
         )
@@ -38,24 +34,20 @@ class PrepareDataBase(ABC):
         for i in range(r):
             for j in range(c):
                 slope = mat_slope[i][j]
-                par_x = mat_x[i][j]
+                par_nsheet = mat_nsheet[i][j]
                 par_y = mat_y[i][j]
 
-                if par_x == no_data or par_y == no_data or slope == no_data:
-                    par_a = no_data
+                if par_nsheet == no_data or par_y == no_data or slope == no_data:
                     par_aa = no_data
-                elif par_x == no_data or par_y == no_data or slope == 0.0:
-                    par_a = 0.0001
-                    par_aa = par_a / mat_n[i][j]
+                elif par_nsheet == no_data or par_y == no_data or slope == 0.0:
+                    par_aa = 0.0001
                 else:
                     exp = np.power(slope, par_y)
-                    par_a = par_x * exp
-                    par_aa = par_a / mat_n[i][j]
+                    par_aa = 1 / mat_nsheet[i][j] * exp
 
-                mat_a[i][j] = par_a
                 mat_aa[i][j] = par_aa
 
-        return mat_a, mat_aa
+        return mat_aa
 
     @staticmethod
     def _get_crit_water(mat_b, mat_tau, mat_v, r, c, mat_slope,
@@ -121,18 +113,13 @@ class PrepareDataBase(ABC):
                     kkk = mat_k[i][j]
                     sss = mat_s[i][j]
                     ccc = [kkk, sss]
-                    try:
-                        if combinat.index(ccc):
-                            mat_inf_index[i][j] = combinat.index(ccc)
-                    except ValueError:
-                        # ccc not in combinat
+                    if ccc not in combinat:
                         combinat.append(ccc)
                         combinatIndex.append(
                             [combinat.index(ccc), kkk, sss, 0]
                         )
-                        mat_inf_index[i][j] = combinat.index(
-                            ccc
-                        )
+
+                    mat_inf_index[i][j] = combinat.index(ccc)
 
         return mat_inf_index, combinatIndex
 
@@ -162,8 +149,15 @@ class PrepareDataBase(ABC):
 
     @staticmethod
     def _get_rr_rc(r, c, mat_boundary):
-        """Create list rr and list of lists rc which contain i and j index of
-        elements inside the compuation domain."""
+        """Create list rr and list of lists rc.
+
+        They contain i and j indexes of elements inside the computation domain.
+
+        :param r: TODO
+        :param c: TODO
+        :param mat_boundary: TODO
+        :return: TODO
+        """
         nr = range(r)
         nc = range(c)
 
@@ -199,6 +193,7 @@ class PrepareDataGISBase(PrepareDataBase):
         'dem_slope_mask': 'temp',
         'dem_polygon': 'temp',
         'aoi': 'temp',
+        'aoi_buffer': 'temp',
         'aoi_polygon': 'core',
         'aoi_mask': 'temp',
         'dem_filled': 'temp',
@@ -214,9 +209,7 @@ class PrepareDataGISBase(PrepareDataBase):
         'points_aoi': 'temp',
         'soil_veg': 'temp',
         'soilveg_aoi': 'temp',
-        'aoi_buffer': 'temp',
         'stream_aoi': 'temp',
-        "stream_aoi_z": 'temp',
         'stream_start': 'temp',
         'stream_end': 'temp',
         'stream_seg': 'temp',
@@ -225,11 +218,12 @@ class PrepareDataGISBase(PrepareDataBase):
     }
 
     soilveg_fields = {
-        "k": None, "s": None, "n": None, "pi": None, "ppl": None,
-        "ret": None, "b": None, "x": None, "y": None, "tau": None, "v": None
+        "k": None, "s": None, "nrill": None, "pi": None, "ppl": None,
+        "ret": None, "b": None, "nsheet": None, "y": None, "tau": None, "v": None
     }
-    def __init__(self, writter):
-        self.storage = writter
+
+    def __init__(self, writer):
+        self.storage = writer
 
         # complete list of field names that are supposed not to be changed,
         # e.g. in properties tables
@@ -245,7 +239,6 @@ class PrepareDataGISBase(PrepareDataBase):
             'channel_shape_id':  self._input_params[
                 'streams_channel_type_fieldname'
             ],
-            'channel_profile': 'profile',
             'channel_shapetype': 'shapetype',
             'channel_bottom_width': 'b',
             'channel_bank_steepness': 'm',
@@ -258,10 +251,8 @@ class PrepareDataGISBase(PrepareDataBase):
         self.storage.set_data_layers(self.data_layers)
 
         self.stream_shape_fields = [
-            self.fieldnames['channel_profile'],
             self.fieldnames['channel_shapetype'],
             self.fieldnames['channel_bottom_width'],
-            self.fieldnames['channel_bank_steepness'],
             self.fieldnames['channel_bank_steepness'],
             self.fieldnames['channel_bed_roughness'],
             self.fieldnames['channel_q365']
@@ -286,12 +277,11 @@ class PrepareDataGISBase(PrepareDataBase):
             'mat_effect_cont': None,
             'mat_slope': None,
             'mat_nan': None,
-            'mat_a': None,
-            'mat_n': None,
+            'mat_nrill': None,
             'end_time': self._input_params['end_time'],
             'state_cell': None,
             'type_of_computing': None,
-            'mfda': None,
+            'mfda': self._input_params['flow_direction'] == 'multiple',
             'sr': None,
             'itera': None,
             'streams': None,
@@ -371,7 +361,8 @@ class PrepareDataGISBase(PrepareDataBase):
         time.
 
         :param reference: reference raster layer
-        :param reference_cellsize: reference raster layer for cell size (see https://github.com/storm-fsv-cvut/smoderp2d/issues/256)
+        :param reference_cellsize: reference raster layer for cell size
+            (see https://github.com/storm-fsv-cvut/smoderp2d/issues/256)
         """
         pass
 
@@ -485,9 +476,36 @@ class PrepareDataGISBase(PrepareDataBase):
         """Get field names for vector layer."""
         pass
 
+    def _check_empty_values(self, table, field, unique=False):
+        """Check empty values in fields.
+
+        :param table: name of table to be checked
+        :param field: name of field to be checked
+        :param unique: True for testing also unique values
+        """
+        values = self._get_field_values(table, field)
+
+        for v in values:
+            if v is None or (isinstance(v, str) and v.strip() == ""):
+                raise DataPreparationInvalidInput(
+                    "Incorrect values in field '{}': "
+                    "empty values are not allowed".format(field)
+                )
+
+        if unique:
+            if len(values) != len(set(values)):
+                raise DataPreparationInvalidInput(
+                    "Incorrect values in field '{}': "
+                    "duplicated values are not allowed".format(field)
+                )
+
     @abstractmethod
-    def _check_empty_values(self, table, field):
-        """Check empty values in fields."""
+    def _get_field_values(self, table, field):
+        """Check empty values in fields.
+
+        :param table: name of table
+        :param field: name of field
+        """
         pass
 
     def run(self):
@@ -580,7 +598,7 @@ class PrepareDataGISBase(PrepareDataBase):
         )
         Logger.progress(40)
 
-        self.data['mat_n'] = self.soilveg_fields['n']
+        self.data['mat_nrill'] = self.soilveg_fields['nrill']
         self.data['mat_pi'] = self.soilveg_fields['pi']
         self.data['mat_ppl'] = self.soilveg_fields['ppl']
         self.data['mat_reten'] = self.soilveg_fields['ret']
@@ -597,11 +615,10 @@ class PrepareDataGISBase(PrepareDataBase):
                               self.data['mat_dem'])
 
         # build a/aa arrays
-        self.data['mat_a'], self.data['mat_aa'] = self._get_a(
-            self.soilveg_fields['n'], self.soilveg_fields['x'],
-            self.soilveg_fields['y'], GridGlobals.r,
-            GridGlobals.c, GridGlobals.NoDataValue, self.data['mat_slope']
-        )
+        self.data['mat_aa'] = self._get_a(
+                self.soilveg_fields['nsheet'], self.soilveg_fields['y'],
+                GridGlobals.r, GridGlobals.c, GridGlobals.NoDataValue,
+                self.data['mat_slope'])
         Logger.progress(50)
 
         Logger.info("Computing critical level...")
@@ -624,7 +641,7 @@ class PrepareDataGISBase(PrepareDataBase):
                 self._input_params['streams'],
                 self._input_params['channel_properties_table'],
                 self._input_params['streams_channel_type_fieldname'],
-                dem_filled,
+                dem_aoi,
                 # provide unclipped DEM to avoid stream vertices placed
                 # outside DEM
                 aoi_polygon
@@ -647,7 +664,6 @@ class PrepareDataGISBase(PrepareDataBase):
             GridGlobals.r, GridGlobals.c, self.data['mat_boundary']
         )
 
-        self.data['mfda'] = False  # ML: ???
         self.data['mat_boundary'] = None  # ML: -> JJ ???
 
         Logger.info("Data preparation has been finished")
@@ -692,7 +708,7 @@ class PrepareDataGISBase(PrepareDataBase):
 
         self.storage.create_storage(self._input_params['output'])
 
-    def _get_points_dem_coords(self, x, y):
+    def _get_point_dem_coords(self, x, y):
         """ Finds the raster row and column index for input x, y coordinates
         :param x: X coordinate of the point
         :param y: Y coordinate of the point
@@ -715,7 +731,8 @@ class PrepareDataGISBase(PrepareDataBase):
 
     def _prepare_streams(self, stream, stream_shape_tab, stream_shape_code,
                          dem, aoi_polygon):
-        if self.data['type_of_computing'] in (CompType.stream_rill, CompType.stream_subflow_rill):
+        rill_comptypes = (CompType.stream_rill, CompType.stream_subflow_rill)
+        if self.data['type_of_computing'] in rill_comptypes:
             Logger.info("Clipping stream to AoI outline ...")
             stream_aoi = self._stream_clip(stream, aoi_polygon)
             Logger.progress(70)
@@ -775,9 +792,7 @@ class PrepareDataGISBase(PrepareDataBase):
         return mat_boundary
 
     def _convert_slope_units(self):
-        """
-        Converts slope units from % to 0-1 range in the mask.
-        """
+        """Convert slope units from % to 0-1 range in the mask."""
         self.data['mat_slope'] = np.where(
             self.data['mat_slope'] != GridGlobals.NoDataValue,
             self.data['mat_slope'] / 100.,
@@ -796,6 +811,10 @@ class PrepareDataGISBase(PrepareDataBase):
         )
 
     def _check_soilveg_dim(self, field):
+        """TODO.
+
+        :param field: TODO
+        """
         if self.soilveg_fields[field].shape[0] != GridGlobals.r or \
            self.soilveg_fields[field].shape[1] != GridGlobals.c:
             raise DataPreparationError(
@@ -806,6 +825,7 @@ class PrepareDataGISBase(PrepareDataBase):
             )
 
     def _get_streams_attr_(self):
+        """Get stream attributes."""
         fields = [
             self.fieldnames['stream_segment_id'],
             self._input_params['streams_channel_type_fieldname'],
@@ -814,13 +834,10 @@ class PrepareDataGISBase(PrepareDataBase):
             self.fieldnames['stream_segment_inclination']
         ] + self.stream_shape_fields
 
-        stream_attr = {}
-        for f in fields:
-            stream_attr[f] = []
-
-        return stream_attr
+        return {field: [] for field in fields}
 
     def _check_input_data_(self):
+        """Check input data."""
         self._check_empty_values(
             self._input_params['vegetation'],
             self._input_params['vegetation_type_fieldname']
@@ -839,7 +856,8 @@ class PrepareDataGISBase(PrepareDataBase):
 
             self._check_empty_values(
                 self._input_params['points'],
-                self._input_params['points_fieldname']
+                self._input_params['points_fieldname'],
+                unique=True
             )
 
         if self._input_params['streams'] or \
@@ -891,7 +909,11 @@ class PrepareDataGISBase(PrepareDataBase):
 
     @staticmethod
     def _check_resolution_consistency(ewres, nsres):
-        """Raise DataPreparationInvalidInput on different spatial resolution."""
+        """Raise DataPreparationInvalidInput on different spatial resolution.
+
+        :param ewres: TODO
+        :param nsres: TODO
+        """
         if not math.isclose(GridGlobals.dx, ewres) or not math.isclose(GridGlobals.dy, nsres):
             raise DataPreparationInvalidInput(
                 "Input DEM spatial resolution ({}, {}) differs from processing "
@@ -901,9 +923,12 @@ class PrepareDataGISBase(PrepareDataBase):
 
     @staticmethod
     def _check_rst2np(arr):
-        """Check numpy array consistency with GridGlobals
+        """Check numpy array consistency with GridGlobals.
         
-        Raise DataPreparationError() if array's shape is different from GridGlobals.
+        Raise DataPreparationError() if array's shape is different from
+        GridGlobals.
+
+        :param arr: TODO
         """
         if arr.shape[0] != GridGlobals.r or arr.shape[1] != GridGlobals.c:
             raise DataPreparationError(
@@ -913,7 +938,11 @@ class PrepareDataGISBase(PrepareDataBase):
             )
 
     def _decode_stream_attr(self, attr):
-        """Decode attribute names to fieldnames keys"""
+        """Decode attribute names to fieldnames keys.
+
+        :param attr: TODO
+        :return: TODO
+        """
         attr_decoded = {}
         for k, v in attr.items():
             key_decoded = list(self.fieldnames.keys())[
@@ -924,6 +953,11 @@ class PrepareDataGISBase(PrepareDataBase):
         return attr_decoded
 
     def _stream_check_fields(self, stream_aoi):
+        """TODO.
+
+        :param stream_aoi: TODO
+        :return: TODO
+        """
         fields = self._get_field_names(stream_aoi)
         duplicated_fields = []
         for f in fields:
@@ -951,7 +985,16 @@ class PrepareDataGISBase(PrepareDataBase):
 
     @staticmethod
     def _update_points_array(array_points, i, fid, r, c, x, y):
-        """Update array of points"""
+        """Update array of points.
+
+        :param array_points: TODO
+        :param i: TODO
+        :param fid: TODO
+        :param r: TODO
+        :param c: TODO
+        :param x: TODO
+        :param y: TODO
+        """
         array_points[i][0] = fid
         array_points[i][1] = r
         array_points[i][2] = c

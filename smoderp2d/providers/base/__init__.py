@@ -20,6 +20,7 @@ from smoderp2d.providers.base.exceptions import DataPreparationError
 
 
 class Args:
+    """TODO."""
 
     # type of computation (CompType)
     workflow_mode = None
@@ -31,6 +32,7 @@ class Args:
 
 
 class WorkflowMode:
+    """TODO."""
 
     # type of computation
     dpre = 0  # data preparation only
@@ -48,6 +50,7 @@ class WorkflowMode:
 
 
 class BaseWriter(object):
+    """TODO."""
     _raster_extension = '.asc'
 
     def __init__(self):
@@ -65,17 +68,20 @@ class BaseWriter(object):
         Get correct path to store dataset 'name'.
 
         :param name: layer name to be saved
-        :param data_type: None to determine target subdirectory from self._data_target
+        :param data_type: None to determine target subdirectory
+            from self._data_target
         :param dirname_only: True to return only path to parent directory
 
         :return: full path to the dataset
         """
         if data_type is None:
             data_type = self._data_target.get(name)
-            if data_type is None or data_type not in ("temp", "control", "core"):
-                raise ProviderError(
-                    "Unable to define target in output_filepath: {}".format(name)
+            defined_targets = ("temp", "control", "core")
+            if data_type is None or data_type not in defined_targets:
+                Logger.debug(
+                   "Unable to define target in output_filepath for {}. Assuming temp.".format(name)
                 )
+                data_type = "temp"
 
         path = os.path.join(Globals.outdir, data_type) if data_type != 'core' else Globals.outdir
         if not os.path.exists(path):
@@ -88,6 +94,8 @@ class BaseWriter(object):
     @staticmethod
     def _print_array_stats(arr, file_output):
         """Print array stats.
+
+        :param file_output: TODO
         """
 
         Logger.info("Raster ASCII output file <{}> saved".format(
@@ -119,6 +127,10 @@ class BaseWriter(object):
         self._write_raster(array, file_output)
 
     def create_storage(self, outdir):
+        """TODO.
+
+        :param outdir: TODO
+        """
         pass
 
     @abstractmethod
@@ -144,6 +156,7 @@ class BaseWriter(object):
 
 
 class BaseProvider(object):
+    """TODO."""
 
     def __init__(self):
         self.args = Args()
@@ -153,13 +166,19 @@ class BaseProvider(object):
         # default logging level (can be modified by provider)
         Logger.setLevel(logging.INFO)
 
-        # storage writter must be defined
+        # storage writer must be defined
         self.storage = None
         self._hidden_config = self.__load_hidden_config()
 
     @property
     def workflow_mode(self):
         return self.args.workflow_mode
+
+    @abstractmethod
+    def _postprocessing(self):
+        """Perform provider-specific postprocessing.
+        """
+        pass
 
     @staticmethod
     def add_logging_handler(handler, formatter=None):
@@ -174,12 +193,12 @@ class BaseProvider(object):
                 "- [%(module)s:%(lineno)s]"
             )
         handler.setFormatter(formatter)
-        if sys.version_info.major >= 3:
-            if len(Logger.handlers) == 0:
-                # avoid duplicated handlers (e.g. in case of ArcGIS)
-                Logger.addHandler(handler)
+        if len(Logger.handlers) == 0:
+            # avoid duplicated handlers (e.g. in case of ArcGIS)
+            Logger.addHandler(handler)
 
-    def __load_hidden_config(self):
+    @staticmethod
+    def __load_hidden_config():
         """Load hidden configuration with advanced settings.
 
         return ConfigParser: object
@@ -200,22 +219,28 @@ class BaseProvider(object):
 
         return config
 
-    def _load_data_from_hidden_config(self, ignore=[]):
+    def _load_data_from_hidden_config(self, ignore=()):
         """Load data from hidden config.
 
-        :param list ignore: list of options to me ignored
+        :param tuple ignore: list of options to me ignored
 
-        :return dict
+        :return: dict
         """
         data = {}
-        data['prtTimes'] = self._hidden_config.get('output', 'printtimes', fallback=None)
-        data['extraout'] = self._hidden_config.getboolean('output', 'extraout', fallback=False)
-        if 'mfda' not in ignore:
-            data['mfda'] = self._hidden_config.getboolean('processes', 'mfda', fallback=False)
+        data['prtTimes'] = self._hidden_config.get(
+            'output', 'printtimes', fallback=None
+        )
+        data['extraout'] = self._hidden_config.getboolean(
+            'output', 'extraout', fallback=False
+        )
+        self.args.workflow_mode = WorkflowMode()[self._hidden_config.get(
+            'processes', 'workflow_mode', fallback="full"
+        )]
 
         return data
 
     def _load_config(self):
+        """TODO."""
         # load configuration
         if not os.path.exists(self.args.config_file):
             raise ConfigError("{} does not exist".format(
@@ -272,6 +297,11 @@ class BaseProvider(object):
         if self._config.get('time', 'endtime'):
             data['end_time'] = self._config.getfloat('time', 'endtime')
 
+        if self._config.get('processes', 'mfda'):
+            data['mfda'] = self._config.getboolean(
+                'processes', 'mfda', fallback=False
+            )
+
         # type of computing
         data['type_of_computing'] = CompType()[
             self._config.get('processes', 'typecomp', fallback='stream_rill')
@@ -314,7 +344,7 @@ class BaseProvider(object):
                           'pixel_area', 'r', 'rc', 'rr', 'xllcorner',
                           'yllcorner'):
                     data[k] = getattr(GridGlobals, k)
-                self._save_data(data, self.args.data_file)
+                self.save_data(data, self.args.data_file)
                 return
 
         if self.args.workflow_mode == WorkflowMode.roff:
@@ -355,13 +385,13 @@ class BaseProvider(object):
         else:
             Globals.extraOut = hidden_config.get('extraout', False)
 
-        Globals.end_time *= 60 # convert min to sec
+        Globals.end_time *= 60  # convert min to sec
 
         # If profile1d provider is used the values
         # should be set in the loop at the beginning
         # of this method since it is part of the
         # data dict (only in profile1d provider).
-        # Otherwise, is has to be set to 1.
+        # Otherwise, it has to be set to 1.
         if Globals.slope_width is None:
             Globals.slope_width = 1
 
@@ -382,14 +412,24 @@ class BaseProvider(object):
             # no output directory defined
             return
         if os.path.exists(output_dir):
-            for filename in os.listdir(output_dir):
-                file_path = os.path.join(output_dir, filename)
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
+            try:
+                for filename in os.listdir(output_dir):
+                    file_path = os.path.join(output_dir, filename)
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+            except PermissionError as e:
+                raise ProviderError(
+                    f"Unable to cleanup output directory: {e}"
+                )
         else:
-            os.makedirs(output_dir)
+            try:
+                os.makedirs(output_dir)
+            except PermissionError as e:
+                raise ProviderError(
+                    f"Unable to create output directory: {e}"
+                )
 
     @staticmethod
     def _comp_type(itc):
@@ -401,7 +441,6 @@ class BaseProvider(object):
         :param CompType itc: type of computation
 
         :return dict:
-
         """
         ret = {}
         for item in ('sheet_only',
@@ -432,15 +471,17 @@ class BaseProvider(object):
         return ret
 
     def logo(self):
-        """Print Smoderp2d ascii-style logo."""
+        """Print SMODERP2D ascii-style logo."""
         logo_file = os.path.join(os.path.dirname(__file__), 'txtlogo.txt')
         with open(logo_file, 'r') as fd:
             self._print_logo_fn(fd.read())
         self._print_logo_fn('')  # extra line
 
     @staticmethod
-    def _save_data(data, filename):
+    def save_data(data, filename):
         """Save data into pickle.
+
+        :param filename: TODO
         """
         if filename is None:
             raise ProviderError('Output file for saving data not defined')
@@ -459,18 +500,16 @@ class BaseProvider(object):
         """Load data from pickle.
 
         :param str filename: file to be loaded
+        :return: TODO
         """
         if filename is None:
             raise ProviderError('Input file for loading data not defined')
         with open(filename, 'rb') as fd:
-            if sys.version_info > (3, 0):
-                data = {
-                    key.decode() if isinstance(key, bytes) else key:
-                    val.decode() if isinstance(val, bytes) else val
-                    for key, val in pickle.load(fd, encoding='bytes').items()
-                }
-            else:
-                data = pickle.load(fd)
+            data = {
+                key.decode() if isinstance(key, bytes) else key:
+                val.decode() if isinstance(val, bytes) else val
+                for key, val in pickle.load(fd, encoding='bytes').items()
+            }
         Logger.debug('Size of loaded data is {} bytes'.format(
             sys.getsizeof(data))
         )
@@ -478,6 +517,12 @@ class BaseProvider(object):
         return data
 
     def postprocessing(self, cumulative, surface_array, stream):
+        """Perform postprocessing steps. Store results.
+
+        :param cumulative: Cumulative object
+        :param surface_array: numpy array
+        :param stream: stream array (reach)
+        """
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
 
@@ -606,6 +651,9 @@ class BaseProvider(object):
                               'q365_m3_s{sep}V_out_cum_m3{sep}'
                               'Q_max_m3_s'.format(sep=';'))
 
+        # perform provider-specific postprocessing
+        self._postprocessing()
+
     @staticmethod
     def _make_mask(arr):
         """ Assure that the no data value is outside the
@@ -614,7 +662,6 @@ class BaseProvider(object):
 
         :param arr: numpy array
         """
-
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
 
@@ -626,11 +673,3 @@ class BaseProvider(object):
                 arr[i, j] = copy_arr[i, j]
 
         return arr
-
-        # TODO
-        # if not Globals.extraOut:
-        #     if os.path.exists(output + os.sep + 'temp'):
-        #         shutil.rmtree(output + os.sep + 'temp')
-        #     if os.path.exists(output + os.sep + 'temp_dp'):
-        #         shutil.rmtree(output + os.sep + 'temp_dp')
-        #     return 1

@@ -35,24 +35,34 @@ git clone https://github.com/storm-fsv-cvut/smoderp2d.git
 Build an image:
 
 ```sh
-docker build -t smoderp docker/
+docker build \
+ --tag smoderp2d:latest --file docker/Dockerfile .
 ```
 
 Run SMODERP command line tool from Docker container:
 
 ```sh
-docker run -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
- ./bin/start-smoderp2d.py smoderp \
- --config tests/config_files/quicktest.ini
+docker run \
+ -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
+ ./bin/start-smoderp2d.py smoderp2d \
+ --config tests/config_files/quicktest_stream_rill.ini
 ```
 
-### From command line locally
+### Run locally
+
+Build and install SMODERP2D Python package:
 
 ```sh
-./bin/start-smoderp2d.py --config tests/config_files/quicktest.ini
+pip install .
 ```
 
-### From GRASS GIS
+#### Command line
+
+```sh
+./bin/start-smoderp2d.py --config tests/config_files/quicktest_stream_rill.ini
+```
+
+#### GRASS GIS
 
 Note: GRASS GIS 8.3+ required
 
@@ -82,25 +92,38 @@ Run `r.smoderp2d` module:
     output=tests/data/output
 ```
 
-### From ArcGIS 10.x or Pro
+#### ArcGIS Pro
 
 Launch SMODERP2D ArcToolbox from `bin\arcgis` directory.
 
 ![SMODERP2D ArcToolbox in action](img/arctoolbox.png?raw=true "SMODERP2D ArcToolbox in action")
 
-### From QGIS
+#### QGIS
 
 Requirements: QGIS 3.28.10 and higher
 
-Set path to the plugin from command line:
-
-```sh
-QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/nucice/qgis_project.qgz
-```
-
-or define `QGIS_PLUGINPATH` in `Settings -> Options -> System` and restart QGIS:
+Define `QGIS_PLUGINPATH` and `PYTHONPATH` environmental variables in
+`Settings -> Options -> System` and restart QGIS:
 
 ![SMODERP2D QGIS settings](img/qgis_settings.png?raw=true "QGIS settings")
 
+Than enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
 
-And enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
+Alternatively set up environment variables in command line before starting QGIS:
+
+```sh
+PYTHONPATH=`pwd` QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/nucice/qgis_project.qgz
+```
+
+#### Known issue
+
+On MS Windows QGIS plugin suffers by poping-up windows when starting computation.
+This can be solved by copying ``core.py`` file located in ``smoderp2d\bin\qgis\grass_patch``
+to a GRASS target directory.
+
+GRASS target directory is typically located in:
+
+- ``C:\Program Files\QGIS 3.**.*\apps\grass\grass83\etc\python\grass\script`` in the case that QGIS has been installed by standalone installer, or
+- ``C:\OSGeo4W\apps\grass\grass83\etc\python\grass\script`` in the case that QGIS has been installed by OSGeo4W network installer.
+
+Update: This bug has been fixed in GRASS GIS 8.4.

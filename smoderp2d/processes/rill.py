@@ -11,7 +11,6 @@ def update_hb(loc_V_to_rill, rillRatio, l, b):
     if ma.any(V < 0):
         raise SmoderpError('V is smaller than 0')
     newb = ma.sqrt(V / (rillRatio * l))
-    # if ppp :  print 'zvetsuje', newb, b, V
     b = ma.where(
         V > 0,
         ma.maximum(b, newb),
@@ -24,7 +23,6 @@ def update_hb(loc_V_to_rill, rillRatio, l, b):
 
 def rill(V_to_rill, rillRatio, l, b, delta_t,
          ratio, n, slope):
-
     V_rill_runoff = 0
     V_rill_rest = 0     # vrillrest z predchoziho kroku je zapocten v vtorill
     # b = 0.0
@@ -111,12 +109,10 @@ def rill(V_to_rill, rillRatio, l, b, delta_t,
 #         # if sur.state != 2 :
 #         #     b = 0
 #
-#         # print '\t', b,
 #         b, V_rill_runoff, V_rill_rest, q, v, courant = rill(
 #             V_to_rill, rillRatio, l, b, delta_t, ratio, n, slope
 #         )
 #         # if ppp :
-#         # print '\t', b, V_rill_runoff, V_rill_rest, courant
 #         if courant > courantMax:
 #             Logger.debug('------ ratio += 1 -----')
 #             input()
@@ -129,6 +125,4 @@ def rill(V_to_rill, rillRatio, l, b, delta_t,
 #
 #     qMax = max(q)
 #     vMax = max(v)
-#     # print input('..')
-#     # print "V_to_rill, V_rill_runoff", V_to_rill, V_rill_runoff
 #     return b, V_to_rill, V_rill_runoff, V_rill_rest, qMax, vMax, ratio, courant

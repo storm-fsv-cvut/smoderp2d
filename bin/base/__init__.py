@@ -24,9 +24,9 @@ arguments = {
     'soil': Argument('Soil polygons feature layer'),
     'landuse': Argument('Landuse polygons feature layer'),
     'points': Argument('Input points feature layer'),
-    'points_field': Argument('Field with the input points identifier'),
-    'stream': Argument('Stream network feature layer'),
-    'rainfall': Argument('Definition of the rainfall event'),
+    'points_fieldname': Argument('Field with the input points identifier'),
+    'streams': Argument('Stream network feature layer'),
+    'rainfall_file': Argument('Definition of the rainfall event'),
     'output': Argument('Output directory'),
     'max_time_step': Argument('Maximum time step [s]'),
     'total_time': Argument('Total running time [min]'),
@@ -37,10 +37,11 @@ arguments = {
     'soil_landuse_field': Argument(
         'Field with the connection between landuse and soil'
     ),
-    'channel_type_identifier': Argument(
+    'streams_channel_type_fieldname': Argument(
         'Field with the channel type identifier'
     ),
-    'channel_properties': Argument('Channel properties table'),
+    'channel_properties_table': Argument('Channel properties table'),
+    'flow_direction': Argument('Flow direction'),
     'preparation_only': Argument('Do the data preparation only'),
     'generate_temporary': Argument('Generate also temporary data'),
 }
@@ -51,14 +52,15 @@ sections = [
         'Spatial data',
         (
             'elevation', 'soil', 'soil_type_field', 'landuse',
-            'landuse_type_field', 'points', 'points_field', 'stream', 'rainfall'
+            'landuse_type_field', 'points', 'points_fieldname', 'streams',
+            'rainfall_file'
         )
     ),
     Section(
         'Model parameters',
         (
-            'soil_landuse_table', 'soil_landuse_field', 'channel_properties',
-            'channel_type_identifier'
+            'soil_landuse_table', 'soil_landuse_field',
+            'channel_properties_table', 'streams_channel_type_fieldname'
         )
     ),
     Section(
@@ -67,6 +69,6 @@ sections = [
     ),
     Section(
         'Advanced',
-        ('generate_temporary', )
+        ('flow_direction', 'generate_temporary', )
     )  # TODO: Add ('preparation_only',))
 ]

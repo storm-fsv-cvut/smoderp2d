@@ -23,47 +23,50 @@ import smoderp2d.flow_algorithm.mfd as mfd
 import smoderp2d.flow_algorithm.D8 as D8_
 from smoderp2d.providers import Logger
 
-# Defines methods for executing the one direction flow algorithm D8.
-#
-#  Can be inherited by the Classes:
-#
-#  - smoderp2d.core.kinematic_diffuse.Kinematic
-#  - smoderp2d.core.kinematic_diffuse.Diffuse
-#
-
 
 class D8(object):
+    """Define methods for executing the one direction flow algorithm D8.
 
-    # constructor
-    #
-    #  defines inflows list which defines the flow direction for each
-    #  cell of the DEM. The kinematic approach is used the inflows are defines
-    #  only once in this constructor.
-    #
+    Can be inherited by the Classes:
+
+     - smoderp2d.core.kinematic_diffuse.Kinematic
+     - smoderp2d.core.kinematic_diffuse.Diffuse
+    """
 
     def __init__(self):
+        """Constructor.
+
+        Defines inflows list which defines the flow direction for each
+        cell of the DEM. The kinematic approach is used the inflows are defines
+        only once in this constructor.
+        """
         Logger.info("D8 flow algorithm")
         self.inflows = D8_.new_inflows(Globals.get_mat_fd())
 
-    # updates #inflows list if the diffuse approach is used.
-    #
-    # In the diffusive approach the flow direction may change due to changes of
-    # the water level.
-    #
     def update_inflows(self, fd):
+        """Update inflows list if the diffuse approach is used.
+
+        In the diffusive approach the flow direction may change due to changes
+        of the water level.
+
+        :param fd: TODO
+        """
         self.inflows = D8_.new_inflows(fd)
 
-    # returns the water volume water flows into cell i , j from the previous
-    # time step based on the inflows list.
-    #
-    # inflows list definition is shown in the method  new_inflows() in the
-    # package smoderp2d.flow_algorithm.D8.
-    #
-    #  The total inflow is sum of sheet and rill runoff volume.
-    #
-    #  @return inflow_from_cells inflow volume from the adjacent cells
-    #
     def cell_runoff(self, i, j):
+        """Return the water volume water flows into cell i, j
+
+        Returns values from the previous time step based on the inflows list.
+
+        Inflows list definition is shown in the method  new_inflows() in the
+        package smoderp2d.flow_algorithm.D8.
+
+        The total inflow is sum of sheet and rill runoff volume.
+
+        :param i: TODO
+        :param j: TODO
+        :returns: inflow volume from the adjacent cells
+        """
         inflow_from_cells = 0.0
         for z in range(len(self.inflows[i][j])):
             ax = self.inflows[i][j][z][0]
@@ -84,22 +87,28 @@ class D8(object):
         return inflow_from_cells
 
 
-# Defines methods for executing the multiple flow direction algorithm mfda.
-#
-#  Can be inherited by the Classes:
-#
-#  - smoderp2d.core.kinematic_diffuse.Kinematic
-#  - smoderp2d.core.kinematic_diffuse.Diffuse
-#
-#  note: The rill flow, if computed, is always defined in terms
-#  of one of the direction algorithm. In the class Mfda are therefore
-#  defined rules for mfda which governs the sheet flow and D8
-#  algorithm which defines the rill flow.
-#
 class Mfda(object):
+    """Define methods for executing the multiple flow direction algorithm mfda.
+
+    Can be inherited by the Classes:
+
+    - smoderp2d.core.kinematic_diffuse.Kinematic
+    - smoderp2d.core.kinematic_diffuse.Diffuse
+
+    note: The rill flow, if computed, is always defined in terms
+    of one of the direction algorithm. In the class Mfda are therefore
+    defined rules for mfda which governs the sheet flow and D8
+    algorithm which defines the rill flow.
+    """
 
     def __init__(self):
+        """Constructor.
 
+        Defines inflows list which defines the flow direction for each
+        cell of the DEM. The kinematic approach is used the inflows are defines
+        only once in this constructor.
+        TODO.
+        """
         Logger.info("Multiflow direction algorithm")
         self.inflows, fd_rill = mfd.new_mfda(
             Globals.mat_dem, Globals.mat_nan, Globals.mat_fd
@@ -107,20 +116,41 @@ class Mfda(object):
         self.inflowsRill = D8_.new_inflows(fd_rill)
 
     def update_inflows(self, fd):
+        """Update inflows list if the diffuse approach is used.
+
+        In the diffusive approach the flow direction may change due to changes
+        of the water level.
+
+        :param fd: TODO
+        """
         self.inflows, fd_rill = mfd.new_mfda(self.H, Globals.mat_nan, fd)
         self.inflowsRill = D8_.new_inflows(fd_rill)
 
     def cell_runoff(self, i, j, sur=True):
+        """Return the water volume water flows into cell i, j
+
+        Returns values from the previous time step based on the inflows list.
+
+        Inflows list definition is shown in the method  new_inflows() in the
+        package smoderp2d.flow_algorithm.D8.
+
+        The total inflow is sum of sheet and rill runoff volume.
+
+        :param i: TODO
+        :param j: TODO
+        :param sur: TODO
+        :returns: inflow volume from the adjacent cells
+        """
         if i == 0:
-            inflows_up = np.array([[0,] * 8,] * GridGlobals.c)
+            inflows_up = np.zeros((GridGlobals.c, 8))
             inflows_down = self.inflows[i + 1]
-            vol_runoff_up = np.array([0,] * GridGlobals.c)
+            vol_runoff_up = np.zeros(GridGlobals.c)
             vol_runoff_down = self.arr.vol_runoff.data[i + 1]
         elif i == GridGlobals.r - 1:
             inflows_up = self.inflows[i - 1]
-            inflows_down = np.array([[0,] * 8,] * GridGlobals.c)
+            inflows_down = np.zeros((GridGlobals.c, 8))
             vol_runoff_up = self.arr.vol_runoff.data[i - 1]
-            vol_runoff_down = np.array([0,] * GridGlobals.c)
+            vol_runoff_down = np.zeros(GridGlobals.c)
         else:
             inflows_up = self.inflows[i - 1]
             inflows_down = self.inflows[i + 1]
