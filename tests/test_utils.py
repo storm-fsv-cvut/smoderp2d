@@ -42,7 +42,13 @@ def write_array_diff(arr1, arr2, target_path):
     try:
         diff = arr1 - arr2
     except ValueError as e:
-        print(f"Unable to compute array diff: {e}")
+        if arr1.shape == arr2.shape:
+            print(f"Unable to compute array diff: {e}")
+        else:
+            print(
+                f"The two arrays have different shapes: "
+                f"{arr1.shape} versus {arr2.shape}"
+            )
         return
 
     if not diff.any():
@@ -155,33 +161,39 @@ def are_dir_trees_equal(dir1, dir2):
 
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
-        equal = np.allclose(new_output, reference, rtol=relative_tolerance)
-        if equal is True:
-            same_files.append(file_path)
-        else:
-            diff_files.append(file_path)
+        if new_output.shape == reference.shape:
+            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+            if equal is True:
+                same_files.append(file_path)
+                continue
+
+        diff_files.append(file_path)
 
     for i in glob.glob(os.path.join(dir1, 'control', '*.asc')):
         file_path = os.path.join('control', os.path.split(i)[1])
 
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
-        equal = np.allclose(new_output, reference, rtol=relative_tolerance)
-        if equal is True:
-            same_files.append(file_path)
-        else:
-            diff_files.append(file_path)
+        if new_output.shape == reference.shape:
+            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+            if equal is True:
+                same_files.append(file_path)
+                continue
+
+        diff_files.append(file_path)
 
     for i in glob.glob(os.path.join(dir1, 'control_point', '*.csv')):
         file_path = os.path.join('control_point', os.path.split(i)[1])
 
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
-        equal = np.allclose(new_output, reference, rtol=relative_tolerance)
-        if equal is True:
-            same_files.append(file_path)
-        else:
-            diff_files.append(file_path)
+        if new_output.shape == reference.shape:
+            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+            if equal is True:
+                same_files.append(file_path)
+                continue
+
+        diff_files.append(file_path)
 
     assert len(diff_files) == 0, \
         _print_diff_files(

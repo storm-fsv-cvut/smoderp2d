@@ -60,30 +60,35 @@ def load_precipitation(fh):
         fh = open(fh, "r")
         x = []
         for line in fh.readlines():
-            z = line.split()
-            if len(z) == 0:
+            split_line = line.split()
+            if len(split_line) == 0 or '#' in split_line[0]:
+                # row is empty or there is a comment
                 continue
-            elif z[0].find('#') >= 0:
+
+            try:
+                timestamp = float(split_line[0])
+                precipitation = float(split_line[1])
+            except ValueError:
+                # probaby comma used to separate decimal part
+                timestamp = float(split_line[0].replace(',', '.'))
+                precipitation = float(split_line[1].replace(',', '.'))
+
+            if (timestamp == 0) & (precipitation > 0):
+                # if the record start with zero minutes the line has to
+                # be corrected
+                raise ErrorInRainfallRecord()
+            elif (timestamp == 0) & (precipitation == 0):
+                # if the record start with zero minutes and rainfall
+                # the line is ignored
                 continue
             else:
-                if len(z) == 0:  # if raw in text file is empty
-                    continue
-                elif (float(z[0]) == 0) & (float(z[1]) > 0):
-                    # if the record start with zero minutes the line has to
-                    # be corrected
-                    raise ErrorInRainfallRecord()
-                elif (float(z[0]) == 0) & (float(z[1]) == 0):
-                    # if the record start with zero minutes and rainfall
-                    # the line is ignored
-                    continue
-                else:
-                    y0 = float(z[0]) * 60.0  # convert minutes to seconds
-                    y1 = float(z[1]) / 1000.0  # convert mm to m
-                    if y1 < y2:
-                        raise NonCumulativeRainData()
-                    y2 = y1
-                    mv = y0, y1
-                    x.append(mv)
+                y0 = timestamp * 60.0  # convert minutes to seconds
+                y1 = precipitation / 1000.0  # convert mm to m
+                if y1 < y2:
+                    raise NonCumulativeRainData()
+                y2 = y1
+                mv = y0, y1
+                x.append(mv)
         fh.close()
 
         # Values ordered by time ascending
