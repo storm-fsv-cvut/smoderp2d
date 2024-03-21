@@ -33,6 +33,8 @@ class HistoryWidget(QListWidgetItem):
             'elevation': map_names['elevation'],
             'soil': map_names['soil'],
             'soil_type_fieldname': params['soil_type_fieldname'],
+            'vegetation': map_names['vegetation'],
+            'vegetation_type_fieldname': params['vegetation_type_fieldname'],
             'points': map_names['points'],
             'points_fieldname': params['points_fieldname'],
             'streams': map_names['streams'],

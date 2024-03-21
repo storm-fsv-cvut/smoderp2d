@@ -912,6 +912,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 param_dict = {
                     'elevation': instance.mapLayersByName('dem')[0],
                     'soil': instance.mapLayersByName('soils')[0],
+                    'soil_type_fieldname': 'Soil',
+                    'vegetation': instance.mapLayersByName('landuse')[0],
+                    'vegetation_type_fieldname': 'LandUse',
                     'points': instance.mapLayersByName('points')[0],
                     'points_fieldname': 'point_id',
                     'streams': instance.mapLayersByName('streams')[0],
@@ -947,6 +950,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.elevation.setLayer(param_dict['elevation'])
         self.soil.setLayer(param_dict['soil'])
         self.soil_type.setCurrentText(param_dict['soil_type_fieldname'])
+        self.vegetation.setLayer(param_dict['vegetation'])
+        self.vegetation_type.setCurrentText(param_dict['vegetation_type_fieldname'])
         self.points.setLayer(param_dict['points'])
         self.points_field.setCurrentText(
             param_dict['points_fieldname']
