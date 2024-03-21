@@ -72,7 +72,8 @@ class SubArrs:
         )
 
 
-class SubsurfaceC(GridGlobals, get_diffuse() if Globals.diffuse else get_kinematic()):
+class SubsurfaceC(GridGlobals,
+                  get_diffuse() if Globals.wave == 'diffusion' else get_kinematic()):
     def __init__(self, L_sub, Ks, vg_n, vg_l):
         """TODO.
 

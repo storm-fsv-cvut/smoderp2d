@@ -9,7 +9,7 @@ if Globals.isStream:
     from smoderp2d.core.stream import Stream
 else:
     from smoderp2d.core.stream import StreamPass as Stream
-from smoderp2d.core.kinematic_diffuse import get_kinematic
+from smoderp2d.core.kinematic_diffuse import get_kinematic, get_diffuse
 import smoderp2d.processes.rill as rill
 import smoderp2d.processes.surface as surfacefce
 
@@ -107,7 +107,8 @@ class SurArrs(object):
 
 
 def get_surface():
-    class Surface(GridGlobals, Stream, get_kinematic()):
+    class Surface(GridGlobals, Stream,
+                  get_diffuse() if Globals.wave == 'diffusion' else get_kinematic()):
         """Data and methods to calculate the surface and rill runoff."""
 
         def __init__(self):

@@ -19,6 +19,11 @@ jobs:
     with:
       pytest-suite: tests/test_cmd.py --config config_files/quicktest_rill.ini
 
+  smoderp2d-quicktest-rill-diffusion:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_rill_diffusion.ini
+
   smoderp2d-quicktest-sheet-stream:
     uses: ./.github/workflows/cmd_template.yml
     with:
@@ -53,6 +58,11 @@ jobs:
     uses: ./.github/workflows/cmd_template.yml
     with:
       pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill_mfda.ini
+
+  smoderp2d-longtest-stream-rill-mfda-diffusion:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill_mfda_diffusion.ini
 
   smoderp2d-longtest-stream-rill:
     uses: ./.github/workflows/cmd_template.yml

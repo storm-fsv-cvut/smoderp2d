@@ -30,11 +30,11 @@ def get_diffuse():
         def __init__(self):
             Logger.info("Diffuse approach")
 
-            r = Globals.r
-            c = Globals.c
+            r = GridGlobals.r
+            c = GridGlobals.c
 
             if r is None or c is None:
-                exit("Global variables are not assigned")
+                exit("GridGlobal variables are not assigned")
 
             self.H = ma.masked_array(
                 np.zeros([r, c], float), mask=GridGlobals.masks
@@ -42,11 +42,9 @@ def get_diffuse():
 
         def new_inflows(self):
             fd = flow_direction.flow_direction(
-                self.H,
+                self.arr.h_total_pre + Globals.mat_dem,
                 self.rr,
                 self.rc,
-                self.br,
-                self.bc,
                 self.pixel_area)
             self.update_inflows(fd)
 
