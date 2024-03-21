@@ -835,11 +835,7 @@ class PrepareDataGISBase(PrepareDataBase):
             self.fieldnames['stream_segment_inclination']
         ] + self.stream_shape_fields
 
-        stream_attr = {}
-        for f in fields:
-            stream_attr[f] = []
-
-        return stream_attr
+        return {field: [] for field in fields}
 
     def _check_input_data_(self):
         """Check input data."""

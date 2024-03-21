@@ -7,8 +7,7 @@ from smoderp2d.core.general import GridGlobals
 
 def flow_direction(dem, rr, rc, pixel_size):
 
-    dist = [math.sqrt(pixel_size),
-            math.sqrt(pixel_size * pixel_size)]
+    dist = [math.sqrt(pixel_size), math.sqrt(pixel_size * pixel_size)]
 
     fd = ma.masked_array(np.zeros(dem.shape, int), mask=GridGlobals.masks)
 

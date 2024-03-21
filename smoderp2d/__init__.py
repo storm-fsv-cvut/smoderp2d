@@ -23,4 +23,4 @@ The computational options are as follows:
    - no
 """
 
-__version__ = "2.0.dev"
+__version__ = "2.0.0rc1"

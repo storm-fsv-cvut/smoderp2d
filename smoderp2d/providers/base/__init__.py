@@ -348,7 +348,7 @@ class BaseProvider(object):
                           'pixel_area', 'r', 'rc', 'rr', 'xllcorner',
                           'yllcorner'):
                     data[k] = getattr(GridGlobals, k)
-                self._save_data(data, self.args.data_file)
+                self.save_data(data, self.args.data_file)
                 return
 
         if self.args.workflow_mode == WorkflowMode.roff:
@@ -481,7 +481,7 @@ class BaseProvider(object):
         self._print_logo_fn('')  # extra line
 
     @staticmethod
-    def _save_data(data, filename):
+    def save_data(data, filename):
         """Save data into pickle.
 
         :param filename: TODO
