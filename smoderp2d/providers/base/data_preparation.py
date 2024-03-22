@@ -26,26 +26,20 @@ class PrepareDataBase(ABC):
         :param mat_slope:
         :return: np ndarray for mat_aa
         """
-        mat_aa = np.zeros(
-            [r, c], float
+        mat_aa = ma.where(
+            ma.logical_or(
+                mat_nsheet == no_data, mat_y == no_data, mat_slope == no_data
+            ),
+            no_data,
+            ma.where(
+                ma.logical_or(
+                    mat_nsheet == no_data, mat_y == no_data,
+                    mat_slope == 0
+                ),
+                0.0001,  # comment OP: where did we get this value from?
+                1 / mat_nsheet * ma.power(mat_slope, mat_y)
+            )
         )
-
-        # calculating the "a" parameter
-        for i in range(r):
-            for j in range(c):
-                slope = mat_slope[i][j]
-                par_nsheet = mat_nsheet[i][j]
-                par_y = mat_y[i][j]
-
-                if par_nsheet == no_data or par_y == no_data or slope == no_data:
-                    par_aa = no_data
-                elif par_nsheet == no_data or par_y == no_data or slope == 0.0:
-                    par_aa = 0.0001
-                else:
-                    exp = np.power(slope, par_y)
-                    par_aa = 1 / mat_nsheet[i][j] * exp
-
-                mat_aa[i][j] = par_aa
 
         return mat_aa
 
