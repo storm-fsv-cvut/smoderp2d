@@ -637,6 +637,20 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     def _getInputParams(self):
         """Get input parameters from QGIS plugin."""
+        def get_layer(data_provider):
+            name = data_provider.name()
+            uri = data_provider.dataSourceUri()
+            if name in ('ogr', 'gdal'):
+                ret = uri.split('|', 1)[0]
+            elif name == 'delimitedtext':
+                ret = uri.split('?')[0].split('file://')[1]
+            else:
+                raise ProviderError(
+                    f'Unknown type of layer {data_provider.dataSourceUri()}'
+                )
+
+            return ret
+
         self._input_params = {
             'elevation': self.elevation.currentText(),
             'soil': self.soil.currentText(),
@@ -663,15 +677,16 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         self._input_maps = {
             'elevation':
-                self.elevation.currentLayer().dataProvider().dataSourceUri(),
+                get_layer(self.elevation.currentLayer().dataProvider()),
             'soil':
-                self.soil.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
+                get_layer(self.soil.currentLayer().dataProvider()),
             'vegetation':
-                self.vegetation.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
+                get_layer(self.vegetation.currentLayer().dataProvider()),
             'points': "",
             'streams': "",
-            'table_soil_vegetation':
-                self.table_soil_vegetation.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
+            'table_soil_vegetation': get_layer(
+                self.table_soil_vegetation.currentLayer().dataProvider()
+            ),
             'channel_properties_table': ""
         }
 
@@ -683,16 +698,19 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         # optional inputs
         if self.points.currentLayer() is not None:
-            self._input_maps["points"] = \
-                self.points.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
+            self._input_maps["points"] = get_layer(
+                self.points.currentLayer().dataProvider()
+            )
 
         if self.stream.currentLayer() is not None:
-            self._input_maps["streams"] = \
-                self.stream.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
+            self._input_maps["streams"] = get_layer(
+                self.stream.currentLayer().dataProvider()
+            )
 
         if self.table_stream_shape.currentLayer() is not None:
-            self._input_maps['channel_properties_table'] = \
-                self.table_stream_shape.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
+            self._input_maps['channel_properties_table'] = get_layer(
+                self.table_stream_shape.currentLayer().dataProvider()
+            )
             self._input_maps["streams_channel_type_fieldname"] = self.table_stream_shape_code.currentText()
 
     def _checkInputDataPrep(self):
