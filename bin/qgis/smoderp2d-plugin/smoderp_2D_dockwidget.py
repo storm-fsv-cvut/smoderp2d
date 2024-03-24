@@ -637,7 +637,12 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     def _getInputParams(self):
         """Get input parameters from QGIS plugin."""
-        def get_layer(data_provider):
+        def get_map_path(data_provider):
+            """Get path to a map.
+
+            :param data_provider: qgis_layer.dataProvider()
+            :return: path to the source map as a string
+            """
             name = data_provider.name()
             uri = data_provider.dataSourceUri()
             if name in ('ogr', 'gdal'):
@@ -677,14 +682,14 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         self._input_maps = {
             'elevation':
-                get_layer(self.elevation.currentLayer().dataProvider()),
+                get_map_path(self.elevation.currentLayer().dataProvider()),
             'soil':
-                get_layer(self.soil.currentLayer().dataProvider()),
+                get_map_path(self.soil.currentLayer().dataProvider()),
             'vegetation':
-                get_layer(self.vegetation.currentLayer().dataProvider()),
+                get_map_path(self.vegetation.currentLayer().dataProvider()),
             'points': "",
             'streams': "",
-            'table_soil_vegetation': get_layer(
+            'table_soil_vegetation': get_map_path(
                 self.table_soil_vegetation.currentLayer().dataProvider()
             ),
             'channel_properties_table': ""
@@ -698,17 +703,17 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         # optional inputs
         if self.points.currentLayer() is not None:
-            self._input_maps["points"] = get_layer(
+            self._input_maps["points"] = get_map_path(
                 self.points.currentLayer().dataProvider()
             )
 
         if self.stream.currentLayer() is not None:
-            self._input_maps["streams"] = get_layer(
+            self._input_maps["streams"] = get_map_path(
                 self.stream.currentLayer().dataProvider()
             )
 
         if self.table_stream_shape.currentLayer() is not None:
-            self._input_maps['channel_properties_table'] = get_layer(
+            self._input_maps['channel_properties_table'] = get_map_path(
                 self.table_stream_shape.currentLayer().dataProvider()
             )
             self._input_maps["streams_channel_type_fieldname"] = self.table_stream_shape_code.currentText()
