@@ -15,13 +15,11 @@ from smoderp2d.providers.base.exceptions import DataPreparationError, \
 
 class PrepareDataBase(ABC):
     @staticmethod
-    def _get_a(mat_nsheet, mat_y, r, c, no_data, mat_slope):
+    def _get_a(mat_nsheet, mat_y, no_data, mat_slope):
         """Build 'a' and 'aa' arrays.
 
         :param mat_nsheet:
         :param mat_y:
-        :param r: number of rows
-        :param c: number of columns
         :param no_data: no data value
         :param mat_slope:
         :return: np ndarray for mat_aa
@@ -611,8 +609,7 @@ class PrepareDataGISBase(PrepareDataBase):
         # build a/aa arrays
         self.data['mat_aa'] = self._get_a(
                 self.soilveg_fields['nsheet'], self.soilveg_fields['y'],
-                GridGlobals.r, GridGlobals.c, GridGlobals.NoDataValue,
-                self.data['mat_slope'])
+                GridGlobals.NoDataValue, self.data['mat_slope'])
         Logger.progress(50)
 
         Logger.info("Computing critical level...")

@@ -198,8 +198,6 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['mat_aa'] = self._get_a(
             data['nsheet'],
             data['y'],
-            data['r'],
-            data['c'],
             data['NoDataValue'],
             data['mat_slope'])
         data['mat_hcrit'] = self._get_crit_water(
