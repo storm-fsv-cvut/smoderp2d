@@ -513,7 +513,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
     def _addCurrentHistoryItem(self):
         """Add the current run into settings[historical_runs].
 
-        Control that there is no more than 15 historical items holded.
+        Control that there is no more than 25 historical items holded.
 
         Then call _addHistoryItem to add the widget to the pane.
         """
@@ -637,6 +637,25 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     def _getInputParams(self):
         """Get input parameters from QGIS plugin."""
+        def get_map_path(data_provider):
+            """Get path to a map.
+
+            :param data_provider: qgis_layer.dataProvider()
+            :return: path to the source map as a string
+            """
+            name = data_provider.name()
+            uri = data_provider.dataSourceUri()
+            if name in ('ogr', 'gdal'):
+                ret = uri.split('|', 1)[0]
+            elif name == 'delimitedtext':
+                ret = uri.split('?')[0].split('file://')[1]
+            else:
+                raise ProviderError(
+                    f'Unknown type of layer {data_provider.dataSourceUri()}'
+                )
+
+            return ret
+
         self._input_params = {
             'elevation': self.elevation.currentText(),
             'soil': self.soil.currentText(),
@@ -663,15 +682,16 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         self._input_maps = {
             'elevation':
-                self.elevation.currentLayer().dataProvider().dataSourceUri(),
+                get_map_path(self.elevation.currentLayer().dataProvider()),
             'soil':
-                self.soil.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
+                get_map_path(self.soil.currentLayer().dataProvider()),
             'vegetation':
-                self.vegetation.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
+                get_map_path(self.vegetation.currentLayer().dataProvider()),
             'points': "",
             'streams': "",
-            'table_soil_vegetation':
-                self.table_soil_vegetation.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0],
+            'table_soil_vegetation': get_map_path(
+                self.table_soil_vegetation.currentLayer().dataProvider()
+            ),
             'channel_properties_table': ""
         }
 
@@ -683,16 +703,19 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         # optional inputs
         if self.points.currentLayer() is not None:
-            self._input_maps["points"] = \
-                self.points.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
+            self._input_maps["points"] = get_map_path(
+                self.points.currentLayer().dataProvider()
+            )
 
         if self.stream.currentLayer() is not None:
-            self._input_maps["streams"] = \
-                self.stream.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
+            self._input_maps["streams"] = get_map_path(
+                self.stream.currentLayer().dataProvider()
+            )
 
         if self.table_stream_shape.currentLayer() is not None:
-            self._input_maps['channel_properties_table'] = \
-                self.table_stream_shape.currentLayer().dataProvider().dataSourceUri().split('|', 1)[0]
+            self._input_maps['channel_properties_table'] = get_map_path(
+                self.table_stream_shape.currentLayer().dataProvider()
+            )
             self._input_maps["streams_channel_type_fieldname"] = self.table_stream_shape_code.currentText()
 
     def _checkInputDataPrep(self):
@@ -912,6 +935,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 param_dict = {
                     'elevation': instance.mapLayersByName('dem')[0],
                     'soil': instance.mapLayersByName('soils')[0],
+                    'soil_type_fieldname': 'Soil',
+                    'vegetation': instance.mapLayersByName('landuse')[0],
+                    'vegetation_type_fieldname': 'LandUse',
                     'points': instance.mapLayersByName('points')[0],
                     'points_fieldname': 'point_id',
                     'streams': instance.mapLayersByName('streams')[0],
@@ -946,6 +972,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         """
         self.elevation.setLayer(param_dict['elevation'])
         self.soil.setLayer(param_dict['soil'])
+        self.soil_type.setCurrentText(param_dict['soil_type_fieldname'])
+        self.vegetation.setLayer(param_dict['vegetation'])
+        self.vegetation_type.setCurrentText(param_dict['vegetation_type_fieldname'])
         self.points.setLayer(param_dict['points'])
         self.points_field.setCurrentText(
             param_dict['points_fieldname']
