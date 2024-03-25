@@ -585,7 +585,9 @@ class PrepareData(PrepareDataGISBase):
                             raise DataPreparationError(
                                 'Incorrect stream network topology downstream '
                                 'segment streamID: {}. The network can not '
-                                'bifurcate.'.format(segment_id)
+                                'bifurcate (at point [{}, {}]).'.format(
+                                    segment_id, seg[-1].x, seg[-1].y
+                                )
                             )
                         seg.attrs[next_down_fieldname] = vmap[
                             start_seg.id
