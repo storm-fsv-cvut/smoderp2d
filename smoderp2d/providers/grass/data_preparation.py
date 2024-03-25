@@ -511,8 +511,10 @@ class PrepareData(PrepareDataGISBase):
                 segment_id = seg.attrs[segment_id_fieldname]
                 if elev_change == 0:
                     raise DataPreparationError(
-                        'Stream segment {}: {} has zero slope'.format(
-                            segment_id_fieldname, segment_id
+                        'Stream segment {}: {} [[{}, {}], [{}, {}]] has zero '
+                        'slope'.format(
+                            segment_id_fieldname, segment_id, startpt.x,
+                            startpt.y, endpt.x, endpt.y
                         )
                     )
                 elif elev_change < 0:
