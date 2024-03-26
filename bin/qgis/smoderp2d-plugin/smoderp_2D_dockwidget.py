@@ -903,9 +903,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     def _loadTestParams(self):
         """Load test parameters into the GUI."""
-        dir_path = os.path.join(
-            os.path.dirname(__file__), '..', '..', '..', 'tests', 'data'
-        )
+        dir_path = QgsProject.instance().readPath("./")
         try:
             instance = QgsProject.instance()
             with tempfile.NamedTemporaryFile() as temp_dir:
