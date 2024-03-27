@@ -218,6 +218,7 @@ class TimeStep:
                                                 method='krylov', options={'fatol':1e-8,'maxiter':max_iter})
                 
                 h_new = solution.x
+                fc.iter_ = solution.nit
                 
                 #print ('h_hew {} nit {}'.format(h_new.mean(), solution.nit))
                 if solution.success == False:
