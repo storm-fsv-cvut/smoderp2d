@@ -22,6 +22,7 @@ bin/qgis/smoderp2d-plugin/zip_build/
 # build files
 build
 smoderp2d.egg-info
+*.whl
 
 # jetbrains
 .idea/
