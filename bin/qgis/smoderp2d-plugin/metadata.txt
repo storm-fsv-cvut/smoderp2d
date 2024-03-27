@@ -1,23 +1,19 @@
-# This file contains metadata for your plugin. Since 
-# version 2.0 of QGIS this is the proper way to supply 
-# information about a plugin. The old method of 
-# embedding metadata in __init__.py will 
-# is no longer supported since version 2.0.
+# This file should be included when you package your plugin.
 
-# This file should be included when you package your plugin.# Mandatory items:
+# Mandatory items:
 
 [general]
 name=SMODERP2D
-qgisMinimumVersion=3.0
-description=This plugin computes hydrological erosion model.
+qgisMinimumVersion=3.28.10
+description=This plugin calculates hydrological and erosion processes on individual plots or small catchments.
 version=2.0.0rc1
 author=CTU
 email=petr.kavka@fsv.cvut.cz
 
-about=This plugin computes hydrological erosion model.
+about=The SMODERP2D model is designed to calculate hydrological and erosion processes on individual plots or small catchments. The outputs of the model are primarily used to determine runoff conditions in a catchment and obtain parameters for runoff and erosion control measures on agricultural land. Additionally, the model can assist in designing more complex systems, including sediment retention ponds, dry basins, or polders. Its use complies with current methods, technical standards, and recommended practices.
 
-tracker=https://github.com/jerabekjak/smoderp/
-repository=https://github.com/jerabekjak/smoderp/
+tracker=https://github.com/storm-fsv-cvut/smoderp2d/issues
+repository=https://github.com/storm-fsv-cvut/smoderp2d
 # End of mandatory metadata
 
 # Recommended items:
@@ -26,9 +22,9 @@ repository=https://github.com/jerabekjak/smoderp/
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=python
+tags=hydrology,erosion,python
 
-homepage=https://github.com/jerabekjak/smoderp/
+homepage=https://storm-fsv-cvut.github.io/smoderp2d-manual/
 category=Plugins
 icon=icon.png
 # experimental flag
@@ -36,4 +32,3 @@ experimental=True
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False
-
