@@ -2,7 +2,7 @@ diff --git a/bin/qgis/smoderp2d-plugin/smoderp_2D_dockwidget.py b/bin/qgis/smode
 index 846ae00d..dd929ee7 100644
 --- a/bin/qgis/smoderp2d-plugin/smoderp_2D_dockwidget.py
 +++ b/bin/qgis/smoderp2d-plugin/smoderp_2D_dockwidget.py
-@@ -26,6 +26,7 @@ import os
+@@ -27,6 +27,7 @@ import os
  import glob
  import datetime
  import tempfile
