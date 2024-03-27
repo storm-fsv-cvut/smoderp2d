@@ -26,6 +26,7 @@ import os
 import glob
 import datetime
 import tempfile
+from pathlib import Path
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSignal, QFileInfo, QSettings, QCoreApplication, Qt
@@ -926,24 +927,23 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     def _loadTestParams(self):
         """Load test parameters into the GUI."""
-        dir_path = os.path.join(
-            os.path.dirname(__file__), '..', '..', '..', 'tests', 'data'
-        )
         try:
-            instance = QgsProject.instance()
+            project = QgsProject.instance()
+            project_path = project.readPath("./")
+            project_dirname = Path(project_path).name
             with tempfile.NamedTemporaryFile() as temp_dir:
                 param_dict = {
-                    'elevation': instance.mapLayersByName('dem')[0],
-                    'soil': instance.mapLayersByName('soils')[0],
+                    'elevation': project.mapLayersByName('dem')[0],
+                    'soil': project.mapLayersByName('soils')[0],
                     'soil_type_fieldname': 'Soil',
-                    'vegetation': instance.mapLayersByName('landuse')[0],
+                    'vegetation': project.mapLayersByName('landuse')[0],
                     'vegetation_type_fieldname': 'LandUse',
-                    'points': instance.mapLayersByName('points')[0],
+                    'points': project.mapLayersByName('points')[0],
                     'points_fieldname': 'point_id',
-                    'streams': instance.mapLayersByName('streams')[0],
-                    'rainfall_file': os.path.join(dir_path, 'rainfall_nucice.txt'),
-                    'table_soil_vegetation': instance.mapLayersByName('soil_veg_tab')[0],
-                    'channel_properties_table': instance.mapLayersByName('streams_shape')[0],
+                    'streams': project.mapLayersByName('streams')[0],
+                    'rainfall_file': os.path.join(Path(project_path).parent, f'rainfall_{project_dirname}.txt'),
+                    'table_soil_vegetation': project.mapLayersByName('soil_veg_tab')[0],
+                    'channel_properties_table': project.mapLayersByName('streams_shape')[0],
                     'streams_channel_type_fieldname': 'channel_id',
                     'output': temp_dir.name,
                     'end_time': 5,
