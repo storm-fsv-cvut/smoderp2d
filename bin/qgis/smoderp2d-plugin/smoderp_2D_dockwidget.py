@@ -918,7 +918,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                     'points': project.mapLayersByName('points')[0],
                     'points_fieldname': 'point_id',
                     'streams': project.mapLayersByName('streams')[0],
-                    'rainfall_file': os.path.join(project_path, f'rainfall_{project_dirname}.txt'),
+                    'rainfall_file': os.path.join(Path(project_path).parent, f'rainfall_{project_dirname}.txt'),
                     'table_soil_vegetation': project.mapLayersByName('soil_veg_tab')[0],
                     'channel_properties_table': project.mapLayersByName('streams_shape')[0],
                     'streams_channel_type_fieldname': 'channel_id',
