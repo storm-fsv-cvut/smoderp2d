@@ -604,10 +604,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                         map_name
                     )
 
-                    print(map_name)
-                    if map_name == 'stream_aoi':
+                    if map_name == 'streams_aoi':
                         csv_uri = f'file:///{os.path.dirname(map_path)}/streams.csv?delimiter=;'
-                        csv = QgsVectorLayer(csv_uri, 'stream_table', 'delimitedtext')
+                        csv = QgsVectorLayer(csv_uri, 'streams_table', 'delimitedtext')
                         QgsProject.instance().addMapLayer(csv, False)
 
                         joinObject = QgsVectorLayerJoinInfo()

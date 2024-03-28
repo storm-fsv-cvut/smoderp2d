@@ -642,7 +642,7 @@ class BaseProvider(object):
                 outputtable[i][5] = ma.unique(stream[fid[i]].V_out_cum)[0]
                 outputtable[i][6] = ma.unique(stream[fid[i]].Q_max)[0]
 
-            np.savetxt(os.path.join(Globals.outdir, 'stream.csv'),
+            np.savetxt(os.path.join(Globals.outdir, 'streams.csv'),
                        outputtable, delimiter=';', fmt='%.3e',
                        header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}'
                               'q365_m3_s{sep}V_out_cum_m3{sep}'

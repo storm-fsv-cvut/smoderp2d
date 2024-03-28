@@ -201,10 +201,8 @@ class PrepareDataGISBase(PrepareDataBase):
         'points_aoi': 'control',
         'soil_veg': 'temp',
         'soilveg_aoi': 'temp',
-        'stream_aoi': 'core',
-        'stream_start': 'temp',
-        'stream_end': 'temp',
-        'stream_seg': 'temp',
+        'streams_aoi': 'core',
+        'streams_seg': 'temp',
         'ratio_cell': 'temp',
         'effect_cont': 'temp',
     }

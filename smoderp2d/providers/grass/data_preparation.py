@@ -444,15 +444,18 @@ class PrepareData(PrepareDataGISBase):
             distance=-GridGlobals.dx / 3
         )
 
-        stream_aoi = self.storage.output_filepath('stream_aoi')
+        stream_aoi = self.storage.output_filepath('streams_aoi')
         self._run_grass_module(
-            'v.clip', input=stream, clip=aoi_buffer, output='stream_aoi_unclean'
+            'v.clip', input=stream, clip=aoi_buffer, output='streams_aoi_unclean'
         )
         # clean topology
         # (necessary for stream connection snapped in lines instead of points)
         self._run_grass_module(
-            'v.clean', input='stream_aoi_unclean', tool='break',
+            'v.clean', input='streams_aoi_unclean', tool='break',
             output=stream_aoi
+        )
+        self.__remove_temp_data(
+            {'name': 'streams_aoi_unclean', 'type': 'vector'}
         )
 
         drop_fields = self._stream_check_fields(stream_aoi)
@@ -604,7 +607,7 @@ class PrepareData(PrepareDataGISBase):
             ewres=GridGlobals.dx, nsres=GridGlobals.dy
         )
 
-        stream_seg = self.storage.output_filepath('stream_seg')
+        stream_seg = self.storage.output_filepath('streams_seg')
         self._run_grass_module(
             'v.to.rast', input=stream, type='line', use='attr',
             attribute_column=self.fieldnames['stream_segment_id'],
