@@ -340,7 +340,7 @@ class PrepareData(PrepareDataGISBase):
             "FULL", "ROUND",
         )
 
-        stream_aoi = self.storage.output_filepath('stream_aoi')
+        stream_aoi = self.storage.output_filepath('streams_aoi')
         arcpy.analysis.Clip(stream, aoi_buffer, stream_aoi)
 
         # make sure that no of the stream properties fields are in the stream
@@ -478,7 +478,7 @@ class PrepareData(PrepareDataGISBase):
     def _stream_reach(self, stream):
         """See base method for description.
         """
-        stream_seg = self.storage.output_filepath('stream_seg')
+        stream_seg = self.storage.output_filepath('streams_seg')
         arcpy.conversion.PolylineToRaster(
             stream, self.fieldnames['stream_segment_id'], stream_seg,
             "MAXIMUM_LENGTH", cellsize=GridGlobals.dx

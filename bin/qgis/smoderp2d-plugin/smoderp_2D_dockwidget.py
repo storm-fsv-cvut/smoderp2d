@@ -36,7 +36,8 @@ from PyQt5.QtWidgets import QFileDialog, QProgressBar, QMenu
 from qgis.core import (
     QgsProviderRegistry, QgsMapLayerProxyModel, QgsRasterLayer, QgsTask,
     QgsApplication, Qgis, QgsProject, QgsRasterBandStats,
-    QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp, QgsVectorLayer
+    QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp, QgsVectorLayer,
+    QgsVectorLayerJoinInfo
 )
 from qgis.utils import iface
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
@@ -571,7 +572,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     def computationFinished(self):
         """TODO."""
-        def import_group_layers(group, outdir, ext='asc', show=False):
+        def import_group_layers(group, outdir, ext=['asc', 'gml'], show=False):
             """TODO.
 
             :param group: TODO
@@ -579,12 +580,19 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             :param ext: TODO
             :param show: TODO
             """
-            for map_path in glob.glob(os.path.join(outdir, f'*.{ext}')):
-                if ext == 'asc':
+            # collect map files
+            map_files = []
+            for e in ext:
+                map_files += glob.glob(os.path.join(outdir, f'*.{e}'))
+
+            # create layer and add into group
+            for map_path in map_files:
+                map_name, map_ext = os.path.splitext(os.path.basename(map_path))
+                if map_ext == '.asc':
                     # raster
                     layer = QgsRasterLayer(
                         map_path,
-                        os.path.basename(os.path.splitext(map_path)[0])
+                        map_name
                     )
 
                     # set symbology
@@ -593,8 +601,22 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                     # vector
                     layer = QgsVectorLayer(
                         map_path,
-                        os.path.basename(os.path.splitext(map_path)[0])
+                        map_name
                     )
+
+                    if map_name == 'streams_aoi':
+                        csv_uri = f'file:///{os.path.dirname(map_path)}/streams.csv?delimiter=;'
+                        csv = QgsVectorLayer(csv_uri, 'streams_table', 'delimitedtext')
+                        QgsProject.instance().addMapLayer(csv, False)
+
+                        joinObject = QgsVectorLayerJoinInfo()
+                        joinObject.setJoinLayerId(csv.id())
+                        joinObject.setJoinFieldName("# FID")
+                        joinObject.setTargetFieldName("segment_id")
+                        joinObject.setPrefix('')
+                        joinObject.setUsingMemoryCache(True)
+                        joinObject.setJoinLayer(csv)
+                        layer.addJoin(joinObject)
 
                 # add layer into group
                 QgsProject.instance().addMapLayer(layer, False)
@@ -630,7 +652,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             temp_group.setExpanded(False)
             temp_group.setItemVisibilityChecked(False)
             import_group_layers(temp_group, os.path.join(outdir, 'temp'))
-            import_group_layers(temp_group, os.path.join(outdir, 'temp'), 'gml')
 
         # QGIS bug: group must be collapsed and then expanded
         group.setExpanded(False)
