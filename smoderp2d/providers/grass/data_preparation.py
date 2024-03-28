@@ -598,6 +598,9 @@ class PrepareData(PrepareDataGISBase):
 
             vmap.table.conn.commit()
 
+        # stream layer modified, must be exported explicitly
+        self._export_data(stream, 'vector')
+
     def _stream_reach(self, stream):
         """See base method for description."""
         self._run_grass_module(

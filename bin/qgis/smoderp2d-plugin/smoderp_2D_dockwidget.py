@@ -612,7 +612,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                         joinObject = QgsVectorLayerJoinInfo()
                         joinObject.setJoinLayerId(csv.id())
                         joinObject.setJoinFieldName("# FID")
-                        joinObject.setTargetFieldName("cat")
+                        joinObject.setTargetFieldName("segment_id")
                         joinObject.setPrefix('')
                         joinObject.setUsingMemoryCache(True)
                         joinObject.setJoinLayer(csv)
