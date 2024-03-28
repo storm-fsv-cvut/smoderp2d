@@ -571,7 +571,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     def computationFinished(self):
         """TODO."""
-        def import_group_layers(group, outdir, ext='asc', show=False):
+        def import_group_layers(group, outdir, ext=['asc', 'gml'], show=False):
             """TODO.
 
             :param group: TODO
@@ -579,12 +579,19 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             :param ext: TODO
             :param show: TODO
             """
-            for map_path in glob.glob(os.path.join(outdir, f'*.{ext}')):
-                if ext == 'asc':
+            # collect map files
+            map_files = []
+            for e in ext:
+                map_files += glob.glob(os.path.join(outdir, f'*.{e}'))
+
+            # create layer and add into group
+            for map_path in map_files:
+                map_name, map_ext = os.path.splitext(os.path.basename(map_path))
+                if map_ext == '.asc':
                     # raster
                     layer = QgsRasterLayer(
                         map_path,
-                        os.path.basename(os.path.splitext(map_path)[0])
+                        map_name
                     )
 
                     # set symbology
@@ -593,7 +600,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                     # vector
                     layer = QgsVectorLayer(
                         map_path,
-                        os.path.basename(os.path.splitext(map_path)[0])
+                        map_name
                     )
 
                 # add layer into group
@@ -630,7 +637,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             temp_group.setExpanded(False)
             temp_group.setItemVisibilityChecked(False)
             import_group_layers(temp_group, os.path.join(outdir, 'temp'))
-            import_group_layers(temp_group, os.path.join(outdir, 'temp'), 'gml')
 
         # QGIS bug: group must be collapsed and then expanded
         group.setExpanded(False)
