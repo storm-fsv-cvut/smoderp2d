@@ -36,7 +36,8 @@ from PyQt5.QtWidgets import QFileDialog, QProgressBar, QMenu
 from qgis.core import (
     QgsProviderRegistry, QgsMapLayerProxyModel, QgsRasterLayer, QgsTask,
     QgsApplication, Qgis, QgsProject, QgsRasterBandStats,
-    QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp, QgsVectorLayer
+    QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp, QgsVectorLayer,
+    QgsVectorLayerJoinInfo
 )
 from qgis.utils import iface
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
@@ -602,6 +603,21 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                         map_path,
                         map_name
                     )
+
+                    print(map_name)
+                    if map_name == 'stream_aoi':
+                        csv_uri = f'file:///{os.path.dirname(map_path)}/streams.csv?delimiter=;'
+                        csv = QgsVectorLayer(csv_uri, 'stream_table', 'delimitedtext')
+                        QgsProject.instance().addMapLayer(csv, False)
+
+                        joinObject = QgsVectorLayerJoinInfo()
+                        joinObject.setJoinLayerId(csv.id())
+                        joinObject.setJoinFieldName("# FID")
+                        joinObject.setTargetFieldName("cat")
+                        joinObject.setPrefix('')
+                        joinObject.setUsingMemoryCache(True)
+                        joinObject.setJoinLayer(csv)
+                        layer.addJoin(joinObject)
 
                 # add layer into group
                 QgsProject.instance().addMapLayer(layer, False)
