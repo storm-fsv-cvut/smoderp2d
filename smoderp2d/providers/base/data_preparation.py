@@ -11,6 +11,7 @@ from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError, \
     DataPreparationInvalidInput
+from smoderp2d.exceptions import RainDataError
 
 
 class PrepareDataBase(ABC):
@@ -621,8 +622,11 @@ class PrepareDataGISBase(PrepareDataBase):
         self.storage.write_raster(self.data['mat_hcrit'], 'hcrit', 'control')
 
         # load precipitation input file
-        self.data['sr'], self.data['itera'] = \
-            rainfall.load_precipitation(self._input_params['rainfall_file'])
+        try:
+            self.data['sr'], self.data['itera'] = \
+                rainfall.load_precipitation(self._input_params['rainfall_file'])
+        except RainDataError as e:
+            raise DataPreparationInvalidInput(e)
         Logger.progress(60)
 
         Logger.info("Processing stream network:")
@@ -897,6 +901,12 @@ class PrepareDataGISBase(PrepareDataBase):
                             channel_type_fieldname, target
                         )
                     )
+
+        # rainfall file
+        if not os.path.isfile(self._input_params['rainfall_file']):
+            raise DataPreparationInvalidInput(
+                "The rainfall file does not exist"
+            )
 
     @staticmethod
     def _check_resolution_consistency(ewres, nsres):

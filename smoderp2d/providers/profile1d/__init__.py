@@ -10,7 +10,7 @@ from smoderp2d.core import CompType
 from smoderp2d.providers.base import BaseProvider
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.cmd import CmdWriter, CmdArgumentParser
-from smoderp2d.exceptions import ConfigError, ProviderError
+from smoderp2d.exceptions import ConfigError, ProviderError, RainDataError
 
 
 class Profile1DProvider(BaseProvider, PrepareDataBase):
@@ -157,6 +157,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             )
         except TypeError:
             raise ProviderError('Invalid rainfall file in [data] section')
+        except RainDataError as e:
+            raise ProviderError(e)
         # Logger.progress(10)
 
         # general settings
