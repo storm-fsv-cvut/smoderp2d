@@ -13,6 +13,7 @@ from smoderp2d.exceptions import ConfigError, ProviderError, RainDataError
 
 
 class Profile1DProvider(BaseProvider, PrepareDataBase):
+
     def __init__(self, config_file=None):
         super(Profile1DProvider, self).__init__()
 
