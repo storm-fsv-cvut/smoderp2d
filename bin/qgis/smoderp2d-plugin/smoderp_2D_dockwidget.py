@@ -943,6 +943,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                     'streams': project.mapLayersByName('streams')[0],
                     'rainfall_file': os.path.join(Path(project_path).parent, f'rainfall_{project_dirname}.txt'),
                     'table_soil_vegetation': project.mapLayersByName('soil_veg_tab')[0],
+                    'table_soil_vegetation_fieldname': 'soilveg',
                     'channel_properties_table': project.mapLayersByName('streams_shape')[0],
                     'streams_channel_type_fieldname': 'channel_id',
                     'output': temp_dir.name,
@@ -983,6 +984,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.rainfall.setText(param_dict['rainfall_file'])
         self.table_soil_vegetation.setLayer(
             param_dict['table_soil_vegetation']
+        )
+        self.table_soil_vegetation_field.setCurrentText(
+            param_dict['table_soil_vegetation_fieldname']
         )
         self.table_stream_shape.setLayer(
             param_dict['channel_properties_table']

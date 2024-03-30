@@ -40,6 +40,9 @@ class HistoryWidget(QListWidgetItem):
             'streams': map_names['streams'],
             'rainfall_file': params['rainfall_file'],
             'table_soil_vegetation': map_names['table_soil_vegetation'],
+            'table_soil_vegetation_fieldname': params[
+                'table_soil_vegetation_fieldname'
+            ],
             'channel_properties_table': map_names['channel_properties_table'],
             'streams_channel_type_fieldname': params[
                 'streams_channel_type_fieldname'
