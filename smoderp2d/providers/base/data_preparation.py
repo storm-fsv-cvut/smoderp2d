@@ -118,25 +118,27 @@ class PrepareDataBase(ABC):
 
     @staticmethod
     def _get_mat_nan(r, c, no_data_value, mat_slope, mat_dem):
+        # data value vector intersection
+        condition = ma.logical_or(
+            mat_dem == no_data_value, mat_slope == no_data_value
+        )
         # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u
         # sklonu a acc
-        mat_nan = np.zeros(
-            [r, c], float
+        mat_nan = ma.where(
+            condition,
+            no_data_value,
+            0
         )
-
-        # data value vector intersection
-        # TODO: no loop needed?
-        nv = no_data_value
-        for i in range(r):
-            for j in range(c):
-                x_mat_dem = mat_dem[i][j]
-                slp = mat_slope[i][j]
-                if x_mat_dem == nv or slp == nv:
-                    mat_nan[i][j] = nv
-                    mat_slope[i][j] = nv
-                    mat_dem[i][j] = nv
-                else:
-                    mat_nan[i][j] = 0
+        mat_slope = ma.where(
+            condition,
+            no_data_value,
+            mat_slope
+        )
+        mat_dem = ma.where(
+            condition,
+            no_data_value,
+            mat_dem
+        )
 
         return mat_nan, mat_slope, mat_dem
 
