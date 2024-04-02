@@ -212,7 +212,8 @@ class PrepareDataGISBase(PrepareDataBase):
 
     soilveg_fields = {
         "k": None, "s": None, "nrill": None, "pi": None, "ppl": None,
-        "ret": None, "b": None, "nsheet": None, "y": None, "tau": None, "v": None
+        "ret": None, "b": None, "nsheet": None, "y": None, "tau": None,
+        "v": None
     }
 
     def __init__(self, writer):
