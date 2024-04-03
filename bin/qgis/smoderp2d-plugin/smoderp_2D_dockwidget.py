@@ -60,11 +60,11 @@ class InputError(Exception):
 
 
 class SmoderpTask(QgsTask):
-    """TODO."""
+    """Task holding the SMODERP2D run in a parallel thread."""
 
     def __init__(self, input_params, input_maps, grass_bin_path, *args,
                  **kwargs):
-        """TODO.
+        """Initialize the task and set its class variables.
 
         :param input_params: TODO
         :param input_maps: TODO
@@ -80,7 +80,7 @@ class SmoderpTask(QgsTask):
         self.runner = None
 
     def run(self):
-        """TODO."""
+        """Run the task in a parallel thread."""
         try:
             self.runner = QGISRunner(self.setProgress, self.grass_bin_path)
             self.runner.set_options(self.input_params)
@@ -97,9 +97,10 @@ class SmoderpTask(QgsTask):
         return True
 
     def finished(self, result):
-        """TODO.
+        """Handle what should happen once the task is finished.
 
-        :param result: TODO
+        :param result: result object containing info on how did the task finish
+            (fine, error, aborted...)
         """
         self.runner.finish()
 
