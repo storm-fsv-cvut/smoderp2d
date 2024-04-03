@@ -10,7 +10,7 @@ class HistoryWidget(QListWidgetItem):
     def __init__(self, *args, **kwargs):
         """Initialize an instance.
 
-        Create and empty self.params_dict dictionary and then do
+        Create an empty self.params_dict dictionary and then do
         the QListWidgetItem things.
         """
         self.params_dict = {}
