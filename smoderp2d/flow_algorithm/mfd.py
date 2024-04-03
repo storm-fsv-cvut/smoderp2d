@@ -56,8 +56,7 @@ def new_mfda(mat_dem, mat_nan, mat_fd):
 
             if point_m < 0 or i == 0 or j == 0 or i == (rows - 1) or j == (cols - 1):
                 # jj nemely by ty byt nuly?
-                for m in range(8):
-                    val_array[i][j][m] = 0.0  # -3.40282346639e+38
+                val_array[i][j][:] = 0  # -3.40282346639e+38
                 val_array2[i][j] = -3.40282346639e+38
 
             else:
@@ -258,19 +257,15 @@ def new_mfda(mat_dem, mat_nan, mat_fd):
                         )
 
                     # same direction as in ArcGIS
-                    flow_direction = [
+                    flow_direction = np.array(
                         flow_amount_cell[4], flow_amount_cell[7],
                         flow_amount_cell[6], flow_amount_cell[5],
                         flow_amount_cell[3], flow_amount_cell[0],
                         flow_amount_cell[1], flow_amount_cell[2]
-                    ]
+                    )
 
-                    fldirr = np.zeros(8)
-                    for n in range(8):
-                        if flow_direction[n] > 0:
-                            fldirr[n] = 1
-                        else:
-                            fldirr[n] = 0
+                    # 1 where flow_direction > 0, 0 elsewhere
+                    fldirr = (flow_direction > 0).astype('int8')
 
                     int_val = boolToInt(fldirr)
                     val_array2[i][j] = int_val
