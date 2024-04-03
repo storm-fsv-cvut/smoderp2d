@@ -90,20 +90,20 @@ class PrepareDataBase(ABC):
         return mat_hcrit
 
     @staticmethod
-    def _get_inf_combinat_index(r, c, mat_k, mat_s):
+    def _get_inf_combinat_index(r, c, mat_k, mat_s, infiltration_type=0):
         """TODO.
 
         :param r: TODO
         :param c: TODO
         :param mat_k: TODO
         :param mat_s: TODO
+        :param infiltration_type: numerical identifier defining the
+            infiltration type (default 0 stays for Phillip)
         """
         mat_inf_index = None
         combinatIndex = None
 
-        infiltration_type = 0  # "Phillip"
         if infiltration_type == 0:
-            # to se rovna vzdycky ne? nechapu tuhle podminku 23.05.2018 MK
             mat_inf_index = np.zeros(
                 [r, c], int
             )
