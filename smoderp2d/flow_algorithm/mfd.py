@@ -257,12 +257,12 @@ def new_mfda(mat_dem, mat_nan, mat_fd):
                         )
 
                     # same direction as in ArcGIS
-                    flow_direction = np.array(
+                    flow_direction = np.array((
                         flow_amount_cell[4], flow_amount_cell[7],
                         flow_amount_cell[6], flow_amount_cell[5],
                         flow_amount_cell[3], flow_amount_cell[0],
                         flow_amount_cell[1], flow_amount_cell[2]
-                    )
+                    ))
 
                     # 1 where flow_direction > 0, 0 elsewhere
                     fldirr = (flow_direction > 0).astype('int8')
