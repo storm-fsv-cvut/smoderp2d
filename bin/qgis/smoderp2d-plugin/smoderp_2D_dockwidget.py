@@ -132,7 +132,7 @@ class SmoderpTask(QgsTask):
 
 
 class Smoderp2DDockWidget(QtWidgets.QDockWidget):
-    """TODO."""
+    """Class holding the GUI and functionalities of the SMODERP2D plugin."""
 
     closingPlugin = pyqtSignal()
 
@@ -266,7 +266,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.tabWidget.addTab(section_tab, 'History')
 
     def set_widgets(self):
-        """TODO."""
+        """Set the layout of individual widgets."""
         self.arguments['elevation'].addWidget(self.elevation)
         self.arguments['elevation'].addWidget(self.elevation_toolButton)
         self.arguments['soil'].addWidget(self.soil)
@@ -328,9 +328,11 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         # TODO: what if tables are in format that cannot be added to map?
         #  (txt), currently works for dbf
 
+        # run button
         self.run_button.clicked.connect(self.onRunButton)
 
-        # 1st tab - Data preparation
+        # 1ST TAB - SPATIAL DATA
+        # clicked signals
         self.elevation_toolButton.clicked.connect(
             lambda: self.openFileDialog('raster', self.elevation)
         )
@@ -343,12 +345,14 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.points_toolButton.clicked.connect(
             lambda: self.openFileDialog('vector', self.points)
         )
-        # self.output_toolButton.clicked.connect(
-        #        lambda: self.openFileDialog('folder', self.output_lineEdit))
         self.stream_toolButton.clicked.connect(
             lambda: self.openFileDialog('vector', self.stream)
         )
+        self.rainfall_toolButton.clicked.connect(
+            lambda: self.openFileDialog('file', self.rainfall)
+        )
 
+        # layerChanged signals
         self.soil.layerChanged.connect(lambda: self.setFields('soil'))
         self.vegetation.layerChanged.connect(
             lambda: self.setFields('vegetation')
@@ -357,12 +361,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             lambda: self.setFields('points')
         )
 
-        # 2nd tab - Computation
-        self.rainfall_toolButton.clicked.connect(
-            lambda: self.openFileDialog('file', self.rainfall)
-        )
-
-        # 3rd tab - Settings
+        # 2ND TAB - MODEL PARAMETERS
+        # clicked signals
         self.table_soil_vegetation_toolButton.clicked.connect(
             lambda: self.openFileDialog(
                 'table', self.table_soil_vegetation
@@ -373,10 +373,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 'table', self.table_stream_shape
             )
         )
-        self.main_output_toolButton.clicked.connect(
-            lambda: self.openFileDialog('folder', self.main_output)
-        )
 
+        # layerChanged signals
         self.table_soil_vegetation.layerChanged.connect(
             lambda: self.setFields('table_soil_veg')
         )
@@ -384,9 +382,14 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             lambda: self.setFields('channel_properties_table')
         )
 
+        # 3RD TAB - COMPUTATION OPTIONS
+        self.main_output_toolButton.clicked.connect(
+            lambda: self.openFileDialog('folder', self.main_output)
+        )
+
     def setupCombos(self):
-        """Setup combo boxes."""
-        # 1st tab - Data preparation
+        """Setup combo boxes (set map type filters and add items)."""
+        # 1ST TAB - SPATIAL DATA
         self.elevation.setFilters(QgsMapLayerProxyModel.RasterLayer)
         self.soil.setFilters(QgsMapLayerProxyModel.VectorLayer)
         self.vegetation.setFilters(QgsMapLayerProxyModel.VectorLayer)
@@ -397,7 +400,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.setFields('vegetation')
         self.setFields('points')
 
-        # 3rd tab - Settings
+        # 2ND TAB - MODEL PARAMETERS
         self.table_soil_vegetation.setFilters(
             QgsMapLayerProxyModel.VectorLayer
         )
@@ -408,17 +411,17 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.setFields('table_soil_veg')
         self.setFields('channel_properties_table')
 
-        # 4th tab - Advanced
+        # 4TH TAB - ADVANCED
         self.flow_direction.addItems(('single', 'multiple'))
 
     def set_allow_empty(self):
-        """TODO."""
+        """Set AllowEmptyLayer to True for optional options."""
         self.points.setAllowEmptyLayer(True)
         self.stream.setAllowEmptyLayer(True)
         self.table_stream_shape.setAllowEmptyLayer(True)
 
     def set_button_texts(self):
-        """TODO."""
+        """Set [...] as texts on buttons."""
         buttons = (
             self.elevation_toolButton, self.soil_toolButton,
             self.vegetation_toolButton, self.points_toolButton,
@@ -484,7 +487,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             smoderp_task.progressChanged.connect(
                 lambda a: progress_bar.setValue(int(a))
             )
-            smoderp_task.taskCompleted.connect(self.computationFinished)
+            smoderp_task.taskCompleted.connect(self.importResults)
 
             # start the task
             self.task_manager.addTask(smoderp_task)
@@ -552,7 +555,11 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     @staticmethod
     def _layerColorRamp(layer):
-        """TODO."""
+        """Get a renderer with the color ramp set to a layer value extents.
+
+        :param layer: QGIS layer from which to read the values for the ramp
+        :return: colr ramp renderer
+        """
         # get min/max values
         data_provider = layer.dataProvider()
         stats = data_provider.bandStatistics(
@@ -570,15 +577,16 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         return renderer
 
-    def computationFinished(self):
-        """TODO."""
+    def importResults(self):
+        """Import results into QGIS, group them and show them as layers.
+        """
         def import_group_layers(group, outdir, ext='asc', show=False):
-            """TODO.
+            """Import individual group layers.
 
-            :param group: TODO
-            :param outdir: TODO
-            :param ext: TODO
-            :param show: TODO
+            :param group: QGIS group object
+            :param outdir: output directory used during the computation
+            :param ext: extension of files to be imported
+            :param show: show the layers after import or don't
             """
             for map_path in glob.glob(os.path.join(outdir, f'*.{ext}')):
                 if ext == 'asc':
@@ -724,6 +732,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         """Check mandatory fields.
 
         Check if all mandatory fields are filled correctly for data preparation.
+
+        :return: boolean saying if mandatory fields are correctly set or not
         """
         # Check if none of fields are empty
         if None not in (
@@ -733,9 +743,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self.vegetation.currentLayer(),
                 self.vegetation_type.currentText(),
                 self.table_soil_vegetation.currentLayer(),
-                # self.table_soil_vegetation_field_comboBox.currentText(),
                 ) and "" not in (
-                # self.output_lineEdit.text().strip(),
                 self.maxdt.text().strip(),
                 self.rainfall.text().strip(),
                 self.end_time.text().strip(),
@@ -748,7 +756,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         """Open file dialog, load layer and set path/name to widget.
 
         :param t: layer type (raster or vector)
-        :param widget: TODO
+        :param widget: widget that will be set to the layer corresponding to
+            the chosen file
         """
         # TODO: what format can tables have?
         # TODO: set layers srs on loading
@@ -780,7 +789,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 )
                 widget.setLayer(self.iface.activeLayer())
                 self.settings.setValue(sender, os.path.dirname(file_name))
-
         elif t == 'raster':
             raster_filters = QgsProviderRegistry.instance().fileRasterFilters()
             file_name = QFileDialog.getOpenFileName(
@@ -805,7 +813,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 )
                 widget.setLayer(self.iface.activeLayer())
                 self.settings.setValue(sender, os.path.dirname(file_name))
-
         elif t == 'folder':
             folder_name = QFileDialog.getExistingDirectory(
                 self, self.tr(u'Select directory'),
@@ -823,7 +830,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                     u'{} is not writable.'.format(folder_name),
                     'CRITICAL'
                 )
-
         elif t == 'table':
             # write path to file to lineEdit
             file_name = QFileDialog.getOpenFileName(
@@ -837,7 +843,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 )
                 widget.setLayer(self.iface.activeLayer())
                 self.settings.setValue(sender, os.path.dirname(file_name))
-
         elif t == 'file':
             # write path to file to lineEdit
             file_name = QFileDialog.getOpenFileName(
@@ -902,9 +907,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             widget.setField(None)
 
     def _sendMessage(self, caption, message, t):
-        """TODO.
+        """Tell the user what's going on in the process.
 
-        :param caption: TODO
+        :param caption: title of the message
         :param message: message to be shown
         :param t: type of message (CRITICAL, INFO)
         """
@@ -916,7 +921,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                                              self.tr(u'{}').format(message))
 
     def contextMenuEvent(self, event):
-        """TODO.
+        """Roll out the right-click menu.
 
         :param event: TODO
         """
