@@ -15,6 +15,7 @@ from smoderp2d.exceptions import RainDataError
 
 
 class PrepareDataBase(ABC):
+
     @staticmethod
     def _get_a(mat_nsheet, mat_y, no_data, mat_slope):
         """Build 'a' and 'aa' arrays.
@@ -90,6 +91,13 @@ class PrepareDataBase(ABC):
 
     @staticmethod
     def _get_inf_combinat_index(r, c, mat_k, mat_s):
+        """TODO.
+
+        :param r: TODO
+        :param c: TODO
+        :param mat_k: TODO
+        :param mat_s: TODO
+        """
         mat_inf_index = None
         combinatIndex = None
 
