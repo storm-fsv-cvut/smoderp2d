@@ -73,35 +73,65 @@ def compute_h_det(A, m, b, err=0.0001, max_iter=50):
 #
 #
 def rectangle(reach, dt):
-    if reach.q365 > 0:
-        Vp = reach.q365 * dt  # objem           : baseflow
-        hp = Vp / (reach.b * reach.length)  # vyska hladiny   : baseflow
-    else:
-        # Vp == 0.0
-        hp = 0.0
+    
+    """Calculates the discharge in rectangle shaped reach of a
+    stream.
 
-    dV = reach.V_in_from_field + reach.vol_rest + \
-         reach.V_in_from_reach  # z okoli, predtim, odtok  : epizoda
-    # Question ToDo nevim co je V_in_from_field - odhaduji, ze to je pritok
-    #  z plosneho odotku prislusnych pixelu v danem casovem kroku pro dany
-    h = dV / (reach.b * reach.length)  # vyska hladiny   : epizoda
-    H = hp + h  # total vyska hl. : epizoda
-    O = reach.b + 2 * H  # omoceny obvod
-    S = reach.b * H  # prurocna plocha
-    R = S / O  # hydraulicky polomer
+    :param reach: on reach of the stream network
+    :param dt: time step length
+    """
+
+    # reach.b - channel_bottom_width
+    # reach.length - channel_length
+    if reach.q365 > 0:
+        # volume of baseflow
+        vol_baseflow = reach.q365 * dt  
+        # water level of baseflow
+        h_baseflow = vol_baseflow / \
+                (reach.b * reach.length)  
+    else:
+        # water level of baseflow
+        h_baseflow = 0.0 
+
+    # water from rainfall
+    vol_episode = reach.V_in_from_field + reach.vol_rest + \
+         reach.V_in_from_reach
+
+    # water level increase due rainfall
+    h = vol_episode / (reach.b * reach.length)  
+    # total water level in reach; baseflow + water from epizode
+    H = h_baseflow + h  
+
+    wetted_perimeter = reach.b + 2 * H
+
+    # cross-sectional area of the flow
+    cross_section = reach.b * H  
+
+    # hydraulic diameter
+    hyd_diameter = cross_section / wetted_perimeter  # hydraulicky polomer
+    
+    # calculated velocity based on mannings
     reach.vs = ma.power(
-        R,
+        hyd_diameter,
         0.6666) * ma.power(
         reach.inclination,
-        0.5) / (
-                   reach.roughness)  # rychlost
-    reach.Q_out = S * reach.vs
-    # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt                   # prutok
-    reach.V_out = reach.Q_out * dt  # odtekly objem
-    condition = ma.greater(reach.V_out, dV)
-    reach.V_out = ma.where(condition, dV, reach.V_out)
-    reach.vol_rest = ma.where(condition, 0, dV - reach.V_out)
+        0.5) / (reach.roughness)  
+
+    # calculated outflow m3/s
+    reach.Q_out = cross_section * reach.vs
+    # calculated outflow volume m3
+    reach.V_out = reach.Q_out * dt
+
+    # if ouflow volume is larger then the water volume from the rainfall
+    condition = ma.greater(reach.V_out, vol_episode)
+
+    # outflow volumw is saved to reach class
+    reach.V_out = ma.where(condition, vol_episode, reach.V_out)
+    # what rests in stream reach after time step calculation is completed
+    reach.vol_rest = ma.where(condition, 0, vol_episode - reach.V_out)
+    # outflow discharge m3/s is saved to reach class
     reach.Q_out = reach.V_out / dt
+    # total water level in stream reach is saved to reach class
     reach.h = H
 
 
