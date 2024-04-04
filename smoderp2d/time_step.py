@@ -221,7 +221,7 @@ class TimeStep:
                 
                 #print ('h_hew {} nit {}'.format(h_new.mean(), solution.nit))
                 if solution.success == False:
-                    delta_t = delta_t/2
+                    delta_t = delta_t/modif_down
                     continue
             except ZeroDivisionError:
                 raise Error("Error: The nonlinear solver did not converge. Try to change the time step")
