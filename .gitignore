@@ -28,3 +28,7 @@ smoderp2d.egg-info
 # direnv
 .envrc
 .direnv
+
+#rfiles
+.Rhistory
+.RData
