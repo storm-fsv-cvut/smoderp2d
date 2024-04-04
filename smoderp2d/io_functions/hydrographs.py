@@ -80,8 +80,6 @@ class Hydrographs:
         self.header = []
 
         for i in range(self.n):
-            # for correct opening in e.g. excel
-            # header = 'sep={sep}{line}'.format(sep=SEP,line= os.linesep)
             header = '# Hydrograph at the point with coordinates: ' \
                      '{:.8} {:.8}{}'.format(
                 float(self.point_int[i][3]), float(self.point_int[i][4]),
@@ -181,7 +179,7 @@ class Hydrographs:
                 m = self.point_int[ip][2]
                 self.files[ip].writelines(
                     '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3}{linesep}'.format(
-                        total_time, dt, currRain,
+                        total_time[l, m], dt[l, m], currRain[l, m],
                         surface.return_stream_str_vals(
                             l, m, SEP, Globals.extraOut
                         ),

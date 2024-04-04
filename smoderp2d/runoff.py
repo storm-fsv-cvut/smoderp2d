@@ -264,8 +264,8 @@ class Runoff(object):
         while ma.any(self.flow_control.compare_time(end_time)):
 
             self.flow_control.save_vars()
+            self.flow_control.refresh_iter()
             # Calculate 
-           
             actRain, self.delta_t = self.time_step.do_next_h(
                 self.surface,
                 self.subsurface,
@@ -292,6 +292,15 @@ class Runoff(object):
                 self.flow_control.total_time + self.delta_t
             )
             
+            # calculate outflow from each reach of the stream network
+            self.surface.stream_reach_outflow(self.delta_t)
+            # calculate inflow to reaches
+            self.surface.stream_reach_inflow()
+            # record cumulative and maximal results of a reach
+            self.surface.stream_cumulative(
+                self.flow_control.total_time + self.delta_t
+            )
+            
             # write hydrographs of reaches
             self.hydrographs.write_hydrographs_record(
                 None,
@@ -302,6 +311,7 @@ class Runoff(object):
                 self.surface,
                 self.cumulative,
                 actRain,
+                True
             )
 
             # proceed to next time
