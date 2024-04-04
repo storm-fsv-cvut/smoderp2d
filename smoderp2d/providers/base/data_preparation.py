@@ -11,9 +11,11 @@ from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError, \
     DataPreparationInvalidInput
+from smoderp2d.exceptions import RainDataError
 
 
 class PrepareDataBase(ABC):
+
     @staticmethod
     def _get_a(mat_nsheet, mat_y, no_data, mat_slope):
         """Build 'a' and 'aa' arrays.
@@ -44,57 +46,61 @@ class PrepareDataBase(ABC):
     @staticmethod
     def _get_crit_water(mat_b, mat_tau, mat_v, r, c, mat_slope,
                         no_data_value, mat_aa):
-        # critical water level
-        mat_hcrit_tau = np.zeros([r, c], float)
-        mat_hcrit_v = np.zeros([r, c], float)
-        mat_hcrit_flux = np.zeros([r, c], float)
-        mat_hcrit = np.zeros([r, c], float)
+        cond = ma.logical_and(
+            mat_slope != no_data_value, mat_tau != no_data_value
+        )
 
-        for i in range(r):
-            for j in range(c):
-                if mat_slope[i][j] != no_data_value \
-                   and mat_tau[i][j] != no_data_value:
-                    slope = mat_slope[i][j]
-                    tau_crit = mat_tau[i][j]
-                    v_crit = mat_v[i][j]
-                    b = mat_b[i][j]
-                    aa = mat_aa[i][j]
-                    flux_crit = tau_crit * v_crit
-                    exp = 1 / (b - 1)
+        flux_crit = mat_tau * mat_v
+        exp = 1 / (mat_b - 1)
 
-                    if slope == 0.0:
-                        hcrit_tau = hcrit_v = hcrit_flux = 1000
-                        # set come auxiliary high value for zero slope
-                    else:
-                        hcrit_v = np.power((v_crit / aa), exp)
-                        # h critical from v
-                        hcrit_tau = tau_crit / 9807 / slope
-                        # h critical from tau
-                        hcrit_flux = np.power(
-                            (flux_crit / slope / 9807 / aa), (1 / mat_b[i][j])
-                        )  # kontrola jednotek
+        g = 9807
 
-                    mat_hcrit_tau[i][j] = hcrit_tau
-                    mat_hcrit_v[i][j] = hcrit_v
-                    mat_hcrit_flux[i][j] = hcrit_flux
-                    hcrit = min(hcrit_tau, hcrit_v, hcrit_flux)
-                    mat_hcrit[i][j] = hcrit
-                else:
-                    mat_hcrit_tau[i][j] = no_data_value
-                    mat_hcrit_v[i][j] = no_data_value
-                    mat_hcrit_flux[i][j] = no_data_value
-                    mat_hcrit[i][j] = no_data_value
+        # 1000 = auxiliary high value for zero slope
+        mat_hcrit_tau = ma.where(
+            cond,
+            ma.where(mat_slope == 0, 1000, mat_tau / g / mat_slope),
+            no_data_value
+        )
+
+        mat_hcrit_v = ma.where(
+            cond,
+            ma.where(mat_slope == 0, 1000, ma.power(mat_v / mat_aa, exp)),
+            no_data_value
+        )
+
+        mat_hcrit_flux = ma.where(
+            cond,
+            ma.where(
+                mat_slope == 0,
+                1000,
+                ma.power(flux_crit / mat_slope / g / mat_aa, 1 / mat_b)
+            ),
+            no_data_value
+        )
+
+        mat_hcrit = ma.where(
+            cond,
+            ma.minimum(ma.minimum(mat_hcrit_tau, mat_hcrit_v), mat_hcrit_flux),
+            no_data_value
+        )
 
         return mat_hcrit
 
     @staticmethod
-    def _get_inf_combinat_index(r, c, mat_k, mat_s):
+    def _get_inf_combinat_index(r, c, mat_k, mat_s, infiltration_type=0):
+        """TODO.
+
+        :param r: TODO
+        :param c: TODO
+        :param mat_k: TODO
+        :param mat_s: TODO
+        :param infiltration_type: numerical identifier defining the
+            infiltration type (default 0 stays for Phillip)
+        """
         mat_inf_index = None
         combinatIndex = None
 
-        infiltration_type = 0  # "Phillip"
         if infiltration_type == 0:
-            # to se rovna vzdycky ne? nechapu tuhle podminku 23.05.2018 MK
             mat_inf_index = np.zeros(
                 [r, c], int
             )
@@ -117,25 +123,27 @@ class PrepareDataBase(ABC):
 
     @staticmethod
     def _get_mat_nan(r, c, no_data_value, mat_slope, mat_dem):
+        # data value vector intersection
+        condition = ma.logical_or(
+            mat_dem == no_data_value, mat_slope == no_data_value
+        )
         # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u
         # sklonu a acc
-        mat_nan = np.zeros(
-            [r, c], float
+        mat_nan = ma.where(
+            condition,
+            no_data_value,
+            0
         )
-
-        # data value vector intersection
-        # TODO: no loop needed?
-        nv = no_data_value
-        for i in range(r):
-            for j in range(c):
-                x_mat_dem = mat_dem[i][j]
-                slp = mat_slope[i][j]
-                if x_mat_dem == nv or slp == nv:
-                    mat_nan[i][j] = nv
-                    mat_slope[i][j] = nv
-                    mat_dem[i][j] = nv
-                else:
-                    mat_nan[i][j] = 0
+        mat_slope = ma.where(
+            condition,
+            no_data_value,
+            mat_slope
+        )
+        mat_dem = ma.where(
+            condition,
+            no_data_value,
+            mat_dem
+        )
 
         return mat_nan, mat_slope, mat_dem
 
@@ -211,7 +219,8 @@ class PrepareDataGISBase(PrepareDataBase):
 
     soilveg_fields = {
         "k": None, "s": None, "nrill": None, "pi": None, "ppl": None,
-        "ret": None, "b": None, "nsheet": None, "y": None, "tau": None, "v": None
+        "ret": None, "b": None, "nsheet": None, "y": None, "tau": None,
+        "v": None
     }
 
     def __init__(self, writer):
@@ -621,8 +630,11 @@ class PrepareDataGISBase(PrepareDataBase):
         self.storage.write_raster(self.data['mat_hcrit'], 'hcrit', 'control')
 
         # load precipitation input file
-        self.data['sr'], self.data['itera'] = \
-            rainfall.load_precipitation(self._input_params['rainfall_file'])
+        try:
+            self.data['sr'], self.data['itera'] = \
+                rainfall.load_precipitation(self._input_params['rainfall_file'])
+        except RainDataError as e:
+            raise DataPreparationInvalidInput(e)
         Logger.progress(60)
 
         Logger.info("Processing stream network:")
@@ -897,6 +909,12 @@ class PrepareDataGISBase(PrepareDataBase):
                             channel_type_fieldname, target
                         )
                     )
+
+        # rainfall file
+        if not os.path.isfile(self._input_params['rainfall_file']):
+            raise DataPreparationInvalidInput(
+                "The rainfall file does not exist"
+            )
 
     @staticmethod
     def _check_resolution_consistency(ewres, nsres):

@@ -14,7 +14,7 @@ from abc import abstractmethod
 from smoderp2d.core import CompType
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
 from smoderp2d.exceptions import ProviderError, ConfigError, GlobalsNotSet, \
-    SmoderpError
+    SmoderpError, RainDataError
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError
 
@@ -315,6 +315,8 @@ class BaseProvider(object):
                 )
             except TypeError:
                 raise ProviderError('Invalid rainfall file')
+            except RainDataError as e:
+                raise ProviderError(e)
 
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
 
