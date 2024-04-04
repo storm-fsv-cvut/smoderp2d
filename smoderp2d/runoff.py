@@ -219,7 +219,8 @@ class Runoff(object):
             self.cumulative,
             ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-            )
+            ),
+            Globals.isStream
         )
         
 
@@ -311,7 +312,7 @@ class Runoff(object):
                 self.surface,
                 self.cumulative,
                 actRain,
-                True
+                Globals.isStream
             )
 
             # proceed to next time
