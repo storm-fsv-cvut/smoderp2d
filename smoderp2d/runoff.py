@@ -292,17 +292,30 @@ class Runoff(object):
                 self.flow_control.iter_,
                 self.flow_control.total_time + self.delta_t
             )
+            if Globals.isStream:
+                # calculate outflow from each reach of the stream network
+                self.surface.stream_reach_outflow(self.delta_t)
+                # calculate inflow to reaches
+                self.surface.stream_reach_inflow()
+                # record cumulative and maximal results of a reach
+                self.surface.stream_cumulative(
+                    self.flow_control.total_time + self.delta_t
+                )
             
-            # calculate outflow from each reach of the stream network
-            self.surface.stream_reach_outflow(self.delta_t)
-            # calculate inflow to reaches
-            self.surface.stream_reach_inflow()
-            # record cumulative and maximal results of a reach
-            self.surface.stream_cumulative(
-                self.flow_control.total_time + self.delta_t
-            )
-            
-            # write hydrographs of reaches
+                # write hydrographs of reaches
+                self.hydrographs.write_hydrographs_record(
+                    None,
+                    None,
+                    self.flow_control,
+                    self.courant,
+                    self.delta_t,
+                    self.surface,
+                    self.cumulative,
+                    actRain,
+                    True
+                )
+
+            # write hydrographs of raster cells
             self.hydrographs.write_hydrographs_record(
                 None,
                 None,
@@ -311,10 +324,9 @@ class Runoff(object):
                 self.delta_t,
                 self.surface,
                 self.cumulative,
-                actRain,
-                Globals.isStream
+                actRain
             )
-
+            
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
             
