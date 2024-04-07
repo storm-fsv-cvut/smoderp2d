@@ -51,14 +51,6 @@ from .connect_grass import find_grass_bin
 from .custom_widgets import HistoryWidget
 
 
-class InputError(Exception):
-    """TODO."""
-
-    def __init__(self):
-        """TODO."""
-        pass
-
-
 class SmoderpTask(QgsTask):
     """Task holding the SMODERP2D run in a parallel thread."""
 
