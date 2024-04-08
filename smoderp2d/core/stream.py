@@ -73,19 +73,20 @@ class Reach(object):
         )
 
         if channel_shapetype == 0:  # obdelnik
-            self.outflow_method = stream_f.rectangle
+            self.outflow_method = stream_f.genspahe
         elif channel_shapetype == 1:  # trapezoid
-            self.outflow_method = stream_f.trapezoid
+            self.outflow_method = stream_f.genspahe
         elif channel_shapetype == 2:  # triangle
-            self.outflow_method = stream_f.triangle
+            self.outflow_method = stream_f.genspahe
         elif channel_shapetype == 3:  # parabola
             self.outflow_method = stream_f.parabola
             # ToDO - ve stream_f-py - mame u paraboly napsano, ze nefunguje
         else:
-            self.outflow_method = stream_f.rectangle
+            self.outflow_method = stream_f.genspahe
             # ToDo - zahodit posledni else a misto toho dat hlasku, ze to
             #        je mimo rozsah
 
+        self.outflow_method = stream_f.genspahe
 
 # Documentation for a class.
 #

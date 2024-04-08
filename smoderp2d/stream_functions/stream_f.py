@@ -57,78 +57,15 @@ def compute_h(A, m, b, err=0.0001, max_iter=20, hinit = 100):
 
 
 
-
-# Function calculates the discharge in rectangular shaped reach of a stream.
+# Function calculates the discharge in trapezoid/rectangle/triangle shaped
+# reach of a stream.
 #
 #
-def rectangle(reach, dt):
-    
-    """Calculates the discharge in rectangle shaped reach of a
-    stream.
+def genspahe(reach, dt):
+    """Calculates the discharge in trapezoid/rectangle/triangle  shaped reach
+    of a stream.
 
-    :param reach: on reach of the stream network
-    :param dt: time step length
-    """
-
-    # reach.b - channel_bottom_width
-    # reach.length - channel_length
-    if reach.q365 > 0:
-        # volume of baseflow
-        vol_baseflow = reach.q365 * dt  
-        # water level of baseflow
-        h_baseflow = vol_baseflow / \
-                (reach.b * reach.length)  
-    else:
-        # water level of baseflow
-        h_baseflow = 0.0 
-
-    # water from rainfall
-    vol_episode = reach.V_in_from_field + reach.vol_rest + \
-         reach.V_in_from_reach
-
-    # water level increase due rainfall
-    h = vol_episode / (reach.b * reach.length)  
-    # total water level in reach; baseflow + water from epizode
-    H = h_baseflow + h  
-
-    wetted_perimeter = reach.b + 2 * H
-
-    # cross-sectional area of the flow
-    cross_section = reach.b * H  
-
-    # hydraulic diameter
-    hyd_diameter = cross_section / wetted_perimeter  # hydraulicky polomer
-    
-    # calculated velocity based on mannings
-    reach.vs = ma.power(
-        hyd_diameter,
-        0.6666) * ma.power(
-        reach.inclination,
-        0.5) / (reach.roughness)  
-
-    # calculated outflow m3/s
-    reach.Q_out = cross_section * reach.vs
-    # calculated outflow volume m3
-    reach.V_out = reach.Q_out * dt
-
-    # if ouflow volume is larger then the water volume from the rainfall
-    condition = ma.greater(reach.V_out, vol_episode)
-
-    # outflow volumw is saved to reach class
-    reach.V_out = ma.where(condition, vol_episode, reach.V_out)
-    # what rests in stream reach after time step calculation is completed
-    reach.vol_rest = ma.where(condition, 0, vol_episode - reach.V_out)
-    # outflow discharge m3/s is saved to reach class
-    reach.Q_out = reach.V_out / dt
-    # total water level in stream reach is saved to reach class
-    reach.h = H
-
-
-def trapezoid(reach, dt):
-    """Calculates the discharge in trapezoidal shaped reach of a
-    stream.
-
-    :param reach: on reach of the stream network
+    :param reach: one reach of the stream network
     :param dt: time step length
     """
     # reach.b - channel_bottom_width
@@ -145,7 +82,9 @@ def trapezoid(reach, dt):
         # water level of baseflow
         h_baseflow = 0.0
 
-    # baseflow water level width; equals reach.b if h_baseflow = 0.
+    # baseflow water level width
+    #   for trapezoid equals reach.b if h_baseflow = 0.
+    #   for traingle equals zero if h_baseflow = 0.
     b_baseflow = reach.b + 2.0 * h_baseflow * reach.m 
     
     # water level increase due rainfall
@@ -169,7 +108,7 @@ def trapezoid(reach, dt):
     h_baseflow * h_baseflow
 
     # volume of the epizode water
-    dvol= dcross_section * reach.length
+    dvol = dcross_section * reach.length
     # hydraulic diameter
     hyd_diameter = cross_section / wetted_perimeter
 
@@ -198,59 +137,6 @@ def trapezoid(reach, dt):
     reach.h = H
 
 
-
-# Function calculates the discharge in triangular shaped reach of a stream.
-#
-#
-def triangle(reach, dt):
-    if reach.q365 > 0:
-        Vp = reach.q365 * dt  # objem           : baseflow
-        hp = ma.power(Vp / (reach.length * reach.m), 0.5)
-        # vyska hladiny   : baseflow
-    else:
-        # Vp == 0.0
-        hp = 0.0
-
-    # explanation: hp = d
-    #              B = wetted perimeter, p
-    #              reach.m = sqrt(1+Z^2)
-    B = 2.0 * hp * reach.m
-    # sirka zakladny  : baseflow \/
-    # Bb = B + reach.h*reach.m
-    # tohle nechapu, takze jsem to zakomantoval...
-    # h  = (reach.V_in_from_field + reach.vol_rest + reach.V_in_from_reach)/(Bb
-    # * reach.length) # tohle nechapu...
-
-    Ve = (reach.V_in_from_field + reach.vol_rest + reach.V_in_from_reach)
-    # objem z epizody
-    #
-    # vyska z epizody co pribude na trouhelnik z baseflow (takze lichobeznik)
-    #                       ____                                          __
-    # zakladna lichobezniku \__/ je spodni 'horni'  zakladna trojuhelniku \/
-    he = compute_h(A=Ve / reach.length, m=reach.m, b=B, hinit=reach.h + 1)
-    # funkce pouzita pro lichobeznik  ____
-    H = hp + he
-    # vyska vysledneho trouhelniku    \  /
-    O = 2.0 * H * ma.power(
-        1.0 + reach.m * reach.m,
-        0.5)  # \/
-    S = reach.m * H * H
-    # dS = B*reach.h + reach.m*reach.h*reach.h
-    # dV = dS*reach.length
-    R = ma.where(O != 0, S / O, 0)
-    reach.vs = ma.power(
-        R,
-        0.6666) * ma.power(
-        reach.inclination,
-        0.5) / (reach.roughness)  # v
-    reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
-    reach.V_out = reach.Q_out * dt
-
-    condition = ma.greater(reach.V_out, Ve)
-    reach.V_out = ma.where(condition, Ve, reach.V_out)
-    reach.vol_rest = ma.where(condition, 0, Ve - reach.V_out)
-    reach.Q_out = reach.V_out / dt
-    reach.h = H
 
 
 # Function calculates the discharge in parabola shaped reach of a stream.
