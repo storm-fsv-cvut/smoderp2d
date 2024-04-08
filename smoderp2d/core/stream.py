@@ -72,21 +72,41 @@ class Reach(object):
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
 
-        if channel_shapetype == 0:  # obdelnik
+        if channel_shapetype == 0:  # rectangle
+            
+            if (self.m != 0):
+                Logger.warning('For rectangle shaped reach, m should be zero. m is forced to be zero.')
+                self.m = 0
+            if ((self.b == 0) or (self.b is None)):
+                raise ProviderError('Rectangle spahed reach with id {} needs to have bottom width'.format(self.segment_id))
+
             self.outflow_method = stream_f.genspahe
+
         elif channel_shapetype == 1:  # trapezoid
+
+            if ((self.b == 0) or (self.b is None)):
+                raise ProviderError('Trapezoid spahed reach with id {} needs to have bottom width'.format(self.segment_id))
+            if ((self.m == 0) or (self.m is None)):
+                raise ProviderError('Trapezoid spahed reach with id {} needs to have side slop width'.format(self.segment_id))
+
             self.outflow_method = stream_f.genspahe
+
         elif channel_shapetype == 2:  # triangle
+
+            if (self.b != 0):
+                Logger.warning('For triangle shaped reach, b should be zero. b is forced to be zero.')
+                self.b = 0
+            if ((self.m == 0) or (self.m is None)):
+                raise ProviderError('Triangle spahed reach with id {} needs to have side slop width'.format(self.segment_id))
+
             self.outflow_method = stream_f.genspahe
+
         elif channel_shapetype == 3:  # parabola
             self.outflow_method = stream_f.parabola
-            # ToDO - ve stream_f-py - mame u paraboly napsano, ze nefunguje
+            # TODO - ve stream_f-py - mame u paraboly napsano, ze nefunguje
         else:
             self.outflow_method = stream_f.genspahe
-            # ToDo - zahodit posledni else a misto toho dat hlasku, ze to
-            #        je mimo rozsah
 
-        self.outflow_method = stream_f.genspahe
 
 # Documentation for a class.
 #
