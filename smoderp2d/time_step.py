@@ -199,22 +199,25 @@ class TimeStep:
            
             # Changing matrix to a single float
             dt = delta_t.mean()
+            def model(h_new):
+                res = self.model(h_new,
+                                dt,
+                                h_old,
+                                list_fd,
+                                r,c,
+                                aa,b,
+                                act_rain,
+                                surface.arr.soil_type,
+                                pixel_area,
+                                surface.arr.sur_ret,
+                                surface.arr.h_crit,
+                                surface.arr.state,
+                                surface.arr.rillWidth,
+                                surface.arr.h_rillPre,
+                                surface.arr.h_last_state1)
+                return res
             try:
-                solution = sp.optimize.root(self.model, h_0, 
-                                            args=(dt,
-                                                    h_old,
-                                                    list_fd,
-                                                    r,c,
-                                                    aa,b,
-                                                    act_rain,
-                                                    surface.arr.soil_type,
-                                                    pixel_area,
-                                                    surface.arr.sur_ret,
-                                                    surface.arr.h_crit,
-                                                    surface.arr.state,
-                                                    surface.arr.rillWidth,
-                                                    surface.arr.h_rillPre,
-                                                    surface.arr.h_last_state1),
+                solution = sp.optimize.root(model, h_0,
                                                 method='krylov', options={'fatol':1e-8,'maxiter':max_iter})
                 
                 h_new = solution.x
