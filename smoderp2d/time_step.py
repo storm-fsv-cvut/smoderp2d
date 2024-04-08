@@ -162,8 +162,8 @@ class TimeStep:
         dh_max = 1e-5  # [m]
         
         # Setting the maximum number of iterations for the solver
-        max_iter = 7
-        min_iter = 3
+        max_iter = 20
+        min_iter = 10
         # parameter for the time step modification  
         modif_up = 2
         modif_down = 2
@@ -218,12 +218,13 @@ class TimeStep:
                 return res
             try:
                 solution = sp.optimize.root(model, h_0,
-                                                method='krylov', options={'fatol':1e-8,'maxiter':max_iter})
+                                                method='df-sane', options={'fatol':1e-8,'maxiter':max_iter})
                 
                 h_new = solution.x
                 fc.iter_ = solution.nit
                 
-                #print ('h_hew {} nit {}'.format(h_new.mean(), solution.nit))
+                # print ('h_hew {} nit {}'.format(h_new.mean(), solution.nit))
+                # input('press...')
                 if solution.success == False:
                     delta_t = delta_t/modif_down
                     continue
