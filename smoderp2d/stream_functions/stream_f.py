@@ -212,7 +212,6 @@ def triangle(reach, dt):
     S = reach.m * H * H
     # dS = B*reach.h + reach.m*reach.h*reach.h
     # dV = dS*reach.length
-    print (O)
     R = ma.where(O != 0, S / O, 0)
     reach.vs = ma.power(
         R,
