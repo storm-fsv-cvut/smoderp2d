@@ -102,6 +102,8 @@ class Reach(object):
             self.outflow_method = stream_f.genspahe
 
         elif channel_shapetype == 3:  # parabola
+            Logger.warning('Parabola shaped stream reach calculation is under'
+            'development and may not produce reliable numbers')
             self.outflow_method = stream_f.parabola
             # TODO - ve stream_f-py - mame u paraboly napsano, ze nefunguje
         else:
