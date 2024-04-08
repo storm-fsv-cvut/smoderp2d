@@ -56,23 +56,6 @@ def compute_h(A, m, b, err=0.0001, max_iter=20, hinit = 100):
     return h
 
 
-def compute_h_det(A, m, b, err=0.0001, max_iter=50):
-    a = m
-    b = b
-    c = np.unique(-A)[0]
-    print (a)
-    print (b)
-    print (c)
-    # Calculate the discriminant
-    discriminant = (b**2) - (4*a*c)
-    if (discriminant == 0): return (0)
-
-    # Find two solutions
-    root1 = (-b + math.sqrt(discriminant)) / (2*a)
-    root2 = (-b - math.sqrt(discriminant)) / (2*a)
-
-    if root1 > root2: return(root1)
-    if root2 > root1: return(root2)
 
 
 # Function calculates the discharge in rectangular shaped reach of a stream.
