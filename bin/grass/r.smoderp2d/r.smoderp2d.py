@@ -118,6 +118,13 @@
 # % options: single,multiple
 # % answer: single
 # %end
+# %option
+# % key: wave
+# % description: Wave type
+# % guisection: Settings
+# % options: kinematic,diffusion
+# % answer: kinematic
+# %end
 # %option G_OPT_M_DIR
 # % key: output
 # % description: Name for output directory where to store results

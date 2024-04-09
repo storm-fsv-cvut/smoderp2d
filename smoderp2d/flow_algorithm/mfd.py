@@ -63,6 +63,8 @@ def new_mfda(mat_dem, mat_nan, mat_fd):
                 possible_circulation = 0
 
                 nbrs = neighbors(i, j, mat_dem, rows, cols)
+                if any([ma.is_masked(nbr) for nbr in nbrs]):
+                    continue
                 fldir, flsp = dirSlope(point_m, nbrs, dy, dx)
 
                 flprop = np.zeros(8, float)

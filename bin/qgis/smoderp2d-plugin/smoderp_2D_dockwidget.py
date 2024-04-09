@@ -177,6 +177,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.table_stream_shape = QgsMapLayerComboBox()
         self.table_stream_shape_toolButton = QtWidgets.QToolButton()
         self.flow_direction = QtWidgets.QComboBox()
+        self.wave = QtWidgets.QComboBox()
         self.generate_temporary = QtWidgets.QCheckBox()
         self.run_button = QtWidgets.QPushButton(self.dockWidgetContents)
 
@@ -301,6 +302,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.arguments['flow_direction'].addWidget(
             self.flow_direction
         )
+        self.arguments['wave'].addWidget(
+            self.wave
+        )
         self.arguments['generate_temporary'].insertWidget(
             0, self.generate_temporary
         )  # checkbox should be before label
@@ -405,6 +409,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         # 4TH TAB - ADVANCED
         self.flow_direction.addItems(('single', 'multiple'))
+        self.wave.addItems(('kinematic', 'diffusion'))
 
     def set_allow_empty(self):
         """Set AllowEmptyLayer to True for optional options."""
@@ -678,6 +683,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             'streams_channel_type_fieldname':
                 self.table_stream_shape_code.currentText(),
             'flow_direction': self.flow_direction.currentText(),
+            'wave': self.wave.currentText(),
             'generate_temporary': bool(self.generate_temporary.checkState()),
             'output': self.main_output.text().strip()
         }
