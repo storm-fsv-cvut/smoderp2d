@@ -21,7 +21,7 @@ build-backend = "setuptools.build_meta"
 
 [metadata]
 name = 'smoderp2d'
-version = '2.0.0rc1'
+version = '2.0.0rc2'
 
 [tool.setuptools.packages.find]
 where = [""]
@@ -32,8 +32,9 @@ exclude = ["bin*", "utils*", "tests*"]
 
 [project]
 name = 'smoderp2d'
-version = '2.0.0rc1'
+version = '2.0.0rc2'
 description = 'Distributed event-based model for surface and subsurface runoff and erosion.'
+readme = 'README.md'
 authors = [
     {name = "Petr Kavka", email = "petr.kavka@fsv.cvut.cz"},
     {name = "Jakub Jeřábek", email = "jakub.jerabek@fsv.cvut.cz"},
@@ -46,5 +47,5 @@ license = {text = "GPLv3"}
 dependencies = ['numpy']
 
 [project.urls]
-documentation = 'https://storm.fsv.cvut.cz/cinnost-katedry/volne-stazitelne-vysledky/smoderp/?lang=en'
+documentation = 'https://storm-fsv-cvut.github.io/smoderp2d-manual'
 repository = 'https://github.com/storm-fsv-cvut/smoderp2d'
