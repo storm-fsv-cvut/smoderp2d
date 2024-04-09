@@ -511,8 +511,10 @@ class PrepareData(PrepareDataGISBase):
                 segment_id = seg.attrs[segment_id_fieldname]
                 if elev_change == 0:
                     raise DataPreparationError(
-                        'Stream segment {}: {} has zero slope'.format(
-                            segment_id_fieldname, segment_id
+                        'Stream segment {}: {} [[{}, {}], [{}, {}]] has zero '
+                        'slope'.format(
+                            segment_id_fieldname, segment_id, startpt.x,
+                            startpt.y, endpt.x, endpt.y
                         )
                     )
                 elif elev_change < 0:
@@ -583,7 +585,9 @@ class PrepareData(PrepareDataGISBase):
                             raise DataPreparationError(
                                 'Incorrect stream network topology downstream '
                                 'segment streamID: {}. The network can not '
-                                'bifurcate.'.format(segment_id)
+                                'bifurcate (at point [{}, {}]).'.format(
+                                    segment_id, seg[-1].x, seg[-1].y
+                                )
                             )
                         seg.attrs[next_down_fieldname] = vmap[
                             start_seg.id

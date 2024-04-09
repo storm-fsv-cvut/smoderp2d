@@ -370,10 +370,13 @@ class PerformTest:
                             if isinstance(vv[0], str):
                                 equal = vv == reference_dict[k][kk]
                             else:
-                                equal = np.allclose(
-                                    vv, reference_dict[k][kk],
-                                    rtol=relative_tolerance
-                                )
+                                try:
+                                    equal = np.allclose(
+                                        vv, reference_dict[k][kk],
+                                        rtol=relative_tolerance
+                                    )
+                                except ValueError as e:
+                                    equal = False
                             assert equal is True, \
                                 self.report_pickle_difference(
                                     dataprep_filepath, reference_filepath
