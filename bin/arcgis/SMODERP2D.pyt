@@ -31,6 +31,7 @@ PARAMETER_CHANNEL_PROPS_TABLE = 14
 PARAMETER_FLOW_DIRECTION = 15
 PARAMETER_GENERATE_TEMPDATA = 16
 PARAMETER_PATH_TO_OUTPUT_DIRECTORY = 17
+PARAMETER_WAVE_TYPE = 18
 
 class Toolbox(object):
     def __init__(self):
@@ -218,6 +219,18 @@ class SMODERP2D(object):
         flowRoutingType.filter.type = "ValueList"
         flowRoutingType.filter.list = ["single", "multiple"]
 
+        waveType = arcpy.Parameter(
+            displayName = "Wave type",
+            name = "waveType",
+            datatype = "GPString",
+            parameterType = "Required",
+            direction = "Input",
+            category = "Advanced"
+            )
+        waveType.value = "kinematic"
+        waveType.filter.type = "ValueList"
+        waveType.filter.list = ["kinematic", "diffusion"]
+
         generateTempData = arcpy.Parameter(
             displayName = "Generate also temporary data",
             name = "generateTempData",
@@ -233,7 +246,7 @@ class SMODERP2D(object):
             inputLUPolygons, LUtypeFieldName, inputRainfall,
             maxTimeStep, totalRunTime, inputPoints, inputPointsFieldName,
             soilvegPropertiesTable, soilvegIDfieldName, streamNetwork, streamChannelShapeIDfieldName,
-            channelPropertiesTable, flowRoutingType, generateTempData, outDir,
+            channelPropertiesTable, flowRoutingType, generateTempData, outDir, waveType
         ]
 
     def updateParameters(self, parameters):
@@ -283,5 +296,6 @@ class SMODERP2D(object):
             'channel_properties_table': parameters[PARAMETER_CHANNEL_PROPS_TABLE].valueAsText,
             'flow_direction': parameters[PARAMETER_FLOW_DIRECTION].valueAsText,
             'generate_temporary': parameters[PARAMETER_GENERATE_TEMPDATA].value,
-            'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText
+            'output': parameters[PARAMETER_PATH_TO_OUTPUT_DIRECTORY].valueAsText,
+            'wave': parameters[PARAMETER_WAVE_TYPE].valueAsText,
         }
