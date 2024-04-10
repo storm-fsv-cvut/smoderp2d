@@ -5,6 +5,7 @@ import tempfile
 import binascii
 
 from smoderp2d.runners.grass import GrassGisRunner
+from smoderp2d.providers import Logger
 
 class Popen(subprocess.Popen):
     """Avoid displaying cmd windows on MS Windows."""
@@ -80,6 +81,11 @@ class QGISRunner(GrassGisRunner):
         :param options: dictionary of input data
         """
         from grass.pygrass.modules import Module
+        from grass.pygrass.gis import Mapset
+
+        Logger.debug("Using GRASS location: {}".format(
+            Mapset().path())
+        )
 
         for key in options:
             # import rasters

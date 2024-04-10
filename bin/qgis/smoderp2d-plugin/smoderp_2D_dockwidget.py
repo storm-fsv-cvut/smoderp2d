@@ -953,6 +953,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                     'output': temp_dir.name,
                     'end_time': 5,
                     'flow_direction': 'single',
+                    'wave': 'kinematic',
                     'generate_temporary': True
                 }
             self._loadParams(param_dict)
@@ -1001,6 +1002,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.main_output.setText(param_dict['output'])
         self.end_time.setValue(param_dict['end_time'])
         self.flow_direction.setCurrentText(param_dict['flow_direction'])
+        self.wave.setCurrentText(param_dict['wave'])
         self.generate_temporary.setChecked(param_dict['generate_temporary'])
 
     def abort_computation(self):
