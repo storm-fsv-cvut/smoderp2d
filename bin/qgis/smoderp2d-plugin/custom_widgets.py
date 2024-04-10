@@ -50,6 +50,7 @@ class HistoryWidget(QListWidgetItem):
             'output': params['output'],
             'end_time': params['end_time'],
             'flow_direction': params['flow_direction'],
+            'wave': params['wave'],
             'generate_temporary': params['generate_temporary']
         })
 
