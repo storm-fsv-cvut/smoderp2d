@@ -187,17 +187,6 @@ class SMODERP2D(object):
            direction="Input"
         )
 
-        flowDirection = arcpy.Parameter(
-           displayName="Flow direction",
-           name="flowDirection",
-           datatype="String",
-           parameterType="Optional",
-           direction="Input",
-           category="Settings"
-        )
-        #flowDirection.values(["single","multiple"])
-        #flowDirection.value("single")
-
         outDir = arcpy.Parameter(
            displayName="Output folder",
            name="outDir",
