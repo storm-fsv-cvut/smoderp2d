@@ -47,9 +47,7 @@ class FlowControl(object):
         self.infiltration_type = 0
 
         # actual time in calculation
-        self.total_time = ma.masked_array(
-            np.zeros((r, c), float), mask=GridGlobals.masks
-        )
+        self.total_time = 0
 
         # keep order of a current rainfall interval
         self.tz = 0
@@ -182,7 +180,7 @@ class Runoff(object):
         # handle times step changes based on Courant condition
         self.courant = Courant()
         self.delta_t = self.courant.initial_time_step()
-        Logger.info('Corrected time step is {} [s]'.format(self.delta_t.max()))
+        Logger.info('Corrected time step is {} [s]'.format(self.delta_t))
 
         # opens files for storing hydrographs
         if Globals.get_array_points() is not None:
@@ -258,10 +256,6 @@ class Runoff(object):
         # main loop: until the end time
         timeperc_last = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-
-        self.delta_t = ma.masked_array(
-            self.delta_t, mask=GridGlobals.masks
         )
 
         while ma.any(self.flow_control.compare_time(end_time)):
@@ -432,7 +426,7 @@ class Runoff(object):
                 # print progress with 5% step
                 Logger.progress(
                     timeperc.max(),
-                    self.delta_t.max(),
+                    self.delta_t,
                     self.flow_control.iter_,
                     self.flow_control.total_time + self.delta_t
                 )

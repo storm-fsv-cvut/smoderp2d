@@ -31,10 +31,7 @@ class Courant:
         self.j = -1
         self.co = 'sheet'
         self.maxratio = 10
-        self.max_delta_t = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt,
-            mask=GridGlobals.masks
-        )
+        self.max_delta_t = Gl.maxdt
         self.max_delta_t_mult = 1.0
 
     #
@@ -79,10 +76,7 @@ class Courant:
         # (math.sqrt(sur.pixel_area)*self.cour_least*self.cour_coef)/velGuess
 
         # return self.initGuess
-        return ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt,
-            mask=GridGlobals.masks
-        )
+        return Gl.maxdt
 
     #
     def CFL(self, v, delta_t, effect_cont, co, rill_courant):
