@@ -108,7 +108,7 @@ def timestepRainfall(itera, total_time, delta_t, tz, sr):
     z = tz
     # skontroluje jestli neni mimo srazkovy zaznam
     if z > (itera - 1):
-        rainfall = ma.zeros((GridGlobals.r, GridGlobals.c))
+        rainfall = 0
     else:
         # skontroluje jestli casovy krok, ktery prave resi, je stale vramci
         # srazkoveho zaznamu z
