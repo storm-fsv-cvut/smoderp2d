@@ -581,7 +581,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
     def importResults(self):
         """Import results into QGIS, group them and show them as layers.
         """
-        def import_group_layers(group, outdir, ext='asc', show=False):
+        def import_group_layers(group, outdir, ext=['asc', 'gml'], show=False):
             """Import individual group layers.
 
             :param group: QGIS group object
