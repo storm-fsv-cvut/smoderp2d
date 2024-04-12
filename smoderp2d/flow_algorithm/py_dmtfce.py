@@ -131,7 +131,7 @@ def removeCellsWithSameHeightNeighborhood(mat_dem, mat_nan, rows, cols):
     A function determines if cell neighborhood has exactly same values of
     height, and then it save that cell as NoData.
 
-    :param mat_dem: TODO
+    :param mat_dem: digital elevation model
     :param mat_nan: TODO
     :param rows: TODO
     :param cols: TODO
