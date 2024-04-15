@@ -83,9 +83,11 @@ def rectangle(reach, dt):
     reach.Q_out = S * reach.vs
     # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt                   # prutok
     reach.V_out = reach.Q_out * dt  # odtekly objem
-    condition = ma.greater(reach.V_out, dV)
-    reach.V_out = ma.where(condition, dV, reach.V_out)
-    reach.vol_rest = ma.where(condition, 0, dV - reach.V_out)
+    if reach.V_out > dV:
+        reach.V_out = dV
+        reach.vol_rest = 0
+    else:
+        reach.vol_rest = dV - reach.V_out
     reach.Q_out = reach.V_out / dt
     reach.h = H
 
@@ -128,9 +130,11 @@ def trapezoid(reach, dt):
     reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
 
-    condition = ma.greater(reach.V_out, dV)
-    reach.V_out = ma.where(condition, dV, reach.V_out)
-    reach.vol_rest = ma.where(condition, 0, dV - reach.V_out)
+    if reach.V_out > dV:
+        reach.V_out = dV
+        reach.vol_rest = 0
+    else:
+        reach.vol_rest = dV - reach.V_out
     reach.Q_out = reach.V_out / dt
     reach.h = H
 
@@ -178,7 +182,10 @@ def triangle(reach, dt):
     S = reach.m * H * H
     # dS = B*reach.h + reach.m*reach.h*reach.h
     # dV = dS*reach.length
-    R = ma.where(O != 0, S / O, 0)
+    if O == 0:
+        R = 0
+    else:
+        R = S / O
     reach.vs = ma.power(
         R,
         0.6666) * ma.power(
@@ -187,9 +194,11 @@ def triangle(reach, dt):
     reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
 
-    condition = ma.greater(reach.V_out, Ve)
-    reach.V_out = ma.where(condition, Ve, reach.V_out)
-    reach.vol_rest = ma.where(condition, 0, Ve - reach.V_out)
+    if reach.V_out > Ve:
+        reach.V_out = Ve
+        reach.vol_rest = 0
+    else:
+        reach.vol_rest = Ve - reach.V_out
     reach.Q_out = reach.V_out / dt
     reach.h = H
 
@@ -215,16 +224,24 @@ def parabola(reach, dt):
     B = u * hp #sirka hladiny #b = 3*a/(2*h)
     H = hp + reach.h  # D -> vyska hladiny
     dB = u * H
-    O = ma.where(dB != 0, dB + 8 * H * H / (3 * dB), 0)
+    if dB == 0:
+        O = 0
+    else:
+        O = dB + 8 * H * H / (3 * dB)
     S = 2 / 3 * dB * H
     dS = S - 2 / 3 * B * hp
     dV = dS * reach.length
-    R = ma.where(O != 0, S / O, 0)
+    if O == 0:
+        R = 0
+    else:
+        R = S / O
     reach.Q_out = S * ma.power(R, 0.66666) * ma.power(reach.inclination, 0.5) / (reach.roughness) # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
 
-    reach.Q_out = ma.where(reach.V_out > dV, dV / dt, reach.Q_out)
-    reach.V_out = ma.where(reach.V_out > dV, dV, reach.V_out)
+    if reach.V_out > dV:
+        reach.Q_out = dV / dt
+        reach.V_out = dV
+        
     reach.vs = ma.power(R, 0.6666) * ma.power(reach.inclination, 0.5) / (reach.roughness) #v
     reach.vol_rest = dV - reach.V_out
     reach.h = H
