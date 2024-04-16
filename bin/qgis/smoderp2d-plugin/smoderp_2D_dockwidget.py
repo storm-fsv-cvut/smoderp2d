@@ -581,7 +581,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
     def importResults(self):
         """Import results into QGIS, group them and show them as layers.
         """
-        def import_group_layers(group, outdir, ext=('asc', 'gml'), show=False):
+        def import_group_layers(group, outdir, ext=('asc', 'gml', 'csv'), show=False):
             """Import individual group layers.
 
             :param group: QGIS group object
@@ -606,6 +606,13 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
                     # set symbology
                     layer.setRenderer(self._layerColorRamp(layer))
+                elif map_ext == '.csv':
+                    # table
+                    layer = QgsVectorLayer(
+                        f'file:///{os.path.dirname(map_path)}/{map_name}.csv?delimiter=;',
+                        map_name,
+                        'delimitedtext'
+                    )
                 else:
                     # vector
                     layer = QgsVectorLayer(
@@ -651,9 +658,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         ctrl_group = group.addGroup('control_point')
         ctrl_group.setExpanded(False)
         ctrl_group.setItemVisibilityChecked(False)
-        import_group_layers(
-            ctrl_group, os.path.join(outdir, 'control_point'), 'csv'
-        )
+        import_group_layers(ctrl_group, os.path.join(outdir, 'control_point'))
 
         if self._input_params['generate_temporary'] is True:
             # import temp results
