@@ -85,6 +85,7 @@ class GrassGisWriter(BaseWriter):
         """
         Module(
             'v.out.ogr',
+            flags='s',
             input=raster_name,
             output=file_output + self._vector_extension,
             format='GML',
