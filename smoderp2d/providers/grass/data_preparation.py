@@ -30,6 +30,9 @@ class PrepareData(PrepareDataGISBase):
 
         super(PrepareData, self).__init__(writer)
 
+        # TODO: do not install hydrodem if already installed
+        Module('g.extension', extension='r.hydrodem')
+
     def __del__(self):
         # remove mask
         try:
@@ -156,15 +159,14 @@ class PrepareData(PrepareDataGISBase):
         dem_flowdir = self.storage.output_filepath('dem_flowdir')
         # calculate the depressionless DEM
         self._run_grass_module(
-            'r.fill.dir', input=dem, output=dem_filled, format='agnps',
-            direction=dem_flowdir+'2'
+            'r.hydrodem', flags='f', input=dem, output=dem_filled
         )
 
         # calculate the flow direction
         # calculate flow accumulation
         dem_flowacc = self.storage.output_filepath('dem_flowacc')
         self._run_grass_module(
-            'r.watershed', flags='as', elevation=dem,
+            'r.watershed', flags='as', elevation=dem_filled,
             drainage=dem_flowdir+'1', accumulation=dem_flowacc
         )
         # recalculate flow dir to ArcGIS notation
@@ -186,7 +188,7 @@ class PrepareData(PrepareDataGISBase):
             rules='-', stdin_=reclass
         )
         self.__remove_temp_data(
-            {'name': '{r}1,{r}2'.format(r=dem_flowdir), 'type': 'raster'}
+            {'name': '{r}1'.format(r=dem_flowdir), 'type': 'raster'}
         )
 
         # calculate slope
