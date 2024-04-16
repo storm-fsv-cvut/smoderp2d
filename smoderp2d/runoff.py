@@ -254,9 +254,7 @@ class Runoff(object):
         end_time = Globals.end_time
 
         # main loop: until the end time
-        timeperc_last = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
+        timeperc_last = 0
 
         while ma.any(self.flow_control.compare_time(end_time)):
 
@@ -422,10 +420,10 @@ class Runoff(object):
             self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / end_time
-            if ma.any(timeperc > 99.9) or ma.any(timeperc - timeperc_last > 5):
+            if timeperc > 99.9 or timeperc - timeperc_last > 5:
                 # print progress with 5% step
                 Logger.progress(
-                    timeperc.max(),
+                    timeperc,
                     self.delta_t,
                     self.flow_control.iter_,
                     self.flow_control.total_time + self.delta_t
