@@ -15,7 +15,7 @@ import numpy as np
 from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.providers import Logger
 
-relative_tolerance = 0.0001
+tolerance = 0.0001
 
 def write_array_diff_png(diff, target_path):
     import matplotlib.pyplot as plt
@@ -162,7 +162,7 @@ def are_dir_trees_equal(dir1, dir2):
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
         if new_output.shape == reference.shape:
-            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+            equal = np.allclose(new_output, reference, rtol=tolerance)
             if equal is True:
                 same_files.append(file_path)
                 continue
@@ -175,7 +175,7 @@ def are_dir_trees_equal(dir1, dir2):
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
         if new_output.shape == reference.shape:
-            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+            equal = np.allclose(new_output, reference, rtol=tolerance)
             if equal is True:
                 same_files.append(file_path)
                 continue
@@ -188,7 +188,7 @@ def are_dir_trees_equal(dir1, dir2):
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
         if new_output.shape == reference.shape:
-            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+            equal = np.allclose(new_output, reference, rtol=tolerance)
             if equal is True:
                 same_files.append(file_path)
                 continue
@@ -326,7 +326,7 @@ class PerformTest:
                                 try:
                                     equal = np.allclose(
                                         vv, reference_dict[k][kk],
-                                        rtol=relative_tolerance
+                                        atol=tolerance
                                     )
                                 except ValueError as e:
                                     equal = False
@@ -342,7 +342,7 @@ class PerformTest:
                     else:
                         if k not in ('rc', 'wave'):
                             equal = np.allclose(
-                                v, reference_dict[k], rtol=relative_tolerance
+                                v, reference_dict[k], atol=tolerance
                             )
                         else:
                             # cannot create an array from inhomogeneous list
