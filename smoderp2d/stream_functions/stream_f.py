@@ -34,7 +34,7 @@ def compute_h(A, m, b, err=0.0001, max_iter=20, hinit = 100):
         return b + 2.0 * m * h
 
     # first height estimation
-    h_pre = hinit
+    h_pre = ma.where(b != 0, A / b, 0)
     h = h_pre
     iter_ = 1
     while ma.any(feval(h_pre) > err):
