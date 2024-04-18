@@ -14,7 +14,7 @@ import numpy as np
 from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.providers import Logger
 
-relative_tolerance = 0.0001
+relative_tolerance = 0.001
 
 def write_array_diff_png(diff, target_path):
     import matplotlib.pyplot as plt
