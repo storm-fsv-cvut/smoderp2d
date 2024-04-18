@@ -153,6 +153,15 @@ def are_dir_trees_equal(dir1, dir2):
             ignore_list.extend(ignore_right)
         return ignore_list
 
+    def _allclose(array1, array2, relative_tolerance, name):
+        try:
+            equal = np.allclose(array1, array2, rtol=relative_tolerance)
+        except ValueError as e:
+            print(f"Unable to process {name}: {e}")
+            equal = False
+
+        return equal
+
     same_files = []
     diff_files = []
 
@@ -162,7 +171,7 @@ def are_dir_trees_equal(dir1, dir2):
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
         if new_output.shape == reference.shape:
-            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+            equal = _allclose(new_output, reference, relative_tolerance, i)
             if equal is True:
                 same_files.append(file_path)
                 continue
@@ -175,7 +184,7 @@ def are_dir_trees_equal(dir1, dir2):
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
         if new_output.shape == reference.shape:
-            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+            equal = _allclose(new_output, reference, relative_tolerance, i)
             if equal is True:
                 same_files.append(file_path)
                 continue
@@ -188,7 +197,7 @@ def are_dir_trees_equal(dir1, dir2):
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
         if new_output.shape == reference.shape:
-            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+            equal = _allclose(new_output, reference, relative_tolerance, i)
             if equal is True:
                 same_files.append(file_path)
                 continue
@@ -329,6 +338,7 @@ class PerformTest:
                                         rtol=relative_tolerance
                                     )
                                 except ValueError as e:
+                                    print(f"Unable to process {k}/{kk}: {e}")
                                     equal = False
                             if equal is False:
                                 diff_list.append(unified_diff(self._data_to_str({k: new_output_dict[k]}),
@@ -341,9 +351,13 @@ class PerformTest:
                                                           fromfile='output', tofile='reference'))
                     else:
                         if k not in ('rc', 'wave'):
-                            equal = np.allclose(
-                                v, reference_dict[k], rtol=relative_tolerance
-                            )
+                            try:
+                                equal = np.allclose(
+                                    v, reference_dict[k], rtol=relative_tolerance
+                                )
+                            except ValueError as e:
+                                print(f"Unable to process {k}: {e}")
+                                equal = False
                         else:
                             # cannot create an array from inhomogeneous list
                             equal = v == reference_dict[k]
