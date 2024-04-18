@@ -1,5 +1,5 @@
 # @package smoderp2d.courant defines Class Courant which handles the time
-# step adjustement
+# step adjustment
 
 
 import numpy as np
@@ -21,7 +21,7 @@ class Courant:
     def __init__(self):
         """TODO."""
         self.cour_speed = 0
-        # citical courant value
+        # critical courant value
         self.cour_crit = 0.95
         self.cour_most = self.cour_crit + 1
         self.cour_most_rill = self.cour_crit + 1.0

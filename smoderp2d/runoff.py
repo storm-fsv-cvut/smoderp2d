@@ -57,7 +57,7 @@ class FlowControl(object):
             np.zeros((r, c), float), mask=GridGlobals.masks
         )
 
-        # factor deviding the time step for rill calculation
+        # factor dividing the time step for rill calculation
         # currently inactive
         self.ratio = ma.masked_array(
             np.ones((r, c), float), mask=GridGlobals.masks
@@ -95,7 +95,7 @@ class FlowControl(object):
     def refresh_iter(self):
         """Set current number of iteration to zero.
 
-        Should be called at the begining of each time step.
+        Should be called at the beginning of each time step.
         """
         self.iter_ = 0
 

@@ -18,7 +18,7 @@ class Runner(object):
         self._provider = self._get_provider()
 
     def _get_provider(self):
-        """Get provider object instace.
+        """Get provider object instance.
 
         :return provider class instance
         """

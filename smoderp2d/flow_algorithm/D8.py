@@ -6,10 +6,10 @@ from smoderp2d.core.general import GridGlobals
 
 # defines inflows to the cell of raster based on the flow direction raster
 #
-#  @infloes return list defines relative postion of cells \f$ i+m \f$ and
+#  @inflows return list defines relative position of cells \f$ i+m \f$ and
 #  \f$ j+n \f$ from which the water flows to cell \f$ i,j \f$. \n
 #
-#  Accordinto the figure, the inflows list at the cell \f$ i,j \f$ looks as
+#  According to the figure, the inflows list at the cell \f$ i,j \f$ looks as
 #  follows:\n
 #
 #  \f$ m_1 = inflows[i][j][0][0] = -1  \f$ \n
