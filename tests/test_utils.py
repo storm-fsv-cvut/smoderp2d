@@ -1,7 +1,6 @@
 import os
 import sys
 import configparser
-import filecmp
 import logging
 import glob
 import pickle
@@ -348,7 +347,7 @@ class PerformTest:
                         if reference_dict[k] is not None:
                             diff_list.append(unified_diff(self._data_to_str({k: new_output_dict[k]}),
                                                           self._data_to_str({k: reference_dict[k]}),
-                                                          fromfile='output', tofile='reference'))
+                                                          fromfile=f'output ({k})', tofile=f'reference ({k})'))
                     else:
                         if k not in ('rc', 'wave'):
                             try:
@@ -364,7 +363,7 @@ class PerformTest:
                         if equal is False:
                             diff_list.append(unified_diff(self._data_to_str({k: new_output_dict[k]}),
                                                           self._data_to_str({k: reference_dict[k]}),
-                                                          fromfile='output', tofile='reference'))
+                                                          fromfile=f'output ({k})', tofile=f'reference ({k})'))
 
         diff_fn = dataprep_filepath + ".diff"
         if diff_list:
