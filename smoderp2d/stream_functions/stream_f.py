@@ -24,7 +24,7 @@ frameinfo = getframeinfo(currentframe())
 #   @return h water level in the trapezoid
 
 
-def compute_h(A, m, b, err=0.0001, max_iter=20):
+def compute_h(A, m, b, err=0.0001, max_iter=20, hinit = 100):
     def feval(h):
         return b * h + m * h * h - A
 
@@ -32,7 +32,7 @@ def compute_h(A, m, b, err=0.0001, max_iter=20):
         return b + 2.0 * m * h
 
     # first height estimation
-    h_pre = ma.where(b != 0, A / b, 0)
+    h_pre = hinit
     h = h_pre
     iter_ = 1
     while ma.any(feval(h_pre) > err):
@@ -116,7 +116,8 @@ def trapezoid(reach, dt):
         A=(reach.V_in_from_field + reach.vol_rest +
            reach.V_in_from_reach) / reach.length,
         m=reach.m,
-        b=reach.b)
+        b=reach.b,
+        hinit = reach.h + 1)
     # tuhle iteracni metodu nezna ToDo - nevim kdo ji kdy tvoril
     H = hp + h  # celkova vyska
     O = B + 2.0 * H * ma.power(1 + reach.m * reach.m, 0.5)
@@ -172,7 +173,9 @@ def triangle(reach, dt):
     # vyska z epizody co pribude na trouhelnik z baseflow (takze lichobeznik)
     #                       ____                                          __
     # zakladna lichobezniku \__/ je spodni 'horni'  zakladna trojuhelniku \/
-    he = compute_h(A=Ve / reach.length, m=reach.m, b=B)
+    he = compute_h(A=Ve / reach.length, m=reach.m, b=B,
+        hinit = reach.h + 1)
+
     # funkce pouzita pro lichobeznik  ____
     H = hp + he
     # vyska vysledneho trouhelniku    \  /
