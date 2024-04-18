@@ -52,7 +52,7 @@ class Reach(object):
             if ((self.b == 0) or (self.b is None)):
                 raise ProviderError('Rectangle spahed reach with id {} needs to have bottom width'.format(self.segment_id))
 
-            self.outflow_method = stream_f.genspahe
+            self.outflow_method = stream_f.genshape
 
         elif channel_shapetype == 1:  # trapezoid
 
@@ -61,7 +61,7 @@ class Reach(object):
             if ((self.m == 0) or (self.m is None)):
                 raise ProviderError('Trapezoid spahed reach with id {} needs to have side slop width'.format(self.segment_id))
 
-            self.outflow_method = stream_f.genspahe
+            self.outflow_method = stream_f.genshape
 
         elif channel_shapetype == 2:  # triangle
 
@@ -71,7 +71,7 @@ class Reach(object):
             if ((self.m == 0) or (self.m is None)):
                 raise ProviderError('Triangle spahed reach with id {} needs to have side slop width'.format(self.segment_id))
 
-            self.outflow_method = stream_f.genspahe
+            self.outflow_method = stream_f.genshape
 
         elif channel_shapetype == 3:  # parabola
             Logger.warning('Parabola shaped stream reach calculation is under'
@@ -79,7 +79,7 @@ class Reach(object):
             self.outflow_method = stream_f.parabola
             # TODO - ve stream_f-py - mame u paraboly napsano, ze nefunguje
         else:
-            self.outflow_method = stream_f.genspahe
+            self.outflow_method = stream_f.genshape
 
 
 # Documentation for a class.

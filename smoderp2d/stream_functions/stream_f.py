@@ -61,7 +61,7 @@ def compute_h(A, m, b, err=0.0001, max_iter=20, hinit = 100):
 # reach of a stream.
 #
 #
-def genspahe(reach, dt):
+def genshape(reach, dt):
     """Calculates the discharge in trapezoid/rectangle/triangle  shaped reach
     of a stream.
 
