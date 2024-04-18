@@ -29,48 +29,20 @@ class Reach(object):
         self.m = channel_bank_steepness
         self.roughness = channel_bed_roughness
         self.q365 = channel_q365
-        self.V_in_from_field = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.V_in_from_field_cum = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.V_in_from_reach = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.V_out_cum = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )   # L^3
-        self.vol_rest = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.h = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )  # jj mozna pocatecni podminka? ikdyz to je asi q365 co...
-        self.h_max = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.timeh_max = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.V_out = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.vs = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.Q_out = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.Q_max = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.timeQ_max = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.V_out_domain = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
+        self.V_in_from_field = 0
+        self.V_in_from_field_cum = 0
+        self.V_in_from_reach = 0
+        self.V_out_cum = 0  # L^3
+        self.vol_rest = 0
+        self.h = 0  # jj mozna pocatecni podminka? ikdyz to je asi q365 co...
+        self.h_max = 0
+        self.timeh_max = 0
+        self.V_out = 0
+        self.vs = 0
+        self.Q_out = 0
+        self.Q_max = 0
+        self.timeQ_max = 0
+        self.V_out_domain = 0
 
         if channel_shapetype == 0:  # rectangle
             
@@ -145,9 +117,7 @@ class Stream(object):
 
     def reset_inflows(self):
         for r in self.reach.values():
-            r.V_in_from_field = ma.masked_array(
-                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-            )
+            r.V_in_from_field = 0
 
     # Documentation for a reach inflows.
     #  @param fid feature id
@@ -174,12 +144,8 @@ class Stream(object):
 
     def stream_reach_inflow(self):
         for r in self.reach.values():
-            r.V_in_from_reach = ma.masked_array(
-                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-            )
-            r.V_out_domain = ma.masked_array(
-                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-            )
+            r.V_in_from_reach = 0
+            r.V_out_domain = 0
 
         for r in self.reach.values():
             fid_to_node = int(r.next_down_id)
@@ -213,13 +179,13 @@ class Stream(object):
         r = self.reach[fid]
         if not extraOut:
             line = '{h:.4e}{sep}{q:.4e}{sep}{cumvol:.4e}'.format(
-                h=r.h[i, j], q=r.Q_out[i, j], cumvol=r.V_out_cum[i, j], sep=sep
+                h=r.h, q=r.Q_out, cumvol=r.V_out_cum, sep=sep
             )
         else:
             line = '{h:.4e}{sep}{v:.4e}{sep}{q:.4e}{sep}{vi:.4e}{sep}' \
                    '{vo:.4e}'.format(
-                h=r.h[i, j], v=r.V_out[i, j], q=r.Q_out[i, j],
-                vi=r.V_in_from_field[i, j], vo=r.vol_rest[i, j], sep=sep
+                h=r.h, v=r.V_out, q=r.Q_out,
+                vi=r.V_in_from_field, vo=r.vol_rest, sep=sep
             )
 
         return line

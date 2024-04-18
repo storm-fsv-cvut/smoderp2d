@@ -49,10 +49,10 @@ class BaseLogger(logging.Logger):
 
     def _progress(self, perc, delta_t, t_iter, total_time):
         self.info('-' * 80)
-        self.info("Total time      [secs]: {0:.2f}".format(total_time.max()))
+        self.info("Total time      [secs]: {0:.2f}".format(total_time))
         self.info("Time step       [secs]: {0:.2e}".format(delta_t))
         self.info("Time iterations       : {0:d}".format(t_iter))
-        self.info("Percentage done    [%]: {0:.2f}".format(perc.max()))
+        self.info("Percentage done    [%]: {0:.2f}".format(perc))
         units = ' [secs]'
         if np.any(perc > 0):
             diff_time = time.time() - self.start_time
@@ -69,7 +69,7 @@ class BaseLogger(logging.Logger):
             remaining /= float(60 * 60 * 24)
             units = ' [days]'
 
-        self.info("Time to end    {0}: {1:.2f}".format(units, remaining.max()))
+        self.info("Time to end    {0}: {1:.2f}".format(units, remaining))
         self.info('-' * 80)
 
     def reset(self):

@@ -22,7 +22,7 @@ from smoderp2d.core.general import GridGlobals
 def new_inflows(mat_fd):
     """TODO.
 
-    :param mat_fd: TODO
+    :param mat_fd: flow direction
     """
     direction = [128, 64, 32, 16, 8, 4, 2, 1]
 
@@ -48,7 +48,7 @@ def new_inflows(mat_fd):
 def __directionsInflow(mat_fd, i, j):
     """TODO.
 
-    :param mat_fd: TODO
+    :param mat_fd: flow direction
     :param i: TODO
     :param j: TODO
     """

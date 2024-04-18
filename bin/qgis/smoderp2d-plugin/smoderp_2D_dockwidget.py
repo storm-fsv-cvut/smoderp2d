@@ -36,7 +36,8 @@ from PyQt5.QtWidgets import QFileDialog, QProgressBar, QMenu
 from qgis.core import (
     QgsProviderRegistry, QgsMapLayerProxyModel, QgsRasterLayer, QgsTask,
     QgsApplication, Qgis, QgsProject, QgsRasterBandStats,
-    QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp, QgsVectorLayer
+    QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp, QgsVectorLayer,
+    QgsVectorLayerJoinInfo
 )
 from qgis.utils import iface
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
@@ -177,6 +178,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.table_stream_shape = QgsMapLayerComboBox()
         self.table_stream_shape_toolButton = QtWidgets.QToolButton()
         self.flow_direction = QtWidgets.QComboBox()
+        self.wave = QtWidgets.QComboBox()
         self.generate_temporary = QtWidgets.QCheckBox()
         self.run_button = QtWidgets.QPushButton(self.dockWidgetContents)
 
@@ -301,6 +303,9 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.arguments['flow_direction'].addWidget(
             self.flow_direction
         )
+        self.arguments['wave'].addWidget(
+            self.wave
+        )
         self.arguments['generate_temporary'].insertWidget(
             0, self.generate_temporary
         )  # checkbox should be before label
@@ -405,6 +410,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         # 4TH TAB - ADVANCED
         self.flow_direction.addItems(('single', 'multiple'))
+        self.wave.addItems(('kinematic', 'diffusion'))
 
     def set_allow_empty(self):
         """Set AllowEmptyLayer to True for optional options."""
@@ -572,7 +578,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
     def importResults(self):
         """Import results into QGIS, group them and show them as layers.
         """
-        def import_group_layers(group, outdir, ext='asc', show=False):
+        def import_group_layers(group, outdir, ext=('asc', 'gml', 'csv'), show=False):
             """Import individual group layers.
 
             :param group: QGIS group object
@@ -580,22 +586,50 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             :param ext: extension of files to be imported
             :param show: show the layers after import or don't
             """
-            for map_path in glob.glob(os.path.join(outdir, f'*.{ext}')):
-                if ext == 'asc':
+            # collect map files
+            map_files = []
+            for e in ext:
+                map_files += glob.glob(os.path.join(outdir, f'*.{e}'))
+
+            # create layer and add into group
+            for map_path in map_files:
+                map_name, map_ext = os.path.splitext(os.path.basename(map_path))
+                if map_ext == '.asc':
                     # raster
                     layer = QgsRasterLayer(
                         map_path,
-                        os.path.basename(os.path.splitext(map_path)[0])
+                        map_name
                     )
 
                     # set symbology
                     layer.setRenderer(self._layerColorRamp(layer))
+                elif map_ext == '.csv':
+                    # table
+                    layer = QgsVectorLayer(
+                        f'file:///{os.path.dirname(map_path)}/{map_name}.csv?delimiter=;',
+                        map_name,
+                        'delimitedtext'
+                    )
                 else:
                     # vector
                     layer = QgsVectorLayer(
                         map_path,
-                        os.path.basename(os.path.splitext(map_path)[0])
+                        map_name
                     )
+
+                    if map_name == 'streams_aoi':
+                        csv_uri = f'file:///{os.path.dirname(map_path)}/streams.csv?delimiter=;'
+                        csv = QgsVectorLayer(csv_uri, 'streams_table', 'delimitedtext')
+                        QgsProject.instance().addMapLayer(csv, False)
+
+                        joinObject = QgsVectorLayerJoinInfo()
+                        joinObject.setJoinLayerId(csv.id())
+                        joinObject.setJoinFieldName("# FID")
+                        joinObject.setTargetFieldName("segment_id")
+                        joinObject.setPrefix('')
+                        joinObject.setUsingMemoryCache(True)
+                        joinObject.setJoinLayer(csv)
+                        layer.addJoin(joinObject)
 
                 # add layer into group
                 QgsProject.instance().addMapLayer(layer, False)
@@ -621,9 +655,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         ctrl_group = group.addGroup('control_point')
         ctrl_group.setExpanded(False)
         ctrl_group.setItemVisibilityChecked(False)
-        import_group_layers(
-            ctrl_group, os.path.join(outdir, 'control_point'), 'csv'
-        )
+        import_group_layers(ctrl_group, os.path.join(outdir, 'control_point'))
 
         if self._input_params['generate_temporary'] is True:
             # import temp results
@@ -631,7 +663,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             temp_group.setExpanded(False)
             temp_group.setItemVisibilityChecked(False)
             import_group_layers(temp_group, os.path.join(outdir, 'temp'))
-            import_group_layers(temp_group, os.path.join(outdir, 'temp'), 'gml')
 
         # QGIS bug: group must be collapsed and then expanded
         group.setExpanded(False)
@@ -678,6 +709,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             'streams_channel_type_fieldname':
                 self.table_stream_shape_code.currentText(),
             'flow_direction': self.flow_direction.currentText(),
+            'wave': self.wave.currentText(),
             'generate_temporary': bool(self.generate_temporary.checkState()),
             'output': self.main_output.text().strip()
         }
@@ -947,6 +979,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                     'output': temp_dir.name,
                     'end_time': 5,
                     'flow_direction': 'single',
+                    'wave': 'kinematic',
                     'generate_temporary': True
                 }
             self._loadParams(param_dict)
@@ -995,6 +1028,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.main_output.setText(param_dict['output'])
         self.end_time.setValue(param_dict['end_time'])
         self.flow_direction.setCurrentText(param_dict['flow_direction'])
+        self.wave.setCurrentText(param_dict['wave'])
         self.generate_temporary.setChecked(param_dict['generate_temporary'])
 
     def abort_computation(self):

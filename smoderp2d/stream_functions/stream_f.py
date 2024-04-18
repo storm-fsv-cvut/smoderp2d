@@ -99,7 +99,6 @@ def genspahe(reach, dt):
 
     # total wetted perimeter: baseflow + epizode water
     wetted_perimeter = reach.b + 2.0 * H * ma.power(1 + reach.m * reach.m, 0.5)
-
     # total cross-sectional area of the flow
     cross_section = reach.b * H + reach.m * H * H
 
@@ -124,18 +123,19 @@ def genspahe(reach, dt):
     # calculated outflow volume m3
     reach.V_out = reach.Q_out * dt
 
-    # if ouflow volume is larger then the water volume from the rainfall
-    condition = ma.greater(reach.V_out, dvol)
+    if reach.V_out > dvol:
+        # outflow volumw is saved to reach class
+        reach.V_out = dvol
+        # what rests in stream reach after time step calculation is completed
+        reach.vol_rest = 0
+    else:
+        # what rests in stream reach after time step calculation is completed
+        reach.vol_rest = dvol - reach.V_out
 
-    # outflow volumw is saved to reach class
-    reach.V_out = ma.where(condition, dvol, reach.V_out)
-    # what rests in stream reach after time step calculation is completed
-    reach.vol_rest = ma.where(condition, 0, dvol - reach.V_out)
     # outflow discharge m3/s is saved to reach class
     reach.Q_out = reach.V_out / dt
     # total water level in stream reach is saved to reach class
     reach.h = H
-
 
 
 
@@ -160,16 +160,24 @@ def parabola(reach, dt):
     B = u * hp #sirka hladiny #b = 3*a/(2*h)
     H = hp + reach.h  # D -> vyska hladiny
     dB = u * H
-    O = ma.where(dB != 0, dB + 8 * H * H / (3 * dB), 0)
+    if dB == 0:
+        O = 0
+    else:
+        O = dB + 8 * H * H / (3 * dB)
     S = 2 / 3 * dB * H
     dS = S - 2 / 3 * B * hp
     dV = dS * reach.length
-    R = ma.where(O != 0, S / O, 0)
+    if O == 0:
+        R = 0
+    else:
+        R = S / O
     reach.Q_out = S * ma.power(R, 0.66666) * ma.power(reach.inclination, 0.5) / (reach.roughness) # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
 
-    reach.Q_out = ma.where(reach.V_out > dV, dV / dt, reach.Q_out)
-    reach.V_out = ma.where(reach.V_out > dV, dV, reach.V_out)
+    if reach.V_out > dV:
+        reach.Q_out = dV / dt
+        reach.V_out = dV
+        
     reach.vs = ma.power(R, 0.6666) * ma.power(reach.inclination, 0.5) / (reach.roughness) #v
     reach.vol_rest = dV - reach.V_out
     reach.h = H

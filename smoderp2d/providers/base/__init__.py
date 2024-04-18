@@ -302,6 +302,10 @@ class BaseProvider(object):
                 'processes', 'mfda', fallback=False
             )
 
+        data['wave'] = self._config.get(
+            'processes', 'wave', fallback='kinematic'
+        )
+
         # type of computing
         data['type_of_computing'] = CompType()[
             self._config.get('processes', 'typecomp', fallback='stream_rill')
@@ -371,7 +375,6 @@ class BaseProvider(object):
 
         Globals.mat_reten = -1.0 * data['mat_reten'] / 1000  # converts mm to m
         comp_type = self._comp_type(data['type_of_computing'])
-        Globals.diffuse = False  # not implemented yet
         Globals.subflow = comp_type['subflow_rill']
         Globals.isRill = comp_type['rill']
         Globals.isStream = comp_type['stream']
@@ -644,11 +647,8 @@ class BaseProvider(object):
                 outputtable[i][5] = ma.unique(stream[fid[i]].V_out_cum)[0]
                 outputtable[i][6] = ma.unique(stream[fid[i]].Q_max)[0]
 
-            temp_dir = os.path.join(Globals.outdir, 'temp')
-            if not os.path.isdir(temp_dir):
-                os.makedirs(temp_dir)
-            path_ = os.path.join(temp_dir, 'stream.csv')
-            np.savetxt(path_, outputtable, delimiter=';', fmt='%.3e',
+            np.savetxt(os.path.join(Globals.outdir, 'streams.csv'),
+                       outputtable, delimiter=';', fmt='%.3e',
                        header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}'
                               'q365_m3_s{sep}V_out_cum_m3{sep}'
                               'Q_max_m3_s'.format(sep=';'))

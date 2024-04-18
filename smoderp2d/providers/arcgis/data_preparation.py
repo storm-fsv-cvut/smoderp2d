@@ -66,7 +66,8 @@ class PrepareData(PrepareDataGISBase):
         arcpy.conversion.RasterToPolygon(aoi_mask_mem, aoi_polygon_mem, "NO_SIMPLIFY")
         aoi_mask = self.storage.output_filepath('aoi_mask')
         with arcpy.EnvManager(extent=aoi_polygon_mem):
-            arcpy.management.Clip(aoi_mask_mem, out_raster=aoi_mask, nodata_value=GridGlobals.NoDataValue)
+            arcpy.management.Clip(aoi_mask_mem, out_raster=aoi_mask, nodata_value=GridGlobals.NoDataValue,
+                                  in_template_dataset=aoi_polygon_mem, clipping_geometry="ClippingGeometry")
         # generate aoi_polygon to be snapped to aoi_mask
         aoi_polygon = self.storage.output_filepath('aoi_polygon')
         with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, extent=aoi_mask, cellSize=aoi_mask, cellAlignment=aoi_mask,
@@ -340,7 +341,7 @@ class PrepareData(PrepareDataGISBase):
             "FULL", "ROUND",
         )
 
-        stream_aoi = self.storage.output_filepath('stream_aoi')
+        stream_aoi = self.storage.output_filepath('streams_aoi')
         arcpy.analysis.Clip(stream, aoi_buffer, stream_aoi)
 
         # make sure that no of the stream properties fields are in the stream
@@ -478,7 +479,7 @@ class PrepareData(PrepareDataGISBase):
     def _stream_reach(self, stream):
         """See base method for description.
         """
-        stream_seg = self.storage.output_filepath('stream_seg')
+        stream_seg = self.storage.output_filepath('streams_seg')
         arcpy.conversion.PolylineToRaster(
             stream, self.fieldnames['stream_segment_id'], stream_seg,
             "MAXIMUM_LENGTH", cellsize=GridGlobals.dx
