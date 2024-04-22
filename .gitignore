@@ -16,11 +16,13 @@ tests/data/reference/gistest_*/*/control/*.prj
 tests/data/reference/gistest_*/*/temp/*.prj
 tests/log
 
+bin/qgis/smoderp2d-plugin/smoderp2d/
+bin/qgis/smoderp2d-plugin/zip_build/
+
 # build files
 build
 smoderp2d.egg-info
-
-/bin/arcgis/old/
+*.whl
 
 # jetbrains
 .idea/

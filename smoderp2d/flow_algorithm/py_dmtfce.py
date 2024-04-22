@@ -2,6 +2,7 @@ import numpy as np
 import math
 
 from smoderp2d.providers import Logger
+from smoderp2d.core.general import GridGlobals
 
 FB = math.pi / 4  # facet boundary
 PI_HALF = math.pi / 2
@@ -130,7 +131,7 @@ def removeCellsWithSameHeightNeighborhood(mat_dem, mat_nan, rows, cols):
     A function determines if cell neighborhood has exactly same values of
     height, and then it save that cell as NoData.
 
-    :param mat_dem: TODO
+    :param mat_dem: digital elevation model
     :param mat_nan: TODO
     :param rows: TODO
     :param cols: TODO
@@ -159,8 +160,8 @@ def removeCellsWithSameHeightNeighborhood(mat_dem, mat_nan, rows, cols):
             # compare number of neighbours with the same height
             if count_nbrs >= 7:
                 # set problematic cells to NoData
-                mat_dem[i][j] = np.nan
-                mat_nan[i][j] = np.nan
+                mat_dem[i][j] = GridGlobals.NoDataValue
+                mat_nan[i][j] = GridGlobals.NoDataValue
 
     Logger.info(
         "Possible water circulation! Check the input DTM raster for flat "

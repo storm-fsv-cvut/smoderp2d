@@ -50,9 +50,7 @@ class FlowControl(object):
         self.infiltration_type = 0
 
         # actual time in calculation
-        self.total_time = ma.masked_array(
-            np.zeros((r, c), float), mask=GridGlobals.masks
-        )
+        self.total_time = 0
 
         # keep order of a current rainfall interval
         self.tz = 0
@@ -62,7 +60,7 @@ class FlowControl(object):
             np.zeros((r, c), float), mask=GridGlobals.masks
         )
 
-        # factor deviding the time step for rill calculation
+        # factor dividing the time step for rill calculation
         # currently inactive
         self.ratio = ma.masked_array(
             np.ones((r, c), float), mask=GridGlobals.masks
@@ -100,7 +98,7 @@ class FlowControl(object):
     def refresh_iter(self):
         """Set current number of iteration to zero.
 
-        Should be called at the begining of each time step.
+        Should be called at the beginning of each time step.
         """
         self.iter_ = 0
 
@@ -185,9 +183,11 @@ class Runoff(object):
         
         # in implicit version - courant condition is not used, used for setting time step 
         self.courant = Courant()
+
         self.delta_tmax = self.courant.initial_time_step()
         
         self.delta_t = self.delta_tmax
+
 
         Logger.info('Corrected time step is {} [s]'.format(self.delta_t))
 
@@ -262,6 +262,7 @@ class Runoff(object):
         self.flow_control.save_vars()
         # main loop: until the end time
 
+
         while ma.any(self.flow_control.compare_time(end_time)):
 
             self.flow_control.save_vars()
@@ -326,7 +327,19 @@ class Runoff(object):
                 self.cumulative,
                 actRain
             )
-            
+
+
+            timeperc = 100 * (self.flow_control.total_time + self.delta_t) / end_time
+            if timeperc > 99.9 or timeperc - timeperc_last > 5:
+                # print progress with 5% step
+                Logger.progress(
+                    timeperc,
+                    self.delta_t,
+                    self.flow_control.iter_,
+                    self.flow_control.total_time + self.delta_t
+                )
+                timeperc_last = timeperc
+
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
             

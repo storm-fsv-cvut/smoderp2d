@@ -1,5 +1,5 @@
 # @package smoderp2d.courant defines Class Courant which handles the time
-# step adjustement
+# step adjustment
 
 
 import numpy as np
@@ -21,7 +21,7 @@ class Courant:
     def __init__(self):
         """TODO."""
         self.cour_speed = 0
-        # citical courant value
+        # critical courant value
         self.cour_crit = 0.95
         self.cour_most = self.cour_crit + 1
         self.cour_most_rill = self.cour_crit + 1.0
@@ -31,10 +31,7 @@ class Courant:
         self.j = -1
         self.co = 'sheet'
         self.maxratio = 10
-        self.max_delta_t = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt,
-            mask=GridGlobals.masks
-        )
+        self.max_delta_t = Gl.maxdt
         self.max_delta_t_mult = 1.0
 
     #
@@ -79,10 +76,7 @@ class Courant:
         # (math.sqrt(sur.pixel_area)*self.cour_least*self.cour_coef)/velGuess
 
         # return self.initGuess
-        return ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt,
-            mask=GridGlobals.masks
-        )
+        return Gl.maxdt
 
     #
     def CFL(self, v, delta_t, effect_cont, co, rill_courant):
