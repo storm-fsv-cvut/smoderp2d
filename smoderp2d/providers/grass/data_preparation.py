@@ -160,33 +160,11 @@ class PrepareData(PrepareDataGISBase):
             direction=dem_flowdir+'2'
         )
 
-        # calculate the flow direction
-        # calculate flow accumulation
+        # calculate the flow direction and accumulation
         dem_flowacc = self.storage.output_filepath('dem_flowacc')
         self._run_grass_module(
-            'r.watershed', flags='as', elevation=dem,
-            drainage=dem_flowdir+'1', accumulation=dem_flowacc
-        )
-        # recalculate flow dir to ArcGIS notation
-        # https://idea.isnew.info/how-to-import-arcgis-flow-direction-into-grass-gis.html
-        # ML: flowdir is slightly different compared to ArcGIS
-        # ML: flowacc is slightly different compared to ArcGIS
-        reclass = """
--1 1 = 128
--2 2 = 64
--3 3 = 32
--4 4 = 16
--5 5 = 8
--6 6 = 4
--7 7 = 2
--8 8 = 1
-"""
-        self._run_grass_module(
-            'r.reclass', input=dem_flowdir+'1', output=dem_flowdir,
-            rules='-', stdin_=reclass
-        )
-        self.__remove_temp_data(
-            {'name': '{r}1,{r}2'.format(r=dem_flowdir), 'type': 'raster'}
+            'r.terraflow', flags='s', elevation=dem, filled=dem_filled,
+            direction=dem_flowdir, accumulation=dem_flowacc
         )
 
         # calculate slope
