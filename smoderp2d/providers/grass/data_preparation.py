@@ -30,6 +30,9 @@ class PrepareData(PrepareDataGISBase):
 
         super(PrepareData, self).__init__(writer)
 
+        # TODO: do not install hydrodem if already installed
+        Module('g.extension', extension='r.hydrodem')
+
     def __del__(self):
         # remove mask
         try:
@@ -156,8 +159,7 @@ class PrepareData(PrepareDataGISBase):
         dem_flowdir = self.storage.output_filepath('dem_flowdir')
         # calculate the depressionless DEM
         self._run_grass_module(
-            'r.fill.dir', input=dem, output=dem_filled, format='agnps',
-            direction=dem_flowdir+'2'
+            'r.hydrodem', flags='f', input=dem, output=dem_filled
         )
 
         # calculate the flow direction and accumulation
