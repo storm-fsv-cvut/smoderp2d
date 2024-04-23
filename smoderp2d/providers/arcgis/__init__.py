@@ -77,9 +77,6 @@ class ArcGisProvider(BaseProvider):
     def __init__(self, log_handler=ArcPyLogHandler):
         super(ArcGisProvider, self).__init__()
 
-        # type of computation (default)
-        self.args.workflow_mode = WorkflowMode.full
-
         # options must be defined by set_options()
         self._options = None
 
