@@ -217,7 +217,7 @@ class BaseProvider(object):
         Logger.setLevel(config.get('logging', 'level', fallback=logging.INFO))
 
         # set workflow mode
-        self.workflow_mode = WorkflowMode()[config.get(
+        self.args.workflow_mode = WorkflowMode()[config.get(
             'processes', 'workflow_mode', fallback="full"
         )]
 
