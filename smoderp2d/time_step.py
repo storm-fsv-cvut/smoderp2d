@@ -198,7 +198,7 @@ class TimeStep:
              
            
             # Changing matrix to a single float
-            dt = delta_t.mean()
+            dt = delta_t
             def model(h_new):
                 res = self.model(h_new,
                                 dt,

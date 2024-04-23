@@ -260,6 +260,9 @@ class Runoff(object):
         end_time = Globals.end_time
 
         self.flow_control.save_vars()
+
+        # var for progress bar
+        timeperc_last = 0
         # main loop: until the end time
 
 
@@ -288,8 +291,8 @@ class Runoff(object):
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / end_time
             Logger.progress(
-                timeperc.max(),
-                self.delta_t.max(),
+                timeperc,
+                self.delta_t,
                 self.flow_control.iter_,
                 self.flow_control.total_time + self.delta_t
             )
