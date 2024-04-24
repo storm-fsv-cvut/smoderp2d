@@ -14,15 +14,19 @@ root  <-  "d:/0_Smoderp/00_QGtest_ds_plocha/out2"
 root  <-  "d:/0_Smoderp/02_AGPro_provider/out19_AG"
 
 root  <-  "jj-tests/"
+root  <-  "tests/data/output/"
+
 #root  <-  "d:/2_granty_projekty/2_Bezici/2022_RAGO/01_reseni_projektu/00_test_Smoderp/out2"
 # output dir
-outdir <- c('diffusionsheet/control_point/', 'kinematicsheet/control_point/')
+# outdir <- c('diffusionsheet/control_point/', 'kinematicsheet/control_point/')
+outdir <- 'control_point'
+
 # choose points to be printed (*.dat file v output dir)
 # point000.dat -> id = 1
 # point001.dat -> id = 2
 # atd...
-id1_ = 5
-id2_ = id1_+6
+id1_ = 1
+id2_ = 7
 #2+6;1+4
 # End setting  
 #
