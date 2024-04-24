@@ -133,7 +133,7 @@ class TimeStep:
         
         # Until the max_infilt_capa
         potRain, tz_temp = rain_f.timestepRainfall(
-            itera, flow_control.total_time+delta_t, delta_t, flow_control.tz, sr
+            itera, flow_control.total_time, delta_t, flow_control.tz, sr
             )
         self.infilt_capa += potRain
         if ma.all(self.infilt_capa < self.max_infilt_capa):
@@ -171,7 +171,7 @@ class TimeStep:
         for i in range(1, fc.max_iter ):
             # Calcualting the potenial rain
             potRain, tz_temp = rain_f.timestepRainfall(
-            itera, flow_control.total_time+delta_t, delta_t, flow_control.tz, sr
+            itera, flow_control.total_time, delta_t, flow_control.tz, sr
             )
             
             # Calculating the actual rain
@@ -257,20 +257,17 @@ class TimeStep:
         # save the tz for actual time step
         
         potRain, flow_control.tz = rain_f.timestepRainfall(
-        itera, flow_control.total_time+delta_t, delta_t, flow_control.tz, sr
+        itera, flow_control.total_time, delta_t, flow_control.tz, sr
         )
         # Calculating the actual rain
         actRain, fc.sum_interception, rain_arr.arr.veg = \
             rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
         
-        surface.arr.cur_rain = actRain 
         # Saving the new water level
         surface.arr.h_total_new = ma.array(h_new.reshape(r,c),mask=GridGlobals.masks) 
         # Saving the actual rain
-        surface.arr.cur_rain = actRain  
-        surface.arr.h_total_new = ma.array(h_new.reshape(r,c),mask=GridGlobals.masks)  
-        # Saving the actual rain
-        surface.arr.cur_rain = actRain  
+        surface.arr.cur_rain = actRain    
+         
         if Globals.isRill:
             last_state1_buf = surface.arr.h_last_state1
             #saving the last value of the water level in rill during growing phase (state = 1)
