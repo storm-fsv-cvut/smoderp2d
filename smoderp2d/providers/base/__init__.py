@@ -521,7 +521,7 @@ class BaseProvider(object):
 
         return data
 
-    def postprocessing(self, cumulative, surface_array, stream, inflows):
+    def postprocessing(self, cumulative, surface_array, stream, inflows=None):
         """Perform postprocessing steps. Store results.
 
         :param cumulative: Cumulative object
