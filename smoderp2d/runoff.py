@@ -438,7 +438,7 @@ class Runoff(object):
         Logger.info('Saving output data...')
         # perform postprocessing - store results
         self.provider.postprocessing(self.cumulative, self.surface.arr,
-                                     self.surface.reach)
+                                     self.surface.reach, self.surface.inflows)
         # Logger.progress(100)
 
         # TODO

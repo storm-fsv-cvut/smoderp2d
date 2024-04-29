@@ -521,12 +521,13 @@ class BaseProvider(object):
 
         return data
 
-    def postprocessing(self, cumulative, surface_array, stream):
+    def postprocessing(self, cumulative, surface_array, stream, inflows):
         """Perform postprocessing steps. Store results.
 
         :param cumulative: Cumulative object
         :param surface_array: numpy array
         :param stream: stream array (reach)
+        :param inflows: inflows array
         """
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
@@ -652,6 +653,29 @@ class BaseProvider(object):
                        header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}'
                               'q365_m3_s{sep}V_out_cum_m3{sep}'
                               'Q_max_m3_s'.format(sep=';'))
+
+        if inflows:
+            inflows_array = np.zeros((GridGlobals.r, GridGlobals.c))
+            recode = {
+                ( 1, 0): 1,
+                ( 1,-1): 2,
+                ( 0,-1): 4,
+                (-1,-1): 8,
+                (-1, 0): 16,
+                (-1,-1): 32,
+                ( 0, 1): 64,
+                ( 1, 1): 128
+            }
+            for i in range(len(inflows)):
+                for j in range(len(inflows[i])):
+                    if_code = 0
+                    for v in inflows[i][j]:
+                        if_code += recode[tuple(v)]
+                    inflows_array[i][j] = if_code
+
+            self.storage.write_raster(
+                self._make_mask(inflows_array), 'inflows', 'temp'
+            )
 
         # perform provider-specific postprocessing
         self._postprocessing()
