@@ -2,6 +2,7 @@ import os
 import argparse
 import numpy as np
 
+from smoderp2d.core.general import GridGlobals
 from smoderp2d.providers.base import BaseProvider, BaseWriter, WorkflowMode
 from smoderp2d.exceptions import ConfigError
 
@@ -13,7 +14,16 @@ class CmdWriter(BaseWriter):
     def _write_raster(self, array, file_output):
         """See base method for description.
         """
-        np.savetxt(file_output + self._raster_extension, array, fmt='%.6e')
+        header = f'ncols\t{GridGlobals.c}\nnrows\t{GridGlobals.r}\n' \
+                 f'xllcorner\t{GridGlobals.xllcorner}\n' \
+                 f'yllcorner\t{GridGlobals.yllcorner}\n' \
+                 f'cellsize\t{np.sqrt(GridGlobals.pixel_area)}\n' \
+                 f'NODATA_value\t{GridGlobals.NoDataValue}'
+
+        np.savetxt(
+            file_output + self._raster_extension, array, fmt='%.6e',
+            header=header, comments=''
+        )
 
 
 class CmdArgumentParser(object):
