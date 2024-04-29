@@ -52,6 +52,10 @@ def __directionsInflow(mat_fd, i, j):
     :param i: TODO
     :param j: TODO
     """
+    # numpy (axis 0 - rows, axis 1 - cols)
+    # | -1 -1 | -1  0 | -1  1 |
+    # |  0 -1 |  0  0 |  0  1 |
+    # |  1 -1 |  1  0 |  1  1 |
     coco = [[-1, 1, 8], [-1, 0, 4], [-1, -1, 2], [0, -1, 1],
             [1, -1, 128], [1, 0, 64], [1, 1, 32], [0, 1, 16]]
     inflows = 0
