@@ -656,15 +656,19 @@ class BaseProvider(object):
 
         if inflows:
             inflows_array = np.zeros((GridGlobals.r, GridGlobals.c))
+            # | -1 -1 | -1  0 | -1  1 |
+            # |  0 -1 |  0  0 |  0  1 |
+            # |  1 -1 |  1  0 |  1  1 |
+
             recode = {
-                ( 1, 0): 1,
-                ( 1,-1): 2,
-                ( 0,-1): 4,
-                (-1,-1): 8,
-                (-1, 0): 16,
-                (-1,-1): 32,
-                ( 0, 1): 64,
-                ( 1, 1): 128
+                ( 0,  1): 1,
+                ( 1,  1): 2,
+                ( 1,  0): 4,
+                ( 1, -1): 8,
+                ( 0, -1): 16,
+                (-1, -1): 32,
+                (-1,  0): 64,
+                (-1,  1): 128
             }
             for i in range(len(inflows)):
                 for j in range(len(inflows[i])):
