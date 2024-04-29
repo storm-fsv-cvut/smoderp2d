@@ -654,7 +654,7 @@ class BaseProvider(object):
                               'q365_m3_s{sep}V_out_cum_m3{sep}'
                               'Q_max_m3_s'.format(sep=';'))
 
-        if inflows:
+        if inflows is not None:
             inflows_array = np.zeros((GridGlobals.r, GridGlobals.c))
             # | -1 -1 | -1  0 | -1  1 |
             # |  0 -1 |  0  0 |  0  1 |
