@@ -92,10 +92,11 @@ class Courant:
         """
         cour = v / self.cour_coef * delta_t / effect_cont
         cour = ma.maximum(cour, rill_courant)
-        if ma.any(cour > self.cour_most):
-            self.i, self.j = np.unravel_index(ma.argmax(cour), cour.shape)
+        cour_max = ma.argmax(cour)
+        if our_max > self.cour_most:
+            self.i, self.j = np.unravel_index(cour_max, cour.shape)
             self.co = co
-            self.cour_most = cour[self.i, self.j]
+            self.cour_most = cour_max
             self.cour_speed = v[self.i, self.j]
         # if rill_courant > self.cour_most_rill:
             # self.cour_most_rill = rill_courant
