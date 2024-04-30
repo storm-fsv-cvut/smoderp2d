@@ -75,19 +75,19 @@ grass --text -c tests/grassdata/smoderp2d-location/test/
 Run `r.smoderp2d` module:
 
 ```sh
-./bin/grass/r.smoderp2d/r.smoderp2d.py \
-    elevation=dem10m@PERMANENT \
+PYTHONPATH=$PYTHONPATH:`pwd` ./bin/grass/r.smoderp2d/r.smoderp2d.py \
+    elevation=dem@PERMANENT \
     soil=soils@PERMANENT \
-    soil_type_fieldname=SID \
+    soil_type_fieldname=Soil \
     vegetation=landuse@PERMANENT \
     vegetation_type_fieldname=LandUse \
     rainfall_file=tests/data/rainfall_nucice.txt \
     maxdt=5 end_time=5 \
     points=points@PERMANENT points_fieldname='point_id' \
-    table_soil_vegetation=soil_veg_tab_mean@PERMANENT \
+    table_soil_vegetation=soil_veg_tab@PERMANENT \
     table_soil_vegetation_fieldname=soilveg \
-    streams=stream@PERMANENT \
-    channel_properties_table=stream_shape@PERMANENT \
+    streams=streams@PERMANENT \
+    channel_properties_table=streams_shape@PERMANENT \
     streams_channel_type_fieldname=channel_id \
     output=tests/data/output
 ```
