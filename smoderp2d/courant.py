@@ -141,13 +141,12 @@ class Courant:
         # mensi nez cour_least a vetsi nez cour_crit
         # explicitne se dopocita dt na nejvetsi mozne
         #                                      xor
-        if ma.any((self.cour_most < self.cour_least) != (self.cour_crit <=
-                                                         self.cour_most)):
+        if (self.cour_most < self.cour_least) ^ (self.cour_crit <= self.cour_most):
             # pokud se na povrchu nic nedeje
             # nema se zmena dt cim ridit
             # a zmeni se podle maxima nasobeneho max_delta_t_mult
             # max_delta_t_mult se meni podle ryh, vyse v teto funkci
-            if ma.any(self.cour_speed == 0.0):
+            if self.cour_speed == 0.0:
                 return self.max_delta_t * self.max_delta_t_mult, ratio
 
             effect_cont = Gl.mat_effect_cont[self.i, self.j]
@@ -160,7 +159,7 @@ class Courant:
 
             # return dt*self.max_delta_t_mult, ratio
             # return min(dt,self.max_delta_t*self.max_delta_t_mult), ratio
-            dt_min = ma.minimum(
+            dt_min = min(
                 self.max_delta_t_mult * dt,
                 self.max_delta_t * self.max_delta_t_mult
             )
