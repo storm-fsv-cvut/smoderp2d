@@ -684,7 +684,7 @@ class BaseProvider(object):
                     inflows_array[i][j] = if_code
 
             self.storage.write_raster(
-                self._make_mask(inflows_array), 'inflows', 'temp'
+                self._make_mask(inflows_array), 'inflows', 'control'
             )
 
         # perform provider-specific postprocessing
