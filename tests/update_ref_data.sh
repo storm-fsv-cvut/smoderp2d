@@ -21,7 +21,7 @@ if [[ "$1" == gistest ]]; then
 elif [[ "$1" == profile1d ]]; then
 	echo "tests/data/reference/profile1d"
 	rm -r tests/data/reference/profile1d/*
-	python3 -m pytest tests/test_profile1d.py
+	pytest tests/test_profile1d.py
 	cp -r tests/data/output/* tests/data/reference/profile1d/
 else
 	settings=("sheet" "rill" "sheet_stream" "stream_rill")
@@ -29,7 +29,7 @@ else
 	do
 	  echo "tests/data/reference/${1}_${setting}"
 	  rm -r tests/data/reference/${1}_${setting}/*
-	  python3 -m pytest tests/test_cmd.py --config config_files/${1}_${setting}.ini
+	  pytest tests/test_cmd.py --config config_files/${1}_${setting}.ini
 	  cp -r tests/data/output/* tests/data/reference/${1}_${setting}/
 	done
 	# do the quicktest/test different test (MFDA, diffusion)
@@ -42,7 +42,7 @@ else
 	do
 	  echo "tests/data/reference/${1}_${setting}"
 	  rm -r tests/data/reference/${1}_${setting}/*
-	  python3 -m pytest tests/test_cmd.py --config config_files/${1}_${setting}.ini
+	  pytest tests/test_cmd.py --config config_files/${1}_${setting}.ini
 	  cp -r tests/data/output/* tests/data/reference/${1}_${setting}/
 	done
 fi
