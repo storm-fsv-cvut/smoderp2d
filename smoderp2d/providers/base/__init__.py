@@ -197,8 +197,7 @@ class BaseProvider(object):
             # avoid duplicated handlers (e.g. in case of ArcGIS)
             Logger.addHandler(handler)
 
-    @staticmethod
-    def __load_hidden_config():
+    def __load_hidden_config(self):
         """Load hidden configuration with advanced settings.
 
         return ConfigParser: object
@@ -217,6 +216,11 @@ class BaseProvider(object):
         # set logging level
         Logger.setLevel(config.get('logging', 'level', fallback=logging.INFO))
 
+        # set workflow mode
+        self.args.workflow_mode = WorkflowMode()[config.get(
+            'processes', 'workflow_mode', fallback="full"
+        )]
+
         return config
 
     def _load_data_from_hidden_config(self, ignore=()):
@@ -233,9 +237,6 @@ class BaseProvider(object):
         data['extraout'] = self._hidden_config.getboolean(
             'output', 'extraout', fallback=False
         )
-        self.args.workflow_mode = WorkflowMode()[self._hidden_config.get(
-            'processes', 'workflow_mode', fallback="full"
-        )]
 
         return data
 
@@ -350,6 +351,9 @@ class BaseProvider(object):
                           'pixel_area', 'r', 'rc', 'rr', 'xllcorner',
                           'yllcorner'):
                     data[k] = getattr(GridGlobals, k)
+                self.args.data_file = os.path.join(
+                    Globals.outdir, "dpre.save"
+                )
                 self.save_data(data, self.args.data_file)
                 return
 

@@ -98,9 +98,6 @@ class GrassGisProvider(BaseProvider):
     def __init__(self, log_handler=GrassGisLogHandler):
         super(GrassGisProvider, self).__init__()
 
-        # type of computation (default)
-        self.args.workflow_mode = WorkflowMode.full
-
         # options must be defined by set_options()
         self._options = None
 
