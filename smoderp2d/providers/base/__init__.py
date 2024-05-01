@@ -654,7 +654,9 @@ class BaseProvider(object):
                               'q365_m3_s{sep}V_out_cum_m3{sep}'
                               'Q_max_m3_s'.format(sep=';'))
 
-        if inflows is not None:
+        if inflows is not None and Globals.mfda is False:
+            # inflows are not stored for MFDA, see
+            # https://github.com/storm-fsv-cvut/smoderp2d/issues/375
             inflows_array = np.zeros((GridGlobals.r, GridGlobals.c))
             # | -1 -1 | -1  0 | -1  1 |
             # |  0 -1 |  0  0 |  0  1 |
