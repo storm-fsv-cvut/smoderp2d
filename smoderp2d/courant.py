@@ -150,9 +150,10 @@ class Courant:
                 return self.max_delta_t * self.max_delta_t_mult, ratio
 
             effect_cont = Gl.mat_effect_cont[self.i, self.j]
-            dt = ma.round(
+            dt = round(
                 effect_cont * self.cour_crit * self.cour_coef / self.cour_speed,
-                8)
+                8
+            )
 
             # nove dt nesmi byt vetsi nez je maxdt * max_delta_t_mult
             # max_delta_t_mult se meni podle ryh, vyse v teto funkci
