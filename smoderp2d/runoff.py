@@ -258,7 +258,7 @@ class Runoff(object):
         # main loop: until the end time
         timeperc_last = 0
 
-        while self.flow_control.compare_time(end_time) is True:
+        while self.flow_control.compare_time(end_time):
 
             self.flow_control.save_vars()
             self.flow_control.refresh_iter()
