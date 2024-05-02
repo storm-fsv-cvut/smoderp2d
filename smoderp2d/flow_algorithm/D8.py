@@ -56,18 +56,18 @@ def __directionsInflow(mat_fd, i, j):
 
     :return list: inflows (eg. [[-1, 0], [-1, 1]] inflow from north and north-east)
     """
-    coco = [[-1, 1, 8], [-1, 0, 4], [-1, -1, 2], [0, -1, 1],
+    inflow_directions = [[-1, 1, 8], [-1, 0, 4], [-1, -1, 2], [0, -1, 1],
             [1, -1, 128], [1, 0, 64], [1, 1, 32], [0, 1, 16]]
     inflows = []
 
-    for k in range(len(coco)):
-        a = i + coco[k][0]
-        b = j + coco[k][1]
+    for k in range(len(inflow_directions)):
+        a = i + inflow_directions[k][0]
+        b = j + inflow_directions[k][1]
         try:
             value = mat_fd[a][b]
         except IndexError:
             value = -1
-        if value == coco[k][2]:
-            inflows.append([coco[k][0], coco[k][1]])
+        if value == inflow_directions[k][2]:
+            inflows.append([inflow_directions[k][0], inflow_directions[k][1]])
 
     return inflows
