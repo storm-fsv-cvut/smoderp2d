@@ -215,7 +215,7 @@ class Hydrographs:
                         total_time, dt, currRain[l, m],
                         linebil[0], linebil[1],
                         surface.arr.vol_to_rill[l, m],
-                        ratio[l, m], courantMost, courantRill, iter_,
+                        ratio, courantMost, courantRill, iter_,
                         sep=sep
                     )
                 line += os.linesep
