@@ -171,7 +171,7 @@ class Courant:
             # max_delta_t_mult se meni podle ryh, vyse v teto funkci
         else:
             # return delta_t, ratio
-            if ma.all(ratio <= self.maxratio) and (self.cour_most_rill < 0.5):
+            if ratio <= self.maxratio and (self.cour_most_rill < 0.5):
                 return delta_t, ratio
             else:
                 return delta_t * self.max_delta_t_mult, ratio

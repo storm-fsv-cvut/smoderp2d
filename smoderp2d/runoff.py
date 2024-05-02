@@ -59,9 +59,7 @@ class FlowControl(object):
 
         # factor dividing the time step for rill calculation
         # currently inactive
-        self.ratio = ma.masked_array(
-            np.ones((r, c), float), mask=GridGlobals.masks
-        )
+        self.ratio = 1
 
         # maximum amount of iterations
         self.max_iter = 40
@@ -299,10 +297,7 @@ class Runoff(object):
 
                 # courant conditions is satisfied (time step did
                 # change) the iteration loop breaks
-                if ma.all(
-                    ma.logical_and(delta_t_tmp == self.delta_t,
-                                   self.flow_control.compare_ratio())
-                ):
+                if delta_t_tmp == self.delta_t and self.flow_control.compare_ratio():
                     break
 
             # Calculate actual rainfall and adds up interception todo:
