@@ -32,10 +32,7 @@ class PrepareDataBase(ABC):
             ),
             no_data,
             ma.where(
-                ma.logical_or(
-                    mat_nsheet == no_data, mat_y == no_data,
-                    mat_slope == 0
-                ),
+                mat_slope == 0,
                 0.0001,  # comment OP: where did we get this value from?
                 1 / mat_nsheet * ma.power(mat_slope, mat_y)
             )
