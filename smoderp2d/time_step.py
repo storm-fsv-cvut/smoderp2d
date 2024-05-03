@@ -48,9 +48,7 @@ class TimeStep:
 
         surface_state = surface.arr.state
 
-        runoff_return = runoff(
-            surface.arr, delta_t, mat_effect_cont, fc.ratio
-        )
+        runoff_return = runoff(surface.arr, delta_t, mat_effect_cont)
 
         cond_state_flow = surface_state > Globals.streams_flow_inc
         v_sheet = ma.where(cond_state_flow, 0, runoff_return[0])
@@ -61,33 +59,30 @@ class TimeStep:
             )
         if ma.any(cond_state_flow):
             fc.ratio = 0
-        else:
-            # TODO: Better way to make it just a number
-            fc.ratio = runoff_return[2]
-        rill_courant = ma.where(cond_state_flow, 0, runoff_return[3])
+        rill_courant = ma.where(cond_state_flow, 0, runoff_return[2])
         surface.arr.h_sheet = ma.where(
-            cond_state_flow, surface.arr.h_sheet, runoff_return[4]
+            cond_state_flow, surface.arr.h_sheet, runoff_return[3]
         )
         surface.arr.h_rill = ma.where(
-            cond_state_flow, surface.arr.h_rill, runoff_return[5]
+            cond_state_flow, surface.arr.h_rill, runoff_return[4]
         )
         surface.arr.h_rillPre = ma.where(
-            cond_state_flow, surface.arr.h_rillPre, runoff_return[6]
+            cond_state_flow, surface.arr.h_rillPre, runoff_return[5]
         )
         surface.arr.vol_runoff = ma.where(
-            cond_state_flow, surface.arr.vol_runoff, runoff_return[7]
+            cond_state_flow, surface.arr.vol_runoff, runoff_return[6]
         )
         surface.arr.vol_rest = ma.where(
-            cond_state_flow, surface.arr.vol_rest, runoff_return[8]
+            cond_state_flow, surface.arr.vol_rest, runoff_return[7]
         )
         surface.arr.v_rill_rest = ma.where(
-            cond_state_flow, surface.arr.v_rill_rest, runoff_return[9]
+            cond_state_flow, surface.arr.v_rill_rest, runoff_return[8]
         )
         surface.arr.vol_runoff_rill = ma.where(
-            cond_state_flow, surface.arr.vol_runoff_rill, runoff_return[10]
+            cond_state_flow, surface.arr.vol_runoff_rill, runoff_return[9]
         )
         surface.arr.vel_rill = ma.where(
-            cond_state_flow, surface.arr.vel_rill, runoff_return[11]
+            cond_state_flow, surface.arr.vel_rill, runoff_return[10]
         )
 
         v = ma.maximum(v_sheet, v_rill)

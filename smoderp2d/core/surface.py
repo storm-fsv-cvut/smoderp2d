@@ -223,12 +223,11 @@ def get_surface():
     return Surface
 
 
-def __runoff(sur, dt, effect_vrst, ratio):
+def __runoff(sur, dt, effect_vrst):
     """Calculate the sheet and rill flow.
 
     :param dt: TODO
     :param effect_vrst: TODO
-    :param ratio: TODO
 
     :return: TODO
     """
@@ -247,7 +246,7 @@ def __runoff(sur, dt, effect_vrst, ratio):
 
     # rill runoff
     rill_runoff_results = rill_runoff(
-        dt, effect_vrst, ratio, h_rill, sur.rillWidth, sur.v_rill_rest,
+        dt, effect_vrst, h_rill, sur.rillWidth, sur.v_rill_rest,
         sur.vol_runoff_rill
     )
     v_rill = ma.where(sur.state > 0, rill_runoff_results[0], 0)
@@ -255,24 +254,22 @@ def __runoff(sur, dt, effect_vrst, ratio):
                                sur.v_rill_rest)
     vol_runoff_rill = ma.where(sur.state > 0, rill_runoff_results[2],
                                    sur.vol_runoff_rill)
-    ratio = ma.where(sur.state > 0, rill_runoff_results[3], ratio)
-    rill_courant = ma.where(sur.state > 0, rill_runoff_results[4], 0)
-    sur.vol_to_rill = ma.where(sur.state > 0, rill_runoff_results[5],
+    rill_courant = ma.where(sur.state > 0, rill_runoff_results[3], 0)
+    sur.vol_to_rill = ma.where(sur.state > 0, rill_runoff_results[4],
                                sur.vol_to_rill)
-    sur.rillWidth = ma.where(sur.state > 0, rill_runoff_results[6],
+    sur.rillWidth = ma.where(sur.state > 0, rill_runoff_results[5],
                              sur.rillWidth)
 
-    return (v_sheet, v_rill, ratio, rill_courant, h_sheet, h_rill, h_rillPre,
+    return (v_sheet, v_rill, rill_courant, h_sheet, h_rill, h_rillPre,
             vol_runoff, vol_rest, v_rill_rest, vol_runoff_rill, v_rill)
 
 
-def __runoff_zero_comp_type(sur, dt, effect_vrst, ratio):
+def __runoff_zero_comp_type(sur, dt, effect_vrst):
     """TODO.
 
     :param sur: TOD
     :param dt: TODO
     :param effect_vrst: TODO
-    :param ratio: TODO
 
     :return: TODO
     """
@@ -286,9 +283,8 @@ def __runoff_zero_comp_type(sur, dt, effect_vrst, ratio):
     v_rill = 0
 
     return (
-        v_sheet, v_rill, ratio, 0.0, sur.h_sheet,
-        sur.h_rill, sur.h_rillPre, vol_runoff, vol_rest, sur.v_rill_rest,
-        sur.vol_runoff_rill, v_rill
+        v_sheet, v_rill, 0.0, sur.h_sheet, sur.h_rill, sur.h_rillPre,
+        vol_runoff, vol_rest, sur.v_rill_rest, sur.vol_runoff_rill, v_rill
     )
 
 
@@ -366,13 +362,12 @@ def sheet_runoff(dt, a, b, h_sheet):
     return q_sheet, vol_runoff, vol_rest
 
 
-def rill_runoff(dt, effect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
+def rill_runoff(dt, effect_vrst, h_rill, rillWidth, v_rill_rest,
                 vol_runoff_rill):
     """TODO.
 
     :param dt: TODO
     :param effect_vrst: TODO
-    :param ratio: TODO
     :param h_rill: TODO
     :param rillWidth: TODO
     :param v_rill_rest: TODO
@@ -411,10 +406,7 @@ def rill_runoff(dt, effect_vrst, ratio, h_rill, rillWidth, v_rill_rest,
         vol_runoff_rill
     )
 
-    return (
-        v_rill, v_rill_rest, vol_runoff_rill, ratio, courant,
-        vol_to_rill, b
-    )
+    return v_rill, v_rill_rest, vol_runoff_rill, courant, vol_to_rill, b
 
 
 def surface_retention(bil, sur):
