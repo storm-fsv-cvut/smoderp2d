@@ -102,11 +102,6 @@ class GridGlobals(object):
         return cls.rr, cls.rc
 
     @classmethod
-    def get_border_dim(cls):
-        """TODO."""
-        return cls.br, cls.bc
-
-    @classmethod
     def get_llcorner(cls):
         """TODO."""
         return cls.xllcorner, cls.yllcorner
@@ -155,10 +150,6 @@ class GridGlobals(object):
         # id of columns in computational domain (list of lists)
         # row out of computational domain is empty list
         cls.rc = None
-        # id of rows in at the boundary of computational domain
-        cls.br = None
-        # id of columns in at the boundary of computational domain
-        cls.bc = None
         # left bottom corner x coordinate of raster
         cls.xllcorner = None
         # left bottom corner y coordinate of raster
@@ -240,6 +231,8 @@ class Globals:
     # bool variable for flow direction algorithm (false=one direction, true
     # multiple flow direction)
     mfda = None
+    # variable for wave algorithm (kinematic, diffuse)
+    wave = None
     # list contains the precipitation data
     sr = None
     # counter of precipitation intervals
@@ -389,6 +382,11 @@ class Globals:
         return cls.mfda
 
     @classmethod
+    def get_wave(cls):
+        """TODO."""
+        return cls.wave
+
+    @classmethod
     def get_sr(cls):
         """TODO."""
         return cls.sr
@@ -474,6 +472,8 @@ class Globals:
         # bool variable for flow direction algorithm (false=one direction, true
         # multiple flow direction)
         cls.mfda = None
+        # variable for wave algorithm (kinematic, diffuse)
+        cls.wave = None
         # list contains the precipitation data
         cls.sr = None
         # counter of precipitation intervals

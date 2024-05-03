@@ -18,9 +18,9 @@ from smoderp2d.providers import Logger
 def new_mfda(mat_dem, mat_nan, mat_fd):
     """TODO.
 
-    :param mat_dem: TODO
+    :param mat_dem: digital elevation model
     :param mat_nan: TODO
-    :param mat_fd: TODO
+    :param mat_fd: flow directions
     """
     state = 0
     state2 = 0
@@ -43,7 +43,7 @@ def new_mfda(mat_dem, mat_nan, mat_fd):
 
     Logger.info("Computing multiple flow direction algorithm...")
 
-    # function determines if cell neighborhood has miltiple cell with exactly
+    # function determines if cell neighborhood has multiple cell with exactly
     # same values of height, and then it saves that cell as NoData
     mat_dem, mat_nan = removeCellsWithSameHeightNeighborhood(
         mat_dem, mat_nan, rows, cols)
@@ -63,6 +63,8 @@ def new_mfda(mat_dem, mat_nan, mat_fd):
                 possible_circulation = 0
 
                 nbrs = neighbors(i, j, mat_dem, rows, cols)
+                if any([ma.is_masked(nbr) for nbr in nbrs]):
+                    continue
                 fldir, flsp = dirSlope(point_m, nbrs, dy, dx)
 
                 flprop = np.zeros(8, float)

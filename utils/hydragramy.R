@@ -17,14 +17,20 @@ root  <-  "tests/data/output/"
 root  <-  "H:/2_granty_projekty/2_Bezici/2022_RAGO/01_reseni_projektu/02_SmoderpSimulace/Svodnice_velvary/_out/N100_B_IC2_ZBGD"
 root  <-  "H:/2_granty_projekty/2_Bezici/2022_RAGO/01_reseni_projektu/02_SmoderpSimulace/Svodnice_velvary/_out/compare"
 
+
+root  <-  "jj-tests/"
+#root  <-  "d:/2_granty_projekty/2_Bezici/2022_RAGO/01_reseni_projektu/00_test_Smoderp/out2"
+
 # output dir
-outdir <- 'control_point'
+outdir <- c('diffusionsheet/control_point/', 'kinematicsheet/control_point/')
 # choose points to be printed (*.dat file v output dir)
 # point000.dat -> id = 1
 # point001.dat -> id = 2
 # atd...
 id1_ = 6
 id2_ = 7
+id1_ = 5
+id2_ = id1_+6
 #2+6;1+4
 # End setting  
 #

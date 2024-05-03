@@ -85,6 +85,7 @@ class GrassGisWriter(BaseWriter):
         """
         Module(
             'v.out.ogr',
+            flags='s',
             input=raster_name,
             output=file_output + self._vector_extension,
             format='GML',
@@ -96,9 +97,6 @@ class GrassGisProvider(BaseProvider):
 
     def __init__(self, log_handler=GrassGisLogHandler):
         super(GrassGisProvider, self).__init__()
-
-        # type of computation (default)
-        self.args.workflow_mode = WorkflowMode.full
 
         # options must be defined by set_options()
         self._options = None

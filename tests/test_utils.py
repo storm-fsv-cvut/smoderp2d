@@ -77,25 +77,16 @@ def are_dir_trees_equal(dir1, dir2):
         there were no errors while accessing the directories or files,
         False otherwise.
     """
-    def _read_gdal_array(filename):
-        from osgeo import gdal
-        ds = gdal.Open(filename)
-        array = ds.GetRasterBand(1).ReadAsArray()
-        ds = None
-        return array
-
     def _read_data(filename):
         header_rows = 0
         delimiter = None
         with open(filename) as f:
             first_line = f.readline()
-            use_gdal = first_line.startswith('ncols')
-            is_point_csv = first_line.startswith('# Hydro')
-        if use_gdal:
-            return _read_gdal_array(filename)
-        elif is_point_csv:
-            header_rows = 3
-            delimiter = ';'
+            if first_line.startswith('ncols'):
+                header_rows = 6
+            elif first_line.startswith('# Hydro'):
+                header_rows = 3
+                delimiter = ';'
 
         return np.loadtxt(filename, skiprows=header_rows, delimiter=delimiter)
 
@@ -243,7 +234,8 @@ class PerformTest:
                 "streams_channel_type_fieldname": "channel_id",
                 "output": self._output_dir,
                 'generate_temporary': False,
-                'flow_direction': 'single'
+                'flow_direction': 'single',
+                'wave': 'kinematic'
             }
             self._params.update(params)
         else:
@@ -386,7 +378,7 @@ class PerformTest:
                                 dataprep_filepath, reference_filepath
                             )
                     else:
-                        if k != 'rc':
+                        if k not in ('rc', 'wave'):
                             equal = np.allclose(
                                 v, reference_dict[k], rtol=relative_tolerance
                             )

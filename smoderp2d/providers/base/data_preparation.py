@@ -32,10 +32,7 @@ class PrepareDataBase(ABC):
             ),
             no_data,
             ma.where(
-                ma.logical_or(
-                    mat_nsheet == no_data, mat_y == no_data,
-                    mat_slope == 0
-                ),
+                mat_slope == 0,
                 0.0001,  # comment OP: where did we get this value from?
                 1 / mat_nsheet * ma.power(mat_slope, mat_y)
             )
@@ -206,13 +203,11 @@ class PrepareDataGISBase(PrepareDataBase):
         'dem_flowdir_aoi': 'temp',
         'dem_flowacc_aoi': 'temp',
         'dem_aspect_aoi': 'temp',
-        'points_aoi': 'temp',
+        'points_aoi': 'control',
         'soil_veg': 'temp',
         'soilveg_aoi': 'temp',
-        'stream_aoi': 'temp',
-        'stream_start': 'temp',
-        'stream_end': 'temp',
-        'stream_seg': 'temp',
+        'streams_aoi': 'core',
+        'streams_seg': 'temp',
         'ratio_cell': 'temp',
         'effect_cont': 'temp',
     }
@@ -283,6 +278,7 @@ class PrepareDataGISBase(PrepareDataBase):
             'state_cell': None,
             'type_of_computing': None,
             'mfda': self._input_params['flow_direction'] == 'multiple',
+            'wave': self._input_params['wave'],
             'sr': None,
             'itera': None,
             'streams': None,
