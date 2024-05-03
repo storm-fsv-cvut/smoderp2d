@@ -57,8 +57,6 @@ class TimeStep:
             subsurface.runoff(
                 delta_t, mat_effect_cont
             )
-        if ma.any(cond_state_flow):
-            fc.ratio = 0
         rill_courant = ma.where(cond_state_flow, 0, runoff_return[2])
         surface.arr.h_sheet = ma.where(
             cond_state_flow, surface.arr.h_sheet, runoff_return[3]
@@ -101,7 +99,7 @@ class TimeStep:
 
     # self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
     # courant, total_time, delta_t, combinatIndex, NoDataValue,
-    # sum_interception, mat_effect_cont, ratio, iter_
+    # sum_interception, mat_effect_cont, iter_
 
     def do_next_h(self, surface, subsurface, rain_arr, cumulative, hydrographs,
                   flow_control, courant, potRain, delta_t):
