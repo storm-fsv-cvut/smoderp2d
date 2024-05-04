@@ -274,6 +274,12 @@ class Runoff(object):
             self.flow_control.refresh_iter()
             # Calculate 
             actRain, self.delta_t = self.time_step.do_next_h(
+                self.surface,
+                self.subsurface,
+                self.rain_arr,
+                self.cumulative,
+                self.hydrographs,
+                self.flow_control,
                 self.delta_t,
                 self.delta_tmax,
                 self.list_fd    
