@@ -237,6 +237,9 @@ class BaseProvider(object):
         data['extraout'] = self._hidden_config.getboolean(
             'output', 'extraout', fallback=False
         )
+        data['computation_type'] = self._hidden_config.get(
+            'computation_type', 'computation_type', fallback='explicit'
+        )
 
         return data
 
@@ -393,6 +396,10 @@ class BaseProvider(object):
             Globals.extraOut = data['extraout']
         else:
             Globals.extraOut = hidden_config.get('extraout', False)
+        if 'computation_type' in data:
+            Globals.computationType = data['computation_type']
+        else:
+            Globals.computationType = hidden_config.get('computation_type', 'explicit')
 
         Globals.end_time *= 60  # convert min to sec
 

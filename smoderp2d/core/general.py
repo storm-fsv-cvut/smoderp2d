@@ -255,6 +255,8 @@ class Globals:
     streamsNextDownIdNoSegment = -1
     # slope width
     slope_width = None
+    # computation type
+    computation_type = 'explicit'
 
     @classmethod
     def get_type_of_computing(cls):
@@ -496,3 +498,5 @@ class Globals:
         cls.streamsNextDownIdNoSegment = -1
         # slope width
         cls.slope_width = None
+        # computation type
+        cls.computation_type = 'explicit'
