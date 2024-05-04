@@ -15,6 +15,8 @@ import time
 import numpy as np
 import numpy.ma as ma
 
+from math import floor
+
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
 from smoderp2d.core.surface import get_surface
@@ -266,18 +268,12 @@ class Runoff(object):
         # main loop: until the end time
 
 
-        while ma.any(self.flow_control.compare_time(end_time)):
+        while self.flow_control.compare_time(end_time):
 
             self.flow_control.save_vars()
             self.flow_control.refresh_iter()
             # Calculate 
             actRain, self.delta_t = self.time_step.do_next_h(
-                self.surface,
-                self.subsurface,
-                self.rain_arr,
-                self.cumulative,
-                self.hydrographs,
-                self.flow_control,
                 self.delta_t,
                 self.delta_tmax,
                 self.list_fd    
