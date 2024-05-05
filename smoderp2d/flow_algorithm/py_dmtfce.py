@@ -141,8 +141,10 @@ def removeCellsWithSameHeightNeighborhood(mat_dem, mat_nan, rows, cols):
     # trimming
     for i in range(1, rows - 1):
         for j in range(1, cols - 1):
-            count_nbrs = 0
             point_m = mat_dem[i][j]
+
+            if point_m <= 0:
+                continue
 
             nbrs = [mat_dem[i - 1][j - 1],
                     mat_dem[i - 1][j],
@@ -153,8 +155,9 @@ def removeCellsWithSameHeightNeighborhood(mat_dem, mat_nan, rows, cols):
                     mat_dem[i + 1][j],
                     mat_dem[i + 1][j + 1]]
 
+            count_nbrs = 0
             for nbrs_k in nbrs:
-                if point_m > 0 and point_m == nbrs_k:
+                if point_m == nbrs_k:
                     count_nbrs += 1
 
             # compare number of neighbours with the same height
