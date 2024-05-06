@@ -24,7 +24,7 @@ frameinfo = getframeinfo(currentframe())
 #   @return h water level in the trapezoid
 
 
-def compute_h(A, m, b, err=0.0001, max_iter=20, hinit = 100):
+def compute_h(A, m, b, err=0.00001, max_iter=20, hinit = 100):
     def feval(h):
         return b * h + m * h * h - A
 
