@@ -15,6 +15,8 @@ import time
 import numpy as np
 import numpy.ma as ma
 
+from math import floor
+
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
 from smoderp2d.core.surface import get_surface
@@ -256,7 +258,7 @@ class Runoff(object):
         # main loop: until the end time
         timeperc_last = 0
 
-        while ma.any(self.flow_control.compare_time(end_time)):
+        while self.flow_control.compare_time(end_time):
 
             self.flow_control.save_vars()
             self.flow_control.refresh_iter()
@@ -294,8 +296,8 @@ class Runoff(object):
                 # computed time is exactly at the top of each minute
                 oldtime_minut = self.flow_control.total_time/60
                 newtime_minut = (self.flow_control.total_time+self.delta_t)/60
-                if ma.any(ma.floor(newtime_minut) > ma.floor(oldtime_minut)):
-                    self.delta_t = (ma.floor(newtime_minut) - oldtime_minut)*60.
+                if floor(newtime_minut) > floor(oldtime_minut):
+                    self.delta_t = (floor(newtime_minut) - oldtime_minut) * 60.
 
                 # courant conditions is satisfied (time step did
                 # change) the iteration loop breaks
@@ -342,14 +344,12 @@ class Runoff(object):
                 )
 
             # adjusts the last time step size
-            if ma.all(ma.logical_and(
-                    end_time - self.flow_control.total_time < self.delta_t,
-                    end_time - self.flow_control.total_time > 0
-            )):
+            if end_time - self.flow_control.total_time < self.delta_t and \
+                    end_time - self.flow_control.total_time > 0:
                 self.delta_t = end_time - self.flow_control.total_time
 
             # if end time reached the main loop breaks
-            if ma.all(self.flow_control.total_time == end_time):
+            if self.flow_control.total_time == end_time:
                 break
 
             # calculate outflow from each reach of the stream network
