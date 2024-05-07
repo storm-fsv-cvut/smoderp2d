@@ -50,16 +50,16 @@ class Reach(object):
                 Logger.warning('For rectangle shaped reach, m should be zero. m is forced to be zero.')
                 self.m = 0
             if ((self.b == 0) or (self.b is None)):
-                raise ProviderError('Rectangle spahed reach with id {} needs to have bottom width'.format(self.segment_id))
+                raise ProviderError('Rectangle shaped reach with id {} needs to have bottom width'.format(self.segment_id))
 
             self.outflow_method = stream_f.genshape
 
         elif channel_shapetype == 1:  # trapezoid
 
             if ((self.b == 0) or (self.b is None)):
-                raise ProviderError('Trapezoid spahed reach with id {} needs to have bottom width'.format(self.segment_id))
+                raise ProviderError('Trapezoid shaped reach with id {} needs to have bottom width'.format(self.segment_id))
             if ((self.m == 0) or (self.m is None)):
-                raise ProviderError('Trapezoid spahed reach with id {} needs to have side slop width'.format(self.segment_id))
+                raise ProviderError('Trapezoid shaped reach with id {} needs to have side slop width'.format(self.segment_id))
 
             self.outflow_method = stream_f.genshape
 
@@ -69,7 +69,7 @@ class Reach(object):
                 Logger.warning('For triangle shaped reach, b should be zero. b is forced to be zero.')
                 self.b = 0
             if ((self.m == 0) or (self.m is None)):
-                raise ProviderError('Triangle spahed reach with id {} needs to have side slop width'.format(self.segment_id))
+                raise ProviderError('Triangle shaped reach with id {} needs to have side slop width'.format(self.segment_id))
 
             self.outflow_method = stream_f.genshape
 
