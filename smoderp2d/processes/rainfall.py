@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# -*- coding: latin-1 -*-
-# SMODERP 2D
 # Created by Jan Zajicek, FCE, CTU Prague, 2012-2013
 
 import sys
@@ -9,45 +6,7 @@ import numpy.ma as ma
 
 from smoderp2d.providers import Logger
 from smoderp2d.core.general import GridGlobals
-
-
-# definice erroru  na urovni modulu
-#
-
-
-class Error(Exception):
-    """Base class for exceptions in this module."""
-    pass
-
-
-class NonCumulativeRainData(Error):
-    """Exception raised bad rainfall record assignment.
-
-    Attributes:
-        msg  -- explanation of the error
-    """
-
-    def __init__(self):
-        self.msg = 'Error: Rainfall record has to be cumulative'
-
-    def __str__(self):
-        return repr(self.msg)
-
-
-class ErrorInRainfallRecord(Error):
-    """Exception raised for  rainfall record assignment.
-
-    Attributes:
-        msg  -- explanation of the error
-    """
-
-    def __init__(self):
-        self.msg = 'Error: Rainfall record starts with the length of the ' \
-                   'first time interval. See manual.'
-
-    def __str__(self):
-        return repr(self.msg)
-
+from smoderp2d.exceptions import RainDataError
 
 def load_precipitation(fh):
     """TODO.
@@ -60,30 +19,36 @@ def load_precipitation(fh):
         fh = open(fh, "r")
         x = []
         for line in fh.readlines():
-            z = line.split()
-            if len(z) == 0:
+            split_line = line.split()
+            if len(split_line) == 0 or '#' in split_line[0]:
+                # row is empty or there is a comment
                 continue
-            elif z[0].find('#') >= 0:
+
+            try:
+                timestamp = float(split_line[0])
+                precipitation = float(split_line[1])
+            except ValueError:
+                # probaby comma used to separate decimal part
+                timestamp = float(split_line[0].replace(',', '.'))
+                precipitation = float(split_line[1].replace(',', '.'))
+
+            if (timestamp == 0) & (precipitation > 0):
+                # if the record start with zero minutes the line has to
+                # be corrected
+                raise RainDataError('Rainfall record starts with the length of the '
+                                    'first time interval. See the manual.')
+            elif (timestamp == 0) & (precipitation == 0):
+                # if the record start with zero minutes and rainfall
+                # the line is ignored
                 continue
             else:
-                if len(z) == 0:  # if raw in text file is empty
-                    continue
-                elif (float(z[0]) == 0) & (float(z[1]) > 0):
-                    # if the record start with zero minutes the line has to
-                    # be corrected
-                    raise ErrorInRainfallRecord()
-                elif (float(z[0]) == 0) & (float(z[1]) == 0):
-                    # if the record start with zero minutes and rainfall
-                    # the line is ignored
-                    continue
-                else:
-                    y0 = float(z[0]) * 60.0  # convert minutes to seconds
-                    y1 = float(z[1]) / 1000.0  # convert mm to m
-                    if y1 < y2:
-                        raise NonCumulativeRainData()
-                    y2 = y1
-                    mv = y0, y1
-                    x.append(mv)
+                y0 = timestamp * 60.0  # convert minutes to seconds
+                y1 = precipitation / 1000.0  # convert mm to m
+                if y1 < y2:
+                    raise RainDataError('Rainfall record has to be cumulative')
+                y2 = y1
+                mv = y0, y1
+                x.append(mv)
         fh.close()
 
         # Values ordered by time ascending
@@ -122,10 +87,9 @@ def load_precipitation(fh):
         return sr, itera
 
     except IOError:
-        Logger.critical("The rainfall file does not exist!")
-    except:
-        Logger.critical("Unexpected error:", sys.exc_info()[0])
-        raise
+        raise RainDataError("The rainfall file does not exist")
+    except Exception as e:
+        raise RainDataError("Unexpected error: {}".format(e))
 
 
 def timestepRainfall(itera, total_time, delta_t, tz, sr):
@@ -144,7 +108,7 @@ def timestepRainfall(itera, total_time, delta_t, tz, sr):
     z = tz
     # skontroluje jestli neni mimo srazkovy zaznam
     if z > (itera - 1):
-        rainfall = ma.zeros((GridGlobals.r, GridGlobals.c))
+        rainfall = 0
     else:
         # skontroluje jestli casovy krok, ktery prave resi, je stale vramci
         # srazkoveho zaznamu z

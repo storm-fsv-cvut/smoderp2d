@@ -32,10 +32,7 @@ def compute_h(A, m, b, err=0.0001, max_iter=20):
         return b + 2.0 * m * h
 
     # first height estimation
-    try:
-        h_pre = A / b
-    except ZeroDivisionError:
-        h_pre = 0.0
+    h_pre = ma.where(b != 0, A / b, 0)
     h = h_pre
     iter_ = 1
     while ma.any(feval(h_pre) > err):
@@ -86,9 +83,11 @@ def rectangle(reach, dt):
     reach.Q_out = S * reach.vs
     # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt                   # prutok
     reach.V_out = reach.Q_out * dt  # odtekly objem
-    condition = ma.greater(reach.V_out, dV)
-    reach.V_out = ma.where(condition, dV, reach.V_out)
-    reach.vol_rest = ma.where(condition, 0, dV - reach.V_out)
+    if reach.V_out > dV:
+        reach.V_out = dV
+        reach.vol_rest = 0
+    else:
+        reach.vol_rest = dV - reach.V_out
     reach.Q_out = reach.V_out / dt
     reach.h = H
 
@@ -108,6 +107,9 @@ def trapezoid(reach, dt):
         # Vp == 0.0
         hp = 0.0
 
+    # explanation: hp = d
+    #              B = wetted perimeter, p
+    #              reach.m = sqrt(1+Z^2)
     B = reach.b + 2.0 * hp * reach.m  # b pro pocatecni stav (q365)
     # Bb = B + hp * reach.m
     h = compute_h(
@@ -128,9 +130,11 @@ def trapezoid(reach, dt):
     reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
 
-    condition = ma.greater(reach.V_out, dV)
-    reach.V_out = ma.where(condition, dV, reach.V_out)
-    reach.vol_rest = ma.where(condition, 0, dV - reach.V_out)
+    if reach.V_out > dV:
+        reach.V_out = dV
+        reach.vol_rest = 0
+    else:
+        reach.vol_rest = dV - reach.V_out
     reach.Q_out = reach.V_out / dt
     reach.h = H
 
@@ -152,6 +156,9 @@ def triangle(reach, dt):
         # Vp == 0.0
         hp = 0.0
 
+    # explanation: hp = d
+    #              B = wetted perimeter, p
+    #              reach.m = sqrt(1+Z^2)
     B = 2.0 * hp * reach.m
     # sirka zakladny  : baseflow \/
     # Bb = B + reach.h*reach.m
@@ -175,22 +182,23 @@ def triangle(reach, dt):
     S = reach.m * H * H
     # dS = B*reach.h + reach.m*reach.h*reach.h
     # dV = dS*reach.length
-    try:
+    if O == 0:
+        R = 0
+    else:
         R = S / O
-    except ZeroDivisionError:
-        R = 0.0
     reach.vs = ma.power(
         R,
         0.6666) * ma.power(
         reach.inclination,
-        0.5) / (
-                   reach.roughness)  # v
+        0.5) / (reach.roughness)  # v
     reach.Q_out = S * reach.vs  # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
 
-    condition = ma.greater(reach.V_out, Ve)
-    reach.V_out = ma.where(condition, Ve, reach.V_out)
-    reach.vol_rest = ma.where(condition, 0, Ve - reach.V_out)
+    if reach.V_out > Ve:
+        reach.V_out = Ve
+        reach.vol_rest = 0
+    else:
+        reach.vol_rest = Ve - reach.V_out
     reach.Q_out = reach.V_out / dt
     reach.h = H
 
@@ -199,32 +207,44 @@ def triangle(reach, dt):
 #
 #
 def parabola(reach, dt):
-    # ToDo - podivat se proc parabola nefunguje, ale to nechme az rozchodime
-    #  vubec toky a Qgis
-    raise NotImplementedError(
-        'Parabola shaped stream reach has not been implemented yet'
-    )
     # a = reach.b   #vzd ohniska od vrcholu
-    # u = 3.0 #(h=B/u  B=f(a))
-    # Vp = reach.q365*dt
-    # hp = ma.power(Vp*3/(2*reach.length*u),0.5)
-    # B = u*hp #sirka hladiny #b = 3*a/(2*h)
-    # reach.h = ma.power((reach.V_in_from_field + reach.vol_rest)/(2*reach.length*ma.power(hp,0.5))+ma.power(hp,1.5),0.6666)  # h = (dV/2.L.hp^0,5+hp^1,5)^0,666
-    # H = hp + reach.h
-    # Bb = u*H
-    # O = Bb+8*H*H/(3*Bb)
-    # S = 2/3*Bb*H
-    # dS = S - 2/3*B*hp
-    # dV = dS*reach.length
-    # R = S/O
-    # reach.Q_out = S*ma.power(R,0.66666)*ma.power(reach.slope,0.5)/(reach.roughness) # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
-    # reach.V_out = reach.Q_out*dt
-    # if reach.V_out > dV:
-    #     reach.V_out = dV
-    #     reach.Q_out = dV/dt
-    # reach.vs = ma.power(R,0.6666)*ma.power(reach.slope,0.5)/(reach.roughness) #v
-    # reach.vol_rest = dV - reach.V_out
-    # reach.h = H
+    u = 3.0 #(h=B/u  B=f(a))
+    if reach.q365 > 0:
+        Vp = reach.q365 * dt  # objem           : baseflow
+        hp = ma.power(Vp * 3 / (2 * reach.length * u), 0.5)
+        # vyska hladiny   : baseflow
+        reach.h = ma.power(
+            (reach.V_in_from_field + reach.vol_rest) / (2 * reach.length * ma.power(hp, 0.5)) + ma.power(hp, 1.5),
+            0.6666
+        )  # h = (dV/2.L.hp^0,5+hp^1,5)^0,666
+    else:
+        # Vp == 0.0
+        hp = 0.0
+
+    B = u * hp #sirka hladiny #b = 3*a/(2*h)
+    H = hp + reach.h  # D -> vyska hladiny
+    dB = u * H
+    if dB == 0:
+        O = 0
+    else:
+        O = dB + 8 * H * H / (3 * dB)
+    S = 2 / 3 * dB * H
+    dS = S - 2 / 3 * B * hp
+    dV = dS * reach.length
+    if O == 0:
+        R = 0
+    else:
+        R = S / O
+    reach.Q_out = S * ma.power(R, 0.66666) * ma.power(reach.inclination, 0.5) / (reach.roughness) # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
+    reach.V_out = reach.Q_out * dt
+
+    if reach.V_out > dV:
+        reach.Q_out = dV / dt
+        reach.V_out = dV
+        
+    reach.vs = ma.power(R, 0.6666) * ma.power(reach.inclination, 0.5) / (reach.roughness) #v
+    reach.vol_rest = dV - reach.V_out
+    reach.h = H
 
 # def stream_reach_max(toky):
 #     ToDo - tohle asi zachovavalo maxima a pridavalo je to do output vrstvy

@@ -14,7 +14,7 @@ from abc import abstractmethod
 from smoderp2d.core import CompType
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
 from smoderp2d.exceptions import ProviderError, ConfigError, GlobalsNotSet, \
-    SmoderpError
+    SmoderpError, RainDataError
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError
 
@@ -197,8 +197,7 @@ class BaseProvider(object):
             # avoid duplicated handlers (e.g. in case of ArcGIS)
             Logger.addHandler(handler)
 
-    @staticmethod
-    def __load_hidden_config():
+    def __load_hidden_config(self):
         """Load hidden configuration with advanced settings.
 
         return ConfigParser: object
@@ -217,6 +216,11 @@ class BaseProvider(object):
         # set logging level
         Logger.setLevel(config.get('logging', 'level', fallback=logging.INFO))
 
+        # set workflow mode
+        self.args.workflow_mode = WorkflowMode()[config.get(
+            'processes', 'workflow_mode', fallback="full"
+        )]
+
         return config
 
     def _load_data_from_hidden_config(self, ignore=()):
@@ -233,9 +237,6 @@ class BaseProvider(object):
         data['extraout'] = self._hidden_config.getboolean(
             'output', 'extraout', fallback=False
         )
-        self.args.workflow_mode = WorkflowMode()[self._hidden_config.get(
-            'processes', 'workflow_mode', fallback="full"
-        )]
 
         return data
 
@@ -302,6 +303,10 @@ class BaseProvider(object):
                 'processes', 'mfda', fallback=False
             )
 
+        data['wave'] = self._config.get(
+            'processes', 'wave', fallback='kinematic'
+        )
+
         # type of computing
         data['type_of_computing'] = CompType()[
             self._config.get('processes', 'typecomp', fallback='stream_rill')
@@ -315,6 +320,8 @@ class BaseProvider(object):
                 )
             except TypeError:
                 raise ProviderError('Invalid rainfall file')
+            except RainDataError as e:
+                raise ProviderError(e)
 
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
 
@@ -344,7 +351,10 @@ class BaseProvider(object):
                           'pixel_area', 'r', 'rc', 'rr', 'xllcorner',
                           'yllcorner'):
                     data[k] = getattr(GridGlobals, k)
-                self._save_data(data, self.args.data_file)
+                self.args.data_file = os.path.join(
+                    Globals.outdir, "dpre.save"
+                )
+                self.save_data(data, self.args.data_file)
                 return
 
         if self.args.workflow_mode == WorkflowMode.roff:
@@ -369,8 +379,7 @@ class BaseProvider(object):
 
         Globals.mat_reten = -1.0 * data['mat_reten'] / 1000  # converts mm to m
         comp_type = self._comp_type(data['type_of_computing'])
-        Globals.diffuse = False  # not implemented yet
-        Globals.subflow = comp_type['subflow']
+        Globals.subflow = comp_type['subflow_rill']
         Globals.isRill = comp_type['rill']
         Globals.isStream = comp_type['stream']
 
@@ -478,7 +487,7 @@ class BaseProvider(object):
         self._print_logo_fn('')  # extra line
 
     @staticmethod
-    def _save_data(data, filename):
+    def save_data(data, filename):
         """Save data into pickle.
 
         :param filename: TODO
@@ -642,11 +651,8 @@ class BaseProvider(object):
                 outputtable[i][5] = ma.unique(stream[fid[i]].V_out_cum)[0]
                 outputtable[i][6] = ma.unique(stream[fid[i]].Q_max)[0]
 
-            temp_dir = os.path.join(Globals.outdir, 'temp')
-            if not os.path.isdir(temp_dir):
-                os.makedirs(temp_dir)
-            path_ = os.path.join(temp_dir, 'stream.csv')
-            np.savetxt(path_, outputtable, delimiter=';', fmt='%.3e',
+            np.savetxt(os.path.join(Globals.outdir, 'streams.csv'),
+                       outputtable, delimiter=';', fmt='%.3e',
                        header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}'
                               'q365_m3_s{sep}V_out_cum_m3{sep}'
                               'Q_max_m3_s'.format(sep=';'))

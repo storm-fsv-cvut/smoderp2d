@@ -43,6 +43,7 @@ arguments = {
     'channel_properties_table': Argument('Channel properties table'),
     'flow_direction': Argument('Flow direction'),
     'preparation_only': Argument('Do the data preparation only'),
+    'wave': Argument('Wave type'),
     'generate_temporary': Argument('Generate also temporary data'),
 }
 
@@ -69,6 +70,6 @@ sections = [
     ),
     Section(
         'Advanced',
-        ('flow_direction', 'generate_temporary', )
+        ('flow_direction', 'wave', 'generate_temporary', )
     )  # TODO: Add ('preparation_only',))
 ]

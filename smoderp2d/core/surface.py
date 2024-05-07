@@ -9,7 +9,7 @@ if Globals.isStream:
     from smoderp2d.core.stream import Stream
 else:
     from smoderp2d.core.stream import StreamPass as Stream
-from smoderp2d.core.kinematic_diffuse import get_kinematic
+from smoderp2d.core.kinematic_diffuse import get_kinematic, get_diffuse
 import smoderp2d.processes.rill as rill
 import smoderp2d.processes.surface as surfacefce
 
@@ -107,7 +107,8 @@ class SurArrs(object):
 
 
 def get_surface():
-    class Surface(GridGlobals, Stream, get_kinematic()):
+    class Surface(GridGlobals, Stream,
+                  get_diffuse() if Globals.wave == 'diffusion' else get_kinematic()):
         """Data and methods to calculate the surface and rill runoff."""
 
         def __init__(self):
@@ -161,7 +162,7 @@ def get_surface():
             if not extra_out:
                 line = '{0:.4e}{sep}{1:.4e}'.format(
                     arr.h_total_new[i, j],
-                    (vol_runoff / dt[i, j] + vol_runoff_rill / dt[i, j]) *
+                    (vol_runoff / dt + vol_runoff_rill / dt) *
                     sw,
                     sep=sep
                 )
@@ -180,7 +181,7 @@ def get_surface():
                        '{4:.4e}{sep}{5:.4e}{sep}{6:.4e}{sep}{7:.4e}{sep}' \
                        '{8:.4e}{sep}{9:.4e}'.format(
                     arr.h_sheet[i, j],
-                    vol_runoff / dt[i, j],
+                    vol_runoff / dt,
                     vol_runoff,
                     velocity[i, j],
                     arr.vol_rest[i, j],
@@ -198,11 +199,11 @@ def get_surface():
                             '{7:.4e}'.format(
                         arr.h_rill[i, j],
                         arr.rillWidth[i, j],
-                        vol_runoff_rill / dt[i, j],
+                        vol_runoff_rill / dt,
                         vol_runoff_rill,
                         arr.vel_rill[i, j],
                         arr.v_rill_rest[i, j],
-                        vol_runoff / dt[i, j] + vol_runoff_rill / dt[i, j],
+                        vol_runoff / dt + vol_runoff_rill / dt,
                         vol_runoff + vol_runoff_rill,
                         sep=sep
                     )
@@ -423,7 +424,6 @@ def surface_retention(bil, sur):
     :param sur: TODO
     """
     reten = sur.sur_ret
-    pre_reten = reten
     bil_new = ma.where(
         reten < 0,
         ma.where(bil + reten > 0, bil + reten, 0),
@@ -436,7 +436,7 @@ def surface_retention(bil, sur):
     )
 
     sur.sur_ret = reten_new
-    sur.cur_sur_ret = reten_new - pre_reten
+    sur.cur_sur_ret = reten_new - reten
 
     return bil_new
 

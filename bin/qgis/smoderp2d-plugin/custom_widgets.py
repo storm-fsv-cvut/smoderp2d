@@ -10,7 +10,7 @@ class HistoryWidget(QListWidgetItem):
     def __init__(self, *args, **kwargs):
         """Initialize an instance.
 
-        Create and empty self.params_dict dictionary and then do
+        Create an empty self.params_dict dictionary and then do
         the QListWidgetItem things.
         """
         self.params_dict = {}
@@ -32,11 +32,17 @@ class HistoryWidget(QListWidgetItem):
         self.params_dict.update({
             'elevation': map_names['elevation'],
             'soil': map_names['soil'],
+            'soil_type_fieldname': params['soil_type_fieldname'],
+            'vegetation': map_names['vegetation'],
+            'vegetation_type_fieldname': params['vegetation_type_fieldname'],
             'points': map_names['points'],
             'points_fieldname': params['points_fieldname'],
             'streams': map_names['streams'],
             'rainfall_file': params['rainfall_file'],
             'table_soil_vegetation': map_names['table_soil_vegetation'],
+            'table_soil_vegetation_fieldname': params[
+                'table_soil_vegetation_fieldname'
+            ],
             'channel_properties_table': map_names['channel_properties_table'],
             'streams_channel_type_fieldname': params[
                 'streams_channel_type_fieldname'
@@ -44,6 +50,7 @@ class HistoryWidget(QListWidgetItem):
             'output': params['output'],
             'end_time': params['end_time'],
             'flow_direction': params['flow_direction'],
+            'wave': params['wave'],
             'generate_temporary': params['generate_temporary']
         })
 

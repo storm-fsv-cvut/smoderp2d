@@ -15,6 +15,8 @@ import time
 import numpy as np
 import numpy.ma as ma
 
+from math import floor
+
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
 from smoderp2d.core.surface import get_surface
@@ -47,9 +49,7 @@ class FlowControl(object):
         self.infiltration_type = 0
 
         # actual time in calculation
-        self.total_time = ma.masked_array(
-            np.zeros((r, c), float), mask=GridGlobals.masks
-        )
+        self.total_time = 0
 
         # keep order of a current rainfall interval
         self.tz = 0
@@ -59,7 +59,7 @@ class FlowControl(object):
             np.zeros((r, c), float), mask=GridGlobals.masks
         )
 
-        # factor deviding the time step for rill calculation
+        # factor dividing the time step for rill calculation
         # currently inactive
         self.ratio = ma.masked_array(
             np.ones((r, c), float), mask=GridGlobals.masks
@@ -97,7 +97,7 @@ class FlowControl(object):
     def refresh_iter(self):
         """Set current number of iteration to zero.
 
-        Should be called at the begining of each time step.
+        Should be called at the beginning of each time step.
         """
         self.iter_ = 0
 
@@ -182,7 +182,7 @@ class Runoff(object):
         # handle times step changes based on Courant condition
         self.courant = Courant()
         self.delta_t = self.courant.initial_time_step()
-        Logger.info('Corrected time step is {} [s]'.format(self.delta_t.max()))
+        Logger.info('Corrected time step is {} [s]'.format(self.delta_t))
 
         # opens files for storing hydrographs
         if Globals.get_array_points() is not None:
@@ -256,15 +256,9 @@ class Runoff(object):
         end_time = Globals.end_time
 
         # main loop: until the end time
-        timeperc_last = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
+        timeperc_last = 0
 
-        self.delta_t = ma.masked_array(
-            self.delta_t, mask=GridGlobals.masks
-        )
-
-        while ma.any(self.flow_control.compare_time(end_time)):
+        while self.flow_control.compare_time(end_time):
 
             self.flow_control.save_vars()
             self.flow_control.refresh_iter()
@@ -302,8 +296,8 @@ class Runoff(object):
                 # computed time is exactly at the top of each minute
                 oldtime_minut = self.flow_control.total_time/60
                 newtime_minut = (self.flow_control.total_time+self.delta_t)/60
-                if ma.any(ma.floor(newtime_minut) > ma.floor(oldtime_minut)):
-                    self.delta_t = (ma.floor(newtime_minut) - oldtime_minut)*60.
+                if floor(newtime_minut) > floor(oldtime_minut):
+                    self.delta_t = (floor(newtime_minut) - oldtime_minut) * 60.
 
                 # courant conditions is satisfied (time step did
                 # change) the iteration loop breaks
@@ -350,14 +344,12 @@ class Runoff(object):
                 )
 
             # adjusts the last time step size
-            if ma.all(ma.logical_and(
-                    end_time - self.flow_control.total_time < self.delta_t,
-                    end_time - self.flow_control.total_time > 0
-            )):
+            if end_time - self.flow_control.total_time < self.delta_t and \
+                    end_time - self.flow_control.total_time > 0:
                 self.delta_t = end_time - self.flow_control.total_time
 
             # if end time reached the main loop breaks
-            if ma.all(self.flow_control.total_time == end_time):
+            if self.flow_control.total_time == end_time:
                 break
 
             # calculate outflow from each reach of the stream network
@@ -428,11 +420,11 @@ class Runoff(object):
             self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / end_time
-            if ma.any(timeperc > 99.9) or ma.any(timeperc - timeperc_last > 5):
+            if timeperc > 99.9 or timeperc - timeperc_last > 5:
                 # print progress with 5% step
                 Logger.progress(
-                    timeperc.max(),
-                    self.delta_t.max(),
+                    timeperc,
+                    self.delta_t,
                     self.flow_control.iter_,
                     self.flow_control.total_time + self.delta_t
                 )

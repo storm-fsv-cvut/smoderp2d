@@ -42,7 +42,13 @@ def write_array_diff(arr1, arr2, target_path):
     try:
         diff = arr1 - arr2
     except ValueError as e:
-        print(f"Unable to compute array diff: {e}")
+        if arr1.shape == arr2.shape:
+            print(f"Unable to compute array diff: {e}")
+        else:
+            print(
+                f"The two arrays have different shapes: "
+                f"{arr1.shape} versus {arr2.shape}"
+            )
         return
 
     if not diff.any():
@@ -71,25 +77,16 @@ def are_dir_trees_equal(dir1, dir2):
         there were no errors while accessing the directories or files,
         False otherwise.
     """
-    def _read_gdal_array(filename):
-        from osgeo import gdal
-        ds = gdal.Open(filename)
-        array = ds.GetRasterBand(1).ReadAsArray()
-        ds = None
-        return array
-
     def _read_data(filename):
         header_rows = 0
         delimiter = None
         with open(filename) as f:
             first_line = f.readline()
-            use_gdal = first_line.startswith('ncols')
-            is_point_csv = first_line.startswith('# Hydro')
-        if use_gdal:
-            return _read_gdal_array(filename)
-        elif is_point_csv:
-            header_rows = 3
-            delimiter = ';'
+            if first_line.startswith('ncols'):
+                header_rows = 6
+            elif first_line.startswith('# Hydro'):
+                header_rows = 3
+                delimiter = ';'
 
         return np.loadtxt(filename, skiprows=header_rows, delimiter=delimiter)
 
@@ -155,33 +152,39 @@ def are_dir_trees_equal(dir1, dir2):
 
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
-        equal = np.allclose(new_output, reference, rtol=relative_tolerance)
-        if equal is True:
-            same_files.append(file_path)
-        else:
-            diff_files.append(file_path)
+        if new_output.shape == reference.shape:
+            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+            if equal is True:
+                same_files.append(file_path)
+                continue
+
+        diff_files.append(file_path)
 
     for i in glob.glob(os.path.join(dir1, 'control', '*.asc')):
         file_path = os.path.join('control', os.path.split(i)[1])
 
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
-        equal = np.allclose(new_output, reference, rtol=relative_tolerance)
-        if equal is True:
-            same_files.append(file_path)
-        else:
-            diff_files.append(file_path)
+        if new_output.shape == reference.shape:
+            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+            if equal is True:
+                same_files.append(file_path)
+                continue
+
+        diff_files.append(file_path)
 
     for i in glob.glob(os.path.join(dir1, 'control_point', '*.csv')):
         file_path = os.path.join('control_point', os.path.split(i)[1])
 
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
-        equal = np.allclose(new_output, reference, rtol=relative_tolerance)
-        if equal is True:
-            same_files.append(file_path)
-        else:
-            diff_files.append(file_path)
+        if new_output.shape == reference.shape:
+            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+            if equal is True:
+                same_files.append(file_path)
+                continue
+
+        diff_files.append(file_path)
 
     assert len(diff_files) == 0, \
         _print_diff_files(
@@ -231,7 +234,8 @@ class PerformTest:
                 "streams_channel_type_fieldname": "channel_id",
                 "output": self._output_dir,
                 'generate_temporary': False,
-                'flow_direction': 'single'
+                'flow_direction': 'single',
+                'wave': 'kinematic'
             }
             self._params.update(params)
         else:
@@ -357,10 +361,13 @@ class PerformTest:
                             if isinstance(vv[0], str):
                                 equal = vv == reference_dict[k][kk]
                             else:
-                                equal = np.allclose(
-                                    vv, reference_dict[k][kk],
-                                    rtol=relative_tolerance
-                                )
+                                try:
+                                    equal = np.allclose(
+                                        vv, reference_dict[k][kk],
+                                        rtol=relative_tolerance
+                                    )
+                                except ValueError as e:
+                                    equal = False
                             assert equal is True, \
                                 self.report_pickle_difference(
                                     dataprep_filepath, reference_filepath
@@ -371,7 +378,7 @@ class PerformTest:
                                 dataprep_filepath, reference_filepath
                             )
                     else:
-                        if k != 'rc':
+                        if k not in ('rc', 'wave'):
                             equal = np.allclose(
                                 v, reference_dict[k], rtol=relative_tolerance
                             )

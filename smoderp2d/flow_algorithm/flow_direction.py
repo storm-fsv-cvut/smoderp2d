@@ -5,10 +5,9 @@ import math
 from smoderp2d.core.general import GridGlobals
 
 
-def flow_direction(dem, rr, rc, br, bc, pixel_size):
+def flow_direction(dem, rr, rc, pixel_size):
 
-    dist = [math.sqrt(pixel_size),
-            math.sqrt(pixel_size * pixel_size)]
+    dist = [math.sqrt(pixel_size), math.sqrt(pixel_size * pixel_size)]
 
     fd = ma.masked_array(np.zeros(dem.shape, int), mask=GridGlobals.masks)
 
@@ -24,21 +23,9 @@ def flow_direction(dem, rr, rc, br, bc, pixel_size):
     # 16      1
     # 8   4   2
 
+    # TODO: This is very slow - should be rewritten to numpy if possible
     for i in rr:
         for j in rc[i]:
-            drop[0] = (dem[i][j] - dem[i - 1][j - 1]) / dist[0] * 100.00
-            drop[1] = (dem[i][j] - dem[i][j - 1]) / dist[1] * 100.00
-            drop[2] = (dem[i][j] - dem[i + 1][j - 1]) / dist[0] * 100.00
-            drop[3] = (dem[i][j] - dem[i - 1][j]) / dist[1] * 100.00
-            drop[4] = (dem[i][j] - dem[i + 1][j]) / dist[1] * 100.00
-            drop[5] = (dem[i][j] - dem[i - 1][j + 1]) / dist[0] * 100.00
-            drop[6] = (dem[i][j] - dem[i][j + 1]) / dist[1] * 100.00
-            drop[7] = (dem[i][j] - dem[i + 1][j + 1]) / dist[0] * 100.00
-            min_drop = ma.argmax(drop)
-            fd[i][j] = dir_[min_drop]
-
-    for i in br:
-        for j in bc[i]:
 
             if i >= 1 and j >= 1:
                 try:
