@@ -13,10 +13,10 @@ import smoderp2d.processes.subsurface as darcy
 class SubArrs:
     """TODO."""
 
-    def __init__(self, L_sub, Ks, vg_n, vg_l, z, ele):
+    def __init__(self, subsoil_depth, Ks, vg_n, vg_l, z, ele):
         """Subsurface attributes.
 
-        :param L_sub: depth of subsoil layer
+        :param subsoil_depth: depth of subsoil layer
         :param Ks: saturated hydrulic conductivity
         :param vg_n: van genuchten parameter 
         :param vg_l: van genuchten parameter
@@ -24,8 +24,8 @@ class SubArrs:
         :param ele: elevatin of subsoil
         """
         # amount of water in subsoil = h / porosity
-        self.L_sub = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * L_sub
+        self.subsoil_depth = ma.masked_array(
+            np.ones((GridGlobals.r, GridGlobals.c)) * subsoil_depth,
             mask=GridGlobals.masks
         )
         # water level on the subsoil layer
@@ -83,7 +83,7 @@ class SubArrs:
 
 class SubsurfaceC(GridGlobals,
                   get_diffuse() if Globals.wave == 'diffusion' else get_kinematic()):
-    def __init__(self, L_sub, Ks, vg_n, vg_l = 0.5):
+    def __init__(self, subsoil_depth, Ks, vg_n, vg_l = 0.5):
         """Class that handles the subsurface flow.
 
         Subsurface flow occurs in shallow soil layer usually few tens of cm
@@ -94,7 +94,7 @@ class SubsurfaceC(GridGlobals,
         supported.
         
 
-        :param L_sub: of water in subsoil layer
+        :param subsoil_depth: of water in subsoil layer
         :param Ks: saturated hydrulic conductivity
         :param vg_n: van genuchten parameter 
         :param vg_l: van genuchten parameter usually = 3.5
@@ -104,11 +104,11 @@ class SubsurfaceC(GridGlobals,
         Logger.info("Subsurface: ON")
 
         self.arr = SubArrs(
-            L_sub,
+            subsoil_depth,
             Ks,
             vg_n,
             vg_l,
-            Globals.mat_dem - L_sub,
+            Globals.mat_dem - subsoil_depth,
             Globals.mat_dem)
 
         self.arr.slope = Globals.mat_slope
@@ -174,10 +174,10 @@ class SubsurfaceC(GridGlobals,
         """
         arr = self.arr
 
-        if bil > arr.L_sub:
+        if bil > arr.subsoil_depth:
             S = 1.0
         else:
-            S = bil / arr.L_sub
+            S = bil / arr.subsoil_depth
 
         perc = arr.Ks * self.Kr(S, arr.vg_l, arr.vg_m) * dt
         # jj bacha
@@ -194,22 +194,22 @@ class SubsurfaceC(GridGlobals,
         """
 
         arr = self.arr
-        if bil > arr.L_sub:
-            exfilt = bil - arr.L_sub
-            bil = arr.L_sub
+        if bil > arr.subsoil_depth:
+            exfilt = bil - arr.subsoil_depth
+            bil = arr.subsoil_depth
         else:
             exfilt = 0
 
         return bil, exfilt
 
-    def runoff(self, delta_t, effect_vrst):
+    def runoff(self, delta_t, ef_counter_line):
         """Calculate the volume of subsoil runoff
 
         :param delta_t: time step
-        :param effect_vrst: effective counter line 
+        :param ef_counter_line: effective counter line 
         """
         arr = self.arr
-        self.q_subsurface = self.darcy(arr, effect_vrst)
+        self.q_subsurface = self.darcy(arr, ef_counter_line)
         arr.vol_runoff = delta_t * self.q_subsurface
         arr.vol_rest = arr.h * self.pixel_area - delta_t * self.q_subsurface
 
@@ -252,10 +252,10 @@ class SubsurfaceC(GridGlobals,
 class SubsurfacePass(GridGlobals):
     """TODO."""
 
-    def __init__(self, L_sub, Ks, vg_n, vg_l):
+    def __init__(self, subsoil_depth, Ks, vg_n, vg_l):
         """TODO.
 
-        :param L_sub: TODO
+        :param subsoil_depth: TODO
         :param Ks: TODO
         :param vg_n: TODO
         :param vg_l: TODO
@@ -300,11 +300,11 @@ class SubsurfacePass(GridGlobals):
         """
         pass
 
-    def runoff(self, delta_t, effect_vrst):
+    def runoff(self, delta_t, ef_counter_line):
         """TODO.
 
         :param delta_t: TODO
-        :param effect_vrst: TODO
+        :param ef_counter_line: TODO
         """
         pass
 
@@ -334,17 +334,17 @@ class SubsurfacePass(GridGlobals):
 class Subsurface(SubsurfaceC if Globals.subflow else SubsurfacePass):
     """TODO."""
 
-    def __init__(self, L_sub=0.010, Ks=0.001, vg_n=1.5, vg_l=0.5):
+    def __init__(self, subsoil_depth=0.010, Ks=0.001, vg_n=1.5, vg_l=0.5):
         """TODO.
 
-        :param L_sub: TODO
+        :param subsoil_depth: TODO
         :param Ks: TODO
         :param vg_n: TODO
         :param vg_l: TODO
         """
         Logger.info("Subsurface:")
         super(Subsurface, self).__init__(
-            L_sub=L_sub,
+            subsoil_depth=subsoil_depth,
             Ks=Ks,
             vg_n=vg_n,
             vg_l=vg_l

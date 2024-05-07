@@ -168,7 +168,7 @@ class Runoff(object):
         # TODO: include in data preprocessing
         if Globals.subflow:
             self.subsurface = Subsurface(
-                L_sub=0.1,
+                subsoil_depth=0.1,
                 Ks=0.005,
                 vg_n=1.5,
                 vg_l=0.5
