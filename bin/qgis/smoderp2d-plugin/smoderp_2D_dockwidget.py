@@ -37,7 +37,7 @@ from qgis.core import (
     QgsProviderRegistry, QgsMapLayerProxyModel, QgsRasterLayer, QgsTask,
     QgsApplication, Qgis, QgsProject, QgsRasterBandStats,
     QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp, QgsVectorLayer,
-    QgsVectorLayerJoinInfo
+    QgsVectorLayerJoinInfo, QgsMessageLog
 )
 from qgis.utils import iface
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
@@ -510,8 +510,16 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         if runs is None:
             self.settings.setValue('historical_runs', [])
         else:
+            nerrors = 0
             for run in reversed(runs):
-                self._addHistoryItem(run)
+                if self._addHistoryItem(run) is False:
+                    nerrors += 1
+
+            if nerrors > 0:
+                iface.messageBar().pushMessage(
+                    f'Failed to add {nerrors} historical items (see logs for details)',
+                    level=Qgis.Warning
+            )
 
     def _addCurrentHistoryItem(self):
         """Add the current run into settings[historical_runs].
@@ -531,25 +539,34 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         self.settings.setValue('historical_runs', runs)
 
-        self._addHistoryItem(run)
+        if self._addHistoryItem(run) is False:
+            iface.messageBar().pushMessage(
+                'Failed to historical item (see logs for details)',
+                level=Qgis.Warning
+            )
 
     def _addHistoryItem(self, run):
         """Add the historical item to the history pane.
 
         :param run: The current run info in format (timestamp, params, maps)
+
+        :return True on success otherwise False
         """
         this_run = HistoryWidget(f'{run[1]["output"]} -- {run[0]}')
         try:
             this_run.saveHistory(run[1], run[2])
             self.history_tab.insertItem(0, this_run)
         except (KeyError, IndexError) as e:
-            iface.messageBar().pushMessage(
-                f'Failed to add historical item {run[0]}: ', str(e),
-                level=Qgis.Warning
-            )
+            QgsMessageLog.logMessage(
+                f'Failed to add historical item {run[0]}: {e}',
+                'SMODERP2D', level=Qgis.Warning)
+            return False
+
         self.history_tab.itemDoubleClicked.connect(
             self._loadHistoricalParameters
         )
+
+        return True
 
     @staticmethod
     def _layerColorRamp(layer):
