@@ -146,22 +146,8 @@ def removeCellsWithSameHeightNeighborhood(mat_dem, mat_nan, rows, cols):
             if point_m <= 0:
                 continue
 
-            nbrs = [mat_dem[i - 1][j - 1],
-                    mat_dem[i - 1][j],
-                    mat_dem[i - 1][j + 1],
-                    mat_dem[i][j - 1],
-                    mat_dem[i][j + 1],
-                    mat_dem[i + 1][j - 1],
-                    mat_dem[i + 1][j],
-                    mat_dem[i + 1][j + 1]]
-
-            count_nbrs = 0
-            for nbrs_k in nbrs:
-                if point_m == nbrs_k:
-                    count_nbrs += 1
-
             # compare number of neighbours with the same height
-            if count_nbrs >= 7:
+            if np.sum(mat_dem[i - 1:i + 1, j - 1: j + 1] == point_m) >= 7:
                 # set problematic cells to NoData
                 mat_dem[i][j] = GridGlobals.NoDataValue
                 mat_nan[i][j] = GridGlobals.NoDataValue
