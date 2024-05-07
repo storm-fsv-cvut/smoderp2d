@@ -16,15 +16,16 @@ class SubArrs:
     def __init__(self, L_sub, Ks, vg_n, vg_l, z, ele):
         """Subsurface attributes.
 
-        :param L_sub: depth of the topsoil
+        :param L_sub: depth of subsoil layer
         :param Ks: saturated hydrulic conductivity
         :param vg_n: van genuchten parameter 
         :param vg_l: van genuchten parameter
-        :param z: unused variables
+        :param z: ???
         :param ele: elevatin of subsoil
         """
+        # amount of water in subsoil = h / porosity
         self.L_sub = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * L_sub,
+            np.ones((GridGlobals.r, GridGlobals.c)) * L_sub
             mask=GridGlobals.masks
         )
         # water level on the subsoil layer
@@ -78,16 +79,11 @@ class SubArrs:
         )
         #van genuchgtens m
         self.vg_m = 1 - (1 / self.vg_n)
-        #vg_l ??? JJ what is that?
-        self.vg_l = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * vg_l,
-            mask=GridGlobals.masks
-        )
 
 
 class SubsurfaceC(GridGlobals,
                   get_diffuse() if Globals.wave == 'diffusion' else get_kinematic()):
-    def __init__(self, L_sub, Ks, vg_n, vg_l):
+    def __init__(self, L_sub, Ks, vg_n, vg_l = 0.5):
         """Class that handles the subsurface flow.
 
         Subsurface flow occurs in shallow soil layer usually few tens of cm
@@ -98,10 +94,10 @@ class SubsurfaceC(GridGlobals,
         supported.
         
 
-        :param L_sub: depth of the topsoil
+        :param L_sub: of water in subsoil layer
         :param Ks: saturated hydrulic conductivity
         :param vg_n: van genuchten parameter 
-        :param vg_l: van genuchten parameter
+        :param vg_l: van genuchten parameter usually = 3.5
         """
         GridGlobals.__init__(self)
 
@@ -121,11 +117,13 @@ class SubsurfaceC(GridGlobals,
         self.darcy = darcy.darcy
 
     def slope_(self, i, j):
-        """TODO.
+        """Slope implemented for diffusitve wave approximation
+        
+        It is not used in kinematic wave approximation.
 
-        :param i: TODO
-        :param j: TODO
-        :return: TODO
+        :param i: i th element
+        :param j: j th element 
+        :return: slope
         """
         a = self.arr.H[i - 1, j - 1]
         b = self.arr.H[i - 1, j]
@@ -145,19 +143,19 @@ class SubsurfaceC(GridGlobals,
         return diffslope
 
     def fill_slope(self):
-        """TODO."""
+        """Update H (=z + h) for next slope calculation."""
         self.update_H()
 
     def get_exfiltration(self):
-        """TODO."""
+        """Return the current exfiltration amount at given time step."""
         return self.arr.exfiltration
 
     def bilance(self, infilt, inflow, dt):
-        """TODO.
+        """calculate subsoi water balance.
 
-        :param infilt: TODO
-        :param inflow: TODO
-        :param dt: TODO
+        :param infilt: infiltration in current time step [L]
+        :param inflow: inflows in current time step [L]
+        :param dt: current time step
         """
         arr = self.arr
         bil = infilt + arr.vol_rest / self.pixel_area + inflow
@@ -169,10 +167,10 @@ class SubsurfaceC(GridGlobals,
         arr.h, arr.exfiltration = self.calc_exfiltration(bil)
 
     def calc_percolation(self, bil, dt):
-        """TODO.
+        """calculated percolation to deeper soil layers.
 
-        :param bil: TODO
-        :param dt: TODO
+        :param bil: subsoil water balance 
+        :param dt: time step 
         """
         arr = self.arr
 
@@ -189,10 +187,12 @@ class SubsurfaceC(GridGlobals,
         return perc
 
     def calc_exfiltration(self, bil):
-        """TODO.
+        """Calculate amount of water then flows back to soil surface.
 
-        :param bil: TODO
+        :param bil: subsoil water balance
+        :return: updated subsoil water balance  and exfiltrated water
         """
+
         arr = self.arr
         if bil > arr.L_sub:
             exfilt = bil - arr.L_sub
@@ -203,10 +203,10 @@ class SubsurfaceC(GridGlobals,
         return bil, exfilt
 
     def runoff(self, delta_t, effect_vrst):
-        """TODO.
+        """Calculate the volume of subsoil runoff
 
-        :param delta_t: TODO
-        :param effect_vrst: TODO
+        :param delta_t: time step
+        :param effect_vrst: effective counter line 
         """
         arr = self.arr
         self.q_subsurface = self.darcy(arr, effect_vrst)
@@ -214,29 +214,29 @@ class SubsurfaceC(GridGlobals,
         arr.vol_rest = arr.h * self.pixel_area - delta_t * self.q_subsurface
 
     def runoff_stream_cell(self, indices):
-        """TODO.
+        """Zeros in cells that are where stream reach is.
 
-        :param indices: TODO
+        :param indices: what cell in arrays is where the stream is
         """
         self.arr.vol_runoff[indices] = 0.0
         self.arr.vol_rest[indices] = 0.0
         return ma.where(indices, self.arr.h, 0)
 
     def curr_to_pre(self):
-        """TODO."""
+        """At the end of time step calculation the runoff water volume is
+        stored in vol_runoff_pre."""
         self.arr.vol_runoff_pre = self.arr.vol_runoff
 
     def return_str_vals(self, i, j, sep, dt):
-        """TODO.
+        """Returns values stored in i j cell for io.
 
-        :param i: TODO
-        :param j: TODO
-        :param sep: TODO
-        :param dt: TODO
+        :param i: i th cell
+        :param j: j th cell
+        :param sep: separator to file
+        :param dt: time step
         :return: TODO
         """
         arr = self.arr
-        #  ';Sub_Water_level_[m];Sub_Flow_[m3/s];Sub_V_runoff[m3];Sub_V_rest[m3];Percolation[],exfiltration[];'
         line = str(
             arr.h) + sep + str(
                 arr.vol_runoff / dt) + sep + str(
