@@ -55,10 +55,8 @@ class TimeStep:
         cond_state_flow = surface_state > Globals.streams_flow_inc
         v_sheet = ma.where(cond_state_flow, 0, runoff_return[0])
         v_rill = ma.where(cond_state_flow, 0, runoff_return[1])
-        if ma.all(cond_state_flow):
-            subsurface.runoff(
-                delta_t, mat_effect_cont
-            )
+        subsurface.runoff(delta_t, mat_effect_cont, cond_state_flow)
+
         if ma.any(cond_state_flow):
             fc.ratio = ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)),

@@ -202,14 +202,15 @@ class SubsurfaceC(GridGlobals,
 
         return bil, exfilt
 
-    def runoff(self, delta_t, ef_counter_line):
+    def runoff(self, delta_t, ef_counter_line, cond_state_flow):
         """Calculate the volume of subsoil runoff
 
         :param delta_t: time step
         :param ef_counter_line: effective counter line 
         """
         arr = self.arr
-        self.q_subsurface = self.darcy(arr, ef_counter_line)
+        subflow = self.darcy(arr, ef_counter_line) 
+        self.q_subsurface = ma.where(cond_state_flow, subflow , 0)
         arr.vol_runoff = delta_t * self.q_subsurface
         arr.vol_rest = arr.h * self.pixel_area - delta_t * self.q_subsurface
 
