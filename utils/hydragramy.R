@@ -10,10 +10,10 @@ library('manipulate')
 # install package is missing with: install.packages("manipulate")
 #
 # root dir
-root  <-  ""
+root  <-  "tests/data/output"
 
 # output dir
-outdir <- c('tests/data/output/control_point/')
+outdir <- c('/control_point/')
 # choose points to be printed (*.dat file v output dir)
 # point000.dat -> id = 1
 # point001.dat -> id = 2
