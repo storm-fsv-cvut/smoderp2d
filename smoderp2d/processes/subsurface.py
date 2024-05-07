@@ -1,8 +1,8 @@
-def relative_unsat_conductivity(S, l=0.5, m):
+def relative_unsat_conductivity(S, m, l=0.5):
     """
     :param S: subsoil layers saturation.
+    :param m: van genuchten parameter 
     :param l: Mualem's parameter, it is usually 0.5
-    :param vg_m: van genuchten parameter 
     """
     return S**l * (1.0 - (1.0 - S**(1.0 / m))**m)**2.0
     
