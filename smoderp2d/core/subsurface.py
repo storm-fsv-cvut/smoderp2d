@@ -16,20 +16,22 @@ class SubArrs:
     def __init__(self, L_sub, Ks, vg_n, vg_l, z, ele):
         """Subsurface attributes.
 
-        :param L_sub: TODO
-        :param Ks: TODO
-        :param vg_n: TODO
-        :param vg_l: TODO
-        :param z: TODO
-        :param ele: TODO
+        :param L_sub: depth of the topsoil
+        :param Ks: saturated hydrulic conductivity
+        :param vg_n: van genuchten parameter 
+        :param vg_l: van genuchten parameter
+        :param z: unused variables
+        :param ele: elevatin of subsoil
         """
         self.L_sub = ma.masked_array(
             np.ones((GridGlobals.r, GridGlobals.c)) * L_sub,
             mask=GridGlobals.masks
         )
+        # water level on the subsoil layer
         self.h = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
+        # total optantial of the water on the subsoil layer
         self.H = ma.masked_array(
             np.ones((GridGlobals.r, GridGlobals.c)) * ele,
             mask=GridGlobals.masks
@@ -37,35 +39,46 @@ class SubArrs:
         self.z = ma.masked_array(
             np.ones((GridGlobals.r, GridGlobals.c)) * z, mask=GridGlobals.masks
         )
+        # slope of the subsoil layer = slope of surface
         self.slope = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
+        # if subsoil layer is full the water exfiltrates
         self.exfiltration = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
+        # volume of subsurface runoff
         self.vol_runoff = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
+        # volume of subsurface runoff in cell from previous time step
         self.vol_runoff_pre = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
+        # remaining water in the subsurface
         self.vol_rest = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
+        # saturated hydraulic conductivity 
         self.Ks = ma.masked_array(
             np.ones((GridGlobals.r, GridGlobals.c)) * Ks, mask=GridGlobals.masks
         )
+        # cumulative percolation (for percolation see few lines bellow)
         self.cum_percolation = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
+        # water that infiltrates to deeper soil layers
         self.percolation = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
+        #van genuchgtens n
         self.vg_n = ma.masked_array(
             np.ones((GridGlobals.r, GridGlobals.c)) * vg_n,
             mask=GridGlobals.masks
         )
+        #van genuchgtens m
         self.vg_m = 1 - (1 / self.vg_n)
+        #vg_l ??? JJ what is that?
         self.vg_l = ma.masked_array(
             np.ones((GridGlobals.r, GridGlobals.c)) * vg_l,
             mask=GridGlobals.masks
@@ -75,12 +88,20 @@ class SubArrs:
 class SubsurfaceC(GridGlobals,
                   get_diffuse() if Globals.wave == 'diffusion' else get_kinematic()):
     def __init__(self, L_sub, Ks, vg_n, vg_l):
-        """TODO.
+        """Class that handles the subsurface flow.
 
-        :param L_sub: TODO
-        :param Ks: TODO
-        :param vg_n: TODO
-        :param vg_l: TODO
+        Subsurface flow occurs in shallow soil layer usually few tens of cm
+        bellow the soil surface. The volume of water that flow is controlled 
+        by the Darcy's law. The flow directions and slope can be driven by 
+        D8 or mfd algorithm. The slope potentially follow the kinematic or
+        diffusive wave approximation. Now, only D8 and kinematic wave is
+        supported.
+        
+
+        :param L_sub: depth of the topsoil
+        :param Ks: saturated hydrulic conductivity
+        :param vg_n: van genuchten parameter 
+        :param vg_l: van genuchten parameter
         """
         GridGlobals.__init__(self)
 
