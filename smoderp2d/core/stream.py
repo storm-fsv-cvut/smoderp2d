@@ -44,19 +44,42 @@ class Reach(object):
         self.timeQ_max = 0
         self.V_out_domain = 0
 
-        if channel_shapetype == 0:  # obdelnik
-            self.outflow_method = stream_f.rectangle
+        if channel_shapetype == 0:  # rectangle
+            
+            if (self.m != 0):
+                Logger.warning('For rectangle shaped reach, m should be zero. m is forced to be zero.')
+                self.m = 0
+            if ((self.b == 0) or (self.b is None)):
+                raise ProviderError('Rectangle shaped reach with id {} needs to have bottom width'.format(self.segment_id))
+
+            self.outflow_method = stream_f.genshape
+
         elif channel_shapetype == 1:  # trapezoid
-            self.outflow_method = stream_f.trapezoid
+
+            if ((self.b == 0) or (self.b is None)):
+                raise ProviderError('Trapezoid shaped reach with id {} needs to have bottom width'.format(self.segment_id))
+            if ((self.m == 0) or (self.m is None)):
+                raise ProviderError('Trapezoid shaped reach with id {} needs to have side slop width'.format(self.segment_id))
+
+            self.outflow_method = stream_f.genshape
+
         elif channel_shapetype == 2:  # triangle
-            self.outflow_method = stream_f.triangle
+
+            if (self.b != 0):
+                Logger.warning('For triangle shaped reach, b should be zero. b is forced to be zero.')
+                self.b = 0
+            if ((self.m == 0) or (self.m is None)):
+                raise ProviderError('Triangle shaped reach with id {} needs to have side slop width'.format(self.segment_id))
+
+            self.outflow_method = stream_f.genshape
+
         elif channel_shapetype == 3:  # parabola
+            Logger.warning('Parabola shaped stream reach calculation is under'
+            'development and may not produce reliable numbers')
             self.outflow_method = stream_f.parabola
-            # ToDO - ve stream_f-py - mame u paraboly napsano, ze nefunguje
+            # TODO - ve stream_f-py - mame u paraboly napsano, ze nefunguje
         else:
-            self.outflow_method = stream_f.rectangle
-            # ToDo - zahodit posledni else a misto toho dat hlasku, ze to
-            #        je mimo rozsah
+            self.outflow_method = stream_f.genshape
 
 
 # Documentation for a class.
