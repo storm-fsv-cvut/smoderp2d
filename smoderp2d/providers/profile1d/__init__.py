@@ -375,8 +375,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
 
         return array_points
 
-    def postprocessing(self, cumulative, surface_array, stream):
-        super().postprocessing(cumulative, surface_array, stream)
+    def postprocessing(self, cumulative, surface_array, stream, inflows):
+        super().postprocessing(cumulative, surface_array, stream, inflows)
 
         # extra to normal postprocessing - write profile.csv
 

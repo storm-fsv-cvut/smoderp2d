@@ -416,7 +416,6 @@ def surface_retention(bil, sur):
     :param sur: TODO
     """
     reten = sur.sur_ret
-    pre_reten = reten
     bil_new = ma.where(
         reten < 0,
         ma.where(bil + reten > 0, bil + reten, 0),
@@ -429,7 +428,7 @@ def surface_retention(bil, sur):
     )
 
     sur.sur_ret = reten_new
-    sur.cur_sur_ret = reten_new - pre_reten
+    sur.cur_sur_ret = reten_new - reten
 
     return bil_new
 
