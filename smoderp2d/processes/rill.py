@@ -19,44 +19,40 @@ def update_hb(loc_V_to_rill, rillRatio, l, b):
     return h, b
 
 
-def rill(V_to_rill, rillRatio, l, b, delta_t,
-         ratio, n, slope):
+def rill(V_to_rill, rillRatio, l, b, delta_t, n, slope):
     V_rill_runoff = 0
     V_rill_rest = 0     # vrillrest z predchoziho kroku je zapocten v vtorill
     # b = 0.0
 
-    loc_delta_t = delta_t / ratio
-    loc_V_to_rill = V_to_rill / ratio
+    v = [0]
+    q = [0]
 
-    v = [0] * ratio
-    q = [0] * ratio
+    # for k in range(ratio):
 
-    for k in range(ratio):
+    #     h, b = update_hb(
+    #         loc_V_to_rill + V_rill_rest, rillRatio, l, b)
 
-        h, b = update_hb(
-            loc_V_to_rill + V_rill_rest, rillRatio, l, b)
+    #     R_rill = (h * b) / (b + 2 * h)
+    #     v[k] = ma.pow(
+    #         R_rill,
+    #         (2.0 / 3.0)) * 1 / n * ma.pow(slope / 100, 0.5)  # m/s
 
-        R_rill = (h * b) / (b + 2 * h)
-        v[k] = ma.pow(
-            R_rill,
-            (2.0 / 3.0)) * 1 / n * ma.pow(slope / 100, 0.5)  # m/s
+    #     q[k] = v[k] * rillRatio * b * b  # [m3/s]
+    #     V = q[k] * loc_delta_t
+    #     courant = v[k] / 0.5601 * loc_delta_t / l
 
-        q[k] = v[k] * rillRatio * b * b  # [m3/s]
-        V = q[k] * loc_delta_t
-        courant = v[k] / 0.5601 * loc_delta_t / l
+    #     if courant <= courantMax:
 
-        if courant <= courantMax:
+    #         if V > (loc_V_to_rill + V_rill_rest):
+    #             V_rill_rest = 0
+    #             V_rill_runoff = V_rill_runoff + loc_V_to_rill + V_rill_rest
 
-            if V > (loc_V_to_rill + V_rill_rest):
-                V_rill_rest = 0
-                V_rill_runoff = V_rill_runoff + loc_V_to_rill + V_rill_rest
+    #         else:
+    #             V_rill_rest = loc_V_to_rill + V_rill_rest - V
+    #             V_rill_runoff = V_rill_runoff + V
 
-            else:
-                V_rill_rest = loc_V_to_rill + V_rill_rest - V
-                V_rill_runoff = V_rill_runoff + V
-
-        else:
-            return b, V_rill_runoff, V_rill_rest, q, v, courant
+    #     else:
+    #         return b, V_rill_runoff, V_rill_rest, q, v, courant
 
     return b, V_rill_runoff, V_rill_rest, q, v, courant
 
@@ -72,7 +68,6 @@ def rill(V_to_rill, rillRatio, l, b, delta_t,
 #  @param n roughness of the rill
 #  @param slope slope of the computational cell
 #  @param delta_t  time step
-#  @param ratio  ratio to make the time division to satisfy the courant condition
 #
 #
 #  \image html rill_schema.png "The rill shape and dimension" width=5cm
@@ -90,7 +85,7 @@ def rill(V_to_rill, rillRatio, l, b, delta_t,
 #
 #
 #
-# def rillCalculations(sur, pixelArea, l, rillRatio, n, slope, delta_t, ratio):
+# def rillCalculations(sur, pixelArea, l, rillRatio, n, slope, delta_t):
 #
 #     input()
 #     h_rill = sur.h_rill
@@ -108,7 +103,7 @@ def rill(V_to_rill, rillRatio, l, b, delta_t,
 #         #     b = 0
 #
 #         b, V_rill_runoff, V_rill_rest, q, v, courant = rill(
-#             V_to_rill, rillRatio, l, b, delta_t, ratio, n, slope
+#             V_to_rill, rillRatio, l, b, delta_t, n, slope
 #         )
 #         # if ppp :
 #         if courant > courantMax:

@@ -111,9 +111,10 @@ class TimeStep:
         res = res.ravel()         
         return res
 
+
     # self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
     # courant, total_time, delta_t, combinatIndex, NoDataValue,
-    # sum_interception, mat_effect_cont, ratio, iter_
+    # sum_interception, mat_effect_cont, iter_
 
     def do_next_h(self, surface, subsurface, rain_arr, cumulative, 
                   hydrographs, flow_control,   delta_t,  delta_tmax,list_fd):

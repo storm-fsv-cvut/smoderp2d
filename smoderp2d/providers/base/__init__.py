@@ -532,12 +532,13 @@ class BaseProvider(object):
 
         return data
 
-    def postprocessing(self, cumulative, surface_array, stream):
+    def postprocessing(self, cumulative, surface_array, stream, inflows):
         """Perform postprocessing steps. Store results.
 
         :param cumulative: Cumulative object
         :param surface_array: numpy array
         :param stream: stream array (reach)
+        :param inflows: inflows array
         """
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
@@ -663,6 +664,35 @@ class BaseProvider(object):
                        header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}'
                               'q365_m3_s{sep}V_out_cum_m3{sep}'
                               'Q_max_m3_s'.format(sep=';'))
+
+        if inflows is not None and Globals.mfda is False:
+            # inflows are not stored for MFDA, see
+            # https://github.com/storm-fsv-cvut/smoderp2d/issues/375
+            inflows_array = np.zeros((GridGlobals.r, GridGlobals.c))
+            # | -1 -1 | -1  0 | -1  1 |
+            # |  0 -1 |  0  0 |  0  1 |
+            # |  1 -1 |  1  0 |  1  1 |
+
+            recode = {
+                ( 0,  1): 1,
+                ( 1,  1): 2,
+                ( 1,  0): 4,
+                ( 1, -1): 8,
+                ( 0, -1): 16,
+                (-1, -1): 32,
+                (-1,  0): 64,
+                (-1,  1): 128
+            }
+            for i in range(len(inflows)):
+                for j in range(len(inflows[i])):
+                    if_code = 0
+                    for v in inflows[i][j]:
+                        if_code += recode[tuple(v)]
+                    inflows_array[i][j] = if_code
+
+            self.storage.write_raster(
+                self._make_mask(inflows_array), 'inflows', 'control'
+            )
 
         # perform provider-specific postprocessing
         self._postprocessing()

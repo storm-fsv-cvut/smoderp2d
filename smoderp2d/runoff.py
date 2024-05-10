@@ -15,8 +15,6 @@ import time
 import numpy as np
 import numpy.ma as ma
 
-from math import floor
-
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
 from smoderp2d.core.surface import get_surface
@@ -62,12 +60,6 @@ class FlowControl(object):
             np.zeros((r, c), float), mask=GridGlobals.masks
         )
 
-        # factor dividing the time step for rill calculation
-        # currently inactive
-        self.ratio = ma.masked_array(
-            np.ones((r, c), float), mask=GridGlobals.masks
-        )
-
         # maximum amount of iterations
         self.max_iter = 40
 
@@ -77,9 +69,6 @@ class FlowControl(object):
         # defined by save_vars()
         self.tz_tmp = None
         self.sum_interception_tmp = ma.copy(self.sum_interception)
-
-        # defined by save_ratio()
-        self.ratio_tmp = None
 
     def save_vars(self):
         """Store tz and sum of interception.
@@ -114,14 +103,6 @@ class FlowControl(object):
     def max_iter_reached(self):
         """Check if iteration exceed a maximum allowed amount."""
         return self.iter_ < self.max_iter
-
-    def save_ratio(self):
-        """Save ratio in case of iteration within time step."""
-        self.ratio_tmp = self.ratio
-
-    def compare_ratio(self):
-        """Check for changing ratio after rill courant criterion check."""
-        return self.ratio_tmp == self.ratio
 
     def update_total_time(self, dt):
         """Rise time after successfully calculated previous time step.
@@ -363,7 +344,7 @@ class Runoff(object):
         Logger.info('Saving output data...')
         # perform postprocessing - store results
         self.provider.postprocessing(self.cumulative, self.surface.arr,
-                                     self.surface.reach)
+                                     self.surface.reach, self.surface.inflows)
         # Logger.progress(100)
 
         # TODO
