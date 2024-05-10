@@ -222,6 +222,7 @@ def get_surface():
 
     return Surface
 
+
 def __runoff(sur, dt, effect_vrst):
     """Calculate the sheet and rill flow.
 
@@ -329,7 +330,15 @@ def update_state(h_total_new, h_crit, h_total_pre, state, h_last_state1):
 
 # New version for implicit scheme
 def compute_h_hrill(h_total, h_crit, state,h_rill_pre):
-    
+    """TODO.
+
+    :param h_total_pre: TODO
+    :param h_crit: TODO
+    :param state: TODO (not used)
+    :param h_rill_pre: TODO (not used)
+
+    :return: TODO
+    """
     h_rill = ma.where(
         state == 0,
         0,
@@ -375,7 +384,6 @@ def sheet_runoff(a, b, h_sheet):
 
     :return: TODO
     """
-    
     q_sheet = surfacefce.shallowSurfaceKinematic(a, b, h_sheet)
 
     vol_runoff = q_sheet * GridGlobals.get_size()[0]
@@ -458,4 +466,3 @@ if Globals.isRill:
     runoff = __runoff
 else:
     runoff = __runoff_zero_comp_type
-
