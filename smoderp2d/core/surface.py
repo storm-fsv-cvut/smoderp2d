@@ -222,6 +222,70 @@ def get_surface():
 
     return Surface
 
+def __runoff(sur, dt, effect_vrst):
+    """Calculate the sheet and rill flow.
+
+    :param dt: TODO
+    :param effect_vrst: TODO
+
+    :return: TODO
+    """
+    h_total_pre = sur.h_total_pre
+    h_crit = sur.h_crit
+    state = sur.state  # da se tady podivat v jakym jsem casovym kroku a jak
+    # se a
+
+    # sur.arr.state               = update_state1(h_total_pre,h_crit,state)
+    h_sheet, h_rill, h_rillPre = compute_h_hrill(
+        h_total_pre, h_crit, state, sur.h_rillPre)
+
+    q_sheet, vol_runoff, vol_rest = sheet_runoff(dt, sur.a, sur.b, h_sheet)
+
+    v_sheet = ma.where(h_sheet > 0, q_sheet / h_sheet, 0)
+
+    # rill runoff
+    rill_runoff_results = rill_runoff(
+        dt, effect_vrst, h_rill, sur.rillWidth, sur.v_rill_rest,
+        sur.vol_runoff_rill
+    )
+    v_rill = ma.where(sur.state > 0, rill_runoff_results[0], 0)
+    v_rill_rest = ma.where(sur.state > 0, rill_runoff_results[1],
+                               sur.v_rill_rest)
+    vol_runoff_rill = ma.where(sur.state > 0, rill_runoff_results[2],
+                                   sur.vol_runoff_rill)
+    rill_courant = ma.where(sur.state > 0, rill_runoff_results[3], 0)
+    sur.vol_to_rill = ma.where(sur.state > 0, rill_runoff_results[4],
+                               sur.vol_to_rill)
+    sur.rillWidth = ma.where(sur.state > 0, rill_runoff_results[5],
+                             sur.rillWidth)
+
+    return (v_sheet, v_rill, rill_courant, h_sheet, h_rill, h_rillPre,
+            vol_runoff, vol_rest, v_rill_rest, vol_runoff_rill, v_rill)
+
+
+def __runoff_zero_comp_type(sur, dt, effect_vrst):
+    """TODO.
+
+    :param sur: TOD
+    :param dt: TODO
+    :param effect_vrst: TODO
+
+    :return: TODO
+    """
+    # sur.arr.state               = update_state1(h_total_pre,h_crit,state)
+    sur.h_sheet = sur.h_total_pre
+
+    q_sheet, vol_runoff, vol_rest = sheet_runoff(dt, sur.a, sur.b, sur.h_sheet)
+
+    v_sheet = ma.where(sur.h_sheet > 0, q_sheet / sur.h_sheet, 0)
+
+    v_rill = 0
+
+    return (
+        v_sheet, v_rill, 0.0, sur.h_sheet, sur.h_rill, sur.h_rillPre,
+        vol_runoff, vol_rest, sur.v_rill_rest, sur.vol_runoff_rill, v_rill
+    )
+
 
 def update_state1(ht_1, hcrit, state):
     """TODO.
@@ -388,4 +452,10 @@ def inflows_comp(tot_flow, list_fd):
     inflow[0:r,0:c-1] += list_fd[0:r,0:c-1,7]*tot_flow[0:r,1:c] #E
     
     return inflow
+
+
+if Globals.isRill:
+    runoff = __runoff
+else:
+    runoff = __runoff_zero_comp_type
 
