@@ -314,6 +314,25 @@ class Runoff(object):
                 actRain
             )
 
+            if Globals.computationType == 'explicit':
+                # print raster results in given time steps
+                self.times_prt.prt(
+                    self.flow_control.total_time, self.delta_t, self.surface
+                )
+
+                # set current time results to previous time step
+                # check if rill flow occur
+
+                # update states
+                self.surface.arr.state(
+                    surface.arr.h_total_time,
+                    surface.arr.h_crit,
+                    surface.arr.h_total_pre,
+                    surface.arr.state,
+                    surface.arr.h_last_state1
+                )
+
+            self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / end_time
             if timeperc > 99.9 or timeperc - timeperc_last > 5:

@@ -238,39 +238,28 @@ def update_state1(ht_1, hcrit, state):
     #         return 1
     return state
 
-def update_state(h_tot_new,h_crit,h_tot_pre,state,h_last_state1):
+
+def update_state(h_total_new, h_crit, h_total_pre, state, h_last_state1):
     # update state == 0
     state = ma.where(
         ma.logical_and(
-            state == 0, h_tot_new> h_crit
+            state == 0, h_total_new > h_crit
         ),
         1,
         state
     )
-    # # update state == 1
-    state_1_cond = ma.logical_and(
-        state == 1,
-        h_tot_new < h_tot_pre
-    )
-    state = ma.where(
-        state_1_cond,
-        2,
-        state
-    )
-    h_last_state1 = ma.where(
-                state_1_cond,
-                h_tot_pre,
-                h_last_state1
-            )      
+
+    # update state == 1
+    state_1_cond = ma.logical_and(state == 1, h_total_new < h_total_pre)
+
+    state = ma.where(state_1_cond, 2, state)
+    h_last_state1 = ma.where(state_1_cond, h_total_pre, h_last_state1)
+
     # update state == 2
     state = ma.where(
-        ma.logical_and(
-            state == 2,
-            h_tot_new> h_last_state1,
-        ),
-        1,
-        state
-    )   
+        ma.logical_and(state == 2, h_total_new > h_last_state1), 1, state
+    )
+
     return state             
 
 
