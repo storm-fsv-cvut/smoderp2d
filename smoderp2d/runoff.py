@@ -328,16 +328,6 @@ class Runoff(object):
 
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
-            
-            # h_new = self.surface.arr.h_total_new
-            # h_old = self.surface.arr.h_total_pre
-            # if ma.all(abs(h_new - h_old) < 1e-5):
-            #     if ma.all(self.delta_t*2 < self.delta_tmax):
-            #         self.delta_t = self.delta_t*2
-            #     else:
-            #         self.delta_t = self.delta_tmax
-            self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
-                
 
     def save_output(self):
         """TODO."""
