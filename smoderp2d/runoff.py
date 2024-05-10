@@ -15,8 +15,6 @@ import time
 import numpy as np
 import numpy.ma as ma
 
-from math import floor
-
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
 from smoderp2d.core.surface import get_surface
@@ -274,10 +272,10 @@ class Runoff(object):
                 # if current time plus timestep is in next minute
                 # of computation the dt is reduced so the next
                 # computed time is exactly at the top of each minute
-                oldtime_minut = self.flow_control.total_time/60
-                newtime_minut = (self.flow_control.total_time+self.delta_t)/60
-                if floor(newtime_minut) > floor(oldtime_minut):
-                    self.delta_t = (floor(newtime_minut) - oldtime_minut) * 60.
+                oldtime = self.flow_control.total_time
+                newtime_minute_floor = (self.flow_control.total_time + self.delta_t) // 60
+                if newtime_minute_floor > oldtime // 60:
+                    self.delta_t = newtime_minute_floor * 60. - oldtime
 
                 # courant conditions is satisfied (time step did
                 # change) the iteration loop breaks
