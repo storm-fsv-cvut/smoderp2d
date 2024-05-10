@@ -661,7 +661,7 @@ class PrepareDataGISBase(PrepareDataBase):
 
         # write mat arrays to temp
         for k, v in self.data.items():
-            if k not in ('array_points', 'sr') and isinstance(v, np.ndarray):
+            if isinstance(v, np.ndarray) and k not in ('array_points', 'sr'):
                 self.storage.write_raster(
                     v, k, 'temp'
                 )
