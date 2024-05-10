@@ -27,7 +27,7 @@ from smoderp2d.core.surface import compute_h_rill_pre
 
 class TimeStep:
     """TODO."""
-    
+
     def __init__(self):
         """Set the class variables to default values."""
         self.infilt_capa = 0
@@ -113,6 +113,18 @@ class TimeStep:
 
     def do_next_h(self, surface, subsurface, rain_arr, cumulative, 
                   hydrographs, flow_control,   delta_t,  delta_tmax,list_fd):
+        """TODO.
+
+        :param surface: TODO
+        :param subsurface: TODO
+        :param rain_arr: TODO
+        :param cumulative: TODO
+        :param hydrographs: TODO
+        :param flow_control: TODO
+        :param courant: TODO
+        :param potRain: TODO
+        :param delta_t: TODO
+        """
         # global variables for infilitration
         # class infilt_capa
         # global max_infilt_capa
@@ -123,6 +135,7 @@ class TimeStep:
         fc = flow_control
         combinatIndex = Globals.get_combinatIndex()
         NoDataValue = GridGlobals.get_no_data()
+
         # Calculating the infiltration
         sr = Globals.get_sr()
         itera = Globals.get_itera()

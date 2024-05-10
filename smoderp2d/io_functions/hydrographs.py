@@ -229,4 +229,3 @@ class HydrographsPass:
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface,
                                  currRain, inStream=False, sep=SEP):
         pass
-

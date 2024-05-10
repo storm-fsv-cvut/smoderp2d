@@ -19,7 +19,6 @@ root  <-  "H:/2_granty_projekty/2_Bezici/2022_RAGO/01_reseni_projektu/02_Smoderp
 
 
 root  <-  "jj-tests/"
-
 #root  <-  "d:/2_granty_projekty/2_Bezici/2022_RAGO/01_reseni_projektu/00_test_Smoderp/out2"
 
 # output dir
