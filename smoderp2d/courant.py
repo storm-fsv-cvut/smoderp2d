@@ -30,7 +30,6 @@ class Courant:
         self.i = -1
         self.j = -1
         self.co = 'sheet'
-        self.maxratio = 10
         self.max_delta_t = Gl.maxdt
         self.max_delta_t_mult = 1.0
 
@@ -102,17 +101,13 @@ class Courant:
 
     # Returns the adjusted/unchanged time step after a time step computation
     # is completed.
-    #
-    #  Also returns the ratio for the rill computation division.
-    #
-    def courant(self, delta_t, ratio):
+    def courant(self, delta_t):
         """TODO.
 
         :param delta_t: TODO
-        :param ratio: TODO
         :return: TODO
         """
-        # ratio se muze zmensit  a max_delta_t_mult zvetsit
+        # max_delta_t_mult se muze zvetsit
         # pokud je courant v ryhach <= 0.2
         #
         # pokud je courant > 0.5 deje se opak
@@ -147,7 +142,7 @@ class Courant:
             # a zmeni se podle maxima nasobeneho max_delta_t_mult
             # max_delta_t_mult se meni podle ryh, vyse v teto funkci
             if self.cour_speed == 0.0:
-                return self.max_delta_t * self.max_delta_t_mult, ratio
+                return self.max_delta_t * self.max_delta_t_mult
 
             effect_cont = Gl.mat_effect_cont[self.i, self.j]
             dt = round(
@@ -164,14 +159,14 @@ class Courant:
                 self.max_delta_t_mult * dt,
                 self.max_delta_t * self.max_delta_t_mult
             )
-            return dt_min, ratio
+            return dt_min
 
             # pokud je courant v povolenem rozmezi
             # skontrolje se pouze pokud neni vetsi nez maxdt * max_delta_t_mult
             # max_delta_t_mult se meni podle ryh, vyse v teto funkci
         else:
-            # return delta_t, ratio
-            if ma.all(ratio <= self.maxratio) and (self.cour_most_rill < 0.5):
-                return delta_t, ratio
+            # return delta_t
+            if self.cour_most_rill < 0.5:
+                return delta_t
             else:
-                return delta_t * self.max_delta_t_mult, ratio
+                return delta_t * self.max_delta_t_mult
