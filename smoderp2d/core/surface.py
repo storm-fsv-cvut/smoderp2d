@@ -232,10 +232,9 @@ def update_state1(ht_1, hcrit, state):
 
     :return: TODO
     """
-    state = ma.where(ht_1 > hcrit,ma.where(state == 0, 1, state), state)
-    # if ht_1 > hcrit:
-    #     if state == 0:
-    #         return 1
+    if ht_1 > hcrit:
+        if state == 0:
+            return 1
     return state
 
 
