@@ -358,6 +358,16 @@ class TimeStep:
             surface.arr,
             subsurface.arr,
             delta_t)
+        if Globals.computationType == 'explicit':
+            hydrographs.write_hydrographs_record(
+                None,
+                None,
+                flow_control,
+                courant,
+                delta_t,
+                surface,
+                cumulative,
+                actRain)
         
 
         return actRain, delta_t
