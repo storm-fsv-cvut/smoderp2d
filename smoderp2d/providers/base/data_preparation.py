@@ -655,13 +655,16 @@ class PrepareDataGISBase(PrepareDataBase):
             GridGlobals.r, GridGlobals.c, GridGlobals.NoDataValue,
             self.data['mat_nan']
         )
-        self.storage.write_raster(
-            self.data['mat_boundary'], 'mat_boundary', 'temp'
-        )
-
         GridGlobals.rr, GridGlobals.rc = self._get_rr_rc(
             GridGlobals.r, GridGlobals.c, self.data['mat_boundary']
         )
+
+        # write mat arrays to temp
+        for k, v in self.data.items():
+            if k not in ('array_points', 'sr') and isinstance(v, np.ndarray):
+                self.storage.write_raster(
+                    v, k, 'temp'
+                )
 
         self.data['mat_boundary'] = None  # ML: -> JJ ???
 
