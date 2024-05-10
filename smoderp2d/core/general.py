@@ -256,7 +256,7 @@ class Globals:
     # slope width
     slope_width = None
     # computation type
-    computation_type = 'explicit'
+    computationType = 'explicit'
 
     @classmethod
     def get_type_of_computing(cls):
@@ -499,4 +499,4 @@ class Globals:
         # slope width
         cls.slope_width = None
         # computation type
-        cls.computation_type = 'explicit'
+        cls.computationType = 'explicit'
