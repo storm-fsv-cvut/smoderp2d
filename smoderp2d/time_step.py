@@ -1,23 +1,19 @@
 # @package smoderp2d.time_step methods to perform
 #  time step, and to store intermediate variables
 
-from itertools import cycle
-from uu import Error
 from matplotlib.pylab import norm
 from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
-import smoderp2d.processes.infiltration as infiltration
+import smoderp2d.processes.infiltration as infilt
 import smoderp2d.processes.rill as rill
 from smoderp2d.core.surface import inflows_comp, surface_retention_impl
 from smoderp2d.core.surface import surface_retention_update
-from smoderp2d.core.surface import update_state1
 from smoderp2d.core.surface import update_state
 
 from smoderp2d.exceptions import NegativeWaterLevel
 
 import numpy as np
 import numpy.ma as ma
-import scipy as sp
 import scipy.optimize as spopt
 
 
@@ -30,6 +26,7 @@ from smoderp2d.core.surface import compute_h_rill_pre
 # Class manages the one time step operation
 
 class TimeStep:
+    """TODO."""
     
     def __init__(self):
         """Set the class variables to default values."""
@@ -37,8 +34,6 @@ class TimeStep:
         self.infilt_time = 0
         self.max_infilt_capa = 0.000  # [m]
 
-    # @staticmethod
-     # objective function  
     def model(self,
                 h_new,
               dt,
@@ -60,8 +55,8 @@ class TimeStep:
         h_old = h_old.reshape(r,c)
 
         # Calculating infiltration  - function which does not allow negative levels
-        infilt_buf = infiltration.philip_infiltration(soil_type,h_new)/dt #[m/s]
-        infilt = ma.filled(infilt_buf,fill_value=0)
+        infilt_buf = infilt.philip_infiltration(soil_type, h_new) / dt #[m/s]
+        infiltr = ma.filled(infilt_buf,fill_value=0)
         efect_vrst = Globals.get_mat_effect_cont()
         # Calculating surface retention
         sur_ret = ma.filled(surface_retention_impl(h_new,sur_ret_old),fill_value=0) 
@@ -104,7 +99,7 @@ class TimeStep:
         # inflow from neigbouring cells
         res += inflow
         # infiltration
-        res += - infilt
+        res += - infiltr
         # Surface retention
         res += sur_ret/dt
         
@@ -188,14 +183,14 @@ class TimeStep:
                 k = iii[1]
                 s = iii[2]
                 
-                iii[3] = infiltration.philip_implicit(
+                iii[3] = infilt.philip_implicit(
                     k,
                     s,
                     delta_t,
                     fc.total_time + delta_t -  self.infilt_time,
                     NoDataValue)
             
-            infiltration.set_combinatIndex(combinatIndex)
+            infilt.set_combinatIndex(combinatIndex)
              
            
             # Changing matrix to a single float
@@ -218,7 +213,7 @@ class TimeStep:
                                 surface.arr.h_last_state1)
                 return res
             try:
-                solution = sp.optimize.root(model, h_0,
+                solution = spopt.root(model, h_0,
                                                 method='df-sane', options={'fatol':1e-8,'maxiter':max_iter})
                 
                 h_new = solution.x
@@ -229,8 +224,8 @@ class TimeStep:
                 if solution.success == False:
                     delta_t = delta_t/modif_down
                     continue
-            except ZeroDivisionError:
-                raise Error("Error: The nonlinear solver did not converge. Try to change the time step")
+            except ZeroDivisionError as e:
+                raise e("Error: The nonlinear solver did not converge. Try to change the time step")
   
             
             if solution.nit >= max_iter:
@@ -338,7 +333,7 @@ class TimeStep:
         surface.arr.inflow_tm =ma.array(inflows_comp(tot_flow, list_fd),mask=GridGlobals.masks)
         
         # Calculating the infiltration
-        surface.arr.infiltration = infiltration.philip_infiltration(surface.arr.soil_type,
+        surface.arr.infiltration = infilt.philip_infiltration(surface.arr.soil_type,
                                                                     surface.arr.h_total_new) #[m]    
         
         # Updating surface retention
