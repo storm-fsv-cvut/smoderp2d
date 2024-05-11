@@ -518,7 +518,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             if nerrors > 0:
                 iface.messageBar().pushMessage(
                     f'Failed to add {nerrors} historical items (see logs for details)',
-                    level=Qgis.Warning
+                    level=Qgis.Warning, duration=5
             )
 
     def _addCurrentHistoryItem(self):
@@ -542,7 +542,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         if self._addHistoryItem(run) is False:
             iface.messageBar().pushMessage(
                 'Failed to historical item (see logs for details)',
-                level=Qgis.Warning
+                level=Qgis.Warning, duration=5
             )
 
     def _addHistoryItem(self, run):
