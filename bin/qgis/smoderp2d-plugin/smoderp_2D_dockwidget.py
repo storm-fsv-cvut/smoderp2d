@@ -609,7 +609,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 map_files += glob.glob(os.path.join(outdir, f'*.{e}'))
 
             # create layer and add into group
-            for map_path in map_files:
+            for map_path in sorted(map_files):
                 map_name, map_ext = os.path.splitext(os.path.basename(map_path))
                 if map_ext == '.asc':
                     # raster
