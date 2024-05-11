@@ -595,13 +595,12 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
     def importResults(self):
         """Import results into QGIS, group them and show them as layers.
         """
-        def import_group_layers(group, outdir, ext=('asc', 'gml', 'csv'), show=False):
+        def import_group_layers(group, outdir, ext=('asc', 'gml', 'csv')):
             """Import individual group layers.
 
             :param group: QGIS group object
             :param outdir: output directory used during the computation
             :param ext: extension of files to be imported
-            :param show: show the layers after import or don't
             """
             # collect map files
             map_files = []
@@ -652,15 +651,23 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 QgsProject.instance().addMapLayer(layer, False)
                 node = group.addLayer(layer)
                 node.setExpanded(False)
-                node.setItemVisibilityChecked(show is True)
-                show = False
+                node.setItemVisibilityChecked(False)
 
         # show main results
         root = QgsProject.instance().layerTreeRoot()
         group = root.insertGroup(0, self._result_group_name)
 
         outdir = self.main_output.text().strip()
-        import_group_layers(group, outdir, show=True)
+        import_group_layers(group, outdir)
+
+        try:
+            #  set layer visibility
+            layer_id = QgsProject.instance().mapLayersByName('cvsur_m3')[0]
+            node = group.findLayer(layer_id)
+            if node:
+                node.setItemVisibilityChecked(True)
+        except IndexError:
+            pass
 
         # import control results
         ctrl_group = group.addGroup('control')
