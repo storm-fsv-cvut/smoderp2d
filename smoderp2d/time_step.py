@@ -34,6 +34,76 @@ class TimeStep:
         self.infilt_time = 0
         self.max_infilt_capa = 0.000  # [m]
 
+    @staticmethod
+    def do_flow(surface, subsurface, delta_t, flow_control, courant):
+        """TODO.
+
+        :param surface: TODO
+        :param subsurface: TODO
+        :param delta_t: TODO
+        :param flow_control: TODO
+        :param courant: TODO
+        """
+        mat_effect_cont = Globals.get_mat_effect_cont()
+        fc = flow_control
+        sr = Globals.get_sr()
+        itera = Globals.get_itera()
+
+        potRain, fc.tz = rain_f.timestepRainfall(
+            itera, fc.total_time, delta_t, fc.tz, sr
+        )
+
+        surface_state = surface.arr.state
+
+        runoff_return = runoff(surface.arr, delta_t, mat_effect_cont)
+
+        cond_state_flow = surface_state > Globals.streams_flow_inc
+        v_sheet = ma.where(cond_state_flow, 0, runoff_return[0])
+        v_rill = ma.where(cond_state_flow, 0, runoff_return[1])
+        if ma.all(cond_state_flow):
+            subsurface.runoff(
+                delta_t, mat_effect_cont
+            )
+        rill_courant = ma.where(cond_state_flow, 0, runoff_return[2])
+        surface.arr.h_sheet = ma.where(
+            cond_state_flow, surface.arr.h_sheet, runoff_return[3]
+        )
+        surface.arr.h_rill = ma.where(
+            cond_state_flow, surface.arr.h_rill, runoff_return[4]
+        )
+        surface.arr.h_rillPre = ma.where(
+            cond_state_flow, surface.arr.h_rillPre, runoff_return[5]
+        )
+        surface.arr.vol_runoff = ma.where(
+            cond_state_flow, surface.arr.vol_runoff, runoff_return[6]
+        )
+        surface.arr.vol_rest = ma.where(
+            cond_state_flow, surface.arr.vol_rest, runoff_return[7]
+        )
+        surface.arr.v_rill_rest = ma.where(
+            cond_state_flow, surface.arr.v_rill_rest, runoff_return[8]
+        )
+        surface.arr.vol_runoff_rill = ma.where(
+            cond_state_flow, surface.arr.vol_runoff_rill, runoff_return[9]
+        )
+        surface.arr.vel_rill = ma.where(
+            cond_state_flow, surface.arr.vel_rill, runoff_return[10]
+        )
+
+        v = ma.maximum(v_sheet, v_rill)
+        co = 'sheet'
+        courant.CFL(
+            v,
+            delta_t,
+            mat_effect_cont,
+            co,
+            rill_courant
+        )
+        # w1 = surface.arr.get_item([i, j]).vol_runoff_rill
+        # w2 = surface.arr.get_item([i, j]).v_rill_rest
+
+        return potRain
+
     def model(self,
                 h_new,
               dt,
