@@ -48,26 +48,23 @@ from smoderp2d.providers import Logger
 from smoderp2d.exceptions import ProviderError, ComputationAborted
 from bin.base import arguments, sections
 
-from .connect_grass import find_grass_bin
 from .custom_widgets import HistoryWidget
 
 
 class SmoderpTask(QgsTask):
     """Task holding the SMODERP2D run in a parallel thread."""
 
-    def __init__(self, input_params, input_maps, grass_bin_path, *args,
+    def __init__(self, input_params, input_maps, *args,
                  **kwargs):
         """Initialize the task and set its class variables.
 
         :param input_params: TODO
         :param input_maps: TODO
-        :param grass_bin_path: TODO
         """
         super().__init__(*args, **kwargs)
 
         self.input_params = input_params
         self.input_maps = input_maps
-        self.grass_bin_path = grass_bin_path
         self.error = None
         self.finish_msg_level = Qgis.Info
         self.runner = None
@@ -75,11 +72,11 @@ class SmoderpTask(QgsTask):
     def run(self):
         """Run the task in a parallel thread."""
         try:
-            self.runner = QGISRunner(self.setProgress, self.grass_bin_path)
+            self.runner = QGISRunner(self.setProgress)
             self.runner.set_options(self.input_params)
             self.runner.import_data(self.input_maps)
             self.runner.run()
-        except ProviderError as e:
+        except (ProviderError, ImportError) as e:
             self.error = e
             self.finish_msg_level = Qgis.Critical
             return False
@@ -95,7 +92,8 @@ class SmoderpTask(QgsTask):
         :param result: result object containing info on how did the task finish
             (fine, error, aborted...)
         """
-        self.runner.finish()
+        if self.runner:
+            self.runner.finish()
 
         # resets
         Globals.reset()
@@ -207,7 +205,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.setWidget(self.dockWidgetContents)
 
         self._result_group_name = "SMODERP2D"
-        self._grass_bin_path = None
 
     def retranslateUi(self):
         """TODO."""
@@ -433,18 +430,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     def onRunButton(self):
         """Run the processing when the run button was pushed."""
-        if not self._grass_bin_path:
-            # Get GRASS executable
-            try:
-                self._grass_bin_path = find_grass_bin()
-            except ImportError:
-                self._sendMessage(
-                    "ERROR:",
-                    "GRASS GIS not found.",
-                    "CRITICAL"
-                )
-                return
-
         if self._checkInputDataPrep():
             # remove previous results
             root = QgsProject.instance().layerTreeRoot()
@@ -456,7 +441,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             self._getInputParams()
 
             smoderp_task = SmoderpTask(
-                self._input_params, self._input_maps, self._grass_bin_path
+                self._input_params, self._input_maps
             )
 
             # prepare the progress bar
