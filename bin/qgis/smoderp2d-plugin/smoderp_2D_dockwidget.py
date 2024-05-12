@@ -503,7 +503,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             if nerrors > 0:
                 iface.messageBar().pushMessage(
                     f'Failed to add {nerrors} historical items (see logs for details)',
-                    level=Qgis.Warning
+                    level=Qgis.Warning, duration=5
             )
 
     def _addCurrentHistoryItem(self):
@@ -527,7 +527,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         if self._addHistoryItem(run) is False:
             iface.messageBar().pushMessage(
                 'Failed to historical item (see logs for details)',
-                level=Qgis.Warning
+                level=Qgis.Warning, duration=5
             )
 
     def _addHistoryItem(self, run):
@@ -580,13 +580,12 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
     def importResults(self):
         """Import results into QGIS, group them and show them as layers.
         """
-        def import_group_layers(group, outdir, ext=('asc', 'gml', 'csv'), show=False):
+        def import_group_layers(group, outdir, ext=('asc', 'gml', 'csv')):
             """Import individual group layers.
 
             :param group: QGIS group object
             :param outdir: output directory used during the computation
             :param ext: extension of files to be imported
-            :param show: show the layers after import or don't
             """
             # collect map files
             map_files = []
@@ -594,7 +593,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 map_files += glob.glob(os.path.join(outdir, f'*.{e}'))
 
             # create layer and add into group
-            for map_path in map_files:
+            for map_path in sorted(map_files):
                 map_name, map_ext = os.path.splitext(os.path.basename(map_path))
                 if map_ext == '.asc':
                     # raster
@@ -637,15 +636,23 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 QgsProject.instance().addMapLayer(layer, False)
                 node = group.addLayer(layer)
                 node.setExpanded(False)
-                node.setItemVisibilityChecked(show is True)
-                show = False
+                node.setItemVisibilityChecked(False)
 
         # show main results
         root = QgsProject.instance().layerTreeRoot()
         group = root.insertGroup(0, self._result_group_name)
 
         outdir = self.main_output.text().strip()
-        import_group_layers(group, outdir, show=True)
+        import_group_layers(group, outdir)
+
+        try:
+            #  set layer visibility
+            layer_id = QgsProject.instance().mapLayersByName('cvsur_m3')[0]
+            node = group.findLayer(layer_id)
+            if node:
+                node.setItemVisibilityChecked(True)
+        except IndexError:
+            pass
 
         # import control results
         ctrl_group = group.addGroup('control')

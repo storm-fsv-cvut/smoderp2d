@@ -51,4 +51,3 @@ class QGISRunner(GrassGisRunner):
         
         QGisLogHandler.progress_reporter = self.progress_reporter
         return GrassGisProvider(QGisLogHandler)
-    
