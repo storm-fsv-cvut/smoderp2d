@@ -19,10 +19,11 @@ class Popen(subprocess.Popen):
 
 class GrassGisRunner(Runner):
     """Run SMODERP2D in GRASS GIS environment."""
-    def __init__(self, grass_bin_path, create_location=None):
+    def __init__(self, grass_bin_path='/usr/bin/grass', create_location=None):
         """Initialize runner.
 
         :param str grass_bin_path: path to GRASS installation directory
+        :param str create_location: EPSG code to create new location
         """
         self.grass_bin_path = None
         if not os.getenv('GISRC'):
