@@ -333,8 +333,8 @@ class TimeStep:
         # saving the actual rain at current time step
         # save the tz for actual time step
         
-        potRain, flow_control.tz = rain_f.timestepRainfall(
-        itera, flow_control.total_time, delta_t, flow_control.tz, sr
+        potRain, fc.tz = rain_f.timestepRainfall(
+        itera, fc.total_time, delta_t, fc.tz, sr
         )
         # Calculating the actual rain
         actRain, fc.sum_interception, rain_arr.arr.veg = \

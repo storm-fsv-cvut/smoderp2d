@@ -252,31 +252,24 @@ class Runoff(object):
             self.flow_control.save_vars()
             self.flow_control.refresh_iter()
             # Calculate 
-            actRain, self.delta_t = self.time_step.do_next_h_implicit(
-                self.surface,
-                self.subsurface,
-                self.rain_arr,
-                self.cumulative,
-                self.hydrographs,
-                self.flow_control,
-                self.delta_t,
-                self.delta_tmax,
-                self.list_fd,
-                self.courant    
-            )
+            if Globals.computationType == 'explicit':
+                #TODO: Add explicit version
+                pass
+            else:
+                # implicit version
+                actRain, self.delta_t = self.time_step.do_next_h_implicit(
+                    self.surface,
+                    self.subsurface,
+                    self.rain_arr,
+                    self.cumulative,
+                    self.hydrographs,
+                    self.flow_control,
+                    self.delta_t,
+                    self.delta_tmax,
+                    self.list_fd,
+                    self.courant    
+                )
 
-            # print raster results in given time steps
-            self.times_prt.prt(
-                self.flow_control.total_time, self.delta_t, self.surface
-            )
-
-            timeperc = 100 * (self.flow_control.total_time + self.delta_t) / end_time
-            Logger.progress(
-                timeperc,
-                self.delta_t,
-                self.flow_control.iter_,
-                self.flow_control.total_time + self.delta_t
-            )
             if Globals.isStream:
                 # calculate outflow from each reach of the stream network
                 self.surface.stream_reach_outflow(self.delta_t)
@@ -300,27 +293,14 @@ class Runoff(object):
                     True
                 )
 
-            # # write hydrographs of raster cells
-            # self.hydrographs.write_hydrographs_record(
-            #     None,
-            #     None,
-            #     self.flow_control,
-            #     self.courant,
-            #     self.delta_t,
-            #     self.surface,
-            #     self.cumulative,
-            #     actRain
-            # )
+            # print raster results in given time steps
+            self.times_prt.prt(
+                self.flow_control.total_time, self.delta_t, self.surface
+            )
 
+            # set current time results to previous time step - for explicit version (implicit version is done in do_next_h_implicit)
+            # check if rill flow occur
             if Globals.computationType == 'explicit':
-                # print raster results in given time steps
-                self.times_prt.prt(
-                    self.flow_control.total_time, self.delta_t, self.surface
-                )
-
-                # set current time results to previous time step
-                # check if rill flow occur
-
                 # update states
                 self.surface.arr.state(
                     surface.arr.h_total_time,
