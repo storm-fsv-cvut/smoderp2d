@@ -1,16 +1,12 @@
 # @package smoderp2d.time_step methods to perform
 #  time step, and to store intermediate variables
 
-from itertools import cycle
-from uu import Error
-from matplotlib.pylab import norm
 from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.processes.infiltration as infiltration
 import smoderp2d.processes.rill as rill
 from smoderp2d.core.surface import inflows_comp, surface_retention_impl
 from smoderp2d.core.surface import surface_retention_update
-from smoderp2d.core.surface import update_state1
 from smoderp2d.core.surface import update_state
 
 from smoderp2d.exceptions import NegativeWaterLevel
@@ -18,8 +14,6 @@ from smoderp2d.exceptions import NegativeWaterLevel
 import numpy as np
 import numpy.ma as ma
 import scipy as sp
-import scipy.optimize as spopt
-
 
 from smoderp2d.core.surface import sheet_runoff
 from smoderp2d.core.surface import rill_runoff
@@ -230,7 +224,7 @@ class TimeStep:
                     delta_t = delta_t/modif_down
                     continue
             except ZeroDivisionError:
-                raise Error("Error: The nonlinear solver did not converge. Try to change the time step")
+                raise "Error: The nonlinear solver did not converge. Try to change the time step"
   
             
             if solution.nit >= max_iter:
@@ -248,7 +242,7 @@ class TimeStep:
                 
         #input('press...')
         if i == fc.max_iter-1:
-            raise Error("Error: The nonlinear solver did not meet the requirements after repeated decreasing of the time step. Try to change the maximum time step.")        
+            raise "Error: The nonlinear solver did not meet the requirements after repeated decreasing of the time step. Try to change the maximum time step."       
         
         # Checking solution for negative values
         if ma.all(h_new < 0):
