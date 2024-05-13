@@ -1,5 +1,6 @@
 import numpy as np
 import numpy.ma as ma
+from smoderp2d.core.general import Globals
 # from smoderp2d.exceptions import NegativeWaterLevel
 
 # combinatIndex muze byt tady jako globalni
@@ -30,19 +31,21 @@ def philip_infiltration(soil, bil):
             ma.where(infilt_bil_cond, bil, z[3]),
             infiltration
         )
+        
+        if Globals.computationType == 'explicit':
+            bil = ma.where(
+            soil == z[0],
+            ma.where(infilt_bil_cond, 0, bil - z[3]),
+            bil
+        )
+        else:
+            bil = bil
     
-    return infiltration
+    return bil, infiltration
 
-
-def phlilip(k, s, deltaT, totalT, NoDataValue):
+def philip(k, s, deltaT, totalT, NoDataValue):
     if k and s == NoDataValue:
         infiltration = NoDataValue
-    # elif totalT == 0:
-        # infiltration = k*deltaT
-        # toto je chyba, infiltrace se rovna k az po ustaleni.
-        # Na zacatku je teoreticky nekonecno
-    # else:
-        # try:
     else:
         infiltration1 = ma.where(
             totalT == 0,
@@ -55,11 +58,3 @@ def phlilip(k, s, deltaT, totalT, NoDataValue):
 
         # except ValueError:
     return infiltration
-
-def philip_implicit(k, s, deltaT, totalT, NoDataValue):
-    if k and s == NoDataValue:
-        infiltration = NoDataValue
-    else:
-        infiltration = (0.5 * ma.divide(s, ma.sqrt(totalT + deltaT)) + k) * \
-                deltaT
-    return infiltration 
