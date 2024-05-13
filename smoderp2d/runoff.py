@@ -21,9 +21,8 @@ from smoderp2d.core.surface import get_surface
 from smoderp2d.core.subsurface import Subsurface
 from smoderp2d.core.cumulative_max import Cumulative
 
-# from smoderp2d.time_step import TimeStep
-from smoderp2d.courant import Courant
 from smoderp2d.time_step import TimeStep
+from smoderp2d.courant import Courant
 
 from smoderp2d.tools.times_prt import TimesPrt
 from smoderp2d.io_functions import hydrographs as wf
@@ -167,14 +166,14 @@ class Runoff(object):
         # in implicit version - courant condition is not used, used for setting time step 
         self.courant = Courant()
 
-        self.delta_tmax = self.courant.initial_time_step()
+        self.delta_t = self.courant.initial_time_step()
         
-        self.delta_t = self.delta_tmax
+        self.delta_tmax = self.delta_t
 
 
         Logger.info('Corrected time step is {} [s]'.format(self.delta_t))
 
-        # opens files for storing hydrographs 
+        # opens files for storing hydrographs
         if Globals.get_array_points() is not None:
             self.hydrographs = wf.Hydrographs()
             # TODO
@@ -191,6 +190,7 @@ class Runoff(object):
 
         # method for single time step calculation
         self.time_step = TimeStep()
+
         # record values into hydrographs at time zero
         self.hydrographs.write_hydrographs_record(
             None,
@@ -205,7 +205,6 @@ class Runoff(object):
             ),
             Globals.isStream
         )
-        
 
         Logger.info('-' * 80)
 
@@ -244,10 +243,9 @@ class Runoff(object):
 
         self.flow_control.save_vars()
 
+        # main loop: until the end time
         # var for progress bar
         timeperc_last = 0
-        # main loop: until the end time
-
 
         while self.flow_control.compare_time(end_time):
 
@@ -265,8 +263,7 @@ class Runoff(object):
                 self.delta_tmax,
                 self.list_fd    
             )
-            
-            
+
             # print raster results in given time steps
             self.times_prt.prt(
                 self.flow_control.total_time, self.delta_t, self.surface
@@ -314,6 +311,25 @@ class Runoff(object):
                 actRain
             )
 
+            if Globals.computationType == 'explicit':
+                # print raster results in given time steps
+                self.times_prt.prt(
+                    self.flow_control.total_time, self.delta_t, self.surface
+                )
+
+                # set current time results to previous time step
+                # check if rill flow occur
+
+                # update states
+                self.surface.arr.state(
+                    surface.arr.h_total_time,
+                    surface.arr.h_crit,
+                    surface.arr.h_total_pre,
+                    surface.arr.state,
+                    surface.arr.h_last_state1
+                )
+
+            self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / end_time
             if timeperc > 99.9 or timeperc - timeperc_last > 5:
@@ -328,16 +344,6 @@ class Runoff(object):
 
             # proceed to next time
             self.flow_control.update_total_time(self.delta_t)
-            
-            # h_new = self.surface.arr.h_total_new
-            # h_old = self.surface.arr.h_total_pre
-            # if ma.all(abs(h_new - h_old) < 1e-5):
-            #     if ma.all(self.delta_t*2 < self.delta_tmax):
-            #         self.delta_t = self.delta_t*2
-            #     else:
-            #         self.delta_t = self.delta_tmax
-            self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
-                
 
     def save_output(self):
         """TODO."""

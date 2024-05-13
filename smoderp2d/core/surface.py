@@ -223,6 +223,71 @@ def get_surface():
     return Surface
 
 
+def __runoff(sur, dt, effect_vrst):
+    """Calculate the sheet and rill flow.
+
+    :param dt: TODO
+    :param effect_vrst: TODO
+
+    :return: TODO
+    """
+    h_total_pre = sur.h_total_pre
+    h_crit = sur.h_crit
+    state = sur.state  # da se tady podivat v jakym jsem casovym kroku a jak
+    # se a
+
+    # sur.arr.state               = update_state1(h_total_pre,h_crit,state)
+    h_sheet, h_rill, h_rillPre = compute_h_hrill(
+        h_total_pre, h_crit, state, sur.h_rillPre)
+
+    q_sheet, vol_runoff, vol_rest = sheet_runoff(dt, sur.a, sur.b, h_sheet)
+
+    v_sheet = ma.where(h_sheet > 0, q_sheet / h_sheet, 0)
+
+    # rill runoff
+    rill_runoff_results = rill_runoff(
+        dt, effect_vrst, h_rill, sur.rillWidth, sur.v_rill_rest,
+        sur.vol_runoff_rill
+    )
+    v_rill = ma.where(sur.state > 0, rill_runoff_results[0], 0)
+    v_rill_rest = ma.where(sur.state > 0, rill_runoff_results[1],
+                               sur.v_rill_rest)
+    vol_runoff_rill = ma.where(sur.state > 0, rill_runoff_results[2],
+                                   sur.vol_runoff_rill)
+    rill_courant = ma.where(sur.state > 0, rill_runoff_results[3], 0)
+    sur.vol_to_rill = ma.where(sur.state > 0, rill_runoff_results[4],
+                               sur.vol_to_rill)
+    sur.rillWidth = ma.where(sur.state > 0, rill_runoff_results[5],
+                             sur.rillWidth)
+
+    return (v_sheet, v_rill, rill_courant, h_sheet, h_rill, h_rillPre,
+            vol_runoff, vol_rest, v_rill_rest, vol_runoff_rill, v_rill)
+
+
+def __runoff_zero_comp_type(sur, dt, effect_vrst):
+    """TODO.
+
+    :param sur: TOD
+    :param dt: TODO
+    :param effect_vrst: TODO
+
+    :return: TODO
+    """
+    # sur.arr.state               = update_state1(h_total_pre,h_crit,state)
+    sur.h_sheet = sur.h_total_pre
+
+    q_sheet, vol_runoff, vol_rest = sheet_runoff(dt, sur.a, sur.b, sur.h_sheet)
+
+    v_sheet = ma.where(sur.h_sheet > 0, q_sheet / sur.h_sheet, 0)
+
+    v_rill = 0
+
+    return (
+        v_sheet, v_rill, 0.0, sur.h_sheet, sur.h_rill, sur.h_rillPre,
+        vol_runoff, vol_rest, sur.v_rill_rest, sur.vol_runoff_rill, v_rill
+    )
+
+
 def update_state1(ht_1, hcrit, state):
     """TODO.
 
@@ -232,52 +297,48 @@ def update_state1(ht_1, hcrit, state):
 
     :return: TODO
     """
-    state = ma.where(ht_1 > hcrit,ma.where(state == 0, 1, state), state)
-    # if ht_1 > hcrit:
-    #     if state == 0:
-    #         return 1
+    if ht_1 > hcrit:
+        if state == 0:
+            return 1
     return state
 
-def update_state(h_tot_new,h_crit,h_tot_pre,state,h_last_state1):
+
+def update_state(h_total_new, h_crit, h_total_pre, state, h_last_state1):
     # update state == 0
     state = ma.where(
         ma.logical_and(
-            state == 0, h_tot_new> h_crit
+            state == 0, h_total_new > h_crit
         ),
         1,
         state
     )
-    # # update state == 1
-    state_1_cond = ma.logical_and(
-        state == 1,
-        h_tot_new < h_tot_pre
-    )
-    state = ma.where(
-        state_1_cond,
-        2,
-        state
-    )
-    h_last_state1 = ma.where(
-                state_1_cond,
-                h_tot_pre,
-                h_last_state1
-            )      
+
+    # update state == 1
+    state_1_cond = ma.logical_and(state == 1, h_total_new < h_total_pre)
+
+    state = ma.where(state_1_cond, 2, state)
+    h_last_state1 = ma.where(state_1_cond, h_total_pre, h_last_state1)
+
     # update state == 2
     state = ma.where(
-        ma.logical_and(
-            state == 2,
-            h_tot_new> h_last_state1,
-        ),
-        1,
-        state
-    )   
+        ma.logical_and(state == 2, h_total_new > h_last_state1), 1, state
+    )
+
     return state             
 
 
 
 # New version for implicit scheme
 def compute_h_hrill(h_total, h_crit, state,h_rill_pre):
-    
+    """TODO.
+
+    :param h_total_pre: TODO
+    :param h_crit: TODO
+    :param state: TODO (not used)
+    :param h_rill_pre: TODO (not used)
+
+    :return: TODO
+    """
     h_rill = ma.where(
         state == 0,
         0,
@@ -310,12 +371,19 @@ def compute_h_rill_pre( h_rill_pre,h_rill,state): #h_rill_pre is depth of rill
             h_rill,
             h_rill_pre
         )
-            )
+    )
     return h_rill_pre
 
 
 def sheet_runoff(a, b, h_sheet):
-    
+    """TODO.
+
+    :param a: TODO
+    :param b: TODO
+    :param h_sheet: TODO
+
+    :return: TODO
+    """
     q_sheet = surfacefce.shallowSurfaceKinematic(a, b, h_sheet)
 
     vol_runoff = q_sheet * GridGlobals.get_size()[0]
@@ -333,8 +401,9 @@ def rill_runoff(dt,   h_rill, effect_vrst, rillWidth ):
     :param rillWidth: TODO
     :param v_rill_rest: TODO
     :param vol_runoff_rill: TODO
-    """
 
+    :return: TODO
+    """
     nrill = Globals.get_mat_nrill()
     slope = Globals.get_mat_slope()
 
@@ -392,3 +461,8 @@ def inflows_comp(tot_flow, list_fd):
     
     return inflow
 
+
+if Globals.isRill:
+    runoff = __runoff
+else:
+    runoff = __runoff_zero_comp_type
