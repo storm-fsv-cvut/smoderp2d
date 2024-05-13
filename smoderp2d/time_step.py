@@ -181,8 +181,8 @@ class TimeStep:
     # courant, total_time, delta_t, combinatIndex, NoDataValue,
     # sum_interception, mat_effect_cont, iter_
 
-    def do_next_h(self, surface, subsurface, rain_arr, cumulative, 
-                  hydrographs, flow_control,   delta_t,  delta_tmax,list_fd):
+    def do_next_h_implicit(self, surface, subsurface, rain_arr, cumulative, 
+                  hydrographs, flow_control,   delta_t,  delta_tmax,list_fd,courant):
         """TODO.
 
         :param surface: TODO
@@ -212,7 +212,7 @@ class TimeStep:
         
         # Until the max_infilt_capa
         potRain, tz_temp = rain_f.timestepRainfall(
-            itera, flow_control.total_time, delta_t, flow_control.tz, sr
+            itera, fc.total_time, delta_t, fc.tz, sr
             )
         self.infilt_capa += potRain
         if ma.all(self.infilt_capa < self.max_infilt_capa):
@@ -237,8 +237,6 @@ class TimeStep:
         b = ma.array(Globals.get_mat_b(),mask=GridGlobals.masks)
         # Setting the initial guess for the solver
         h_0 = h_old 
-
-        dh_max = 1e-5  # [m]
         
         # Setting the maximum number of iterations for the solver
         max_iter = 20
@@ -276,11 +274,9 @@ class TimeStep:
             infilt.set_combinatIndex(combinatIndex)
              
            
-            # Changing matrix to a single float
-            dt = delta_t
-            def model(h_new):
+            def model_args(h_new):
                 res = self.model(h_new,
-                                dt,
+                                delta_t,
                                 h_old,
                                 list_fd,
                                 r,c,
@@ -296,7 +292,7 @@ class TimeStep:
                                 surface.arr.h_last_state1)
                 return res
             try:
-                solution = spopt.root(model, h_0,
+                solution = spopt.root(model_args, h_0,
                                                 method='df-sane', options={'fatol':1e-8,'maxiter':max_iter})
                 
                 h_new = solution.x
@@ -390,14 +386,14 @@ class TimeStep:
             RILL_RATIO = 0.7
             efect_vrst = Globals.get_mat_effect_cont()
 
-            surface.arr.vol_runoff_rill = ma.filled(rill_runoff(dt, 
+            surface.arr.vol_runoff_rill = ma.filled(rill_runoff(delta_t, 
                                                     surface.arr.h_rill,  efect_vrst, 
                                                     surface.arr.rillWidth),
-                                                  0)*dt # [m]
+                                                  0)*delta_t # [m]
             
             surface.arr.vol_to_rill = ma.where(surface.arr.state > 0,vol_to_rill,
                                surface.arr.vol_to_rill)
-            surface.arr.vel_rill = ma.filled(surface.arr.vol_runoff_rill/surface.arr.rillWidth/surface.arr.h_rill/dt,
+            surface.arr.vel_rill = ma.filled(surface.arr.vol_runoff_rill/surface.arr.rillWidth/surface.arr.h_rill/delta_t,
                                              0.0)
             # Calculating the rill width
             rill_h, rill_b = rill.update_hb(
@@ -410,7 +406,7 @@ class TimeStep:
             surface.arr.h_sheet = surface.arr.h_total_new
         
         #calculating sheet runoff
-        surface.arr.vol_runoff = ma.filled(sheet_runoff(aa, b, surface.arr.h_sheet),fill_value=0.0)*dt #[m]
+        surface.arr.vol_runoff = ma.filled(sheet_runoff(aa, b, surface.arr.h_sheet),fill_value=0.0)*delta_t #[m]
     
         # Saving the inflows
         tot_flow = (surface.arr.vol_runoff + surface.arr.vol_runoff_rill)
@@ -430,8 +426,8 @@ class TimeStep:
             surface.arr,
             subsurface.arr,
             delta_t)
-        if Globals.computationType == 'explicit':
-            hydrographs.write_hydrographs_record(
+        
+        hydrographs.write_hydrographs_record(
                 None,
                 None,
                 flow_control,

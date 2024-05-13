@@ -252,7 +252,7 @@ class Runoff(object):
             self.flow_control.save_vars()
             self.flow_control.refresh_iter()
             # Calculate 
-            actRain, self.delta_t = self.time_step.do_next_h(
+            actRain, self.delta_t = self.time_step.do_next_h_implicit(
                 self.surface,
                 self.subsurface,
                 self.rain_arr,
@@ -261,7 +261,8 @@ class Runoff(object):
                 self.flow_control,
                 self.delta_t,
                 self.delta_tmax,
-                self.list_fd    
+                self.list_fd,
+                self.courant    
             )
 
             # print raster results in given time steps
@@ -299,17 +300,17 @@ class Runoff(object):
                     True
                 )
 
-            # write hydrographs of raster cells
-            self.hydrographs.write_hydrographs_record(
-                None,
-                None,
-                self.flow_control,
-                self.courant,
-                self.delta_t,
-                self.surface,
-                self.cumulative,
-                actRain
-            )
+            # # write hydrographs of raster cells
+            # self.hydrographs.write_hydrographs_record(
+            #     None,
+            #     None,
+            #     self.flow_control,
+            #     self.courant,
+            #     self.delta_t,
+            #     self.surface,
+            #     self.cumulative,
+            #     actRain
+            # )
 
             if Globals.computationType == 'explicit':
                 # print raster results in given time steps
