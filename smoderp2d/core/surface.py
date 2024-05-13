@@ -359,10 +359,6 @@ def compute_h_hrill(h_total, h_crit, state,h_rill_pre):
         )
     )
     
-    return h_sheet, h_rill
-
-
-def compute_h_rill_pre( h_rill_pre,h_rill,state): #h_rill_pre is depth of rill
     h_rill_pre = ma.where(
         state == 0,
         0,
@@ -372,8 +368,8 @@ def compute_h_rill_pre( h_rill_pre,h_rill,state): #h_rill_pre is depth of rill
             h_rill_pre
         )
     )
-    return h_rill_pre
 
+    return h_sheet, h_rill, h_rill_pre
 
 def sheet_runoff(a, b, h_sheet):
     """TODO.

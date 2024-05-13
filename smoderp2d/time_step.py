@@ -20,7 +20,7 @@ import scipy.optimize as spopt
 from smoderp2d.core.surface import sheet_runoff
 from smoderp2d.core.surface import rill_runoff
 from smoderp2d.core.surface import compute_h_hrill
-from smoderp2d.core.surface import compute_h_rill_pre
+
 
 
 # Class manages the one time step operation
@@ -133,7 +133,7 @@ class TimeStep:
         # updating rill surface state
         state = update_state(h_new,h_crit,h_old,state, h_last_state1)
         if Globals.isRill and ma.any(state != 0):
-            h_sheet, h_rill = compute_h_hrill(h_new,h_crit,state,h_rillPre) 
+            h_sheet, h_rill, _h_rill_pre = compute_h_hrill(h_new,h_crit,state,h_rillPre) 
         else:
             h_sheet = h_new
             
@@ -321,15 +321,15 @@ class TimeStep:
                         delta_t = delta_tmax
                 break
 
-                
-        #input('press...')
         if i == fc.max_iter-1:
             raise "Error: The nonlinear solver did not meet the requirements after repeated decreasing of the time step. Try to change the maximum time step."       
         
         # Checking solution for negative values
         if ma.all(h_new < 0):
             raise NegativeWaterLevel()   
-        
+        #---------------------------------------------------------------------
+        # POSTPROCESSING
+        #---------------------------------------------------------------------
         # saving the actual rain at current time step
         # save the tz for actual time step
         
@@ -367,19 +367,15 @@ class TimeStep:
         
             # Saving results to surface structure
             # Saving the new rill water level
-            h_sheet, h_rill = compute_h_hrill(surface.arr.h_total_new, surface.arr.h_crit,
+            h_sheet, h_rill, h_rill_pre = compute_h_hrill(surface.arr.h_total_new, surface.arr.h_crit,
                                                         surface.arr.state,
                                                         surface.arr.h_rillPre)
             
             surface.arr.h_rill = ma.array(h_rill,mask=GridGlobals.masks)
             
             surface.arr.h_sheet = ma.array(h_sheet,mask=GridGlobals.masks) 
-            # Updating the information about rill depth
-            surface.arr.h_rillPre = compute_h_rill_pre(surface.arr.h_rillPre,h_rill,
-                                                       surface.arr.state)
             
-
-                
+            surface.arr.h_rillPre = ma.array(h_rill_pre,mask=GridGlobals.masks)
             
             # calcualting rill runoff
             vol_to_rill = h_rill * GridGlobals.get_pixel_area()
