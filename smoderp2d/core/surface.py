@@ -422,9 +422,7 @@ def rill_runoff(dt,   h_rill, effect_vrst, rillWidth ):
     return vol_runoff_rill
 
 
-def surface_retention_impl(h_sur, reten_old):
-    reten = reten_old
-    # print(reten.max(), reten.min())
+def surface_retention_impl(h_sur, reten):
     
     h_ret = ma.where(reten<0, 
                      ma.where(h_sur+reten > 0, reten, 
