@@ -371,9 +371,10 @@ def compute_h_hrill(h_total, h_crit, state,h_rill_pre):
 
     return h_sheet, h_rill, h_rill_pre
 
-def sheet_runoff(a, b, h_sheet):
+def sheet_runoff(dt, a, b, h_sheet):
     """TODO.
 
+    :param dt: TODO
     :param a: TODO
     :param b: TODO
     :param h_sheet: TODO
@@ -382,11 +383,12 @@ def sheet_runoff(a, b, h_sheet):
     """
     q_sheet = surfacefce.shallowSurfaceKinematic(a, b, h_sheet)
 
-    vol_runoff = q_sheet * GridGlobals.get_size()[0]
+    vol_runoff = q_sheet * dt * GridGlobals.get_size()[0]
+    vol_rest = h_sheet * GridGlobals.get_pixel_area() - vol_runoff
     
     vol_runoff = np.nan_to_num(vol_runoff, 0.0)
     
-    return vol_runoff
+    return q_sheet, vol_runoff, vol_rest
 
 def rill_runoff(dt,   h_rill, effect_vrst, rillWidth ):
     """TODO.

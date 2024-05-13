@@ -138,8 +138,8 @@ class TimeStep:
             h_sheet = h_new
             
         #calculating sheet runoff from all cells
-        sheet_flow  = ma.filled(
-            sheet_runoff(a,b,h_sheet),fill_value=0.0)/pixel_area
+        _q_sheet, vol_runoff, _volrest = sheet_runoff(dt, a, b, h_sheet) #[m^3]
+        sheet_flow  = ma.filled(vol_runoff,fill_value=0.0)/pixel_area/dt # [m/s]
         tot_flow    = sheet_flow 
         #calculating rill runoff from all cells
         
@@ -402,7 +402,9 @@ class TimeStep:
             surface.arr.h_sheet = surface.arr.h_total_new
         
         #calculating sheet runoff
-        surface.arr.vol_runoff = ma.filled(sheet_runoff(aa, b, surface.arr.h_sheet),fill_value=0.0)*delta_t #[m]
+        _q_sheet, surface.arr.vol_runoff, surface.arr.vol_rest = ma.filled(
+            sheet_runoff(delta_t, aa, b, surface.arr.h_sheet),fill_value=0.0) 
+        
     
         # Saving the inflows
         tot_flow = (surface.arr.vol_runoff + surface.arr.vol_runoff_rill)
