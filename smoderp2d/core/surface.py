@@ -439,16 +439,29 @@ def rill_runoff(dt,   h_rill, effect_vrst, rillWidth ):
         
     return v_rill, v_rill_rest, vol_runoff_rill, courant, vol_to_rill, b
 
+def surface_retention(bil, sur):
+    """TODO.
 
-def surface_retention_impl(h_sur, reten):
-    
-    h_ret = ma.where(reten<0, 
-                     ma.where(h_sur+reten > 0, reten, 
-                     -h_sur),
+    :param bil: TODO
+    :param sur: TODO
+    """
+    reten = sur.sur_ret
+    if Globals.computationType == 'explicit':
+        bil_new = ma.where(
+            reten < 0,
+            ma.where(bil + reten > 0, bil + reten, 0),
+            bil
+        )
+        surface_retention_update(bil, sur)
+    else:
+        # For implict version bil_new is surface retention contriubution 
+        # to the bilance   
+        bil_new = ma.where(reten<0, 
+                     ma.where(bil+reten > 0, reten, 
+                     -bil),
                      0
-                     )
-    
-    return h_ret
+                     ) 
+    return bil_new
 
 def surface_retention_update(h_sur, sur):
     reten = sur.sur_ret

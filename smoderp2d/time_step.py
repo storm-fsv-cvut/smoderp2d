@@ -6,7 +6,7 @@ from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.processes.infiltration as infilt
 import smoderp2d.processes.rill as rill
-from smoderp2d.core.surface import inflows_comp, surface_retention_impl
+from smoderp2d.core.surface import inflows_comp
 from smoderp2d.core.surface import surface_retention_update
 from smoderp2d.core.surface import update_state
 
@@ -20,6 +20,7 @@ import scipy.optimize as spopt
 from smoderp2d.core.surface import sheet_runoff
 from smoderp2d.core.surface import rill_runoff
 from smoderp2d.core.surface import compute_h_hrill
+from smoderp2d.core.surface import surface_retention
 
 
 
@@ -114,7 +115,7 @@ class TimeStep:
               act_rain,
               soil_type,
               pixel_area,
-              sur_ret_old,
+              surface,
               h_crit,
               state,
               rillWidth,
@@ -129,7 +130,7 @@ class TimeStep:
         infiltr = ma.filled(infilt_buf,fill_value=0) / dt #[m/s]
         efect_vrst = Globals.get_mat_effect_cont()
         # Calculating surface retention
-        sur_ret = ma.filled(surface_retention_impl(h_new,sur_ret_old),fill_value=0) 
+        sur_ret = ma.filled(surface_retention(h_new,surface),fill_value=0) 
         # updating rill surface state
         state = update_state(h_new,h_crit,h_old,state, h_last_state1)
         if Globals.isRill and ma.any(state != 0):
@@ -285,7 +286,7 @@ class TimeStep:
                                 act_rain,
                                 surface.arr.soil_type,
                                 pixel_area,
-                                surface.arr.sur_ret,
+                                surface.arr,
                                 surface.arr.h_crit,
                                 surface.arr.state,
                                 surface.arr.rillWidth,
