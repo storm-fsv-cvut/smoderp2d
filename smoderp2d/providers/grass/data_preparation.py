@@ -193,7 +193,7 @@ class PrepareData(PrepareDataGISBase):
         dem_slope = self.storage.output_filepath('dem_slope')
         dem_aspect = self.storage.output_filepath('dem_aspect')
         self._run_grass_module(
-            'r.slope.aspect', elevation=dem_filled, format='percent',
+            'r.slope.aspect', elevation=dem, format='percent',
             slope=dem_slope, aspect=dem_aspect
         )
 
