@@ -245,18 +245,17 @@ class Runoff(object):
 
         Selected values are stored in at the end of each loop.
         """
-        # creates list of flow direction vectors (r*c vectors of length 8 coposed of 1 and 0) 
-        for i in range(self.r):
-            for j in range(self.c):
-                self.list_fd[i][j] = D8.inflow_dir(Globals.get_mat_fd(),i,j)
-              
+        if Globals.computationType == 'implicit':
+            # creates list of flow direction vectors (r*c vectors of length 8 coposed of 1 and 0) 
+            for i in range(self.r):
+                for j in range(self.c):
+                    self.list_fd[i][j] = D8.inflow_dir(Globals.get_mat_fd(),i,j)
+            self.flow_control.save_vars()
 
         # saves time before the main loop
         Logger.info('Start of computing...')
         Logger.start_time = time.time()
         end_time = Globals.end_time
-
-        self.flow_control.save_vars()
 
         # main loop: until the end time
         # var for progress bar
@@ -268,8 +267,88 @@ class Runoff(object):
             self.flow_control.refresh_iter()
             # Calculate 
             if Globals.computationType == 'explicit':
-                #TODO: Add explicit version
-                pass
+                # iteration loop
+                while self.flow_control.max_iter_reached():
+
+                    self.flow_control.update_iter()
+                    self.flow_control.restore_vars()
+
+                    # reset of the courant condition
+                    self.courant.reset()
+
+                    # time step size
+                    potRain = self.time_step.do_flow(
+                        self.surface,
+                        self.subsurface,
+                        self.delta_t,
+                        self.flow_control,
+                        self.courant
+                    )
+
+                    # stores current time step
+                    delta_t_tmp = self.delta_t
+
+                    # update time step size if necessary (based on the courant
+                    # condition)
+                    self.delta_t = self.courant.courant(self.delta_t)
+
+                    # if current time plus timestep is in next minute
+                    # of computation the dt is reduced so the next
+                    # computed time is exactly at the top of each minute
+                    oldtime = self.flow_control.total_time
+                    newtime_minute_floor = (self.flow_control.total_time + self.delta_t) // 60
+                    if newtime_minute_floor > oldtime // 60:
+                        self.delta_t = newtime_minute_floor * 60. - oldtime
+
+                    # courant conditions is satisfied (time step did
+                    # change) the iteration loop breaks
+                    if delta_t_tmp == self.delta_t:
+                        break
+
+                # Calculate actual rainfall and adds up interception todo:
+                # AP - actual is not storred in hydrographs
+                actRain = self.time_step.do_next_h(
+                    self.surface,
+                    self.subsurface,
+                    self.rain_arr,
+                    self.cumulative,
+                    self.hydrographs,
+                    self.flow_control,
+                    self.courant,
+                    potRain,
+                    self.delta_t
+                )
+
+                # if the iteration exceed the maximal amount of iteration
+                # last results are stored in hydrographs
+                # and error is raised
+                if not self.flow_control.max_iter_reached():
+                    self.hydrographs.write_hydrographs_record(
+                        0,
+                        0,
+                        self.flow_control,
+                        self.courant,
+                        self.delta_t,
+                        self.surface,
+                        self.cumulative,
+                        actRain
+                    )
+                    # TODO
+                    # post_proc.do(
+                    # self.cumulative, Globals.mat_slope, Gl, surface.arr)
+                    raise MaxIterationExceeded(
+                        self.flow_control.max_iter,
+                        self.flow_control.total_time
+                    )
+
+                # adjusts the last time step size
+                if end_time - self.flow_control.total_time < self.delta_t and \
+                        end_time - self.flow_control.total_time > 0:
+                    self.delta_t = end_time - self.flow_control.total_time
+
+                # if end time reached the main loop breaks
+                if self.flow_control.total_time == end_time:
+                    break
             else:
                 # implicit version
                 actRain, self.delta_t = self.time_step.do_next_h_implicit(
@@ -307,6 +386,10 @@ class Runoff(object):
                     actRain,
                     True
                 )
+
+            if Globals.computationType == 'explicit':
+                # set current times to previous time step
+                self.subsurface.curr_to_pre()
 
             # print raster results in given time steps
             self.times_prt.prt(
