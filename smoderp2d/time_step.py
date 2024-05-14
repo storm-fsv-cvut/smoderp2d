@@ -2,6 +2,7 @@
 #  time step, and to store intermediate variables
 
 
+from textwrap import fill
 from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.processes.infiltration as infilt
@@ -389,11 +390,11 @@ class TimeStep:
             surface.arr.vol_runoff_rill = vol_runoff_rill # [m]
             
             surface.arr.vol_to_rill = vol_to_rill
-            surface.arr.vel_rill = v_rill
+            surface.arr.vel_rill = ma.filled(v_rill, fill_value=0.0)
             surface.arr.rillWidth = ma.array(ma.where(surface.arr.state > 0, rill_b,
                                             surface.arr.rillWidth),
                                             mask=GridGlobals.masks) #[m]
-            surface.arr.v_rill_rest = v_rill_rest
+            surface.arr.v_rill_rest = ma.filled(v_rill_rest,fill_value=0.0)
             
         else: 
             surface.arr.h_sheet = surface.arr.h_total_new
