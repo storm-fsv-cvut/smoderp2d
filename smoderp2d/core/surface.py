@@ -327,10 +327,10 @@ def update_state(h_total_new, h_crit, h_total_pre, state, h_last_state1):
     return state             
 
 
-def compute_h_hrill(h_total_pre, h_crit, state,h_rill_pre):
+def compute_h_hrill(h_total_pre, h_crit, state, h_rill_pre):
     """TODO.
 
-    :param h_total_pre: TODO
+    :param h_total_pre: TODO (more like h_total in the implicit solution)
     :param h_crit: TODO
     :param state: TODO (not used)
     :param h_rill_pre: TODO (not used)
