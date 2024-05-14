@@ -145,8 +145,9 @@ class TimeStep:
         
         if  Globals.isRill and ma.any(state != 0):
             # # calcualting rill runoff
-            rill_flow = ma.filled(rill_runoff(dt, h_rill,efect_vrst, rillWidth 
-                                            ),fill_value=0.0)/pixel_area # [m/s]
+            _v_rill, _v_rill_rest, vol_runoff_rill, _courant, _vol_to_rill, _b = rill_runoff(
+                dt, h_rill,efect_vrst, rillWidth)
+            rill_flow = ma.filled(vol_runoff_rill,fill_value=0.0)/pixel_area/dt # [m/s]
 
             tot_flow += rill_flow
             
@@ -378,25 +379,20 @@ class TimeStep:
             surface.arr.h_rillPre = ma.array(h_rill_pre,mask=GridGlobals.masks)
             
             # calcualting rill runoff
-            vol_to_rill = h_rill * GridGlobals.get_pixel_area()
-            RILL_RATIO = 0.7
+            # vol_to_rill = h_rill * GridGlobals.get_pixel_area()
             efect_vrst = Globals.get_mat_effect_cont()
-
-            surface.arr.vol_runoff_rill = ma.filled(rill_runoff(delta_t, 
-                                                    surface.arr.h_rill,  efect_vrst, 
-                                                    surface.arr.rillWidth),
-                                                  0)*delta_t # [m]
             
-            surface.arr.vol_to_rill = ma.where(surface.arr.state > 0,vol_to_rill,
-                               surface.arr.vol_to_rill)
-            surface.arr.vel_rill = ma.filled(surface.arr.vol_runoff_rill/surface.arr.rillWidth/surface.arr.h_rill/delta_t,
-                                             0.0)
-            # Calculating the rill width
-            rill_h, rill_b = rill.update_hb(
-            vol_to_rill, RILL_RATIO, efect_vrst, surface.arr.rillWidth)
+            v_rill, v_rill_rest, vol_runoff_rill, _courant, vol_to_rill, rill_b = rill_runoff(
+                delta_t, h_rill,efect_vrst, surface.arr.rillWidth)
+
+            surface.arr.vol_runoff_rill = vol_runoff_rill # [m]
+            
+            surface.arr.vol_to_rill = vol_to_rill
+            surface.arr.vel_rill = v_rill
             surface.arr.rillWidth = ma.array(ma.where(surface.arr.state > 0, rill_b,
                                             surface.arr.rillWidth),
                                             mask=GridGlobals.masks) #[m]
+            surface.arr.v_rill_rest = v_rill_rest
             
         else: 
             surface.arr.h_sheet = surface.arr.h_total_new

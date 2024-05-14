@@ -383,7 +383,7 @@ def sheet_runoff(dt, a, b, h_sheet):
     vol_runoff = q_sheet * dt * GridGlobals.get_size()[0]
     vol_rest = h_sheet * GridGlobals.get_pixel_area() - vol_runoff
 
-    if Globals.computation_type == 'implicit':
+    if Globals.computationType == 'implicit':
         vol_runoff = np.nan_to_num(vol_runoff, 0.0)
     
     return q_sheet, vol_runoff, vol_rest
@@ -412,10 +412,32 @@ def rill_runoff(dt,   h_rill, effect_vrst, rillWidth ):
     v_rill = ma.power(r_rill, (2.0 / 3.0)) * 1. / nrill * ma.power(slope, 0.5)
 
     q_rill = v_rill * h * b
+    
+    vol_rill = q_rill * dt
 
-    vol_runoff_rill = ma.filled(q_rill,0)
+    courant = (v_rill * dt) / effect_vrst
+    
+    
+    if Globals.computationType == 'explicit':
+        # celerita
+        # courant = (1 + s*b/(3*(b+2*h))) * q_rill/(b*h)
+        v_rill_rest = ma.where(
+            courant <= courantMax,
+            ma.where(vol_rill > vol_to_rill, 0, vol_to_rill - vol_rill),
+            v_rill_rest
+        )
         
-    return vol_runoff_rill
+        vol_runoff_rill = ma.where(
+            courant <= courantMax,
+            ma.where(vol_rill > vol_to_rill, vol_to_rill, vol_rill),
+            vol_runoff_rill
+        )
+    else:
+        v_rill_rest = vol_to_rill - vol_rill
+        
+        vol_runoff_rill = ma.filled(vol_rill,0)    
+        
+    return v_rill, v_rill_rest, vol_runoff_rill, courant, vol_to_rill, b
 
 
 def surface_retention_impl(h_sur, reten):
