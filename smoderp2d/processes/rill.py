@@ -1,5 +1,6 @@
 import numpy.ma as ma
 
+from smoderp2d.core.general import Globals
 from smoderp2d.exceptions import SmoderpError
 from smoderp2d.providers import Logger
 
@@ -8,9 +9,15 @@ courantMax = 1.0
 
 def update_hb(loc_V_to_rill, rillRatio, l, b):
     V = loc_V_to_rill
+    if Globals.computationType == 'explicit':
+        if ma.any(V < 0):
+            raise SmoderpError('V is smaller than 0')
+        cond = V > 0
+    else:
+        cond = V >= 0
     newb = ma.sqrt(V / (rillRatio * l))
     b = ma.where(
-        V >= 0,
+        cond,
         ma.maximum(b, newb),
         b
     )
