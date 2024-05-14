@@ -26,30 +26,27 @@ def philip_infiltration(soil, bil):
 
         infilt_bil_cond = z[3] > bil
 
-        
-        
         if Globals.computationType == 'explicit':
             infiltration = ma.where(
-            soil == z[0],
-            ma.where(infilt_bil_cond, bil, z[3]),
-            infiltration
-        )
+                soil == z[0],
+                ma.where(infilt_bil_cond, bil, z[3]),
+                infiltration
+            )
             
             bil = ma.where(
-            soil == z[0],
-            ma.where(infilt_bil_cond, 0, bil - z[3]),
-            bil
-        )
+                soil == z[0],
+                ma.where(infilt_bil_cond, 0, bil - z[3]),
+                bil
+            )
         else:
             infiltration = ma.where(
-            soil == z[0],
-            ma.where(infilt_bil_cond, bil, z[3]),
-            infiltration
-        )
-            
-            bil = bil
-    
+                soil == z[0],
+                ma.where(infilt_bil_cond, bil, z[3]),
+                infiltration
+            )
+
     return bil, infiltration
+
 
 def philip(k, s, deltaT, totalT, NoDataValue):
     if k and s == NoDataValue:
