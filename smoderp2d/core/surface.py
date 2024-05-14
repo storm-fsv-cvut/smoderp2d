@@ -382,8 +382,9 @@ def sheet_runoff(dt, a, b, h_sheet):
 
     vol_runoff = q_sheet * dt * GridGlobals.get_size()[0]
     vol_rest = h_sheet * GridGlobals.get_pixel_area() - vol_runoff
-    
-    vol_runoff = np.nan_to_num(vol_runoff, 0.0)
+
+    if Globals.computation_type == 'implicit':
+        vol_runoff = np.nan_to_num(vol_runoff, 0.0)
     
     return q_sheet, vol_runoff, vol_rest
 
