@@ -327,9 +327,7 @@ def update_state(h_total_new, h_crit, h_total_pre, state, h_last_state1):
     return state             
 
 
-
-# New version for implicit scheme
-def compute_h_hrill(h_total, h_crit, state,h_rill_pre):
+def compute_h_hrill(h_total_pre, h_crit, state,h_rill_pre):
     """TODO.
 
     :param h_total_pre: TODO
@@ -339,26 +337,24 @@ def compute_h_hrill(h_total, h_crit, state,h_rill_pre):
 
     :return: TODO
     """
+    h_sheet = ma.where(
+        state == 0,
+        h_total_pre,
+        ma.where(
+            state == 1,
+            ma.minimum(h_crit, h_total_pre),
+            ma.where(h_total_pre > h_rill_pre, h_total_pre - h_rill_pre, 0)
+        )
+    )
     h_rill = ma.where(
         state == 0,
         0,
         ma.where(
             state == 1,
-            ma.maximum(h_total - h_crit, 0),
-            ma.where(h_total > h_rill_pre, h_rill_pre, h_total)
+            ma.maximum(h_total_pre - h_crit, 0),
+            ma.where(h_total_pre > h_rill_pre, h_rill_pre, h_total_pre)
         )
     )
-    
-    h_sheet = ma.where(
-        state == 0,
-        h_total,
-        ma.where(
-            state == 1,
-            ma.minimum(h_crit, h_total),
-            ma.where(h_total > h_rill_pre, h_total - h_rill_pre, 0)
-        )
-    )
-    
     h_rill_pre = ma.where(
         state == 0,
         0,
@@ -370,6 +366,7 @@ def compute_h_hrill(h_total, h_crit, state,h_rill_pre):
     )
 
     return h_sheet, h_rill, h_rill_pre
+
 
 def sheet_runoff(dt, a, b, h_sheet):
     """TODO.
