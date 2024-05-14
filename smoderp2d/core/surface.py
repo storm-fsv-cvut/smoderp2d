@@ -388,15 +388,16 @@ def sheet_runoff(dt, a, b, h_sheet):
     
     return q_sheet, vol_runoff, vol_rest
 
-def rill_runoff(dt,   h_rill, effect_vrst, rillWidth ):
+def rill_runoff(dt, effect_vrst, h_rill, rillWidth, v_rill_rest=None,
+                vol_runoff_rill=None):
     """TODO.
 
     :param dt: TODO
     :param effect_vrst: TODO
     :param h_rill: TODO
     :param rillWidth: TODO
-    :param v_rill_rest: TODO
-    :param vol_runoff_rill: TODO
+    :param v_rill_rest: TODO (not used in the implicit solution)
+    :param vol_runoff_rill: TODO (not used in the implicit solution)
 
     :return: TODO
     """
@@ -412,12 +413,11 @@ def rill_runoff(dt,   h_rill, effect_vrst, rillWidth ):
     v_rill = ma.power(r_rill, (2.0 / 3.0)) * 1. / nrill * ma.power(slope, 0.5)
 
     q_rill = v_rill * h * b
-    
+
     vol_rill = q_rill * dt
 
     courant = (v_rill * dt) / effect_vrst
-    
-    
+
     if Globals.computationType == 'explicit':
         # celerita
         # courant = (1 + s*b/(3*(b+2*h))) * q_rill/(b*h)

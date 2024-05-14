@@ -147,7 +147,7 @@ class TimeStep:
         if  Globals.isRill and ma.any(state != 0):
             # # calcualting rill runoff
             _v_rill, _v_rill_rest, vol_runoff_rill, _courant, _vol_to_rill, _b = rill_runoff(
-                dt, h_rill,efect_vrst, rillWidth)
+                dt, efect_vrst, h_rill, rillWidth)
             rill_flow = ma.filled(vol_runoff_rill,fill_value=0.0)/pixel_area/dt # [m/s]
 
             tot_flow += rill_flow
@@ -384,7 +384,7 @@ class TimeStep:
             efect_vrst = Globals.get_mat_effect_cont()
             
             v_rill, v_rill_rest, vol_runoff_rill, _courant, vol_to_rill, rill_b = rill_runoff(
-                delta_t, h_rill,efect_vrst, surface.arr.rillWidth)
+                delta_t, efect_vrst, h_rill, surface.arr.rillWidth)
 
             surface.arr.vol_runoff_rill = vol_runoff_rill # [m]
             
