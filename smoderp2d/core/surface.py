@@ -306,11 +306,7 @@ def update_state1(ht_1, hcrit, state):
 def update_state(h_total_new, h_crit, h_total_pre, state, h_last_state1):
     # update state == 0
     state = ma.where(
-        ma.logical_and(
-            state == 0, h_total_new > h_crit
-        ),
-        1,
-        state
+        ma.logical_and(state == 0, h_total_new > h_crit), 1, state
     )
 
     # update state == 1
