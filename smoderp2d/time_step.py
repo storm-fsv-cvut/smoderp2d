@@ -283,9 +283,10 @@ class TimeStep:
                                     fill_value=0)/dt #[m/s]
         efect_vrst = Globals.get_mat_effect_cont()
         # Calculating surface retention
-        sur_ret = ma.filled(surface_retention(h_new,surface),fill_value=0) 
-        # updating rill surface state
-        state, _ = update_state(h_new,h_crit,h_old,state, h_last_state1)
+        sur_ret = ma.filled(surface_retention(h_new,surface),fill_value=0)
+        if Globals.isRill: 
+            # updating rill surface state
+            state, _ = update_state(h_new,h_crit,h_old,state, h_last_state1)
         if Globals.isRill and ma.any(state != 0):
             h_sheet, h_rill, _h_rill_pre = compute_h_hrill(h_new,h_crit,state,h_rillPre) 
         else:
@@ -338,8 +339,10 @@ class TimeStep:
     # self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
     # courant, total_time, delta_t, combinatIndex, NoDataValue,
     # sum_interception, mat_effect_cont, iter_
-    def do_next_h_implicit(self, surface, subsurface, rain_arr, cumulative, 
-                  hydrographs, flow_control,   delta_t,  delta_tmax,list_fd,courant):
+    def do_next_h_implicit(self, surface, subsurface,
+                            rain_arr, cumulative, 
+                            hydrographs, flow_control,   delta_t, 
+                            delta_tmax,list_fd,courant):
         """TODO.
 
         :param surface: TODO
@@ -447,7 +450,9 @@ class TimeStep:
                 return res
             try:
                 solution = spopt.root(model_args, h_0,
-                                                method='df-sane', options={'fatol':1e-8,'maxiter':max_iter})
+                                                method='df-sane', 
+                                                options={'fatol':1e-9,
+                                                         'maxiter':max_iter})
                 
                 h_new = solution.x
                 fc.iter_ = solution.nit
@@ -494,14 +499,7 @@ class TimeStep:
         actRain, fc.sum_interception, rain_arr.arr.veg = \
             rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
         
-        # Saving the new water level
-        surface_state = surface.arr.state
-        state_condition = surface_state > Globals.streams_flow_inc
-        surface.arr.h_total_new = ma.where(
-            state_condition,  # stream flow in the cell
-            0,
-            h_new.reshape(r,c)
-        )
+        
         # Saving the actual rain
         surface.arr.cur_rain = actRain    
          
@@ -513,14 +511,24 @@ class TimeStep:
                 surface.arr.state == 1,
                 surface.arr.h_total_new < surface.arr.h_total_pre,
             )
-            
+            surface.arr.h_last_state1 = ma.where(
+                state_1_cond,
+                surface.arr.h_total_pre,
+                surface.arr.h_last_state1
+            ) 
+
         # updating rill surface state
-            surface.arr.state, surface.arr.last_state_1 = update_state(surface.arr.h_total_new,
+            surface.arr.state, _ = update_state(surface.arr.h_total_new,
                                                 surface.arr.h_crit,
                                                 surface.arr.h_total_pre,
                                                 surface.arr.state,
                                                 last_state1_buf)
-        
+            # Saving the new water level
+            state_condition = surface.arr.state > Globals.streams_flow_inc
+            surface.arr.h_total_new = ma.where(
+                state_condition,  # stream flow in the cell
+                0,
+                h_new.reshape(r,c))
             # Saving results to surface structure
             # Saving the new rill water level
             h_sheet, h_rill, h_rill_pre = compute_h_hrill(surface.arr.h_total_new, surface.arr.h_crit,
@@ -550,6 +558,12 @@ class TimeStep:
             surface.arr.v_rill_rest = ma.filled(v_rill_rest,fill_value=0.0)
             
         else: 
+            # Saving the new water level
+            state_condition = surface.arr.state > Globals.streams_flow_inc
+            surface.arr.h_total_new = ma.where(
+                state_condition,  # stream flow in the cell
+                0,
+                h_new.reshape(r,c))
             surface.arr.h_sheet = surface.arr.h_total_new
         
         #calculating sheet runoff
@@ -573,6 +587,7 @@ class TimeStep:
         
         #Reaches
         surface_state = surface.arr.state
+
         state_condition = surface_state > Globals.streams_flow_inc
         
         if ma.any(surface_state > Globals.streams_flow_inc):

@@ -387,9 +387,9 @@ class Runoff(object):
                     True
                 )
 
-            if Globals.computationType == 'explicit':
-                # set current times to previous time step
-                self.subsurface.curr_to_pre()
+            
+            # set current times to previous time step
+            self.subsurface.curr_to_pre()
 
             # print raster results in given time steps
             self.times_prt.prt(
