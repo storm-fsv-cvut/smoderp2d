@@ -94,27 +94,19 @@ def __directions(inflow, direction):
 
 def inflow_dir(mat_fd, i, j):
     inflow_dirs = np.zeros(8, float)
-    
-    # inflow matrix stores the information about the inflow directions (0 if there is no inflow, 1 if there is inflow from the direction) 
-    # 32  64  128
-    # 16      1
-    # 8   4   2
-    
+    inflows = __directionsInflow(mat_fd, i, j)
+    if len(inflows) == 0:
+        return inflow_dirs
+    num_inflows = len(inflows)
 
-    coco = [[-1, 1, 8], [-1, 0, 4], [-1, -1, 2], [0, -1, 1],
-            [1, -1, 128], [1, 0, 64], [1, 1, 32], [0, 1, 16]]
-    pocet = len(coco)
-    for k in range(pocet):
-        a = i + coco[k][0]
-        b = j + coco[k][1]
-        if a < 0 or b < 0:
-                value = -1
-        else:        
-            try:
-                value = mat_fd[a][b]
-            except IndexError:
-                value = -1        
-        
-        if value == coco[k][2]:
-            inflow_dirs[k] = 1.0   
+    num_inflows = len(inflows)
+    inflow_directions = [[-1, 1], [-1, 0], [-1, -1], [0, -1],
+            [1, -1], [1, 0], [1, 1], [0, 1]]
+    for k in range(len(inflow_dirs)):
+        if inflow_directions[k] == inflows[num_inflows-1]:
+            inflow_dirs[k] = 1
+            num_inflows -= 1
+            
+        if num_inflows == 0:
+            break    
     return inflow_dirs
