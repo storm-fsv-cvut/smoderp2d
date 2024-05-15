@@ -2,6 +2,7 @@
 #  time step, and to store intermediate variables
 
 
+from re import sub
 from textwrap import fill
 from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
@@ -268,14 +269,18 @@ class TimeStep:
               state,
               rillWidth,
               h_rillPre,
-              h_last_state1):
+              h_last_state1,
+              exfiltration):
         
         h_new = ma.masked_array(h_new.reshape(r,c),mask=GridGlobals.masks)
         h_old = h_old.reshape(r,c)
 
         # Calculating infiltration  - function which does not allow negative levels
         _bil,infilt_buf = infilt.philip_infiltration(soil_type, h_new) #[m]
-        infiltr = ma.filled(infilt_buf,fill_value=0) / dt #[m/s]
+        infiltr = ma.filled(ma.where(exfiltration > 0,
+                                     0,
+                                     infilt_buf),
+                                    fill_value=0)/dt #[m/s]
         efect_vrst = Globals.get_mat_effect_cont()
         # Calculating surface retention
         sur_ret = ma.filled(surface_retention(h_new,surface),fill_value=0) 
@@ -306,6 +311,8 @@ class TimeStep:
         inflow = inflows_comp(tot_flow, list_fd)
             
         h_new = ma.filled(h_new,fill_value=0.0)
+        
+        exfiltration = ma.filled(exfiltration,fill_value=0.0)
         # setting all residuals to zero
         res = np.zeros((r,c))
         # calculating residual for each cell - adding contributions from all processes
@@ -322,6 +329,8 @@ class TimeStep:
         res += - infiltr
         # Surface retention
         res += sur_ret/dt
+        # exfiltration
+        res += exfiltration/dt
         
         res = res.ravel()         
         return res
@@ -433,7 +442,8 @@ class TimeStep:
                                 surface.arr.state,
                                 surface.arr.rillWidth,
                                 surface.arr.h_rillPre,
-                                surface.arr.h_last_state1)
+                                surface.arr.h_last_state1,
+                                subsurface.get_exfiltration())
                 return res
             try:
                 solution = spopt.root(model_args, h_0,
@@ -555,9 +565,11 @@ class TimeStep:
         surface.arr.inflow_tm =ma.array(inflows_comp(tot_flow, list_fd),mask=GridGlobals.masks)
         
         # Calculating the infiltration
-        _bil,surface.arr.infiltration = infilt.philip_infiltration(surface.arr.soil_type,
+        _bil,infiltration = infilt.philip_infiltration(surface.arr.soil_type,
                                                                     surface.arr.h_total_new) #[m]    
-        
+        surface.arr.infiltration = ma.where(subsurface.get_exfiltration() > 0, 
+                                            0,
+                                            infiltration)
         # Updating surface retention
         h_ret = actRain - surface.arr.infiltration
         surface_retention_update(h_ret,surface.arr)
