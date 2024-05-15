@@ -489,6 +489,11 @@ class TimeStep:
         #---------------------------------------------------------------------
         # POSTPROCESSING
         #---------------------------------------------------------------------
+        surface.reset_inflows()
+        surface.new_inflows()
+
+        subsurface.fill_slope()
+        subsurface.new_inflows()
         
         surface_state = surface.arr.state
 
