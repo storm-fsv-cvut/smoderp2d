@@ -400,12 +400,12 @@ class Runoff(object):
             # check if rill flow occur
             if Globals.computationType == 'explicit':
                 # update states
-                self.surface.arr.state = update_state(
-                    surface.arr.h_total_time,
-                    surface.arr.h_crit,
-                    surface.arr.h_total_pre,
-                    surface.arr.state,
-                    surface.arr.h_last_state1
+                self.surface.arr.state, self.surface.arr.h_last_state1 = update_state(
+                    self.surface.arr.h_total_new,
+                    self.surface.arr.h_crit,
+                    self.surface.arr.h_total_pre,
+                    self.surface.arr.state,
+                    self.surface.arr.h_last_state1
                 )
 
             self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)

@@ -280,7 +280,7 @@ class TimeStep:
         # Calculating surface retention
         sur_ret = ma.filled(surface_retention(h_new,surface),fill_value=0) 
         # updating rill surface state
-        state = update_state(h_new,h_crit,h_old,state, h_last_state1)
+        state, _ = update_state(h_new,h_crit,h_old,state, h_last_state1)
         if Globals.isRill and ma.any(state != 0):
             h_sheet, h_rill, _h_rill_pre = compute_h_hrill(h_new,h_crit,state,h_rillPre) 
         else:

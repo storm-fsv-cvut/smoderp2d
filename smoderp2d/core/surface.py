@@ -320,7 +320,7 @@ def update_state(h_total_new, h_crit, h_total_pre, state, h_last_state1):
         ma.logical_and(state == 2, h_total_new > h_last_state1), 1, state
     )
 
-    return state             
+    return state, h_last_state1
 
 
 def compute_h_hrill(h_total_pre, h_crit, state, h_rill_pre):
