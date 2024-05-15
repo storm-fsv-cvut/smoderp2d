@@ -324,8 +324,8 @@ class Runoff(object):
                 # and error is raised
                 if not self.flow_control.max_iter_reached():
                     self.hydrographs.write_hydrographs_record(
-                        0,
-                        0,
+                        None,
+                        None,
                         self.flow_control,
                         self.courant,
                         self.delta_t,
