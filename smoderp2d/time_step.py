@@ -483,9 +483,14 @@ class TimeStep:
         # Calculating the actual rain
         actRain, fc.sum_interception, rain_arr.arr.veg = \
             rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
-        
+        surface_state = surface.arr.state
+        state_condition = surface_state > Globals.streams_flow_inc
         # Saving the new water level
-        surface.arr.h_total_new = ma.array(h_new.reshape(r,c),mask=GridGlobals.masks) 
+        surface.arr.h_total_new = ma.where(
+            state_condition,  # stream flow in the cell
+            0,
+            h_new.reshape(r,c)
+        )
         # Saving the actual rain
         surface.arr.cur_rain = actRain    
          
@@ -556,6 +561,23 @@ class TimeStep:
         # Updating surface retention
         h_ret = actRain - surface.arr.infiltration
         surface_retention_update(h_ret,surface.arr)
+        
+        #Reaches
+        surface_state = surface.arr.state
+        state_condition = surface_state > Globals.streams_flow_inc
+        
+        if ma.any(surface_state > Globals.streams_flow_inc):
+            h_sub = subsurface.runoff_stream_cell(state_condition)
+            inflowToReach = ma.where(
+                state_condition,
+                h_sub * pixel_area + h_new.reshape(r,c) * pixel_area,
+                0
+            )
+            surface.reach_inflows(
+                surface_state - Globals.streams_flow_inc,
+                inflowToReach,
+                state_condition
+            )
 
         cumulative.update_cumulative(
             surface.arr,
