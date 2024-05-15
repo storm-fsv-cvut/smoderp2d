@@ -489,9 +489,17 @@ class TimeStep:
         #---------------------------------------------------------------------
         # POSTPROCESSING
         #---------------------------------------------------------------------
+        
+        surface_state = surface.arr.state
+
+        state_condition = surface_state > Globals.streams_flow_inc
+        # Saving the new water level
+        surface.arr.h_total_new = ma.where(
+            state_condition,  # stream flow in the cell
+            0,
+            h_new.reshape(r,c))
         # saving the actual rain at current time step
         # save the tz for actual time step
-        
         potRain, fc.tz = rain_f.timestepRainfall(
             itera, fc.total_time, delta_t, fc.tz, sr
         )
@@ -523,12 +531,7 @@ class TimeStep:
                                                 surface.arr.h_total_pre,
                                                 surface.arr.state,
                                                 last_state1_buf)
-            # Saving the new water level
-            state_condition = surface.arr.state > Globals.streams_flow_inc
-            surface.arr.h_total_new = ma.where(
-                state_condition,  # stream flow in the cell
-                0,
-                h_new.reshape(r,c))
+            
             # Saving results to surface structure
             # Saving the new rill water level
             h_sheet, h_rill, h_rill_pre = compute_h_hrill(surface.arr.h_total_new, surface.arr.h_crit,
@@ -559,11 +562,6 @@ class TimeStep:
             
         else: 
             # Saving the new water level
-            state_condition = surface.arr.state > Globals.streams_flow_inc
-            surface.arr.h_total_new = ma.where(
-                state_condition,  # stream flow in the cell
-                0,
-                h_new.reshape(r,c))
             surface.arr.h_sheet = surface.arr.h_total_new
         
         #calculating sheet runoff
@@ -586,10 +584,8 @@ class TimeStep:
         surface_retention_update(h_ret,surface.arr)
         
         #Reaches
-        surface_state = surface.arr.state
-
-        state_condition = surface_state > Globals.streams_flow_inc
-        
+       
+       
         if ma.any(surface_state > Globals.streams_flow_inc):
             h_sub = subsurface.runoff_stream_cell(state_condition)
             inflowToReach = ma.where(
