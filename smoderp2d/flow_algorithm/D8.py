@@ -95,17 +95,20 @@ def __directions(inflow, direction):
 def inflow_dir(mat_fd, i, j):
     inflow_dirs = np.zeros(8, float)
     inflows = __directionsInflow(mat_fd, i, j)
-    if len(inflows) == 0:
-        return inflow_dirs
+    
     num_inflows = len(inflows)
 
-    num_inflows = len(inflows)
+    if num_inflows == 0:
+        return inflow_dirs
+    
+
     inflow_directions = [[-1, 1], [-1, 0], [-1, -1], [0, -1],
             [1, -1], [1, 0], [1, 1], [0, 1]]
-    for k in range(len(inflow_dirs)):
+    for k in range(len(inflow_dirs)-1,0,-1):
         if inflow_directions[k] == inflows[num_inflows-1]:
             inflow_dirs[k] = 1
             num_inflows -= 1
+            
             
         if num_inflows == 0:
             break    
