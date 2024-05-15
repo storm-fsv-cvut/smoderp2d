@@ -24,7 +24,7 @@ class PrepareData(PrepareDataGISBase):
                 "Spatial Analysis extension for ArcGIS is not available"
             )
 
-        arcpy.env.XYTolerance = "0.000001 Meters" # increased because of GRASS GIS data comparision
+        arcpy.env.XYTolerance = "0.000001 Meters"  # increased because of GRASS GIS data comparison
         super(PrepareData, self).__init__(writer)
 
     def _create_AoI_outline(self, elevation, soil, vegetation):
@@ -66,7 +66,8 @@ class PrepareData(PrepareDataGISBase):
         arcpy.conversion.RasterToPolygon(aoi_mask_mem, aoi_polygon_mem, "NO_SIMPLIFY")
         aoi_mask = self.storage.output_filepath('aoi_mask')
         with arcpy.EnvManager(extent=aoi_polygon_mem):
-            arcpy.management.Clip(aoi_mask_mem, out_raster=aoi_mask, nodata_value=GridGlobals.NoDataValue)
+            arcpy.management.Clip(aoi_mask_mem, out_raster=aoi_mask, nodata_value=GridGlobals.NoDataValue,
+                                  in_template_dataset=aoi_polygon_mem, clipping_geometry="ClippingGeometry")
         # generate aoi_polygon to be snapped to aoi_mask
         aoi_polygon = self.storage.output_filepath('aoi_polygon')
         with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, extent=aoi_mask, cellSize=aoi_mask, cellAlignment=aoi_mask,
@@ -289,8 +290,7 @@ class PrepareData(PrepareDataGISBase):
             aoi_mask = self.storage.output_filepath('aoi_mask')
             with arcpy.EnvManager(nodata=GridGlobals.NoDataValue, cellSize=aoi_mask, cellAlignment=aoi_mask, snapRaster=aoi_mask):
                 arcpy.conversion.PolygonToRaster(
-                    soilveg_aoi_path, field, output, "MAXIMUM_AREA", "",
-                    GridGlobals.dy
+                    soilveg_aoi_path, field, output, cellsize=GridGlobals.dy
                 )
             self.soilveg_fields[field] = self._rst2np(output)
             self._check_soilveg_dim(field)

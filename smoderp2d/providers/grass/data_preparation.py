@@ -195,7 +195,7 @@ class PrepareData(PrepareDataGISBase):
         dem_slope = self.storage.output_filepath('dem_slope')
         dem_aspect = self.storage.output_filepath('dem_aspect')
         self._run_grass_module(
-            'r.slope.aspect', elevation=dem_filled, format='percent',
+            'r.slope.aspect', elevation=dem, format='percent',
             slope=dem_slope, aspect=dem_aspect
         )
 
@@ -222,6 +222,11 @@ class PrepareData(PrepareDataGISBase):
             'v.select', ainput=dataset, binput=aoi_polygon,
             operator='within', output=points_clipped
         )
+        # if no points selected v.select doesn't create any output
+        if points_clipped not in Mapset().glist('vector'):
+            self._run_grass_module(
+                'v.edit', map=points_clipped, tool='create'
+            )
 
         # select points outside the AoI
         self._run_grass_module(
@@ -735,6 +740,10 @@ class PrepareData(PrepareDataGISBase):
         :param map_name: map name
         :param mtype: map type
         """
+        if map_name not in Mapset().glist(mtype):
+            # skip export if map doesn't exist
+            return
+
         output_path = self.storage.output_filepath(map_name, full_path=True)
         if mtype == 'raster':
             self.storage.export_raster(

@@ -347,7 +347,7 @@ def do(cumulative, mat_slope, G, surArr):
 #                 sep + 'mWatLM' + sep + 'restVolM3' + sep + 'toFID' + '\n'
 #             # line = 'FID'+sep+'v_out_cum [L^3]'+sep+'Q_max
 #             # [L^3.t^{-1}]'+sep+'timeQ_max[s]'+sep+'h_max
-#             # [L]'+sep+'timeh_max[s]'+sep+'Cumulatice_inflow_from_field[L^3]' +
+#             # [L]'+sep+'timeh_max[s]'+sep+'Cumulative_inflow_from_field[L^3]' +
 #             # sep+ 'Left_after_last_time_step[L^3]'   + sep+
 #             # 'Out_form_domain[L^3]'+sep+'to_reach'+'\n'
 #             f.write(line)

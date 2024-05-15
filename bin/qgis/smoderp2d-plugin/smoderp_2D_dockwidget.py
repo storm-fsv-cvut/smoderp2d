@@ -37,7 +37,7 @@ from qgis.core import (
     QgsProviderRegistry, QgsMapLayerProxyModel, QgsRasterLayer, QgsTask,
     QgsApplication, Qgis, QgsProject, QgsRasterBandStats,
     QgsSingleBandPseudoColorRenderer, QgsGradientColorRamp, QgsVectorLayer,
-    QgsVectorLayerJoinInfo
+    QgsVectorLayerJoinInfo, QgsMessageLog
 )
 from qgis.utils import iface
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
@@ -510,8 +510,16 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         if runs is None:
             self.settings.setValue('historical_runs', [])
         else:
+            nerrors = 0
             for run in reversed(runs):
-                self._addHistoryItem(run)
+                if self._addHistoryItem(run) is False:
+                    nerrors += 1
+
+            if nerrors > 0:
+                iface.messageBar().pushMessage(
+                    f'Failed to add {nerrors} historical items (see logs for details)',
+                    level=Qgis.Warning, duration=5
+            )
 
     def _addCurrentHistoryItem(self):
         """Add the current run into settings[historical_runs].
@@ -531,25 +539,34 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
         self.settings.setValue('historical_runs', runs)
 
-        self._addHistoryItem(run)
+        if self._addHistoryItem(run) is False:
+            iface.messageBar().pushMessage(
+                'Failed to historical item (see logs for details)',
+                level=Qgis.Warning, duration=5
+            )
 
     def _addHistoryItem(self, run):
         """Add the historical item to the history pane.
 
         :param run: The current run info in format (timestamp, params, maps)
+
+        :return True on success otherwise False
         """
         this_run = HistoryWidget(f'{run[1]["output"]} -- {run[0]}')
         try:
             this_run.saveHistory(run[1], run[2])
             self.history_tab.insertItem(0, this_run)
         except (KeyError, IndexError) as e:
-            iface.messageBar().pushMessage(
-                f'Failed to add historical item {run[0]}: ', str(e),
-                level=Qgis.Warning
-            )
+            QgsMessageLog.logMessage(
+                f'Failed to add historical item {run[0]}: {e}',
+                'SMODERP2D', level=Qgis.Warning)
+            return False
+
         self.history_tab.itemDoubleClicked.connect(
             self._loadHistoricalParameters
         )
+
+        return True
 
     @staticmethod
     def _layerColorRamp(layer):
@@ -578,13 +595,12 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
     def importResults(self):
         """Import results into QGIS, group them and show them as layers.
         """
-        def import_group_layers(group, outdir, ext=('asc', 'gml', 'csv'), show=False):
+        def import_group_layers(group, outdir, ext=('asc', 'gml', 'csv')):
             """Import individual group layers.
 
             :param group: QGIS group object
             :param outdir: output directory used during the computation
             :param ext: extension of files to be imported
-            :param show: show the layers after import or don't
             """
             # collect map files
             map_files = []
@@ -592,7 +608,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 map_files += glob.glob(os.path.join(outdir, f'*.{e}'))
 
             # create layer and add into group
-            for map_path in map_files:
+            for map_path in sorted(map_files):
                 map_name, map_ext = os.path.splitext(os.path.basename(map_path))
                 if map_ext == '.asc':
                     # raster
@@ -635,15 +651,23 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 QgsProject.instance().addMapLayer(layer, False)
                 node = group.addLayer(layer)
                 node.setExpanded(False)
-                node.setItemVisibilityChecked(show is True)
-                show = False
+                node.setItemVisibilityChecked(False)
 
         # show main results
         root = QgsProject.instance().layerTreeRoot()
         group = root.insertGroup(0, self._result_group_name)
 
         outdir = self.main_output.text().strip()
-        import_group_layers(group, outdir, show=True)
+        import_group_layers(group, outdir)
+
+        try:
+            #  set layer visibility
+            layer_id = QgsProject.instance().mapLayersByName('cvsur_m3')[0]
+            node = group.findLayer(layer_id)
+            if node:
+                node.setItemVisibilityChecked(True)
+        except IndexError:
+            pass
 
         # import control results
         ctrl_group = group.addGroup('control')
