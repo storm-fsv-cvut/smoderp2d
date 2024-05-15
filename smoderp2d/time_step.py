@@ -493,9 +493,10 @@ class TimeStep:
         # Calculating the actual rain
         actRain, fc.sum_interception, rain_arr.arr.veg = \
             rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
+        
+        # Saving the new water level
         surface_state = surface.arr.state
         state_condition = surface_state > Globals.streams_flow_inc
-        # Saving the new water level
         surface.arr.h_total_new = ma.where(
             state_condition,  # stream flow in the cell
             0,
@@ -512,13 +513,9 @@ class TimeStep:
                 surface.arr.state == 1,
                 surface.arr.h_total_new < surface.arr.h_total_pre,
             )
-            surface.arr.h_last_state1 = ma.where(
-                state_1_cond,
-                surface.arr.h_total_pre,
-                surface.arr.h_last_state1
-            ) 
+            
         # updating rill surface state
-            surface.arr.state, _ = update_state(surface.arr.h_total_new,
+            surface.arr.state, surface.arr.last_state_1 = update_state(surface.arr.h_total_new,
                                                 surface.arr.h_crit,
                                                 surface.arr.h_total_pre,
                                                 surface.arr.state,
