@@ -17,7 +17,7 @@ import numpy.ma as ma
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
-from smoderp2d.core.surface import get_surface
+from smoderp2d.core.surface import get_surface, update_state
 from smoderp2d.core.subsurface import Subsurface
 from smoderp2d.core.cumulative_max import Cumulative
 
