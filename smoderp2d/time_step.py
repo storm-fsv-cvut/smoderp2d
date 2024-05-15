@@ -106,6 +106,159 @@ class TimeStep:
 
         return potRain
 
+    def do_next_h(self, surface, subsurface, rain_arr, cumulative, hydrographs,
+                  flow_control, courant, potRain, delta_t):
+        """TODO.
+
+        :param surface: TODO
+        :param subsurface: TODO
+        :param rain_arr: TODO
+        :param cumulative: TODO
+        :param hydrographs: TODO
+        :param flow_control: TODO
+        :param courant: TODO
+        :param potRain: TODO
+        :param delta_t: TODO
+        """
+        rr, rc = GridGlobals.get_region_dim()
+        pixel_area = GridGlobals.get_pixel_area()
+        fc = flow_control
+        combinatIndex = Globals.get_combinatIndex()
+        NoDataValue = GridGlobals.get_no_data()
+
+        self.infilt_capa += potRain
+        if ma.all(self.infilt_capa < self.max_infilt_capa):
+            self.infilt_time += delta_t
+            actRain = ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+            )
+            hydrographs.write_hydrographs_record(
+                None,
+                None,
+                flow_control,
+                courant,
+                delta_t,
+                surface,
+                cumulative,
+                actRain)
+            return actRain
+
+        for iii in combinatIndex:
+            k = iii[1]
+            s = iii[2]
+            # jj * 100.0 !!! smazat
+            iii[3] = infilt.philip(
+                k,
+                s,
+                delta_t,
+                fc.total_time - self.infilt_time,
+                NoDataValue)
+
+        infilt.set_combinatIndex(combinatIndex)
+
+        #
+        # nulovani na zacatku kazdeho kola
+        #
+        surface.reset_inflows()
+        surface.new_inflows()
+
+        subsurface.fill_slope()
+        subsurface.new_inflows()
+
+        #
+        # current cell precipitation
+        #
+        actRain, fc.sum_interception, rain_arr.arr.veg = \
+            rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
+        surface.arr.cur_rain = actRain
+
+        #
+        # Inflows from surroundings cells
+        #
+        for i in rr:
+            for j in rc[i]:
+                surface.arr.inflow_tm[i, j] = surface.cell_runoff(i, j)
+
+        #
+        # Surface BILANCE
+        #
+        surBIL = (
+            surface.arr.h_total_pre + actRain + surface.arr.inflow_tm /
+            pixel_area - (
+                surface.arr.vol_runoff / pixel_area +
+                surface.arr.vol_runoff_rill / pixel_area
+            )
+        )
+
+        #
+        # infiltration
+        #
+        philip_infiltration = infilt.philip_infiltration(
+            surface.arr.soil_type, surBIL
+        )
+        surBIL = ma.where(
+            subsurface.get_exfiltration() > 0,
+            surBIL,
+            philip_infiltration[0]
+        )
+        surface.arr.infiltration = ma.where(
+            subsurface.get_exfiltration() > 0,
+            0,
+            philip_infiltration[1]
+        )
+
+        #
+        # surface retention
+        #
+        surBIL = surface_retention(surBIL, surface.arr)
+
+        # add exfiltration
+        surBIL += subsurface.get_exfiltration()
+
+        surface_state = surface.arr.state
+
+        state_condition = surface_state > Globals.streams_flow_inc
+        surface.arr.h_total_new = ma.where(
+            state_condition,  # stream flow in the cell
+            0,
+            surBIL
+        )
+        if ma.any(surface_state > Globals.streams_flow_inc):
+            h_sub = subsurface.runoff_stream_cell(state_condition)
+            inflowToReach = ma.where(
+                state_condition,
+                h_sub * pixel_area + surBIL * pixel_area,
+                0
+            )
+            surface.reach_inflows(
+                surface_state - Globals.streams_flow_inc,
+                inflowToReach,
+                state_condition
+            )
+
+        # subsurface inflow
+        """
+        inflow_sub = subsurface.cell_runoff(i,j,False)
+        subsurface.bilance(infiltration,inflow_sub/pixel_area,delta_t)
+        subsurface.fill_slope()
+        """
+
+        cumulative.update_cumulative(
+            surface.arr,
+            subsurface.arr,
+            delta_t)
+        hydrographs.write_hydrographs_record(
+            None,
+            None,
+            flow_control,
+            courant,
+            delta_t,
+            surface,
+            cumulative,
+            actRain)
+
+        return actRain
+
     def model(self,
                 h_new,
               dt,
