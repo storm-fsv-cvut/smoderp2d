@@ -204,6 +204,21 @@ class Runoff(object):
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
             )
             )
+        # record values into stream hydrographs at time zero
+        self.hydrographs.write_hydrographs_record(
+            None,
+            None,
+            self.flow_control,
+            self.courant,
+            self.delta_t,
+            self.surface,
+            self.cumulative,
+            ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+            ),
+            True
+        )
+
 
         Logger.info('-' * 80)
 
