@@ -17,7 +17,7 @@ import numpy.ma as ma
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
-from smoderp2d.core.surface import get_surface
+from smoderp2d.core.surface import get_surface, update_state
 from smoderp2d.core.subsurface import Subsurface
 from smoderp2d.core.cumulative_max import Cumulative
 
@@ -400,12 +400,12 @@ class Runoff(object):
             # check if rill flow occur
             if Globals.computationType == 'explicit':
                 # update states
-                self.surface.arr.state = update_state(
-                    surface.arr.h_total_time,
-                    surface.arr.h_crit,
-                    surface.arr.h_total_pre,
-                    surface.arr.state,
-                    surface.arr.h_last_state1
+                self.surface.arr.state, self.surface.arr.h_last_state1 = update_state(
+                    self.surface.arr.h_total_new,
+                    self.surface.arr.h_crit,
+                    self.surface.arr.h_total_pre,
+                    self.surface.arr.state,
+                    self.surface.arr.h_last_state1
                 )
 
             self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
