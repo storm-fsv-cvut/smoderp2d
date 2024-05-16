@@ -19,15 +19,15 @@ class Popen(subprocess.Popen):
 
 class GrassGisRunner(Runner):
     """Run SMODERP2D in GRASS GIS environment."""
-    def __init__(self, grass_bin_path='/usr/bin/grass', create_location=None):
+    def __init__(self, create_location=None):
         """Initialize runner.
 
         :param str grass_bin_path: path to GRASS installation directory
         :param str create_location: EPSG code to create new location
         """
-        self.grass_bin_path = None
+        self.grass_bin_path = self._find_grass_bin_path()
         if not os.getenv('GISRC'):
-            self._set_environment(grass_bin_path)
+            self._set_environment()
         if create_location:
             self._crs = create_location
             self._grass_session = self._create_location(self._crs)
@@ -39,8 +39,34 @@ class GrassGisRunner(Runner):
    
         # test GRASS env varible
         if not os.getenv('GISRC'):
-            raise SmoderpError('GRASS not found.')
+            raise SmoderpError('GRASS GIS not initialized properly.')
 
+    @staticmethod
+    def _find_grass_bin_path():
+        """Find GRASS installation.
+        :todo: Avoid bat file calling.
+        """
+        if sys.platform == 'win32':
+            if 'QGIS_PREFIX_PATH' in os.environ:
+                bin_path = os.path.join(os.environ['QGIS_PREFIX_PATH'],
+                                        '..', '..',  'bin')
+            else:
+                bin_path = os.path.join(os.environ['OSGEO4W_ROOT'],
+                                        'bin')
+            grass_bin_path = None
+
+            for grass_version in range(83, 89):
+                gpath = os.path.join(bin_path, 'grass{}.bat'.format(grass_version))
+                if os.path.exists(gpath):
+                    grass_bin_path = gpath
+                    break
+
+            if grass_bin_path is None:
+                raise ImportError("No GRASS executable found.")
+        else:
+            grass_bin_path = '/usr/bin/grass'
+
+        return grass_bin_path
 
     def finish(self):
         """Close GRASS session."""
@@ -54,16 +80,11 @@ class GrassGisRunner(Runner):
         from smoderp2d.providers.grass import GrassGisProvider
         return GrassGisProvider()
 
-    def _set_environment(self, grass_bin_path):
+    def _set_environment(self):
         """Set GRASS environment.
 
         :param str grass_bin_path: path to GRASS installation
         """
-        if self.grass_bin_path is not None:
-            # avoid reestablishment of the environment
-            return
-
-        self.grass_bin_path = grass_bin_path        
         startcmd = [self.grass_bin_path, '--config', 'path']
 
         p = Popen(startcmd,
@@ -116,7 +137,6 @@ class GrassGisRunner(Runner):
 
         # initialize GRASS session
         grass_session = init(gisdb, location, 'PERMANENT')
-        print(gisdb, location)
         # calling gsetup.init() is not enough for PyGRASS
         Mapset('PERMANENT', location, gisdb).current()
 

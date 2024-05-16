@@ -20,29 +20,6 @@ class QGISRunner(GrassGisRunner):
         except ImportError as e:
             raise ImportError('Unable to find GRASS installation. {}'.format(e))
 
-    @staticmethod
-    def _find_grass_bin_path():
-        """Find GRASS installation.
-        :todo: Avoid bat file calling.
-        """
-        if sys.platform == 'win32':
-            qgis_prefix_path = os.environ['QGIS_PREFIX_PATH']
-            bin_path = os.path.join(qgis_prefix_path, '..', '..',  'bin')
-            grass_bin_path = None
-
-            for grass_version in range(83, 89):
-                gpath = os.path.join(bin_path, 'grass{}.bat'.format(grass_version))
-                if os.path.exists(gpath):
-                    grass_bin_path = gpath
-                    break
-
-            if grass_bin_path is None:
-                raise ImportError("No GRASS executable found.")
-        else:
-            grass_bin_path = '/usr/bin/grass'
-
-        return grass_bin_path
-        
     def _get_provider(self):
         """See base method for description.
         """

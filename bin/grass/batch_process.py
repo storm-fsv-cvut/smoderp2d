@@ -9,13 +9,16 @@ def main(params, epsg=5514):
     from smoderp2d.exceptions import ProviderError
 
     try:
-        runner = GrassGisRunner('/usr/bin/grass', create_location=f'EPSG:{epsg}')
+        print('x', params)
+        runner = GrassGisRunner(create_location=f'EPSG:{epsg}')
+        print('p', params)
         runner.set_options(params)
         runner.import_data(params)
         runner.run()
         # grass_session.finish()
     except ProviderError as e:
-        sys.exit(f'{e}')
+        print(f'ERORR: {e}', file=sys.stderr)
+        sys.exit(1)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
