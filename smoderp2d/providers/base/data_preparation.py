@@ -38,9 +38,6 @@ class PrepareDataBase(ABC):
             )
         )
 
-        np.savetxt('mat_aa1.txt', mat_aa, fmt="%.2e")
-        print('save mat aa 1')
-
         return mat_aa
 
     @staticmethod
