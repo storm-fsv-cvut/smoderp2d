@@ -19,28 +19,18 @@ class Popen(subprocess.Popen):
 
 class GrassGisRunner(Runner):
     """Run SMODERP2D in GRASS GIS environment."""
-    def __init__(self, create_location=None):
+    def __init__(self):
         """Initialize runner.
-
-        :param str grass_bin_path: path to GRASS installation directory
-        :param str create_location: EPSG code to create new location
         """
         self.grass_bin_path = self._find_grass_bin_path()
         if not os.getenv('GISRC'):
             self._set_environment()
-        if create_location:
-            self._crs = create_location
-            self._grass_session = self._create_location(self._crs)
-        else:
-            self._grass_session = None
-            self._crs = None # TODO
+
+        self._grass_session = None
+        self._grass_session_crs = None # TODO
             
         super().__init__()
    
-        # test GRASS env varible
-        if not os.getenv('GISRC'):
-            raise SmoderpError('GRASS GIS not initialized properly.')
-
     @staticmethod
     def _find_grass_bin_path():
         """Find GRASS installation.
@@ -99,13 +89,21 @@ class GrassGisRunner(Runner):
         str_out = out.decode("utf-8")
         gisbase = str_out.rstrip(os.linesep)
 
-        # Initialize GRASS runtime enviroment
+        # check version
+        # gs.version() requires g.gisenv which is not possible to use when no location is active
+        # if list(map(int, gs.version()['version'].split('.')[:-1])) < [8, 3]:
+        with open(os.path.join(gisbase, "etc", "VERSIONNUMBER")) as fd:
+            grass_version = fd.read().split(' ')[0]
+        if list(map(int, grass_version.split('.')[:-1])) < [8, 3]:
+            raise ProviderError("GRASS GIS version 8.3+ required")
+
+        # initialize GRASS runtime enviroment
         sys.path.append(os.path.join(gisbase, "etc", "python"))
         
         from grass.script.setup import setup_runtime_env
         setup_runtime_env(gisbase)
 
-    def _create_location(self, epsg):
+    def create_location(self, epsg):
         """Create GRASS location.
 
         :param int epsg: EPSG code
@@ -140,8 +138,12 @@ class GrassGisRunner(Runner):
         # calling gsetup.init() is not enough for PyGRASS
         Mapset('PERMANENT', location, gisdb).current()
 
+        # update class properties
+        self._grass_session = grass_session
+        self._grass_session_crs = epsg
+
         return grass_session
-    
+
     def import_data(self, options):
         """Import files to grass.
 
@@ -166,7 +168,7 @@ class GrassGisRunner(Runner):
                 ds = gdal.Open(value)
                 proj = osr.SpatialReference(wkt=ds.GetProjection())
                 crs = proj.GetAttrValue('AUTHORITY', 1)
-                if crs is None or crs == self._crs.split(':')[1]:
+                if crs is None or crs == self._grass_session_crs.split(':')[1]:
                     Module(
                         "r.import", input=value, output=key,
                         flags='o'
