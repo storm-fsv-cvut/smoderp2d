@@ -131,7 +131,7 @@ class Hydrographs:
                                   '{sep}percolation[]{sep}' \
                                   'exfiltration[]'.format(sep=SEP)
                     if Globals.extraOut:
-                        header += '{sep}vToRill[m3]{sep}ratio{sep}courant'\
+                        header += '{sep}vToRill[m3]{sep}courant'\
                                   '{sep}courantRill{sep}iter'.format(sep=SEP)
                     header += os.linesep
 
@@ -158,7 +158,6 @@ class Hydrographs:
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface,
                                  cumulative, currRain, inStream=False, sep=SEP):
 
-        ratio = fc.ratio
         total_time = fc.total_time + dt
         iter_ = fc.iter_
 
@@ -210,13 +209,12 @@ class Hydrographs:
                     line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'\
                            '{sep}{3}{sep}{4:.4e}'\
                            '{sep}{5:.4e}'\
-                           '{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}' \
-                           '{9:.4e}'.format(
+                           '{sep}{6:.4e}{sep}{7:.4e}{sep}' \
+                           '{8:.4e}'.format(
                         total_time, dt, currRain[l, m],
                         linebil[0], linebil[1],
                         surface.arr.vol_to_rill[l, m],
-                        ratio[l, m], courantMost, courantRill, iter_,
-                        sep=sep
+                        courantMost, courantRill, iter_, sep=sep
                     )
                 line += os.linesep
                 self.files[ip].writelines(line)
