@@ -97,7 +97,7 @@ class SubsurfaceC(GridGlobals,
         :param subsoil_depth: of water in subsoil layer
         :param Ks: saturated hydrulic conductivity
         :param vg_n: van genuchten parameter 
-        :param vg_l: van genuchten parameter usually = 3.5
+        :param vg_l: van genuchten parameter usually = 0.5
         """
         GridGlobals.__init__(self)
 
