@@ -10,15 +10,9 @@ class QGISRunner(GrassGisRunner):
 
         :param progress_reporter: TODO
         """
-        from qgis.core import QgsProject
-
         self.progress_reporter = progress_reporter
  
-        try:
-            super().__init__(self._find_grass_bin_path(),
-                             create_location=QgsProject.instance().crs().authid())
-        except ImportError as e:
-            raise ImportError('Unable to find GRASS installation. {}'.format(e))
+        super().__init__()
 
     def _get_provider(self):
         """See base method for description.

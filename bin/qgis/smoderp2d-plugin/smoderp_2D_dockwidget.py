@@ -73,6 +73,7 @@ class SmoderpTask(QgsTask):
         """Run the task in a parallel thread."""
         try:
             self.runner = QGISRunner(self.setProgress)
+            self.runner.create_location(QgsProject.instance().crs().authid())
             self.runner.set_options(self.input_params)
             self.runner.import_data(self.input_maps)
             self.runner.run()
