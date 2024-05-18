@@ -37,4 +37,5 @@ python3 %~dp0%\batch_process.py ^
         --wave kinematic ^
         --generate_temporary
 
-timeout /t 100
+rem wait for 5 sec
+timeout /t 5
