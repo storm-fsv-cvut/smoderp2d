@@ -9,11 +9,8 @@ def main(params, epsg=5514):
     from smoderp2d.exceptions import ProviderError
 
     try:
-        print('1', params)
         runner = GrassGisRunner()
-        print('2', params)
         runner.create_location(f'EPSG:{epsg}')
-        print('3', params)
         runner.set_options(params)
         runner.import_data(params)
         runner.run()
@@ -70,4 +67,3 @@ if __name__ == "__main__":
         'wave': args.wave,
         'generate_temporary': bool(args.generate_temporary)
     })
-
