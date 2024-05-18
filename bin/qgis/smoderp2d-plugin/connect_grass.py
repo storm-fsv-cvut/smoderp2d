@@ -15,7 +15,7 @@ def find_grass_bin():
 
 
 def _grass_loc():
-    """Find GRASS instalation.
+    """Find GRASS installation.
     :todo: Avoid bat file calling.
     """
     if sys.platform == 'win32':

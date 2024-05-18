@@ -57,12 +57,6 @@ class FlowControl(object):
             np.zeros((r, c), float), mask=GridGlobals.masks
         )
 
-        # factor deviding the time step for rill calculation
-        # currently inactive
-        self.ratio = ma.masked_array(
-            np.ones((r, c), float), mask=GridGlobals.masks
-        )
-
         # maximum amount of iterations
         self.max_iter = 40
 
@@ -72,9 +66,6 @@ class FlowControl(object):
         # defined by save_vars()
         self.tz_tmp = None
         self.sum_interception_tmp = ma.copy(self.sum_interception)
-
-        # defined by save_ratio()
-        self.ratio_tmp = None
 
     def save_vars(self):
         """Store tz and sum of interception.
@@ -95,7 +86,7 @@ class FlowControl(object):
     def refresh_iter(self):
         """Set current number of iteration to zero.
 
-        Should be called at the begining of each time step.
+        Should be called at the beginning of each time step.
         """
         self.iter_ = 0
 
@@ -109,14 +100,6 @@ class FlowControl(object):
     def max_iter_reached(self):
         """Check if iteration exceed a maximum allowed amount."""
         return self.iter_ < self.max_iter
-
-    def save_ratio(self):
-        """Save ratio in case of iteration within time step."""
-        self.ratio_tmp = self.ratio
-
-    def compare_ratio(self):
-        """Check for changing ratio after rill courant criterion check."""
-        return self.ratio_tmp == self.ratio
 
     def update_total_time(self, dt):
         """Rise time after successfully calculated previous time step.
@@ -256,7 +239,7 @@ class Runoff(object):
         # main loop: until the end time
         timeperc_last = 0
 
-        while ma.any(self.flow_control.compare_time(end_time)):
+        while self.flow_control.compare_time(end_time):
 
             self.flow_control.save_vars()
             self.flow_control.refresh_iter()
@@ -269,7 +252,6 @@ class Runoff(object):
 
                 # reset of the courant condition
                 self.courant.reset()
-                self.flow_control.save_ratio()
 
                 # time step size
                 potRain = self.time_step.do_flow(
@@ -285,24 +267,19 @@ class Runoff(object):
 
                 # update time step size if necessary (based on the courant
                 # condition)
-                self.delta_t, self.flow_control.ratio = self.courant.courant(
-                    self.delta_t, self.flow_control.ratio
-                )
+                self.delta_t = self.courant.courant(self.delta_t)
 
                 # if current time plus timestep is in next minute
                 # of computation the dt is reduced so the next
                 # computed time is exactly at the top of each minute
-                oldtime_minut = self.flow_control.total_time/60
-                newtime_minut = (self.flow_control.total_time+self.delta_t)/60
-                if ma.any(ma.floor(newtime_minut) > ma.floor(oldtime_minut)):
-                    self.delta_t = (ma.floor(newtime_minut) - oldtime_minut)*60.
+                oldtime = self.flow_control.total_time
+                newtime_minute_floor = (self.flow_control.total_time + self.delta_t) // 60
+                if newtime_minute_floor > oldtime // 60:
+                    self.delta_t = newtime_minute_floor * 60. - oldtime
 
                 # courant conditions is satisfied (time step did
                 # change) the iteration loop breaks
-                if ma.all(
-                    ma.logical_and(delta_t_tmp == self.delta_t,
-                                   self.flow_control.compare_ratio())
-                ):
+                if delta_t_tmp == self.delta_t:
                     break
 
             # Calculate actual rainfall and adds up interception todo:
@@ -342,14 +319,12 @@ class Runoff(object):
                 )
 
             # adjusts the last time step size
-            if ma.all(ma.logical_and(
-                    end_time - self.flow_control.total_time < self.delta_t,
-                    end_time - self.flow_control.total_time > 0
-            )):
+            if end_time - self.flow_control.total_time < self.delta_t and \
+                    end_time - self.flow_control.total_time > 0:
                 self.delta_t = end_time - self.flow_control.total_time
 
             # if end time reached the main loop breaks
-            if ma.all(self.flow_control.total_time == end_time):
+            if self.flow_control.total_time == end_time:
                 break
 
             # calculate outflow from each reach of the stream network
@@ -438,7 +413,7 @@ class Runoff(object):
         Logger.info('Saving output data...')
         # perform postprocessing - store results
         self.provider.postprocessing(self.cumulative, self.surface.arr,
-                                     self.surface.reach)
+                                     self.surface.reach, self.surface.inflows)
         # Logger.progress(100)
 
         # TODO

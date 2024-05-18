@@ -32,10 +32,7 @@ class PrepareDataBase(ABC):
             ),
             no_data,
             ma.where(
-                ma.logical_or(
-                    mat_nsheet == no_data, mat_y == no_data,
-                    mat_slope == 0
-                ),
+                mat_slope == 0,
                 0.0001,  # comment OP: where did we get this value from?
                 1 / mat_nsheet * ma.power(mat_slope, mat_y)
             )
@@ -576,7 +573,7 @@ class PrepareDataGISBase(PrepareDataBase):
         Logger.progress(30)
 
         # build points array
-        if self._input_params['points'] != '':
+        if self._input_params['points']:
             points_aoi = self._clip_record_points(
                 self._input_params['points'], aoi_polygon, 'points_aoi'
             )
@@ -658,13 +655,17 @@ class PrepareDataGISBase(PrepareDataBase):
             GridGlobals.r, GridGlobals.c, GridGlobals.NoDataValue,
             self.data['mat_nan']
         )
-        self.storage.write_raster(
-            self.data['mat_boundary'], 'mat_boundary', 'temp'
-        )
-
         GridGlobals.rr, GridGlobals.rc = self._get_rr_rc(
             GridGlobals.r, GridGlobals.c, self.data['mat_boundary']
         )
+
+        if self._input_params['generate_temporary']:
+            # write mat arrays to temp
+            for k, v in self.data.items():
+                if isinstance(v, np.ndarray) and k not in ('array_points', 'sr'):
+                    self.storage.write_raster(
+                        v, k, 'temp'
+                    )
 
         self.data['mat_boundary'] = None  # ML: -> JJ ???
 
