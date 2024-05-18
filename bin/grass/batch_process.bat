@@ -6,7 +6,7 @@ set GRASS_VERSION=83
 rem set GRASS GIS environment
 call "%OSGEO4W_ROOT%\apps\grass\grass%GRASS_VERSION%\etc\env.bat"
 path %OSGEO4W_ROOT%\apps\grass\grass%GRASS_VERSION%\lib;%OSGEO4W_ROOT%\apps\grass\grass%GRASS_VERSION%\bin;%PATH%
-echo %PATH%
+
 rem add smoderp2d root directory to python path
 set smoderp2d_path=%~dp0\..\..
 set PYTHONPATH=%smoderp2d_path%;%PYTHONPATH%
