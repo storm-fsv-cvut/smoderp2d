@@ -235,7 +235,7 @@ class SubsurfaceC(GridGlobals,
         :param j: j th cell
         :param sep: separator to file
         :param dt: time step
-        :return: TODO
+        :return: lines with computed values
         """
         arr = self.arr
         line = str(
@@ -251,7 +251,8 @@ class SubsurfaceC(GridGlobals,
 # Class
 #  empty class if no subsurface flow is considered
 class SubsurfacePass(GridGlobals):
-    """TODO."""
+    """This is empty class with pass methods in case
+    of not calculating subsurface flow."""
 
     def __init__(self, subsoil_depth, Ks, vg_n, vg_l):
         """TODO.
