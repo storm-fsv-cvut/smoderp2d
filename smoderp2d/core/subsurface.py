@@ -301,7 +301,7 @@ class SubsurfacePass(GridGlobals):
         """
         pass
 
-    def runoff(self, delta_t, ef_counter_line):
+    def runoff(self, delta_t, ef_counter_line, cond_state_flow):
         """TODO.
 
         :param delta_t: TODO
