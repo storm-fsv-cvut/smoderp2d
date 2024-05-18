@@ -141,6 +141,7 @@ class TimeStep:
                 courant,
                 delta_t,
                 surface,
+                subsurface,
                 cumulative,
                 actRain)
             return actRain
@@ -256,6 +257,7 @@ class TimeStep:
             courant,
             delta_t,
             surface,
+            subsurface,
             cumulative,
             actRain)
 

@@ -156,7 +156,7 @@ class Hydrographs:
         Logger.info("Hydrographs files has been created...")
 
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface,
-                                 cumulative, currRain, inStream=False, sep=SEP):
+            subsurface, cumulative, currRain, inStream=False, sep=SEP):
 
         total_time = fc.total_time + dt
         iter_ = fc.iter_
@@ -227,5 +227,5 @@ class Hydrographs:
 
 class HydrographsPass:
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface,
-                                 currRain, inStream=False, sep=SEP):
+            subsurface, currRain, inStream=False, sep=SEP):
         pass
