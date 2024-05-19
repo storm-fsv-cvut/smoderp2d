@@ -194,9 +194,10 @@ def are_dir_trees_equal(dir1, dir2):
     return True
 
 
-def _setup(request, config_file, reference_dir=None):
+def _setup(request, config_file, reference_dir=None, hidden_config=None):
     request.cls.config_file = config_file
     request.cls.reference_dir = reference_dir
+    request.cls.hidden_config = hidden_config
 
 @pytest.fixture(scope='class')
 def class_manager(request, pytestconfig):
@@ -390,13 +391,15 @@ class PerformTest:
                                 dataprep_filepath, reference_filepath
                             )
 
-    def run_roff(self, config_file):
+    def run_roff(self, config_file, hidden_config_file=None):
         assert os.path.exists(config_file)
 
         config = configparser.ConfigParser()
         config.read(config_file)
 
         os.environ["SMODERP2D_CONFIG_FILE"] = str(config_file)
+        if hidden_config_file is not None:
+            os.environ["SMODERP2D_HIDDEN_CONFIG_FILE"] = str(hidden_config_file)
         self._run()
 
         assert os.path.isdir(self._output_dir)

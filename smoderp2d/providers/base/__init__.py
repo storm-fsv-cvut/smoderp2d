@@ -202,9 +202,12 @@ class BaseProvider(object):
 
         return ConfigParser: object
         """
-        _path = os.path.join(
-            os.path.dirname(__file__), '..', '..', '.config.ini'
-        )
+        if os.getenv("SMODERP2D_HIDDEN_CONFIG_FILE") is None:
+            _path = os.path.join(
+                os.path.dirname(__file__), '..', '..', '.config.ini'
+            )
+        else:
+            _path = os.getenv("SMODERP2D_HIDDEN_CONFIG_FILE")
         if not os.path.exists(_path):
             raise ConfigError("{} does not exist".format(
                 _path
