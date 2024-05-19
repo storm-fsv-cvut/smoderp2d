@@ -1,6 +1,7 @@
 import numpy as np
 import sqlite3
 import tempfile
+from subprocess import PIPE
 
 from smoderp2d.core.general import GridGlobals, Globals
 
@@ -30,8 +31,11 @@ class PrepareData(PrepareDataGISBase):
 
         super(PrepareData, self).__init__(writer)
 
-        # TODO: do not install hydrodem if already installed
-        Module('g.extension', extension='r.hydrodem')
+        # install r.hydrodem if not available
+        ext = Module('g.extension', flags='a', stdout_=PIPE)
+        list_ext = ext.outputs.stdout.splitlines()
+        if 'r.hydrodem' not in list_ext:
+            Module('g.extension', extension='r.hydrodem')
 
     def __del__(self):
         # remove mask
