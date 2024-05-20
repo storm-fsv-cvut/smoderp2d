@@ -162,7 +162,7 @@ def get_subsurface():
             """Return the current exfiltration amount at given time step."""
             return self.arr.exfiltration
 
-        def bilance(self, infilt, inflow, dt):
+        def balance(self, infilt, inflow, dt):
             """calculate subsoi water balance.
 
             :param infilt: infiltration in current time step [L]
@@ -322,7 +322,7 @@ def get_subsurface_pass():
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
             )
 
-        def bilance(self, infilt, inflow, dt):
+        def balance(self, infilt, inflow, dt):
             """TODO.
 
             :param infilt: TODO

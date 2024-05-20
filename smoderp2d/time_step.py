@@ -185,7 +185,7 @@ class TimeStep:
 
 
         #
-        # Surface BILANCE
+        # Surface water balance 
         #
         surBIL = (
             surface.arr.h_total_pre + actRain + surface.arr.inflow_tm /
@@ -244,7 +244,7 @@ class TimeStep:
         # subsurface inflow
         """
         inflow_sub = subsurface.cell_runoff(i,j,False)
-        subsurface.bilance(infiltration,inflow_sub/pixel_area,delta_t)
+        subsurface.balance(infiltration,inflow_sub/pixel_area,delta_t)
         subsurface.fill_slope()
         """
 
