@@ -88,7 +88,7 @@ class SubArrs:
 def get_subsurface():
     class Subsurface(GridGlobals,
                       get_diffuse() if Globals.wave == 'diffusion' else get_kinematic()):
-        def __init__(self, subsoil_depth, Ks, vg_n, vg_l = 0.5):
+        def __init__(self, ubsoil_depth=0.010, Ks=0.001, vg_n=1.5, vg_l=0.5):
             """Class that handles the subsurface flow.
 
             Subsurface flow occurs in shallow soil layer usually few tens of cm
@@ -253,6 +253,8 @@ def get_subsurface():
 
             return line
 
+    return Subsurface 
+
 
 # Class
 #  empty class if no subsurface flow is considered
@@ -261,7 +263,7 @@ def get_subsurface_pass():
         """This is empty class with pass methods in case
         of not calculating subsurface flow."""
 
-        def __init__(self, subsoil_depth, Ks, vg_n, vg_l):
+        def __init__(self, ubsoil_depth=0.010, Ks=0.001, vg_n=1.5, vg_l=0.5):
             """TODO.
 
             :param subsoil_depth: TODO
@@ -339,3 +341,5 @@ def get_subsurface_pass():
             """TODO."""
             pass
 
+
+    return SubsurfacePass
