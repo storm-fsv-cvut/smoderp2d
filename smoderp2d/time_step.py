@@ -451,7 +451,7 @@ class TimeStep:
             try:
                 solution = spopt.root(model_args, h_0,
                                                 method='df-sane', 
-                                                options={'fatol':1e-5,
+                                                options={'fatol':1e-4,
                                                          'maxiter':max_iter})
                 
                 h_new = solution.x
