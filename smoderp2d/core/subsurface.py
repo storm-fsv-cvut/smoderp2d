@@ -82,6 +82,11 @@ class SubArrs:
             np.ones((GridGlobals.r, GridGlobals.c)) * vg_n,
             mask=GridGlobals.masks
         )
+        #van genuchgtens n
+        self.vg_l = ma.masked_array(
+            np.ones((GridGlobals.r, GridGlobals.c)) * vg_l,
+            mask=GridGlobals.masks
+        )
         #van genuchgtens m
         self.vg_m = 1 - (1 / self.vg_n)
 
@@ -186,16 +191,21 @@ def get_subsurface():
             """
             arr = self.arr
 
-            if bil > arr.subsoil_depth:
-                S = 1.0
-            else:
-                S = bil / arr.subsoil_depth
+            S = ma.where(
+                bil > arr.subsoil_depth, 
+                1.0,
+                bil / arr.subsoil_depth
+            )
 
             perc = arr.Ks * self.Kr(S, arr.vg_l, arr.vg_m) * dt
             # jj bacha
             # perc = 0
-            if perc > bil:
-                perc = bil
+            perc = ma.where(
+               perc > bil,
+               bil,
+               perc
+            )
+
             return perc
 
         def calc_exfiltration(self, bil):
