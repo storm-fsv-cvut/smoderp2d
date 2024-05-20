@@ -1,5 +1,6 @@
 *.pyc
 *~
+*.swp
 
 tests/data/log
 tests/data/output*
