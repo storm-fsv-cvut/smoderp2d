@@ -238,13 +238,14 @@ class SubsurfaceC(GridGlobals,
         :return: lines with computed values
         """
         arr = self.arr
-        line = str(
-            arr.h) + sep + str(
-                arr.vol_runoff / dt) + sep + str(
-            arr.vol_runoff) + sep + str(
-                arr.vol_rest) + sep + str(
-                    arr.percolation) + sep + str(
-                        arr.exfiltration)
+        line = '{0:.4e}{sep}{1:.4e}{sep}'\
+               '{2:.4e}{sep}{3:.4e}{sep}'\
+               '{4:.4e}{sep}{5:.4e}'.format(
+                arr.h[i][j], arr.vol_runoff[i][j] / dt, arr.vol_runoff[i][j],
+                arr.vol_rest[i][j], arr.percolation[i][j],
+                arr.exfiltration[i][j], sep=sep
+        )
+
         return line
 
 
