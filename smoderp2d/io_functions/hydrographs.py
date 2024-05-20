@@ -207,12 +207,16 @@ class Hydrographs:
                 # prozatim
                 if Globals.extraOut:
                     line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'\
-                           '{sep}{3}{sep}{4:.4e}'\
-                           '{sep}{5:.4e}'\
-                           '{sep}{6:.4e}{sep}{7:.4e}{sep}' \
-                           '{8:.4e}'.format(
+                           '{sep}{3}{sep}{4:.4e}'.format(
                         total_time, dt, currRain[l, m],
-                        linebil[0], linebil[1],
+                        linebil[0], linebil[1], sep=sep
+                    )
+                #if Globals.subflow:
+                #    line = ''.format()
+                if Globals.extraOut:
+                    line += '{sep}{0:.4e}'\
+                            '{sep}{1:.4e}{sep}{2:.4e}{sep}' \
+                            '{3:.4e}'.format(
                         surface.arr.vol_to_rill[l, m],
                         courantMost, courantRill, iter_, sep=sep
                     )
