@@ -162,7 +162,7 @@ def get_subsurface():
             """Return the current exfiltration amount at given time step."""
             return self.arr.exfiltration
 
-        def balance(self, infilt, inflow, dt):
+        def balance(self, infilt, dt):
             """calculate subsoi water balance.
 
             :param infilt: infiltration in current time step [L]
@@ -170,7 +170,7 @@ def get_subsurface():
             :param dt: current time step
             """
             arr = self.arr
-            bil = infilt + arr.vol_rest / self.pixel_area + inflow
+            bil = infilt + arr.vol_rest / self.pixel_area + arr.inflow_tm
 
             percolation = self.calc_percolation(bil, dt)
             arr.cum_percolation += percolation

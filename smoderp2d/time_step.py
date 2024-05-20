@@ -241,12 +241,9 @@ class TimeStep:
                 state_condition
             )
 
-        # subsurface inflow
-        """
-        inflow_sub = subsurface.cell_runoff(i,j,False)
-        subsurface.balance(infiltration,inflow_sub/pixel_area,delta_t)
+        # subsurface water balance
+        subsurface.balance(surface.arr.infiltration,delta_t)
         subsurface.fill_slope()
-        """
 
         cumulative.update_cumulative(
             surface.arr,
