@@ -283,7 +283,7 @@ def get_subsurface_pass():
             """TODO."""
             pass
 
-        def cell_runoff(self, i, j, sur):
+        def cell_runoff(self, i, j):
             """TODO.
 
             :param i: TODO
