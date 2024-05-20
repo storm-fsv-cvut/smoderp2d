@@ -4,17 +4,21 @@ import os
 import sys
 import argparse
 
-def main(params, epsg=5514):
+def run_process(params, epsg):
     from smoderp2d.runners.grass import GrassGisRunner
+
+    runner = GrassGisRunner()
+    runner.create_location(f'EPSG:{epsg}')
+    runner.set_options(params)
+    runner.import_data(params)
+    runner.run()
+    runner.finish()
+
+def main(params, epsg):
     from smoderp2d.exceptions import ProviderError
 
     try:
-        runner = GrassGisRunner()
-        runner.create_location(f'EPSG:{epsg}')
-        runner.set_options(params)
-        runner.import_data(params)
-        runner.run()
-        runner.finish()
+        run_process(params, epsg)
     except ProviderError as e:
         print(f'ERORR: {e}', file=sys.stderr)
         sys.exit(1)
@@ -43,6 +47,7 @@ if __name__ == "__main__":
     parser.add_argument('--flow_direction', default='single')
     parser.add_argument('--wave', default='kinematic')
     parser.add_argument('--generate_temporary', action='store_true')
+    parser.add_argument('--epsg', default=5514)
 
     args = parser.parse_args()
 
@@ -66,4 +71,5 @@ if __name__ == "__main__":
         'flow_direction': args.flow_direction,
         'wave': args.wave,
         'generate_temporary': bool(args.generate_temporary)
-    })
+    }, epsg=args.epsg
+         )

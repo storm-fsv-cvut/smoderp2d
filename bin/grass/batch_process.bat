@@ -33,7 +33,7 @@ python3 %~dp0%\batch_process.py ^
         --streams .\tests\data\nucice\streams.shp ^
         --channel_properties_table .\tests\data\nucice\streams_shape.dbf ^
         --streams_channel_type_fieldname channel_id ^
-        --flow_direction 'single' ^
+        --flow_direction single ^
         --wave kinematic ^
         --generate_temporary
 
