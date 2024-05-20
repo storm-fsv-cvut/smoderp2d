@@ -181,6 +181,8 @@ class TimeStep:
         for i in rr:
             for j in rc[i]:
                 surface.arr.inflow_tm[i, j] = surface.cell_runoff(i, j)
+                subsurface.arr.inflow_tm[i, j] = subsurface.cell_runoff(i, j)
+
 
         #
         # Surface BILANCE

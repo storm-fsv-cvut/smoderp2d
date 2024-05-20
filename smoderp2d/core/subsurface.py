@@ -80,6 +80,10 @@ class SubArrs:
         #van genuchgtens m
         self.vg_m = 1 - (1 / self.vg_n)
 
+        self.inflow_tm = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
+
 
 class SubsurfaceC(GridGlobals,
                   get_diffuse() if Globals.wave == 'diffusion' else get_kinematic()):
