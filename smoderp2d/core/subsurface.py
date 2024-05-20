@@ -216,11 +216,18 @@ def get_subsurface():
             """
 
             arr = self.arr
-            if bil > arr.subsoil_depth:
-                exfilt = bil - arr.subsoil_depth
-                bil = arr.subsoil_depth
-            else:
-                exfilt = 0
+
+            exfilt = ma.where(
+                bil > arr.subsoil_depth,
+                bil - arr.subsoil_depth,
+                0
+            )
+        
+            bil = ma.where(
+                bil > arr.subsoil_depth,
+                arr.subsoil_depth,
+                bil
+            )
 
             return bil, exfilt
 
