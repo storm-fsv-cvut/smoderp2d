@@ -395,8 +395,8 @@ class TimeStep:
         h_0 = h_old 
         
         # Setting the maximum number of iterations for the solver
-        max_iter = 15 # 20
-        min_iter = 1 # 0
+        max_iter = 20
+        min_iter = 10
         # parameter for the time step modification  
         modif_up = 2
         modif_down = 2
@@ -450,10 +450,9 @@ class TimeStep:
                 return res
             try:
                 solution = spopt.root(model_args, h_0,
-                                                method='krylov',#'df-sane', 
-                                                options={#'fatol':1e-4,
+                                                method='df-sane', 
+                                                options={'fatol':1e-4,
                                                           'maxiter': max_iter})
-                                                #)
                 
                 h_new = solution.x
                 fc.iter_ = solution.nit
