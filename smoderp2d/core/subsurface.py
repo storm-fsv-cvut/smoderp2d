@@ -255,6 +255,17 @@ def get_subsurface():
 
     return Subsurface 
 
+class SubArrsPass:
+    """TODO."""
+
+    def __init__(self):
+        """Subsurface attributes.
+
+        """
+
+        self.inflow_tm = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
 
 # Class
 #  empty class if no subsurface flow is considered
@@ -278,6 +289,8 @@ def get_subsurface_pass():
             self.q_subsurface = None
             # self.arr = np.zeros([0],float)
             Logger.info("Subsurface: OFF")
+            self.arr = SubArrsPass()
+
 
         def new_inflows(self):
             """TODO."""
