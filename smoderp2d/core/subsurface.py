@@ -322,7 +322,7 @@ def get_subsurface_pass():
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
             )
 
-        def balance(self, infilt, inflow, dt):
+        def balance(self, infilt, dt):
             """TODO.
 
             :param infilt: TODO
