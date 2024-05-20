@@ -52,6 +52,11 @@ class SubArrs:
         self.vol_runoff = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
+        # has to be here in order to cell_runoff in smoderp2d/core/flow.py
+        # works properly
+        self.vol_runoff_rill = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
         # volume of subsurface runoff in cell from previous time step
         self.vol_runoff_pre = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
@@ -120,6 +125,8 @@ def get_subsurface():
 
             self.Kr = darcy.relative_unsat_conductivity
             self.darcy = darcy.darcy
+
+            self.update_inflows(Globals.get_mat_fd())
 
         def slope_(self, i, j):
             """Slope implemented for diffusitve wave approximation
