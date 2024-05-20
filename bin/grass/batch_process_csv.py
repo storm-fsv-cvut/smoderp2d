@@ -27,7 +27,7 @@ def main(csv_file, workers):
             print(row)
 
     # run processes
-    Parallel(n_jobs=workers, backend="threading", verbose=10)(
+    Parallel(n_jobs=workers, backend="multiprocessing", verbose=10)(
         delayed(run_process)(*get_params_epsg(param)) for param in params
     )
 
@@ -43,3 +43,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     main(args.csv, int(args.workers))
+    # main(args.csv)
