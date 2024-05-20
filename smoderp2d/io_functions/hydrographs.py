@@ -204,7 +204,6 @@ class Hydrographs:
                     sep=sep
                 )
                 # line += subsurface.return_str_vals(l,m,SEP,dt) + sep   #
-                # prozatim
                 if Globals.extraOut:
                     line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'\
                            '{sep}{3}{sep}{4:.4e}'.format(
@@ -212,7 +211,7 @@ class Hydrographs:
                         linebil[0], linebil[1], sep=sep
                     )
                 #if Globals.subflow:
-                #    line = ''.format()
+                #    line += ''.format()
                 if Globals.extraOut:
                     line += '{sep}{0:.4e}'\
                             '{sep}{1:.4e}{sep}{2:.4e}{sep}' \
