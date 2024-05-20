@@ -117,11 +117,9 @@ class GrassGisRunner(Runner):
         gisdb = os.path.join(tempfile.gettempdir(), 'grassdata')
         if not os.path.isdir(gisdb):
             os.mkdir(gisdb)
-        print(gisdb)
         # location: use random names for batch jobs
         string_length = 16
         location = binascii.hexlify(os.urandom(string_length)).decode("utf-8")
-        print(location)
         p = Popen(
             [self.grass_bin_path, '-e', f'-c {epsg}', os.path.join(gisdb, location)]
         )
@@ -134,16 +132,14 @@ class GrassGisRunner(Runner):
         #     raise SmoderpError('{}'.format(e))
 
         # initialize GRASS session
-        #Logger.info(f"Python GISRC: {os.getenv('GISRC', 'x')}")
         grass_session = init(gisdb, location, 'PERMANENT')
-        #Logger.info(f"Python GISRC: {os.getenv('GISRC', 'x')}")
-        from grass.pygrass.utils import getenv
+
+        # GISRC env variable must be set explicitly when run as batch
+        # process (why?)
         import grass.lib.gis as libgis
         libgis.G_putenv("GISRC", os.environ["GISRC"])
 
-        # Logger.info(f"PyGRASS GISRC: {getenv('GISRC')}")
-        print(f"PyGRASS GISRC: {getenv('GISRC')}", file=sys.stderr)
-        # calling gsetup.init() is not enough for PyGRASS
+        # calling gsetup.init() is not enough for PyGRASS (why?)
         Mapset('PERMANENT', location, gisdb).current()
 
         # update class properties

@@ -2,16 +2,19 @@
 
 import argparse
 import csv
-from joblib import Parallel, delayed 
+# SMODERP2D is not possible currently to run in parallel
+# from joblib import Parallel, delayed
 
 from batch_process import run_process
+
+from smoderp2d.core.general import Globals, GridGlobals
 
 def get_params_epsg(params):
     epsg = params.pop('epsg')
 
     return params, int(epsg)
 
-def main(csv_file, workers):
+def main(csv_file): #, workers):
     # collect params
     params = []
     with open(csv_file, newline='') as fd:
@@ -24,23 +27,31 @@ def main(csv_file, workers):
                 if v in ('true', 'false'):
                     row[k] = True if v.lower() == 'true' else False
             params.append(row)
-            print(row)
 
     # run processes
-    Parallel(n_jobs=workers, backend="multiprocessing", verbose=10)(
-        delayed(run_process)(*get_params_epsg(param)) for param in params
-    )
+    # Parallel(n_jobs=workers, backend="multiprocessing", verbose=10)(
+    #     delayed(run_process)(*get_params_epsg(p)) for p in params
+    # )
+    for p in params:
+        print('-' * 80)
+        print(f'Run process with {p}...')
+        print('-' * 80)
+        run_process(*get_params_epsg(p))
+        # reset global variables
+        Globals.reset()
+        GridGlobals.reset()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog='batch_process_csv',
-        description='Run SMODERP2D as batch processes in parallel'
+        description='Run SMODERP2D as batch processes from CSV',
+        epilog='Usage: PYTHONPATH=`pwd` python3 bin/grass/batch_process_csv.py --csv \ bin/grass/batch_process.csv'
     )
 
     parser.add_argument('--csv', required=True)
-    parser.add_argument('--workers', default=1)
+    # parser.add_argument('--workers', default=2)
 
     args = parser.parse_args()
     
-    main(args.csv, int(args.workers))
-    # main(args.csv)
+    # main(args.csv, int(args.workers))
+    main(args.csv)
