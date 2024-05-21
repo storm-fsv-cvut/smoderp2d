@@ -5,8 +5,9 @@ class CompType:
     rill = 1
     sheet_stream = 2
     stream_rill = 3
-    subflow_rill = 4
-    stream_subflow_rill = 5
+    subflow = 4
+    subflow_rill = 5
+    stream_subflow_rill = 6
 
     @classmethod
     def __getitem__(cls, key):
@@ -18,7 +19,11 @@ class CompType:
             return cls.sheet_stream
         elif key == 'stream_rill':
             return cls.stream_rill
+        elif key == 'subflow':
+            return cls.subflow
         elif key == 'subflow_rill':
             return cls.subflow_rill
+        elif key == 'stream_subflow_rill':
+            return cls.stream_subflow_rill
         else:
             return cls.stream_subflow_rill
