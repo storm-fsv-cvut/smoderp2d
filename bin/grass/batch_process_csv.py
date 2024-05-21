@@ -2,8 +2,6 @@
 
 import argparse
 import csv
-# SMODERP2D is not possible currently to run in parallel
-# from joblib import Parallel, delayed
 
 from batch_process import run_process
 
@@ -14,7 +12,17 @@ def get_params_epsg(params):
 
     return params, int(epsg)
 
-def main(csv_file): #, workers):
+def run_process_single(params, epsg):
+    # run single process
+    print('-' * 80)
+    print(f'Run process with {params}...')
+    print('-' * 80)
+    run_process(params, epsg)
+    # reset global variables
+    Globals.reset()
+    GridGlobals.reset()
+
+def main(csv_file, workers):
     # collect params
     params = []
     with open(csv_file, newline='') as fd:
@@ -29,17 +37,16 @@ def main(csv_file): #, workers):
             params.append(row)
 
     # run processes
-    # Parallel(n_jobs=workers, backend="multiprocessing", verbose=10)(
-    #     delayed(run_process)(*get_params_epsg(p)) for p in params
-    # )
-    for p in params:
-        print('-' * 80)
-        print(f'Run process with {p}...')
-        print('-' * 80)
-        run_process(*get_params_epsg(p))
-        # reset global variables
-        Globals.reset()
-        GridGlobals.reset()
+    if workers > 1:
+        # WARNING: SMODERP2D is not possible currently to run in parallel
+        from joblib import Parallel, delayed
+
+        Parallel(n_jobs=workers, backend="multiprocessing", verbose=10)(
+            delayed(run_process_single)(*get_params_epsg(p)) for p in params
+        )
+    else:
+        for p in params:
+            run_process_single(*get_params_epsg(p))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -49,9 +56,8 @@ if __name__ == "__main__":
     )
 
     parser.add_argument('--csv', required=True)
-    # parser.add_argument('--workers', default=2)
+    parser.add_argument('--workers', default=1)
 
     args = parser.parse_args()
     
-    # main(args.csv, int(args.workers))
-    main(args.csv)
+    main(args.csv, int(args.workers))
