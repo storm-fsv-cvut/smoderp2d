@@ -45,7 +45,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog='batch_process_csv',
         description='Run SMODERP2D as batch processes from CSV',
-        epilog='Usage: PYTHONPATH=`pwd` python3 bin/grass/batch_process_csv.py --csv \ bin/grass/batch_process.csv'
+        epilog=r'Usage: PYTHONPATH=`pwd` python3 bin/grass/batch_process_csv.py --csv \ bin/grass/batch_process.csv'
     )
 
     parser.add_argument('--csv', required=True)
