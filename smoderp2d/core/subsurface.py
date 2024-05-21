@@ -20,10 +20,10 @@ class SubArrs:
         :param Ks: saturated hydrulic conductivity
         :param vg_n: van genuchten parameter 
         :param vg_l: van genuchten parameter
-        :param z: ???
-        :param ele: elevatin of subsoil
+        :param z: elevation of the subsoil layers
+        :param ele: elevation of the soil surface
         """
-        # amount of water in subsoil = h / porosity
+        # depth of the subsoil layer in meters
         self.subsoil_depth = ma.masked_array(
             np.ones((GridGlobals.r, GridGlobals.c)) * subsoil_depth,
             mask=GridGlobals.masks
@@ -32,11 +32,12 @@ class SubArrs:
         self.h = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
-        # total optantial of the water on the subsoil layer
+        # total potential of the water on the subsoil layer
         self.H = ma.masked_array(
             np.ones((GridGlobals.r, GridGlobals.c)) * ele,
             mask=GridGlobals.masks
         )
+        # elevation of the subsurface: DEM - subsoil_depth
         self.z = ma.masked_array(
             np.ones((GridGlobals.r, GridGlobals.c)) * z, mask=GridGlobals.masks
         )
@@ -110,7 +111,7 @@ def get_subsurface():
             
 
             :param subsoil_depth: of water in subsoil layer
-            :param Ks: saturated hydrulic conductivity
+            :param Ks: saturated hydraulic conductivity
             :param vg_n: van genuchten parameter 
             :param vg_l: van genuchten parameter usually = 0.5
             """
@@ -134,7 +135,7 @@ def get_subsurface():
             self.update_inflows(Globals.get_mat_fd())
 
         def slope_(self, i, j):
-            """Slope implemented for diffusitve wave approximation
+            """Slope implemented for diffusive wave approximation
             
             It is not used in kinematic wave approximation.
 
@@ -165,8 +166,7 @@ def get_subsurface():
 
         def get_exfiltration(self):
             """Return the current exfiltration amount at given time step."""
-            return self.arr.exfiltration
-
+            return self.arr.exfiltsubsoin
         def balance(self, infilt, dt):
             """calculate subsoi water balance.
 
@@ -191,15 +191,17 @@ def get_subsurface():
             """
             arr = self.arr
 
+            # S - saturation; if S == subsoil_depth: 
+            #                       subsoil is full of water
             S = ma.where(
                 bil > arr.subsoil_depth, 
                 1.0,
                 bil / arr.subsoil_depth
             )
 
+            # free drainage BC at the bottom of subsoil
             perc = arr.Ks * self.Kr(S, arr.vg_l, arr.vg_m) * dt
-            # jj bacha
-            # perc = 0
+
             perc = ma.where(
                perc > bil,
                bil,
@@ -307,12 +309,12 @@ def get_subsurface_pass():
             :param vg_l: TODO
             """
             super(SubsurfacePass, self).__init__()
-            # jj
+            
             self.n = 0
 
             self.q_subsurface = None
-            # self.arr = np.zeros([0],float)
             Logger.info("Subsurface: OFF")
+            # create empty array
             self.arr = SubArrsPass()
 
 
