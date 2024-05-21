@@ -10,13 +10,12 @@ path %OSGEO4W_ROOT%\apps\grass\grass%GRASS_VERSION%\lib;%OSGEO4W_ROOT%\apps\gras
 rem add smoderp2d root directory to python path
 set smoderp2d_path=%~dp0\..\..
 set PYTHONPATH=%smoderp2d_path%;%PYTHONPATH%
-echo %PYTHONPATH%
 
 rem change current directory to smpdepr2d root directory
 cd /d %smoderp2d_path%
 
 rem run batch process
-python3 %~dp0%\batch_process.py ^
+python3 %smoderp2d_path%\bin\grass\batch_process.py ^
         --elevation .\tests\data\nucice\dem.tif ^
         --soil .\tests\data\nucice\soils.shp ^
         --soil_type_fieldname Soil ^
