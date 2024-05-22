@@ -379,10 +379,9 @@ class BaseProvider(object):
 
         Globals.mat_reten = -1.0 * data['mat_reten'] / 1000  # converts mm to m
         comp_type = self._comp_type(data['type_of_computing'])
-        Globals.subflow = comp_type['subflow_rill']
+        Globals.subflow = comp_type['subflow']
         Globals.isRill = comp_type['rill']
         Globals.isStream = comp_type['stream']
-
         # load hidden config
         hidden_config = self._load_data_from_hidden_config()
         if 'prtTimes' in data:
@@ -455,6 +454,7 @@ class BaseProvider(object):
         for item in ('sheet_only',
                      'rill',
                      'stream',
+                     'subflow',
                      'subflow_rill',
                      'stream_subflow_rill'):
             ret[item] = False
@@ -469,6 +469,8 @@ class BaseProvider(object):
         elif itc == CompType.stream_rill:
             ret['stream'] = True
             ret['rill'] = True
+        elif itc == CompType.subflow:
+            ret['subflow'] = True
         elif itc == CompType.subflow_rill:
             ret['subflow'] = True
             ret['rill'] = True

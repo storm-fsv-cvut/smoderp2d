@@ -156,7 +156,7 @@ class Hydrographs:
         Logger.info("Hydrographs files has been created...")
 
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface,
-                                 cumulative, currRain, inStream=False, sep=SEP):
+            subsurface, cumulative, currRain, inStream=False, sep=SEP):
 
         total_time = fc.total_time + dt
         iter_ = fc.iter_
@@ -203,16 +203,19 @@ class Hydrographs:
                     linebil[0], cumulativelines[1],
                     sep=sep
                 )
-                # line += subsurface.return_str_vals(l,m,SEP,dt) + sep   #
-                # prozatim
                 if Globals.extraOut:
                     line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'\
-                           '{sep}{3}{sep}{4:.4e}'\
-                           '{sep}{5:.4e}'\
-                           '{sep}{6:.4e}{sep}{7:.4e}{sep}' \
-                           '{8:.4e}'.format(
+                           '{sep}{3}{sep}{4:.4e}'.format(
                         total_time, dt, currRain[l, m],
-                        linebil[0], linebil[1],
+                        linebil[0], linebil[1], sep=sep
+                    )
+                if Globals.subflow:
+                    subline = subsurface.return_str_vals(l,m,SEP,dt) + sep 
+                    line += subline
+                if Globals.extraOut:
+                    line += '{sep}{0:.4e}'\
+                            '{sep}{1:.4e}{sep}{2:.4e}{sep}' \
+                            '{3:.4e}'.format(
                         surface.arr.vol_to_rill[l, m],
                         courantMost, courantRill, iter_, sep=sep
                     )
@@ -227,5 +230,5 @@ class Hydrographs:
 
 class HydrographsPass:
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface,
-                                 currRain, inStream=False, sep=SEP):
+            subsurface, currRain, inStream=False, sep=SEP):
         pass
