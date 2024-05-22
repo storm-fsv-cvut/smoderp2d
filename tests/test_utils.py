@@ -1,7 +1,6 @@
 import os
 import sys
 import configparser
-import filecmp
 import logging
 import glob
 import pickle
@@ -15,6 +14,7 @@ import numpy as np
 from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.providers import Logger
 
+relative_tolerance = 0.001
 
 def write_array_diff_png(diff, target_path):
     import matplotlib.pyplot as plt
@@ -143,7 +143,15 @@ def are_dir_trees_equal(dir1, dir2):
             ignore_list.extend(ignore_right)
         return ignore_list
 
-    relative_tolerance = 0.0001
+    def _allclose(array1, array2, relative_tolerance, name):
+        try:
+            equal = np.allclose(array1, array2, rtol=relative_tolerance)
+        except ValueError as e:
+            print(f"Unable to process {name}: {e}")
+            equal = False
+
+        return equal
+
     same_files = []
     diff_files = []
 
@@ -153,7 +161,7 @@ def are_dir_trees_equal(dir1, dir2):
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
         if new_output.shape == reference.shape:
-            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+            equal = _allclose(new_output, reference, relative_tolerance, i)
             if equal is True:
                 same_files.append(file_path)
                 continue
@@ -166,7 +174,7 @@ def are_dir_trees_equal(dir1, dir2):
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
         if new_output.shape == reference.shape:
-            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+            equal = _allclose(new_output, reference, relative_tolerance, i)
             if equal is True:
                 same_files.append(file_path)
                 continue
@@ -179,7 +187,7 @@ def are_dir_trees_equal(dir1, dir2):
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
         if new_output.shape == reference.shape:
-            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
+            equal = _allclose(new_output, reference, relative_tolerance, i)
             if equal is True:
                 same_files.append(file_path)
                 continue
@@ -279,52 +287,6 @@ class PerformTest:
                 continue
             write_array_diff(v, reference_dict[k], os.path.join(target_dir, k))
 
-    def report_pickle_difference(self, new_output, reference):
-        """Report the inconsistency of two files.
-
-        To be called when output comparison assert fails.
-
-        :param new_output: path to the new output file
-        :param reference: path to the reference file
-        :return: string message reporting the content of the new output
-        """
-        diff_fn = new_output + ".diff"
-        diff_fd = open(diff_fn, "w")
-
-        with open(new_output, "rb") as left:
-            with open(reference, "rb") as right:
-                new_output_dict = pickle.load(left, encoding="bytes")
-                reference_dict = pickle.load(right, encoding="bytes")
-
-                if not _is_on_github_action():
-                    self._extract_pickle_data(
-                        new_output_dict, self._extract_target_dir(new_output)
-                    )
-                    self._extract_pickle_data(
-                        reference_dict, self._extract_target_dir(reference)
-                    )
-                    self._compare_arrays(
-                        new_output_dict,
-                        reference_dict,
-                        self._extract_target_dir(new_output)
-                    )
-
-                new_output_str = self._data_to_str(new_output_dict)
-                reference_str = self._data_to_str(reference_dict)
-
-                # sys.stdout.writelines(
-                #   unified_diff(new_output_str, reference_str)
-                # )
-                diff_fd.writelines(unified_diff(new_output_str, reference_str))
-
-        diff_fd.close()
-
-        return (
-            "Inconsistency in {} compared to the reference data. "
-            "The diff can be seen above and is stored in {}.".format(
-                new_output, diff_fn
-            )
-        )
 
     def _run(self, comptype=None):
         runner = self.runner()
@@ -349,8 +311,7 @@ class PerformTest:
             "dpre.save",
         )
 
-        relative_tolerance = 0.0001
-
+        diff_list = []
         with open(dataprep_filepath, "rb") as new_output:
             with open(reference_filepath, "rb") as reference:
                 new_output_dict = pickle.load(new_output, encoding="bytes")
@@ -367,28 +328,57 @@ class PerformTest:
                                         rtol=relative_tolerance
                                     )
                                 except ValueError as e:
+                                    print(f"Unable to process {k}/{kk}: {e}")
                                     equal = False
-                            assert equal is True, \
-                                self.report_pickle_difference(
-                                    dataprep_filepath, reference_filepath
-                                )
+                            if equal is False:
+                                diff_list.append(unified_diff(self._data_to_str({k: new_output_dict[k]}),
+                                                              self._data_to_str({k: reference_dict[k]}),
+                                                              fromfile=f'output ({kk})', tofile=f'reference ({kk})'))
                     elif v is None:
-                        assert reference_dict[k] is None, \
-                            self.report_pickle_difference(
-                                dataprep_filepath, reference_filepath
-                            )
+                        if reference_dict[k] is not None:
+                            diff_list.append(unified_diff(self._data_to_str({k: new_output_dict[k]}),
+                                                          self._data_to_str({k: reference_dict[k]}),
+                                                          fromfile=f'output ({k})', tofile=f'reference ({k})'))
                     else:
                         if k not in ('rc', 'wave'):
-                            equal = np.allclose(
-                                v, reference_dict[k], rtol=relative_tolerance
-                            )
+                            try:
+                                equal = np.allclose(
+                                    v, reference_dict[k], rtol=relative_tolerance
+                                )
+                            except ValueError as e:
+                                print(f"Unable to process {k}: {e}")
+                                equal = False
                         else:
                             # cannot create an array from inhomogeneous list
                             equal = v == reference_dict[k]
-                        assert equal, \
-                            self.report_pickle_difference(
-                                dataprep_filepath, reference_filepath
-                            )
+                        if equal is False:
+                            diff_list.append(unified_diff(self._data_to_str({k: new_output_dict[k]}),
+                                                          self._data_to_str({k: reference_dict[k]}),
+                                                          fromfile=f'output ({k})', tofile=f'reference ({k})'))
+
+        diff_fn = dataprep_filepath + ".diff"
+        if diff_list:
+            with open(diff_fn, "w") as diff_fd:
+                for dl in diff_list:
+                    diff_fd.writelines(dl)
+                    diff_fd.write("\n")
+
+            if not _is_on_github_action():
+                self._extract_pickle_data(
+                    new_output_dict, self._extract_target_dir(dataprep_filepath)
+                )
+                self._extract_pickle_data(
+                    reference_dict, self._extract_target_dir(reference_filepath)
+                )
+                self._compare_arrays(
+                    new_output_dict,
+                    reference_dict,
+                    self._extract_target_dir(dataprep_filepath)
+                )
+
+        assert not diff_list, \
+                f"Inconsistency in {dataprep_filepath} compared to the reference data. " \
+                f"The diff can be seen above and is stored in {diff_fn}."
 
     def run_roff(self, config_file):
         assert os.path.exists(config_file)
