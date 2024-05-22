@@ -87,7 +87,7 @@ class GrassGisRunner(Runner):
             )
 
         str_out = out.decode("utf-8")
-        gisbase = str_out.rstrip(os.linesep)
+        gisbase = str_out.strip()
 
         # check version
         # gs.version() requires g.gisenv which is not possible to use when no location is active
