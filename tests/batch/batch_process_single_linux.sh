@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# bash ./bin/grass/batch_process.sh
+
 PYTHONPATH=`pwd` python3 ./bin/grass/batch_process.py \
         --elevation ./tests/data/nucice/dem.tif \
         --soil ./tests/data/nucice/soils.shp \
@@ -12,7 +12,7 @@ PYTHONPATH=`pwd` python3 ./bin/grass/batch_process.py \
         --maxdt 5 \
         --table_soil_vegetation ./tests/data/nucice/soil_veg_tab.dbf \
         --table_soil_vegetation_fieldname soilveg \
-        --output /tmp/smoderp2d \
+        --output ./tests/data/output \
         --points ./tests/data/nucice/points.shp \
         --points_fieldname point_id \
         --streams ./tests/data/nucice/streams.shp \

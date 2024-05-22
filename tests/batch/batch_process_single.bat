@@ -1,21 +1,12 @@
 @echo off
 
-call "C:\OSGeo4W\bin\o4w_env.bat"
-set GRASS_VERSION=83
-
-rem set GRASS GIS environment
-call "%OSGEO4W_ROOT%\apps\grass\grass%GRASS_VERSION%\etc\env.bat"
-path %OSGEO4W_ROOT%\apps\grass\grass%GRASS_VERSION%\lib;%OSGEO4W_ROOT%\apps\grass\grass%GRASS_VERSION%\bin;%PATH%
-
-rem add smoderp2d root directory to python path
-set smoderp2d_path=%~dp0\..\..
-set PYTHONPATH=%smoderp2d_path%;%PYTHONPATH%
+call "C:\OSGeo4W\bin\init_windows_env.bat"
 
 rem change current directory to smpdepr2d root directory
-cd /d %smoderp2d_path%
+cd /d %SMODERP2D_PATH%
 
 rem run batch process
-python3 %smoderp2d_path%\bin\grass\batch_process.py ^
+python3 %SMODERP2D_PATH%\bin\grass\batch_process.py ^
         --elevation .\tests\data\nucice\dem.tif ^
         --soil .\tests\data\nucice\soils.shp ^
         --soil_type_fieldname Soil ^
@@ -26,7 +17,7 @@ python3 %smoderp2d_path%\bin\grass\batch_process.py ^
         --maxdt 5 ^
         --table_soil_vegetation .\tests\data\nucice\soil_veg_tab.dbf ^
         --table_soil_vegetation_fieldname soilveg ^
-        --output  %userprofile%\downloads\smoderp2d ^
+        --output  .\tests\data\output ^
         --points .\tests\data\nucice\points.shp ^
         --points_fieldname point_id ^
         --streams .\tests\data\nucice\streams.shp ^
