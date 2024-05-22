@@ -1,6 +1,6 @@
 @echo off
 
-call "C:\OSGeo4W\bin\init_windows_env.bat"
+call "%~dp0\init_windows_env.bat"
 
 rem change current directory to smpdepr2d root directory
 cd /d %SMODERP2D_PATH%
