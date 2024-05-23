@@ -18,7 +18,7 @@ import numpy.ma as ma
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
 from smoderp2d.core.surface import get_surface, update_state
-from smoderp2d.core.subsurface import Subsurface
+from smoderp2d.core.subsurface import get_subsurface, get_subsurface_pass
 from smoderp2d.core.cumulative_max import Cumulative
 
 from smoderp2d.time_step import TimeStep
@@ -150,14 +150,9 @@ class Runoff(object):
         # class handling the subsurface processes if desir
         # TODO: include in data preprocessing
         if Globals.subflow:
-            self.subsurface = Subsurface(
-                L_sub=0.1,
-                Ks=0.005,
-                vg_n=1.5,
-                vg_l=0.5
-            )
+            self.subsurface = get_subsurface()()
         else:
-            self.subsurface = Subsurface()
+            self.subsurface = get_subsurface_pass()()
 
         # maximal and cumulative values of resulting variables
         self.cumulative = Cumulative()
@@ -199,6 +194,7 @@ class Runoff(object):
             self.courant,
             self.delta_t,
             self.surface,
+            self.subsurface,
             self.cumulative,
             ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
@@ -212,6 +208,7 @@ class Runoff(object):
             self.courant,
             self.delta_t,
             self.surface,
+            self.subsurface,
             self.cumulative,
             ma.masked_array(
                 np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
@@ -330,6 +327,7 @@ class Runoff(object):
                         self.courant,
                         self.delta_t,
                         self.surface,
+                        self.subsurface,
                         self.cumulative,
                         actRain
                     )
@@ -382,6 +380,7 @@ class Runoff(object):
                     self.courant,
                     self.delta_t,
                     self.surface,
+                    self.subsurface,
                     self.cumulative,
                     actRain,
                     True

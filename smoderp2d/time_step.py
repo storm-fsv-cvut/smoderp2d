@@ -57,11 +57,18 @@ class TimeStep:
         cond_state_flow = surface_state > Globals.streams_flow_inc
         v_sheet = ma.where(cond_state_flow, 0, runoff_return[0])
         v_rill = ma.where(cond_state_flow, 0, runoff_return[1])
-        if ma.all(cond_state_flow):
-            subsurface.runoff(
-                delta_t, mat_effect_cont
+        subsurface.runoff(delta_t, mat_effect_cont, cond_state_flow)
+
+        if ma.any(cond_state_flow):
+            fc.ratio = ma.masked_array(
+                np.zeros((GridGlobals.r, GridGlobals.c)),
+                mask=GridGlobals.masks
             )
-        rill_courant = ma.where(cond_state_flow, 0, runoff_return[2])
+        else:
+            # TODO: Better way to make it just a number
+            fc.ratio = runoff_return[2]
+        rill_courant = ma.where(cond_state_flow, 0, runoff_return[3])
+
         surface.arr.h_sheet = ma.where(
             cond_state_flow, surface.arr.h_sheet, runoff_return[3]
         )
@@ -134,6 +141,7 @@ class TimeStep:
                 courant,
                 delta_t,
                 surface,
+                subsurface,
                 cumulative,
                 actRain)
             return actRain
@@ -173,9 +181,11 @@ class TimeStep:
         for i in rr:
             for j in rc[i]:
                 surface.arr.inflow_tm[i, j] = surface.cell_runoff(i, j)
+                subsurface.arr.inflow_tm[i, j] = subsurface.cell_runoff(i, j)
+
 
         #
-        # Surface BILANCE
+        # Surface water balance 
         #
         surBIL = (
             surface.arr.h_total_pre + actRain + surface.arr.inflow_tm /
@@ -231,12 +241,9 @@ class TimeStep:
                 state_condition
             )
 
-        # subsurface inflow
-        """
-        inflow_sub = subsurface.cell_runoff(i,j,False)
-        subsurface.bilance(infiltration,inflow_sub/pixel_area,delta_t)
+        # subsurface water balance
+        subsurface.balance(surface.arr.infiltration,delta_t)
         subsurface.fill_slope()
-        """
 
         cumulative.update_cumulative(
             surface.arr,
@@ -249,6 +256,7 @@ class TimeStep:
             courant,
             delta_t,
             surface,
+            subsurface,
             cumulative,
             actRain)
 

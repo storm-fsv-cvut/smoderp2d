@@ -17,6 +17,8 @@ tests/data/reference/gistest_*/*/control/*.prj
 tests/data/reference/gistest_*/*/temp/*.prj
 tests/log
 
+tests/grassdata/
+
 bin/qgis/smoderp2d-plugin/smoderp2d/
 bin/qgis/smoderp2d-plugin/zip_build/
 
