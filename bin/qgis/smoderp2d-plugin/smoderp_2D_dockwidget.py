@@ -538,7 +538,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         """
         this_run = HistoryWidget(f'{run[1]["output"]} -- {run[0]}')
         try:
-            this_run.saveHistory(run[1], run[2])
+            # history items changed by https://github.com/storm-fsv-cvut/smoderp2d/pull/392
+            this_run.saveHistory(run[1] if len(run) == 2 else run[3])
             self.history_tab.insertItem(0, this_run)
         except (KeyError, IndexError) as e:
             QgsMessageLog.logMessage(
@@ -706,10 +707,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             'vegetation': get_map_path(
                 self.vegetation.currentLayer().dataProvider()),
             'vegetation_type_fieldname': self.vegetation_type.currentText(),
-            'points': None,
+            'points': '',
             'points_fieldname': self.points_field.currentText(),
             # 'output': self.output_lineEdit.text().strip(),
-            'streams': None,
+            'streams': '',
             'rainfall_file': self.rainfall.text(),
             'end_time': self.end_time.value(),
             'maxdt': self.maxdt.value(),
@@ -717,7 +718,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 self.table_soil_vegetation.currentLayer().dataProvider()),
             'table_soil_vegetation_fieldname':
                 self.table_soil_vegetation_field.currentText(),
-            'channel_properties_table': None,
+            'channel_properties_table': '',
             'streams_channel_type_fieldname':
                 self.table_stream_shape_code.currentText(),
             'flow_direction': self.flow_direction.currentText(),
