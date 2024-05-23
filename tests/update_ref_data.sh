@@ -45,4 +45,17 @@ else
 	  python3 -m pytest tests/test_cmd.py --config config_files/${1}_${setting}.ini
 	  cp -r tests/data/output/* tests/data/reference/${1}_${setting}/
 	done
+	# do the quicktest/test different test for the implicit solution
+	if [[ "$1" == quicktest ]]; then
+		special_settings=("stream_rill")
+        else
+		special_settings=("stream_rill_mfda")
+	fi
+	for setting in ${special_settings[*]}
+	do
+	  echo "tests/data/reference/${1}_implicit_${setting}"
+	  rm -r tests/data/reference/${1}_implicit_${setting}/*
+	  python3 -m pytest tests/test_cmd.py --config config_files/${1}_${setting}.ini --hidden_config config_files/.config_implicit.ini
+	  cp -r tests/data/output/* tests/data/reference/${1}_implicit_${setting}/
+	done
 fi
