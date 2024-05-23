@@ -27,7 +27,7 @@ class GrassGisRunner(Runner):
             self._set_environment()
 
         self._grass_session = None
-        self._grass_session_crs = None # TODO
+        self._grass_session_crs = None
             
         super().__init__()
    
@@ -148,19 +148,20 @@ class GrassGisRunner(Runner):
 
         return grass_session
 
-    def import_data(self, options):
+    def import_data(self):
         """Import files to grass.
-
-        :param options: dictionary of input data
         """
         from grass.pygrass.modules import Module
         from grass.pygrass.gis import Mapset
 
-        Logger.info("Importing input data to GRASS ({})...".format(
+        if self.options is None:
+            raise ProviderError("Provider options not set")
+
+        Logger.info("Importing input data using GRASS GIS ({})...".format(
             Mapset().path())
         )
 
-        for key, value in options.items():
+        for key, value in self.options.items():
             if not value:
                 # skip optional options
                 continue
@@ -200,10 +201,10 @@ class GrassGisRunner(Runner):
                     **kwargs
                 )
 
-        # TODO: it must be set also for QGIS somehow (?)
+        # update spatial data related options (path -> map name)
         for opt in ("elevation", "soil", "vegetation", "points", "streams",
                     "table_soil_vegetation", "channel_properties_table"):
-            if options[opt]:
-                options[opt] = opt
+            if self.options[opt]:
+                self.options[opt] = opt
 
         Logger.info("Input data successully imported")

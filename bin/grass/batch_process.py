@@ -10,7 +10,7 @@ def run_process(params, epsg):
     runner = GrassGisRunner()
     runner.create_location(f'EPSG:{epsg}')
     runner.set_options(params)
-    runner.import_data(params)
+    runner.import_data()
     runner.run()
     runner.finish()
 

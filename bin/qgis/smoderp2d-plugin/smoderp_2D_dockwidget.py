@@ -54,17 +54,15 @@ from .custom_widgets import HistoryWidget
 class SmoderpTask(QgsTask):
     """Task holding the SMODERP2D run in a parallel thread."""
 
-    def __init__(self, input_params, input_maps, *args,
+    def __init__(self, input_params, *args,
                  **kwargs):
         """Initialize the task and set its class variables.
 
         :param input_params: TODO
-        :param input_maps: TODO
         """
         super().__init__(*args, **kwargs)
 
         self.input_params = input_params
-        self.input_maps = input_maps
         self.error = None
         self.finish_msg_level = Qgis.Info
         self.runner = None
@@ -75,7 +73,7 @@ class SmoderpTask(QgsTask):
             self.runner = QGISRunner(self.setProgress)
             self.runner.create_location(QgsProject.instance().crs().authid())
             self.runner.set_options(self.input_params)
-            self.runner.import_data(self.input_maps)
+            self.runner.import_data()
             self.runner.run()
         except (ProviderError, ImportError) as e:
             self.error = e
@@ -442,7 +440,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             self._getInputParams()
 
             smoderp_task = SmoderpTask(
-                self._input_params, self._input_maps
+                self._input_params
             )
 
             # prepare the progress bar
@@ -515,7 +513,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         Then call _addHistoryItem to add the widget to the pane.
         """
         timestamp = str(datetime.datetime.now())
-        run = (timestamp, dict(self._input_params), dict(self._input_maps))
+        run = (timestamp, dict(self._input_params))
 
         runs = self.settings.value('historical_runs')
         runs.insert(0, run)
@@ -700,22 +698,26 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             return ret
 
         self._input_params = {
-            'elevation': self.elevation.currentText(),
-            'soil': self.soil.currentText(),
+            'elevation': get_map_path(
+                self.elevation.currentLayer().dataProvider()),
+            'soil': get_map_path(
+                self.soil.currentLayer().dataProvider()),
             'soil_type_fieldname': self.soil_type.currentText(),
-            'vegetation': self.vegetation.currentText(),
+            'vegetation': get_map_path(
+                self.vegetation.currentLayer().dataProvider()),
             'vegetation_type_fieldname': self.vegetation_type.currentText(),
-            'points': self.points.currentText(),
+            'points': None,
             'points_fieldname': self.points_field.currentText(),
             # 'output': self.output_lineEdit.text().strip(),
-            'streams': self.stream.currentText(),
+            'streams': None,
             'rainfall_file': self.rainfall.text(),
             'end_time': self.end_time.value(),
             'maxdt': self.maxdt.value(),
-            'table_soil_vegetation': self.table_soil_vegetation.currentText(),
+            'table_soil_vegetation': get_map_path(
+                self.table_soil_vegetation.currentLayer().dataProvider()),
             'table_soil_vegetation_fieldname':
                 self.table_soil_vegetation_field.currentText(),
-            'channel_properties_table': self.table_stream_shape.currentText(),
+            'channel_properties_table': None,
             'streams_channel_type_fieldname':
                 self.table_stream_shape_code.currentText(),
             'flow_direction': self.flow_direction.currentText(),
@@ -724,43 +726,22 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             'output': self.main_output.text().strip()
         }
 
-        self._input_maps = {
-            'elevation':
-                get_map_path(self.elevation.currentLayer().dataProvider()),
-            'soil':
-                get_map_path(self.soil.currentLayer().dataProvider()),
-            'vegetation':
-                get_map_path(self.vegetation.currentLayer().dataProvider()),
-            'points': "",
-            'streams': "",
-            'table_soil_vegetation': get_map_path(
-                self.table_soil_vegetation.currentLayer().dataProvider()
-            ),
-            'channel_properties_table': ""
-        }
-
-        # TODO: It would be nicer to use names defined in _input_params before
-        # this reparsing
-        for key in self._input_maps.keys():
-            if self._input_params[key] != '':
-                self._input_params[key] = key
-
         # optional inputs
         if self.points.currentLayer() is not None:
-            self._input_maps["points"] = get_map_path(
+            self._input_params["points"] = get_map_path(
                 self.points.currentLayer().dataProvider()
             )
 
         if self.stream.currentLayer() is not None:
-            self._input_maps["streams"] = get_map_path(
+            self._input_params["streams"] = get_map_path(
                 self.stream.currentLayer().dataProvider()
             )
 
         if self.table_stream_shape.currentLayer() is not None:
-            self._input_maps['channel_properties_table'] = get_map_path(
+            self._input_params['channel_properties_table'] = get_map_path(
                 self.table_stream_shape.currentLayer().dataProvider()
             )
-            self._input_maps["streams_channel_type_fieldname"] = self.table_stream_shape_code.currentText()
+            self._input_params["streams_channel_type_fieldname"] = self.table_stream_shape_code.currentText()
 
     def _checkInputDataPrep(self):
         """Check mandatory fields.
