@@ -26,7 +26,7 @@ def main(csv_file, workers):
     # collect params
     params = []
     with open(csv_file, newline='') as fd:
-        reader = csv.DictReader(fd)
+        reader = csv.DictReader(fd, delimiter=';')
         for row in reader:
             if row['epsg'].startswith('#'):
                 # skip commented rows
