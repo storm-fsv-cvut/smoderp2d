@@ -38,7 +38,6 @@ def main(csv_file, workers):
 
     # run processes
     if workers > 1:
-        # WARNING: SMODERP2D is not possible currently to run in parallel
         from joblib import Parallel, delayed
 
         Parallel(n_jobs=workers, backend="multiprocessing", verbose=10)(
