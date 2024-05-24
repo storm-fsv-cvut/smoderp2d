@@ -482,6 +482,23 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 "CRITICAL"
             )
 
+    def _getHistoryItems(self):
+        """Get historical runs from the settings."""
+        try:
+            runs = self.settings.value('historical_runs')
+        except TypeError as e:
+            iface.messageBar().pushMessage(
+                f'Failed to read historical items: {e}. History will be deleted.',
+                level=Qgis.Warning, duration=5
+            )
+            runs = None
+
+        if runs is None:
+            runs = []
+            self.settings.setValue('historical_runs', runs)
+
+        return runs
+
     def _loadHistory(self):
         """Load historical runs into History tab.
 
@@ -489,28 +506,18 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         """
         # uncomment the following line to reset the history pane
         # self.settings.setValue('historical_runs', None)
-        try:
-            runs = self.settings.value('historical_runs')
-        except TypeError as e:
+        runs = self._getHistoryItems()
+
+        nerrors = 0
+        for run in reversed(runs):
+            if self._addHistoryItem(run) is False:
+                nerrors += 1
+
+        if nerrors > 0:
             iface.messageBar().pushMessage(
-                f'Failed to read historical items: {e}',
+                f'Failed to add {nerrors} historical items (see logs for details)',
                 level=Qgis.Warning, duration=5
-            )
-            runs = []
-
-        if runs is None:
-            self.settings.setValue('historical_runs', [])
-        else:
-            nerrors = 0
-            for run in reversed(runs):
-                if self._addHistoryItem(run) is False:
-                    nerrors += 1
-
-            if nerrors > 0:
-                iface.messageBar().pushMessage(
-                    f'Failed to add {nerrors} historical items (see logs for details)',
-                    level=Qgis.Warning, duration=5
-            )
+        )
 
     def _addCurrentHistoryItem(self):
         """Add the current run into settings[historical_runs].
@@ -522,9 +529,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         timestamp = str(datetime.datetime.now())
         run = (timestamp, dict(self._input_params))
 
-        runs = self.settings.value('historical_runs')
+        runs = self._getHistoryItems()
         runs.insert(0, run)
-
         if len(runs) > 25:
             runs.pop(-1)
 
