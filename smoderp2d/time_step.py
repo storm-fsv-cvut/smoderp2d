@@ -347,10 +347,9 @@ class TimeStep:
     # self,surface, subsurface, rain_arr, cumulative, hydrographs, potRain,
     # courant, total_time, delta_t, combinatIndex, NoDataValue,
     # sum_interception, mat_effect_cont, iter_
-    def do_next_h_implicit(self, surface, subsurface,
-                            rain_arr, cumulative, 
-                            hydrographs, flow_control,   delta_t, 
-                            delta_tmax,list_fd,courant):
+    def do_next_h_implicit(self, surface, subsurface, rain_arr, cumulative,
+                           hydrographs, flow_control, delta_t, delta_tmax,
+                           list_fd,courant):
         """TODO.
 
         :param surface: TODO
@@ -377,7 +376,7 @@ class TimeStep:
         # Calculating the infiltration
         sr = Globals.get_sr()
         itera = Globals.get_itera()
-        
+
         # Until the max_infilt_capa
         potRain, tz_temp = rain_f.timestepRainfall(
             itera, fc.total_time, delta_t, fc.tz, sr
@@ -397,11 +396,11 @@ class TimeStep:
         h_old = np.ravel(surface.arr.h_total_pre.tolist(0))
 
         # Preparing the matrixes of flow parameters
-        aa = ma.array(Globals.get_mat_aa(),mask=GridGlobals.masks)
-        b = ma.array(Globals.get_mat_b(),mask=GridGlobals.masks)
+        aa = ma.array(Globals.get_mat_aa(), mask=GridGlobals.masks)
+        b = ma.array(Globals.get_mat_b(), mask=GridGlobals.masks)
         # Setting the initial guess for the solver
         h_0 = h_old 
-        
+
         # Setting the maximum number of iterations for the solver
         max_iter = 20
         min_iter = 10
@@ -414,83 +413,80 @@ class TimeStep:
             potRain, tz_temp = rain_f.timestepRainfall(
                 itera, flow_control.total_time, delta_t, flow_control.tz, sr
             )
-            
+
             # Calculating the actual rain
             actRain, sum_interception_temp, vegaarr_temp = \
                 rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
-            
+
             # Changing the actRain to a list - inserting 0 for the NoDataValues	
-            act_rain = (actRain/delta_t).tolist(0)
+            act_rain = (actRain / delta_t).tolist(0)
             # After the max_infilt_capa is filled       
             for iii in combinatIndex:
                 # TODO: variable not used. Should we delete it?
                 index = iii[0]
                 k = iii[1]
                 s = iii[2]
-                
+
                 iii[3] = infilt.philip(
                     k,
                     s,
                     delta_t,
                     fc.total_time + delta_t -  self.infilt_time,
                     NoDataValue)
-            
+
             infilt.set_combinatIndex(combinatIndex)
-             
-           
+
             def model_args(h_new):
-                res = self.model(h_new,
-                                delta_t,
-                                h_old,
-                                list_fd,
-                                r,c,
-                                aa,b,
-                                act_rain,
-                                surface.arr.soil_type,
-                                pixel_area,
-                                surface.arr,
-                                surface.arr.h_crit,
-                                surface.arr.state,
-                                surface.arr.rillWidth,
-                                surface.arr.h_rillPre,
-                                surface.arr.h_last_state1,
-                                subsurface.get_exfiltration())
+                res = self.model(
+                    h_new,
+                    delta_t,
+                    h_old,
+                    list_fd,
+                    r,c,
+                    aa,b,
+                    act_rain,
+                    surface.arr.soil_type,
+                    pixel_area,
+                    surface.arr,
+                    surface.arr.h_crit,
+                    surface.arr.state,
+                    surface.arr.rillWidth,
+                    surface.arr.h_rillPre,
+                    surface.arr.h_last_state1,
+                    subsurface.get_exfiltration()
+                )
                 return res
             try:
-                solution = spopt.root(model_args, h_0,
-                                                method='df-sane', 
-                                                options={'fatol':1e-4,
-                                                          'maxiter': max_iter})
-                
+                solution = spopt.root(
+                    model_args, h_0, method='df-sane',
+                    options={'fatol':1e-4, 'maxiter': max_iter}
+                )
+
                 h_new = solution.x
                 fc.iter_ = solution.nit
-                
-                # print ('h_hew {} nit {}'.format(h_new.mean(), solution.nit))
-                # input('press...')
+
                 if solution.success == False:
-                    delta_t = delta_t/modif_down
+                    delta_t = delta_t / modif_down
                     continue
 
             except ZeroDivisionError:
                 raise "Error: The nonlinear solver did not converge. Try to change the time step"
 
-  
-            
             if solution.nit >= max_iter:
             #if ma.any(abs(h_new - h_old) > dh_max):
-                delta_t = delta_t/modif_down
+                delta_t = delta_t / modif_down
             else:
                 # print ('break dt {}'.format(dt))
                 if solution.nit < min_iter : 
-                    if ma.all(delta_t*modif_up < delta_tmax):
-                        delta_t = delta_t*modif_up
+                    if ma.all(delta_t * modif_up < delta_tmax):
+                        delta_t = delta_t * modif_up
                     else:
                         delta_t = delta_tmax
                 break
 
-        if i == fc.max_iter-1:
+        if i == fc.max_iter - 1:
             raise "Error: The nonlinear solver did not meet the requirements after repeated decreasing of the time step. Try to change the maximum time step."       
-        
+
         # Checking solution for negative values
         if ma.all(h_new < 0):
             raise NegativeWaterLevel()   
@@ -502,7 +498,7 @@ class TimeStep:
 
         subsurface.fill_slope()
         subsurface.new_inflows()
-        
+
         surface_state = surface.arr.state
 
         state_condition = surface_state > Globals.streams_flow_inc
@@ -510,7 +506,7 @@ class TimeStep:
         surface.arr.h_total_new = ma.where(
             state_condition,  # stream flow in the cell
             0,
-            h_new.reshape(r,c))
+            h_new.reshape(r, c))
         # saving the actual rain at current time step
         # save the tz for actual time step
         potRain, fc.tz = rain_f.timestepRainfall(
@@ -519,11 +515,10 @@ class TimeStep:
         # Calculating the actual rain
         actRain, fc.sum_interception, rain_arr.arr.veg = \
             rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
-        
-        
+
         # Saving the actual rain
         surface.arr.cur_rain = actRain    
-         
+
         if Globals.isRill:
             last_state1_buf = surface.arr.h_last_state1
             #saving the last value of the water level in rill during growing phase (state = 1)
@@ -536,74 +531,81 @@ class TimeStep:
                 state_1_cond,
                 surface.arr.h_total_pre,
                 surface.arr.h_last_state1
-            ) 
+            )
 
         # updating rill surface state
-            surface.arr.state, _ = update_state(surface.arr.h_total_new,
-                                                surface.arr.h_crit,
-                                                surface.arr.h_total_pre,
-                                                surface.arr.state,
-                                                last_state1_buf)
-            
+            surface.arr.state, _ = update_state(
+                surface.arr.h_total_new,
+                surface.arr.h_crit,
+                surface.arr.h_total_pre,
+                surface.arr.state,
+                last_state1_buf
+            )
+
             # Saving results to surface structure
             # Saving the new rill water level
-            h_sheet, h_rill, h_rill_pre = compute_h_hrill(surface.arr.h_total_new, surface.arr.h_crit,
-                                                        surface.arr.state,
-                                                        surface.arr.h_rillPre)
-            
-            surface.arr.h_rill = ma.array(h_rill,mask=GridGlobals.masks)
-            
-            surface.arr.h_sheet = ma.array(h_sheet,mask=GridGlobals.masks) 
-            
-            surface.arr.h_rillPre = ma.array(h_rill_pre,mask=GridGlobals.masks)
-            
+            h_sheet, h_rill, h_rill_pre = compute_h_hrill(
+                surface.arr.h_total_new,
+                surface.arr.h_crit,
+                surface.arr.state,
+                surface.arr.h_rillPre
+            )
+
+            surface.arr.h_rill = ma.array(h_rill, mask=GridGlobals.masks)
+
+            surface.arr.h_sheet = ma.array(h_sheet, mask=GridGlobals.masks)
+
+            surface.arr.h_rillPre = ma.array(h_rill_pre, mask=GridGlobals.masks)
+
             # calcualting rill runoff
             # vol_to_rill = h_rill * GridGlobals.get_pixel_area()
             efect_vrst = Globals.get_mat_effect_cont()
-            
-            v_rill, v_rill_rest, vol_runoff_rill, _courant, vol_to_rill, rill_b = rill_runoff(
-                delta_t, efect_vrst, h_rill, surface.arr.rillWidth)
 
-            surface.arr.vol_runoff_rill = vol_runoff_rill # [m]
-            
+            v_rill, v_rill_rest, vol_runoff_rill, _courant, vol_to_rill, rill_b = rill_runoff(
+                delta_t, efect_vrst, h_rill, surface.arr.rillWidth
+            )
+
+            surface.arr.vol_runoff_rill = vol_runoff_rill  # [m]
+
             surface.arr.vol_to_rill = vol_to_rill
             surface.arr.vel_rill = ma.filled(v_rill, fill_value=0.0)
-            surface.arr.rillWidth = ma.array(ma.where(surface.arr.state > 0, rill_b,
-                                            surface.arr.rillWidth),
-                                            mask=GridGlobals.masks) #[m]
-            surface.arr.v_rill_rest = ma.filled(v_rill_rest,fill_value=0.0)
-            
+            surface.arr.rillWidth = ma.array(
+                ma.where(surface.arr.state > 0, rill_b, surface.arr.rillWidth),
+                mask=GridGlobals.masks
+            )  #[m]
+            surface.arr.v_rill_rest = ma.filled(v_rill_rest, fill_value=0.0)
         else: 
             # Saving the new water level
             surface.arr.h_sheet = surface.arr.h_total_new
-        
+
         #calculating sheet runoff
         _q_sheet, surface.arr.vol_runoff, surface.arr.vol_rest = ma.filled(
-            sheet_runoff(delta_t, aa, b, surface.arr.h_sheet),fill_value=0.0) 
+            sheet_runoff(delta_t, aa, b, surface.arr.h_sheet), fill_value=0.0
+        )
 
         # Saving the inflows
         tot_flow = (surface.arr.vol_runoff + surface.arr.vol_runoff_rill)
-        
-        surface.arr.inflow_tm =ma.array(inflows_comp(tot_flow, list_fd),mask=GridGlobals.masks)
-        
+
+        surface.arr.inflow_tm =ma.array(inflows_comp(tot_flow, list_fd), mask=GridGlobals.masks)
+
         # Calculating the infiltration
-        _bil,infiltration = infilt.philip_infiltration(surface.arr.soil_type,
-                                                                    surface.arr.h_total_new) #[m]    
-        surface.arr.infiltration = ma.where(subsurface.get_exfiltration() > 0, 
-                                            0,
-                                            infiltration)
+        _bil,infiltration = infilt.philip_infiltration(
+            surface.arr.soil_type, surface.arr.h_total_new
+        ) #[m]
+        surface.arr.infiltration = ma.where(
+            subsurface.get_exfiltration() > 0, 0, infiltration
+        )
         # Updating surface retention
         h_ret = actRain - surface.arr.infiltration
-        surface_retention_update(h_ret,surface.arr)
-        
+        surface_retention_update(h_ret, surface.arr)
+
         #Reaches
-       
-       
+
         if ma.any(surface_state > Globals.streams_flow_inc):
             h_sub = subsurface.runoff_stream_cell(state_condition)
             inflowToReach = ma.where(
                 state_condition,
-                h_sub * pixel_area + h_new.reshape(r,c) * pixel_area,
+                h_sub * pixel_area + h_new.reshape(r, c) * pixel_area,
                 0
             )
             surface.reach_inflows(
@@ -615,8 +617,9 @@ class TimeStep:
         cumulative.update_cumulative(
             surface.arr,
             subsurface.arr,
-            delta_t)
-        
+            delta_t
+        )
+
         hydrographs.write_hydrographs_record(
             None,
             None,
@@ -625,6 +628,7 @@ class TimeStep:
             delta_t,
             surface,
             cumulative,
-            actRain)
+            actRain
+        )
 
         return actRain, delta_t

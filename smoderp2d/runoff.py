@@ -157,7 +157,6 @@ class Runoff(object):
         # maximal and cumulative values of resulting variables
         self.cumulative = Cumulative()
 
-        
         # in implicit version - courant condition is not used, used for setting time step 
         self.courant = Courant()
 
@@ -221,8 +220,8 @@ class Runoff(object):
 
         if Globals.computationType == 'implicit':
             # list of flewdirection vectors - incialization
-            self.r,self.c = GridGlobals.get_dim()
-            self.list_fd = np.zeros((self.r,self.c,8),dtype=int)
+            self.r, self.c = GridGlobals.get_dim()
+            self.list_fd = np.zeros((self.r, self.c, 8), dtype=int)
 
     def run(self):
         """Perform the computation of the water level development.
@@ -246,7 +245,7 @@ class Runoff(object):
             # creates list of flow direction vectors (r*c vectors of length 8 coposed of 1 and 0) 
             for i in range(self.r):
                 for j in range(self.c):
-                    self.list_fd[i][j] = D8.inflow_dir(Globals.get_mat_fd(),i,j)
+                    self.list_fd[i][j] = D8.inflow_dir(Globals.get_mat_fd(), i, j)
             self.flow_control.save_vars()
 
         # saves time before the main loop
