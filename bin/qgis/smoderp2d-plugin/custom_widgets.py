@@ -31,10 +31,11 @@ class HistoryWidget(QListWidgetItem):
         # add tooltip
         self.setToolTip(str(params))
 
+        # store params
+        self.params_dict.update(params)
+
         # update spatial data related items
         for key in ("elevation", "soil", "vegetation", "points", "streams",
                     "table_soil_vegetation", "channel_properties_table"):
             if params[key]:
-                params[key] = map_layers.get(params[key], None)
-
-        self.params_dict.update(params)
+                self.params_dict[key] = map_layers.get(params[key], None)
