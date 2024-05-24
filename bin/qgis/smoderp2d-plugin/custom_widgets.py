@@ -26,7 +26,7 @@ class HistoryWidget(QListWidgetItem):
         # collect map layers
         map_layers = {}
         for lyr in instance.mapLayers().values():
-            map_layers[lyr.source()] = lyr
+            map_layers[lyr.source().split('|')[0]] = lyr
 
         # add tooltip
         self.setToolTip(str(params))
@@ -39,3 +39,5 @@ class HistoryWidget(QListWidgetItem):
                     "table_soil_vegetation", "channel_properties_table"):
             if params[key]:
                 self.params_dict[key] = map_layers.get(params[key], None)
+            else:
+                self.params_dict[key] = None
