@@ -489,7 +489,14 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         """
         # uncomment the following line to reset the history pane
         # self.settings.setValue('historical_runs', None)
-        runs = self.settings.value('historical_runs')
+        try:
+            runs = self.settings.value('historical_runs')
+        except TypeError as e:
+            iface.messageBar().pushMessage(
+                f'Failed to read historical items: {e}',
+                level=Qgis.Warning, duration=5
+            )
+            runs = []
 
         if runs is None:
             self.settings.setValue('historical_runs', [])

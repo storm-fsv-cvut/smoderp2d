@@ -36,5 +36,5 @@ class HistoryWidget(QListWidgetItem):
                     "table_soil_vegetation", "channel_properties_table"):
             if params[key]:
                 params[key] = map_layers.get(params[key], None)
-        print(params)
+
         self.params_dict.update(params)
