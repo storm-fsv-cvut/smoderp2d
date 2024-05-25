@@ -193,9 +193,10 @@ class BaseProvider(object):
                 "- [%(module)s:%(lineno)s]"
             )
         handler.setFormatter(formatter)
-        if len(Logger.handlers) == 0:
-            # avoid duplicated handlers (e.g. in case of ArcGIS)
-            Logger.addHandler(handler)
+
+        # TODO: if len(Logger.handlers) < 0:
+        # avoid duplicated handlers (e.g. in case of ArcGIS)
+        Logger.addHandler(handler)
 
     def __load_hidden_config(self):
         """Load hidden configuration with advanced settings.
@@ -343,6 +344,11 @@ class BaseProvider(object):
         """Load configuration data."""
         # cleanup output directory first
         self._cleanup()
+
+        # log file need to be created after cleanup
+        self.add_logging_handler(
+            logging.FileHandler(os.path.join(Globals.outdir, "smoderp2d.log"))
+        )
 
         data = None
         if self.args.workflow_mode in (WorkflowMode.dpre, WorkflowMode.full):
