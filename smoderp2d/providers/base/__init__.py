@@ -187,15 +187,12 @@ class BaseProvider(object):
         :param handler: logging handler to be registered
         :param formatter: logging handler formatting
         """
-        if not formatter:
+        if formatter is None:
             formatter = logging.Formatter(
                 "%(asctime)s - %(name)s - %(levelname)s - %(message)s "
                 "- [%(module)s:%(lineno)s]"
             )
         handler.setFormatter(formatter)
-
-        # TODO: if len(Logger.handlers) < 0:
-        # avoid duplicated handlers (e.g. in case of ArcGIS)
         Logger.addHandler(handler)
 
     def __load_hidden_config(self):

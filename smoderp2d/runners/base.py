@@ -103,3 +103,7 @@ class Runner(object):
         :param options: options to be set by provider
         """
         self._provider.set_options(options)
+
+    def finish(self):
+        # reset handlers
+        Logger.handlers = []

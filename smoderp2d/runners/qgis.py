@@ -136,3 +136,5 @@ class QGISRunner(GrassGisRunner):
         """TODO."""
         from grass.script import setup as gsetup
         self._grass_session.finish()
+
+        super().finish()
