@@ -1032,6 +1032,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         )
         self.main_output.setText(param_dict['output'])
         self.end_time.setValue(param_dict['end_time'])
+        self.maxdt.setValue(param_dict['maxdt'])
         self.flow_direction.setCurrentText(param_dict['flow_direction'])
         self.wave.setCurrentText(param_dict['wave'])
         self.generate_temporary.setChecked(param_dict['generate_temporary'])
