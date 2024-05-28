@@ -982,6 +982,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                     'channel_properties_table': project.mapLayersByName('streams_shape')[0],
                     'streams_channel_type_fieldname': 'channel_id',
                     'output': temp_dir.name,
+                    'maxdt': 5,
                     'end_time': 5,
                     'flow_direction': 'single',
                     'wave': 'kinematic',
