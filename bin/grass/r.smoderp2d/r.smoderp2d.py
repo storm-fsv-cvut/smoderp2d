@@ -145,11 +145,8 @@ if __name__ == "__main__":
 
     try:
         runner = GrassGisRunner()
-
         runner.set_options(options)
-
-        sys.exit(
-            runner.run()
-        )
+        runner.run()
+        runner.finish()
     except ProviderError as e:
         gs.fatal(e)

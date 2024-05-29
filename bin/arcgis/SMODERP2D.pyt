@@ -252,12 +252,11 @@ class SMODERP2D(object):
         """The source code of the tool."""
         try:
             runner = ArcGisRunner()
-
             runner.set_options(
                 self._get_input_params(parameters)
             )
-
             runner.run()
+            runner.finish()
         except ProviderError as e:
             arcpy.AddError(e)
 
