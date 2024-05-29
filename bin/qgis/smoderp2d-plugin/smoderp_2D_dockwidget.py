@@ -48,26 +48,21 @@ from smoderp2d.providers import Logger
 from smoderp2d.exceptions import ProviderError, ComputationAborted
 from bin.base import arguments, sections
 
-from .connect_grass import find_grass_bin
 from .custom_widgets import HistoryWidget
 
 
 class SmoderpTask(QgsTask):
     """Task holding the SMODERP2D run in a parallel thread."""
 
-    def __init__(self, input_params, input_maps, grass_bin_path, *args,
+    def __init__(self, input_params, *args,
                  **kwargs):
         """Initialize the task and set its class variables.
 
         :param input_params: TODO
-        :param input_maps: TODO
-        :param grass_bin_path: TODO
         """
         super().__init__(*args, **kwargs)
 
         self.input_params = input_params
-        self.input_maps = input_maps
-        self.grass_bin_path = grass_bin_path
         self.error = None
         self.finish_msg_level = Qgis.Info
         self.runner = None
@@ -75,11 +70,12 @@ class SmoderpTask(QgsTask):
     def run(self):
         """Run the task in a parallel thread."""
         try:
-            self.runner = QGISRunner(self.setProgress, self.grass_bin_path)
+            self.runner = QGISRunner(self.setProgress)
+            self.runner.create_location(QgsProject.instance().crs().authid())
             self.runner.set_options(self.input_params)
-            self.runner.import_data(self.input_maps)
+            self.runner.import_data()
             self.runner.run()
-        except ProviderError as e:
+        except (ProviderError, ImportError) as e:
             self.error = e
             self.finish_msg_level = Qgis.Critical
             return False
@@ -95,7 +91,8 @@ class SmoderpTask(QgsTask):
         :param result: result object containing info on how did the task finish
             (fine, error, aborted...)
         """
-        self.runner.finish()
+        if self.runner:
+            self.runner.finish()
 
         # resets
         Globals.reset()
@@ -207,7 +204,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         self.setWidget(self.dockWidgetContents)
 
         self._result_group_name = "SMODERP2D"
-        self._grass_bin_path = None
 
     def retranslateUi(self):
         """TODO."""
@@ -433,18 +429,6 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
 
     def onRunButton(self):
         """Run the processing when the run button was pushed."""
-        if not self._grass_bin_path:
-            # Get GRASS executable
-            try:
-                self._grass_bin_path = find_grass_bin()
-            except ImportError:
-                self._sendMessage(
-                    "ERROR:",
-                    "GRASS GIS not found.",
-                    "CRITICAL"
-                )
-                return
-
         if self._checkInputDataPrep():
             # remove previous results
             root = QgsProject.instance().layerTreeRoot()
@@ -456,7 +440,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             self._getInputParams()
 
             smoderp_task = SmoderpTask(
-                self._input_params, self._input_maps, self._grass_bin_path
+                self._input_params
             )
 
             # prepare the progress bar
@@ -498,6 +482,23 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                 "CRITICAL"
             )
 
+    def _getHistoryItems(self):
+        """Get historical runs from the settings."""
+        try:
+            runs = self.settings.value('historical_runs')
+        except TypeError as e:
+            iface.messageBar().pushMessage(
+                f'Failed to read historical items: {e}. History will be deleted.',
+                level=Qgis.Warning, duration=5
+            )
+            runs = None
+
+        if runs is None:
+            runs = []
+            self.settings.setValue('historical_runs', runs)
+
+        return runs
+
     def _loadHistory(self):
         """Load historical runs into History tab.
 
@@ -505,21 +506,18 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         """
         # uncomment the following line to reset the history pane
         # self.settings.setValue('historical_runs', None)
-        runs = self.settings.value('historical_runs')
+        runs = self._getHistoryItems()
 
-        if runs is None:
-            self.settings.setValue('historical_runs', [])
-        else:
-            nerrors = 0
-            for run in reversed(runs):
-                if self._addHistoryItem(run) is False:
-                    nerrors += 1
+        nerrors = 0
+        for run in reversed(runs):
+            if self._addHistoryItem(run) is False:
+                nerrors += 1
 
-            if nerrors > 0:
-                iface.messageBar().pushMessage(
-                    f'Failed to add {nerrors} historical items (see logs for details)',
-                    level=Qgis.Warning, duration=5
-            )
+        if nerrors > 0:
+            iface.messageBar().pushMessage(
+                f'Failed to add {nerrors} historical items (see logs for details)',
+                level=Qgis.Warning, duration=5
+        )
 
     def _addCurrentHistoryItem(self):
         """Add the current run into settings[historical_runs].
@@ -529,11 +527,10 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         Then call _addHistoryItem to add the widget to the pane.
         """
         timestamp = str(datetime.datetime.now())
-        run = (timestamp, dict(self._input_params), dict(self._input_maps))
+        run = (timestamp, dict(self._input_params))
 
-        runs = self.settings.value('historical_runs')
+        runs = self._getHistoryItems()
         runs.insert(0, run)
-
         if len(runs) > 25:
             runs.pop(-1)
 
@@ -554,7 +551,8 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         """
         this_run = HistoryWidget(f'{run[1]["output"]} -- {run[0]}')
         try:
-            this_run.saveHistory(run[1], run[2])
+            # history items changed by https://github.com/storm-fsv-cvut/smoderp2d/pull/392
+            this_run.saveHistory(run[1] if len(run) == 2 else run[3])
             self.history_tab.insertItem(0, this_run)
         except (KeyError, IndexError) as e:
             QgsMessageLog.logMessage(
@@ -714,22 +712,26 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             return ret
 
         self._input_params = {
-            'elevation': self.elevation.currentText(),
-            'soil': self.soil.currentText(),
+            'elevation': get_map_path(
+                self.elevation.currentLayer().dataProvider()),
+            'soil': get_map_path(
+                self.soil.currentLayer().dataProvider()),
             'soil_type_fieldname': self.soil_type.currentText(),
-            'vegetation': self.vegetation.currentText(),
+            'vegetation': get_map_path(
+                self.vegetation.currentLayer().dataProvider()),
             'vegetation_type_fieldname': self.vegetation_type.currentText(),
-            'points': self.points.currentText(),
+            'points': '',
             'points_fieldname': self.points_field.currentText(),
             # 'output': self.output_lineEdit.text().strip(),
-            'streams': self.stream.currentText(),
+            'streams': '',
             'rainfall_file': self.rainfall.text(),
             'end_time': self.end_time.value(),
             'maxdt': self.maxdt.value(),
-            'table_soil_vegetation': self.table_soil_vegetation.currentText(),
+            'table_soil_vegetation': get_map_path(
+                self.table_soil_vegetation.currentLayer().dataProvider()),
             'table_soil_vegetation_fieldname':
                 self.table_soil_vegetation_field.currentText(),
-            'channel_properties_table': self.table_stream_shape.currentText(),
+            'channel_properties_table': '',
             'streams_channel_type_fieldname':
                 self.table_stream_shape_code.currentText(),
             'flow_direction': self.flow_direction.currentText(),
@@ -738,43 +740,22 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
             'output': self.main_output.text().strip()
         }
 
-        self._input_maps = {
-            'elevation':
-                get_map_path(self.elevation.currentLayer().dataProvider()),
-            'soil':
-                get_map_path(self.soil.currentLayer().dataProvider()),
-            'vegetation':
-                get_map_path(self.vegetation.currentLayer().dataProvider()),
-            'points': "",
-            'streams': "",
-            'table_soil_vegetation': get_map_path(
-                self.table_soil_vegetation.currentLayer().dataProvider()
-            ),
-            'channel_properties_table': ""
-        }
-
-        # TODO: It would be nicer to use names defined in _input_params before
-        # this reparsing
-        for key in self._input_maps.keys():
-            if self._input_params[key] != '':
-                self._input_params[key] = key
-
         # optional inputs
         if self.points.currentLayer() is not None:
-            self._input_maps["points"] = get_map_path(
+            self._input_params["points"] = get_map_path(
                 self.points.currentLayer().dataProvider()
             )
 
         if self.stream.currentLayer() is not None:
-            self._input_maps["streams"] = get_map_path(
+            self._input_params["streams"] = get_map_path(
                 self.stream.currentLayer().dataProvider()
             )
 
         if self.table_stream_shape.currentLayer() is not None:
-            self._input_maps['channel_properties_table'] = get_map_path(
+            self._input_params['channel_properties_table'] = get_map_path(
                 self.table_stream_shape.currentLayer().dataProvider()
             )
-            self._input_maps["streams_channel_type_fieldname"] = self.table_stream_shape_code.currentText()
+            self._input_params["streams_channel_type_fieldname"] = self.table_stream_shape_code.currentText()
 
     def _checkInputDataPrep(self):
         """Check mandatory fields.
@@ -1001,6 +982,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
                     'channel_properties_table': project.mapLayersByName('streams_shape')[0],
                     'streams_channel_type_fieldname': 'channel_id',
                     'output': temp_dir.name,
+                    'maxdt': 5,
                     'end_time': 5,
                     'flow_direction': 'single',
                     'wave': 'kinematic',
@@ -1051,6 +1033,7 @@ class Smoderp2DDockWidget(QtWidgets.QDockWidget):
         )
         self.main_output.setText(param_dict['output'])
         self.end_time.setValue(param_dict['end_time'])
+        self.maxdt.setValue(param_dict['maxdt'])
         self.flow_direction.setCurrentText(param_dict['flow_direction'])
         self.wave.setCurrentText(param_dict['wave'])
         self.generate_temporary.setChecked(param_dict['generate_temporary'])

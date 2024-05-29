@@ -1,7 +1,0 @@
-appmap_dir: tmp\appmap
-language: python
-name: SMODERP
-packages:
-- path: smoderp2d-plugin
-- path: smoderp2d
-- path: base
