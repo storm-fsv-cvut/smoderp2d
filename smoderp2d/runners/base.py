@@ -2,7 +2,7 @@
 import os
 from abc import abstractmethod
 
-from smoderp2d.core.general import Globals
+from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
@@ -110,6 +110,7 @@ class Runner(object):
         self._provider.set_options(options)
 
     def finish(self):
+        """Finish runner's operations."""
         # reset handlers
         Logger.handlers = []
 

@@ -22,10 +22,3 @@ class QGISRunner(GrassGisRunner):
         
         QGisLogHandler.progress_reporter = self.progress_reporter
         return GrassGisProvider(QGisLogHandler)
-
-    def finish(self):
-        """TODO."""
-        from grass.script import setup as gsetup
-        self._grass_session.finish()
-
-        super().finish()

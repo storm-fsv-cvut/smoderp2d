@@ -59,10 +59,14 @@ class GrassGisRunner(Runner):
         return grass_bin_path
 
     def finish(self):
-        """Close GRASS session."""
+        """Finish runner's operations.
+
+        Close GRASS session."""
         from grass.script import setup as gsetup
         if self._grass_session:
             self._grass_session.finish()
+
+        super().finish()
         
     def _get_provider(self):
         """See base method for description.
