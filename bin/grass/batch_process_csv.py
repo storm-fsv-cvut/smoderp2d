@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import argparse
 import csv
 
@@ -35,6 +36,11 @@ def main(csv_file, workers):
                 if v in ('true', 'false'):
                     row[k] = True if v.lower() == 'true' else False
             params.append(row)
+
+    # check for duplicated output paths
+    output_paths = set(p['output'] for p in params)
+    if len(params) != len(output_paths):
+        sys.exit("ERROR: Duplicated output paths detected")
 
     # run processes
     if workers > 1:
