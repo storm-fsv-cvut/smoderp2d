@@ -97,6 +97,11 @@ class Runner(object):
 
         return 0
 
+    @property
+    def options(self):
+        """Get provider options."""
+        return self._provider._options
+
     def set_options(self, options):
         """Set options.
 
