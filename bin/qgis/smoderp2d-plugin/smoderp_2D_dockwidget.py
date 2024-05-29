@@ -43,7 +43,6 @@ from qgis.utils import iface
 from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
 
 from smoderp2d.runners.qgis import QGISRunner
-from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.providers import Logger
 from smoderp2d.exceptions import ProviderError, ComputationAborted
 from bin.base import arguments, sections
@@ -93,10 +92,6 @@ class SmoderpTask(QgsTask):
         """
         if self.runner:
             self.runner.finish()
-
-        # resets
-        Globals.reset()
-        GridGlobals.reset()
 
         iface.messageBar().findChildren(QtWidgets.QToolButton)[0].setHidden(
             False

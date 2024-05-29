@@ -112,3 +112,7 @@ class Runner(object):
     def finish(self):
         # reset handlers
         Logger.handlers = []
+
+        # reset globals
+        Globals.reset()
+        GridGlobals.reset()
