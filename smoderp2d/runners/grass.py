@@ -3,6 +3,7 @@ import sys
 import subprocess
 import tempfile
 import binascii
+import shutil
 
 from smoderp2d.runners.base import Runner
 from smoderp2d.providers import Logger
@@ -37,6 +38,7 @@ class GrassGisRunner(Runner):
         :todo: Avoid bat file calling.
         """
         if sys.platform == 'win32':
+            # MS Windows
             if 'QGIS_PREFIX_PATH' in os.environ:
                 bin_path = os.path.join(os.environ['QGIS_PREFIX_PATH'],
                                         '..', '..',  'bin')
@@ -54,7 +56,8 @@ class GrassGisRunner(Runner):
             if grass_bin_path is None:
                 raise ImportError("No GRASS executable found.")
         else:
-            grass_bin_path = '/usr/bin/grass'
+            # expecting GNU/Linux
+            grass_bin_path = shutil.which("grass")
 
         return grass_bin_path
 
