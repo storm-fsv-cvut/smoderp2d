@@ -39,13 +39,31 @@ docker build \
  --tag smoderp2d:latest --file docker/Dockerfile .
 ```
 
-Run SMODERP command line tool from Docker container:
+Run SMODERP2D command line tool from Docker container:
 
 ```sh
 docker run \
  -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
  ./bin/start-smoderp2d.py smoderp2d \
  --config tests/config_files/quicktest_stream_rill.ini
+```
+
+#### GRASS GIS
+
+Build an image with GRASS GIS support:
+
+```sh
+docker build \
+ --tag smoderp2d-grass:latest --file docker/grass/Dockerfile .
+```
+
+Run SMODERP2D with GRASS GIS provider from Docker container:
+
+```sh
+docker run \
+ -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
+ ./tests/run_grass_gistest.sh smoderp2d-grass \
+ nucice
 ```
 
 ### Run locally
