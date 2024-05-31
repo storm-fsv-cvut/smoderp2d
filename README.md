@@ -132,16 +132,3 @@ Alternatively set up environment variables in command line before starting QGIS:
 ```sh
 PYTHONPATH=`pwd` QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/nucice/qgis_project.qgz
 ```
-
-#### Known issue
-
-On MS Windows QGIS plugin suffers by poping-up windows when starting computation.
-This can be solved by copying ``core.py`` file located in ``smoderp2d\bin\qgis\grass_patch``
-to a GRASS target directory.
-
-GRASS target directory is typically located in:
-
-- ``C:\Program Files\QGIS 3.**.*\apps\grass\grass83\etc\python\grass\script`` in the case that QGIS has been installed by standalone installer, or
-- ``C:\OSGeo4W\apps\grass\grass83\etc\python\grass\script`` in the case that QGIS has been installed by OSGeo4W network installer.
-
-Update: This bug has been fixed in GRASS GIS 8.4.
