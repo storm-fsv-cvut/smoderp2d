@@ -73,6 +73,19 @@ class GrassGisRunner(Runner):
         from smoderp2d.providers.grass import GrassGisProvider
         return GrassGisProvider()
 
+    @staticmethod
+    def grass_version():
+        """Get GRASS GIS version.
+
+        :return list: GRASS version as a list (major, minor only)
+        """
+        # gs.version() requires g.gisenv which is not possible to use when no location is active
+        # if list(map(int, gs.version()['version'].split('.')[:-1])) < [8, 3]:
+        with open(os.path.join(os.environ["GISBASE"], "etc", "VERSIONNUMBER")) as fd:
+            grass_version = fd.read().split(' ')[0]
+
+        return list(map(int, grass_version.split('.')[:-1]))
+
     def _set_environment(self):
         """Set GRASS environment.
 
@@ -92,19 +105,15 @@ class GrassGisRunner(Runner):
         str_out = out.decode("utf-8")
         gisbase = str_out.strip()
 
-        # check version
-        # gs.version() requires g.gisenv which is not possible to use when no location is active
-        # if list(map(int, gs.version()['version'].split('.')[:-1])) < [8, 3]:
-        with open(os.path.join(gisbase, "etc", "VERSIONNUMBER")) as fd:
-            grass_version = fd.read().split(' ')[0]
-        if list(map(int, grass_version.split('.')[:-1])) < [8, 3]:
-            raise ProviderError("GRASS GIS version 8.3+ required")
-
         # initialize GRASS runtime enviroment
         sys.path.append(os.path.join(gisbase, "etc", "python"))
         
         from grass.script.setup import setup_runtime_env
         setup_runtime_env(gisbase)
+
+        # check version
+        if self.grass_version() < [8, 3]:
+            raise ProviderError("GRASS GIS version 8.3+ required")
 
     def create_location(self, epsg):
         """Create GRASS location.
