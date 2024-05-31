@@ -165,6 +165,10 @@ class GrassGisRunner(Runner):
         """
         from grass.pygrass.modules import Module
         from grass.pygrass.gis import Mapset
+        from osgeo import gdal, osr
+        gdal.UseExceptions()
+        # avoid GTIFF_SRS_SOURCE related warnings
+        os.environ["GTIFF_SRS_SOURCE"] = "EPSG"
 
         if self.options is None:
             raise ProviderError("Provider options not set")
@@ -180,8 +184,6 @@ class GrassGisRunner(Runner):
 
             # import rasters
             if key == "elevation":
-                from osgeo import gdal, osr
-
                 ds = gdal.Open(value)
                 proj = osr.SpatialReference(wkt=ds.GetProjection())
                 crs = proj.GetAttrValue('AUTHORITY', 1)
