@@ -17,7 +17,6 @@ from smoderp2d.exceptions import NegativeWaterLevel
 
 import numpy as np
 import numpy.ma as ma
-import scipy.optimize as spopt
 
 
 # Class manages the one time step operation
@@ -362,6 +361,8 @@ class TimeStep:
         :param potRain: TODO
         :param delta_t: TODO
         """
+        import scipy.optimize as spopt
+
         # global variables for infilitration
         # class infilt_capa
         # global max_infilt_capa
