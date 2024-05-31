@@ -122,8 +122,8 @@ class GrassGisRunner(Runner):
         
         # path to temp location
         gisdb = os.path.join(tempfile.gettempdir(), 'grassdata')
-        if not os.path.isdir(gisdb):
-            os.mkdir(gisdb)
+        os.makedirs(gisdb, exist_ok=True)
+
         # location: use random names for batch jobs
         string_length = 16
         location = binascii.hexlify(os.urandom(string_length)).decode("utf-8")
