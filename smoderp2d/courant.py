@@ -102,7 +102,7 @@ class Courant:
     # Returns the adjusted/unchanged time step after a time step computation
     # is completed.
     def courant(self, delta_t):
-        """TODO.
+        """Adjust the time step based on Courant.
 
         :param delta_t: TODO
         :return: TODO
