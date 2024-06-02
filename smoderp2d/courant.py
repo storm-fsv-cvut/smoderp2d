@@ -84,7 +84,7 @@ class Courant:
         Store it in each computational cell.
 
         :param v: TODO
-        :param delta_t: TODO
+        :param delta_t: current time step length
         :param effect_cont: TODO
         :param co: TODO
         :param rill_courant: TODO
@@ -104,7 +104,7 @@ class Courant:
     def courant(self, delta_t):
         """Adjust the time step based on Courant.
 
-        :param delta_t: TODO
+        :param delta_t: current time step length
         :return: TODO
         """
         # max_delta_t_mult se muze zvetsit
