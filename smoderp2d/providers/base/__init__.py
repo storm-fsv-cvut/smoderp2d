@@ -343,9 +343,11 @@ class BaseProvider(object):
         self._cleanup()
 
         # log file need to be created after cleanup
+        file_logger = os.path.join(Globals.outdir, "smoderp2d.log")
         self.add_logging_handler(
-            logging.FileHandler(os.path.join(Globals.outdir, "smoderp2d.log"))
+            logging.FileHandler(file_logger)
         )
+        Logger.debug(f'File logger set to {file_logger}')
 
         data = None
         if self.args.workflow_mode in (WorkflowMode.dpre, WorkflowMode.full):
