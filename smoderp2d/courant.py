@@ -155,10 +155,7 @@ class Courant:
 
             # return dt*self.max_delta_t_mult, ratio
             # return min(dt,self.max_delta_t*self.max_delta_t_mult), ratio
-            dt_min = min(
-                self.max_delta_t_mult * dt,
-                self.max_delta_t * self.max_delta_t_mult
-            )
+            dt_min = min(dt, self.max_delta_t) * self.max_delta_t_mult
             return dt_min
 
             # pokud je courant v povolenem rozmezi
