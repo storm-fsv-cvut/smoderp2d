@@ -38,6 +38,8 @@ class PrepareDataBase(ABC):
             )
         )
 
+        mat_aa = ma.where(mat_aa == 0, 0.0001, mat_aa)
+
         return mat_aa
 
     @staticmethod
