@@ -250,6 +250,7 @@ class SMODERP2D(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
+        runner = None
         try:
             runner = ArcGisRunner()
             runner.set_options(
@@ -259,7 +260,8 @@ class SMODERP2D(object):
         except ProviderError as e:
             arcpy.AddError(e)
 
-        runner.finish()
+        if runner is not None:
+            runner.finish()
 
         return
 
