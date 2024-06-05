@@ -106,7 +106,7 @@ class FlowControl(object):
     def update_total_time(self, dt):
         """Rise time after successfully calculated previous time step.
 
-        :param dt: TODO
+        :param dt: current time step length
         """
         self.total_time += dt
 

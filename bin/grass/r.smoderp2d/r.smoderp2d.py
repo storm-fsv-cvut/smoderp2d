@@ -137,7 +137,7 @@ import grass.script as gs
 
 from smoderp2d.runners.grass import GrassGisRunner
 from smoderp2d.providers.base import WorkflowMode
-from smoderp2d.exceptions import ProviderError
+from smoderp2d.exceptions import ProviderError, MaxIterationExceeded
 
 if __name__ == "__main__":
     options, flags = gs.parser()
@@ -148,5 +148,9 @@ if __name__ == "__main__":
         runner.set_options(options)
         runner.run()
         runner.finish()
+<<<<<<< 399-save-log-messages-in-target-directory
     except ProviderError as e:
+=======
+    except (ProviderError, MaxIterationExceeded) as e:
+>>>>>>> master
         gs.fatal(e)

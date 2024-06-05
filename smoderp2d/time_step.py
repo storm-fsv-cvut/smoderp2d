@@ -36,7 +36,7 @@ class TimeStep:
 
         :param surface: TODO
         :param subsurface: TODO
-        :param delta_t: TODO
+        :param delta_t: current time step length
         :param flow_control: TODO
         :param courant: TODO
         """
@@ -119,7 +119,7 @@ class TimeStep:
         :param flow_control: TODO
         :param courant: TODO
         :param potRain: TODO
-        :param delta_t: TODO
+        :param delta_t: current time step length
         """
         rr, rc = GridGlobals.get_region_dim()
         pixel_area = GridGlobals.get_pixel_area()
@@ -359,7 +359,7 @@ class TimeStep:
         :param flow_control: TODO
         :param courant: TODO
         :param potRain: TODO
-        :param delta_t: TODO
+        :param delta_t: current time step length
         """
         import scipy.optimize as spopt
 

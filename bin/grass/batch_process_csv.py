@@ -4,9 +4,9 @@ import sys
 import argparse
 import csv
 
-from batch_process import run_process
+from smoderp2d.exceptions import ProviderError, MaxIterationExceeded
 
-from smoderp2d.core.general import Globals, GridGlobals
+from batch_process import run_process
 
 def get_params_epsg(params):
     epsg = params.pop('epsg')
@@ -18,10 +18,8 @@ def run_process_single(params, epsg):
     print('-' * 80)
     print(f'Run process with {params}...')
     print('-' * 80)
-    run_process(params, epsg)
-    # reset global variables
-    Globals.reset()
-    GridGlobals.reset()
+
+    return run_process(params, epsg)
 
 def main(csv_file, workers):
     # collect params

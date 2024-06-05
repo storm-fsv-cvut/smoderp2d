@@ -4,24 +4,27 @@ import os
 import sys
 import argparse
 
-def run_process(params, epsg):
-    from smoderp2d.runners.grass import GrassGisRunner
+from smoderp2d.runners.grass import GrassGisRunner
+from smoderp2d.exceptions import ProviderError, MaxIterationExceeded
 
-    runner = GrassGisRunner()
-    runner.create_location(f'EPSG:{epsg}')
-    runner.set_options(params)
-    runner.import_data()
-    runner.run()
+def run_process(params, epsg):
+    retcode = 0
+    try:
+        runner = GrassGisRunner()
+        runner.create_location(f'EPSG:{epsg}')
+        runner.set_options(params)
+        runner.import_data()
+        runner.run()
+    except (ProviderError, MaxIterationExceeded) as e:
+        print(f'ERORR: {e}', file=sys.stderr)
+        retcode = 1
+
     runner.finish()
 
-def main(params, epsg):
-    from smoderp2d.exceptions import ProviderError
+    return retcode
 
-    try:
-        run_process(params, epsg)
-    except ProviderError as e:
-        print(f'ERORR: {e}', file=sys.stderr)
-        sys.exit(1)
+def main(params, epsg):
+    sys.exit(run_process(params, epsg))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

@@ -145,7 +145,7 @@ def get_surface():
             :param i: row index
             :param j: col index
             :param sep: separator
-            :param dt: TODO
+            :param dt: current time step length
             :param extra_out: append extra output
 
             :return: TODO
@@ -224,7 +224,7 @@ def get_surface():
 def __runoff(sur, dt, effect_vrst):
     """Calculate the sheet and rill flow.
 
-    :param dt: TODO
+    :param dt: current time step length
     :param effect_vrst: TODO
 
     :return: TODO
@@ -266,7 +266,7 @@ def __runoff_zero_comp_type(sur, dt, effect_vrst):
     """TODO.
 
     :param sur: TOD
-    :param dt: TODO
+    :param dt: current time step length
     :param effect_vrst: TODO
 
     :return: TODO
@@ -365,7 +365,7 @@ def compute_h_hrill(h_total_pre, h_crit, state, h_rill_pre):
 def sheet_runoff(dt, a, b, h_sheet):
     """TODO.
 
-    :param dt: TODO
+    :param dt: current time step length
     :param a: TODO
     :param b: TODO
     :param h_sheet: TODO
@@ -386,7 +386,7 @@ def rill_runoff(dt, effect_vrst, h_rill, rillWidth, v_rill_rest=None,
                 vol_runoff_rill=None):
     """TODO.
 
-    :param dt: TODO
+    :param dt: current time step length
     :param effect_vrst: TODO
     :param h_rill: TODO
     :param rillWidth: TODO

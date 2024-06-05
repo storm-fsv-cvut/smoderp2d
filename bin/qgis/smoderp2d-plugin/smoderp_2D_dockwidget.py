@@ -23,6 +23,7 @@
 """
 
 import os
+import sys
 import glob
 import datetime
 import tempfile
@@ -44,7 +45,7 @@ from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
 
 from smoderp2d.runners.qgis import QGISRunner
 from smoderp2d.providers import Logger
-from smoderp2d.exceptions import ProviderError, ComputationAborted
+from smoderp2d.exceptions import ProviderError, ComputationAborted, MaxIterationExceeded
 from bin.base import arguments, sections
 
 from .custom_widgets import HistoryWidget
@@ -70,11 +71,22 @@ class SmoderpTask(QgsTask):
         """Run the task in a parallel thread."""
         try:
             self.runner = QGISRunner(self.setProgress)
+            # check for GRASS 8.3 patched version
+            if sys.platform == 'win32' and self.runner.grass_version() == [8, 3]:
+                from grass.script import core as gs_core
+                from itertools import islice
+                with open(gs_core.__file__) as fin:
+                    for line in islice(fin, 1, 2):
+                        if 'SMODERP2D patch applied' not in line:
+                            raise ImportError(
+                                'Your GRASS GIS installation needs to be fixed. Check the '
+                                '<a href="https://storm-fsv-cvut.github.io/smoderp2d-manual/providers.html#known-issue">documentation</a>.'
+                            )
             self.runner.create_location(QgsProject.instance().crs().authid())
             self.runner.set_options(self.input_params)
             self.runner.import_data()
             self.runner.run()
-        except (ProviderError, ImportError) as e:
+        except (ProviderError, ImportError, MaxIterationExceeded) as e:
             self.error = e
             self.finish_msg_level = Qgis.Critical
             return False

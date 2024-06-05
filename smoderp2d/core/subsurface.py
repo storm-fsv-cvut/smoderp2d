@@ -172,7 +172,7 @@ def get_subsurface():
 
             :param infilt: infiltration in current time step [L]
             :param inflow: inflows in current time step [L]
-            :param dt: current time step
+            :param dt: current time step length
             """
             arr = self.arr
             bil = infilt + arr.vol_rest / self.pixel_area + arr.inflow_tm
@@ -187,7 +187,7 @@ def get_subsurface():
             """calculated percolation to deeper soil layers.
 
             :param bil: subsoil water balance 
-            :param dt: time step 
+            :param dt: current time step length
             """
             arr = self.arr
 
@@ -236,7 +236,7 @@ def get_subsurface():
         def runoff(self, delta_t, ef_counter_line, cond_state_flow):
             """Calculate the volume of subsoil runoff
 
-            :param delta_t: time step
+            :param delta_t: current time step length
             :param ef_counter_line: effective counter line 
             """
             arr = self.arr
@@ -265,7 +265,7 @@ def get_subsurface():
             :param i: i th cell
             :param j: j th cell
             :param sep: separator to file
-            :param dt: time step
+            :param dt: current time step length
             :return: lines with computed values
             """
             arr = self.arr
@@ -346,14 +346,14 @@ def get_subsurface_pass():
 
             :param infilt: TODO
             :param inflow: TODO
-            :param dt: TODO
+            :param dt: current time step length
             """
             pass
 
         def runoff(self, delta_t, ef_counter_line, cond_state_flow):
             """TODO.
 
-            :param delta_t: TODO
+            :param delta_t: current time step length
             :param ef_counter_line: TODO
             """
             pass
@@ -371,7 +371,7 @@ def get_subsurface_pass():
             :param i: TODO
             :param j: TODO
             :param sep: TODO
-            :param dt: TODO
+            :param dt: current time step length
             :return: TODO
             """
             return ''
