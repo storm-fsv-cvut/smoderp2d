@@ -256,9 +256,10 @@ class SMODERP2D(object):
                 self._get_input_params(parameters)
             )
             runner.run()
-            runner.finish()
         except ProviderError as e:
             arcpy.AddError(e)
+
+        runner.finish()
 
         return
 
