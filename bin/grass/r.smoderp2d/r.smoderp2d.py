@@ -145,7 +145,6 @@ if __name__ == "__main__":
 
     try:
         runner = GrassGisRunner()
-
         runner.set_options(options)
         runner.run()
         runner.finish()

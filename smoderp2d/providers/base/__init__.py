@@ -187,15 +187,13 @@ class BaseProvider(object):
         :param handler: logging handler to be registered
         :param formatter: logging handler formatting
         """
-        if not formatter:
+        if formatter is None:
             formatter = logging.Formatter(
                 "%(asctime)s - %(name)s - %(levelname)s - %(message)s "
                 "- [%(module)s:%(lineno)s]"
             )
         handler.setFormatter(formatter)
-        if len(Logger.handlers) == 0:
-            # avoid duplicated handlers (e.g. in case of ArcGIS)
-            Logger.addHandler(handler)
+        Logger.addHandler(handler)
 
     def __load_hidden_config(self):
         """Load hidden configuration with advanced settings.
@@ -343,6 +341,13 @@ class BaseProvider(object):
         """Load configuration data."""
         # cleanup output directory first
         self._cleanup()
+
+        # log file need to be created after cleanup
+        file_logger = os.path.join(Globals.outdir, "smoderp2d.log")
+        self.add_logging_handler(
+            logging.FileHandler(file_logger)
+        )
+        Logger.debug(f'File logger set to {file_logger}')
 
         data = None
         if self.args.workflow_mode in (WorkflowMode.dpre, WorkflowMode.full):

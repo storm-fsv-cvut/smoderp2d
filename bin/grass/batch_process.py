@@ -9,6 +9,7 @@ from smoderp2d.exceptions import ProviderError, MaxIterationExceeded
 
 def run_process(params, epsg):
     retcode = 0
+    runner = None
     try:
         runner = GrassGisRunner()
         runner.create_location(f'EPSG:{epsg}')
@@ -19,7 +20,8 @@ def run_process(params, epsg):
         print(f'ERORR: {e}', file=sys.stderr)
         retcode = 1
 
-    runner.finish()
+    if runner is not None:
+        runner.finish()
 
     return retcode
 

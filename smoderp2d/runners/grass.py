@@ -7,6 +7,7 @@ import shutil
 
 from smoderp2d.runners.base import Runner
 from smoderp2d.providers import Logger
+from smoderp2d.exceptions import ProviderError
 
 class Popen(subprocess.Popen):
     """Avoid displaying cmd windows on MS Windows."""
@@ -62,10 +63,14 @@ class GrassGisRunner(Runner):
         return grass_bin_path
 
     def finish(self):
-        """Close GRASS session."""
+        """Finish runner's operations.
+
+        Close GRASS session."""
         from grass.script import setup as gsetup
         if self._grass_session:
             self._grass_session.finish()
+
+        super().finish()
         
     def _get_provider(self):
         """See base method for description.
