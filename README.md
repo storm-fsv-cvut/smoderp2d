@@ -70,62 +70,18 @@ docker run \
 
 ### Run locally
 
-Build and install SMODERP2D Python package:
-
-```sh
-pip install .
-```
-
 #### Command line
 
 ```sh
-./bin/start-smoderp2d.py --config tests/config_files/quicktest_stream_rill.ini
+PYTHONPATH=$PYTHONPATH:`pwd` ./bin/start-smoderp2d.py --config tests/config_files/quicktest_stream_rill.ini
 ```
-
-#### GRASS GIS
-
-Note: GRASS GIS 8.3+ required
-
-Create testing mapset:
-
-```sh
-grass --text -c tests/grassdata/smoderp2d-location/test/
-```
-
-Run `r.smoderp2d` module:
-
-```sh
-PYTHONPATH=$PYTHONPATH:`pwd` ./bin/grass/r.smoderp2d/r.smoderp2d.py \
-    elevation=dem@PERMANENT \
-    soil=soils@PERMANENT \
-    soil_type_fieldname=Soil \
-    vegetation=landuse@PERMANENT \
-    vegetation_type_fieldname=LandUse \
-    rainfall_file=tests/data/rainfall_nucice.txt \
-    maxdt=5 end_time=5 \
-    points=points@PERMANENT points_fieldname='point_id' \
-    table_soil_vegetation=soil_veg_tab@PERMANENT \
-    table_soil_vegetation_fieldname=soilveg \
-    streams=streams@PERMANENT \
-    channel_properties_table=streams_shape@PERMANENT \
-    streams_channel_type_fieldname=channel_id \
-    output=tests/data/output
-```
-
-#### ArcGIS Pro
-
-Launch SMODERP2D ArcToolbox from `bin\arcgis` directory.
-
-![SMODERP2D ArcToolbox in action](img/arctoolbox.png?raw=true "SMODERP2D ArcToolbox in action")
 
 #### QGIS
 
 Requirements: QGIS 3.28.10 and higher
 
 Define `QGIS_PLUGINPATH` and `PYTHONPATH` environmental variables in
-`Settings -> Options -> System` and restart QGIS:
-
-![SMODERP2D QGIS settings](img/qgis_settings.png?raw=true "QGIS settings")
+`Settings -> Options -> System` and restart QGIS.
 
 Than enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
 
