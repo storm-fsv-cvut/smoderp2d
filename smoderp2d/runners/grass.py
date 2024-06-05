@@ -7,6 +7,7 @@ import shutil
 
 from smoderp2d.runners.base import Runner
 from smoderp2d.providers import Logger
+from smoderp2d.exceptions import ProviderError
 
 class Popen(subprocess.Popen):
     """Avoid displaying cmd windows on MS Windows."""
