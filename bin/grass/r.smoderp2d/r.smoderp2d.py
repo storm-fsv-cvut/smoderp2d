@@ -148,9 +148,5 @@ if __name__ == "__main__":
         runner.set_options(options)
         runner.run()
         runner.finish()
-<<<<<<< 399-save-log-messages-in-target-directory
-    except ProviderError as e:
-=======
     except (ProviderError, MaxIterationExceeded) as e:
->>>>>>> master
         gs.fatal(e)
