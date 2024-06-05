@@ -22,6 +22,8 @@ Distributed event-based model for surface and subsurface runoff and erosion.
                                 \___________________ @ @ @ @  @ @ @
 ```
 
+User documentation: <https://storm-fsv-cvut.github.io/smoderp2d-manual/>
+
 ## How to test
 
 Download SMODERP2D source code to your computer.
