@@ -46,7 +46,7 @@ from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
 from smoderp2d.runners.qgis import QGISRunner
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.providers import Logger
-from smoderp2d.exceptions import ProviderError, ComputationAborted
+from smoderp2d.exceptions import ProviderError, ComputationAborted, MaxIterationExceeded
 from bin.base import arguments, sections
 
 from .custom_widgets import HistoryWidget
@@ -87,7 +87,7 @@ class SmoderpTask(QgsTask):
             self.runner.set_options(self.input_params)
             self.runner.import_data()
             self.runner.run()
-        except (ProviderError, ImportError) as e:
+        except (ProviderError, ImportError, MaxIterationExceeded) as e:
             self.error = e
             self.finish_msg_level = Qgis.Critical
             return False
