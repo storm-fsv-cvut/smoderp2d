@@ -186,6 +186,9 @@ class Runoff(object):
         self.time_step = TimeStep()
 
         # record values into hydrographs at time zero
+        zeros = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
         self.hydrographs.write_hydrographs_record(
             None,
             None,
@@ -195,10 +198,8 @@ class Runoff(object):
             self.surface,
             self.subsurface,
             self.cumulative,
-            ma.masked_array(
-                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-            )
-            )
+            zeros
+        )
         # record values into stream hydrographs at time zero
         self.hydrographs.write_hydrographs_record(
             None,
@@ -209,9 +210,7 @@ class Runoff(object):
             self.surface,
             self.subsurface,
             self.cumulative,
-            ma.masked_array(
-                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-            ),
+            zeros,
             True
         )
 
