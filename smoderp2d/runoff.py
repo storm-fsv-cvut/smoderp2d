@@ -185,10 +185,21 @@ class Runoff(object):
         # method for single time step calculation
         self.time_step = TimeStep()
 
-        # record values into hydrographs at time zero
+        self.record_hydrographs_time_zero()
+
+        Logger.info('-' * 80)
+
+        if Globals.computationType == 'implicit':
+            # list of flewdirection vectors - incialization
+            self.r, self.c = GridGlobals.get_dim()
+            self.list_fd = np.zeros((self.r, self.c, 8), dtype=int)
+
+    def record_hydrographs_time_zero(self):
+        """Record values into hydrographs at time zero."""
         zeros = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
+
         self.hydrographs.write_hydrographs_record(
             None,
             None,
@@ -200,7 +211,7 @@ class Runoff(object):
             self.cumulative,
             zeros
         )
-        # record values into stream hydrographs at time zero
+        # stream hydrographs at time zero
         self.hydrographs.write_hydrographs_record(
             None,
             None,
@@ -213,14 +224,6 @@ class Runoff(object):
             zeros,
             True
         )
-
-
-        Logger.info('-' * 80)
-
-        if Globals.computationType == 'implicit':
-            # list of flewdirection vectors - incialization
-            self.r, self.c = GridGlobals.get_dim()
-            self.list_fd = np.zeros((self.r, self.c, 8), dtype=int)
 
     def run(self):
         """Perform the computation of the water level development.
