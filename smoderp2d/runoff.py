@@ -164,7 +164,6 @@ class Runoff(object):
         
         self.delta_tmax = self.delta_t
 
-
         Logger.info('Corrected time step is {} [s]'.format(self.delta_t))
 
         # opens files for storing hydrographs
