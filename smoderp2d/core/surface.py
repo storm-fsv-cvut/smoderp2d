@@ -450,11 +450,11 @@ def surface_retention(bil, sur):
     else:
         # For implict version bil_new is surface retention contriubution 
         # to the bilance   
-        bil_new = ma.where(reten<0, 
-                     ma.where(bil+reten > 0, reten, 
-                     -bil),
-                     0
-                     ) 
+        bil_new = ma.where(
+            reten < 0,
+            ma.where(bil+reten > 0, reten, -bil),
+            0
+        )
     return bil_new
 
 def surface_retention_update(h_sur, sur):
@@ -469,18 +469,20 @@ def surface_retention_update(h_sur, sur):
     sur.cur_sur_ret = reten_new - reten
     
 def inflows_comp(tot_flow, list_fd):
-    inflow = ma.array(ma.zeros((GridGlobals.r, GridGlobals.c)),mask=GridGlobals.masks)
+    inflow = ma.array(
+        ma.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+    )
     r = GridGlobals.r
     c = GridGlobals.c
    
-    inflow[1:r,0:c-1] += list_fd[1:r,0:c-1,0]*tot_flow[0:r-1,1:c] #NE
-    inflow[1:r,0:c] += list_fd[1:r,0:c,1]*tot_flow[0:r-1,0:c] #N
-    inflow[1:r,1:c] += list_fd[1:r,1:c,2]*tot_flow[0:r-1,0:c-1] #NW
-    inflow[0:r,1:c] += list_fd[0:r,1:c,3]*tot_flow[0:r,0:c-1] #W
-    inflow[0:r-1,1:c] += list_fd[0:r-1,1:c,4]*tot_flow[1:r,0:c-1] #SW
-    inflow[0:r-1,0:c] += list_fd[0:r-1,0:c,5]*tot_flow[1:r,0:c] #S
-    inflow[0:r-1,0:c-1] += list_fd[0:r-1,0:c-1,6]*tot_flow[1:r,1:c] #SE
-    inflow[0:r,0:c-1] += list_fd[0:r,0:c-1,7]*tot_flow[0:r,1:c] #E
+    inflow[1:r, 0:c-1] += list_fd[1:r, 0:c-1, 0]*tot_flow[0:r-1, 1:c] #NE
+    inflow[1:r, 0:c] += list_fd[1:r, 0:c, 1]*tot_flow[0:r-1, 0:c] #N
+    inflow[1:r, 1:c] += list_fd[1:r, 1:c, 2]*tot_flow[0:r-1, 0:c-1] #NW
+    inflow[0:r, 1:c] += list_fd[0:r, 1:c, 3]*tot_flow[0:r, 0:c-1] #W
+    inflow[0:r-1, 1:c] += list_fd[0:r-1, 1:c, 4]*tot_flow[1:r, 0:c-1] #SW
+    inflow[0:r-1, 0:c] += list_fd[0:r-1, 0:c, 5]*tot_flow[1:r, 0:c] #S
+    inflow[0:r-1, 0:c-1] += list_fd[0:r-1, 0:c-1, 6]*tot_flow[1:r, 1:c] #SE
+    inflow[0:r, 0:c-1] += list_fd[0:r, 0:c-1, 7]*tot_flow[0:r, 1:c] #E
     
     return inflow
 
