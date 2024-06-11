@@ -5,7 +5,7 @@
 # MODULE:      r.smoderp2d
 # AUTHOR(S):   Martin Landa and SMODERP2D development team
 # PURPOSE:     Performs SMODERP2D soil erosion model.
-# COPYRIGHT:   (C) 2018-2023 by Martin Landa and Smoderp2d development team
+# COPYRIGHT:   (C) 2018-2024 by Martin Landa and Smoderp2d development team
 #
 #              This program is free software under the GNU General Public
 #              License (>=v3.0) and comes with ABSOLUTELY NO WARRANTY.
@@ -135,13 +135,13 @@ import os
 import sys
 import grass.script as gs
 
-from smoderp2d.runners.grass import GrassGisRunner
-from smoderp2d.providers.base import WorkflowMode
-from smoderp2d.exceptions import ProviderError, MaxIterationExceeded
-
 if __name__ == "__main__":
     options, flags = gs.parser()
     options['generate_temporary'] = flags['t']
+
+    from smoderp2d.runners.grass import GrassGisRunner
+    from smoderp2d.providers.base import WorkflowMode
+    from smoderp2d.exceptions import ProviderError, MaxIterationExceeded
 
     try:
         runner = GrassGisRunner()
