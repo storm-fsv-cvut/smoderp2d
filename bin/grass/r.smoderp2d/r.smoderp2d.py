@@ -137,7 +137,7 @@ import grass.script as gs
 
 from smoderp2d.runners.grass import GrassGisRunner
 from smoderp2d.providers.base import WorkflowMode
-from smoderp2d.exceptions import ProviderError
+from smoderp2d.exceptions import ProviderError, MaxIterationExceeded
 
 if __name__ == "__main__":
     options, flags = gs.parser()
@@ -145,11 +145,8 @@ if __name__ == "__main__":
 
     try:
         runner = GrassGisRunner()
-
         runner.set_options(options)
-
-        sys.exit(
-            runner.run()
-        )
-    except ProviderError as e:
+        runner.run()
+        runner.finish()
+    except (ProviderError, MaxIterationExceeded) as e:
         gs.fatal(e)

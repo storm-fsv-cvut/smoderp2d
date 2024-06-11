@@ -697,9 +697,6 @@ class PrepareDataGISBase(PrepareDataBase):
         Logger.info(
             "Creating output directories <{}>".format(Globals.outdir)
         )
-        if os.path.exists(Globals.outdir):
-            shutil.rmtree(Globals.outdir)
-        os.makedirs(Globals.outdir)
 
         # create temporary/control dir
         for dir_name in ("temp", "control"):

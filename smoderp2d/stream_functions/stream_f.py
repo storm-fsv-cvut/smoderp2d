@@ -66,7 +66,7 @@ def genshape(reach, dt):
     of a stream.
 
     :param reach: one reach of the stream network
-    :param dt: time step length
+    :param dt: current time step length
     """
     # reach.b - channel_bottom_width
     # reach.length - channel_length

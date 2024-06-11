@@ -1,5 +1,5 @@
 """
-Core functions to be used in Python scripts.
+Core functions to be used in Python scripts (SMODERP2D patch applied).
 
 Usage:
 

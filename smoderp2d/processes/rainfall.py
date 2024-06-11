@@ -100,7 +100,7 @@ def timestepRainfall(itera, total_time, delta_t, tz, sr):
 
     :param itera: TODO
     :param total_time: TODO
-    :param delta_t: TODO
+    :param delta_t: current time step length
     :param tz: TODO
     :param sr: TODO
     :return: TODO

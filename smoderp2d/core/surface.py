@@ -5,10 +5,7 @@ import numpy as np
 import numpy.ma as ma
 
 from smoderp2d.core.general import Globals, GridGlobals
-if Globals.isStream:
-    from smoderp2d.core.stream import Stream
-else:
-    from smoderp2d.core.stream import StreamPass as Stream
+from smoderp2d.core.stream import Stream, StreamPass
 from smoderp2d.core.kinematic_diffuse import get_kinematic, get_diffuse
 import smoderp2d.processes.rill as rill
 import smoderp2d.processes.surface as surfacefce
@@ -107,7 +104,8 @@ class SurArrs(object):
 
 
 def get_surface():
-    class Surface(GridGlobals, Stream,
+    stream_class = Stream if Globals.isStream else StreamPass
+    class Surface(GridGlobals, stream_class,
                   get_diffuse() if Globals.wave == 'diffusion' else get_kinematic()):
         """Data and methods to calculate the surface and rill runoff."""
 
@@ -135,7 +133,7 @@ def get_surface():
                 Globals.get_mat_b()
             )
 
-            Stream.__init__(self)
+            stream_class.__init__(self)
 
             Logger.info(
                 "\tRill flow: {}".format('ON' if Globals.isRill else 'OFF')
@@ -147,7 +145,7 @@ def get_surface():
             :param i: row index
             :param j: col index
             :param sep: separator
-            :param dt: TODO
+            :param dt: current time step length
             :param extra_out: append extra output
 
             :return: TODO
@@ -226,7 +224,7 @@ def get_surface():
 def __runoff(sur, dt, effect_vrst):
     """Calculate the sheet and rill flow.
 
-    :param dt: TODO
+    :param dt: current time step length
     :param effect_vrst: TODO
 
     :return: TODO
@@ -268,7 +266,7 @@ def __runoff_zero_comp_type(sur, dt, effect_vrst):
     """TODO.
 
     :param sur: TOD
-    :param dt: TODO
+    :param dt: current time step length
     :param effect_vrst: TODO
 
     :return: TODO
@@ -303,10 +301,30 @@ def update_state1(ht_1, hcrit, state):
     return state
 
 
+def update_state(h_total_new, h_crit, h_total_pre, state, h_last_state1):
+    # update state == 0
+    state = ma.where(
+        ma.logical_and(state == 0, h_total_new > h_crit), 1, state
+    )
+
+    # update state == 1
+    state_1_cond = ma.logical_and(state == 1, h_total_new < h_total_pre)
+
+    state = ma.where(state_1_cond, 2, state)
+    h_last_state1 = ma.where(state_1_cond, h_total_pre, h_last_state1)
+
+    # update state == 2
+    state = ma.where(
+        ma.logical_and(state == 2, h_total_new > h_last_state1), 1, state
+    )
+
+    return state, h_last_state1
+
+
 def compute_h_hrill(h_total_pre, h_crit, state, h_rill_pre):
     """TODO.
 
-    :param h_total_pre: TODO
+    :param h_total_pre: TODO (more like h_total in the implicit solution)
     :param h_crit: TODO
     :param state: TODO (not used)
     :param h_rill_pre: TODO (not used)
@@ -347,7 +365,7 @@ def compute_h_hrill(h_total_pre, h_crit, state, h_rill_pre):
 def sheet_runoff(dt, a, b, h_sheet):
     """TODO.
 
-    :param dt: TODO
+    :param dt: current time step length
     :param a: TODO
     :param b: TODO
     :param h_sheet: TODO
@@ -359,19 +377,21 @@ def sheet_runoff(dt, a, b, h_sheet):
     vol_runoff = q_sheet * dt * GridGlobals.get_size()[0]
     vol_rest = h_sheet * GridGlobals.get_pixel_area() - vol_runoff
 
+    if Globals.computationType == 'implicit':
+        vol_runoff = np.nan_to_num(vol_runoff, 0.0)
+    
     return q_sheet, vol_runoff, vol_rest
 
-
-def rill_runoff(dt, effect_vrst, h_rill, rillWidth, v_rill_rest,
-                vol_runoff_rill):
+def rill_runoff(dt, effect_vrst, h_rill, rillWidth, v_rill_rest=None,
+                vol_runoff_rill=None):
     """TODO.
 
-    :param dt: TODO
+    :param dt: current time step length
     :param effect_vrst: TODO
     :param h_rill: TODO
     :param rillWidth: TODO
-    :param v_rill_rest: TODO
-    :param vol_runoff_rill: TODO
+    :param v_rill_rest: TODO (not used in the implicit solution)
+    :param vol_runoff_rill: TODO (not used in the implicit solution)
 
     :return: TODO
     """
@@ -392,22 +412,26 @@ def rill_runoff(dt, effect_vrst, h_rill, rillWidth, v_rill_rest,
 
     courant = (v_rill * dt) / effect_vrst
 
-    # celerita
-    # courant = (1 + s*b/(3*(b+2*h))) * q_rill/(b*h)
-
-    v_rill_rest = ma.where(
-        courant <= courantMax,
-        ma.where(vol_rill > vol_to_rill, 0, vol_to_rill - vol_rill),
-        v_rill_rest
-    )
-    vol_runoff_rill = ma.where(
-        courant <= courantMax,
-        ma.where(vol_rill > vol_to_rill, vol_to_rill, vol_rill),
-        vol_runoff_rill
-    )
-
+    if Globals.computationType == 'explicit':
+        # celerita
+        # courant = (1 + s*b/(3*(b+2*h))) * q_rill/(b*h)
+        v_rill_rest = ma.where(
+            courant <= courantMax,
+            ma.where(vol_rill > vol_to_rill, 0, vol_to_rill - vol_rill),
+            v_rill_rest
+        )
+        
+        vol_runoff_rill = ma.where(
+            courant <= courantMax,
+            ma.where(vol_rill > vol_to_rill, vol_to_rill, vol_rill),
+            vol_runoff_rill
+        )
+    else:
+        v_rill_rest = vol_to_rill - vol_rill
+        
+        vol_runoff_rill = ma.filled(vol_rill,0)    
+        
     return v_rill, v_rill_rest, vol_runoff_rill, courant, vol_to_rill, b
-
 
 def surface_retention(bil, sur):
     """TODO.
@@ -416,21 +440,49 @@ def surface_retention(bil, sur):
     :param sur: TODO
     """
     reten = sur.sur_ret
-    bil_new = ma.where(
-        reten < 0,
-        ma.where(bil + reten > 0, bil + reten, 0),
-        bil
-    )
+    if Globals.computationType == 'explicit':
+        bil_new = ma.where(
+            reten < 0,
+            ma.where(bil + reten > 0, bil + reten, 0),
+            bil
+        )
+        surface_retention_update(bil, sur)
+    else:
+        # For implict version bil_new is surface retention contriubution 
+        # to the bilance   
+        bil_new = ma.where(reten<0, 
+                     ma.where(bil+reten > 0, reten, 
+                     -bil),
+                     0
+                     ) 
+    return bil_new
+
+def surface_retention_update(h_sur, sur):
+    reten = sur.sur_ret
     reten_new = ma.where(
         reten < 0,
-        ma.where(bil + reten > 0, 0, bil + reten),
+        ma.where(h_sur + reten > 0, 0, h_sur + reten),
         reten
     )
 
     sur.sur_ret = reten_new
     sur.cur_sur_ret = reten_new - reten
-
-    return bil_new
+    
+def inflows_comp(tot_flow, list_fd):
+    inflow = ma.array(ma.zeros((GridGlobals.r, GridGlobals.c)),mask=GridGlobals.masks)
+    r = GridGlobals.r
+    c = GridGlobals.c
+   
+    inflow[1:r,0:c-1] += list_fd[1:r,0:c-1,0]*tot_flow[0:r-1,1:c] #NE
+    inflow[1:r,0:c] += list_fd[1:r,0:c,1]*tot_flow[0:r-1,0:c] #N
+    inflow[1:r,1:c] += list_fd[1:r,1:c,2]*tot_flow[0:r-1,0:c-1] #NW
+    inflow[0:r,1:c] += list_fd[0:r,1:c,3]*tot_flow[0:r,0:c-1] #W
+    inflow[0:r-1,1:c] += list_fd[0:r-1,1:c,4]*tot_flow[1:r,0:c-1] #SW
+    inflow[0:r-1,0:c] += list_fd[0:r-1,0:c,5]*tot_flow[1:r,0:c] #S
+    inflow[0:r-1,0:c-1] += list_fd[0:r-1,0:c-1,6]*tot_flow[1:r,1:c] #SE
+    inflow[0:r,0:c-1] += list_fd[0:r,0:c-1,7]*tot_flow[0:r,1:c] #E
+    
+    return inflow
 
 
 if Globals.isRill:
