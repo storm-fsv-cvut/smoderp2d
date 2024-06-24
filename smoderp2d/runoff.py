@@ -190,8 +190,7 @@ class Runoff(object):
 
         if Globals.computationType == 'implicit':
             # list of flewdirection vectors - incialization
-            self.r, self.c = GridGlobals.get_dim()
-            self.list_fd = np.zeros((self.r, self.c, 8), dtype=int)
+            self.list_fd = np.zeros((GridGlobals.r, GridGlobals.c, 8), dtype=int)
 
     def record_hydrographs_time_zero(self):
         """Record values into hydrographs at time zero."""
@@ -244,8 +243,8 @@ class Runoff(object):
         """
         if Globals.computationType == 'implicit':
             # creates list of flow direction vectors (r*c vectors of length 8 coposed of 1 and 0) 
-            for i in range(self.r):
-                for j in range(self.c):
+            for i in range(GridGlobals.r):
+                for j in range(GridGlobals.c):
                     self.list_fd[i][j] = D8.inflow_dir(Globals.get_mat_fd(), i, j)
             self.flow_control.save_vars()
 
