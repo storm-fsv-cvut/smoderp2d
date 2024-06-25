@@ -58,15 +58,7 @@ class TimeStep:
         v_rill = ma.where(cond_state_flow, 0, runoff_return[1])
         subsurface.runoff(delta_t, mat_effect_cont, cond_state_flow)
 
-        if ma.any(cond_state_flow):
-            fc.ratio = ma.masked_array(
-                np.zeros((GridGlobals.r, GridGlobals.c)),
-                mask=GridGlobals.masks
-            )
-        else:
-            # TODO: Better way to make it just a number
-            fc.ratio = runoff_return[2]
-        rill_courant = ma.where(cond_state_flow, 0, runoff_return[3])
+        rill_courant = ma.where(cond_state_flow, 0, runoff_return[2])
 
         surface.arr.h_sheet = ma.where(
             cond_state_flow, surface.arr.h_sheet, runoff_return[3]
