@@ -129,7 +129,7 @@ def get_surface():
                 Globals.get_mat_reten(),
                 Globals.get_mat_inf_index(),
                 Globals.get_mat_hcrit(),
-                Globals.get_mat_aa(),
+                Globals.get_mat_a(),
                 Globals.get_mat_b()
             )
 
