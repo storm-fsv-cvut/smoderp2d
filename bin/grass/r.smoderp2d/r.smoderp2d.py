@@ -34,6 +34,7 @@
 # %option G_OPT_V_INPUT
 # % key: soil
 # % label: Soil polygons feature layer
+# % guidependency: soil_type_fieldname
 # % guisection: Spatial data
 # %end
 # %option G_OPT_DB_COLUMN
@@ -45,6 +46,7 @@
 # %option G_OPT_V_INPUT
 # % key: vegetation
 # % label: Landuse polygons feature layer
+# % guidependency: vegetation_type_fieldname
 # % guisection: Spatial data
 # %end
 # %option G_OPT_DB_COLUMN
@@ -57,13 +59,14 @@
 # % key: points
 # % label: Input points feature layer
 # % required: no
+# % guidependency: points_fieldname
 # % guisection: Spatial data
 # %end
 # %option G_OPT_DB_COLUMN
 # % key: points_fieldname
 # % description: Field with the input points idenfifier
 # % required: no
-# % guisection: Settings
+# % guisection: Spatial data
 # %end
 # %option G_OPT_V_INPUT
 # % key: streams
@@ -79,6 +82,7 @@
 # %option G_OPT_DB_TABLE
 # % key: table_soil_vegetation
 # % description: Soils and landuse parameters table
+# % guidependency: table_soil_vegetation_fieldname
 # % guisection: Model parameters
 # %end
 # %option G_OPT_DB_COLUMN
@@ -89,6 +93,7 @@
 # %option G_OPT_DB_TABLE
 # % key: channel_properties_table
 # % description: Channel properties table
+# % guidependency: streams_channel_type_fieldname
 # % guisection: Model parameters
 # %end
 # %option G_OPT_DB_COLUMN
