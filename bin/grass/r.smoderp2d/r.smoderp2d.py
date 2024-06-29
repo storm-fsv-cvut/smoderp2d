@@ -5,7 +5,7 @@
 # MODULE:      r.smoderp2d
 # AUTHOR(S):   Martin Landa and SMODERP2D development team
 # PURPOSE:     Performs SMODERP2D soil erosion model.
-# COPYRIGHT:   (C) 2018-2023 by Martin Landa and Smoderp2d development team
+# COPYRIGHT:   (C) 2018-2024 by Martin Landa and Smoderp2d development team
 #
 #              This program is free software under the GNU General Public
 #              License (>=v3.0) and comes with ABSOLUTELY NO WARRANTY.
@@ -24,46 +24,96 @@
 # %end
 # %flag
 # % key: t
-# % description: Export temporary data
+# % description: Generate also temporary data
+# % guisection: Advanced
 # %end
 # %option G_OPT_R_ELEV
 # % description: Input surface raster
-# % guisection: Data preparation
+# % guisection: Spatial data
 # %end
 # %option G_OPT_V_INPUT
 # % key: soil
-# % label: Input soil polygon features
-# % guisection: Data preparation
+# % label: Soil polygons feature layer
+# % guidependency: soil_type_fieldname
+# % guisection: Spatial data
 # %end
 # %option G_OPT_DB_COLUMN
 # % key: soil_type_fieldname
-# % description: Soil types
+# % description: Field with the soil type identifier
 # % required: yes
-# % guisection: Data preparation
+# % guisection: Spatial data
 # %end
 # %option G_OPT_V_INPUT
 # % key: vegetation
-# % label: Input land use polygon features
-# % guisection: Data preparation
+# % label: Landuse polygons feature layer
+# % guidependency: vegetation_type_fieldname
+# % guisection: Spatial data
 # %end
 # %option G_OPT_DB_COLUMN
 # % key: vegetation_type_fieldname
-# % description: Land use types
+# % description: Field with the landuse type identifier
 # % required: yes
-# % guisection: Data preparation
+# % guisection: Spatial data
+# %end
+# %option G_OPT_V_INPUT
+# % key: points
+# % label: Input points feature layer
+# % required: no
+# % guidependency: points_fieldname
+# % guisection: Spatial data
+# %end
+# %option G_OPT_DB_COLUMN
+# % key: points_fieldname
+# % description: Field with the input points idenfifier
+# % required: no
+# % guisection: Spatial data
+# %end
+# %option G_OPT_V_INPUT
+# % key: streams
+# % label: Stream network feature layer
+# % required: no
+# % guisection: Spatial data
 # %end
 # %option G_OPT_F_INPUT
 # % key: rainfall_file
-# % description: Rainfall file
-# % guisection: Computation
+# % description: Definition of the rainfall event
+# % guisection: Spatial data
+# %end
+# %option G_OPT_DB_TABLE
+# % key: table_soil_vegetation
+# % description: Soils and landuse parameters table
+# % guidependency: table_soil_vegetation_fieldname
+# % guisection: Model parameters
+# %end
+# %option G_OPT_DB_COLUMN
+# % key: table_soil_vegetation_fieldname
+# % description: Field with the connection between landuse and soil
+# % guisection: Model parameters
+# %end
+# %option G_OPT_DB_TABLE
+# % key: channel_properties_table
+# % description: Channel properties table
+# % guidependency: streams_channel_type_fieldname
+# % guisection: Model parameters
+# %end
+# %option G_OPT_DB_COLUMN
+# % key: streams_channel_type_fieldname
+# % description: Field with the channel type identifier
+# % guisection: Model parameters
+# %end
+# %option G_OPT_M_DIR
+# % key: output
+# % description: Output directory
+# % required: yes
+# % guisection: Computation options
 # %end
 # %option
 # % key: maxdt
 # % type: double
-# % description: Max time step [sec]
+# % description: Maximum time step [s]
 # % answer: 30
 # % required: yes
-# % guisection: Settings
+# % guisection: Computation options
 # %end
 # %option
 # % key: end_time
@@ -71,77 +121,34 @@
 # % description: Total running time [min]
 # % answer: 5
 # % required: yes
-# % guisection: Computation
-# %end
-# %option G_OPT_V_INPUT
-# % key: points
-# % label: Input points features
-# % required: no
-# % guisection: Data preparation
-# %end
-# %option G_OPT_DB_COLUMN
-# % key: points_fieldname
-# % description: Field with the input points idenfifier
-# % required: no
-# % guisection: Settings
-# %end
-# %option G_OPT_DB_TABLE
-# % key: table_soil_vegetation
-# % description: Table of soil and land use information
-# % guisection: Settings
-# %end
-# %option G_OPT_DB_COLUMN
-# % key: table_soil_vegetation_fieldname
-# % description: Soil land use code
-# % guisection: Settings
-# %end
-# %option G_OPT_V_INPUT
-# % key: streams
-# % label: Reach feature
-# % required: no
-# % guisection: Data preparation
-# %end
-# %option G_OPT_DB_TABLE
-# % key: channel_properties_table
-# % description: Reach shapes table
-# % guisection: Settings
-# %end
-# %option G_OPT_DB_COLUMN
-# % key: streams_channel_type_fieldname
-# % description: Reach shape table code
-# % guisection: Settings
+# % guisection: Computation options
 # %end
 # %option
 # % key: flow_direction
 # % description: Flow direction
-# % guisection: Settings
+# % guisection: Advanced
 # % options: single,multiple
 # % answer: single
 # %end
 # %option
 # % key: wave
 # % description: Wave type
-# % guisection: Settings
+# % guisection: Advanced
 # % options: kinematic,diffusion
 # % answer: kinematic
-# %end
-# %option G_OPT_M_DIR
-# % key: output
-# % description: Name for output directory where to store results
-# % required: yes
 # %end
 
 import os
 import sys
 import grass.script as gs
 
-from smoderp2d.runners.grass import GrassGisRunner
-from smoderp2d.providers.base import WorkflowMode
-from smoderp2d.exceptions import ProviderError, MaxIterationExceeded
-
 if __name__ == "__main__":
     options, flags = gs.parser()
     options['generate_temporary'] = flags['t']
+
+    from smoderp2d.runners.grass import GrassGisRunner
+    from smoderp2d.providers.base import WorkflowMode
+    from smoderp2d.exceptions import ProviderError, MaxIterationExceeded
 
     try:
         runner = GrassGisRunner()
