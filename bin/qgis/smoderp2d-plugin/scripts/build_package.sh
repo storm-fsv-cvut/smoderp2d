@@ -24,6 +24,9 @@ done
 
 patch zip_build/smoderp2d_plugin/smoderp_2D_dockwidget.py < patches/smoderp_2D_dockwidget.patch
 
+# copy LICENSE file
+cp ../../../LICENSE zip_build/smoderp2d_plugin/
+
 (cd zip_build; zip -r smoderp2d_plugin.zip smoderp2d_plugin) # pb_tool zip will overwrite patched file
 
 deactivate
