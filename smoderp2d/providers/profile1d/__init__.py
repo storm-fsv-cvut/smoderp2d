@@ -197,7 +197,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         # set values to parameter matrics
         data['mat_nrill'] = parsed_data['nrill'].reshape((data['r'], data['c']))
         data['mat_b'] = parsed_data['b'].reshape((data['r'], data['c']))
-        data['mat_aa'] = self._get_a(
+        data['mat_a'] = self._get_a(
             data['nsheet'],
             data['y'],
             data['NoDataValue'],
@@ -210,7 +210,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             data['c'],
             data['mat_slope'],
             data['NoDataValue'],
-            data['mat_aa']
+            data['mat_a']
         )
 
         data['mat_reten'] = parsed_data['ret'].reshape((data['r'], data['c']))
@@ -344,7 +344,6 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['mat_inf_index'] = np.zeros((data['r'], data['c']), float)
         data['mat_fd'] = np.zeros((data['r'], data['c']), float)
         data['mat_hcrit'] = np.zeros((data['r'], data['c']), float)
-        data['mat_aa'] = np.zeros((data['r'], data['c']), float)
         data['mat_reten'] = np.zeros((data['r'], data['c']), float)
         data['mat_nan'] = np.zeros((data['r'], data['c']), float)
         data['mat_effect_cont'] = np.zeros((data['r'], data['c']), float)
