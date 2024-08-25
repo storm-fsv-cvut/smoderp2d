@@ -32,9 +32,19 @@ class PrepareData(PrepareDataGISBase):
         super(PrepareData, self).__init__(writer)
 
         # install r.hydrodem if not available
+        install_ext = False
         ext = Module('g.extension', flags='a', stdout_=PIPE)
         list_ext = ext.outputs.stdout.splitlines()
         if 'r.hydrodem' not in list_ext:
+            install_ext = True
+        else:
+            # try to run the module
+            try:
+                Module("r.hydrodem", run_=False)
+            except Exception:
+                install_ext = True
+        if install_ext:
+            Logger.info("Installing r.hydrodem extension...")
             Module('g.extension', extension='r.hydrodem')
 
     def __del__(self):

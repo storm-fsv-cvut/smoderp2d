@@ -6,7 +6,8 @@ source $VENV/bin/activate
 
 script_dir=$(realpath $(dirname $0))
 echo $script_dir
-pip3 install smoderp2d
+# pip3 install smoderp2d
+(cd ../../.. ;pip3 install .)
 
 pv=$(python3 -V | cut -d' ' -f 2 | cut -d'.' -f 1,2)
 LIB=$VENV/lib/python$pv/site-packages
