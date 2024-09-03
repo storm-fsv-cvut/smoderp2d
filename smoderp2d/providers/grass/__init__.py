@@ -111,6 +111,8 @@ class GrassGisProvider(BaseProvider):
         os.environ['GRASS_OVERWRITE'] = '1'
         # be quiet
         os.environ['GRASS_VERBOSE'] = '0'
+        # allow to run r.hydrodem also when compatibility test fails
+        os.environ['GRASS_COMPATIBILITY_TEST'] = '0'
 
         # define storage writer
         self.storage = GrassGisWriter()

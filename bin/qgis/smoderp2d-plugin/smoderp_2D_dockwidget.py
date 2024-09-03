@@ -79,7 +79,8 @@ class SmoderpTask(QgsTask):
                     for line in islice(fin, 1, 2):
                         if 'SMODERP2D patch applied' not in line:
                             raise ImportError(
-                                'Your GRASS GIS installation needs to be fixed. Check the '
+                                'There is a bug affecting the plugin functionality. Update QGIS to '
+                                'version 3.34.10/3.38.2 or higher, or apply the fix manually. Check the '
                                 '<a href="https://storm-fsv-cvut.github.io/smoderp2d-manual/providers.html#known-issue">documentation</a>.'
                             )
             self.runner.create_location(QgsProject.instance().crs().authid())
