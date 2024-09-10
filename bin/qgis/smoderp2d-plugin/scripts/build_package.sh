@@ -16,7 +16,8 @@ LIB=$VENV/lib/python$pv/site-packages
 
 pb_tool deploy -y -p zip_build/
 
-plugin_dir=zip_build/smoderp2d_plugin
+plugin_name=smoderp2d_plugin
+plugin_dir=zip_build/$plugin_name
 cp -r $LIB/smoderp2d $plugin_dir/
 cp -r ../../base $plugin_dir/
 find $plugin_dir/smoderp2d $plugin_dir/base -name __pycache__ | xargs rm -rf
@@ -25,12 +26,12 @@ for provider in 'arcgis' 'cmd' 'profile1d' 'wps'; do
     rm -rvf $plugin_dir/smoderp2d/runners/${provider}.py
 done
 
-patch zip_build/smoderp2d_plugin/smoderp_2D_dockwidget.py < patches/smoderp_2D_dockwidget.patch
+patch zip_build/${plugin_name}/smoderp_2D_dockwidget.py < patches/smoderp_2D_dockwidget.patch
 
 # copy LICENSE file
-cp ../../../LICENSE zip_build/smoderp2d_plugin/
+cp ../../../LICENSE zip_build/${plugin_name}/
 
-(cd zip_build; zip -r smoderp2d_plugin.zip smoderp2d_plugin) # pb_tool zip will overwrite patched file
+(cd zip_build; zip -r ${plugin_name}.zip ${plugin_name}) # pb_tool zip will overwrite patched file
 
 deactivate
 rm -rf $VENV
