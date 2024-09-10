@@ -29,7 +29,7 @@ done
 patch zip_build/${plugin_name}/smoderp_2D_dockwidget.py < patches/smoderp_2D_dockwidget.patch
 
 # copy LICENSE file
-# cp ../../../LICENSE zip_build/${plugin_name}/
+cp ../../../LICENSE zip_build/${plugin_name}/
 
 (cd zip_build; zip -r ${plugin_name}.zip ${plugin_name}) # pb_tool zip will overwrite patched file
 
