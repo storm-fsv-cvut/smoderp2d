@@ -21,7 +21,7 @@ build-backend = "setuptools.build_meta"
 
 [metadata]
 name = 'smoderp2d'
-version = '2.1.dev'
+dynamic = ["version"]
 
 [tool.setuptools.packages.find]
 where = [""]
@@ -30,9 +30,12 @@ exclude = ["bin*", "utils*", "tests*"]
 [tool.setuptools.package-data]
 "*" = [".config.ini", "txtlogo.txt"]
 
+[tool.setuptools.dynamic]
+version = {attr = "smoderp2d.__version__"}
+
 [project]
 name = 'smoderp2d'
-version = '2.1.dev'
+dynamic = ["version"]
 description = 'Distributed event-based model for surface and subsurface runoff and erosion.'
 readme = 'README.md'
 authors = [
