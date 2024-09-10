@@ -4,7 +4,6 @@ Update SMODERP2D version in:
 
 - `smoderp2d/__init__.py`
 - `bin/qgis/smoderp2d-plugin/metadata.txt`
-- `pyproject.toml`
 
 Checkout the version:
 
