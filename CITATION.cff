@@ -17,3 +17,19 @@ title: "SMODERP - Distributed event-based model for surface and subsurface runof
 version: 2.0.1
 date-released: 2024-09-01
 url: "https://github.com/storm-fsv-cvut/smoderp2d"
+
+cff-version: 1.2.0
+message: "If you use this software, please cite the following work."
+authors:
+  - family-names: "Kavka"
+    given-names: "Petr"
+  - family-names: "Jeřábek"
+    given-names: "Jakub"
+  - family-names: "Landa"
+    given-names: "Martin"
+title: "SMODERP2D—Sheet and Rill Runoff Routine Validation at Three Scale Levels"
+date-released: "2022-01-23"
+url: "https://doi.org/10.3390/w14030327"
+doi: "10.3390/w14030327"
+version: "14.3"
+keywords: ["sheet flow", "rill flow", "scales", "model validation", "SMODERP"]
