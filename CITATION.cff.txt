@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Petr"
+  given-names: Kavka"
+  orcid: "https://orcid.org/0000-0002-6511-9518"
+- family-names: "Martin"
+  given-names: "Landa"
+  orcid: "https://orcid.org/0000-0001-6869-3542"
+- family-names: "Jakub"
+  given-names: "Jerabek"
+  orcid: "https://orcid.org/0000-0003-0413-1537"
+- family-names: "Ondřej"
+  given-names: "Pešek"
+  orcid: "https://orcid.org/0000-0002-2363-8002"
+title: "SMODERP - Distributed event-based model for surface and subsurface runoff and erosion."
+version: 2.0.1
+date-released: 2024-09-01
+url: "https://github.com/storm-fsv-cvut/smoderp2d"
