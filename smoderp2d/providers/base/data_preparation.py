@@ -154,17 +154,14 @@ class PrepareDataBase(ABC):
         :param mat_boundary: TODO
         :return: TODO
         """
-        nr = range(r)
-        nc = range(c)
-
         rr = []
         rc = []
 
         rr_insert = False
 
-        for i in nr:
+        for i in range(r):
             one_col = []
-            for j in nc:
+            for j in range(c):
 
                 if mat_boundary[i][j] == -99:
                     one_col.append(j)
