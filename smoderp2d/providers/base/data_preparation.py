@@ -124,8 +124,7 @@ class PrepareDataBase(ABC):
         condition = ma.logical_or(
             mat_dem == no_data_value, mat_slope == no_data_value
         )
-        # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u
-        # sklonu a acc
+        # get rid of border cells with errors - beware of slope and acc
         mat_nan = ma.where(
             condition,
             no_data_value,
