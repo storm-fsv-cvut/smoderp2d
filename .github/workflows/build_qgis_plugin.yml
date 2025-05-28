@@ -35,6 +35,7 @@ jobs:
     - name: Prepare artifact
       run: |
         rm bin/qgis/smoderp2d-plugin/zip_build/*.zip
+        ls -a bin/qgis/smoderp2d-plugin/zip_build/smoderp2d_plugin/smoderp2d
 
     - name: Upload ZIP artifact
       uses: actions/upload-artifact@v4
