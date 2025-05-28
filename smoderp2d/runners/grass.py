@@ -202,7 +202,7 @@ class GrassGisRunner(Runner):
             # import vectors
             elif key in ("soil", "vegetation", "points", "streams"):
                 Module(
-                    "v.import", input=value, output=key
+                    "v.import", input=value, output=key, snap=0.001
                 )
             # import tables
             elif key in ("table_soil_vegetation",
