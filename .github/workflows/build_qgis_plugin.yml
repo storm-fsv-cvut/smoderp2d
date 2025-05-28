@@ -43,3 +43,4 @@ jobs:
         name: smoderp2d_plugin
         path: bin/qgis/smoderp2d-plugin/zip_build/
         if-no-files-found: error
+        include-hidden-files: true
