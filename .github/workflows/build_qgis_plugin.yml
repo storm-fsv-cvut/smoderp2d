@@ -1,0 +1,44 @@
+name: Build QGIS plugin zip package
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python3 -m pip install pb_tool
+
+    - name: Build package
+      run: |
+        cd bin/qgis/smoderp2d-plugin/
+        ./scripts/build_package.sh
+
+
+    - name: Prepare artifact
+      run: |
+        rm zip_build/*.zip
+
+    - name: Upload ZIP artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: smoderp2d_plugin
+        path: zip_build/
+        if-no-files-found: error
