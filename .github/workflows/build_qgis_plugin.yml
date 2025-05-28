@@ -34,11 +34,11 @@ jobs:
 
     - name: Prepare artifact
       run: |
-        rm zip_build/*.zip
+        rm bin/qgis/smoderp2d-plugin/zip_build/*.zip
 
     - name: Upload ZIP artifact
       uses: actions/upload-artifact@v4
       with:
         name: smoderp2d_plugin
-        path: zip_build/
+        path: bin/qgis/smoderp2d-plugin/zip_build/
         if-no-files-found: error
