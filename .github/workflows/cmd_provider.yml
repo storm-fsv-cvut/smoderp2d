@@ -4,9 +4,8 @@ on:
   push:
     branches:
       - master
+      - release_*
   pull_request:
-    branches:
-      - master
 
 jobs:
   smoderp2d-quicktest-sheet:
