@@ -397,6 +397,7 @@ def rill_runoff(dt, effect_vrst, h_rill, rillWidth, v_rill_rest=None,
     """
     nrill = Globals.get_mat_nrill()
     slope = Globals.get_mat_slope()
+    #TODO JJ: check if slope zero... and call error if that is the case
 
     vol_to_rill = h_rill * GridGlobals.get_pixel_area()
     h, b = rill.update_hb(
