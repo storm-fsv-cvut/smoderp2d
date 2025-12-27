@@ -389,7 +389,7 @@ class TimeStep:
         h_old = np.ravel(surface.arr.h_total_pre.tolist(0))
 
         # Preparing the matrixes of flow parameters
-        aa = ma.array(Globals.get_mat_aa(), mask=GridGlobals.masks)
+        a = ma.array(Globals.get_mat_a(), mask=GridGlobals.masks)
         b = ma.array(Globals.get_mat_b(), mask=GridGlobals.masks)
         # Setting the initial guess for the solver
         h_0 = h_old 
@@ -436,7 +436,7 @@ class TimeStep:
                     h_old,
                     list_fd,
                     r,c,
-                    aa,b,
+                    a,b,
                     act_rain,
                     surface.arr.soil_type,
                     pixel_area,
@@ -573,7 +573,7 @@ class TimeStep:
 
         #calculating sheet runoff
         _q_sheet, surface.arr.vol_runoff, surface.arr.vol_rest = ma.filled(
-            sheet_runoff(delta_t, aa, b, surface.arr.h_sheet), fill_value=0.0
+            sheet_runoff(delta_t, a, b, surface.arr.h_sheet), fill_value=0.0
         )
 
         # Saving the inflows

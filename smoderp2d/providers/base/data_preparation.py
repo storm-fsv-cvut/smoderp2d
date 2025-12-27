@@ -24,9 +24,9 @@ class PrepareDataBase(ABC):
         :param mat_y:
         :param no_data: no data value
         :param mat_slope:
-        :return: np ndarray for mat_aa
+        :return: np ndarray for mat_a
         """
-        mat_aa = ma.where(
+        mat_a = ma.where(
             ma.logical_or(
                 mat_nsheet == no_data, mat_y == no_data, mat_slope == no_data
             ),
@@ -38,11 +38,11 @@ class PrepareDataBase(ABC):
             )
         )
 
-        return mat_aa
+        return mat_a
 
     @staticmethod
     def _get_crit_water(mat_b, mat_tau, mat_v, r, c, mat_slope,
-                        no_data_value, mat_aa):
+                        no_data_value, mat_a):
         cond = ma.logical_and(
             mat_slope != no_data_value, mat_tau != no_data_value
         )
@@ -61,7 +61,7 @@ class PrepareDataBase(ABC):
 
         mat_hcrit_v = ma.where(
             cond,
-            ma.where(mat_slope == 0, 1000, ma.power(mat_v / mat_aa, exp)),
+            ma.where(mat_slope == 0, 1000, ma.power(mat_v / mat_a, exp)),
             no_data_value
         )
 
@@ -70,7 +70,7 @@ class PrepareDataBase(ABC):
             ma.where(
                 mat_slope == 0,
                 1000,
-                ma.power(flux_crit / mat_slope / g / mat_aa, 1 / mat_b)
+                ma.power(flux_crit / mat_slope / g / mat_a, 1 / mat_b)
             ),
             no_data_value
         )
@@ -261,7 +261,7 @@ class PrepareDataGISBase(PrepareDataBase):
             'surface_retention': None,
             'mat_inf_index': None,
             'mat_hcrit': None,
-            'mat_aa': None,
+            'mat_a': None,
             'mat_b': None,
             'mat_reten': None,
             'mat_fd': None,
@@ -608,7 +608,7 @@ class PrepareDataGISBase(PrepareDataBase):
                               self.data['mat_dem'])
 
         # build a/aa arrays
-        self.data['mat_aa'] = self._get_a(
+        self.data['mat_a'] = self._get_a(
                 self.soilveg_fields['nsheet'], self.soilveg_fields['y'],
                 GridGlobals.NoDataValue, self.data['mat_slope'])
         Logger.progress(50)
@@ -618,7 +618,7 @@ class PrepareDataGISBase(PrepareDataBase):
             self.data['mat_b'], self.soilveg_fields['tau'],
             self.soilveg_fields['v'], GridGlobals.r,
             GridGlobals.c, self.data['mat_slope'],
-            GridGlobals.NoDataValue, self.data['mat_aa'])
+            GridGlobals.NoDataValue, self.data['mat_a'])
         self.storage.write_raster(self.data['mat_hcrit'], 'hcrit', 'control')
 
         # load precipitation input file
