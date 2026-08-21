@@ -442,19 +442,26 @@ def surface_retention(bil, sur):
     :param sur: TODO
     """
     reten = sur.sur_ret
+    # step 2d: read plain-ndarray views for this function's own
+    # arithmetic below. The original bil/reten objects are passed to
+    # surface_retention_update() unchanged (that function is step
+    # 2d-4, not yet converted), so this guard only affects the
+    # bil_new computation in this function.
+    reten_plain = np.asarray(reten)
+    bil_plain = np.asarray(bil)
     if Globals.computationType == 'explicit':
-        bil_new = ma.where(
-            reten < 0,
-            ma.where(bil + reten > 0, bil + reten, 0),
-            bil
+        bil_new = np.where(
+            reten_plain < 0,
+            np.where(bil_plain + reten_plain > 0, bil_plain + reten_plain, 0),
+            bil_plain
         )
         surface_retention_update(bil, sur)
     else:
-        # For implict version bil_new is surface retention contriubution 
-        # to the bilance   
-        bil_new = ma.where(
-            reten < 0,
-            ma.where(bil+reten > 0, reten, -bil),
+        # For implict version bil_new is surface retention contriubution
+        # to the bilance
+        bil_new = np.where(
+            reten_plain < 0,
+            np.where(bil_plain + reten_plain > 0, reten_plain, -bil_plain),
             0
         )
     return bil_new
