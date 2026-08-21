@@ -70,6 +70,13 @@ class GridGlobals(object):
     dy = None
     # masks
     masks = None
+    # krok 2a (odchod od numpy.ma): plochy ekvivalent masky, True = platna
+    # (nemaskovana) bunka. Cisty pridavek vedle masks, nikym dosud cteny -
+    # zavadi se pripravu na 2b-2f, tenhle krok sam o sobe nic neprepina.
+    valid = None
+    # plochy (1D) index platnych bunek, tj. np.flatnonzero(valid.ravel()).
+    # Take cisty pridavek, dosud nekonzumovany.
+    valid_idx = None
 
     def __init__(self):
         """TODO."""
@@ -162,6 +169,9 @@ class GridGlobals(object):
         cls.dy = None
         # masks
         cls.masks = None
+        # krok 2a: plochy ekvivalent masky + jeho plochy index
+        cls.valid = None
+        cls.valid_idx = None
 
 
 class DataGlobals:

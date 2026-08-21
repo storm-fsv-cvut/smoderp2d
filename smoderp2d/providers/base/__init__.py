@@ -427,6 +427,12 @@ class BaseProvider(object):
             for c in rc[r]:
                 GridGlobals.masks[r][c] = False
 
+        # krok 2a (odchod od numpy.ma): plochy ekvivalent masks, ktery
+        # pribyva vedle nej, nic nenahrazuje. valid[r, c] == True prave
+        # tam, kde masks[r][c] == False (platna/nemaskovana bunka).
+        GridGlobals.valid = ~np.array(GridGlobals.masks, dtype=bool)
+        GridGlobals.valid_idx = np.flatnonzero(GridGlobals.valid.ravel())
+
     @staticmethod
     def _cleanup():
         """Clean-up output directory."""
