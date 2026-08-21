@@ -468,17 +468,20 @@ def surface_retention(bil, sur):
 
 def surface_retention_update(h_sur, sur):
     reten = sur.sur_ret
-    reten_new = ma.where(
-        reten < 0,
-        ma.where(h_sur + reten > 0, 0, h_sur + reten),
-        reten
+    # step 2d: h_sur and reten (sur.sur_ret) may still be numpy.ma at
+    # the call boundary - read raw .data via np.asarray() up front so
+    # the whole function body below is plain ndarray arithmetic, same
+    # branching as before, only ma.* -> np.*.
+    reten_plain = np.asarray(reten)
+    h_sur_plain = np.asarray(h_sur)
+    reten_new = np.where(
+        reten_plain < 0,
+        np.where(h_sur_plain + reten_plain > 0, 0, h_sur_plain + reten_plain),
+        reten_plain
     )
 
     sur.sur_ret = reten_new
-    # cur_sur_ret is plain ndarray since step 2c; guard explicitly, the
-    # branching above (sur_ret/reten_new) is unchanged and belongs to
-    # step 2d.
-    sur.cur_sur_ret = np.asarray(reten_new - reten)
+    sur.cur_sur_ret = reten_new - reten_plain
     
 def inflows_comp(tot_flow, list_fd):
     inflow = ma.array(
