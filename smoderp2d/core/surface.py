@@ -311,28 +311,38 @@ def compute_h_hrill(h_total_pre, h_crit, state, h_rill_pre):
 
     :return: TODO
     """
-    h_sheet = ma.where(
+    # step 2d: h_total_pre is already plain ndarray (step 2c); h_crit,
+    # state and h_rill_pre are still numpy.ma (unconverted). Read raw
+    # .data via np.asarray() up front so the whole function body below
+    # is plain ndarray arithmetic - the branching structure and every
+    # comparison/operator stay exactly as before, only ma.* -> np.*.
+    h_total_pre = np.asarray(h_total_pre)
+    h_crit = np.asarray(h_crit)
+    state = np.asarray(state)
+    h_rill_pre = np.asarray(h_rill_pre)
+
+    h_sheet = np.where(
         state == 0,
         h_total_pre,
-        ma.where(
+        np.where(
             state == 1,
-            ma.minimum(h_crit, h_total_pre),
-            ma.where(h_total_pre > h_rill_pre, h_total_pre - h_rill_pre, 0)
+            np.minimum(h_crit, h_total_pre),
+            np.where(h_total_pre > h_rill_pre, h_total_pre - h_rill_pre, 0)
         )
     )
-    h_rill = ma.where(
+    h_rill = np.where(
         state == 0,
         0,
-        ma.where(
+        np.where(
             state == 1,
-            ma.maximum(h_total_pre - h_crit, 0),
-            ma.where(h_total_pre > h_rill_pre, h_rill_pre, h_total_pre)
+            np.maximum(h_total_pre - h_crit, 0),
+            np.where(h_total_pre > h_rill_pre, h_rill_pre, h_total_pre)
         )
     )
-    h_rill_pre = ma.where(
+    h_rill_pre = np.where(
         state == 0,
         0,
-        ma.where(
+        np.where(
             state == 1,
             h_rill,
             h_rill_pre
