@@ -282,20 +282,32 @@ def update_state1(ht_1, hcrit, state):
 
 
 def update_state(h_total_new, h_crit, h_total_pre, state, h_last_state1):
+    # step 2d: h_total_new and h_total_pre are already plain ndarray
+    # (step 2c); h_crit, state and h_last_state1 are still numpy.ma
+    # (unconverted). Read raw .data via np.asarray() up front so the
+    # whole function body below is plain ndarray arithmetic - every
+    # condition and transition stays exactly as before, only ma.* ->
+    # np.*.
+    h_total_new = np.asarray(h_total_new)
+    h_crit = np.asarray(h_crit)
+    h_total_pre = np.asarray(h_total_pre)
+    state = np.asarray(state)
+    h_last_state1 = np.asarray(h_last_state1)
+
     # update state == 0
-    state = ma.where(
-        ma.logical_and(state == 0, h_total_new > h_crit), 1, state
+    state = np.where(
+        np.logical_and(state == 0, h_total_new > h_crit), 1, state
     )
 
     # update state == 1
-    state_1_cond = ma.logical_and(state == 1, h_total_new < h_total_pre)
+    state_1_cond = np.logical_and(state == 1, h_total_new < h_total_pre)
 
-    state = ma.where(state_1_cond, 2, state)
-    h_last_state1 = ma.where(state_1_cond, h_total_pre, h_last_state1)
+    state = np.where(state_1_cond, 2, state)
+    h_last_state1 = np.where(state_1_cond, h_total_pre, h_last_state1)
 
     # update state == 2
-    state = ma.where(
-        ma.logical_and(state == 2, h_total_new > h_last_state1), 1, state
+    state = np.where(
+        np.logical_and(state == 2, h_total_new > h_last_state1), 1, state
     )
 
     return state, h_last_state1

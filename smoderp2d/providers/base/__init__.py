@@ -618,7 +618,10 @@ class BaseProvider(object):
 
         for i in rrows:
             for j in rcols[i]:
-                finState[i][j] = int(surface_array.state.data[i, j])
+                # step 2d: state may be plain ndarray now (update_state()
+                # converted); .data would return a memoryview, not an
+                # ndarray, for a plain array - read directly instead.
+                finState[i][j] = int(surface_array.state[i, j])
                 if finState[i][j] >= Globals.streams_flow_inc:
                     vRest[i][j] = GridGlobals.NoDataValue
                 else:
@@ -634,7 +637,9 @@ class BaseProvider(object):
 
         for i in rrows:
             for j in rcols[i]:
-                if int(surface_array.state.data[i, j]) >= \
+                # step 2d: state may be plain ndarray now, read directly
+                # (see comment above) instead of via .data.
+                if int(surface_array.state[i, j]) >= \
                         Globals.streams_flow_inc:
                     totalBil[i][j] = GridGlobals.NoDataValue
 
