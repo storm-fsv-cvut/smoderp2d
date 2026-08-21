@@ -3,7 +3,6 @@
 
 
 import numpy as np
-import numpy.ma as ma
 
 from smoderp2d.core.general import Globals as Gl, GridGlobals
 
@@ -89,10 +88,32 @@ class Courant:
         :param co: TODO
         :param rill_courant: TODO
         """
-        cour = v / self.cour_coef * delta_t / effect_cont
-        cour = ma.maximum(cour, rill_courant)
-        if ma.any(cour > self.cour_most):
-            self.i, self.j = np.unravel_index(ma.argmax(cour), cour.shape)
+        # step 2f: v and rill_courant may still be numpy.ma at the
+        # call boundary (masked with GridGlobals.masks) - read raw
+        # .data via np.asarray(). Unlike the elementwise ma.where()
+        # conversions elsewhere in step 2, this function does a
+        # *reduction* (argmax) over the whole grid, so the underlying
+        # buffer at invalid/out-of-domain cells (whatever arithmetic
+        # happened to land there, not necessarily harmless - e.g.
+        # division by a near-zero effect_cont) could spuriously win
+        # the maximum once the mask no longer excludes it. The search
+        # below is therefore explicitly restricted to
+        # GridGlobals.valid_idx (step 2a), the same set of cells
+        # ma.argmax()/ma.any() would have considered via the mask.
+        v = np.asarray(v)
+        rill_courant = np.asarray(rill_courant)
+        effect_cont = np.asarray(effect_cont)
+
+        with np.errstate(divide='ignore', invalid='ignore'):
+            cour = v / self.cour_coef * delta_t / effect_cont
+        cour = np.maximum(cour, rill_courant)
+
+        valid_idx = GridGlobals.valid_idx
+        cour_valid = cour.ravel()[valid_idx]
+        if cour_valid.size and np.any(cour_valid > self.cour_most):
+            local_argmax = np.argmax(cour_valid)
+            flat_idx = valid_idx[local_argmax]
+            self.i, self.j = np.unravel_index(flat_idx, cour.shape)
             self.co = co
             self.cour_most = cour[self.i, self.j]
             self.cour_speed = v[self.i, self.j]
