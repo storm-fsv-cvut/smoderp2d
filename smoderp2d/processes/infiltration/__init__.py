@@ -19,31 +19,34 @@ def set_combinatIndex(newCombinatIndex):
 
 
 def philip_infiltration(soil, bil):
-    infiltration = combinatIndex[0][3]
+    # step 2e: soil (surface.arr.soil_type) and bil may still be
+    # numpy.ma at the call boundary - read raw .data via np.asarray()
+    # up front. soil holds category ids built by
+    # providers/base/data_preparation.py:_get_inf_combinat_index(),
+    # which assigns each unique (k, s) combination a unique sequential
+    # index 0..len(combinatIndex)-1 and gives every cell in the raster
+    # (including NoData/boundary cells) exactly one such id - the
+    # categories are disjoint by construction, so the previous
+    # sequential "for z in combinatIndex: ma.where(soil == z[0], ...,
+    # <accumulator>)" loop only ever wrote each cell once, in whichever
+    # iteration matched its own category. That makes it equivalent to
+    # a single vectorized lookup indexed directly by category id,
+    # without the loop and without the per-iteration ma.where nesting.
+    soil_idx = np.asarray(soil).astype(np.intp)
+    bil = np.asarray(bil)
+
+    cap = np.empty(len(combinatIndex))
     for z in combinatIndex:
-        # if ma.all(bil < 0):
-        #     raise NegativeWaterLevel()
+        cap[z[0]] = z[3]
+    cap_cell = cap[soil_idx]
 
-        infilt_bil_cond = z[3] > bil
+    infilt_bil_cond = cap_cell > bil
 
-        if Globals.computationType == 'explicit':
-            infiltration = ma.where(
-                soil == z[0],
-                ma.where(infilt_bil_cond, bil, z[3]),
-                infiltration
-            )
-            
-            bil = ma.where(
-                soil == z[0],
-                ma.where(infilt_bil_cond, 0, bil - z[3]),
-                bil
-            )
-        else:
-            infiltration = ma.where(
-                soil == z[0],
-                ma.where(infilt_bil_cond, bil, z[3]),
-                infiltration
-            )
+    if Globals.computationType == 'explicit':
+        infiltration = np.where(infilt_bil_cond, bil, cap_cell)
+        bil = np.where(infilt_bil_cond, 0, bil - cap_cell)
+    else:
+        infiltration = np.where(infilt_bil_cond, bil, cap_cell)
 
     return bil, infiltration
 
