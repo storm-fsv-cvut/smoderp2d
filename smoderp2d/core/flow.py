@@ -33,6 +33,12 @@ class D8(object):
      - smoderp2d.core.kinematic_diffuse.Diffuse
     """
 
+    # Poradi MUSI odpovidat seznamu inflow_directions ve
+    # smoderp2d.flow_algorithm.D8.__directionsInflow(). Na nem zavisi poradi
+    # scitani v inflow_all(), a tim i bitova shoda s cell_runoff().
+    _INFLOW_DIRS = ((-1, 1), (-1, 0), (-1, -1), (0, -1),
+                    (1, -1), (1, 0), (1, 1), (0, 1))
+
     def __init__(self):
         """Constructor.
 
@@ -42,6 +48,7 @@ class D8(object):
         """
         Logger.info("D8 flow algorithm")
         self.inflows = D8_.new_inflows(Globals.get_mat_fd())
+        self._inflow_w = None
 
     def update_inflows(self, fd):
         """Update inflows list if the diffuse approach is used.
@@ -52,6 +59,54 @@ class D8(object):
         :param fd: TODO
         """
         self.inflows = D8_.new_inflows(fd)
+        self._inflow_w = None
+
+    def _build_inflow_weights(self):
+        """Prevede seznam inflows na vahove pole (r, c, 8) a slice pary.
+
+        Stavi se jednou (lene, pri prvnim volani inflow_all()) a znovu po
+        update_inflows() v difuznim pristupu.
+        """
+        r, c = GridGlobals.r, GridGlobals.c
+        idx = {d: k for k, d in enumerate(self._INFLOW_DIRS)}
+        w = np.zeros((r, c, len(self._INFLOW_DIRS)))
+        for i in range(r):
+            row = self.inflows[i]
+            for j in range(c):
+                for ax, bx in row[j]:
+                    if i + ax < 0 or j + bx < 0:
+                        # stejny guard jako v cell_runoff()
+                        continue
+                    w[i, j, idx[(ax, bx)]] = 1.0
+        self._inflow_w = w
+        self._inflow_slices = tuple(
+            (slice(max(0, -ax), r - max(0, ax)),
+             slice(max(0, -bx), c - max(0, bx)),
+             slice(max(0, ax), r - max(0, -ax)),
+             slice(max(0, bx), c - max(0, -bx)))
+            for ax, bx in self._INFLOW_DIRS
+        )
+
+    def inflow_all(self):
+        """Return inflow volume for the whole domain at once.
+
+        Vektorizovana obdoba cell_runoff() volaneho pro kazdou bunku. Vysledek
+        je bitove identicky - poradi scitani (pro kazdy smer nejdriv sheet,
+        pak rill) odpovida puvodni smycce, neaktivni smery pricitaji presnou
+        nulu.
+
+        :returns: inflow volume from the adjacent cells for all cells
+        """
+        if self._inflow_w is None:
+            self._build_inflow_weights()
+        sheet = self.arr.vol_runoff.data
+        rill = self.arr.vol_runoff_rill.data
+        out = np.zeros((GridGlobals.r, GridGlobals.c))
+        for k, (si, sj, ti, tj) in enumerate(self._inflow_slices):
+            w = self._inflow_w[si, sj, k]
+            out[si, sj] += w * sheet[ti, tj]
+            out[si, sj] += w * rill[ti, tj]
+        return ma.masked_array(out, mask=GridGlobals.masks)
 
     def cell_runoff(self, i, j):
         """Return the water volume water flows into cell i, j
@@ -125,6 +180,24 @@ class Mfda(object):
         """
         self.inflows, fd_rill = mfd.new_mfda(self.H, Globals.mat_nan, fd)
         self.inflowsRill = D8_.new_inflows(fd_rill)
+
+    def inflow_all(self):
+        """Return inflow volume for the whole domain at once.
+
+        Pro MFD zatim skalarni fallback - vahove pole ma jinou topologii a
+        navic ceka na opravu nulovych vah. Chova se presne jako puvodni
+        dvojita smycka v TimeStep.do_next_h().
+
+        :returns: inflow volume from the adjacent cells for all cells
+        """
+        rr, rc = GridGlobals.get_region_dim()
+        out = ma.masked_array(
+            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
+        )
+        for i in rr:
+            for j in rc[i]:
+                out[i, j] = self.cell_runoff(i, j)
+        return out
 
     def cell_runoff(self, i, j, sur=True):
         """Return the water volume water flows into cell i, j
