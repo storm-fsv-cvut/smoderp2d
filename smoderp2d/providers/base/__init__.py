@@ -622,7 +622,10 @@ class BaseProvider(object):
                 if finState[i][j] >= Globals.streams_flow_inc:
                     vRest[i][j] = GridGlobals.NoDataValue
                 else:
-                    vRest[i][j] = surface_array.h_total_new.data[i, j] * \
+                    # h_total_new is plain ndarray since step 2c; .data
+                    # would return a memoryview, not an ndarray, for a
+                    # plain array.
+                    vRest[i][j] = surface_array.h_total_new[i, j] * \
                                   GridGlobals.pixel_area
 
         totalBil = (cumulative.precipitation + cumulative.inflow_sur) - \

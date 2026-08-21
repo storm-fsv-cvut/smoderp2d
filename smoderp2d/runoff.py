@@ -398,15 +398,25 @@ class Runoff(object):
             # check if rill flow occur
             if Globals.computationType == 'explicit':
                 # update states
-                self.surface.arr.state, self.surface.arr.h_last_state1 = update_state(
+                new_state, new_h_last_state1 = update_state(
                     self.surface.arr.h_total_new,
                     self.surface.arr.h_crit,
                     self.surface.arr.h_total_pre,
                     self.surface.arr.state,
                     self.surface.arr.h_last_state1
                 )
+                self.surface.arr.state = new_state
+                # h_last_state1 is plain ndarray since step 2c;
+                # update_state() is unconverted (step 2d) and may still
+                # return numpy.ma.
+                self.surface.arr.h_last_state1 = np.asarray(
+                    new_h_last_state1
+                )
 
-            self.surface.arr.h_total_pre = ma.copy(self.surface.arr.h_total_new)
+            # h_total_pre is plain ndarray since step 2c.
+            self.surface.arr.h_total_pre = np.copy(
+                self.surface.arr.h_total_new
+            )
 
             timeperc = 100 * (self.flow_control.total_time + self.delta_t) / end_time
             if timeperc > 99.9 or timeperc - timeperc_last > 5:

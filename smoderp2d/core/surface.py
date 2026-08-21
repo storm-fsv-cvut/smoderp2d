@@ -29,6 +29,12 @@ class SurArrs(object):
         :a: TODO
         :b: TODO
         """
+        # step 2c (numpy.ma removal): not-yet-converted fields keep
+        # ma.masked_array (state, soil_type, sur_ret, h_crit, a, b,
+        # h_rillPre, rillWidth). The other 15 fields below are plain
+        # ndarray - every place that writes to them elsewhere in the
+        # codebase has been updated (or explicitly guarded with
+        # np.asarray()) so they stay plain across the whole run.
         self.state = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
@@ -36,37 +42,19 @@ class SurArrs(object):
             np.full((GridGlobals.r, GridGlobals.c), sur_ret),
             mask=GridGlobals.masks
         )
-        self.cur_sur_ret = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.cur_rain = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.h_sheet = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.h_total_new = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.h_total_pre = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.vol_runoff = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.vol_rest = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.inflow_tm = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
+        self.cur_sur_ret = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.cur_rain = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.h_sheet = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.h_total_new = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.h_total_pre = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.vol_runoff = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.vol_rest = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.inflow_tm = np.zeros((GridGlobals.r, GridGlobals.c))
         self.soil_type = ma.masked_array(
             np.full((GridGlobals.r, GridGlobals.c), inf_index),
             mask=GridGlobals.masks
         )
-        self.infiltration = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
+        self.infiltration = np.zeros((GridGlobals.r, GridGlobals.c))
         self.h_crit = ma.masked_array(
             np.full((GridGlobals.r, GridGlobals.c), hcrit),
             mask=GridGlobals.masks
@@ -77,30 +65,18 @@ class SurArrs(object):
         self.b = ma.masked_array(
             np.full((GridGlobals.r, GridGlobals.c), b), mask=GridGlobals.masks
         )
-        self.h_rill = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
+        self.h_rill = np.zeros((GridGlobals.r, GridGlobals.c))
         self.h_rillPre = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
-        self.vol_runoff_rill = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.vel_rill = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.v_rill_rest = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
+        self.vol_runoff_rill = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.vel_rill = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.v_rill_rest = np.zeros((GridGlobals.r, GridGlobals.c))
         self.rillWidth = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
         )
-        self.vol_to_rill = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        self.h_last_state1 = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
+        self.vol_to_rill = np.zeros((GridGlobals.r, GridGlobals.c))
+        self.h_last_state1 = np.zeros((GridGlobals.r, GridGlobals.c))
 
 
 def get_surface():
@@ -166,7 +142,8 @@ def get_surface():
                 )
                 bil_ = ''
             else:
-                velocity = ma.where(
+                # h_sheet and vol_runoff are plain ndarray since step 2c
+                velocity = np.where(
                     arr.h_sheet == 0,
                     0,
                     arr.vol_runoff / dt / (arr.h_sheet*GridGlobals.dx)
@@ -253,8 +230,11 @@ def __runoff(sur, dt, effect_vrst):
     vol_runoff_rill = ma.where(sur.state > 0, rill_runoff_results[2],
                                    sur.vol_runoff_rill)
     rill_courant = ma.where(sur.state > 0, rill_runoff_results[3], 0)
-    sur.vol_to_rill = ma.where(sur.state > 0, rill_runoff_results[4],
-                               sur.vol_to_rill)
+    # vol_to_rill is plain ndarray since step 2c; guard explicitly so the
+    # mixed-type ma.where() above does not silently re-wrap it.
+    sur.vol_to_rill = np.asarray(
+        ma.where(sur.state > 0, rill_runoff_results[4], sur.vol_to_rill)
+    )
     sur.rillWidth = ma.where(sur.state > 0, rill_runoff_results[5],
                              sur.rillWidth)
 
@@ -466,7 +446,10 @@ def surface_retention_update(h_sur, sur):
     )
 
     sur.sur_ret = reten_new
-    sur.cur_sur_ret = reten_new - reten
+    # cur_sur_ret is plain ndarray since step 2c; guard explicitly, the
+    # branching above (sur_ret/reten_new) is unchanged and belongs to
+    # step 2d.
+    sur.cur_sur_ret = np.asarray(reten_new - reten)
     
 def inflows_comp(tot_flow, list_fd):
     inflow = ma.array(

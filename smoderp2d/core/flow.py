@@ -99,14 +99,19 @@ class D8(object):
         """
         if self._inflow_w is None:
             self._build_inflow_weights()
-        sheet = self.arr.vol_runoff.data
-        rill = self.arr.vol_runoff_rill.data
+        # step 2c: vol_runoff/vol_runoff_rill are plain ndarray now, so
+        # read them directly - .data would return a memoryview instead
+        # of an ndarray for a plain array, not a masked one.
+        sheet = self.arr.vol_runoff
+        rill = self.arr.vol_runoff_rill
         out = np.zeros((GridGlobals.r, GridGlobals.c))
         for k, (si, sj, ti, tj) in enumerate(self._inflow_slices):
             w = self._inflow_w[si, sj, k]
             out[si, sj] += w * sheet[ti, tj]
             out[si, sj] += w * rill[ti, tj]
-        return ma.masked_array(out, mask=GridGlobals.masks)
+        # step 2c: inflow_tm is plain ndarray now, out is already a
+        # plain zero-initialized ndarray - no mask wrap needed.
+        return out
 
     def cell_runoff(self, i, j):
         """Return the water volume water flows into cell i, j
@@ -128,12 +133,16 @@ class D8(object):
             bx = self.inflows[i][j][z][1]
             iax = i + ax
             jbx = j + bx
+            # step 2c: vol_runoff/vol_runoff_rill are plain ndarray, read
+            # directly (this method is currently unused/dead - see
+            # inflow_all() - but kept consistent with the rest of the
+            # file rather than left referencing a stale .data pattern)
             if iax >= 0 and jbx >= 0:
-                insurfflow_from_cell = self.arr.vol_runoff.data[iax][jbx]
+                insurfflow_from_cell = self.arr.vol_runoff[iax][jbx]
             else:
                 insurfflow_from_cell = 0.0
             if iax >= 0 and jbx >= 0:
-                inrillflow_from_cell = self.arr.vol_runoff_rill.data[iax][jbx]
+                inrillflow_from_cell = self.arr.vol_runoff_rill[iax][jbx]
             else:
                 inrillflow_from_cell = 0.0
             inflow_from_cells = inflow_from_cells + \
@@ -191,9 +200,9 @@ class Mfda(object):
         :returns: inflow volume from the adjacent cells for all cells
         """
         rr, rc = GridGlobals.get_region_dim()
-        out = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
+        # step 2c: inflow_tm is plain ndarray now, so this fallback
+        # returns plain too - no mask wrap needed.
+        out = np.zeros((GridGlobals.r, GridGlobals.c))
         for i in rr:
             for j in rc[i]:
                 out[i, j] = self.cell_runoff(i, j)
@@ -214,21 +223,23 @@ class Mfda(object):
         :param sur: TODO
         :returns: inflow volume from the adjacent cells
         """
+        # step 2c: vol_runoff is plain ndarray, read directly (.data
+        # would return a memoryview, not an ndarray, for a plain array)
         if i == 0:
             inflows_up = np.zeros((GridGlobals.c, 8))
             inflows_down = self.inflows[i + 1]
             vol_runoff_up = np.zeros(GridGlobals.c)
-            vol_runoff_down = self.arr.vol_runoff.data[i + 1]
+            vol_runoff_down = self.arr.vol_runoff[i + 1]
         elif i == GridGlobals.r - 1:
             inflows_up = self.inflows[i - 1]
             inflows_down = np.zeros((GridGlobals.c, 8))
-            vol_runoff_up = self.arr.vol_runoff.data[i - 1]
+            vol_runoff_up = self.arr.vol_runoff[i - 1]
             vol_runoff_down = np.zeros(GridGlobals.c)
         else:
             inflows_up = self.inflows[i - 1]
             inflows_down = self.inflows[i + 1]
-            vol_runoff_up = self.arr.vol_runoff.data[i - 1]
-            vol_runoff_down = self.arr.vol_runoff.data[i + 1]
+            vol_runoff_up = self.arr.vol_runoff[i - 1]
+            vol_runoff_down = self.arr.vol_runoff[i + 1]
 
         if j == 0:
             inflows_leftup = 0
@@ -241,7 +252,7 @@ class Mfda(object):
             vol_runoff_left = 0
             vol_runoff_leftdown = 0
             vol_runoff_rightup = vol_runoff_up[j + 1]
-            vol_runoff_right = self.arr.vol_runoff.data[i][j + 1]
+            vol_runoff_right = self.arr.vol_runoff[i][j + 1]
             vol_runoff_rightdown = vol_runoff_down[j + 1]
         elif j == GridGlobals.c - 1:
             inflows_leftup = inflows_up[j - 1][1]
@@ -251,7 +262,7 @@ class Mfda(object):
             inflows_right = 0
             inflows_rightdown = 0
             vol_runoff_leftup = vol_runoff_up[j - 1]
-            vol_runoff_left = self.arr.vol_runoff.data[i][j - 1]
+            vol_runoff_left = self.arr.vol_runoff[i][j - 1]
             vol_runoff_leftdown = vol_runoff_down[j - 1]
             vol_runoff_rightup = 0
             vol_runoff_right = 0
@@ -264,10 +275,10 @@ class Mfda(object):
             inflows_right = self.inflows[i][j + 1][4]
             inflows_rightdown = inflows_down[j + 1][5]
             vol_runoff_leftup = vol_runoff_up[j - 1]
-            vol_runoff_left = self.arr.vol_runoff.data[i][j - 1]
+            vol_runoff_left = self.arr.vol_runoff[i][j - 1]
             vol_runoff_leftdown = vol_runoff_down[j - 1]
             vol_runoff_rightup = vol_runoff_up[j + 1]
-            vol_runoff_right = self.arr.vol_runoff.data[i][j + 1]
+            vol_runoff_right = self.arr.vol_runoff[i][j + 1]
             vol_runoff_rightdown = vol_runoff_down[j + 1]
 
         inflow_from_cells = \

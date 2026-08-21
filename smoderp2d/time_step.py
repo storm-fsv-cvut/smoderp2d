@@ -60,29 +60,37 @@ class TimeStep:
 
         rill_courant = ma.where(cond_state_flow, 0, runoff_return[2])
 
-        surface.arr.h_sheet = ma.where(
-            cond_state_flow, surface.arr.h_sheet, runoff_return[3]
+        # step 2c: h_sheet, h_rill, vol_runoff, vol_rest, v_rill_rest,
+        # vol_runoff_rill and vel_rill are plain ndarray now - use
+        # np.where() and guard both operands explicitly with
+        # np.asarray(), since runoff_return[k] and cond_state_flow may
+        # still be numpy.ma (compute_h_hrill/rill_runoff are step
+        # 2d/unconverted). h_rillPre is not part of step 2c, left as is.
+        cond_flow = np.asarray(cond_state_flow)
+        surface.arr.h_sheet = np.where(
+            cond_flow, surface.arr.h_sheet, np.asarray(runoff_return[3])
         )
-        surface.arr.h_rill = ma.where(
-            cond_state_flow, surface.arr.h_rill, runoff_return[4]
+        surface.arr.h_rill = np.where(
+            cond_flow, surface.arr.h_rill, np.asarray(runoff_return[4])
         )
         surface.arr.h_rillPre = ma.where(
             cond_state_flow, surface.arr.h_rillPre, runoff_return[5]
         )
-        surface.arr.vol_runoff = ma.where(
-            cond_state_flow, surface.arr.vol_runoff, runoff_return[6]
+        surface.arr.vol_runoff = np.where(
+            cond_flow, surface.arr.vol_runoff, np.asarray(runoff_return[6])
         )
-        surface.arr.vol_rest = ma.where(
-            cond_state_flow, surface.arr.vol_rest, runoff_return[7]
+        surface.arr.vol_rest = np.where(
+            cond_flow, surface.arr.vol_rest, np.asarray(runoff_return[7])
         )
-        surface.arr.v_rill_rest = ma.where(
-            cond_state_flow, surface.arr.v_rill_rest, runoff_return[8]
+        surface.arr.v_rill_rest = np.where(
+            cond_flow, surface.arr.v_rill_rest, np.asarray(runoff_return[8])
         )
-        surface.arr.vol_runoff_rill = ma.where(
-            cond_state_flow, surface.arr.vol_runoff_rill, runoff_return[9]
+        surface.arr.vol_runoff_rill = np.where(
+            cond_flow, surface.arr.vol_runoff_rill,
+            np.asarray(runoff_return[9])
         )
-        surface.arr.vel_rill = ma.where(
-            cond_state_flow, surface.arr.vel_rill, runoff_return[10]
+        surface.arr.vel_rill = np.where(
+            cond_flow, surface.arr.vel_rill, np.asarray(runoff_return[10])
         )
 
         v = ma.maximum(v_sheet, v_rill)
@@ -163,7 +171,9 @@ class TimeStep:
         #
         actRain, fc.sum_interception, rain_arr.arr.veg = \
             rain_f.current_rain(rain_arr.arr, potRain, fc.sum_interception)
-        surface.arr.cur_rain = actRain
+        # cur_rain is plain ndarray since step 2c; current_rain() is
+        # unconverted and may still return numpy.ma, so guard here.
+        surface.arr.cur_rain = np.asarray(actRain)
 
         #
         # Inflows from surroundings cells
@@ -171,7 +181,8 @@ class TimeStep:
         # Vektorizovano: drive dvojita Python smycka pres rr/rc se skalarnim
         # zapisem do maskovaneho pole. Vysledek je bitove identicky, viz
         # D8.inflow_all(). Namerena zmena: 2,55x na celem behu (5 m rastr).
-        surface.arr.inflow_tm = surface.inflow_all()
+        # inflow_tm is plain ndarray since step 2c.
+        surface.arr.inflow_tm = np.asarray(surface.inflow_all())
         subsurface.arr.inflow_tm = subsurface.inflow_all()
 
 
@@ -197,10 +208,12 @@ class TimeStep:
             surBIL,
             philip_infiltration[0]
         )
-        surface.arr.infiltration = ma.where(
-            subsurface.get_exfiltration() > 0,
+        # infiltration is plain ndarray since step 2c; philip_infiltration
+        # is unconverted (step 2e) and may still return numpy.ma.
+        surface.arr.infiltration = np.where(
+            np.asarray(subsurface.get_exfiltration()) > 0,
             0,
-            philip_infiltration[1]
+            np.asarray(philip_infiltration[1])
         )
 
         #
@@ -214,10 +227,13 @@ class TimeStep:
         surface_state = surface.arr.state
 
         state_condition = surface_state > Globals.streams_flow_inc
-        surface.arr.h_total_new = ma.where(
-            state_condition,  # stream flow in the cell
+        # h_total_new is plain ndarray since step 2c; surBIL is a
+        # composite of several unconverted (2d/2e) computations and may
+        # still be numpy.ma.
+        surface.arr.h_total_new = np.where(
+            np.asarray(state_condition),  # stream flow in the cell
             0,
-            surBIL
+            np.asarray(surBIL)
         )
         if ma.any(surface_state > Globals.streams_flow_inc):
             h_sub = subsurface.runoff_stream_cell(state_condition)
