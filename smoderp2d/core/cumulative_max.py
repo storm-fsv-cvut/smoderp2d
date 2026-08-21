@@ -6,7 +6,6 @@
 #
 
 import numpy as np
-import numpy.ma as ma
 
 from smoderp2d.providers import Logger
 from smoderp2d.core.general import GridGlobals, Globals
@@ -142,15 +141,16 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
             'vol_sur_tot'  : CumulativeData('core',    'cvsur_m3'),
         })
 
-        # define arrays class attributes
+        # step 2b (numpy.ma removal): plain ndarray instead of
+        # numpy.ma.masked_array. Validity for output is handled by
+        # provider.postprocessing()._make_mask(), which rebuilds the
+        # NoData pattern from GridGlobals.rr/rc regardless of array type,
+        # so this array no longer needs its own mask.
         for item in self.data.keys():
             setattr(
                 self,
                 item,
-                ma.masked_array(
-                    np.zeros([GridGlobals.r, GridGlobals.c], float),
-                    mask=GridGlobals.masks
-                )
+                np.zeros([GridGlobals.r, GridGlobals.c], float)
             )
 
     def update_cumulative(self, surface, subsurface, delta_t):
@@ -161,38 +161,55 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         :param subsurface: subsurface.arr (to be implemented)
         :param delta_t: current time step length
         """
-        self.infiltration += surface.infiltration * GridGlobals.pixel_area
-        self.precipitation += surface.cur_rain * GridGlobals.pixel_area
-        self.vol_sheet += surface.vol_runoff
-        self.vol_rill += surface.vol_runoff_rill
-        self.vol_sur_tot += surface.vol_runoff_rill + surface.vol_runoff
-        self.inflow_sur += surface.inflow_tm
-        self.sur_ret += surface.cur_sur_ret * GridGlobals.pixel_area
+        # surface.* fields are still numpy.ma arrays until step 2c converts
+        # SurArrs. Pull the raw .data explicitly here so every operation
+        # below is a plain ndarray operation, regardless of the RHS type -
+        # this avoids relying on implicit numpy.ma/ndarray mixed-type
+        # dispatch rules.
+        surface_infiltration = np.asarray(surface.infiltration)
+        surface_cur_rain = np.asarray(surface.cur_rain)
+        surface_vol_runoff = np.asarray(surface.vol_runoff)
+        surface_vol_runoff_rill = np.asarray(surface.vol_runoff_rill)
+        surface_inflow_tm = np.asarray(surface.inflow_tm)
+        surface_cur_sur_ret = np.asarray(surface.cur_sur_ret)
+        surface_h_total_new = np.asarray(surface.h_total_new)
+        surface_h_rill = np.asarray(surface.h_rill)
+        surface_rillWidth = np.asarray(surface.rillWidth)
+        surface_state = np.asarray(surface.state)
+        surface_h_crit = np.asarray(surface.h_crit)
 
-        q_sheet_tot = surface.vol_runoff / delta_t
-        q_rill_tot = surface.vol_runoff_rill / delta_t
+        self.infiltration += surface_infiltration * GridGlobals.pixel_area
+        self.precipitation += surface_cur_rain * GridGlobals.pixel_area
+        self.vol_sheet += surface_vol_runoff
+        self.vol_rill += surface_vol_runoff_rill
+        self.vol_sur_tot += surface_vol_runoff_rill + surface_vol_runoff
+        self.inflow_sur += surface_inflow_tm
+        self.sur_ret += surface_cur_sur_ret * GridGlobals.pixel_area
+
+        q_sheet_tot = surface_vol_runoff / delta_t
+        q_rill_tot = surface_vol_runoff_rill / delta_t
         q_sur_tot = q_sheet_tot + q_rill_tot
 
-        self.q_sur_tot = ma.maximum(q_sur_tot, self.q_sur_tot)
-        self.h_sur_tot = ma.maximum(surface.h_total_new, self.h_sur_tot)
-        self.q_sheet_tot = ma.maximum(q_sheet_tot, self.q_sheet_tot)
+        self.q_sur_tot = np.maximum(q_sur_tot, self.q_sur_tot)
+        self.h_sur_tot = np.maximum(surface_h_total_new, self.h_sur_tot)
+        self.q_sheet_tot = np.maximum(q_sheet_tot, self.q_sheet_tot)
 
-        cond_h_rill = ma.greater(surface.h_rill, self.h_rill)
-        self.h_rill = ma.where(cond_h_rill, surface.h_rill, self.h_rill)
-        self.b_rill = ma.where(cond_h_rill, surface.rillWidth, self.b_rill)
-        self.q_rill_tot = ma.where(cond_h_rill, q_rill_tot, self.q_rill_tot)
+        cond_h_rill = surface_h_rill > self.h_rill
+        self.h_rill = np.where(cond_h_rill, surface_h_rill, self.h_rill)
+        self.b_rill = np.where(cond_h_rill, surface_rillWidth, self.b_rill)
+        self.q_rill_tot = np.where(cond_h_rill, q_rill_tot, self.q_rill_tot)
 
-        cond_sur_state0 = surface.state == 0
-        self.h_sheet_tot = ma.where(
+        cond_sur_state0 = surface_state == 0
+        self.h_sheet_tot = np.where(
             cond_sur_state0,
-            ma.maximum(self.h_sheet_tot, surface.h_total_new),
+            np.maximum(self.h_sheet_tot, surface_h_total_new),
             self.h_sheet_tot
         )
-        cond_sur_state1 = surface.state == 1
-        cond_sur_state2 = surface.state == 2
-        self.h_sheet_tot = ma.where(
-            ma.logical_or(cond_sur_state1, cond_sur_state2),
-            surface.h_crit,
+        cond_sur_state1 = surface_state == 1
+        cond_sur_state2 = surface_state == 2
+        self.h_sheet_tot = np.where(
+            np.logical_or(cond_sur_state1, cond_sur_state2),
+            surface_h_crit,
             self.h_sheet_tot
         )
 
@@ -202,11 +219,16 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         """Compute maximum shear stress and velocity."""
         dx = GridGlobals.get_size()[0]
 
-        self.v_sheet = ma.where(
+        self.v_sheet = np.where(
             self.h_sur_tot == 0, 0, self.q_sheet_tot / (self.h_sheet_tot * dx)
         )
 
-        self.shear_sheet = self.h_sheet_tot * 9807 * Globals.mat_slope
+        # Globals.mat_slope is still numpy.ma (not part of step 2), read
+        # its raw .data explicitly for the same reason as in
+        # update_cumulative() above.
+        self.shear_sheet = (
+            self.h_sheet_tot * 9807 * np.asarray(Globals.mat_slope)
+        )
 
     def return_str_val(self, i, j):
         """Return the cumulative precipitation in mm and cumulative runoff.
