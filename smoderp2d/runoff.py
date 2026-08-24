@@ -13,7 +13,6 @@ Classes:
 
 import time
 import numpy as np
-import numpy.ma as ma
 
 from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.core.vegetation import Vegetation
@@ -55,9 +54,13 @@ class FlowControl(object):
         self.tz = 0
 
         # stores cumulative interception
-        self.sum_interception = ma.masked_array(
-            np.zeros((r, c), float), mask=GridGlobals.masks
-        )
+        # numpy.ma removal: the mask was always exactly GridGlobals.masks.
+        # NOTE: MaskedArray.__iadd__ substitutes 0 for the addend wherever
+        # the cell is masked, so the += in current_rain() never actually
+        # accumulated outside the computation area. On a plain array it
+        # does. Cells outside the area therefore hold different values than
+        # before - see the commit message; they are discarded on output.
+        self.sum_interception = np.zeros((r, c), float)
 
         # maximum amount of iterations
         self.max_iter = 40
@@ -67,7 +70,7 @@ class FlowControl(object):
 
         # defined by save_vars()
         self.tz_tmp = None
-        self.sum_interception_tmp = ma.copy(self.sum_interception)
+        self.sum_interception_tmp = np.copy(self.sum_interception)
 
     def save_vars(self):
         """Store tz and sum of interception.
@@ -75,7 +78,7 @@ class FlowControl(object):
         For the case of repeating the time step iteration.
         """
         self.tz_tmp = self.tz
-        self.sum_interception_tmp = ma.copy(self.sum_interception)
+        self.sum_interception_tmp = np.copy(self.sum_interception)
 
     def restore_vars(self):
         """Restore tz and sum of interception.
@@ -83,7 +86,7 @@ class FlowControl(object):
         In case of repeating time step iteration.
         """
         self.tz = self.tz_tmp
-        self.sum_interception = ma.copy(self.sum_interception_tmp)
+        self.sum_interception = np.copy(self.sum_interception_tmp)
 
     def refresh_iter(self):
         """Set current number of iteration to zero.
@@ -194,9 +197,7 @@ class Runoff(object):
 
     def record_hydrographs_time_zero(self):
         """Record values into hydrographs at time zero."""
-        zeros = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
+        zeros = np.zeros((GridGlobals.r, GridGlobals.c))
 
         self.hydrographs.write_hydrographs_record(
             None,

@@ -42,10 +42,10 @@ class SurArrs(object):
         # The masked array here was therefore only ever live during the
         # first time step of a streams-disabled run.
         self.state = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.sur_ret = ma.masked_array(
-            np.full((GridGlobals.r, GridGlobals.c), sur_ret),
-            mask=GridGlobals.masks
-        )
+        # sur_ret is overwritten by surface_retention_update() with a plain
+        # np.where() result on the first time step anyway, so the masked
+        # array here was only ever live before that.
+        self.sur_ret = np.full((GridGlobals.r, GridGlobals.c), sur_ret)
         self.cur_sur_ret = np.zeros((GridGlobals.r, GridGlobals.c))
         self.cur_rain = np.zeros((GridGlobals.r, GridGlobals.c))
         self.h_sheet = np.zeros((GridGlobals.r, GridGlobals.c))
@@ -54,10 +54,9 @@ class SurArrs(object):
         self.vol_runoff = np.zeros((GridGlobals.r, GridGlobals.c))
         self.vol_rest = np.zeros((GridGlobals.r, GridGlobals.c))
         self.inflow_tm = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.soil_type = ma.masked_array(
-            np.full((GridGlobals.r, GridGlobals.c), inf_index),
-            mask=GridGlobals.masks
-        )
+        # soil_type is constant for the whole run; philip_infiltration()
+        # has read it through np.asarray() since it was converted.
+        self.soil_type = np.full((GridGlobals.r, GridGlobals.c), inf_index)
         self.infiltration = np.zeros((GridGlobals.r, GridGlobals.c))
         self.h_crit = np.full((GridGlobals.r, GridGlobals.c), hcrit)
         # a and b are constant for the whole run - nothing writes to them
@@ -67,15 +66,11 @@ class SurArrs(object):
         self.a = np.full((GridGlobals.r, GridGlobals.c), a)
         self.b = np.full((GridGlobals.r, GridGlobals.c), b)
         self.h_rill = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.h_rillPre = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
+        self.h_rillPre = np.zeros((GridGlobals.r, GridGlobals.c))
         self.vol_runoff_rill = np.zeros((GridGlobals.r, GridGlobals.c))
         self.vel_rill = np.zeros((GridGlobals.r, GridGlobals.c))
         self.v_rill_rest = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.rillWidth = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
+        self.rillWidth = np.zeros((GridGlobals.r, GridGlobals.c))
         self.vol_to_rill = np.zeros((GridGlobals.r, GridGlobals.c))
         self.h_last_state1 = np.zeros((GridGlobals.r, GridGlobals.c))
 
@@ -244,7 +239,7 @@ def __runoff(sur, dt, effect_vrst):
     sur.vol_to_rill = np.where(
         sur.state > 0, rill_runoff_results[4], sur.vol_to_rill
     )
-    sur.rillWidth = ma.where(sur.state > 0, rill_runoff_results[5],
+    sur.rillWidth = np.where(sur.state > 0, rill_runoff_results[5],
                              sur.rillWidth)
 
     return (v_sheet, v_rill, rill_courant, h_sheet, h_rill, h_rillPre,

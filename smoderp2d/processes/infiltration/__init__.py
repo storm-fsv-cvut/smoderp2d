@@ -1,5 +1,4 @@
 import numpy as np
-import numpy.ma as ma
 from smoderp2d.core.general import Globals
 # from smoderp2d.exceptions import NegativeWaterLevel
 
@@ -55,7 +54,10 @@ def philip(k, s, deltaT, totalT, NoDataValue):
     if k and s == NoDataValue:
         infiltration = NoDataValue
     else:
-        infiltration1 = ma.where(
+        # numpy.ma removal: k, s, deltaT and totalT are all SCALARS
+        # (measured, ndim always 0) and never masked, so numpy.ma only
+        # added overhead here - the same case as stream_functions/stream_f.py.
+        infiltration1 = np.where(
             totalT == 0,
             s * 0.0000001 ** 0.5 + k * 0.0000001,
             s * totalT ** 0.5 + k * totalT

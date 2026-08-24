@@ -65,8 +65,8 @@ class TimeStep:
         rill_courant = np.where(cond_state_flow, 0, runoff_return[2])
 
         # cond_state_flow is plain now, so no np.asarray() guard is
-        # needed any more. h_rillPre is still numpy.ma, hence the one
-        # remaining ma.where() below.
+        # needed any more; every operand below is plain as well, so
+        # cond_flow is just an alias kept for readability.
         cond_flow = cond_state_flow
         surface.arr.h_sheet = np.where(
             cond_flow, surface.arr.h_sheet, np.asarray(runoff_return[3])
@@ -74,7 +74,7 @@ class TimeStep:
         surface.arr.h_rill = np.where(
             cond_flow, surface.arr.h_rill, np.asarray(runoff_return[4])
         )
-        surface.arr.h_rillPre = ma.where(
+        surface.arr.h_rillPre = np.where(
             cond_state_flow, surface.arr.h_rillPre, runoff_return[5]
         )
         surface.arr.vol_runoff = np.where(
@@ -128,11 +128,13 @@ class TimeStep:
         NoDataValue = GridGlobals.get_no_data()
 
         self.infilt_capa += potRain
-        if ma.all(self.infilt_capa < self.max_infilt_capa):
+        # numpy.ma removal: infilt_capa is a SCALAR (measured, ndim
+        # always 0), so this reduction was never a grid reduction at
+        # all. NOTE: this branch never fires on the test data
+        # (0 of 680 steps) - the body below is unverified.
+        if np.all(self.infilt_capa < self.max_infilt_capa):
             self.infilt_time += delta_t
-            actRain = ma.masked_array(
-                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-            )
+            actRain = np.zeros((GridGlobals.r, GridGlobals.c))
             hydrographs.write_hydrographs_record(
                 None,
                 None,

@@ -1,6 +1,6 @@
 """TODO."""
 
-import numpy.ma as ma
+import numpy as np
 
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
 from smoderp2d.core.surface import SurArrs
@@ -14,9 +14,15 @@ class VegArrs(object):
         :param ppl: pomerna plocha listova (leave area index)
         :param pi: potential interception
         """
+        # numpy.ma removal: measured - the mask on these two was always
+        # exactly GridGlobals.masks, never anything more, and both are
+        # constant for the whole run. Note that pi carries the no-data
+        # value through the mm -> m conversion below, so outside the
+        # computation area it holds -9.999 rather than -9999; nothing keys
+        # off that value, the area is defined by GridGlobals.valid.
         self.veg = veg
-        self.ppl = ma.masked_array(ppl, mask=GridGlobals.masks)
-        self.pi = ma.masked_array(pi, mask=GridGlobals.masks)
+        self.ppl = np.asarray(ppl)
+        self.pi = np.asarray(pi)
 
 
 class Vegetation(GridGlobals):

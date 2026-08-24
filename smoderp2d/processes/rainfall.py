@@ -2,7 +2,6 @@
 
 import sys
 import numpy as np
-import numpy.ma as ma
 
 from smoderp2d.providers import Logger
 from smoderp2d.core.general import GridGlobals
@@ -113,7 +112,11 @@ def timestepRainfall(itera, total_time, delta_t, tz, sr):
         # skontroluje jestli casovy krok, ktery prave resi, je stale vramci
         # srazkoveho zaznamu z
 
-        if ma.all(sr[z][0] >= (total_time + delta_t)):
+        # numpy.ma removal: sr is a plain ndarray and sr[z][0] / sr[z][1]
+        # are float64 SCALARS (measured, ndim always 0), so numpy.ma did
+        # nothing here but add overhead - the same situation as in
+        # stream_functions/stream_f.py.
+        if np.all(sr[z][0] >= (total_time + delta_t)):
             rainfall = sr[z][1] * delta_t
         # kdyz je mimo tak
         else:
@@ -128,8 +131,8 @@ def timestepRainfall(itera, total_time, delta_t, tz, sr):
             else:
                 # pokud je total_time + delta_t stale dal nez konec posunuteho
                 # zaznamu vezme celou delku zaznamu a tuto srazku pricte
-                while ma.any(sr[z][0] <= (total_time + delta_t)):
-                    rainfall += ma.where(
+                while np.any(sr[z][0] <= (total_time + delta_t)):
+                    rainfall += np.where(
                         sr[z][0] <= (total_time + delta_t),
                         sr[z][1] * (sr[z][0] - sr[z - 1][0]),
                         0
@@ -160,21 +163,32 @@ def current_rain(rain, rainfallm, sum_interception):
     :return: TODO
     """
     # jj
+    # numpy.ma removal: rain.veg / rain.ppl / rain.pi and
+    # sum_interception all carried exactly GridGlobals.masks and nothing
+    # more (measured - no operation here ever produced a mask beyond the
+    # base one), so every ma.* below is a plain elementwise operation on
+    # identical data.
+    #
+    # Two things that must not change:
+    #  - the copy is taken BEFORE the += and is what NS reads, so it has
+    #    to stay a real copy (np.copy), not an alias
+    #  - the += has to stay in place: the caller reassigns the returned
+    #    object over fc.sum_interception, and it is the same object
     rain_veg = rain.veg
     rain_ppl = rain.ppl
     rain_pi = rain.pi
-    sum_interception_pre = ma.copy(sum_interception)
+    sum_interception_pre = np.copy(sum_interception)
 
     interc = rain_ppl * rainfallm  # interception is constant
 
-    sum_interception += ma.where(
-        ma.logical_not(rain_veg),
+    sum_interception += np.where(
+        np.logical_not(rain_veg),
         interc,
         0
     )
-    NS = ma.where(
-        ma.logical_not(rain_veg),
-        ma.where(
+    NS = np.where(
+        np.logical_not(rain_veg),
+        np.where(
             sum_interception >= rain_pi,
             rainfallm - (rain_pi - sum_interception_pre),
             # rest of interception, netto rainfallm
@@ -182,8 +196,8 @@ def current_rain(rain, rainfallm, sum_interception):
         ),
         rainfallm
     )
-    rain_veg = ma.where(
-        ma.logical_and(ma.logical_not(rain_veg), sum_interception >= rain_pi),
+    rain_veg = np.where(
+        np.logical_and(np.logical_not(rain_veg), sum_interception >= rain_pi),
         True,  # as vegetation, interception is full
         rain_veg
     )
