@@ -29,15 +29,19 @@ class SurArrs(object):
         :a: TODO
         :b: TODO
         """
-        # step 2c (numpy.ma removal): not-yet-converted fields keep
-        # ma.masked_array (state, soil_type, sur_ret, h_crit, a, b,
-        # h_rillPre, rillWidth). The other 15 fields below are plain
-        # ndarray - every place that writes to them elsewhere in the
-        # codebase has been updated (or explicitly guarded with
-        # np.asarray()) so they stay plain across the whole run.
-        self.state = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
+        # numpy.ma removal: the fields not converted yet keep
+        # ma.masked_array (soil_type, sur_ret, h_rillPre, rillWidth). All
+        # the others below are plain ndarray - every place that writes to
+        # them elsewhere in the codebase has been updated (or explicitly
+        # guarded with np.asarray()) so they stay plain across the whole
+        # run.
+        #
+        # state: with streams enabled this array is overwritten right
+        # away by Stream.__init__() with a plain np.where() result, and
+        # from the first update_state() onwards it is plain in any case.
+        # The masked array here was therefore only ever live during the
+        # first time step of a streams-disabled run.
+        self.state = np.zeros((GridGlobals.r, GridGlobals.c))
         self.sur_ret = ma.masked_array(
             np.full((GridGlobals.r, GridGlobals.c), sur_ret),
             mask=GridGlobals.masks
@@ -55,16 +59,13 @@ class SurArrs(object):
             mask=GridGlobals.masks
         )
         self.infiltration = np.zeros((GridGlobals.r, GridGlobals.c))
-        self.h_crit = ma.masked_array(
-            np.full((GridGlobals.r, GridGlobals.c), hcrit),
-            mask=GridGlobals.masks
-        )
-        self.a = ma.masked_array(
-            np.full((GridGlobals.r, GridGlobals.c), a), mask=GridGlobals.masks
-        )
-        self.b = ma.masked_array(
-            np.full((GridGlobals.r, GridGlobals.c), b), mask=GridGlobals.masks
-        )
+        self.h_crit = np.full((GridGlobals.r, GridGlobals.c), hcrit)
+        # a and b are constant for the whole run - nothing writes to them
+        # after the constructor. Their mask used to matter in exactly one
+        # place, ma.power() in processes.surface.shallowSurfaceKinematic();
+        # see the comment there.
+        self.a = np.full((GridGlobals.r, GridGlobals.c), a)
+        self.b = np.full((GridGlobals.r, GridGlobals.c), b)
         self.h_rill = np.zeros((GridGlobals.r, GridGlobals.c))
         self.h_rillPre = ma.masked_array(
             np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
@@ -217,23 +218,31 @@ def __runoff(sur, dt, effect_vrst):
 
     q_sheet, vol_runoff, vol_rest = sheet_runoff(dt, sur.a, sur.b, h_sheet)
 
-    v_sheet = ma.where(h_sheet > 0, q_sheet / h_sheet, 0)
+    # numpy.ma removal: q_sheet and h_sheet are both plain now. The
+    # division is guarded only against the warning - where h_sheet == 0
+    # the quotient is discarded by np.where(), exactly as ma.where() did
+    # (the masked condition h_sheet > 0 was plain even before, so the
+    # result never carried a mask here).
+    with np.errstate(divide='ignore', invalid='ignore'):
+        v_sheet = np.where(h_sheet > 0, q_sheet / h_sheet, 0)
 
     # rill runoff
     rill_runoff_results = rill_runoff(
         dt, effect_vrst, h_rill, sur.rillWidth, sur.v_rill_rest,
         sur.vol_runoff_rill
     )
-    v_rill = ma.where(sur.state > 0, rill_runoff_results[0], 0)
-    v_rill_rest = ma.where(sur.state > 0, rill_runoff_results[1],
-                               sur.v_rill_rest)
-    vol_runoff_rill = ma.where(sur.state > 0, rill_runoff_results[2],
-                                   sur.vol_runoff_rill)
-    rill_courant = ma.where(sur.state > 0, rill_runoff_results[3], 0)
-    # vol_to_rill is plain ndarray since step 2c; guard explicitly so the
-    # mixed-type ma.where() above does not silently re-wrap it.
-    sur.vol_to_rill = np.asarray(
-        ma.where(sur.state > 0, rill_runoff_results[4], sur.vol_to_rill)
+    # numpy.ma removal: sur.state is plain and every rill_runoff()
+    # output is plain, so these ma.where() calls already produced a
+    # MaskedArray with an empty mask - np.where() gives the identical
+    # data with no wrapper.
+    v_rill = np.where(sur.state > 0, rill_runoff_results[0], 0)
+    v_rill_rest = np.where(sur.state > 0, rill_runoff_results[1],
+                           sur.v_rill_rest)
+    vol_runoff_rill = np.where(sur.state > 0, rill_runoff_results[2],
+                               sur.vol_runoff_rill)
+    rill_courant = np.where(sur.state > 0, rill_runoff_results[3], 0)
+    sur.vol_to_rill = np.where(
+        sur.state > 0, rill_runoff_results[4], sur.vol_to_rill
     )
     sur.rillWidth = ma.where(sur.state > 0, rill_runoff_results[5],
                              sur.rillWidth)
@@ -256,7 +265,8 @@ def __runoff_zero_comp_type(sur, dt, effect_vrst):
 
     q_sheet, vol_runoff, vol_rest = sheet_runoff(dt, sur.a, sur.b, sur.h_sheet)
 
-    v_sheet = ma.where(sur.h_sheet > 0, q_sheet / sur.h_sheet, 0)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        v_sheet = np.where(sur.h_sheet > 0, q_sheet / sur.h_sheet, 0)
 
     v_rill = 0
 

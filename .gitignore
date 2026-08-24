@@ -37,3 +37,12 @@ smoderp2d.egg-info
 #rfiles
 .Rhistory
 .RData
+
+# utils/bench: generated configs (machine-specific absolute paths) and run
+# outputs - these do not belong in the repository
+utils/bench/cfg/
+utils/bench/bench_out_*/
+utils/bench/ledger.csv
+# gate.py uses an outdir relative to the working tree, so running it by hand
+# from the repository root creates bench_out_* here as well
+/bench_out_*/

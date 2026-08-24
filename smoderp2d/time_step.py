@@ -53,20 +53,21 @@ class TimeStep:
 
         runoff_return = runoff(surface.arr, delta_t, mat_effect_cont)
 
+        # numpy.ma removal: surface_state is a plain ndarray, so
+        # cond_state_flow is a plain boolean array and runoff_return[0..2]
+        # are plain too. These ma.where() calls already returned a
+        # MaskedArray with an empty mask.
         cond_state_flow = surface_state > Globals.streams_flow_inc
-        v_sheet = ma.where(cond_state_flow, 0, runoff_return[0])
-        v_rill = ma.where(cond_state_flow, 0, runoff_return[1])
+        v_sheet = np.where(cond_state_flow, 0, runoff_return[0])
+        v_rill = np.where(cond_state_flow, 0, runoff_return[1])
         subsurface.runoff(delta_t, mat_effect_cont, cond_state_flow)
 
-        rill_courant = ma.where(cond_state_flow, 0, runoff_return[2])
+        rill_courant = np.where(cond_state_flow, 0, runoff_return[2])
 
-        # step 2c: h_sheet, h_rill, vol_runoff, vol_rest, v_rill_rest,
-        # vol_runoff_rill and vel_rill are plain ndarray now - use
-        # np.where() and guard both operands explicitly with
-        # np.asarray(), since runoff_return[k] and cond_state_flow may
-        # still be numpy.ma (compute_h_hrill/rill_runoff are step
-        # 2d/unconverted). h_rillPre is not part of step 2c, left as is.
-        cond_flow = np.asarray(cond_state_flow)
+        # cond_state_flow is plain now, so no np.asarray() guard is
+        # needed any more. h_rillPre is still numpy.ma, hence the one
+        # remaining ma.where() below.
+        cond_flow = cond_state_flow
         surface.arr.h_sheet = np.where(
             cond_flow, surface.arr.h_sheet, np.asarray(runoff_return[3])
         )
@@ -93,7 +94,7 @@ class TimeStep:
             cond_flow, surface.arr.vel_rill, np.asarray(runoff_return[10])
         )
 
-        v = ma.maximum(v_sheet, v_rill)
+        v = np.maximum(v_sheet, v_rill)
         co = 'sheet'
         courant.CFL(
             v,
@@ -236,7 +237,9 @@ class TimeStep:
             0,
             np.asarray(surBIL)
         )
-        if ma.any(surface_state > Globals.streams_flow_inc):
+        # numpy.ma removal: surface_state is plain, so this reduction ran
+        # over the whole grid already - np.any() gives the same answer.
+        if np.any(surface_state > Globals.streams_flow_inc):
             h_sub = subsurface.runoff_stream_cell(state_condition)
             inflowToReach = ma.where(
                 state_condition,
