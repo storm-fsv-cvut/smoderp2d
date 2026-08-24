@@ -1,5 +1,4 @@
 import numpy as np
-import numpy.ma as ma
 
 from smoderp2d.stream_functions import stream_f
 from smoderp2d.core.general import GridGlobals, Globals as Gl
@@ -107,7 +106,16 @@ class Stream(object):
 
         self.mat_stream_reach = Gl.mat_stream_reach
 
-        self.arr.state = ma.where(
+        # numpy.ma removal, runs once at start-up. Gl.mat_stream_reach is a
+        # plain int16 ndarray, so ma.where() returned a MaskedArray with an
+        # EMPTY mask here (mask=False everywhere) - verified. On top of
+        # that, this line OVERWRITES the masked self.arr.state created by
+        # SurArrs.__init__(), so with streams enabled state never had any
+        # mask at all. np.where() gives exactly the same content, just
+        # without the MaskedArray wrapper. (For StreamPass, i.e. streams
+        # disabled, SurArrs.state stays masked - that path is not changed
+        # here and is not covered by the test configs.)
+        self.arr.state = np.where(
             self.mat_stream_reach > Gl.streams_flow_inc,
             self.mat_stream_reach,
             0
@@ -122,12 +130,29 @@ class Stream(object):
     # Documentation for a reach inflows.
     #  @param fid feature id
     def reach_inflows(self, fid, inflows, indices):
+        # numpy.ma removal: fid, inflows and indices arrive here from
+        # time_step.py as MaskedArrays, but measured: their mask is ALWAYS
+        # empty (mask=False on every cell), because inflowToReach is built
+        # as ma.where(state_condition, ..., 0) and the scalar 0 in the else
+        # branch overwrites the mask. ma.sum() therefore already sums OVER
+        # THE WHOLE ARRAY today, not just over the valid cells.
+        #
+        # CAREFUL: this is a REDUCTION over the grid, so one would expect
+        # it has to be restricted to GridGlobals.valid, the way the Courant
+        # reduction had to be. Here that would be WRONG - measured on a
+        # 5 m run (680 calls x 5 reaches): np.sum over the whole array
+        # differs from ma.sum() by 0.0, but np.sum restricted to valid
+        # differs by 4.4e-16. Restricting to valid would break bit
+        # equality. Hence the sum runs over the whole array.
         try:
             # TODO: Would be nice to avoid the loop
+            fid = np.asarray(fid)
+            inflows = np.asarray(inflows)
+            indices = np.asarray(indices)
             for fid_cur in self.reach.keys():
-                self.reach[fid_cur].V_in_from_field += ma.sum(
-                    ma.where(
-                        ma.logical_and(indices, fid == fid_cur), inflows, 0
+                self.reach[fid_cur].V_in_from_field += np.sum(
+                    np.where(
+                        np.logical_and(indices, fid == fid_cur), inflows, 0
                     )
                 )
         except KeyError:
@@ -156,22 +181,25 @@ class Stream(object):
 
     # jj jeste dodelat ty maxima a kumulativni zbyle
     def stream_cumulative(self, time):
+        # numpy.ma removal: every value below is a SCALAR of a single reach
+        # (measured: ndim always 0) and is never masked, so ma.where and
+        # ma.maximum behave exactly like np.where and np.maximum.
         for r in self.reach.values():
             r.V_out_cum += r.V_out
             r.V_in_from_field_cum += r.V_in_from_field
 
-            r.timeQ_max = ma.where(
+            r.timeQ_max = np.where(
                 r.Q_out > r.Q_max,
                 time,
                 r.timeQ_max
             )
-            r.Q_max = ma.maximum(r.Q_out, r.Q_max)
-            r.timeh_max = ma.where(
+            r.Q_max = np.maximum(r.Q_out, r.Q_max)
+            r.timeh_max = np.where(
                 r.h > r.h_max,
                 time,
                 r.timeh_max
             )
-            r.h_max = ma.maximum(r.h, r.h_max)
+            r.h_max = np.maximum(r.h, r.h_max)
 
     def return_stream_str_vals(self, i, j, sep, extraOut):
         fid = int(self.arr.state[i, j] - Gl.streams_flow_inc)

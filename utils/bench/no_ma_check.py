@@ -1,15 +1,16 @@
-"""Statická kontrola, že se numpy.ma nevrátilo do převedených modulů.
+"""Static check that numpy.ma has not crept back into converted modules.
 
-Po dokončení dílčího kroku 2x se převedené soubory přidají do seznamu a tenhle
-skript hlídá, že tam maskovaná pole nikdo omylem nevrátí. Deterministické,
-běží nad AST, nespouští model.
+Once a conversion step is finished, the converted files are added to the list
+and this script guards against anyone reintroducing masked arrays there.
+Deterministic, works on the AST, does not run the model.
 
-POUŽITÍ
--------
+USAGE
+-----
     python no_ma_check.py smoderp2d/core/cumulative_max.py smoderp2d/processes
-    python no_ma_check.py --list prevedene.txt
+    python no_ma_check.py --list converted.txt
+    python no_ma_check.py smoderp2d/          # whole package
 
-Návratový kód 0 = čisté, 1 = nalezeno použití numpy.ma.
+Exit code 0 = clean, 1 = numpy.ma usage found.
 """
 
 import argparse
@@ -19,11 +20,17 @@ import sys
 
 
 class Finder(ast.NodeVisitor):
-    """Najde importy numpy.ma a přístupy na ma.* / np.ma.*."""
+    """Find numpy.ma imports and ma.* / np.ma.* attribute accesses."""
 
     def __init__(self):
-        self.aliases = set()      # jména, pod kterými je numpy.ma naimportované
-        self.hits = []            # (radek, text)
+        # 'ma' is always watched, not only when an import is visible.
+        # Without that, a broken intermediate state passes as "clean": one
+        # where `import numpy.ma as ma` has already been removed but
+        # `ma.power(...)` is still left in the body. Such a file would fail
+        # at run time with NameError, but the static check has to catch it
+        # first.
+        self.aliases = {'ma'}     # names numpy.ma is imported under
+        self.hits = []            # (line number, text)
 
     def visit_Import(self, node):
         for a in node.names:
@@ -80,7 +87,7 @@ def expand(targets):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('targets', nargs='*')
-    ap.add_argument('--list', help='textovy soubor s cestami, jedna na radek')
+    ap.add_argument('--list', help='text file with paths, one per line')
     a = ap.parse_args()
     targets = list(a.targets)
     if a.list:
@@ -89,26 +96,26 @@ def main():
                         if l.strip() and not l.startswith('#')]
     files = expand(targets)
     if not files:
-        print('nic ke kontrole'); return 0
+        print('nothing to check'); return 0
 
     bad = 0
     print('=' * 62)
-    print('KONTROLA: numpy.ma v prevedenych modulech')
+    print('CHECK: numpy.ma in converted modules')
     print('=' * 62)
     for p in files:
         hits = check(p)
         if hits:
             bad += 1
-            print('\n%s  -- %d vyskytu' % (p, len(hits)))
+            print('\n%s  -- %d occurrences' % (p, len(hits)))
             for ln, what, text in hits[:12]:
                 print('   r.%-5d %-22s %s' % (ln, what, text[:60]))
             if len(hits) > 12:
-                print('   ... a dalsich %d' % (len(hits) - 12))
+                print('   ... and %d more' % (len(hits) - 12))
         else:
             print('  OK  %s' % p)
     print('\n' + '-' * 62)
-    print('souboru zkontrolovano: %d | s numpy.ma: %d' % (len(files), bad))
-    print('-> %s' % ('CISTE' if bad == 0 else 'NALEZENO numpy.ma'))
+    print('files checked: %d | with numpy.ma: %d' % (len(files), bad))
+    print('-> %s' % ('CLEAN' if bad == 0 else 'FOUND numpy.ma'))
     return 1 if bad else 0
 
 

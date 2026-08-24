@@ -33,9 +33,10 @@ class D8(object):
      - smoderp2d.core.kinematic_diffuse.Diffuse
     """
 
-    # Poradi MUSI odpovidat seznamu inflow_directions ve
-    # smoderp2d.flow_algorithm.D8.__directionsInflow(). Na nem zavisi poradi
-    # scitani v inflow_all(), a tim i bitova shoda s cell_runoff().
+    # The order MUST match the inflow_directions list in
+    # smoderp2d.flow_algorithm.D8.__directionsInflow(). The summation order
+    # in inflow_all() depends on it, and with it the bit equality against
+    # cell_runoff().
     _INFLOW_DIRS = ((-1, 1), (-1, 0), (-1, -1), (0, -1),
                     (1, -1), (1, 0), (1, 1), (0, 1))
 
@@ -62,10 +63,10 @@ class D8(object):
         self._inflow_w = None
 
     def _build_inflow_weights(self):
-        """Prevede seznam inflows na vahove pole (r, c, 8) a slice pary.
+        """Turn the inflows list into a weight array (r, c, 8) and slice pairs.
 
-        Stavi se jednou (lene, pri prvnim volani inflow_all()) a znovu po
-        update_inflows() v difuznim pristupu.
+        Built once (lazily, on the first call to inflow_all()) and again
+        after update_inflows() in the diffusive approach.
         """
         r, c = GridGlobals.r, GridGlobals.c
         idx = {d: k for k, d in enumerate(self._INFLOW_DIRS)}
@@ -75,7 +76,7 @@ class D8(object):
             for j in range(c):
                 for ax, bx in row[j]:
                     if i + ax < 0 or j + bx < 0:
-                        # stejny guard jako v cell_runoff()
+                        # same guard as in cell_runoff()
                         continue
                     w[i, j, idx[(ax, bx)]] = 1.0
         self._inflow_w = w
@@ -90,10 +91,10 @@ class D8(object):
     def inflow_all(self):
         """Return inflow volume for the whole domain at once.
 
-        Vektorizovana obdoba cell_runoff() volaneho pro kazdou bunku. Vysledek
-        je bitove identicky - poradi scitani (pro kazdy smer nejdriv sheet,
-        pak rill) odpovida puvodni smycce, neaktivni smery pricitaji presnou
-        nulu.
+        Vectorised equivalent of cell_runoff() called for every cell. The
+        result is bit-identical: the summation order (for each direction
+        sheet first, then rill) follows the original loop, and inactive
+        directions add exact zero.
 
         :returns: inflow volume from the adjacent cells for all cells
         """
@@ -193,9 +194,10 @@ class Mfda(object):
     def inflow_all(self):
         """Return inflow volume for the whole domain at once.
 
-        Pro MFD zatim skalarni fallback - vahove pole ma jinou topologii a
-        navic ceka na opravu nulovych vah. Chova se presne jako puvodni
-        dvojita smycka v TimeStep.do_next_h().
+        For MFD this is still a scalar fallback - the weight array has a
+        different topology and is also waiting for the zero-weight fix. It
+        behaves exactly like the original double loop in
+        TimeStep.do_next_h().
 
         :returns: inflow volume from the adjacent cells for all cells
         """

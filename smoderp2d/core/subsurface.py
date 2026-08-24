@@ -257,9 +257,9 @@ def get_subsurface():
         def inflow_all(self):
             """Return inflow volume for the whole domain at once.
 
-            Zamerne skalarni: podpovrchovy tok neni v testovacich datech
-            zapnuty, takze vektorizovana varianta z D8 pro nej neni overena.
-            Chova se presne jako puvodni dvojita smycka.
+            Deliberately scalar: subsurface flow is not enabled in the test
+            data, so the vectorised variant from D8 is not verified for it.
+            Behaves exactly like the original double loop.
 
             :returns: inflow volume from the adjacent cells for all cells
             """

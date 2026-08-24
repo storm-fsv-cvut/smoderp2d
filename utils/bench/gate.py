@@ -1,40 +1,43 @@
-"""Akceptační brána pro jednu změnu. Jeden příkaz, dva oddělené verdikty.
+"""Acceptance gate for a single change. One command, two separate verdicts.
 
-Vychází z pravidla 2 projektu: u ekvivalentního refaktoru je kritérium shoda
-na úrovni float roundoff, ne tolerance. Korektnost je binární, výkon se
-reportuje zvlášť. Tenhle skript to dělá přesně tak — a odmítá je slučovat.
+It follows the project rule that for an equivalent refactor the criterion is
+agreement at float roundoff level, not a tolerance. Correctness is binary,
+performance is reported separately. This script does exactly that - and
+refuses to merge the two.
 
-CO DĚLÁ
--------
-Vezme dva pracovní stromy (typicky dva git worktrees: přijatý stav a kandidát),
-pustí v obou tentýž config nad týmiž daty a vydá:
+WHAT IT DOES
+------------
+It takes two working trees (typically two git worktrees: the accepted state
+and the candidate), runs the same config over the same data in both, and
+reports:
 
-  KOREKTNOST  bajtové porovnání všech výstupních souborů  -> PASS / FAIL
-  VÝKON       medián z N běhů na obou stranách            -> násobek
-  POSTUP      počet volání numpy.ma na časový krok        -> deterministicky
+  CORRECTNESS  byte comparison of all output files      -> PASS / FAIL
+  PERFORMANCE  median of N runs on both sides           -> ratio
+  PROGRESS     numpy.ma calls per time step             -> deterministic
 
-Řádek se připíše do ledger.csv, takže je z historie vidět trend.
+A row is appended to ledger.csv, so the trend is visible in the history.
 
-PROČ BAJTOVĚ A NE PROTI REFERENCI
----------------------------------
-Repozitář dnes nereprodukuje vlastní `tests/data/reference` ani beze změny kódu
-— stačí jiná verze numpy a rozjede se volba dt. Bit-shodu jde proto ověřit
-jen jako A/B na TÉMŽE stroji v TÉMŽE prostředí, což tenhle skript zajišťuje.
-Výstupní soubory jsou navíc formátované na %.4e, takže porovnání proti uloženému
-souboru z jiného stroje nemá vypovídací hodnotu.
+WHY BYTE COMPARISON AND NOT AGAINST THE REFERENCE DATA
+------------------------------------------------------
+The repository does not currently reproduce its own `tests/data/reference`
+even with unchanged code - a different numpy version is enough to shift the
+dt selection. Bit equality can therefore only be verified as an A/B on the
+SAME machine in the SAME environment, which is what this script provides.
+The output files are also formatted to %.4e, so comparing against a stored
+file from a different machine carries no information.
 
-PŘÍPRAVA
---------
-    git worktree add ../smoderp-ref <hash-prijateho-stavu>
-    git worktree add ../smoderp-new <hash-kandidata>
+SETUP
+-----
+    git worktree add ../smoderp-ref <hash-of-accepted-state>
+    git worktree add ../smoderp-new <hash-of-candidate>
 
-POUŽITÍ
--------
+USAGE
+-----
     python gate.py --ref ../smoderp-ref --new ../smoderp-new \\
                    --config bench/cfg/4Gti.ini --label "2b-cumulative" --reps 3
 
-Config je relativní k pracovnímu stromu; musí existovat v obou (nebo dej
-absolutní cestu k .ini, jehož cesty k datům jsou taky absolutní).
+The config path is relative to the working tree and must exist in both (or
+pass an absolute path to an .ini whose data paths are absolute too).
 """
 
 import argparse
@@ -51,7 +54,7 @@ import sys
 RUNNER = r'''
 import sys, os, time, json
 def _rss_mb():
-    """Peak RSS v MB. resource je POSIX-only, na Windows pres psapi."""
+    """Peak RSS in MB. resource is POSIX-only, on Windows go through psapi."""
     try:
         import resource
         return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.
@@ -82,7 +85,7 @@ if os.environ.get('GATE_COUNT_DIR'):
     import ma_counter; ma_counter.install(); count = ma_counter
 from smoderp2d.runners.base import Runner
 r = Runner(); r._provider.load()
-# volitelny monkeypatch modul (pro zmeny, ktere jeste nejsou ve zdrojacich)
+# optional monkeypatch module (for changes not yet in the sources)
 for _m in filter(None, os.environ.get('GATE_INSTALL', '').split(',')):
     __import__(_m).install()
 import smoderp2d.time_step as TS
@@ -92,7 +95,7 @@ def dn(self, *a, **k):
     return _o(self, *a, **k)
 TS.TimeStep.do_next_h = dn
 if count is not None:
-    count.reset()          # pocitat jen bezici vypocet, ne nacitani dat
+    count.reset()          # count the running computation only, not data loading
 from smoderp2d.runoff import Runoff
 t = time.perf_counter(); ro = Runoff(r._provider); ro.run()
 wall = time.perf_counter() - t
@@ -107,7 +110,7 @@ print('GATEJSON ' + json.dumps(out))
 
 
 def run_once(tree, config, count_dir=None, install=''):
-    """Jeden běh v daném pracovním stromě. Vrací dict."""
+    """A single run in the given working tree. Returns a dict."""
     script = os.path.join(tree, '_gate_runner.py')
     with open(script, 'w') as fd:
         fd.write(RUNNER)
@@ -123,7 +126,7 @@ def run_once(tree, config, count_dir=None, install=''):
     for line in p.stdout.splitlines():
         if line.startswith('GATEJSON '):
             return json.loads(line[9:])
-    raise RuntimeError('beh selhal v %s:\n%s' % (tree, p.stderr[-3000:]))
+    raise RuntimeError('run failed in %s:\n%s' % (tree, p.stderr[-3000:]))
 
 
 def outdir_of(tree, config):
@@ -156,7 +159,7 @@ def compare(d1, d2):
 
 
 def _ledger(a, ok, diff, o1, o2, res, ratio, cnt):
-    """Pripise radek do ledgeru. res/ratio/cnt mohou byt None."""
+    """Append a row to the ledger. res/ratio/cnt may be None."""
     row = {
         'datum': datetime.date.today().isoformat(), 'label': a.label,
         'config': os.path.basename(a.config),
@@ -176,31 +179,34 @@ def _ledger(a, ok, diff, o1, o2, res, ratio, cnt):
         if new_file:
             w.writeheader()
         w.writerow(row)
-    print('\nzapsano do %s' % os.path.abspath(a.ledger))
+    print('\nwritten to %s' % os.path.abspath(a.ledger))
     print('=' * 62)
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('--ref', required=True, help='pracovni strom prijateho stavu')
-    ap.add_argument('--new', required=True, help='pracovni strom kandidata')
+    ap.add_argument('--ref', required=True,
+                    help='working tree of the accepted state')
+    ap.add_argument('--new', required=True,
+                    help='working tree of the candidate')
     ap.add_argument('--config', required=True)
-    ap.add_argument('--label', required=True, help='oznaceni kroku, jde do ledgeru')
+    ap.add_argument('--label', required=True,
+                    help='step label, goes into the ledger')
     ap.add_argument('--reps', type=int, default=3)
     ap.add_argument('--ledger', default='ledger.csv')
-    ap.add_argument('--only', choices=['vse','korektnost'], default='vse',
-                    help='korektnost = jen bajtove porovnani, 2 behy misto 10')
+    ap.add_argument('--only', choices=['all', 'correctness'], default='all',
+                    help='correctness = byte comparison only, 2 runs instead of 10')
     ap.add_argument('--install-new', default='',
-                    help='moduly k install() jen na strane --new, oddelene carkou')
+                    help='modules to install() on the --new side only, comma separated')
     a = ap.parse_args()
     here = os.path.dirname(os.path.abspath(__file__))
 
     print('=' * 62)
-    print('AKCEPTACNI BRANA  |  %s' % a.label)
+    print('ACCEPTANCE GATE  |  %s' % a.label)
     print('=' * 62)
 
-    # --- korektnost: jeden bezi na kazde strane, pak bajtove ---
-    print('\n[1/3] KOREKTNOST  (bajtove porovnani vystupu)')
+    # --- correctness: one run on each side, then a byte comparison ---
+    print('\n[1/3] CORRECTNESS  (byte comparison of the outputs)')
     for tree in (a.ref, a.new):
         shutil.rmtree(outdir_of(tree, a.config), ignore_errors=True)
     run_once(a.ref, a.config)
@@ -208,24 +214,25 @@ def main():
     same, diff, o1, o2 = compare(outdir_of(a.ref, a.config),
                                  outdir_of(a.new, a.config))
     ok = not diff and not o1 and not o2
-    print('      identickych %d | odlisnych %d | jen v ref %d | jen v new %d'
+    print('      identical %d | differing %d | only in ref %d | only in new %d'
           % (len(same), len(diff), len(o1), len(o2)))
     for f in (diff + o1 + o2)[:10]:
         print('        ! ' + f)
     print('      -> %s' % ('PASS' if ok else 'FAIL'))
     if not ok:
-        print('\n      Zmena NENI ekvivalentni refaktor. Bud je v ni chyba,')
-        print('      nebo patri do kategorie B (zmena numericke metody) a')
-        print('      validuje se proti merenim, ne proti referencnimu behu.')
+        print('\n      The change is NOT an equivalent refactor. Either it has a')
+        print('      bug, or it belongs to the other category (a change of the')
+        print('      numerical method) and has to be validated against')
+        print('      measurements, not against a reference run.')
 
-    if a.only == 'korektnost':
-        print('\n[2/3] VYKON     preskoceno (--only korektnost)')
-        print('[3/3] POSTUP    preskoceno (--only korektnost)')
+    if a.only == 'correctness':
+        print('\n[2/3] PERFORMANCE  skipped (--only correctness)')
+        print('[3/3] PROGRESS     skipped (--only correctness)')
         _ledger(a, ok, diff, o1, o2, None, None, None)
         sys.exit(0 if ok else 1)
 
-    # --- vykon: reportuje se zvlast, bez ohledu na verdikt vyse ---
-    print('\n[2/3] VYKON  (median z %d behu)' % a.reps)
+    # --- performance: reported separately, regardless of the verdict above ---
+    print('\n[2/3] PERFORMANCE  (median of %d runs)' % a.reps)
     res = {}
     for tag, tree in (('ref', a.ref), ('new', a.new)):
         w, s, m = [], None, None
@@ -235,16 +242,16 @@ def main():
             w.append(r['wall']); s = r['steps']; m = r['rss_mb']
         res[tag] = {'wall': statistics.median(w), 'min': min(w),
                     'steps': s, 'rss': m}
-        print('      %-4s %8.2f s (min %.2f)  kroku %d  RSS %.0f MB'
+        print('      %-4s %8.2f s (min %.2f)  steps %d  RSS %.0f MB'
               % (tag, res[tag]['wall'], res[tag]['min'], s, m))
     ratio = res['ref']['wall'] / res['new']['wall']
     print('      -> %.2fx' % ratio)
     if res['ref']['steps'] != res['new']['steps']:
-        print('      POZOR: jiny pocet casovych kroku (%d vs %d) => zmenila se '
-              'numerika' % (res['ref']['steps'], res['new']['steps']))
+        print('      WARNING: different number of time steps (%d vs %d) => the '
+              'numerics changed' % (res['ref']['steps'], res['new']['steps']))
 
-    # --- postup: deterministicka metrika ---
-    print('\n[3/3] POSTUP  (volani numpy.ma na casovy krok)')
+    # --- progress: a deterministic metric ---
+    print('\n[3/3] PROGRESS  (numpy.ma calls per time step)')
     cnt = {}
     for tag, tree in (('ref', a.ref), ('new', a.new)):
         r = run_once(tree, a.config, count_dir=here,

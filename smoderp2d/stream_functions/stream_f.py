@@ -1,6 +1,5 @@
 # @package smoderp2d.stream_functions.stream_f Module to calculate the stream reaches runoff.
 
-import numpy.ma as ma
 import numpy as np
 import math
 
@@ -33,17 +32,24 @@ def compute_h(A, m, b, err=0.0001, max_iter=20, hinit = 100):
     def dfdheval(h):
         return b + 2.0 * m * h
 
-    # first height estimation
+    # numpy.ma removal: this Newton solver works exclusively with SCALARS
+    # (A, m, b and hinit all arrive from a single reach as float /
+    # np.float64 - measured, ndim is always 0) and none of the values is
+    # ever masked. numpy.ma therefore did nothing here but add overhead;
+    # on unmasked data ma.any/ma.where/ma.copy behave exactly like
+    # np.any/np.where/np.copy. The vectorised loop structure (update only
+    # the not-yet-converged elements) is deliberately left untouched -
+    # this is an implementation change only, not a change of method.
     h_pre = hinit
     h = h_pre
     iter_ = 1
-    while ma.any(feval(h_pre) > err):
-        h = ma.where(
+    while np.any(feval(h_pre) > err):
+        h = np.where(
             feval(h_pre) > err,
             h_pre - feval(h_pre) / dfdheval(h_pre),
             h
         )
-        h_pre = ma.copy(h)
+        h_pre = np.copy(h)
         if iter_ >= max_iter:
             Logger.error(
                 f"if file {frameinfo.filename} near line {frameinfo.lineno} "
@@ -98,7 +104,7 @@ def genshape(reach, dt):
     H = h_baseflow + h  
 
     # total wetted perimeter: baseflow + epizode water
-    wetted_perimeter = reach.b + 2.0 * H * ma.power(1 + reach.m * reach.m, 0.5)
+    wetted_perimeter = reach.b + 2.0 * H * np.power(1 + reach.m * reach.m, 0.5)
     # total cross-sectional area of the flow
     cross_section = reach.b * H + reach.m * H * H
 
@@ -112,9 +118,9 @@ def genshape(reach, dt):
     hyd_diameter = cross_section / wetted_perimeter
 
     # calculated velocity based on mannings
-    reach.vs = ma.power(
+    reach.vs = np.power(
         hyd_diameter,
-        0.6666) * ma.power(
+        0.6666) * np.power(
         reach.inclination,
         0.5) / (reach.roughness)  
 
@@ -147,10 +153,10 @@ def parabola(reach, dt):
     u = 3.0 #(h=B/u  B=f(a))
     if reach.q365 > 0:
         Vp = reach.q365 * dt  # objem           : baseflow
-        hp = ma.power(Vp * 3 / (2 * reach.length * u), 0.5)
+        hp = np.power(Vp * 3 / (2 * reach.length * u), 0.5)
         # vyska hladiny   : baseflow
-        reach.h = ma.power(
-            (reach.V_in_from_field + reach.vol_rest) / (2 * reach.length * ma.power(hp, 0.5)) + ma.power(hp, 1.5),
+        reach.h = np.power(
+            (reach.V_in_from_field + reach.vol_rest) / (2 * reach.length * np.power(hp, 0.5)) + np.power(hp, 1.5),
             0.6666
         )  # h = (dV/2.L.hp^0,5+hp^1,5)^0,666
     else:
@@ -171,14 +177,14 @@ def parabola(reach, dt):
         R = 0
     else:
         R = S / O
-    reach.Q_out = S * ma.power(R, 0.66666) * ma.power(reach.inclination, 0.5) / (reach.roughness) # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
+    reach.Q_out = S * np.power(R, 0.66666) * np.power(reach.inclination, 0.5) / (reach.roughness) # Vo=Qo.dt=S.R^2/3.i^1/2/(n).dt
     reach.V_out = reach.Q_out * dt
 
     if reach.V_out > dV:
         reach.Q_out = dV / dt
         reach.V_out = dV
         
-    reach.vs = ma.power(R, 0.6666) * ma.power(reach.inclination, 0.5) / (reach.roughness) #v
+    reach.vs = np.power(R, 0.6666) * np.power(reach.inclination, 0.5) / (reach.roughness) #v
     reach.vol_rest = dV - reach.V_out
     reach.h = H
 

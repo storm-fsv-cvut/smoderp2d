@@ -397,16 +397,48 @@ def rill_runoff(dt, effect_vrst, h_rill, rillWidth, v_rill_rest=None,
 
     :return: TODO
     """
-    nrill = Globals.get_mat_nrill()
-    slope = Globals.get_mat_slope()
+    # numpy.ma removal: h_rill, v_rill_rest and vol_runoff_rill are
+    # already plain ndarrays, while rillWidth and Globals.mat_slope are
+    # still numpy.ma. The raw .data is read once through np.asarray() so
+    # that the whole function body below is plain ndarray arithmetic - the
+    # operations and their order are unchanged.
+    nrill = np.asarray(Globals.get_mat_nrill())
+    # MIND THE DTYPE: Globals.mat_slope is float32, but ma.power()
+    # converted the exponent to a 0-d float64 array (getdata(0.5)), so the
+    # exponentiation ran in float64. np.power(float32, 0.5) would compute
+    # in float32 and differ by ~1e-7 relative. Hence the explicit float64 -
+    # the upcast is lossless, so the result is bit-identical to the old one.
+    slope = np.asarray(Globals.get_mat_slope(), dtype=np.float64)
+    effect_vrst = np.asarray(effect_vrst)
 
     vol_to_rill = h_rill * GridGlobals.get_pixel_area()
     h, b = rill.update_hb(
         vol_to_rill, RILL_RATIO, effect_vrst, rillWidth
     )
-    r_rill = (h * b) / (b + 2 * h)
 
-    v_rill = ma.power(r_rill, (2.0 / 3.0)) * 1. / nrill * ma.power(slope, 0.5)
+    # The set of cells where numpy.ma masked everything below: a zero
+    # denominator b * l in update_hb() (the division domain of
+    # ma.divide()) plus the cells outside the computation area. Exactly
+    # there ma.where() below took the "else" branch, because a masked
+    # condition evaluates as False inside ma.where(). The condition is
+    # kept explicitly so the behaviour stays bit-identical without a mask.
+    rill_on = b * effect_vrst > 0
+    if GridGlobals.valid is not None:
+        rill_on = np.logical_and(rill_on, GridGlobals.valid)
+
+    r_rill_num = h * b
+    with np.errstate(divide='ignore', invalid='ignore'):
+        r_rill = r_rill_num / (b + 2 * h)
+    # same as in update_hb(): on a zero denominator ma.divide() returned
+    # the numerator and masked the cell
+    r_rill = np.where(np.isfinite(r_rill), r_rill, r_rill_num)
+
+    # ma.power() masked a negative base, np.power() would give nan plus a
+    # RuntimeWarning. On valid cells both r_rill and slope are
+    # non-negative, so clipping at zero changes nothing; outside the area
+    # the result is discarded (see rill_on).
+    v_rill = np.power(np.where(r_rill > 0, r_rill, 0), (2.0 / 3.0)) \
+        * 1. / nrill * np.power(np.where(slope > 0, slope, 0), 0.5)
 
     q_rill = v_rill * h * b
 
@@ -417,22 +449,27 @@ def rill_runoff(dt, effect_vrst, h_rill, rillWidth, v_rill_rest=None,
     if Globals.computationType == 'explicit':
         # celerita
         # courant = (1 + s*b/(3*(b+2*h))) * q_rill/(b*h)
-        v_rill_rest = ma.where(
-            courant <= courantMax,
-            ma.where(vol_rill > vol_to_rill, 0, vol_to_rill - vol_rill),
+        cond = np.logical_and(rill_on, courant <= courantMax)
+        v_rill_rest = np.where(
+            cond,
+            np.where(vol_rill > vol_to_rill, 0, vol_to_rill - vol_rill),
             v_rill_rest
         )
-        
-        vol_runoff_rill = ma.where(
-            courant <= courantMax,
-            ma.where(vol_rill > vol_to_rill, vol_to_rill, vol_rill),
+
+        vol_runoff_rill = np.where(
+            cond,
+            np.where(vol_rill > vol_to_rill, vol_to_rill, vol_rill),
             vol_runoff_rill
         )
     else:
+        # implicit branch - not exercised in the test environment (scipy
+        # missing), so this rewrite was never actually run.
+        # ma.filled(vol_rill, 0) zeroed exactly the masked cells, i.e. the
+        # complement of rill_on.
         v_rill_rest = vol_to_rill - vol_rill
-        
-        vol_runoff_rill = ma.filled(vol_rill,0)    
-        
+
+        vol_runoff_rill = np.where(rill_on, vol_rill, 0)
+
     return v_rill, v_rill_rest, vol_runoff_rill, courant, vol_to_rill, b
 
 def surface_retention(bil, sur):

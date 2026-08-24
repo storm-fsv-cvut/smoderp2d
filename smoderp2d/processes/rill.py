@@ -1,6 +1,6 @@
-import numpy.ma as ma
+import numpy as np
 
-from smoderp2d.core.general import Globals
+from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.exceptions import SmoderpError
 from smoderp2d.providers import Logger
 
@@ -8,20 +8,51 @@ courantMax = 1.0
 
 
 def update_hb(loc_V_to_rill, rillRatio, l, b):
-    V = loc_V_to_rill
+    # numpy.ma removal: loc_V_to_rill is already a plain ndarray,
+    # b (= SurArrs.rillWidth) is still numpy.ma, and l
+    # (= Globals.mat_effect_cont) is plain. The raw .data is read once
+    # through np.asarray() so that the whole function body below is plain
+    # ndarray arithmetic - the operations and their order are unchanged.
+    V = np.asarray(loc_V_to_rill)
+    b = np.asarray(b)
+    l = np.asarray(l)
+
     if Globals.computationType == 'explicit':
-        if ma.any(V < 0):
+        # CAREFUL: this is a reduction over the whole grid, not an
+        # elementwise operation. The original ma.any() on a MaskedArray
+        # ignored invalid cells; on a plain ndarray it would take them
+        # into account, and their underlying value can be anything (no
+        # one computes out-of-domain cells). The test is therefore
+        # restricted to GridGlobals.valid_idx, i.e. exactly the set of
+        # cells the mask would have exposed.
+        valid_idx = GridGlobals.valid_idx
+        if valid_idx is None:
+            neg = V < 0
+        else:
+            neg = V.ravel()[valid_idx] < 0
+        if np.any(neg):
             raise SmoderpError('V is smaller than 0')
         cond = V > 0
     else:
         cond = V >= 0
-    newb = ma.sqrt(V / (rillRatio * l))
-    b = ma.where(
-        cond,
-        ma.maximum(b, newb),
-        b
-    )
-    h = V / (b * l)
+
+    with np.errstate(divide='ignore', invalid='ignore'):
+        newb_arg = V / (rillRatio * l)
+    # ma.sqrt() masked a negative argument, np.sqrt() would give nan plus
+    # a RuntimeWarning. The result is discarded either way (wherever the
+    # argument is negative, cond is necessarily False), so the argument is
+    # merely clipped at zero from below.
+    newb = np.sqrt(np.where(newb_arg > 0, newb_arg, 0))
+    b = np.where(cond, np.maximum(b, newb), b)
+
+    denom = b * l
+    with np.errstate(divide='ignore', invalid='ignore'):
+        h = V / denom
+    # ma.divide() masked cells with a zero denominator and put the
+    # numerator back into .data (_DomainedBinaryOperation behaviour). The
+    # same thing is reproduced here so that no nan/inf is left in the
+    # array - otherwise the value is identical cell by cell.
+    h = np.where(np.isfinite(h), h, V)
 
     return h, b
 

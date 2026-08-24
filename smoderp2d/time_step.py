@@ -178,9 +178,10 @@ class TimeStep:
         #
         # Inflows from surroundings cells
         #
-        # Vektorizovano: drive dvojita Python smycka pres rr/rc se skalarnim
-        # zapisem do maskovaneho pole. Vysledek je bitove identicky, viz
-        # D8.inflow_all(). Namerena zmena: 2,55x na celem behu (5 m rastr).
+        # Vectorised: this used to be a double Python loop over rr/rc with
+        # scalar writes into a masked array. The result is bit-identical,
+        # see D8.inflow_all(). Measured change: 2.55x over the whole run on
+        # a 5 m grid.
         # inflow_tm is plain ndarray since step 2c.
         surface.arr.inflow_tm = np.asarray(surface.inflow_all())
         subsurface.arr.inflow_tm = subsurface.inflow_all()

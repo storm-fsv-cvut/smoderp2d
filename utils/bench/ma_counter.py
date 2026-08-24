@@ -1,25 +1,25 @@
-"""Počítadlo volání numpy.ma — deterministická metrika postupu kroku 2.
+"""Counter of numpy.ma calls - a deterministic progress metric.
 
-Proč to existuje: wall-clock čas šumí podle zatížení stroje, takže se z něj
-u malých dílčích změn nepozná, jestli refaktor postupuje. Počet volání
-`numpy.ma` je naopak deterministický — pro stejná data vyjde vždy stejně.
-Cíl kroku 2 je dostat ho na nulu.
+Why this exists: wall-clock time is noisy depending on machine load, so for
+small incremental changes it does not tell you whether the refactor is making
+progress. The number of `numpy.ma` calls, by contrast, is deterministic - for
+the same data it always comes out the same. The goal is to drive it to zero.
 
-Instaluje se monkeypatchem na modul `numpy.ma`, model se nemění.
+Installed by monkeypatching the `numpy.ma` module; the model is not modified.
 
-POUŽITÍ
--------
+USAGE
+-----
     import ma_counter; ma_counter.install()
-    ...spustit model...
-    ma_counter.report(steps=<pocet casovych kroku>)
+    ...run the model...
+    ma_counter.report(steps=<number of time steps>)
 
-nebo z příkazové řádky (spočítá si kroky sám):
+or from the command line (it counts the steps itself):
 
     python ma_counter.py --config bench/cfg/4Gti.ini
-    python ma_counter.py --config bench/cfg/4Gti.ini --vec     # s vec_inflow
+    python ma_counter.py --config bench/cfg/4Gti.ini --vec     # with vec_inflow
 
-Výstup: tabulka volání podle funkce + součet a přepočet na jeden časový krok,
-plus JSON řádek pro strojové zpracování.
+Output: a table of calls per function plus the total and the per-time-step
+figure, and a JSON line for machine processing.
 """
 
 import argparse
@@ -28,7 +28,7 @@ import json
 import os
 import sys
 
-# funkce, které model reálně používá (zjištěno grepem přes smoderp2d/)
+# the functions the model actually uses (found by grepping smoderp2d/)
 FUNCS = [
     'where', 'masked_array', 'power', 'maximum', 'filled', 'any', 'array',
     'logical_and', 'copy', 'all', 'unique', 'minimum', 'logical_or',
@@ -42,7 +42,7 @@ _orig = {}
 
 
 def install():
-    """Obalí numpy.ma callables počítadlem. Volat před importem jádra."""
+    """Wrap the numpy.ma callables in a counter. Call before importing the core."""
     if _installed[0]:
         return
     import numpy.ma as ma
@@ -60,7 +60,8 @@ def install():
             return wrapper
         setattr(ma, name, make(name, fn))
 
-    # skalární zápis do MaskedArray — dominoval profilu před vektorizací
+    # scalar writes into a MaskedArray - these dominated the profile before
+    # vectorisation
     MA = ma.MaskedArray
     _orig['__setitem__'] = MA.__setitem__
     _orig['__getitem__'] = MA.__getitem__
@@ -83,22 +84,22 @@ def reset():
 
 
 def report(steps=None, label='', as_json=True):
-    """Vypíše tabulku a vrátí dict."""
+    """Print the table and return a dict."""
     total = sum(COUNT.values())
     print()
     print('=' * 58)
-    print('Volání numpy.ma' + (f' — {label}' if label else ''))
+    print('numpy.ma calls' + (f' - {label}' if label else ''))
     print('=' * 58)
-    print(f"{'funkce':<30}{'volání':>12}{'na krok':>14}")
+    print(f"{'function':<30}{'calls':>12}{'per step':>14}")
     print('-' * 58)
     for name, n in COUNT.most_common():
         per = f'{n/steps:,.1f}' if steps else '—'
         print(f'{name:<30}{n:>12,}{per:>14}')
     print('-' * 58)
     per = f'{total/steps:,.1f}' if steps else '—'
-    print(f"{'CELKEM':<30}{total:>12,}{per:>14}")
+    print(f"{'TOTAL':<30}{total:>12,}{per:>14}")
     if steps:
-        print(f'\ncasovych kroku: {steps}')
+        print(f'\ntime steps: {steps}')
     out = {'label': label, 'steps': steps, 'total': total,
            'per_step': (total / steps) if steps else None,
            'by_func': dict(COUNT)}
@@ -111,13 +112,13 @@ def _main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--config', required=True)
     ap.add_argument('--vec', action='store_true',
-                    help='nainstalovat i vec_inflow')
+                    help='install vec_inflow as well')
     a = ap.parse_args()
 
     sys.path[:0] = [os.getcwd(), os.path.join(os.getcwd(), 'bin')]
     os.environ['SMODERP2D_CONFIG_FILE'] = a.config
 
-    install()                       # PŘED importem jádra
+    install()                       # BEFORE importing the core
     from smoderp2d.runners.base import Runner
     r = Runner()
     r._provider.load()
@@ -125,7 +126,7 @@ def _main():
         import vec_inflow
         vec_inflow.install(verify=False)
 
-    # spočítat časové kroky bez další instrumentace
+    # count the time steps without further instrumentation
     import smoderp2d.time_step as TS
     steps = [0]
     _orig_next = TS.TimeStep.do_next_h

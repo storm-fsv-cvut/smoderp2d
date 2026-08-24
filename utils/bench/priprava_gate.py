@@ -1,16 +1,17 @@
-"""Připraví konfigurace pro gate.py. Spustit jednou, pak už jen gate.py.
+"""Generate the configurations for gate.py. Run once, then only gate.py.
 
-Vygeneruje .ini s ABSOLUTNÍMI cestami k datům a RELATIVNÍM výstupním
-adresářem. Díky tomu stačí jeden config pro oba pracovní stromy — data se
-nikam nekopírují (u 1 m sad by to bylo 122 MB na kus) a každý strom si píše
-výstup k sobě, takže se běhy nepřebíjejí.
+Writes .ini files with ABSOLUTE paths to the data and a RELATIVE output
+directory. That way a single config serves both working trees: the data is
+not copied anywhere (for the 1 m sets that would be 122 MB a piece) and each
+tree writes its output next to itself, so the runs do not overwrite each
+other.
 
-POUŽITÍ
--------
+USAGE
+-----
     cd D:\\_Claude_projekty\\SMODERP\\02_fork_from_GIT_to_improve\\smoderp2d\\utils\\bench
     python priprava_gate.py
 
-Volitelně jiný korenový adresář projektu:
+Optionally a different project root directory:
 
     python priprava_gate.py --base D:\\_Claude_projekty\\SMODERP
 """
@@ -50,7 +51,7 @@ def main():
     here = os.path.dirname(os.path.abspath(__file__))
     ap = argparse.ArgumentParser()
     # here = .../02_fork_from_GIT_to_improve/smoderp2d/utils/bench
-    # korenovy adresar projektu je o 4 urovne vys (bench -> utils ->
+    # the project root is 4 levels up (bench -> utils ->
     # smoderp2d -> 02_fork_from_GIT_to_improve -> SMODERP)
     ap.add_argument('--base', default=os.path.abspath(
         os.path.join(here, '..', '..', '..', '..')))
@@ -60,16 +61,16 @@ def main():
     data = os.path.join(a.base, '02_added_data_in')
     rain = os.path.join(data, 'rainfall_nucice.txt')
     if not os.path.exists(rain):
-        raise SystemExit('nenalezen %s\npouzij --base' % rain)
+        raise SystemExit('not found: %s\nuse --base' % rain)
     os.makedirs(a.out, exist_ok=True)
 
-    print('korenovy adresar : %s' % a.base)
-    print('configy pujdou do: %s\n' % a.out)
+    print('project root  : %s' % a.base)
+    print('configs go to : %s\n' % a.out)
     made = []
     for name, folder, mfda in SETS:
         save = os.path.join(data, folder, 'dpre.save')
         if not os.path.exists(save):
-            print('  - %-6s preskoceno, chybi %s' % (name, save))
+            print('  - %-6s skipped, missing %s' % (name, save))
             continue
         p = os.path.join(a.out, name + '.ini')
         with open(p, 'w') as fd:
@@ -80,13 +81,13 @@ def main():
         print('  OK %-6s %-14s %6.0f MB   -> %s' % (name, folder, mb, p))
         made.append(p)
 
-    print('\nhotovo, %d configu' % len(made))
-    print('\nDalsi krok:')
+    print('\ndone, %d configs' % len(made))
+    print('\nNext step:')
     print('  python gate.py --ref <cesta k 01_source_code_from_GIT> \\')
     print('                 --new <cesta k 04_kod_zrychleny_v2> \\')
     print('                 --config "%s" \\'
           % os.path.join(a.out, '5Gor.ini'))
-    print('                 --label krok1-5Gor --reps 1')
+    print('                 --label step1-5Gor --reps 1')
 
 
 if __name__ == '__main__':
