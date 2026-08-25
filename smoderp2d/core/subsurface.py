@@ -336,6 +336,32 @@ def get_subsurface_pass():
             # create empty array
             self.arr = SubArrsPass()
 
+            # Shared all-zero field returned by inflow_all() and
+            # get_exfiltration(). With subsurface flow switched off both
+            # are zero over the whole grid and stay constant for the whole
+            # run, so there is no reason to build a new grid sized array on
+            # every call - that used to happen three times per time step.
+            # GridGlobals.masks is a nested Python list, so every call also
+            # re-converted r*c Python bools into a boolean array.
+            #
+            # It stays a numpy.ma.MaskedArray on purpose: two callers in
+            # the explicit branch still feed it to ma.where, and switching
+            # to a plain ndarray would change their behaviour. That is a
+            # different kind of change and does not belong here.
+            #
+            # Both the data and the mask are made read-only. Nobody writes
+            # into the returned array today (all five call sites only
+            # read), but a shared writeable buffer is exactly the kind of
+            # trap that stays silent - one stray write and every later call
+            # returns corrupted data. Read-only turns that into a loud
+            # ValueError at the first write. Note that locking only the
+            # data is not enough: "arr[i, j] = ma.masked" touches the mask
+            # alone and would still get through.
+            zeros = np.zeros((GridGlobals.r, GridGlobals.c))
+            zeros.setflags(write=False)
+            zeros_mask = np.array(GridGlobals.masks, dtype=bool)
+            zeros_mask.setflags(write=False)
+            self._zeros = ma.masked_array(zeros, mask=zeros_mask, copy=False)
 
         def new_inflows(self):
             """TODO."""
@@ -353,24 +379,24 @@ def get_subsurface_pass():
         def inflow_all(self):
             """Return inflow volume for the whole domain at once.
 
-            Bez podpovrchoveho toku je pritok vsude nulovy.
+            Without subsurface flow the inflow is zero everywhere.
 
-            :returns: array of zeros
+            :returns: shared read-only masked array of zeros
             """
-            return ma.masked_array(
-                np.zeros((GridGlobals.r, GridGlobals.c)),
-                mask=GridGlobals.masks
-            )
+            return self._zeros
 
         def fill_slope(self):
             """TODO."""
             pass
 
         def get_exfiltration(self):
-            """TODO."""
-            return ma.masked_array(
-                np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-            )
+            """Return exfiltration for the whole domain at once.
+
+            Without subsurface flow the exfiltration is zero everywhere.
+
+            :returns: shared read-only masked array of zeros
+            """
+            return self._zeros
 
         def balance(self, infilt, dt):
             """TODO.
