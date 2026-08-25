@@ -72,9 +72,19 @@ def _rss_mb():
                         ('QuotaNonPagedPoolUsage', ctypes.c_size_t),
                         ('PagefileUsage', ctypes.c_size_t),
                         ('PeakPagefileUsage', ctypes.c_size_t)]
+        # Without restype/argtypes ctypes passes the pseudo-handle from
+        # GetCurrentProcess() as a 32-bit int. On 64-bit Windows the HANDLE
+        # parameter is 64-bit, the call gets a bogus handle, fails, and the
+        # struct stays zeroed - which is why this used to report 0 MB.
+        k32, psapi = ctypes.windll.kernel32, ctypes.windll.psapi
+        k32.GetCurrentProcess.restype = wintypes.HANDLE
+        psapi.GetProcessMemoryInfo.argtypes = [
+            wintypes.HANDLE, ctypes.POINTER(_PMC), wintypes.DWORD]
+        psapi.GetProcessMemoryInfo.restype = wintypes.BOOL
         c = _PMC(); c.cb = ctypes.sizeof(c)
-        ctypes.windll.psapi.GetProcessMemoryInfo(
-            ctypes.windll.kernel32.GetCurrentProcess(), ctypes.byref(c), c.cb)
+        if not psapi.GetProcessMemoryInfo(
+                k32.GetCurrentProcess(), ctypes.byref(c), c.cb):
+            return 0.
         return c.PeakWorkingSetSize / 1048576.
 
 sys.path[:0] = [os.getcwd(), os.path.join(os.getcwd(), 'bin')]
@@ -89,9 +99,22 @@ r = Runner(); r._provider.load()
 for _m in filter(None, os.environ.get('GATE_INSTALL', '').split(',')):
     __import__(_m).install()
 import smoderp2d.time_step as TS
-steps = [0]; _o = TS.TimeStep.do_next_h
+steps = [0]; trace = []; _o = TS.TimeStep.do_next_h
+_dtdir = os.environ.get('GATE_DT_DIR')
 def dn(self, *a, **k):
     steps[0] += 1
+    if _dtdir is not None:
+        # do_next_h(surface, subsurface, rain_arr, cumulative, hydrographs,
+        # flow_control, courant, potRain, delta_t) -> dt is a[8],
+        # flow_control is a[5]. A list append costs tens of nanoseconds
+        # against a time step of tens of milliseconds, and the dump happens
+        # after the timed section, so this does not move the measurement.
+        try:
+            dt = k['delta_t'] if 'delta_t' in k else a[8]
+            fc = k['flow_control'] if 'flow_control' in k else a[5]
+            trace.append((fc.total_time, dt))
+        except Exception:
+            pass
     return _o(self, *a, **k)
 TS.TimeStep.do_next_h = dn
 if count is not None:
@@ -102,6 +125,20 @@ wall = time.perf_counter() - t
 ro.save_output()
 out = {'wall': wall, 'steps': steps[0],
        'rss_mb': _rss_mb()}
+if _dtdir is not None:
+    # The time step trajectory decides whether two trees did the same work
+    # at all. %.17g is a round-trip exact float, so the hash compares the
+    # trajectories bit for bit.
+    import hashlib
+    os.makedirs(_dtdir, exist_ok=True)
+    body = ''.join('%d;%.17g;%.17g\n' % (i, tt, dt)
+                   for i, (tt, dt) in enumerate(trace, 1))
+    name = os.environ.get('GATE_DT_NAME') or 'dt_trace'
+    with open(os.path.join(_dtdir, name + '.csv'), 'w') as fd:
+        fd.write('step;total_time_s;dt_s\n')
+        fd.write(body)
+    out['dt_hash'] = hashlib.sha256(body.encode()).hexdigest()[:16]
+    out['dt_points'] = len(trace)
 if count is not None:
     out['ma_total'] = sum(count.COUNT.values())
     out['ma_by_func'] = dict(count.COUNT)

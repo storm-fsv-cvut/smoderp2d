@@ -14,6 +14,18 @@ USAGE
 Optionally a different project root directory:
 
     python priprava_gate.py --base D:\\_Claude_projekty\\SMODERP
+
+The simulated end time is a parameter. The default 6 min covers the whole
+rainfall record plus one minute; a longer end time adds the recession, which
+changes how representative the measured ratio is for a full event. Configs
+generated with a non-default end time get a name suffix and their own output
+directory, so they never collide with the default ones:
+
+    python priprava_gate.py --endtime 13 --suffix=-e13
+    -> cfg/4Gti-e13.ini writing to bench_out_4Gti-e13
+
+Note the '=' in --suffix=-e13. A value starting with a dash has to be
+attached with '=', otherwise argparse reads it as another option.
 """
 
 import argparse
@@ -24,12 +36,12 @@ rainfall: {rain}
 pickle: {save}
 [time]
 maxdt: 5
-endtime: 6
+endtime: {endtime}
 [output]
 outdir: bench_out_{name}
 printtimes:
 [logging]
-level: ERROR
+level: {level}
 [processes]
 typecomp: stream_rill
 mfda: {mfda}
@@ -56,6 +68,14 @@ def main():
     ap.add_argument('--base', default=os.path.abspath(
         os.path.join(here, '..', '..', '..', '..')))
     ap.add_argument('--out', default=os.path.join(here, 'cfg'))
+    ap.add_argument('--endtime', default='6',
+                    help='simulated end time in minutes (default 6)')
+    ap.add_argument('--level', default='ERROR',
+                    help='log level; INFO also writes the progress blocks '
+                         'that the log comparison reads (default ERROR)')
+    ap.add_argument('--suffix', default='',
+                    help='appended to the config name and to the output '
+                         'directory, e.g. -e13')
     a = ap.parse_args()
 
     data = os.path.join(a.base, '02_added_data_in')
@@ -72,21 +92,24 @@ def main():
         if not os.path.exists(save):
             print('  - %-6s skipped, missing %s' % (name, save))
             continue
-        p = os.path.join(a.out, name + '.ini')
+        tag = name + a.suffix
+        p = os.path.join(a.out, tag + '.ini')
         with open(p, 'w') as fd:
             fd.write(CFG.format(rain=rain.replace('\\', '/'),
                                 save=save.replace('\\', '/'),
-                                name=name, mfda=mfda))
+                                name=tag, mfda=mfda,
+                                endtime=a.endtime, level=a.level))
         mb = os.path.getsize(save) / 1e6
-        print('  OK %-6s %-14s %6.0f MB   -> %s' % (name, folder, mb, p))
+        print('  OK %-8s %-14s %6.0f MB   -> %s' % (tag, folder, mb, p))
         made.append(p)
 
-    print('\ndone, %d configs' % len(made))
+    print('\ndone, %d configs  (endtime %s min, log level %s)'
+          % (len(made), a.endtime, a.level))
     print('\nNext step:')
     print('  python gate.py --ref <cesta k 01_source_code_from_GIT> \\')
     print('                 --new <cesta k 04_kod_zrychleny_v2> \\')
     print('                 --config "%s" \\'
-          % os.path.join(a.out, '5Gor.ini'))
+          % os.path.join(a.out, '5Gor' + a.suffix + '.ini'))
     print('                 --label step1-5Gor --reps 1')
 
 
