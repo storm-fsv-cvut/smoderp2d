@@ -1,6 +1,8 @@
 """Package contains classes and methods to compute surface processes.
 """
 
+from collections import namedtuple
+
 import numpy as np
 import numpy.ma as ma
 
@@ -14,6 +16,18 @@ from smoderp2d.providers import Logger
 
 courantMax = 1.0
 RILL_RATIO = 0.7
+
+# step 3-pre: what runoff() returns. It used to be a bare 11-tuple read
+# by position in TimeStep.do_flow(). Dropping the dominated rill_courant
+# element would have renumbered every index behind it - the kind of edit
+# that stays silent and writes the wrong grid into the wrong attribute.
+# Named fields make that class of mistake impossible; one namedtuple per
+# do_flow() call costs nothing next to the grid arithmetic around it.
+RunoffResult = namedtuple(
+    'RunoffResult',
+    'v_sheet v_rill h_sheet h_rill h_rillPre vol_runoff vol_rest '
+    'v_rill_rest vol_runoff_rill vel_rill'
+)
 
 
 class SurArrs(object):
@@ -235,15 +249,24 @@ def __runoff(sur, dt, effect_vrst):
                            sur.v_rill_rest)
     vol_runoff_rill = np.where(sur.state > 0, rill_runoff_results[2],
                                sur.vol_runoff_rill)
-    rill_courant = np.where(sur.state > 0, rill_runoff_results[3], 0)
+    # step 3-pre: rill_runoff_results[3] is the rill Courant number. It
+    # used to be masked here and handed to Courant.CFL(), where it was
+    # folded in with np.maximum() - a term that can never win. See the
+    # argument in Courant.CFL(). It is still computed inside
+    # rill_runoff(), where it gates the volume update, but it no longer
+    # leaves the function.
     sur.vol_to_rill = np.where(
         sur.state > 0, rill_runoff_results[4], sur.vol_to_rill
     )
     sur.rillWidth = np.where(sur.state > 0, rill_runoff_results[5],
                              sur.rillWidth)
 
-    return (v_sheet, v_rill, rill_courant, h_sheet, h_rill, h_rillPre,
-            vol_runoff, vol_rest, v_rill_rest, vol_runoff_rill, v_rill)
+    return RunoffResult(
+        v_sheet=v_sheet, v_rill=v_rill, h_sheet=h_sheet, h_rill=h_rill,
+        h_rillPre=h_rillPre, vol_runoff=vol_runoff, vol_rest=vol_rest,
+        v_rill_rest=v_rill_rest, vol_runoff_rill=vol_runoff_rill,
+        vel_rill=v_rill
+    )
 
 
 def __runoff_zero_comp_type(sur, dt, effect_vrst):
@@ -265,9 +288,11 @@ def __runoff_zero_comp_type(sur, dt, effect_vrst):
 
     v_rill = 0
 
-    return (
-        v_sheet, v_rill, 0.0, sur.h_sheet, sur.h_rill, sur.h_rillPre,
-        vol_runoff, vol_rest, sur.v_rill_rest, sur.vol_runoff_rill, v_rill
+    return RunoffResult(
+        v_sheet=v_sheet, v_rill=v_rill, h_sheet=sur.h_sheet,
+        h_rill=sur.h_rill, h_rillPre=sur.h_rillPre, vol_runoff=vol_runoff,
+        vol_rest=vol_rest, v_rill_rest=sur.v_rill_rest,
+        vol_runoff_rill=sur.vol_runoff_rill, vel_rill=v_rill
     )
 
 

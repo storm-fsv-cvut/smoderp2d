@@ -51,47 +51,47 @@ class TimeStep:
 
         surface_state = surface.arr.state
 
-        runoff_return = runoff(surface.arr, delta_t, mat_effect_cont)
+        # step 3-pre: runoff() returns a named tuple (surface.RunoffResult)
+        # instead of a bare 11-tuple read by position.
+        rr = runoff(surface.arr, delta_t, mat_effect_cont)
 
         # numpy.ma removal: surface_state is a plain ndarray, so
-        # cond_state_flow is a plain boolean array and runoff_return[0..2]
-        # are plain too. These ma.where() calls already returned a
+        # cond_state_flow is a plain boolean array and the runoff()
+        # outputs are plain too. These ma.where() calls already returned a
         # MaskedArray with an empty mask.
         cond_state_flow = surface_state > Globals.streams_flow_inc
-        v_sheet = np.where(cond_state_flow, 0, runoff_return[0])
-        v_rill = np.where(cond_state_flow, 0, runoff_return[1])
+        v_sheet = np.where(cond_state_flow, 0, rr.v_sheet)
+        v_rill = np.where(cond_state_flow, 0, rr.v_rill)
         subsurface.runoff(delta_t, mat_effect_cont, cond_state_flow)
-
-        rill_courant = np.where(cond_state_flow, 0, runoff_return[2])
 
         # cond_state_flow is plain now, so no np.asarray() guard is
         # needed any more; every operand below is plain as well, so
         # cond_flow is just an alias kept for readability.
         cond_flow = cond_state_flow
         surface.arr.h_sheet = np.where(
-            cond_flow, surface.arr.h_sheet, np.asarray(runoff_return[3])
+            cond_flow, surface.arr.h_sheet, np.asarray(rr.h_sheet)
         )
         surface.arr.h_rill = np.where(
-            cond_flow, surface.arr.h_rill, np.asarray(runoff_return[4])
+            cond_flow, surface.arr.h_rill, np.asarray(rr.h_rill)
         )
         surface.arr.h_rillPre = np.where(
-            cond_state_flow, surface.arr.h_rillPre, runoff_return[5]
+            cond_state_flow, surface.arr.h_rillPre, rr.h_rillPre
         )
         surface.arr.vol_runoff = np.where(
-            cond_flow, surface.arr.vol_runoff, np.asarray(runoff_return[6])
+            cond_flow, surface.arr.vol_runoff, np.asarray(rr.vol_runoff)
         )
         surface.arr.vol_rest = np.where(
-            cond_flow, surface.arr.vol_rest, np.asarray(runoff_return[7])
+            cond_flow, surface.arr.vol_rest, np.asarray(rr.vol_rest)
         )
         surface.arr.v_rill_rest = np.where(
-            cond_flow, surface.arr.v_rill_rest, np.asarray(runoff_return[8])
+            cond_flow, surface.arr.v_rill_rest, np.asarray(rr.v_rill_rest)
         )
         surface.arr.vol_runoff_rill = np.where(
             cond_flow, surface.arr.vol_runoff_rill,
-            np.asarray(runoff_return[9])
+            np.asarray(rr.vol_runoff_rill)
         )
         surface.arr.vel_rill = np.where(
-            cond_flow, surface.arr.vel_rill, np.asarray(runoff_return[10])
+            cond_flow, surface.arr.vel_rill, np.asarray(rr.vel_rill)
         )
 
         v = np.maximum(v_sheet, v_rill)
@@ -100,8 +100,7 @@ class TimeStep:
             v,
             delta_t,
             mat_effect_cont,
-            co,
-            rill_courant
+            co
         )
         # w1 = surface.arr.get_item([i, j]).vol_runoff_rill
         # w2 = surface.arr.get_item([i, j]).v_rill_rest

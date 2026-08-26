@@ -77,7 +77,7 @@ class Courant:
         return Gl.maxdt
 
     #
-    def CFL(self, v, delta_t, effect_cont, co, rill_courant):
+    def CFL(self, v, delta_t, effect_cont, co):
         """Check the maximum velocity and maximum Courant coefficient.
 
         Store it in each computational cell.
@@ -86,27 +86,49 @@ class Courant:
         :param delta_t: current time step length
         :param effect_cont: TODO
         :param co: TODO
-        :param rill_courant: TODO
         """
-        # step 2f: v and rill_courant may still be numpy.ma at the
-        # call boundary (masked with GridGlobals.masks) - read raw
-        # .data via np.asarray(). Unlike the elementwise ma.where()
-        # conversions elsewhere in step 2, this function does a
-        # *reduction* (argmax) over the whole grid, so the underlying
-        # buffer at invalid/out-of-domain cells (whatever arithmetic
-        # happened to land there, not necessarily harmless - e.g.
-        # division by a near-zero effect_cont) could spuriously win
-        # the maximum once the mask no longer excludes it. The search
-        # below is therefore explicitly restricted to
-        # GridGlobals.valid_idx (step 2a), the same set of cells
-        # ma.argmax()/ma.any() would have considered via the mask.
+        # step 3-pre: this function used to take a rill_courant grid and
+        # fold it in with np.maximum(cour, rill_courant). That term could
+        # never win, so it was dropped together with the whole chain that
+        # produced it (surface.__runoff -> TimeStep.do_flow -> here).
+        #
+        # The caller passes v = maximum(v_sheet, v_rill) and, as
+        # effect_cont, the very same array that surface.rill_runoff() uses
+        # as effect_vrst (Globals.get_mat_effect_cont()). rill_courant is
+        # v_rill * delta_t / effect_vrst. With effect_cont > 0, delta_t > 0,
+        # v >= v_rill elementwise and 1 / cour_coef = 1.785 > 1:
+        #
+        #     cour = v / cour_coef * dt / effect_cont
+        #          >= 1.785 * v_rill * dt / effect_cont
+        #          =  1.785 * rill_courant
+        #
+        # so cour dominates rill_courant cell by cell. Measured as well,
+        # not just derived: zero violations and zero non-finite margins
+        # over 148.9e6 valid-cell comparisons in 2441 CFL calls across
+        # 1010, 1010-mfda, 4Gor, 4Gti and 5Gor. The maximum rill_courant
+        # observed was 1.97, i.e. the term is large in absolute terms -
+        # it is dominated, not small.
+        #
+        # INVARIANT: effect_cont here and effect_vrst in
+        # surface.rill_runoff() must stay the same array, and cour_coef
+        # must stay below 1. Both are load bearing for the argument above.
+        #
+        # step 2f: v may still be numpy.ma at the call boundary (masked
+        # with GridGlobals.masks) - read raw .data via np.asarray().
+        # Unlike the elementwise ma.where() conversions elsewhere in
+        # step 2, this function does a *reduction* (argmax) over the
+        # whole grid, so the underlying buffer at invalid/out-of-domain
+        # cells (whatever arithmetic happened to land there, not
+        # necessarily harmless - e.g. division by a near-zero
+        # effect_cont) could spuriously win the maximum once the mask no
+        # longer excludes it. The search below is therefore explicitly
+        # restricted to GridGlobals.valid_idx (step 2a), the same set of
+        # cells ma.argmax()/ma.any() would have considered via the mask.
         v = np.asarray(v)
-        rill_courant = np.asarray(rill_courant)
         effect_cont = np.asarray(effect_cont)
 
         with np.errstate(divide='ignore', invalid='ignore'):
             cour = v / self.cour_coef * delta_t / effect_cont
-        cour = np.maximum(cour, rill_courant)
 
         valid_idx = GridGlobals.valid_idx
         cour_valid = cour.ravel()[valid_idx]
