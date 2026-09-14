@@ -23,7 +23,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python3 -m pip install pb_tool 
+        python3 -m pip install pb_tool sphinx
 
     - name: Build package
       run: |
