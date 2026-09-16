@@ -23,20 +23,17 @@ def main(filename):
         'delta_t': indata[13], 'mat_pi': indata[14],
         'mat_ppl': indata[15], 'surface_retention': indata[16],
         'mat_inf_index': indata[17], 'mat_hcrit': indata[18],
-        'mat_aa': indata[19], 'mat_b': indata[20],
-        'mat_reten': indata[21], 'mat_fd': indata[22],
-        'mat_dmt': indata[23], 'mat_effect_cont': indata[24],
-        'mat_slope': indata[25], 'mat_nan': indata[26],
-        'mat_a': indata[27], 'mat_n': indata[28],
-        'outdir': indata[29], 'pixel_area': indata[30],
-        'points': indata[31], 'poradi': indata[32],
-        'end_time': indata[33], 'spix': indata[34],
-        'state_cell': indata[35], 'temp': indata[36],
-        'type_of_computing': indata[37], 'vpix': indata[38],
-        'mfda': indata[39], 'sr': indata[40], 'itera': indata[41],
-        'toky': indata[42], 'cell_stream': indata[43],
-        'mat_tok_reach': indata[44], 'STREAM_RATIO': indata[45],
-        'toky_loc': indata[46]
+        'mat_b': indata[19], 'mat_reten': indata[20], 'mat_fd': indata[21],
+        'mat_dmt': indata[22], 'mat_effect_cont': indata[23],
+        'mat_slope': indata[24], 'mat_nan': indata[25], 'mat_a': indata[26],
+        'mat_n': indata[27], 'outdir': indata[28], 'pixel_area': indata[29],
+        'points': indata[30], 'poradi': indata[31], 'end_time': indata[32],
+        'spix': indata[33], 'state_cell': indata[34], 'temp': indata[35],
+        'type_of_computing': indata[36], 'vpix': indata[37],
+        'mfda': indata[38], 'sr': indata[39], 'itera': indata[40],
+        'toky': indata[41], 'cell_stream': indata[42],
+        'mat_tok_reach': indata[43], 'STREAM_RATIO': indata[44],
+        'toky_loc': indata[45]
     }
 
     BaseProvider.save_data(data, filename)
