@@ -7,6 +7,9 @@ on:
       - release_*
   pull_request:
 
+env:
+  NPY_DISABLE_CPU_FEATURES: "AVX512F AVX512CD AVX512_KNL AVX512_KNM AVX512_SKX AVX512_CLX AVX512_CNL AVX512_ICL"
+
 jobs:
   consistency-quicktest:
     strategy:
