@@ -70,6 +70,14 @@ class GridGlobals(object):
     dy = None
     # masks
     masks = None
+    # step 2a (numpy.ma removal): a flat equivalent of the mask, True =
+    # valid (unmasked) cell. A pure addition alongside masks, read by
+    # nobody so far - groundwork for 2b-2f, this step switches nothing on
+    # its own.
+    valid = None
+    # flat (1D) index of the valid cells, i.e.
+    # np.flatnonzero(valid.ravel()). Also a pure addition, not consumed yet.
+    valid_idx = None
 
     def __init__(self):
         """TODO."""
@@ -162,6 +170,9 @@ class GridGlobals(object):
         cls.dy = None
         # masks
         cls.masks = None
+        # step 2a: flat equivalent of the mask plus its flat index
+        cls.valid = None
+        cls.valid_idx = None
 
 
 class DataGlobals:

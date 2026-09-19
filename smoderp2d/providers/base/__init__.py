@@ -427,6 +427,12 @@ class BaseProvider(object):
             for c in rc[r]:
                 GridGlobals.masks[r][c] = False
 
+        # step 2a (numpy.ma removal): a flat equivalent of masks that is
+        # added alongside it and replaces nothing. valid[r, c] == True
+        # exactly where masks[r][c] == False (a valid/unmasked cell).
+        GridGlobals.valid = ~np.array(GridGlobals.masks, dtype=bool)
+        GridGlobals.valid_idx = np.flatnonzero(GridGlobals.valid.ravel())
+
     @staticmethod
     def _cleanup():
         """Clean-up output directory."""
