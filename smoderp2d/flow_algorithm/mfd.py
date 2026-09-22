@@ -247,15 +247,13 @@ def new_mfda(mat_dem, mat_nan, mat_fd):
                     state = 0
 
                     sum_flprop = sum(flprop)
-                    if not math.isfinite(sum_flprop) or \
-                            abs(sum_flprop - 1.0) > 1e-5:
+                    if abs(sum_flprop - 1.0) > 1e-5:
                         Logger.warning(
                             f"Error - sum of flow proportions {sum_flprop} in"
                             f"cell ({i}, {j}) is not equal to 1.0"
                         )
                     sum_flow_amount = sum(flow_amount_cell)
-                    if not math.isfinite(sum_flow_amount) or \
-                            abs(sum_flow_amount - 1.0) > 1e-5:
+                    if abs(sum_flow_amount - 1.0) > 1e-5:
                         Logger.warning(
                             f"Error - sum of flow amount "
                             f"{sum_flow_amount} in cell ({i}, {j}) is "
