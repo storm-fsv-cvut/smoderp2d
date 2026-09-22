@@ -33,13 +33,6 @@ class D8(object):
      - smoderp2d.core.kinematic_diffuse.Diffuse
     """
 
-    # The order MUST match the inflow_directions list in
-    # smoderp2d.flow_algorithm.D8.__directionsInflow(). The summation order
-    # in inflow_all() depends on it, and with it the bit equality against
-    # cell_runoff().
-    _INFLOW_DIRS = ((-1, 1), (-1, 0), (-1, -1), (0, -1),
-                    (1, -1), (1, 0), (1, 1), (0, 1))
-
     def __init__(self):
         """Constructor.
 
@@ -49,7 +42,6 @@ class D8(object):
         """
         Logger.info("D8 flow algorithm")
         self.inflows = D8_.new_inflows(Globals.get_mat_fd())
-        self._inflow_w = None
 
     def update_inflows(self, fd):
         """Update inflows list if the diffuse approach is used.
@@ -60,54 +52,6 @@ class D8(object):
         :param fd: TODO
         """
         self.inflows = D8_.new_inflows(fd)
-        self._inflow_w = None
-
-    def _build_inflow_weights(self):
-        """Turn the inflows list into a weight array (r, c, 8) and slice pairs.
-
-        Built once (lazily, on the first call to inflow_all()) and again
-        after update_inflows() in the diffusive approach.
-        """
-        r, c = GridGlobals.r, GridGlobals.c
-        idx = {d: k for k, d in enumerate(self._INFLOW_DIRS)}
-        w = np.zeros((r, c, len(self._INFLOW_DIRS)))
-        for i in range(r):
-            row = self.inflows[i]
-            for j in range(c):
-                for ax, bx in row[j]:
-                    if i + ax < 0 or j + bx < 0:
-                        # same guard as in cell_runoff()
-                        continue
-                    w[i, j, idx[(ax, bx)]] = 1.0
-        self._inflow_w = w
-        self._inflow_slices = tuple(
-            (slice(max(0, -ax), r - max(0, ax)),
-             slice(max(0, -bx), c - max(0, bx)),
-             slice(max(0, ax), r - max(0, -ax)),
-             slice(max(0, bx), c - max(0, -bx)))
-            for ax, bx in self._INFLOW_DIRS
-        )
-
-    def inflow_all(self):
-        """Return inflow volume for the whole domain at once.
-
-        Vectorised equivalent of cell_runoff() called for every cell. The
-        result is bit-identical: the summation order (for each direction
-        sheet first, then rill) follows the original loop, and inactive
-        directions add exact zero.
-
-        :returns: inflow volume from the adjacent cells for all cells
-        """
-        if self._inflow_w is None:
-            self._build_inflow_weights()
-        sheet = self.arr.vol_runoff.data
-        rill = self.arr.vol_runoff_rill.data
-        out = np.zeros((GridGlobals.r, GridGlobals.c))
-        for k, (si, sj, ti, tj) in enumerate(self._inflow_slices):
-            w = self._inflow_w[si, sj, k]
-            out[si, sj] += w * sheet[ti, tj]
-            out[si, sj] += w * rill[ti, tj]
-        return ma.masked_array(out, mask=GridGlobals.masks)
 
     def cell_runoff(self, i, j):
         """Return the water volume water flows into cell i, j
@@ -181,25 +125,6 @@ class Mfda(object):
         """
         self.inflows, fd_rill = mfd.new_mfda(self.H, Globals.mat_nan, fd)
         self.inflowsRill = D8_.new_inflows(fd_rill)
-
-    def inflow_all(self):
-        """Return inflow volume for the whole domain at once.
-
-        For MFD this is still a scalar fallback - the weight array has a
-        different topology and is also waiting for the zero-weight fix. It
-        behaves exactly like the original double loop in
-        TimeStep.do_next_h().
-
-        :returns: inflow volume from the adjacent cells for all cells
-        """
-        rr, rc = GridGlobals.get_region_dim()
-        out = ma.masked_array(
-            np.zeros((GridGlobals.r, GridGlobals.c)), mask=GridGlobals.masks
-        )
-        for i in rr:
-            for j in rc[i]:
-                out[i, j] = self.cell_runoff(i, j)
-        return out
 
     def cell_runoff(self, i, j, sur=True):
         """Return the water volume water flows into cell i, j

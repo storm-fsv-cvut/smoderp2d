@@ -254,25 +254,6 @@ def get_subsurface():
             self.arr.vol_rest[indices] = 0.0
             return ma.where(indices, self.arr.h, 0)
 
-        def inflow_all(self):
-            """Return inflow volume for the whole domain at once.
-
-            Deliberately scalar: subsurface flow is not enabled in the
-            test data, so the vectorised variant from D8 is not verified
-            for it. Behaves exactly like the original double loop.
-
-            :returns: inflow volume from the adjacent cells for all cells
-            """
-            rr, rc = GridGlobals.get_region_dim()
-            out = ma.masked_array(
-                np.zeros((GridGlobals.r, GridGlobals.c)),
-                mask=GridGlobals.masks
-            )
-            for i in rr:
-                for j in rc[i]:
-                    out[i, j] = self.cell_runoff(i, j)
-            return out
-
         def curr_to_pre(self):
             """At the end of time step calculation the runoff water volume is
             stored in vol_runoff_pre."""
@@ -349,18 +330,6 @@ def get_subsurface_pass():
             :param sur: TODO
             """
             return 0
-
-        def inflow_all(self):
-            """Return inflow volume for the whole domain at once.
-
-            Without subsurface flow the inflow is zero everywhere.
-
-            :returns: array of zeros
-            """
-            return ma.masked_array(
-                np.zeros((GridGlobals.r, GridGlobals.c)),
-                mask=GridGlobals.masks
-            )
 
         def fill_slope(self):
             """TODO."""
