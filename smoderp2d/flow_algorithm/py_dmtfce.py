@@ -187,6 +187,7 @@ def dirSlope(point_m, nbrs, dy, dx):
         nx = z1 * y2 - z2 * y1
         ny = z1 * x2 - x1 * z2
 
+        # get the direction to the right quadrant
         if nx == 0 and ny >= 0:
             d = 0
         elif nx == 0 and ny < 0:
@@ -196,15 +197,7 @@ def dirSlope(point_m, nbrs, dy, dx):
         elif nx < 0:
             d = THREE_PI_HALF - math.atan2(ny, nx)
 
-        # The slope magnitude is computed relative to the axis shared by both
-        # facet edges: for N/S-aligned facets that is y (y1 == y2 == dy), for
-        # E/W-aligned facets it is x (x1 == x2 == dx). The formula previously
-        # always divided by y1/y2, which is exactly 0 for the four E/W facets
-        # (k=2,3,6,7 in dirSlope) because those facets are built with
-        # y1=0 or y2=0 by construction. That produced inf -> NaN weights
-        # propagating through mfd.py. Selecting the non-degenerate shared
-        # axis fixes the bug without changing the formula or its result for
-        # the facets that were already correct (y1, y2 both != 0).
+        # slope magnitude computed relative to the main axis shared
         if y1 != 0 and y2 != 0:
             d1, d2 = y1, y2
         else:
