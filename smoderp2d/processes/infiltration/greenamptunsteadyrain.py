@@ -20,15 +20,21 @@ class SingleSoilGAIUR(object):
     Water Resources Research,  vol. 14, no. 3, 1978
     """
 
-    def __init__(self, ks, sm):
+    def __init__(self, ks, s):
         """ for each soil type sets the variables 
 
-        ks - saturated hydraulic conductivity
-        sm - suction pressure at the wetting front (s) time difference of the moisture (m)
+        ks - saturated hydraulic conductivity [m/s]
+        s - sorptivity [m/s^0.5]; the suction pressure at the wetting front
+            times the difference of the moisture (sm) [m] is derived from it
+            as sm = s^2 / (2 ks)
         """
 
-        self._ks = 1e-5 
-        self._sm = 1e-2
+        # impermeable soil (ks = 0) or no data (negative ks) does not
+        # infiltrate
+        self._impermeable = ks <= 0
+
+        self._ks = ks
+        self._sm = s * s / (2. * ks) if ks > 0 else 0.0
 
         # cumulative rainfall
         self._p_n_1 = self._p_n = 0.0
@@ -150,6 +156,17 @@ class SingleSoilGAIUR(object):
         :param dt: current time step
         """
 
+        if self._impermeable:
+            # impermeable soil, no infiltration
+            self.infiltration = 0.0
+            return
+
+        if self._sm == 0:
+            # zero sorptivity (s = 0), Green-Ampt reduces to a constant
+            # infiltration capacity ks
+            self.infiltration = min(cprec, self._ks * dt)
+            return
+
         # current precipitation intensity
         i = cprec/dt
 
@@ -204,7 +221,7 @@ class GreenAmptInfiltrationUnsteadyRain(BaseInfiltration):
         self._soil = []
         for i in range(self._n):
             self._soil.append(SingleSoilGAIUR(
-                ks=soils_data[i][1], sm=soils_data[i][2]))
+                ks=soils_data[i][1], s=soils_data[i][2]))
 
     def precalc(self, dt, total_time, cprec):
         """ Precalculates potential infiltration got a given soil.
@@ -228,7 +245,9 @@ if __name__ == "__main__":
     data = [[0, 2.777e-1, 2, 0], [0, 0.0142, 0.036, 0]]
     # from Chu 1978
     data = [[0, 0.0142, 0.036, 0]]
-    t = GreenAmptInfiltrationUnsteadyRain([[0, 0.0142, 0.036, 0]])
+    # K = 0.0142, SM = 0.036 from Chu 1978, SM given as s = sqrt(2 K SM)
+    t = GreenAmptInfiltrationUnsteadyRain(
+        [[0, 0.0142, math.sqrt(2 * 0.0142 * 0.036), 0]])
 
     tt = 0
     for i in range(1, len(sr)):
