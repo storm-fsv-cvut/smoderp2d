@@ -1,16 +1,19 @@
 # SMODERP2D
 
+[![cmd_provider_consistency_test](https://github.com/storm-fsv-cvut/smoderp2d/actions/workflows/cmd_provider.yml/badge.svg?branch=master)](https://github.com/storm-fsv-cvut/smoderp2d/actions/workflows/cmd_provider.yml)
+[![grass_provider_consistency_test](https://github.com/storm-fsv-cvut/smoderp2d/actions/workflows/grass_provider.yml/badge.svg?branch=master)](https://github.com/storm-fsv-cvut/smoderp2d/actions/workflows/grass_provider.yml)
+
 Distributed event-based model for surface and subsurface runoff and erosion.
 
-```
-    @ @ @   @       @     @ @     @ @ @     @ @ @ @  @ @ @    @ @ @  
+```sh
+    @ @ @   @       @     @ @     @ @ @     @ @ @ @  @ @ @    @ @ @
    @        @ @   @ @   @     @   @     @   @        @     @  @     @
    @        @   @   @  @       @  @      @  @        @     @  @     @
-     @ @    @       @  @       @  @      @  @ @ @    @ @ @    @ @ @  
-         @  @       @  @       @  @      @  @        @   @    @      
-         @  @       @   @     @   @     @   @        @    @   @  
-    @ @ @   @       @     @ @     @ @ @     @ @ @ @  @     @  @  
-    \  \  /   / /    \   \  /   \  /    /     /       @ @ @   @ @ @  
+     @ @    @       @  @       @  @      @  @ @ @    @ @ @    @ @ @
+         @  @       @  @       @  @      @  @        @   @    @
+         @  @       @   @     @   @     @   @        @    @   @
+    @ @ @   @       @     @ @     @ @ @     @ @ @ @  @     @  @
+    \  \  /   / /    \   \  /   \  /    /     /       @ @ @   @ @ @
      \ _\/   /_/      \   \/     \/    /_____/       @     @  @     @
          \__/          \  /      _\___/                    @  @      @
              \____      \/      /                         @   @      @
@@ -19,39 +22,71 @@ Distributed event-based model for surface and subsurface runoff and erosion.
                                 \___________________ @ @ @ @  @ @ @
 ```
 
+User documentation: <https://storm-fsv-cvut.github.io/smoderp2d-manual/>
+
 ## How to test
 
 Download SMODERP2D source code to your computer.
 
-    git clone https://github.com/storm-fsv-cvut/smoderp2d.git
+```sh
+git clone https://github.com/storm-fsv-cvut/smoderp2d.git
+```
 
-### From command line
+### From Docker container
 
-    ./bin/start-smoderp2d.py --typecomp roff --indata tests/test.ini
+Build an image:
 
-### From GRASS GIS
+```sh
+docker build \
+ --tag smoderp2d:latest --file docker/Dockerfile .
+```
 
-Note: GRASS GIS 7.8+ required
+Run SMODERP2D command line tool from Docker container:
 
-Create testing mapset:
+```sh
+docker run \
+ -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
+ ./bin/start-smoderp2d.py smoderp2d \
+ --config tests/config_files/quicktest_stream_rill.ini
+```
 
-    grass --text -c tests/grassdata/smoderp2d-location/test/
+#### GRASS GIS
 
-Run `r.smoderp2d` module:
+Build an image with GRASS GIS support:
 
-    ./bin/grass/r.smoderp2d/r.smoderp2d.py \
-        elevation=dem10m \
-        soil=soil_LU soil_type=soil_id \
-        vegetation=soil_LU vegetation_type=lu_id \
-        rainfall_file=tests/data/rainfall.txt \
-        points=points \
-        table_soil_vegetation=soil_LU_property table_soil_vegetation_code=soilveg \
-        stream=stream \
-        table_stream_shape=stream_shape table_stream_shape_code=smoderp \
-        maxdt=10 end_time=120 output_dir=/tmp/smoderp2d
+```sh
+docker build \
+ --tag smoderp2d-grass:latest --file docker/grass/Dockerfile .
+```
 
-### From ArcGIS 10.x or Pro
+Run SMODERP2D with GRASS GIS provider from Docker container:
 
-Launch SMODERP2D ArcToolbox from `bin\arcgis` directory.
+```sh
+docker run \
+ -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
+ ./tests/run_grass_gistest.sh smoderp2d-grass \
+ nucice
+```
 
-![SMODERP2D ArcToolbox in action](img/arctoolbox.png?raw=true "SMODERP2D ArcToolbox in action")
+### Run locally
+
+#### Command line
+
+```sh
+PYTHONPATH=$PYTHONPATH:`pwd` ./bin/start-smoderp2d.py --config tests/config_files/quicktest_stream_rill.ini
+```
+
+#### QGIS
+
+Requirements: QGIS 3.28.10 and higher
+
+Define `QGIS_PLUGINPATH` and `PYTHONPATH` environmental variables in
+`Settings -> Options -> System` and restart QGIS.
+
+Than enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
+
+Alternatively set up environment variables in command line before starting QGIS:
+
+```sh
+PYTHONPATH=$PYTHONPATH:`pwd` QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/nucice/qgis_project.qgz
+```

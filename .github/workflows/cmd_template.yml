@@ -1,0 +1,44 @@
+name: CMD provider consistency test reusable workflow
+
+on:
+  workflow_call:
+    inputs:
+      pytest-suite:
+        required: true
+        type: string
+
+env:
+  NPY_DISABLE_CPU_FEATURES: "AVX512F AVX512CD AVX512_KNL AVX512_KNM AVX512_SKX AVX512_CLX AVX512_CNL AVX512_ICL"
+
+jobs:
+  consistency_test:
+    strategy:
+      fail-fast: false
+
+      matrix:
+        python-version:
+          - "3.9"
+          - "3.13"
+
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r .github/workflows/requirements.txt
+          pip install -r .github/workflows/requirements${{ matrix.python-version }}.txt
+
+      - name: Install smoderp2d
+        run: |
+          pip install .
+
+      - name: Run command test suite
+        run: |
+          pytest ${{ inputs.pytest-suite }}

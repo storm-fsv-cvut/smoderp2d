@@ -1,55 +1,85 @@
+import numpy as np
+import numpy.ma as ma
+
 from smoderp2d.stream_functions import stream_f
 from smoderp2d.core.general import GridGlobals, Globals as Gl
 from smoderp2d.providers import Logger
+from smoderp2d.exceptions import ProviderError
+
 
 class Reach(object):
-    def __init__(self, id_, point_x, point_y, point_x_1, point_y_1,
-                 to_node, length, sklon, smoderp, number, shape, b, m, roughness, q365):
+    def __init__(self, stream_segment_id, stream_segment_next_down_id,
+                 stream_segment_length, stream_segment_inclination,
+                 channel_shape_id, channel_shapetype, channel_bottom_width,
+                 channel_bank_steepness, channel_bed_roughness, channel_q365):
 
-        self.id_ = id_
-        self.pointsFrom = [point_x, point_y]
-        self.pointsTo = [point_x_1, point_y_1]
-        self.to_node = to_node
-        self.length = length
-        if sklon < 0:
+        self.segment_id = stream_segment_id
+        self.next_down_id = stream_segment_next_down_id
+        self.length = stream_segment_length
+        if stream_segment_inclination < 0:
             Logger.info(
-                "Slope in reach part {} indicated minus slope in stream".format(id_
-                ))
-        self.slope = abs(sklon)
-        self.smoderp = smoderp
-        self.no = number
-        self.shape = shape
+                "Slope in reach part {} indicated minus slope in "
+                "stream".format(stream_segment_id)
+            )
+        self.inclination = abs(stream_segment_inclination)
+        self.shape_id = channel_shape_id
+        self.shapetype = channel_shapetype
 
-        self.b = b
-        self.m = m
-        self.roughness = roughness
-        self.q365 = q365
-        self.V_in_from_field = 0.0
-        self.V_in_from_field_cum = 0.0
-        self.V_in_from_reach = 0.0
-        self.V_out_cum = 0.0   # L^3
-        self.vol_rest = 0.0
-        self.h = 0.0  # jj mozna pocatecni podminka? ikdyz to je asi q365 co...
-        self.h_max = 0.0
-        self.timeh_max = 0.0
-        self.V_out = 0.0
-        self.vs = 0.0
-        self.Q_out = 0.0
-        self.Q_max = 0.0
-        self.timeQ_max = 0.0
-        self.V_out_domain = 0.0
+        self.b = channel_bottom_width
+        self.m = channel_bank_steepness
+        self.roughness = channel_bed_roughness
+        self.q365 = channel_q365
+        self.V_in_from_field = 0
+        self.V_in_from_field_cum = 0
+        self.V_in_from_reach = 0
+        self.V_out_cum = 0  # L^3
+        self.vol_rest = 0
+        self.h = 0  # jj mozna pocatecni podminka? ikdyz to je asi q365 co...
+        self.h_max = 0
+        self.timeh_max = 0
+        self.V_out = 0
+        self.vs = 0
+        self.Q_out = 0
+        self.Q_max = 0
+        self.timeQ_max = 0
+        self.V_out_domain = 0
 
+        if channel_shapetype == 0:  # rectangle
+            
+            if (self.m != 0):
+                Logger.warning('For rectangle shaped reach, m should be zero. m is forced to be zero.')
+                self.m = 0
+            if ((self.b == 0) or (self.b is None)):
+                raise ProviderError('Rectangle shaped reach with id {} needs to have bottom width'.format(self.segment_id))
 
-        if shape == 0:  # obdelnik
-            self.outflow_method = stream_f.rectangle
-        elif shape == 1:  # trapezoid
-            self.outflow_method = stream_f.trapezoid
-        elif shape == 2:  # triangle
-            self.outflow_method = stream_f.triangle
-        elif shape == 3:  # parabola
+            self.outflow_method = stream_f.genshape
+
+        elif channel_shapetype == 1:  # trapezoid
+
+            if ((self.b == 0) or (self.b is None)):
+                raise ProviderError('Trapezoid shaped reach with id {} needs to have bottom width'.format(self.segment_id))
+            if ((self.m == 0) or (self.m is None)):
+                raise ProviderError('Trapezoid shaped reach with id {} needs to have side slop width'.format(self.segment_id))
+
+            self.outflow_method = stream_f.genshape
+
+        elif channel_shapetype == 2:  # triangle
+
+            if (self.b != 0):
+                Logger.warning('For triangle shaped reach, b should be zero. b is forced to be zero.')
+                self.b = 0
+            if ((self.m == 0) or (self.m is None)):
+                raise ProviderError('Triangle shaped reach with id {} needs to have side slop width'.format(self.segment_id))
+
+            self.outflow_method = stream_f.genshape
+
+        elif channel_shapetype == 3:  # parabola
+            Logger.warning('Parabola shaped stream reach calculation is under'
+            'development and may not produce reliable numbers')
             self.outflow_method = stream_f.parabola
+            # TODO - ve stream_f-py - mame u paraboly napsano, ze nefunguje
         else:
-            self.outflow_method = stream_f.rectangle
+            self.outflow_method = stream_f.genshape
 
 
 # Documentation for a class.
@@ -65,90 +95,99 @@ class Stream(object):
         Logger.info('Stream: ON')
         self.streams = Gl.streams
 
-        self.nReaches = len(self.streams[0])
+        self.nReaches = len(self.streams['stream_segment_id'])
 
         self.cell_stream = Gl.cell_stream
 
-        self.reach = []
+        self.reach = {}
 
         for i in range(self.nReaches):
-            self.reach.append(
-                Reach(self.streams[0][i],
-                      self.streams[1][i],
-                      self.streams[2][i],
-                      self.streams[3][i],
-                      self.streams[4][i],
-                      self.streams[5][i],
-                      self.streams[6][i],
-                      self.streams[7][i],
-                      self.streams[8][i],
-                      self.streams[9][i],
-                      self.streams[10][i],
-                      self.streams[11][i],
-                      self.streams[12][i],
-                      self.streams[13][i],
-                      self.streams[14][i]))
-        
-        
-        self.streams_loc = Gl.streams_loc
+            args = {k: v[i] for k, v in self.streams.items()}
+            self.reach[self.streams['stream_segment_id'][i]] = Reach(**args)
+
         self.mat_stream_reach = Gl.mat_stream_reach
 
-        for i in self.rr:
-            for j in self.rc[i]:
-                self.arr[i][j].state += self.mat_stream_reach[i][j]
+        self.arr.state = ma.where(
+            self.mat_stream_reach > Gl.streams_flow_inc,
+            self.mat_stream_reach,
+            0
+        )
 
         self.STREAM_RATIO = Gl.STREAM_RATIO
 
     def reset_inflows(self):
-        for id_ in range(self.nReaches):
-            self.reach[id_].V_in_from_field = 0
+        for r in self.reach.values():
+            r.V_in_from_field = 0
 
     # Documentation for a reach inflows.
-    #  @param id_ starts in 0 not 1000
-    def reach_inflows(self, id_, inflows):
-        self.reach[id_].V_in_from_field += inflows
+    #  @param fid feature id
+    def reach_inflows(self, fid, inflows, indices):
+        try:
+            # TODO: Would be nice to avoid the loop
+            for fid_cur in self.reach.keys():
+                self.reach[fid_cur].V_in_from_field += ma.sum(
+                    ma.where(
+                        ma.logical_and(indices, fid == fid_cur), inflows, 0
+                    )
+                )
+        except KeyError:
+            raise ProviderError(
+                "Unable to reach inflow. Feature id {} not found in {}".format(
+                    fid,
+                    ','.join(list(map(lambda x: str(x), self.reach.keys())))
+                )
+            )
 
     def stream_reach_outflow(self, dt):
-        for id_ in range(self.nReaches):
-            self.reach[id_].outflow_method(self.reach[id_], dt)
+        for r in self.reach.values():
+            r.outflow_method(r, dt)
 
     def stream_reach_inflow(self):
-        for id_ in range(self.nReaches):
-            self.reach[id_].V_in_from_reach = 0
-            self.reach[id_].V_out_domain = 0
+        for r in self.reach.values():
+            r.V_in_from_reach = 0
+            r.V_out_domain = 0
 
-        for id_ in range(self.nReaches):
-            id_to_node = int(self.reach[id_].to_node)
-            if id_to_node == -9999:
-                self.reach[id_].V_out_domain += self.reach[id_].V_out
+        for r in self.reach.values():
+            fid_to_node = int(r.next_down_id)
+            if fid_to_node == Gl.streamsNextDownIdNoSegment:
+                r.V_out_domain += r.V_out
             else:
-                self.reach[id_to_node].V_in_from_reach += self.reach[id_].V_out
+                self.reach[fid_to_node].V_in_from_reach += r.V_out
 
     # jj jeste dodelat ty maxima a kumulativni zbyle
     def stream_cumulative(self, time):
-        for id_ in range(self.nReaches):
-            self.reach[id_].V_out_cum += self.reach[id_].V_out
-            self.reach[
-                id_].V_in_from_field_cum += self.reach[
-                    id_].V_in_from_field
-            if self.reach[id_].Q_out > self.reach[id_].Q_max:
-                self.reach[id_].Q_max = self.reach[id_].Q_out
-                self.reach[id_].timeQ_max = time
-            if self.reach[id_].h > self.reach[id_].h_max:
-                self.reach[id_].h_max = self.reach[id_].h
-                self.reach[id_].timeh_max = time
+        for r in self.reach.values():
+            r.V_out_cum += r.V_out
+            r.V_in_from_field_cum += r.V_in_from_field
 
-    def return_stream_str_vals(self, i, j, sep, dt, extraOut):
-        id_ = int(self.arr[i][j].state - 1000)
+            r.timeQ_max = ma.where(
+                r.Q_out > r.Q_max,
+                time,
+                r.timeQ_max
+            )
+            r.Q_max = ma.maximum(r.Q_out, r.Q_max)
+            r.timeh_max = ma.where(
+                r.h > r.h_max,
+                time,
+                r.timeh_max
+            )
+            r.h_max = ma.maximum(r.h, r.h_max)
+
+    def return_stream_str_vals(self, i, j, sep, extraOut):
+        fid = int(self.arr.state[i, j] - Gl.streams_flow_inc)
         # Time;   V_runoff  ;   Q   ;    V_from_field  ;  V_rests_in_stream
-        # print id_, self.reach[id_].Q_out, str(self.reach[id_].V_out)
-        if not(extraOut):
-            line = str(self.reach[id_].h) + sep + str(
-                self.reach[id_].Q_out) + sep + str(self.reach[id_].V_out)
+        r = self.reach[fid]
+        if not extraOut:
+            line = '{h:.4e}{sep}{q:.4e}{sep}{cumvol:.4e}'.format(
+                h=r.h, q=r.Q_out, cumvol=r.V_out_cum, sep=sep
+            )
         else:
-            line = str(self.reach[id_].h) + sep + str(self.reach[id_].V_out) + sep + str(self.reach[id_].Q_out) + sep + \
-                str(self.reach[id_].V_in_from_field) + sep + str(
-                self.reach[id_].vol_rest)
+            line = '{h:.4e}{sep}{v:.4e}{sep}{q:.4e}{sep}{vi:.4e}{sep}' \
+                   '{vo:.4e}'.format(
+                h=r.h, v=r.V_out, q=r.Q_out,
+                vi=r.V_in_from_field, vo=r.vol_rest, sep=sep
+            )
+
         return line
 
 
@@ -162,7 +201,7 @@ class StreamPass(object):
     def reset_inflows(self):
         pass
 
-    def reach_inflows(self, id_, inflows):
+    def reach_inflows(self, fid, inflows, indices):
         pass
 
     def stream_reach_inflow(self):

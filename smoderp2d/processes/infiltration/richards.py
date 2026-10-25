@@ -1,9 +1,9 @@
-try:
-    from smoderp2d.processes.infiltration import BaseInfiltration
-except ImportError:
-    print 'test version of richards infiltration'
-    instance = True
+# option for stand alone testing of the class
+if __name__ == "__main__":
+    print('test version of richards infiltration')
     BaseInfiltration = object
+else:
+    from smoderp2d.processes.infiltration import BaseInfiltration
 
 import numpy as np
 
@@ -114,7 +114,7 @@ class RichardsInfiltration(BaseInfiltration):
             iter_ += 1
         sp.dir_pre = sp.dir_new.copy()
         for i, item in enumerate(sp.dir_new):
-            print i, item
+            print(i, item)
 
     def _no_converged(self, err):
         """ Convergence criterion"""
@@ -190,7 +190,7 @@ class RichardsInfiltration(BaseInfiltration):
 
         return C
 
-    def precalc(self, dt, total_time):
+    def precalc(self, dt, total_time, cprec=None):
         """ Precalculates potential infiltration got a given soil.
         The precalculated value is storred in the self._combinat_index
         """
@@ -199,10 +199,12 @@ class RichardsInfiltration(BaseInfiltration):
             iii[3] = self._solve_step(self._soil[index], dt)
 
     def current_infiltration(self, soil, bil):
-        raise NotImplemented("Not implemented for Richards infiltration")
+        raise NotImplementedError(
+            "Not implemented for Richards infiltration")
 
 
-if instance:
+# option for stand alone testing of the class
+if __name__ == "__main__":
     t = RichardsInfiltration([[0, 2.777e-1, 2, 0]])
     # calc timestep 1 sec
     t.precalc(1, 5.0)

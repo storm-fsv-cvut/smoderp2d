@@ -1,108 +1,70 @@
 import os
-import sys
 import argparse
-import logging
 import numpy as np
-if sys.version_info.major >= 3:
-    from configparser import ConfigParser, NoSectionError
-else:
-    from ConfigParser import ConfigParser, NoSectionError
 
-from smoderp2d.core.general import Globals
-from smoderp2d.providers.base import BaseProvider, Logger, CompType, BaseWritter
+from smoderp2d.core.general import GridGlobals
+from smoderp2d.providers.base import BaseProvider, BaseWriter, WorkflowMode
 from smoderp2d.exceptions import ConfigError
 
-class CmdWritter(BaseWritter):
+
+class CmdWriter(BaseWriter):
     def __init__(self):
-        super(CmdWritter, self).__init__()
+        super(CmdWriter, self).__init__()
 
-    def write_raster(self, array, output_name, directory='core'):
-        """Write raster (numpy array) to ASCII file.
-
-        :param array: numpy array
-        :param output_name: output filename
-        :param directory: directory where to write output file
+    def _write_raster(self, array, file_output):
+        """See base method for description.
         """
-        file_output = self._raster_output_path(output_name, directory)
+        header = f'ncols\t{GridGlobals.c}\nnrows\t{GridGlobals.r}\n' \
+                 f'xllcorner\t{GridGlobals.xllcorner}\n' \
+                 f'yllcorner\t{GridGlobals.yllcorner}\n' \
+                 f'cellsize\t{np.sqrt(GridGlobals.pixel_area)}\n' \
+                 f'NODATA_value\t{GridGlobals.NoDataValue}'
 
-        np.savetxt(file_output, array, fmt='%.3e')
-
-        self._print_array_stats(
-            array, file_output
+        np.savetxt(
+            file_output + self._raster_extension, array, fmt='%.6e',
+            header=header, comments=''
         )
 
-class CmdProvider(BaseProvider):
-    def __init__(self):
-        """Create argument parser."""
-        super(CmdProvider, self).__init__()
-        
-        # define CLI parser
-        parser = argparse.ArgumentParser(description='Run Smoderp2D.')
 
-        # type of computation
+class CmdArgumentParser(object):
+    def __init__(self, config_file):
+        self.config_file = config_file
+
+    def set_config(self, description, workflow_mode):
+        if self.config_file:
+            return self.config_file, WorkflowMode()['roff']
+
+        # define CLI parser
+        parser = argparse.ArgumentParser(description)
+
+        # config file required
         parser.add_argument(
-            '--typecomp',
-            help='type of computation',
+            '--config',
+            help='file with configuration',
             type=str,
-            choices=['full',
-                     'dpre',
-                     'roff'],
             required=True
         )
 
-        # data file (only required for runoff)
-        parser.add_argument(
-            '--indata',
-            help='file with prepared data',
-            type=str
-        )
-        self.args = parser.parse_args()
-        self.args.typecomp = CompType()[self.args.typecomp]
+        args = parser.parse_args()
+
+        return args.config, WorkflowMode()[workflow_mode]
+
+
+class CmdProvider(BaseProvider):
+    def __init__(self, config_file=None):
+        super(CmdProvider, self).__init__()
 
         # load configuration
-        self._config = ConfigParser()
-        if self.args.typecomp == CompType.roff:
-            if not self.args.indata:
-                parser.error('--indata required')
-            if not os.path.exists(self.args.indata):
-                raise ConfigError("{} does not exist".format(
-                    self.args.indata
-                ))
-            self._config.read(self.args.indata)
-
+        if config_file is None and os.getenv("SMODERP2D_CONFIG_FILE"):
+            config_file = os.getenv("SMODERP2D_CONFIG_FILE")
+        cloader = CmdArgumentParser(config_file)
+        self.args.config_file, self.args.workflow_mode = cloader.set_config(
+            "Run SMODERP2D.", workflow_mode='roff')
+        self._config = self._load_config()
         try:
-            # set logging level
-            Logger.setLevel(self._config.get('Other', 'logging'))
-            # sys.stderr logging
-            self._add_logging_handler(
-                logging.StreamHandler(stream=sys.stderr)
-            )
+            self.args.data_file = self._config.get('data', 'pickle')
+        except KeyError:
+            raise ConfigError("No pickle defined")
 
-            # must be defined for _cleanup() method
-            Globals.outdir = self._config.get('Other', 'outdir')
-        except NoSectionError as e:
-            raise ConfigError('Config file {}: {}'.format(
-                self.args.indata, e
-            ))
-
-        # define storage writter
-        self.storage = CmdWritter()
-
-    def load(self):
-        """Load configuration data.
-
-        Only roff procedure supported.
-        """
-        if self.args.typecomp == CompType.roff:
-            # cleanup output directory first
-            self._cleanup()
-
-            data = self._load_roff(
-                self._config.get('Other', 'indata')
-            )
-
-            self._set_globals(data)
-        else:
-            raise ProviderError('Unsupported partial computing: {}'.format(
-                self.args.typecomp
-            ))
+        # define storage writer
+        self.storage = CmdWriter()

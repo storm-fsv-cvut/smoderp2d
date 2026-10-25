@@ -1,7 +1,40 @@
 *.pyc
 *~
-tests/grassdata/smoderp2d-location/test/
-tests/grassdata/smoderp2d-location/PERMANENT/cell_misc/w001001/reclassed_to
-tests/grassdata/smoderp2d-location/stream_prep/
-tests/grassdata/smoderp2d-location/test
-tests/grassdata/smoderp2d-location/water
+*.swp
+
+tests/data/log
+tests/data/output*
+tests/data/reference/gistest_*/*/dpre.extracted/
+tests/data/reference/gistest_*/*/*/dpre.extracted/
+tests/data/reference/gistest_*/dpre/control/
+tests/data/reference/gistest_*/dpre/temp/
+tests/data/reference/gistest_*/full/temp/
+tests/data/reference/gistest_*/full/*.aux.xml
+tests/data/reference/gistest_*/full/*.prj
+tests/data/reference/gistest_*/*/control/*.aux.xml
+tests/data/reference/gistest_*/*/temp/*.aux.xml
+tests/data/reference/gistest_*/*/control/*.prj
+tests/data/reference/gistest_*/*/temp/*.prj
+tests/log
+utils/bench
+
+tests/grassdata/
+
+bin/qgis/smoderp2d-plugin/smoderp2d/
+bin/qgis/smoderp2d-plugin/zip_build/
+
+# build files
+build
+smoderp2d.egg-info
+*.whl
+
+# jetbrains
+.idea/
+
+# direnv
+.envrc
+.direnv
+
+#rfiles
+.Rhistory
+.RData

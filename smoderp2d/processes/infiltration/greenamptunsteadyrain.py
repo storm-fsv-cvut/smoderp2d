@@ -5,7 +5,7 @@ from scipy.optimize import newton
 
 # option for stand alone testing of the class
 if __name__ == "__main__":
-    print '\n\n\n\ntest version of green-ampt infiltration\n\n\n\n'
+    print('\n\n\n\ntest version of green-ampt infiltration\n\n\n\n')
     stand_alone = True
     BaseInfiltration = object
 else:
@@ -140,8 +140,8 @@ class SingleSoilGAIUR(object):
         self._t_n_1 = self._t_n
 
     def _prt_vals(self):
-        print '{:8.4f}  {:8.4f}  {:8.4f}  {:8.4f}'.format(
-            self._t_n, self._p_n, self._f_n, self._r_n)
+        print('{:8.4f}  {:8.4f}  {:8.4f}  {:8.4f}'.format(
+            self._t_n, self._p_n, self._f_n, self._r_n))
 
     def ga_unsteadyrain(self, cprec, t, dt):
         """ calculates next cumulative infiltration for a single soil type

@@ -1,0 +1,85 @@
+name: CMD provider
+
+on:
+  push:
+    branches:
+      - master
+      - release_*
+  pull_request:
+
+jobs:
+  smoderp2d-quicktest-sheet:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_sheet.ini
+
+  smoderp2d-quicktest-rill:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_rill.ini
+
+  smoderp2d-quicktest-rill-diffusion:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_rill_diffusion.ini
+
+  smoderp2d-quicktest-sheet-stream:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_sheet_stream.ini
+
+  smoderp2d-quicktest-rill-mfda:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_rill_mfda.ini
+
+  smoderp2d-quicktest-stream-rill:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/quicktest_stream_rill.ini
+
+  # smoderp2d-quicktest-implicit-stream-rill:
+  #   uses: ./.github/workflows/cmd_template.yml
+  #   with:
+  #     pytest-suite: tests/test_cmd.py --config config_files/quicktest_stream_rill.ini --hidden_config config_files/.config_implicit.ini --reference_dir data/reference/quicktest_implicit_stream_rill/
+
+  smoderp2d-longtest-sheet:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/test_sheet.ini
+
+  smoderp2d-longtest-rill:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/test_rill.ini
+
+  smoderp2d-longtest-sheet-stream:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/test_sheet_stream.ini
+
+  smoderp2d-longtest-stream-rill-mfda:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill_mfda.ini
+
+  # smoderp2d-longtest-implicit-stream-rill-mfda:
+  #   uses: ./.github/workflows/cmd_template.yml
+  #   with:
+  #     pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill_mfda.ini --hidden_config config_files/.config_implicit.ini --reference_dir data/reference/test_implicit_stream_rill_mfda/
+
+  smoderp2d-longtest-stream-rill-mfda-diffusion:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill_mfda_diffusion.ini
+
+  smoderp2d-longtest-stream-rill:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill.ini
+
+  profile1d:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_profile1d.py
+ 

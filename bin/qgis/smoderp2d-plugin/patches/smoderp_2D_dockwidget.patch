@@ -1,0 +1,25 @@
+diff --git a/bin/qgis/smoderp2d-plugin/smoderp_2D_dockwidget.py b/bin/qgis/smoderp2d-plugin/smoderp_2D_dockwidget.py
+index 4cef0a8f..be86b6eb 100644
+--- a/bin/qgis/smoderp2d-plugin/smoderp_2D_dockwidget.py
++++ b/bin/qgis/smoderp2d-plugin/smoderp_2D_dockwidget.py
+@@ -27,6 +27,7 @@ import sys
+ import glob
+ import datetime
+ import tempfile
++import sys
+ from pathlib import Path
+ 
+ from PyQt5 import QtWidgets
+@@ -43,10 +44,11 @@ from qgis.core import (
+ from qgis.utils import iface
+ from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
+ 
++sys.path.insert(0, os.path.dirname(__file__))
+ from smoderp2d.runners.qgis import QGISRunner
+ from smoderp2d.providers import Logger
+ from smoderp2d.exceptions import ProviderError, ComputationAborted, MaxIterationExceeded
+-from bin.base import arguments, sections
++from base import arguments, sections
+ 
+ from .custom_widgets import HistoryWidget
+ 

@@ -1,55 +1,72 @@
 import numpy as np
-import math
-from smoderp2d.exceptions import NegativeWaterLevel
+import numpy.ma as ma
 from smoderp2d.core.general import Globals, GridGlobals
+# from smoderp2d.exceptions import NegativeWaterLevel
 
-
-# combinatIndex muze byt tady jako globalni
-# primenna, main loop bude pro infiltraci volat
-# stejnou funkci, ale az taky bude jina globalni
-# promenna nastavena. mene ifu v main loop
-combinatIndex = []
-
-
-def set_combinatIndex(newCombinatIndex):
-    global combinatIndex
-    combinatIndex = newCombinatIndex
+# set error level of numpy float underflow only to warning instead of errors
+np.seterr(under='warn')
 
 
 # base infiltration is philips infiltration
 class SingleSoilBI(object):
-    """ infiltration for single soil class """
+    """Philip infiltration for a single soil type."""
 
     def __init__(self, ks, s):
+        """Store the soil type parameters.
 
+        :param ks: saturated hydraulic conductivity
+        :param s: sorptivity
+        """
         # saturated hydraulic conductivity
         self._ks = ks
-        # sorbtion
+        # sorptivity
         self._s = s
-        # only flobal variable
+        # only global variable
         # stores the infiltration height
         # for a given time step
         self.infiltration = 0
 
     def philip(self, deltaT, totalT):
-        """ pilips formula """
+        """Philip's formula.
 
+        The potential infiltration in the time step is computed as
+        a difference of the cumulative infiltration at the end and at the
+        beginning of the time step.
+
+        :param deltaT: time step
+        :param totalT: time since the beginning of the infiltration
+        """
         NoDataValue = GridGlobals.get_no_data()
+        k = self._ks
+        s = self._s
 
-        if self._ks and self._s == NoDataValue:
+        if k and s == NoDataValue:
             self.infiltration = NoDataValue
         else:
-            self.infiltration = (
-                0.5 * self._s / math.sqrt(totalT + deltaT) + self._ks) * deltaT
+            infiltration1 = ma.where(
+                totalT == 0,
+                s * 0.0000001 ** 0.5 + k * 0.0000001,
+                s * totalT ** 0.5 + k * totalT
+            )
+            infiltration2 = s * (totalT + deltaT)**0.5 + k * (totalT + deltaT)
+
+            self.infiltration = infiltration2 - infiltration1
 
 
 class BaseInfiltration(object):
+    """Base infiltration (Philip infiltration).
+
+    Other infiltration types inherit from this class and define their own
+    precalculation of the potential infiltration for each soil type.
+    """
 
     def __init__(self, soils_data):
-        """ make instances of SingleSoilBI for each soil type 
-        :param soils_data: combinat_index in the smoderp2d code
-        """
+        """Make instances of SingleSoilBI for each soil type.
 
+        :param soils_data: combinatIndex in the smoderp2d code, i.e. list of
+            [soil type id, ks, s, infiltration]; the soil type id is equal to
+            the index in the list
+        """
         self._n = len(soils_data)
         self._soil = []
         for i in range(self._n):
@@ -57,26 +74,55 @@ class BaseInfiltration(object):
                 ks=soils_data[i][1], s=soils_data[i][2]))
 
     def precalc(self, dt, total_time, cprec):
-        """ Precalculates potential infiltration got a given soil.
-        The precalculated value is storred in the self._combinat_index
-        """
+        """Precalculate potential infiltration for each soil type.
 
+        The precalculated value is stored in the infiltration attribute of
+        the single soil instances.
+
+        :param dt: time step
+        :param total_time: time since the beginning of the infiltration
+        :param cprec: current precipitation height (not used in Philip)
+        """
         for i in range(self._n):
             self._soil[i].philip(dt, total_time)
 
-    def current_infiltration(self, soil_id, bil):
-        """ Returns the actual infiltrated water height 
-        :param soil_id: soil type in current cell
-        :param bil: current water level
-        """
+    def current_infiltration(self, soil_type, bil):
+        """Return the actual infiltrated water height.
 
-        infiltration = self._soil[soil_id].infiltration
-        if bil < 0:
-            raise NegativeWaterLevel()
-        if infiltration > bil:
-            infiltration = bil
-            bil = 0
-        else:
-            bil = bil - infiltration
+        The potential infiltration of each soil type is limited by the
+        current water level.
+
+        :param soil_type: array of soil types in the cells
+        :param bil: array of current water levels
+        :return: tuple of water level reduced by the infiltration (in the
+            implicit computation the water level is returned unchanged) and
+            the infiltration
+        """
+        infiltration = self._soil[0].infiltration
+        for soil_id in range(self._n):
+            soil_infiltration = self._soil[soil_id].infiltration
+            # if ma.all(bil < 0):
+            #     raise NegativeWaterLevel()
+
+            infilt_bil_cond = soil_infiltration > bil
+
+            if Globals.computationType == 'explicit':
+                infiltration = ma.where(
+                    soil_type == soil_id,
+                    ma.where(infilt_bil_cond, bil, soil_infiltration),
+                    infiltration
+                )
+
+                bil = ma.where(
+                    soil_type == soil_id,
+                    ma.where(infilt_bil_cond, 0, bil - soil_infiltration),
+                    bil
+                )
+            else:
+                infiltration = ma.where(
+                    soil_type == soil_id,
+                    ma.where(infilt_bil_cond, bil, soil_infiltration),
+                    infiltration
+                )
 
         return bil, infiltration
