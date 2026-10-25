@@ -41,7 +41,6 @@ def new_mfda(mat_dem, mat_nan, mat_fd):
         np.zeros([rows, cols], float), mask=GridGlobals.masks
     )
 
-
     Logger.info("Computing multiple flow direction algorithm...")
 
     # function determines if cell neighborhood has multiple cell with exactly
@@ -335,4 +334,3 @@ def new_mfda(mat_dem, mat_nan, mat_fd):
     return val_array, fd_rill
 
 # final rasters creation
-

@@ -63,4 +63,3 @@ class TimesPrt(object):
                 self.__n += 1
                 if self.__n == len(self.times):
                     return
-

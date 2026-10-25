@@ -1,10 +1,8 @@
 import numpy as np
 import math
 
-
 from smoderp2d.providers import Logger
 from smoderp2d.core.general import GridGlobals
-
 
 FB = math.pi / 4  # facet boundary
 PI_HALF = math.pi / 2

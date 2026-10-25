@@ -1,13 +1,11 @@
 # @package smoderp2d.post_proc Contain a function for the post-processing
 
-
 import numpy as np
 import os
 import shutil
 
 from smoderp2d.core.general import Globals
 from smoderp2d.core.general import GridGlobals
-
 
 
 def raster_output_arcgis(arrin, G, fs, outname, reachNA=True):
@@ -55,7 +53,6 @@ if Gl.arcgis:
 else:
 """
 raster_output = raster_output_ascii
-
 
 
 def do(cumulative, mat_slope, G, surArr):
@@ -420,4 +417,3 @@ def pass_stream_table(outDir, surface, streams):
 
 
 stream_table = pass_stream_table
-
