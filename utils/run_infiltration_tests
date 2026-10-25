@@ -1,6 +1,0 @@
-# run from smoderp2d root directory
-# for larger test use paralle: cat /utils/run_infiltration_tests | parallel
-# for parallel see https://www.gnu.org/software/parallel/
-# note: both runs write into their own output directory
-./bin/start-smoderp2d.py --config tests/green-ampt.ini
-./bin/start-smoderp2d.py --config tests/config_files/test_stream_rill.ini
