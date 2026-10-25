@@ -8,10 +8,13 @@ import math
 class SingleSoilGA(object):
     """ Green ampt infiltration for single soil type """
 
-    def __init__(self, ks):
+    def __init__(self, ks, s):
         """ for each soil type sets the variables 
 
-        ks - saturated hydraulic conductivity
+        ks - saturated hydraulic conductivity [m/s]
+        s - sorptivity [m/s^0.5]; the soil water potential at the wetting
+            front times the theta difference (sm) [m] is derived from it as
+            sm = s^2 / (2 ks)
         """
 
         self._ks = ks
@@ -21,10 +24,8 @@ class SingleSoilGA(object):
         self._z_plough_pan = 1000
         self._plough_pan_reached = False
 
-        # TODO include into inputs should be different for different soils
-        self._psi = 1e-2  # soil water potential at the wetting front
-        # TODO include into inputs should be different for different soils
-        self._d_theta = 1  # theta difference
+        # soil water potential at the wetting front times theta difference
+        self._sm = s * s / (2. * ks) if ks > 0 else 0.0
 
         # only flobal variable
         # stores the infiltration height
@@ -38,7 +39,7 @@ class SingleSoilGA(object):
         for experimenal purpoces is the plough pan ks one tenth
         of the top soil ks
 
-        # TODO the psi and d_theta needs to be changed in the ploughpan as well
+        # TODO the sm needs to be changed in the ploughpan as well
         """
 
         self._ks = math.sqrt(self._ks*self._ks/10.0)
@@ -51,7 +52,7 @@ class SingleSoilGA(object):
         :param F: cumulative infiltration
         :param t: t
         """
-        return F - self._ks*t - self._psi * self._d_theta * math.log(1 + F/(self._psi * self._d_theta))
+        return F - self._ks*t - self._sm * math.log(1 + F/self._sm)
 
     def _cumulative_F(self, t):
         """ Computes cumulative infiltration with Newton's method
@@ -76,20 +77,22 @@ class SingleSoilGA(object):
             # impermeable soil (also avoids division by zero cumulative
             # infiltration)
             self.infiltration = 0.0
+        elif self._ks == NoDataValue:
+            self.infiltration = NoDataValue
+        elif self._sm == 0:
+            # zero sorptivity (s = 0), Green-Ampt reduces to a constant
+            # infiltration capacity ks
+            self.infiltration = self._ks * dt
         elif (t == 0.0):
             self.infiltration = 1.e108
         else:
-            if self._ks == NoDataValue:
-                self.infiltration = NoDataValue
-            else:
-                F_t = self._cumulative_F(t)
-                self.infiltration = self._ks * \
-                    ((self._psi * self._d_theta)/F_t + 1.)*dt
+            F_t = self._cumulative_F(t)
+            self.infiltration = self._ks * (self._sm/F_t + 1.)*dt
 
-                # if ploughpan is reached the ks changed
-                if (F_t > self._z_plough_pan and not(self._plough_pan_reached)):
-                    self._plough_pan_reached = True
-                    self._reduce_ks()
+            # if ploughpan is reached the ks changed
+            if (F_t > self._z_plough_pan and not(self._plough_pan_reached)):
+                self._plough_pan_reached = True
+                self._reduce_ks()
 
 
 class GreenAmptInfiltration(BaseInfiltration):
@@ -104,7 +107,7 @@ class GreenAmptInfiltration(BaseInfiltration):
         self._soil = []
         for i in range(self._n):
             self._soil.append(SingleSoilGA(
-                ks=soils_data[i][1]))
+                ks=soils_data[i][1], s=soils_data[i][2]))
 
     def precalc(self, dt, total_time, cpred):
         """ Precalculates potential infiltration got a given soil.
