@@ -248,6 +248,13 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         # load hidden config
         data.update(self._load_data_from_hidden_config())
 
+        # infiltration type can be also set in the config
+        # 1 for Philip infiltration (default)
+        # 2 - 4 experimental
+        data['infiltration_type'] = self._config.getint(
+            'infiltration', 'type', fallback=data['infiltration_type']
+        )
+
         return data
 
     @staticmethod
