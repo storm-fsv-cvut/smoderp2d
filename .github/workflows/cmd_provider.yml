@@ -78,6 +78,16 @@ jobs:
     with:
       pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill.ini
 
+  smoderp2d-longtest-stream-rill-green-ampt:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill_green_ampt.ini
+
+  smoderp2d-longtest-stream-rill-green-ampt-unsteady-rain:
+    uses: ./.github/workflows/cmd_template.yml
+    with:
+      pytest-suite: tests/test_cmd.py --config config_files/test_stream_rill_green_ampt_unsteady_rain.ini
+
   profile1d:
     uses: ./.github/workflows/cmd_template.yml
     with:
