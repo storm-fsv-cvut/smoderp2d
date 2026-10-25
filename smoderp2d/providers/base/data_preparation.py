@@ -28,7 +28,8 @@ class PrepareDataBase(ABC):
         """
         mat_a = ma.where(
             ma.logical_or(
-                mat_nsheet == no_data, mat_y == no_data, mat_slope == no_data
+                ma.logical_or(mat_nsheet == no_data, mat_y == no_data),
+                mat_slope == no_data
             ),
             no_data,
             ma.where(
