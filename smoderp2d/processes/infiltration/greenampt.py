@@ -51,7 +51,7 @@ class SingleSoilGA(object):
         :param F: cumulative infiltration
         :param t: t
         """
-        return F - self._ks*t + self._psi * self._d_theta * math.log(1 + F/(self._psi * self._d_theta))
+        return F - self._ks*t - self._psi * self._d_theta * math.log(1 + F/(self._psi * self._d_theta))
 
     def _cumulative_F(self, t):
         """ Computes cumulative infiltration with Newton's method
@@ -72,7 +72,11 @@ class SingleSoilGA(object):
         :param dt: time step
         """
         NoDataValue = GridGlobals.get_no_data()
-        if (t == 0.0):
+        if self._ks == 0:
+            # impermeable soil (also avoids division by zero cumulative
+            # infiltration)
+            self.infiltration = 0.0
+        elif (t == 0.0):
             self.infiltration = 1.e108
         else:
             if self._ks == NoDataValue:

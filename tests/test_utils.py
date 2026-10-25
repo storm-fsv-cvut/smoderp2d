@@ -153,10 +153,7 @@ def are_dir_trees_equal(dir1, dir2):
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
         if new_output.shape == reference.shape:
-            equal = np.allclose(
-                new_output, reference, rtol=relative_tolerance,
-                equal_nan=True
-            )
+            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
             if equal is True:
                 same_files.append(file_path)
                 continue
@@ -169,10 +166,7 @@ def are_dir_trees_equal(dir1, dir2):
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
         if new_output.shape == reference.shape:
-            equal = np.allclose(
-                new_output, reference, rtol=relative_tolerance,
-                equal_nan=True
-            )
+            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
             if equal is True:
                 same_files.append(file_path)
                 continue
@@ -185,10 +179,7 @@ def are_dir_trees_equal(dir1, dir2):
         new_output = _read_data(i)
         reference = _read_data(os.path.join(dir2, file_path))
         if new_output.shape == reference.shape:
-            equal = np.allclose(
-                new_output, reference, rtol=relative_tolerance,
-                equal_nan=True
-            )
+            equal = np.allclose(new_output, reference, rtol=relative_tolerance)
             if equal is True:
                 same_files.append(file_path)
                 continue
