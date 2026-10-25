@@ -46,7 +46,6 @@ class SingleSoilGAIUR(object):
         self._t_n_1 = 0.0
 
         self._ponded = False
-        #self._beginning = True
 
         # only flobal variable
         # stores the infiltration height
@@ -186,7 +185,6 @@ class SingleSoilGAIUR(object):
                 self._f_n = self._p_n - self._r_n
             else:
                 self._ponded = True
-                #self._beginning = False
                 self._t_p = self._time_ponding(i)
                 pt_p = self._prec_at_ponding(i, self._t_p)
                 self._t_s = self._pseudo_time(i, pt_p)

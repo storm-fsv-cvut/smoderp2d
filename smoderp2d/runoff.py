@@ -30,7 +30,6 @@ from smoderp2d.io_functions import hydrographs as wf
 from smoderp2d.providers import Logger
 
 from smoderp2d.exceptions import MaxIterationExceeded
-from smoderp2d.exceptions import SmoderpError
 from smoderp2d.exceptions import IncorrectInfiltrationType
 
 import smoderp2d.processes.rainfall as rain_f
