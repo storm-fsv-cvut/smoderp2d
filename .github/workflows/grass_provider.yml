@@ -23,8 +23,10 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install Python dependencies
+        # numpy is provided by the container (Debian package, GRASS is built against it)
         run: |
-          pip3 install --break-system-packages -r .github/workflows/requirements.txt
+          grep -v '^numpy' .github/workflows/requirements.txt > /tmp/requirements.txt
+          pip3 install --break-system-packages -r /tmp/requirements.txt
 
       - name: Install smoderp2d
         run: |
@@ -46,8 +48,10 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install Python dependencies
+        # numpy is provided by the container (Debian package, GRASS is built against it)
         run: |
-          pip3 install --break-system-packages -r .github/workflows/requirements.txt
+          grep -v '^numpy' .github/workflows/requirements.txt > /tmp/requirements.txt
+          pip3 install --break-system-packages -r /tmp/requirements.txt
 
       - name: Install smoderp2d
         run: |
