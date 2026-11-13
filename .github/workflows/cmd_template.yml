@@ -32,7 +32,6 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install -r .github/workflows/requirements.txt
-          pip install -r .github/workflows/requirements${{ matrix.python-version }}.txt
 
       - name: Install smoderp2d
         run: |
