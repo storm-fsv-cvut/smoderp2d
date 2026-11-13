@@ -1,4 +1,4 @@
-FROM osgeo/grass-gis:releasebranch_8_3-debian
+FROM osgeo/grass-gis:releasebranch_8_5-debian
 
 # install requirements
 COPY . /src/smoderp2d

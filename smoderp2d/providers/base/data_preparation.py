@@ -130,16 +130,18 @@ class PrepareDataBase(ABC):
             no_data_value,
             0
         )
+        # keep input dtype: ma.where promotes float32 to float64 since
+        # NumPy 2 (NEP 50), which would change results compared to NumPy 1
         mat_slope = ma.where(
             condition,
             no_data_value,
             mat_slope
-        )
+        ).astype(mat_slope.dtype)
         mat_dem = ma.where(
             condition,
             no_data_value,
             mat_dem
-        )
+        ).astype(mat_dem.dtype)
 
         return mat_nan, mat_slope, mat_dem
 
