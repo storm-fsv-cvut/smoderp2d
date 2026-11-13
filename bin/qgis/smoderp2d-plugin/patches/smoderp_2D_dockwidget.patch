@@ -1,8 +1,8 @@
 diff --git a/bin/qgis/smoderp2d-plugin/smoderp_2D_dockwidget.py b/bin/qgis/smoderp2d-plugin/smoderp_2D_dockwidget.py
-index e751fcf3..92fed2c4 100644
+index 4cef0a8f..be86b6eb 100644
 --- a/bin/qgis/smoderp2d-plugin/smoderp_2D_dockwidget.py
 +++ b/bin/qgis/smoderp2d-plugin/smoderp_2D_dockwidget.py
-@@ -26,6 +26,7 @@ import os
+@@ -27,6 +27,7 @@ import sys
  import glob
  import datetime
  import tempfile
@@ -10,17 +10,16 @@ index e751fcf3..92fed2c4 100644
  from pathlib import Path
  
  from PyQt5 import QtWidgets
-@@ -41,11 +42,12 @@ from qgis.core import (
+@@ -43,10 +44,11 @@ from qgis.core import (
  from qgis.utils import iface
  from qgis.gui import QgsMapLayerComboBox, QgsFieldComboBox
  
 +sys.path.insert(0, os.path.dirname(__file__))
  from smoderp2d.runners.qgis import QGISRunner
- from smoderp2d.core.general import Globals, GridGlobals
  from smoderp2d.providers import Logger
- from smoderp2d.exceptions import ProviderError, ComputationAborted
+ from smoderp2d.exceptions import ProviderError, ComputationAborted, MaxIterationExceeded
 -from bin.base import arguments, sections
 +from base import arguments, sections
  
- from .connect_grass import find_grass_bin
  from .custom_widgets import HistoryWidget
+ 

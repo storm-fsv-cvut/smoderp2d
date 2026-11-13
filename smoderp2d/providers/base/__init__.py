@@ -187,24 +187,25 @@ class BaseProvider(object):
         :param handler: logging handler to be registered
         :param formatter: logging handler formatting
         """
-        if not formatter:
+        if formatter is None:
             formatter = logging.Formatter(
                 "%(asctime)s - %(name)s - %(levelname)s - %(message)s "
                 "- [%(module)s:%(lineno)s]"
             )
         handler.setFormatter(formatter)
-        if len(Logger.handlers) == 0:
-            # avoid duplicated handlers (e.g. in case of ArcGIS)
-            Logger.addHandler(handler)
+        Logger.addHandler(handler)
 
     def __load_hidden_config(self):
         """Load hidden configuration with advanced settings.
 
         return ConfigParser: object
         """
-        _path = os.path.join(
-            os.path.dirname(__file__), '..', '..', '.config.ini'
-        )
+        if os.getenv("SMODERP2D_HIDDEN_CONFIG_FILE") is None:
+            _path = os.path.join(
+                os.path.dirname(__file__), '..', '..', '.config.ini'
+            )
+        else:
+            _path = os.getenv("SMODERP2D_HIDDEN_CONFIG_FILE")
         if not os.path.exists(_path):
             raise ConfigError("{} does not exist".format(
                 _path
@@ -236,6 +237,9 @@ class BaseProvider(object):
         )
         data['extraout'] = self._hidden_config.getboolean(
             'output', 'extraout', fallback=False
+        )
+        data['computation_type'] = self._hidden_config.get(
+            'computation_type', 'computation_type', fallback='explicit'
         )
 
         return data
@@ -338,6 +342,13 @@ class BaseProvider(object):
         # cleanup output directory first
         self._cleanup()
 
+        # log file need to be created after cleanup
+        file_logger = os.path.join(Globals.outdir, "smoderp2d.log")
+        self.add_logging_handler(
+            logging.FileHandler(file_logger)
+        )
+        Logger.debug(f'File logger set to {file_logger}')
+
         data = None
         if self.args.workflow_mode in (WorkflowMode.dpre, WorkflowMode.full):
             try:
@@ -379,10 +390,9 @@ class BaseProvider(object):
 
         Globals.mat_reten = -1.0 * data['mat_reten'] / 1000  # converts mm to m
         comp_type = self._comp_type(data['type_of_computing'])
-        Globals.subflow = comp_type['subflow_rill']
+        Globals.subflow = comp_type['subflow']
         Globals.isRill = comp_type['rill']
         Globals.isStream = comp_type['stream']
-
         # load hidden config
         hidden_config = self._load_data_from_hidden_config()
         if 'prtTimes' in data:
@@ -393,6 +403,10 @@ class BaseProvider(object):
             Globals.extraOut = data['extraout']
         else:
             Globals.extraOut = hidden_config.get('extraout', False)
+        if 'computation_type' in data:
+            Globals.computationType = data['computation_type']
+        else:
+            Globals.computationType = hidden_config.get('computation_type', 'explicit')
 
         Globals.end_time *= 60  # convert min to sec
 
@@ -455,6 +469,7 @@ class BaseProvider(object):
         for item in ('sheet_only',
                      'rill',
                      'stream',
+                     'subflow',
                      'subflow_rill',
                      'stream_subflow_rill'):
             ret[item] = False
@@ -469,6 +484,8 @@ class BaseProvider(object):
         elif itc == CompType.stream_rill:
             ret['stream'] = True
             ret['rill'] = True
+        elif itc == CompType.subflow:
+            ret['subflow'] = True
         elif itc == CompType.subflow_rill:
             ret['subflow'] = True
             ret['rill'] = True

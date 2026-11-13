@@ -71,3 +71,45 @@ def __directionsInflow(mat_fd, i, j):
             inflows.append([inflow_directions[k][0], inflow_directions[k][1]])
 
     return inflows
+
+
+def __directions(inflow, direction):
+    """TODO.
+
+    :param inflow: TODO
+    :param direction: TODO
+    """
+    y = 0
+    co = [[1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1]]
+    cellin = []
+    for z in direction:
+        if inflow >= z:
+            cellin.append(co[y])
+            inflow = inflow - direction[y]
+            y += 1
+        else:
+            y += 1
+
+    return cellin
+
+def inflow_dir(mat_fd, i, j):
+    inflow_dirs = np.zeros(8, float)
+    inflows = __directionsInflow(mat_fd, i, j)
+    
+    num_inflows = len(inflows)
+
+    if num_inflows == 0:
+        return inflow_dirs
+    
+
+    inflow_directions = [[-1, 1], [-1, 0], [-1, -1], [0, -1],
+            [1, -1], [1, 0], [1, 1], [0, 1]]
+    for k in range(len(inflow_dirs)-1,0,-1):
+        if inflow_directions[k] == inflows[num_inflows-1]:
+            inflow_dirs[k] = 1
+            num_inflows -= 1
+            
+            
+        if num_inflows == 0:
+            break    
+    return inflow_dirs

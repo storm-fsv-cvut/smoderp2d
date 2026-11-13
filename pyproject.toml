@@ -1,5 +1,5 @@
-# Author(s): Petr Kavka, Karel Vrana
-# Copyright (C) TODO
+# Author(s): Petr Kavka and SMODERP2D Development Team
+# Copyright (C) SMODERP2D Development Team
 #
 # This file is part of smoderp2d.
 #
@@ -21,7 +21,7 @@ build-backend = "setuptools.build_meta"
 
 [metadata]
 name = 'smoderp2d'
-version = '2.0.0rc2'
+dynamic = ["version"]
 
 [tool.setuptools.packages.find]
 where = [""]
@@ -30,9 +30,12 @@ exclude = ["bin*", "utils*", "tests*"]
 [tool.setuptools.package-data]
 "*" = [".config.ini", "txtlogo.txt"]
 
+[tool.setuptools.dynamic]
+version = {attr = "smoderp2d.__version__"}
+
 [project]
 name = 'smoderp2d'
-version = '2.0.0rc2'
+dynamic = ["version"]
 description = 'Distributed event-based model for surface and subsurface runoff and erosion.'
 readme = 'README.md'
 authors = [

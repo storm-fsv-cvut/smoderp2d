@@ -187,6 +187,7 @@ def dirSlope(point_m, nbrs, dy, dx):
         nx = z1 * y2 - z2 * y1
         ny = z1 * x2 - x1 * z2
 
+        # get the direction to the right quadrant
         if nx == 0 and ny >= 0:
             d = 0
         elif nx == 0 and ny < 0:
@@ -196,7 +197,13 @@ def dirSlope(point_m, nbrs, dy, dx):
         elif nx < 0:
             d = THREE_PI_HALF - math.atan2(ny, nx)
 
-        s = math.sqrt(z1 * z1 / y1 / y1 / 2 + z2 / y2 * z2 / y2)
+        # slope magnitude computed relative to the main axis shared
+        if y1 != 0 and y2 != 0:
+            d1, d2 = y1, y2
+        else:
+            d1, d2 = x1, x2
+
+        s = math.sqrt(z1 * z1 / d1 / d1 / 2 + z2 / d2 * z2 / d2)
 
         return d, s
 

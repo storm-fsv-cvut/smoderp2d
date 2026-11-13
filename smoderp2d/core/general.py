@@ -205,7 +205,7 @@ class Globals:
     # raster contains critical water level
     mat_hcrit = None
     # raster contains parameter of power law for surface runoff
-    mat_aa = None
+    mat_a = None
     # raster contains parameter of power law for surface runoff
     mat_b = None
     # raster contains surface retention data
@@ -255,6 +255,8 @@ class Globals:
     streamsNextDownIdNoSegment = -1
     # slope width
     slope_width = None
+    # computation type
+    computationType = 'explicit'
 
     @classmethod
     def get_type_of_computing(cls):
@@ -312,9 +314,9 @@ class Globals:
         return cls.mat_hcrit
 
     @classmethod
-    def get_mat_aa(cls):
+    def get_mat_a(cls):
         """TODO."""
-        return cls.mat_aa
+        return cls.mat_a
 
     @classmethod
     def get_mat_b(cls):
@@ -446,7 +448,7 @@ class Globals:
         # raster contains critical water level
         cls.mat_hcrit = None
         # raster contains parameter of power law for surface runoff
-        cls.mat_aa = None
+        cls.mat_a = None
         # raster contains parameter of power law for surface runoff
         cls.mat_b = None
         # raster contains surface retention data
@@ -496,3 +498,5 @@ class Globals:
         cls.streamsNextDownIdNoSegment = -1
         # slope width
         cls.slope_width = None
+        # computation type
+        cls.computationType = 'explicit'

@@ -2,13 +2,11 @@
 import os
 from abc import abstractmethod
 
-from smoderp2d.core.general import Globals
+from smoderp2d.core.general import Globals, GridGlobals
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base import WorkflowMode
 from smoderp2d.providers.base.exceptions import DataPreparationInvalidInput
 from smoderp2d.exceptions import SmoderpError, ProviderError
-
-__version__ = "2.0.dev"
 
 
 class Runner(object):
@@ -97,9 +95,23 @@ class Runner(object):
 
         return 0
 
+    @property
+    def options(self):
+        """Get provider options."""
+        return self._provider._options
+
     def set_options(self, options):
         """Set options.
 
         :param options: options to be set by provider
         """
         self._provider.set_options(options)
+
+    def finish(self):
+        """Finish runner's operations."""
+        # reset handlers
+        Logger.handlers = []
+
+        # reset globals
+        Globals.reset()
+        GridGlobals.reset()

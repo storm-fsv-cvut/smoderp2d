@@ -1,5 +1,6 @@
 *.pyc
 *~
+*.swp
 
 tests/data/log
 tests/data/output*
@@ -15,6 +16,9 @@ tests/data/reference/gistest_*/*/temp/*.aux.xml
 tests/data/reference/gistest_*/*/control/*.prj
 tests/data/reference/gistest_*/*/temp/*.prj
 tests/log
+utils/bench
+
+tests/grassdata/
 
 bin/qgis/smoderp2d-plugin/smoderp2d/
 bin/qgis/smoderp2d-plugin/zip_build/
@@ -30,3 +34,7 @@ smoderp2d.egg-info
 # direnv
 .envrc
 .direnv
+
+#rfiles
+.Rhistory
+.RData

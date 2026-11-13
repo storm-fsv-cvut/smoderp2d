@@ -17,7 +17,13 @@ def class_manager(request, pytestconfig):
         reference_dir = os.path.join(
             os.path.dirname(__file__), pytestconfig.getoption("reference_dir")
         )
-    _setup(request, config, reference_dir)
+    hidden_config = pytestconfig.getoption("hidden_config")
+    if hidden_config is not None:
+        hidden_config = os.path.join(
+            os.path.dirname(__file__), pytestconfig.getoption("hidden_config")
+        )
+
+    _setup(request, config, reference_dir, hidden_config)
     yield
 
 
@@ -25,5 +31,5 @@ def class_manager(request, pytestconfig):
 class TestCmd:
     def test_001_roff(self):
         PerformTest(Runner, self.reference_dir).run_roff(
-            self.config_file
+            self.config_file, self.hidden_config
         )

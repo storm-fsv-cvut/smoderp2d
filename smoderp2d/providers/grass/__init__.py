@@ -107,15 +107,12 @@ class GrassGisProvider(BaseProvider):
             formatter=logging.Formatter("%(message)s")
         )
 
-        # check version
-        # TBD: change to pygrass API
-        if list(map(int, gs.version()['version'].split('.')[:-1])) < [8, 3]:
-            raise ProviderError("GRASS GIS version 8.3+ required")
-
         # force overwrite
         os.environ['GRASS_OVERWRITE'] = '1'
         # be quiet
         os.environ['GRASS_VERBOSE'] = '0'
+        # allow to run r.hydrodem also when compatibility test fails
+        os.environ['GRASS_COMPATIBILITY_TEST'] = '0'
 
         # define storage writer
         self.storage = GrassGisWriter()

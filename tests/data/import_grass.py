@@ -12,7 +12,7 @@ def do_import(path):
     for rast in Path(path).glob('*.tif'):
         Module('r.import', overwrite=True, input=str(rast), output=rast.stem, flags='o')
     for vect in Path(path).glob('*.shp'):
-        Module('v.import', overwrite=True, input=str(vect), output=vect.stem, snap=0.01)
+        Module('v.import', overwrite=True, input=str(vect), output=vect.stem, snap=0.001)
     for tabl in Path(path).glob('*.dbf'):
         if not tabl.with_suffix('.shp').exists():
             Module('db.in.ogr', overwrite=True, input=str(tabl), output=tabl.stem)
