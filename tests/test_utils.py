@@ -61,7 +61,8 @@ def write_array_diff(arr1, arr2, target_path):
     with open(target_path + ".diff", "w") as fd:
         np.savetxt(fd, diff)
 
-    write_array_diff_png(diff, target_path)
+    if diff.ndim == 2:
+        write_array_diff_png(diff, target_path)
 
 
 def are_dir_trees_equal(dir1, dir2):
@@ -284,9 +285,85 @@ class PerformTest:
     @staticmethod
     def _compare_arrays(new_output_dict, reference_dict, target_dir):
         for k, v in new_output_dict.items():
-            if not isinstance(v, np.ndarray):
+            if not isinstance(v, np.ndarray) or \
+                    not isinstance(reference_dict.get(k), np.ndarray):
                 continue
             write_array_diff(v, reference_dict[k], os.path.join(target_dir, k))
+
+    @staticmethod
+    def _values_equal(new, reference, name):
+        """Compare two values loaded from dpre.save.
+
+        :param new: new value
+        :param reference: reference value
+        :param name: variable name (used for reporting)
+        :return: True if values are equal within the tolerance
+        """
+        if new is None or reference is None:
+            return new is None and reference is None
+        try:
+            if isinstance(new[0], str):
+                return new == reference
+        except (TypeError, IndexError, KeyError):
+            pass
+        try:
+            return bool(
+                np.allclose(new, reference, rtol=relative_tolerance)
+            )
+        except (ValueError, TypeError) as e:
+            print(f"Unable to process {name}: {e}")
+            return False
+
+    @staticmethod
+    def _find_differences(new_output_dict, reference_dict):
+        """Find variables which differ from the reference.
+
+        :param new_output_dict: new dpre data
+        :param reference_dict: reference dpre data
+        :return: list of (key, subkey) tuples; subkey is None for
+                 top-level variables
+        """
+        differences = []
+        for k in sorted(set(new_output_dict) | set(reference_dict)):
+            if k not in new_output_dict or k not in reference_dict:
+                differences.append((k, None))
+                continue
+            v = new_output_dict[k]
+            ref = reference_dict[k]
+            if isinstance(v, dict) and isinstance(ref, dict):
+                for kk in sorted(set(v) | set(ref), key=str):
+                    if kk not in v or kk not in ref or \
+                            not PerformTest._values_equal(
+                                v[kk], ref[kk], f"{k}/{kk}"
+                            ):
+                        differences.append((k, kk))
+            elif k in ('rc', 'wave'):
+                # cannot create an array from inhomogeneous list
+                if v != ref:
+                    differences.append((k, None))
+            elif not PerformTest._values_equal(v, ref, k):
+                differences.append((k, None))
+
+        return differences
+
+    @staticmethod
+    def _select_differences(data_dict, differences):
+        """Select only differing variables from data.
+
+        :param data_dict: dpre data
+        :param differences: list of (key, subkey) tuples
+        :return: dictionary {name: value}, missing values are
+                 reported as '<missing>'
+        """
+        missing = '<missing>'
+        selected = {}
+        for k, kk in differences:
+            if kk is None:
+                selected[k] = data_dict.get(k, missing)
+            else:
+                selected[f"{k}.{kk}"] = data_dict.get(k, {}).get(kk, missing)
+
+        return selected
 
 
     def _run(self, comptype=None):
@@ -312,72 +389,44 @@ class PerformTest:
             "dpre.save",
         )
 
-        diff_list = []
         with open(dataprep_filepath, "rb") as new_output:
-            with open(reference_filepath, "rb") as reference:
-                new_output_dict = pickle.load(new_output, encoding="bytes")
-                reference_dict = pickle.load(reference, encoding="bytes")
-                for k, v in new_output_dict.items():
-                    if isinstance(v, dict):
-                        for kk, vv in v.items():
-                            if isinstance(vv[0], str):
-                                equal = vv == reference_dict[k][kk]
-                            else:
-                                try:
-                                    equal = np.allclose(
-                                        vv, reference_dict[k][kk],
-                                        rtol=relative_tolerance
-                                    )
-                                except ValueError as e:
-                                    print(f"Unable to process {k}/{kk}: {e}")
-                                    equal = False
-                            if equal is False:
-                                diff_list.append(unified_diff(self._data_to_str({k: new_output_dict[k]}),
-                                                              self._data_to_str({k: reference_dict[k]}),
-                                                              fromfile=f'output ({kk})', tofile=f'reference ({kk})'))
-                    elif v is None:
-                        if reference_dict[k] is not None:
-                            diff_list.append(unified_diff(self._data_to_str({k: new_output_dict[k]}),
-                                                          self._data_to_str({k: reference_dict[k]}),
-                                                          fromfile=f'output ({k})', tofile=f'reference ({k})'))
-                    else:
-                        if k not in ('rc', 'wave'):
-                            try:
-                                equal = np.allclose(
-                                    v, reference_dict[k], rtol=relative_tolerance
-                                )
-                            except ValueError as e:
-                                print(f"Unable to process {k}: {e}")
-                                equal = False
-                        else:
-                            # cannot create an array from inhomogeneous list
-                            equal = v == reference_dict[k]
-                        if equal is False:
-                            diff_list.append(unified_diff(self._data_to_str({k: new_output_dict[k]}),
-                                                          self._data_to_str({k: reference_dict[k]}),
-                                                          fromfile=f'output ({k})', tofile=f'reference ({k})'))
+            new_output_dict = pickle.load(new_output, encoding="bytes")
+        with open(reference_filepath, "rb") as reference:
+            reference_dict = pickle.load(reference, encoding="bytes")
+
+        differences = self._find_differences(new_output_dict, reference_dict)
+        new_selected = self._select_differences(new_output_dict, differences)
+        reference_selected = self._select_differences(
+            reference_dict, differences
+        )
 
         diff_fn = dataprep_filepath + ".diff"
-        if diff_list:
+        if differences:
             with open(diff_fn, "w") as diff_fd:
-                for dl in diff_list:
-                    diff_fd.writelines(dl)
+                for name in new_selected:
+                    diff_fd.writelines(unified_diff(
+                        self._data_to_str({name: new_selected[name]}),
+                        self._data_to_str({name: reference_selected[name]}),
+                        fromfile=f'output ({name})',
+                        tofile=f'reference ({name})'
+                    ))
                     diff_fd.write("\n")
 
             if not _is_on_github_action():
                 self._extract_pickle_data(
-                    new_output_dict, self._extract_target_dir(dataprep_filepath)
+                    new_selected, self._extract_target_dir(dataprep_filepath)
                 )
                 self._extract_pickle_data(
-                    reference_dict, self._extract_target_dir(reference_filepath)
+                    reference_selected,
+                    self._extract_target_dir(reference_filepath)
                 )
                 self._compare_arrays(
-                    new_output_dict,
-                    reference_dict,
+                    new_selected,
+                    reference_selected,
                     self._extract_target_dir(dataprep_filepath)
                 )
 
-        assert not diff_list, \
+        assert not differences, \
                 f"Inconsistency in {dataprep_filepath} compared to the reference data. " \
                 f"The diff can be seen above and is stored in {diff_fn}."
 
