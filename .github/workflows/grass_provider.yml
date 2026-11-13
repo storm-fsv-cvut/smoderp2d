@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
 
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     container:
       image: osgeo/grass-gis:releasebranch_8_5-debian
 
@@ -38,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
 
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     container:
       image: osgeo/grass-gis:releasebranch_8_5-debian
 
