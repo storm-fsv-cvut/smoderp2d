@@ -82,7 +82,7 @@ class LargeParameterValueError(ConfigError):
     """ Exception raised if a parameter reaches a wrong (too large) numeric value
     """
     def __init__(self, param, value, limit):
-        self.msg = "Parameter '{}' has a wrong value ({} > {}).".format(
+        self.msg = "{} parameter value is too large ({} > {}).".format(
                 param, value, limit
         )
         Logger.fatal(self.msg)
