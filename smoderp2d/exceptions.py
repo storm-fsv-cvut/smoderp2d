@@ -88,15 +88,6 @@ class LargeParameterValueError(ConfigError):
         Logger.fatal(self.msg)
 
 
-class WrongParameterValue(ConfigError):
-    """ Exception raised if a parameter reaches a wrong numeric value
-    """
-    def __init__(self, param, value):
-        self.msg = "Parameter '{}' has a wrong value ({}).".format(
-            param, value
-        )
-        Logger.fatal(self.msg)
-
 class ComputationAborted(SmoderpError):
     """Raised when the computation was aborted through an expected signal."""
 
