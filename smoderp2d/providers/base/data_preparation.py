@@ -11,7 +11,8 @@ from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError, \
     DataPreparationInvalidInput
-from smoderp2d.exceptions import RainDataError
+from smoderp2d.exceptions import RainDataError, SmallParameterValueError, \
+    LargeParameterValueError
 
 
 class PrepareDataBase(ABC):
@@ -176,40 +177,6 @@ class PrepareDataBase(ABC):
             rr_insert = False
             rc.append(one_col)
 
-        # all checks must be after rr and rc are created.  check Ks and S for
-        # infiltraiton
-        self._check_parameter_value(self.data['rr'], self.data['rc'], 'Ks',
-                all_attrib[0], [0,1])
-        self._check_parameter_value(self.data['rr'], self.data['rc'], 'S',
-                all_attrib[1], [0,1])
-
-        self._check_parameter_value(self.data['rr'], self.data['rc'], 'X',
-                all_attrib[7], [1,200])
-        self._check_parameter_value(self.data['rr'], self.data['rc'], 'Y',
-                all_attrib[8], [0.01,1])
-        # check the critical tension and velocity
-        self._check_parameter_value(self.data['rr'], self.data['rc'], 'tau',
-                all_attrib[9], [1,100])
-        self._check_parameter_value(self.data['rr'], self.data['rc'], 'v',
-                all_attrib[10], [0.1,5])
-
-        self._check_parameter_value(self.data['rr'], self.data['rc'], 'n',
-                self.data['mat_n'], [0,10])
-        self._check_parameter_value(self.data['rr'], self.data['rc'], 'pi',
-                self.data['mat_pi'], [0,10])
-        self._check_parameter_value(self.data['rr'], self.data['rc'], 'ppl',
-                self.data['mat_ppl'], [0,1])
-        self._check_parameter_value(self.data['rr'], self.data['rc'], 'reten',
-                self.data['mat_reten'], [0,100])
-        self._check_parameter_value(self.data['rr'], self.data['rc'], 'b',
-                self.data['mat_b'], [1,2.5])
-
-
-        self.data['mfda'] = False
-        self.data['mat_boundary'] = None
-        self.data['spix'] = None
-        self.data['vpix'] = None
-
         return rr, rc
 
 
@@ -283,6 +250,39 @@ class PrepareDataGISBase(PrepareDataBase):
             self.fieldnames['channel_bed_roughness'],
             self.fieldnames['channel_q365']
         ]
+
+        self.data = {
+            'mat_boundary': None,
+            'outletCells': None,
+            'array_points': None,
+            'combinatIndex': None,
+            'maxdt': self._input_params['maxdt'],
+            'mat_pi': None,
+            'mat_ppl': None,
+            'surface_retention': None,
+            'mat_inf_index': None,
+            'mat_hcrit': None,
+            'mat_a': None,
+            'mat_b': None,
+            'mat_reten': None,
+            'mat_fd': None,
+            'mat_dem': None,
+            'mat_effect_cont': None,
+            'mat_slope': None,
+            'mat_nan': None,
+            'mat_nrill': None,
+            'end_time': self._input_params['end_time'],
+            'state_cell': None,
+            'type_of_computing': None,
+            'mfda': self._input_params['flow_direction'] == 'multiple',
+            'wave': self._input_params['wave'],
+            'sr': None,
+            'itera': None,
+            'streams': None,
+            'cell_stream': None,
+            'mat_stream_reach': None,
+            'STREAM_RATIO': None,
+            }
 
     def _check_parameter_value(self, rr, rc, name, arr, range_):
         """ check the parameter margins 
@@ -674,6 +674,34 @@ class PrepareDataGISBase(PrepareDataBase):
         GridGlobals.rr, GridGlobals.rc = self._get_rr_rc(
             GridGlobals.r, GridGlobals.c, self.data['mat_boundary']
         )
+
+        # all checks must be after rr and rc are created.  check Ks and S for
+        # infiltraiton
+        self._check_parameter_value(GridGlobals.rr, GridGlobals.rc, 'Ks',
+                self.soilveg_fields['k'], [0,1])
+        self._check_parameter_value(GridGlobals.rr, GridGlobals.rc, 'S',
+                self.soilveg_fields['s'], [0,1])
+
+        self._check_parameter_value(GridGlobals.rr, GridGlobals.rc, 'X',
+                self.soilveg_fields['nsheet'], [1,200])
+        self._check_parameter_value(GridGlobals.rr, GridGlobals.rc, 'Y',
+                self.soilveg_fields['y'], [0.01,1])
+        # check the critical tension and velocity
+        self._check_parameter_value(GridGlobals.rr, GridGlobals.rc, 'tau',
+                self.soilveg_fields['tau'], [1,100])
+        self._check_parameter_value(GridGlobals.rr, GridGlobals.rc, 'v',
+                self.soilveg_fields['v'], [0.1,5])
+
+        self._check_parameter_value(GridGlobals.rr, GridGlobals.rc, 'n',
+                self.data['mat_nrill'], [0,10])
+        self._check_parameter_value(GridGlobals.rr, GridGlobals.rc, 'pi',
+                self.data['mat_pi'], [0,10])
+        self._check_parameter_value(GridGlobals.rr, GridGlobals.rc, 'ppl',
+                self.data['mat_ppl'], [0,1])
+        self._check_parameter_value(GridGlobals.rr, GridGlobals.rc, 'reten',
+                self.data['mat_reten'], [0,100])
+        self._check_parameter_value(GridGlobals.rr, GridGlobals.rc, 'b',
+                self.data['mat_b'], [1,2.5])
 
         if self._input_params['generate_temporary']:
             # write mat arrays to temp
