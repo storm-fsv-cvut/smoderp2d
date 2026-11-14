@@ -10,41 +10,34 @@ class HistoryWidget(QListWidgetItem):
     def __init__(self, *args, **kwargs):
         """Initialize an instance.
 
-        Create and empty self.params_dict dictionary and then do
+        Create an empty self.params_dict dictionary and then do
         the QListWidgetItem things.
         """
         self.params_dict = {}
         super().__init__(*args, **kwargs)
 
-    def saveHistory(self, params, maps):
+    def saveHistory(self, params):
         """Save historical parameterization into class variables.
 
         :param params: parameters from the current run
-        :param maps: maps from the current run
         """
         instance = QgsProject.instance()
-        map_names = {
-            i: instance.mapLayersByName(os.path.split(os.path.splitext(j)[0])[1]) for i, j in maps.items()
-        }
-        map_names = {
-            i: None if len(j) == 0 else j[0] for i, j in map_names.items()
-        }
-        self.params_dict.update({
-            'elevation': map_names['elevation'],
-            'soil': map_names['soil'],
-            'points': map_names['points'],
-            'points_fieldname': params['points_fieldname'],
-            'streams': map_names['streams'],
-            'rainfall_file': params['rainfall_file'],
-            'table_soil_vegetation': map_names['table_soil_vegetation'],
-            'channel_properties_table': map_names['channel_properties_table'],
-            'streams_channel_type_fieldname': params[
-                'streams_channel_type_fieldname'
-            ],
-            'output': params['output'],
-            'end_time': params['end_time'],
-            'flow_direction': params['flow_direction'],
-            'generate_temporary': params['generate_temporary']
-        })
 
-        self.setToolTip(str(self.params_dict))
+        # collect map layers
+        map_layers = {}
+        for lyr in instance.mapLayers().values():
+            map_layers[lyr.source().split('|')[0]] = lyr
+
+        # add tooltip
+        self.setToolTip(str(params))
+
+        # store params
+        self.params_dict.update(params)
+
+        # update spatial data related items
+        for key in ("elevation", "soil", "vegetation", "points", "streams",
+                    "table_soil_vegetation", "channel_properties_table"):
+            if params[key]:
+                self.params_dict[key] = map_layers.get(params[key], None)
+            else:
+                self.params_dict[key] = None

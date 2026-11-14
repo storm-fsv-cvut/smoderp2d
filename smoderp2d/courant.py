@@ -1,5 +1,5 @@
 # @package smoderp2d.courant defines Class Courant which handles the time
-# step adjustement
+# step adjustment
 
 
 import numpy as np
@@ -21,7 +21,7 @@ class Courant:
     def __init__(self):
         """TODO."""
         self.cour_speed = 0
-        # citical courant value
+        # critical courant value
         self.cour_crit = 0.95
         self.cour_most = self.cour_crit + 1
         self.cour_most_rill = self.cour_crit + 1.0
@@ -30,11 +30,7 @@ class Courant:
         self.i = -1
         self.j = -1
         self.co = 'sheet'
-        self.maxratio = 10
-        self.max_delta_t = ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt,
-            mask=GridGlobals.masks
-        )
+        self.max_delta_t = Gl.maxdt
         self.max_delta_t_mult = 1.0
 
     #
@@ -79,10 +75,7 @@ class Courant:
         # (math.sqrt(sur.pixel_area)*self.cour_least*self.cour_coef)/velGuess
 
         # return self.initGuess
-        return ma.masked_array(
-            np.ones((GridGlobals.r, GridGlobals.c)) * Gl.maxdt,
-            mask=GridGlobals.masks
-        )
+        return Gl.maxdt
 
     #
     def CFL(self, v, delta_t, effect_cont, co, rill_courant):
@@ -91,7 +84,7 @@ class Courant:
         Store it in each computational cell.
 
         :param v: TODO
-        :param delta_t: TODO
+        :param delta_t: current time step length
         :param effect_cont: TODO
         :param co: TODO
         :param rill_courant: TODO
@@ -99,8 +92,7 @@ class Courant:
         cour = v / self.cour_coef * delta_t / effect_cont
         cour = ma.maximum(cour, rill_courant)
         if ma.any(cour > self.cour_most):
-            self.i = np.unravel_index(ma.argmax(cour), cour.shape)[0]
-            self.j = np.unravel_index(ma.argmax(cour), cour.shape)[1]
+            self.i, self.j = np.unravel_index(ma.argmax(cour), cour.shape)
             self.co = co
             self.cour_most = cour[self.i, self.j]
             self.cour_speed = v[self.i, self.j]
@@ -109,17 +101,13 @@ class Courant:
 
     # Returns the adjusted/unchanged time step after a time step computation
     # is completed.
-    #
-    #  Also returns the ratio for the rill computation division.
-    #
-    def courant(self, delta_t, ratio):
-        """TODO.
+    def courant(self, delta_t):
+        """Adjust the time step based on Courant.
 
-        :param delta_t: TODO
-        :param ratio: TODO
+        :param delta_t: current time step length
         :return: TODO
         """
-        # ratio se muze zmensit  a max_delta_t_mult zvetsit
+        # max_delta_t_mult se muze zvetsit
         # pokud je courant v ryhach <= 0.2
         #
         # pokud je courant > 0.5 deje se opak
@@ -148,37 +136,34 @@ class Courant:
         # mensi nez cour_least a vetsi nez cour_crit
         # explicitne se dopocita dt na nejvetsi mozne
         #                                      xor
-        if ma.any((self.cour_most < self.cour_least) != (self.cour_crit <=
-                                                         self.cour_most)):
+        if (self.cour_most < self.cour_least) ^ (self.cour_crit <= self.cour_most):
             # pokud se na povrchu nic nedeje
             # nema se zmena dt cim ridit
             # a zmeni se podle maxima nasobeneho max_delta_t_mult
             # max_delta_t_mult se meni podle ryh, vyse v teto funkci
-            if ma.any(self.cour_speed == 0.0):
-                return self.max_delta_t * self.max_delta_t_mult, ratio
+            if self.cour_speed == 0.0:
+                return self.max_delta_t * self.max_delta_t_mult
 
             effect_cont = Gl.mat_effect_cont[self.i, self.j]
-            dt = ma.round(
+            dt = round(
                 effect_cont * self.cour_crit * self.cour_coef / self.cour_speed,
-                8)
+                8
+            )
 
             # nove dt nesmi byt vetsi nez je maxdt * max_delta_t_mult
             # max_delta_t_mult se meni podle ryh, vyse v teto funkci
 
             # return dt*self.max_delta_t_mult, ratio
             # return min(dt,self.max_delta_t*self.max_delta_t_mult), ratio
-            dt_min = ma.minimum(
-                self.max_delta_t_mult * dt,
-                self.max_delta_t * self.max_delta_t_mult
-            )
-            return dt_min, ratio
+            dt_min = min(dt, self.max_delta_t) * self.max_delta_t_mult
+            return dt_min
 
             # pokud je courant v povolenem rozmezi
             # skontrolje se pouze pokud neni vetsi nez maxdt * max_delta_t_mult
             # max_delta_t_mult se meni podle ryh, vyse v teto funkci
         else:
-            # return delta_t, ratio
-            if ma.all(ratio <= self.maxratio) and (self.cour_most_rill < 0.5):
-                return delta_t, ratio
+            # return delta_t
+            if self.cour_most_rill < 0.5:
+                return delta_t
             else:
-                return delta_t * self.max_delta_t_mult, ratio
+                return delta_t * self.max_delta_t_mult

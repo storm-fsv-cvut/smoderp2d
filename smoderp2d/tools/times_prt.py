@@ -35,7 +35,7 @@ class TimesPrt(object):
         """TODO.
 
         :param time: TODO
-        :param dt: TODO
+        :param dt: current time step length
         :param sur: TODO
         """
         if not self.fTimes:

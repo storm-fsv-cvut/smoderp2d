@@ -1,5 +1,4 @@
 import os
-import sys
 import csv
 import numpy as np
 
@@ -10,10 +9,11 @@ from smoderp2d.core import CompType
 from smoderp2d.providers.base import BaseProvider
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
 from smoderp2d.providers.cmd import CmdWriter, CmdArgumentParser
-from smoderp2d.exceptions import ConfigError, ProviderError
+from smoderp2d.exceptions import ConfigError, ProviderError, RainDataError
 
 
 class Profile1DProvider(BaseProvider, PrepareDataBase):
+
     def __init__(self, config_file=None):
         super(Profile1DProvider, self).__init__()
 
@@ -157,6 +157,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             )
         except TypeError:
             raise ProviderError('Invalid rainfall file in [data] section')
+        except RainDataError as e:
+            raise ProviderError(e)
         # Logger.progress(10)
 
         # general settings
@@ -195,11 +197,9 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         # set values to parameter matrics
         data['mat_nrill'] = parsed_data['nrill'].reshape((data['r'], data['c']))
         data['mat_b'] = parsed_data['b'].reshape((data['r'], data['c']))
-        data['mat_aa'] = self._get_a(
+        data['mat_a'] = self._get_a(
             data['nsheet'],
             data['y'],
-            data['r'],
-            data['c'],
             data['NoDataValue'],
             data['mat_slope'])
         data['mat_hcrit'] = self._get_crit_water(
@@ -210,7 +210,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             data['c'],
             data['mat_slope'],
             data['NoDataValue'],
-            data['mat_aa']
+            data['mat_a']
         )
 
         data['mat_reten'] = parsed_data['ret'].reshape((data['r'], data['c']))
@@ -344,7 +344,6 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['mat_inf_index'] = np.zeros((data['r'], data['c']), float)
         data['mat_fd'] = np.zeros((data['r'], data['c']), float)
         data['mat_hcrit'] = np.zeros((data['r'], data['c']), float)
-        data['mat_aa'] = np.zeros((data['r'], data['c']), float)
         data['mat_reten'] = np.zeros((data['r'], data['c']), float)
         data['mat_nan'] = np.zeros((data['r'], data['c']), float)
         data['mat_effect_cont'] = np.zeros((data['r'], data['c']), float)
@@ -375,8 +374,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
 
         return array_points
 
-    def postprocessing(self, cumulative, surface_array, stream):
-        super().postprocessing(cumulative, surface_array, stream)
+    def postprocessing(self, cumulative, surface_array, stream, inflows):
+        super().postprocessing(cumulative, surface_array, stream, inflows)
 
         # extra to normal postprocessing - write profile.csv
 

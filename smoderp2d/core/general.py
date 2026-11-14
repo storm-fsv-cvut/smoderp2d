@@ -102,11 +102,6 @@ class GridGlobals(object):
         return cls.rr, cls.rc
 
     @classmethod
-    def get_border_dim(cls):
-        """TODO."""
-        return cls.br, cls.bc
-
-    @classmethod
     def get_llcorner(cls):
         """TODO."""
         return cls.xllcorner, cls.yllcorner
@@ -155,10 +150,6 @@ class GridGlobals(object):
         # id of columns in computational domain (list of lists)
         # row out of computational domain is empty list
         cls.rc = None
-        # id of rows in at the boundary of computational domain
-        cls.br = None
-        # id of columns in at the boundary of computational domain
-        cls.bc = None
         # left bottom corner x coordinate of raster
         cls.xllcorner = None
         # left bottom corner y coordinate of raster
@@ -214,7 +205,7 @@ class Globals:
     # raster contains critical water level
     mat_hcrit = None
     # raster contains parameter of power law for surface runoff
-    mat_aa = None
+    mat_a = None
     # raster contains parameter of power law for surface runoff
     mat_b = None
     # raster contains surface retention data
@@ -240,6 +231,8 @@ class Globals:
     # bool variable for flow direction algorithm (false=one direction, true
     # multiple flow direction)
     mfda = None
+    # variable for wave algorithm (kinematic, diffuse)
+    wave = None
     # list contains the precipitation data
     sr = None
     # counter of precipitation intervals
@@ -262,6 +255,8 @@ class Globals:
     streamsNextDownIdNoSegment = -1
     # slope width
     slope_width = None
+    # computation type
+    computationType = 'explicit'
 
     @classmethod
     def get_type_of_computing(cls):
@@ -319,9 +314,9 @@ class Globals:
         return cls.mat_hcrit
 
     @classmethod
-    def get_mat_aa(cls):
+    def get_mat_a(cls):
         """TODO."""
-        return cls.mat_aa
+        return cls.mat_a
 
     @classmethod
     def get_mat_b(cls):
@@ -389,6 +384,11 @@ class Globals:
         return cls.mfda
 
     @classmethod
+    def get_wave(cls):
+        """TODO."""
+        return cls.wave
+
+    @classmethod
     def get_sr(cls):
         """TODO."""
         return cls.sr
@@ -448,7 +448,7 @@ class Globals:
         # raster contains critical water level
         cls.mat_hcrit = None
         # raster contains parameter of power law for surface runoff
-        cls.mat_aa = None
+        cls.mat_a = None
         # raster contains parameter of power law for surface runoff
         cls.mat_b = None
         # raster contains surface retention data
@@ -474,6 +474,8 @@ class Globals:
         # bool variable for flow direction algorithm (false=one direction, true
         # multiple flow direction)
         cls.mfda = None
+        # variable for wave algorithm (kinematic, diffuse)
+        cls.wave = None
         # list contains the precipitation data
         cls.sr = None
         # counter of precipitation intervals
@@ -496,3 +498,5 @@ class Globals:
         cls.streamsNextDownIdNoSegment = -1
         # slope width
         cls.slope_width = None
+        # computation type
+        cls.computationType = 'explicit'

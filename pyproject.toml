@@ -1,5 +1,5 @@
-# Author(s): Petr Kavka, Karel Vrana
-# Copyright (C) TODO
+# Author(s): Petr Kavka and SMODERP2D Development Team
+# Copyright (C) SMODERP2D Development Team
 #
 # This file is part of smoderp2d.
 #
@@ -21,7 +21,7 @@ build-backend = "setuptools.build_meta"
 
 [metadata]
 name = 'smoderp2d'
-version = '2.0.0rc1'
+dynamic = ["version"]
 
 [tool.setuptools.packages.find]
 where = [""]
@@ -30,10 +30,14 @@ exclude = ["bin*", "utils*", "tests*"]
 [tool.setuptools.package-data]
 "*" = [".config.ini", "txtlogo.txt"]
 
+[tool.setuptools.dynamic]
+version = {attr = "smoderp2d.__version__"}
+
 [project]
 name = 'smoderp2d'
-version = '2.0.0rc1'
+dynamic = ["version"]
 description = 'Distributed event-based model for surface and subsurface runoff and erosion.'
+readme = 'README.md'
 authors = [
     {name = "Petr Kavka", email = "petr.kavka@fsv.cvut.cz"},
     {name = "Jakub Jeřábek", email = "jakub.jerabek@fsv.cvut.cz"},
@@ -46,5 +50,5 @@ license = {text = "GPLv3"}
 dependencies = ['numpy']
 
 [project.urls]
-documentation = 'https://storm.fsv.cvut.cz/cinnost-katedry/volne-stazitelne-vysledky/smoderp/?lang=en'
+documentation = 'https://storm-fsv-cvut.github.io/smoderp2d-manual'
 repository = 'https://github.com/storm-fsv-cvut/smoderp2d'

@@ -131,7 +131,7 @@ class Hydrographs:
                                   '{sep}percolation[]{sep}' \
                                   'exfiltration[]'.format(sep=SEP)
                     if Globals.extraOut:
-                        header += '{sep}vToRill[m3]{sep}ratio{sep}courant'\
+                        header += '{sep}vToRill[m3]{sep}courant'\
                                   '{sep}courantRill{sep}iter'.format(sep=SEP)
                     header += os.linesep
 
@@ -156,9 +156,8 @@ class Hydrographs:
         Logger.info("Hydrographs files has been created...")
 
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface,
-                                 cumulative, currRain, inStream=False, sep=SEP):
+            subsurface, cumulative, currRain, inStream=False, sep=SEP):
 
-        ratio = fc.ratio
         total_time = fc.total_time + dt
         iter_ = fc.iter_
 
@@ -179,7 +178,7 @@ class Hydrographs:
                 m = self.point_int[ip][2]
                 self.files[ip].writelines(
                     '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}{sep}{3}{linesep}'.format(
-                        total_time[l, m], dt[l, m], currRain[l, m],
+                        total_time, dt, currRain[l, m],
                         surface.return_stream_str_vals(
                             l, m, SEP, Globals.extraOut
                         ),
@@ -200,23 +199,25 @@ class Hydrographs:
                 )
                 cumulativelines = cumulative.return_str_val(l, m)
                 line = '{0:.4e}{sep}{1}{sep}{2}{sep}{3}'.format(
-                    total_time[l, m], cumulativelines[0],
+                    total_time, cumulativelines[0],
                     linebil[0], cumulativelines[1],
                     sep=sep
                 )
-                # line += subsurface.return_str_vals(l,m,SEP,dt) + sep   #
-                # prozatim
                 if Globals.extraOut:
                     line = '{0:.4e}{sep}{1:.4e}{sep}{2:.4e}'\
-                           '{sep}{3}{sep}{4:.4e}'\
-                           '{sep}{5:.4e}'\
-                           '{sep}{6:.4e}{sep}{7:.4e}{sep}{8:.4e}{sep}' \
-                           '{9:.4e}'.format(
-                        total_time[l, m], dt[l, m], currRain[l, m],
-                        linebil[0], linebil[1],
+                           '{sep}{3}{sep}{4:.4e}'.format(
+                        total_time, dt, currRain[l, m],
+                        linebil[0], linebil[1], sep=sep
+                    )
+                if Globals.subflow:
+                    subline = subsurface.return_str_vals(l,m,SEP,dt) + sep 
+                    line += subline
+                if Globals.extraOut:
+                    line += '{sep}{0:.4e}'\
+                            '{sep}{1:.4e}{sep}{2:.4e}{sep}' \
+                            '{3:.4e}'.format(
                         surface.arr.vol_to_rill[l, m],
-                        ratio[l, m], courantMost, courantRill, iter_,
-                        sep=sep
+                        courantMost, courantRill, iter_, sep=sep
                     )
                 line += os.linesep
                 self.files[ip].writelines(line)
@@ -229,5 +230,5 @@ class Hydrographs:
 
 class HydrographsPass:
     def write_hydrographs_record(self, i, j, fc, courant, dt, surface,
-                                 currRain, inStream=False, sep=SEP):
+            subsurface, currRain, inStream=False, sep=SEP):
         pass

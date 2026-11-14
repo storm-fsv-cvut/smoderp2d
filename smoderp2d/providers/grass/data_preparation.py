@@ -1,6 +1,7 @@
 import numpy as np
 import sqlite3
 import tempfile
+from subprocess import PIPE
 
 from smoderp2d.core.general import GridGlobals, Globals
 
@@ -29,6 +30,22 @@ class PrepareData(PrepareDataGISBase):
         # os.path.join(Location().path(), "output")
 
         super(PrepareData, self).__init__(writer)
+
+        # install r.hydrodem if not available
+        install_ext = False
+        ext = Module('g.extension', flags='a', stdout_=PIPE)
+        list_ext = ext.outputs.stdout.splitlines()
+        if 'r.hydrodem' not in list_ext:
+            install_ext = True
+        else:
+            # try to run the module
+            try:
+                Module("r.hydrodem", run_=False)
+            except Exception:
+                install_ext = True
+        if install_ext:
+            Logger.info("Installing r.hydrodem extension...")
+            Module('g.extension', extension='r.hydrodem')
 
     def __del__(self):
         # remove mask
@@ -156,15 +173,14 @@ class PrepareData(PrepareDataGISBase):
         dem_flowdir = self.storage.output_filepath('dem_flowdir')
         # calculate the depressionless DEM
         self._run_grass_module(
-            'r.fill.dir', input=dem, output=dem_filled, format='agnps',
-            direction=dem_flowdir+'2'
+            'r.hydrodem', flags='f', input=dem, output=dem_filled
         )
 
         # calculate the flow direction
         # calculate flow accumulation
         dem_flowacc = self.storage.output_filepath('dem_flowacc')
         self._run_grass_module(
-            'r.watershed', flags='as', elevation=dem,
+            'r.watershed', flags='as', elevation=dem_filled,
             drainage=dem_flowdir+'1', accumulation=dem_flowacc
         )
         # recalculate flow dir to ArcGIS notation
@@ -186,14 +202,14 @@ class PrepareData(PrepareDataGISBase):
             rules='-', stdin_=reclass
         )
         self.__remove_temp_data(
-            {'name': '{r}1,{r}2'.format(r=dem_flowdir), 'type': 'raster'}
+            {'name': '{r}1'.format(r=dem_flowdir), 'type': 'raster'}
         )
 
         # calculate slope
         dem_slope = self.storage.output_filepath('dem_slope')
         dem_aspect = self.storage.output_filepath('dem_aspect')
         self._run_grass_module(
-            'r.slope.aspect', elevation=dem_filled, format='percent',
+            'r.slope.aspect', elevation=dem, format='percent',
             slope=dem_slope, aspect=dem_aspect
         )
 
@@ -220,6 +236,11 @@ class PrepareData(PrepareDataGISBase):
             'v.select', ainput=dataset, binput=aoi_polygon,
             operator='within', output=points_clipped
         )
+        # if no points selected v.select doesn't create any output
+        if points_clipped not in Mapset().glist('vector'):
+            self._run_grass_module(
+                'v.edit', map=points_clipped, tool='create'
+            )
 
         # select points outside the AoI
         self._run_grass_module(
@@ -444,15 +465,18 @@ class PrepareData(PrepareDataGISBase):
             distance=-GridGlobals.dx / 3
         )
 
-        stream_aoi = self.storage.output_filepath('stream_aoi')
+        stream_aoi = self.storage.output_filepath('streams_aoi')
         self._run_grass_module(
-            'v.clip', input=stream, clip=aoi_buffer, output='stream_aoi_unclean'
+            'v.clip', input=stream, clip=aoi_buffer, output='streams_aoi_unclean'
         )
         # clean topology
         # (necessary for stream connection snapped in lines instead of points)
         self._run_grass_module(
-            'v.clean', input='stream_aoi_unclean', tool='break',
+            'v.clean', input='streams_aoi_unclean', tool='break',
             output=stream_aoi
+        )
+        self.__remove_temp_data(
+            {'name': 'streams_aoi_unclean', 'type': 'vector'}
         )
 
         drop_fields = self._stream_check_fields(stream_aoi)
@@ -511,8 +535,10 @@ class PrepareData(PrepareDataGISBase):
                 segment_id = seg.attrs[segment_id_fieldname]
                 if elev_change == 0:
                     raise DataPreparationError(
-                        'Stream segment {}: {} has zero slope'.format(
-                            segment_id_fieldname, segment_id
+                        'Stream segment {}: {} [[{}, {}], [{}, {}]] has zero '
+                        'slope'.format(
+                            segment_id_fieldname, segment_id, startpt.x,
+                            startpt.y, endpt.x, endpt.y
                         )
                     )
                 elif elev_change < 0:
@@ -583,13 +609,18 @@ class PrepareData(PrepareDataGISBase):
                             raise DataPreparationError(
                                 'Incorrect stream network topology downstream '
                                 'segment streamID: {}. The network can not '
-                                'bifurcate.'.format(segment_id)
+                                'bifurcate (at point [{}, {}]).'.format(
+                                    segment_id, seg[-1].x, seg[-1].y
+                                )
                             )
                         seg.attrs[next_down_fieldname] = vmap[
                             start_seg.id
                         ].attrs[segment_id_fieldname]
 
             vmap.table.conn.commit()
+
+        # stream layer modified, must be exported explicitly
+        self._export_data(stream, 'vector')
 
     def _stream_reach(self, stream):
         """See base method for description."""
@@ -600,7 +631,7 @@ class PrepareData(PrepareDataGISBase):
             ewres=GridGlobals.dx, nsres=GridGlobals.dy
         )
 
-        stream_seg = self.storage.output_filepath('stream_seg')
+        stream_seg = self.storage.output_filepath('streams_seg')
         self._run_grass_module(
             'v.to.rast', input=stream, type='line', use='attr',
             attribute_column=self.fieldnames['stream_segment_id'],
@@ -723,6 +754,10 @@ class PrepareData(PrepareDataGISBase):
         :param map_name: map name
         :param mtype: map type
         """
+        if map_name not in Mapset().glist(mtype):
+            # skip export if map doesn't exist
+            return
+
         output_path = self.storage.output_filepath(map_name, full_path=True)
         if mtype == 'raster':
             self.storage.export_raster(

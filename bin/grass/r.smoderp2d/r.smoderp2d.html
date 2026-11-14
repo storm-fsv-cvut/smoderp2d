@@ -5,24 +5,17 @@ surface and subsurface runoff and erosion (SMODERP2D) in GRASS GIS.
 
 <h2>EXAMPLE</h2>
 
-<h3>Nucice dataset</h3>
+<h3>Create GRASS location and import sample dataset</h3>
 
 <div class="code"><pre>
 grass -c EPSG:5514 /tmp/smoderp2d-nucice --exec python3 tests/data/import_grass.py tests/data/nucice
 grass -c /tmp/smoderp2d-nucice/test
 </pre></div>
 
-<h3>Rain simulation dataset</h3>
-
-<div class="code"><pre>
-grass -c EPSG:5514 /tmp/smoderp2d-rainsim --exec python3 tests/data/import_grass.py tests/data/rain_sim
-grass -c /tmp/smoderp2d-rainsim/test
-</pre></div>
-
 <h3>Perform computation</h3>
 
 <div class="code"><pre>
-./bin/grass/r.smoderp2d/r.smoderp2d.py \
+r.smoderp2d \
  elevation=dem@PERMANENT \
  soil=soils@PERMANENT \
  soil_type_fieldname=Soil \
@@ -43,8 +36,7 @@ grass -c /tmp/smoderp2d-rainsim/test
 
 <em>
   <a href="r.watershed.html">r.watershed</a>,
-  <a href="r.terraflow.html">r.terraflow</a>,
-  <a href="r.filldir.html">r.filldir</a>
+  <a href="r.terraflow.html">r.terraflow</a>
 </em>
 
 <h2>REFERENCES</h2>

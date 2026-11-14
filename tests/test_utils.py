@@ -77,25 +77,16 @@ def are_dir_trees_equal(dir1, dir2):
         there were no errors while accessing the directories or files,
         False otherwise.
     """
-    def _read_gdal_array(filename):
-        from osgeo import gdal
-        ds = gdal.Open(filename)
-        array = ds.GetRasterBand(1).ReadAsArray()
-        ds = None
-        return array
-
     def _read_data(filename):
         header_rows = 0
         delimiter = None
         with open(filename) as f:
             first_line = f.readline()
-            use_gdal = first_line.startswith('ncols')
-            is_point_csv = first_line.startswith('# Hydro')
-        if use_gdal:
-            return _read_gdal_array(filename)
-        elif is_point_csv:
-            header_rows = 3
-            delimiter = ';'
+            if first_line.startswith('ncols'):
+                header_rows = 6
+            elif first_line.startswith('# Hydro'):
+                header_rows = 3
+                delimiter = ';'
 
         return np.loadtxt(filename, skiprows=header_rows, delimiter=delimiter)
 
@@ -203,9 +194,10 @@ def are_dir_trees_equal(dir1, dir2):
     return True
 
 
-def _setup(request, config_file, reference_dir=None):
+def _setup(request, config_file, reference_dir=None, hidden_config=None):
     request.cls.config_file = config_file
     request.cls.reference_dir = reference_dir
+    request.cls.hidden_config = hidden_config
 
 @pytest.fixture(scope='class')
 def class_manager(request, pytestconfig):
@@ -243,7 +235,8 @@ class PerformTest:
                 "streams_channel_type_fieldname": "channel_id",
                 "output": self._output_dir,
                 'generate_temporary': False,
-                'flow_direction': 'single'
+                'flow_direction': 'single',
+                'wave': 'kinematic'
             }
             self._params.update(params)
         else:
@@ -369,10 +362,13 @@ class PerformTest:
                             if isinstance(vv[0], str):
                                 equal = vv == reference_dict[k][kk]
                             else:
-                                equal = np.allclose(
-                                    vv, reference_dict[k][kk],
-                                    rtol=relative_tolerance
-                                )
+                                try:
+                                    equal = np.allclose(
+                                        vv, reference_dict[k][kk],
+                                        rtol=relative_tolerance
+                                    )
+                                except ValueError as e:
+                                    equal = False
                             assert equal is True, \
                                 self.report_pickle_difference(
                                     dataprep_filepath, reference_filepath
@@ -383,7 +379,7 @@ class PerformTest:
                                 dataprep_filepath, reference_filepath
                             )
                     else:
-                        if k != 'rc':
+                        if k not in ('rc', 'wave'):
                             equal = np.allclose(
                                 v, reference_dict[k], rtol=relative_tolerance
                             )
@@ -395,13 +391,15 @@ class PerformTest:
                                 dataprep_filepath, reference_filepath
                             )
 
-    def run_roff(self, config_file):
+    def run_roff(self, config_file, hidden_config_file=None):
         assert os.path.exists(config_file)
 
         config = configparser.ConfigParser()
         config.read(config_file)
 
         os.environ["SMODERP2D_CONFIG_FILE"] = str(config_file)
+        if hidden_config_file is not None:
+            os.environ["SMODERP2D_HIDDEN_CONFIG_FILE"] = str(hidden_config_file)
         self._run()
 
         assert os.path.isdir(self._output_dir)

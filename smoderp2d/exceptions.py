@@ -117,3 +117,8 @@ class ComputationAborted(SmoderpError):
         """Represent the object as a string."""
         return self.msg
 
+
+class RainDataError(Exception):
+    """Exception raised bad rainfall file definition."""
+    def __init__(self, msg):
+        Logger.fatal(msg)

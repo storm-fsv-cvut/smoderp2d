@@ -14,7 +14,7 @@ from abc import abstractmethod
 from smoderp2d.core import CompType
 from smoderp2d.core.general import GridGlobals, DataGlobals, Globals
 from smoderp2d.exceptions import ProviderError, ConfigError, GlobalsNotSet, \
-    SmoderpError
+    SmoderpError, RainDataError
 from smoderp2d.providers import Logger
 from smoderp2d.providers.base.exceptions import DataPreparationError
 
@@ -187,25 +187,25 @@ class BaseProvider(object):
         :param handler: logging handler to be registered
         :param formatter: logging handler formatting
         """
-        if not formatter:
+        if formatter is None:
             formatter = logging.Formatter(
                 "%(asctime)s - %(name)s - %(levelname)s - %(message)s "
                 "- [%(module)s:%(lineno)s]"
             )
         handler.setFormatter(formatter)
-        if len(Logger.handlers) == 0:
-            # avoid duplicated handlers (e.g. in case of ArcGIS)
-            Logger.addHandler(handler)
+        Logger.addHandler(handler)
 
-    @staticmethod
-    def __load_hidden_config():
+    def __load_hidden_config(self):
         """Load hidden configuration with advanced settings.
 
         return ConfigParser: object
         """
-        _path = os.path.join(
-            os.path.dirname(__file__), '..', '..', '.config.ini'
-        )
+        if os.getenv("SMODERP2D_HIDDEN_CONFIG_FILE") is None:
+            _path = os.path.join(
+                os.path.dirname(__file__), '..', '..', '.config.ini'
+            )
+        else:
+            _path = os.getenv("SMODERP2D_HIDDEN_CONFIG_FILE")
         if not os.path.exists(_path):
             raise ConfigError("{} does not exist".format(
                 _path
@@ -216,6 +216,11 @@ class BaseProvider(object):
 
         # set logging level
         Logger.setLevel(config.get('logging', 'level', fallback=logging.INFO))
+
+        # set workflow mode
+        self.args.workflow_mode = WorkflowMode()[config.get(
+            'processes', 'workflow_mode', fallback="full"
+        )]
 
         return config
 
@@ -233,9 +238,9 @@ class BaseProvider(object):
         data['extraout'] = self._hidden_config.getboolean(
             'output', 'extraout', fallback=False
         )
-        self.args.workflow_mode = WorkflowMode()[self._hidden_config.get(
-            'processes', 'workflow_mode', fallback="full"
-        )]
+        data['computation_type'] = self._hidden_config.get(
+            'computation_type', 'computation_type', fallback='explicit'
+        )
 
         return data
 
@@ -302,6 +307,10 @@ class BaseProvider(object):
                 'processes', 'mfda', fallback=False
             )
 
+        data['wave'] = self._config.get(
+            'processes', 'wave', fallback='kinematic'
+        )
+
         # type of computing
         data['type_of_computing'] = CompType()[
             self._config.get('processes', 'typecomp', fallback='stream_rill')
@@ -315,6 +324,8 @@ class BaseProvider(object):
                 )
             except TypeError:
                 raise ProviderError('Invalid rainfall file')
+            except RainDataError as e:
+                raise ProviderError(e)
 
         data['maxdt'] = self._config.getfloat('time', 'maxdt')
 
@@ -331,6 +342,13 @@ class BaseProvider(object):
         # cleanup output directory first
         self._cleanup()
 
+        # log file need to be created after cleanup
+        file_logger = os.path.join(Globals.outdir, "smoderp2d.log")
+        self.add_logging_handler(
+            logging.FileHandler(file_logger)
+        )
+        Logger.debug(f'File logger set to {file_logger}')
+
         data = None
         if self.args.workflow_mode in (WorkflowMode.dpre, WorkflowMode.full):
             try:
@@ -344,6 +362,9 @@ class BaseProvider(object):
                           'pixel_area', 'r', 'rc', 'rr', 'xllcorner',
                           'yllcorner'):
                     data[k] = getattr(GridGlobals, k)
+                self.args.data_file = os.path.join(
+                    Globals.outdir, "dpre.save"
+                )
                 self.save_data(data, self.args.data_file)
                 return
 
@@ -369,11 +390,9 @@ class BaseProvider(object):
 
         Globals.mat_reten = -1.0 * data['mat_reten'] / 1000  # converts mm to m
         comp_type = self._comp_type(data['type_of_computing'])
-        Globals.diffuse = False  # not implemented yet
-        Globals.subflow = comp_type['subflow_rill']
+        Globals.subflow = comp_type['subflow']
         Globals.isRill = comp_type['rill']
         Globals.isStream = comp_type['stream']
-
         # load hidden config
         hidden_config = self._load_data_from_hidden_config()
         if 'prtTimes' in data:
@@ -384,6 +403,10 @@ class BaseProvider(object):
             Globals.extraOut = data['extraout']
         else:
             Globals.extraOut = hidden_config.get('extraout', False)
+        if 'computation_type' in data:
+            Globals.computationType = data['computation_type']
+        else:
+            Globals.computationType = hidden_config.get('computation_type', 'explicit')
 
         Globals.end_time *= 60  # convert min to sec
 
@@ -446,6 +469,7 @@ class BaseProvider(object):
         for item in ('sheet_only',
                      'rill',
                      'stream',
+                     'subflow',
                      'subflow_rill',
                      'stream_subflow_rill'):
             ret[item] = False
@@ -460,6 +484,8 @@ class BaseProvider(object):
         elif itc == CompType.stream_rill:
             ret['stream'] = True
             ret['rill'] = True
+        elif itc == CompType.subflow:
+            ret['subflow'] = True
         elif itc == CompType.subflow_rill:
             ret['subflow'] = True
             ret['rill'] = True
@@ -516,12 +542,13 @@ class BaseProvider(object):
 
         return data
 
-    def postprocessing(self, cumulative, surface_array, stream):
+    def postprocessing(self, cumulative, surface_array, stream, inflows):
         """Perform postprocessing steps. Store results.
 
         :param cumulative: Cumulative object
         :param surface_array: numpy array
         :param stream: stream array (reach)
+        :param inflows: inflows array
         """
         rrows = GridGlobals.rr
         rcols = GridGlobals.rc
@@ -642,14 +669,40 @@ class BaseProvider(object):
                 outputtable[i][5] = ma.unique(stream[fid[i]].V_out_cum)[0]
                 outputtable[i][6] = ma.unique(stream[fid[i]].Q_max)[0]
 
-            temp_dir = os.path.join(Globals.outdir, 'temp')
-            if not os.path.isdir(temp_dir):
-                os.makedirs(temp_dir)
-            path_ = os.path.join(temp_dir, 'stream.csv')
-            np.savetxt(path_, outputtable, delimiter=';', fmt='%.3e',
+            np.savetxt(os.path.join(Globals.outdir, 'streams.csv'),
+                       outputtable, delimiter=';', fmt='%.3e',
                        header='FID{sep}b_m{sep}m__{sep}rough_s_m1_3{sep}'
                               'q365_m3_s{sep}V_out_cum_m3{sep}'
                               'Q_max_m3_s'.format(sep=';'))
+
+        if inflows is not None and Globals.mfda is False:
+            # inflows are not stored for MFDA, see
+            # https://github.com/storm-fsv-cvut/smoderp2d/issues/375
+            inflows_array = np.zeros((GridGlobals.r, GridGlobals.c))
+            # | -1 -1 | -1  0 | -1  1 |
+            # |  0 -1 |  0  0 |  0  1 |
+            # |  1 -1 |  1  0 |  1  1 |
+
+            recode = {
+                ( 0,  1): 1,
+                ( 1,  1): 2,
+                ( 1,  0): 4,
+                ( 1, -1): 8,
+                ( 0, -1): 16,
+                (-1, -1): 32,
+                (-1,  0): 64,
+                (-1,  1): 128
+            }
+            for i in range(len(inflows)):
+                for j in range(len(inflows[i])):
+                    if_code = 0
+                    for v in inflows[i][j]:
+                        if_code += recode[tuple(v)]
+                    inflows_array[i][j] = if_code
+
+            self.storage.write_raster(
+                self._make_mask(inflows_array), 'inflows', 'control'
+            )
 
         # perform provider-specific postprocessing
         self._postprocessing()
