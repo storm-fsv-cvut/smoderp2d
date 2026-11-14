@@ -304,44 +304,6 @@ class PrepareDataGISBase(PrepareDataBase):
         Logger.info('{} parameter values checked.'.format(name))
 
 
-    def _set_output_data(self):
-        """
-        Creates dictionary to which model parameters are computed.
-        """
-        # output data
-        self.data = {
-            'mat_boundary': None,
-            'outletCells': None,
-            'array_points': None,
-            'combinatIndex': None,
-            'maxdt': self._input_params['maxdt'],
-            'mat_pi': None,
-            'mat_ppl': None,
-            'surface_retention': None,
-            'mat_inf_index': None,
-            'mat_hcrit': None,
-            'mat_a': None,
-            'mat_b': None,
-            'mat_reten': None,
-            'mat_fd': None,
-            'mat_dem': None,
-            'mat_effect_cont': None,
-            'mat_slope': None,
-            'mat_nan': None,
-            'mat_nrill': None,
-            'end_time': self._input_params['end_time'],
-            'state_cell': None,
-            'type_of_computing': None,
-            'mfda': self._input_params['flow_direction'] == 'multiple',
-            'wave': self._input_params['wave'],
-            'sr': None,
-            'itera': None,
-            'streams': None,
-            'cell_stream': None,
-            'mat_stream_reach': None,
-            'STREAM_RATIO': None,
-            }
-
     @abstractmethod
     def _create_AoI_outline(self, elevation, soil, vegetation):
         """Creates geometric intersection of input DEM, soil
