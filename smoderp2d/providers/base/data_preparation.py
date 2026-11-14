@@ -118,6 +118,7 @@ class PrepareDataBase(ABC):
 
         return mat_inf_index, combinatIndex
 
+    @staticmethod
     def _get_mat_nan(r, c, no_data_value, mat_slope, mat_dem):
         # data value vector intersection
         condition = ma.logical_or(
