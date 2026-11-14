@@ -209,7 +209,6 @@ class PrepareDataBase(ABC):
         self.data['mat_boundary'] = None
         self.data['spix'] = None
         self.data['vpix'] = None
-        #Logger.progress(100)
 
         return rr, rc
 
