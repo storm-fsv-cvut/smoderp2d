@@ -404,7 +404,10 @@ def rill_runoff(dt, effect_vrst, h_rill, rillWidth, v_rill_rest=None,
     )
     r_rill = (h * b) / (b + 2 * h)
 
-    v_rill = ma.power(r_rill, (2.0 / 3.0)) * 1. / nrill * ma.power(slope, 0.5)
+    # keep input dtype: ma.power promotes float32 to float64 since
+    # NumPy 2 (NEP 50), which would change results compared to NumPy 1
+    v_rill = ma.power(r_rill, (2.0 / 3.0)).astype(r_rill.dtype) * 1. / \
+        nrill * ma.power(slope, 0.5).astype(slope.dtype)
 
     q_rill = v_rill * h * b
 
