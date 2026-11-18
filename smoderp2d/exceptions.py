@@ -68,6 +68,26 @@ class ConfigError(Exception):
     pass
 
 
+class SmallParameterValueError(ConfigError):
+    """ Exception raised if a parameter reaches a wrong (too small) numeric value
+    """
+    def __init__(self, param, value, limit):
+        self.msg = "Parameter '{}' has low value ({} < {}).".format(
+                param, value, limit
+        )
+        Logger.fatal(self.msg)
+
+
+class LargeParameterValueError(ConfigError):
+    """ Exception raised if a parameter reaches a wrong (too large) numeric value
+    """
+    def __init__(self, param, value, limit):
+        self.msg = "{} parameter value is too large ({} > {}).".format(
+                param, value, limit
+        )
+        Logger.fatal(self.msg)
+
+
 class ComputationAborted(SmoderpError):
     """Raised when the computation was aborted through an expected signal."""
 
