@@ -57,9 +57,30 @@ class NegativeWaterLevel(SmoderpError):
 
     def __init__(self):
         """TODO."""
-        Logger.fatal(
-            'Water level reached negative value'
-        )
+        self.msg = 'Water level reached negative value'
+        super().__init__(self.msg)
+
+    def __str__(self):
+        """Represent the object as a string."""
+        return self.msg
+
+
+class IncorrectInfiltrationType(SmoderpError):
+    """Exception raised if an unknown infiltration type is configured."""
+
+    def __init__(self, infiltration_type):
+        """Report the invalid infiltration type.
+
+        :param infiltration_type: infiltration type set in the config
+        """
+        self.msg = 'Incorrect infiltration type: the infiltration id should ' \
+                   'be in the range 1 - 4. {} was assigned in the ' \
+                   'config'.format(infiltration_type)
+        super().__init__(self.msg)
+
+    def __str__(self):
+        """Represent the object as a string."""
+        return self.msg
 
 
 class ConfigError(Exception):

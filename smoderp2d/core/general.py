@@ -257,6 +257,9 @@ class Globals:
     slope_width = None
     # computation type
     computationType = 'explicit'
+    # infiltration type (1 Philip, 2 Green-Ampt, 3 Richards,
+    # 4 Green-Ampt for unsteady rainfall)
+    infiltration_type = 1
 
     @classmethod
     def get_type_of_computing(cls):
@@ -423,6 +426,15 @@ class Globals:
         return cls.STREAM_RATIO
 
     @classmethod
+    def get_infiltration_type(cls):
+        """Return the infiltration type.
+
+        1 stands for Philip infiltration (default), 2 for Green-Ampt,
+        3 for Richards and 4 for Green-Ampt for unsteady rainfall.
+        """
+        return cls.infiltration_type
+
+    @classmethod
     def reset(cls):
         """Reset static variables to their default values."""
         # type of computation
@@ -500,3 +512,5 @@ class Globals:
         cls.slope_width = None
         # computation type
         cls.computationType = 'explicit'
+        # infiltration type
+        cls.infiltration_type = 1

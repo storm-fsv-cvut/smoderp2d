@@ -1,0 +1,59 @@
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage[left = 25mm, right = 25mm, top = 25mm, bottom = 25mm]
+    {geometry}
+
+\usepackage{pdflscape}
+
+
+% \setlength{\parindent}{4em}
+\setlength{\parskip}{0.5em}
+
+\begin{document}
+\begin{landscape}
+
+    \section*{Richards equation in FDM}
+    spatial discretization
+
+        $$
+            C(h)\frac{\mathrm{d} h}{\mathrm{d}  t} = \frac{K(h_{i+1/2})}{\Delta z ^ 2} h_{i+1}
+            - \left(\frac{K(h_{i+1/2})}{\Delta z ^ 2} + \frac{K(h_{i-1/2})}{\Delta z ^ 2} \right)h_{i}
+            + \frac{K(h_{i-1/2})}{\Delta z ^ 2}  h_{i-1}
+            + \frac{K(h_{i+1/2})}{\Delta z} - \frac{K(h_{i-1/2})}{\Delta z}
+        $$
+
+        $$
+            - \left(\frac{K(h_{i+1/2})}{\Delta z} - \frac{K(h_{i-1/2})}{\Delta z} \right) + C(h)\frac{\mathrm{d} h}{\mathrm{d}  t} = \frac{K(h_{i+1/2})}{\Delta z ^ 2} h_{i+1}
+            - \left(\frac{K(h_{i+1/2})}{\Delta z ^ 2} + \frac{K(h_{i-1/2})}{\Delta z ^ 2} \right)h_{i}
+            + \frac{K(h_{i-1/2})}{\Delta z ^ 2}  h_{i-1}
+        $$
+
+        time discretization
+        $$
+            - \left(\frac{K(h ^ {t+1}_{i+1/2})}{\Delta z} - \frac{K(h ^ {t+1}_{i-1/2})}{\Delta z} \right) + C(h_i ^ {t+1})\frac{h_i ^ {t+1}}{\Delta t} - C(h_i ^ {t})  \frac{h_i ^ {t}}{\Delta t}
+            = \frac{K(h ^ {t+1}_{i+1/2})}{\Delta z ^ 2} h ^ {t+1}_{i+1}
+            - \left(\frac{K(h ^ {t+1}_{i+1/2})}{\Delta z ^ 2} + \frac{K(h ^ {t+1}_{i-1/2})}{\Delta z ^ 2}
+                    \right)h ^ {t+1}_{i}
+            + \frac{K(h ^ {t+1}_{i-1/2})}{\Delta z ^ 2}  h ^ {t+1}_{i-1}
+        $$
+
+        $$
+            - \left(\frac{K(h ^ {t+1}_{i+1/2})}{\Delta z} - \frac{K(h ^ {t+1}_{i-1/2})}{\Delta z} \right) - frac{C(h_i ^ {t})}{\Delta t} h_i ^ {t}
+            = \frac{K(h ^ {t+1}_{i+1/2})}{\Delta z ^ 2} h ^ {t+1}_{i+1}
+            - \frac{C(h_i ^ {t+1})}{\Delta t}h_i ^ {t+1} - \left(\frac{K(h ^ {t+1}_{i+1/2})}{\Delta z ^ 2} + \frac{K(h ^ {t+1}_{i-1/2})}{\Delta z ^ 2}
+                                                                 \right)h ^ {t+1}_{i}
+            + \frac{K(h ^ {t+1}_{i-1/2})}{\Delta z ^ 2}  h ^ {t+1}_{i-1}
+        $$
+
+        $$
+            - \left(\frac{K(h ^ {t+1}_{i+1/2})}{\Delta z} - \frac{K(h ^ {t+1}_{i-1/2})}{\Delta z} \right) - frac{C(h_i ^ {t})}{\Delta t} h_i ^ {t}
+            = \frac{K(h ^ {t+1}_{i+1/2})}{\Delta z ^ 2} h ^ {t+1}_{i+1}
+            - \left(frac{C(h_i ^ {t+1})}{\Delta t} + \frac{K(h ^ {t+1}_{i+1/2})}{\Delta z ^ 2} + \frac{K(h ^ {t+1}_{i-1/2})}{\Delta z ^ 2}
+                    \right)h ^ {t+1}_{i}
+            + \frac{K(h ^ {t+1}_{i-1/2})}{\Delta z ^ 2}  h ^ {t+1}_{i-1}
+        $$
+
+\end{landscape}
+\end{document}
