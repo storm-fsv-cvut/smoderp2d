@@ -15,17 +15,18 @@ jobs:
     strategy:
       fail-fast: false
 
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     container:
-      image: osgeo/grass-gis:releasebranch_8_3-debian
+      image: osgeo/grass-gis:releasebranch_8_5-debian
 
     steps:
       - uses: actions/checkout@v3
 
       - name: Install Python dependencies
+        # numpy is provided by the container (Debian package, GRASS is built against it)
         run: |
-          pip3 install --break-system-packages -r .github/workflows/requirements.txt
-          pip3 install --break-system-packages -r .github/workflows/requirements3.13.txt
+          grep -v '^numpy' .github/workflows/requirements.txt > /tmp/requirements.txt
+          pip3 install --break-system-packages -r /tmp/requirements.txt
 
       - name: Install smoderp2d
         run: |
@@ -39,17 +40,18 @@ jobs:
     strategy:
       fail-fast: false
 
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     container:
-      image: osgeo/grass-gis:releasebranch_8_3-debian
+      image: osgeo/grass-gis:releasebranch_8_5-debian
 
     steps:
       - uses: actions/checkout@v3
 
       - name: Install Python dependencies
+        # numpy is provided by the container (Debian package, GRASS is built against it)
         run: |
-          pip3 install --break-system-packages -r .github/workflows/requirements.txt
-          pip3 install --break-system-packages -r .github/workflows/requirements3.13.txt
+          grep -v '^numpy' .github/workflows/requirements.txt > /tmp/requirements.txt
+          pip3 install --break-system-packages -r /tmp/requirements.txt
 
       - name: Install smoderp2d
         run: |
