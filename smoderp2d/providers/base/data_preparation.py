@@ -1,117 +1,104 @@
 import os
 import shutil
+import math
 import numpy as np
+import numpy.ma as ma
 from abc import ABC, abstractmethod
 
 from smoderp2d.processes import rainfall
+from smoderp2d.core import CompType
 from smoderp2d.core.general import GridGlobals, Globals
 from smoderp2d.providers.base import Logger
-from smoderp2d.providers.base.exceptions import DataPreparationError, DataPreparationInvalidInput
+from smoderp2d.providers.base.exceptions import DataPreparationError, \
+    DataPreparationInvalidInput
+from smoderp2d.exceptions import RainDataError
+
 
 class PrepareDataBase(ABC):
+
     @staticmethod
-    def _get_a(mat_n, mat_x, mat_y, r, c, no_data, mat_slope):
+    def _get_a(mat_nsheet, mat_y, no_data, mat_slope):
         """Build 'a' and 'aa' arrays.
 
-        :param mat_n:
-        :param mat_x:
+        :param mat_nsheet:
         :param mat_y:
-        :param r: number of rows
-        :param c: number of columns
         :param no_data: no data value
         :param mat_slope:
-        :return: np ndarray for mat_a and for mat_aa
+        :return: np ndarray for mat_a
         """
-        mat_a = np.zeros(
-            [r, c], float
+        mat_a = ma.where(
+            ma.logical_or(
+                ma.logical_or(mat_nsheet == no_data, mat_y == no_data),
+                mat_slope == no_data
+            ),
+            no_data,
+            ma.where(
+                mat_slope == 0,
+                0.0001,  # comment OP: where did we get this value from?
+                1 / mat_nsheet * ma.power(mat_slope, mat_y)
+            )
         )
-        mat_aa = np.zeros(
-            [r, c], float
+
+        return mat_a
+
+    @staticmethod
+    def _get_crit_water(mat_b, mat_tau, mat_v, r, c, mat_slope,
+                        no_data_value, mat_a):
+        cond = ma.logical_and(
+            mat_slope != no_data_value, mat_tau != no_data_value
         )
 
-        # calculating the "a" parameter
-        for i in range(r):
-            for j in range(c):
-                slope = mat_slope[i][j]
-                par_x = mat_x[i][j]
-                par_y = mat_y[i][j]
+        flux_crit = mat_tau * mat_v
+        exp = 1 / (mat_b - 1)
 
-                if par_x == no_data or par_y == no_data or slope == no_data:
-                    par_a = no_data
-                    par_aa = no_data
-                elif par_x == no_data or par_y == no_data or slope == 0.0:
-                    par_a = 0.0001
-                    par_aa = par_a / mat_n[i][j]
-                else:
-                    exp = np.power(slope, par_y)
-                    par_a = par_x * exp
-                    par_aa = par_a / mat_n[i][j]
+        g = 9807
 
-                mat_a[i][j] = par_a
-                mat_aa[i][j] = par_aa
+        # 1000 = auxiliary high value for zero slope
+        mat_hcrit_tau = ma.where(
+            cond,
+            ma.where(mat_slope == 0, 1000, mat_tau / g / mat_slope),
+            no_data_value
+        )
 
-        return mat_a, mat_aa
+        mat_hcrit_v = ma.where(
+            cond,
+            ma.where(mat_slope == 0, 1000, ma.power(mat_v / mat_a, exp)),
+            no_data_value
+        )
 
-    def _get_crit_water(self, mat_b, mat_tau, mat_v, r, c, mat_slope,
-                        no_data_value, mat_aa):
-        """
+        mat_hcrit_flux = ma.where(
+            cond,
+            ma.where(
+                mat_slope == 0,
+                1000,
+                ma.power(flux_crit / mat_slope / g / mat_a, 1 / mat_b)
+            ),
+            no_data_value
+        )
 
-        :param all_attrib:
-        """
-        # critical water level
-        mat_hcrit_tau = np.zeros([r, c], float)
-        mat_hcrit_v = np.zeros([r, c], float)
-        mat_hcrit_flux = np.zeros([r, c], float)
-        mat_hcrit = np.zeros([r, c], float)
-
-        for i in range(r):
-            for j in range(c):
-                if mat_slope[i][j] != no_data_value \
-                   and mat_tau[i][j] != no_data_value:
-                    slope = mat_slope[i][j]
-                    tau_crit = mat_tau[i][j]
-                    v_crit = mat_v[i][j]
-                    b = mat_b[i][j]
-                    aa = mat_aa[i][j]
-                    flux_crit = tau_crit * v_crit
-                    exp = 1 / (b - 1)
-
-                    if slope == 0.0:
-                        hcrit_tau = hcrit_v = hcrit_flux = 1000 # set come auxiliary high value for zero slope
-
-                    else:
-                        hcrit_v = np.power((v_crit / aa), exp)  # h critical from v
-                        hcrit_tau = tau_crit / 9807 / slope  # h critical from tau
-                        hcrit_flux = np.power((flux_crit / slope / 9807 / aa),(1 / mat_b[i][j]))  # kontrola jednotek
-
-                    mat_hcrit_tau[i][j] = hcrit_tau
-                    mat_hcrit_v[i][j] = hcrit_v
-                    mat_hcrit_flux[i][j] = hcrit_flux
-                    hcrit = min(hcrit_tau, hcrit_v, hcrit_flux)
-                    mat_hcrit[i][j] = hcrit
-                else:
-                    mat_hcrit_tau[i][j] = no_data_value
-                    mat_hcrit_v[i][j] = no_data_value
-                    mat_hcrit_flux[i][j] = no_data_value
-                    mat_hcrit[i][j] = no_data_value
+        mat_hcrit = ma.where(
+            cond,
+            ma.minimum(ma.minimum(mat_hcrit_tau, mat_hcrit_v), mat_hcrit_flux),
+            no_data_value
+        )
 
         return mat_hcrit
 
     @staticmethod
-    def _get_inf_combinat_index(r, c, mat_k, mat_s):
-        """
+    def _get_inf_combinat_index(r, c, mat_k, mat_s, infiltration_type=0):
+        """TODO.
 
-        :param sfield:
-        :param intersect:
-
-        :return all_atrib:
+        :param r: TODO
+        :param c: TODO
+        :param mat_k: TODO
+        :param mat_s: TODO
+        :param infiltration_type: numerical identifier defining the
+            infiltration type (default 0 stays for Phillip)
         """
         mat_inf_index = None
         combinatIndex = None
 
-        infiltration_type = 0  # "Phillip"
         if infiltration_type == 0:
-            # to se rovna vzdycky ne? nechapu tuhle podminku 23.05.2018 MK
             mat_inf_index = np.zeros(
                 [r, c], int
             )
@@ -122,116 +109,119 @@ class PrepareDataBase(ABC):
                     kkk = mat_k[i][j]
                     sss = mat_s[i][j]
                     ccc = [kkk, sss]
-                    try:
-                        if combinat.index(ccc):
-                            mat_inf_index[i][j] = combinat.index(ccc)
-                    except:
+                    if ccc not in combinat:
                         combinat.append(ccc)
                         combinatIndex.append(
                             [combinat.index(ccc), kkk, sss, 0]
                         )
-                        mat_inf_index[i][j] = combinat.index(
-                            ccc
-                        )
+
+                    mat_inf_index[i][j] = combinat.index(ccc)
 
         return mat_inf_index, combinatIndex
 
-    def _get_mat_nan(self, r, c, no_data_value, mat_slope, mat_dem):
-        # vyrezani krajnich bunek, kde byly chyby, je to vyrazeno u
-        # sklonu a acc
-        mat_nan = np.zeros(
-            [r, c], float
-        )
-
-        i = j = 0
-
+    @staticmethod
+    def _get_mat_nan(r, c, no_data_value, mat_slope, mat_dem):
         # data value vector intersection
-        # TODO: no loop needed?
-        nv = no_data_value
-        for i in range(r):
-            for j in range(c):
-                x_mat_dem = mat_dem[i][j]
-                slp = mat_slope[i][j]
-                if x_mat_dem == nv or slp == nv:
-                    mat_nan[i][j] = nv
-                    mat_slope[i][j] = nv
-                    mat_dem[i][j] = nv
-                else:
-                    mat_nan[i][j] = 0
+        condition = ma.logical_or(
+            mat_dem == no_data_value, mat_slope == no_data_value
+        )
+        # get rid of border cells with errors - beware of slope and acc
+        mat_nan = ma.where(
+            condition,
+            no_data_value,
+            0
+        )
+        # keep input dtype: ma.where promotes float32 to float64 since
+        # NumPy 2 (NEP 50), which would change results compared to NumPy 1
+        mat_slope = ma.where(
+            condition,
+            no_data_value,
+            mat_slope
+        ).astype(mat_slope.dtype)
+        mat_dem = ma.where(
+            condition,
+            no_data_value,
+            mat_dem
+        ).astype(mat_dem.dtype)
 
         return mat_nan, mat_slope, mat_dem
 
     @staticmethod
     def _get_rr_rc(r, c, mat_boundary):
-        """Create list rr and list of lists rc which contain i and j index of
-        elements inside the compuation domain."""
-        nr = range(r)
-        nc = range(c)
+        """Create list rr and list of lists rc.
 
+        They contain i and j indexes of elements inside the computation domain.
+
+        :param r: TODO
+        :param c: TODO
+        :param mat_boundary: TODO
+        :return: TODO
+        """
         rr = []
         rc = []
 
-        in_domain = False
-        in_boundary = False
+        rr_insert = False
 
-        for i in nr:
+        for i in range(r):
             one_col = []
-            one_col_boundary = []
-            for j in nc:
+            for j in range(c):
 
-                if mat_boundary[i][j] == -99 and in_boundary is False:
-                    in_boundary = True
-
-                if mat_boundary[i][j] == -99 and in_boundary is True:
-                    one_col_boundary.append(j)
-
-                if (mat_boundary[i][j] == 0.0) and in_domain is False:
-                    rr.append(i)
-                    in_domain = True
-
-                if (mat_boundary[i][j] == 0.0) and in_domain is True:
+                if mat_boundary[i][j] == -99:
                     one_col.append(j)
+                    rr_insert = True
 
-            in_domain = False
-            in_boundary = False
+                elif mat_boundary[i][j] == 0.0:
+                    one_col.append(j)
+                    rr_insert = True
+
+            if rr_insert is True:
+                rr.append(i)
+            rr_insert = False
             rc.append(one_col)
 
         return rr, rc
-    
-class PrepareDataGISBase(PrepareDataBase):
-    def __init__(self, writter):
-        self.storage = writter
 
-        # complete dictionary of datasets and their type
-        self._data_layers = {
-            'dem_slope_mask' : 'temp',
-            'dem_polygon': 'temp',
-            'aoi': 'temp',
-            'aoi_polygon': 'core',
-            'aoi_mask': 'temp',
-            'dem_filled': 'temp',
-            'dem_flowdir': 'temp',
-            'dem_flowacc': 'temp',
-            'dem_slope': 'temp',
-            'dem_aspect': 'temp',
-            'dem_aoi': 'temp',
-            'dem_slope_aoi': 'temp',
-            'dem_flowdir_aoi': 'temp',
-            'dem_flowacc_aoi': 'temp',
-            'dem_aspect_aoi': 'temp',
-            'points_aoi': 'temp',
-            'soil_veg': 'temp',
-            'soilveg_aoi': 'temp',
-            'aoi_buffer': 'temp',
-            'stream_aoi': 'temp',
-            "stream_z": 'temp',
-            'stream_start': 'temp',
-            'stream_end': 'temp',
-            'stream_seg': 'temp',
-            'ratio_cell' : 'temp',
-            'efect_cont' : 'temp',
-        }
-        # complete list of field names that are supposed not to be changed, eg. in properties tables
+
+class PrepareDataGISBase(PrepareDataBase):
+
+    # complete dictionary of datasets and their type
+    data_layers = {
+        'dem_slope_mask': 'temp',
+        'dem_polygon': 'temp',
+        'aoi': 'temp',
+        'aoi_buffer': 'temp',
+        'aoi_polygon': 'core',
+        'aoi_mask': 'temp',
+        'dem_filled': 'temp',
+        'dem_flowdir': 'temp',
+        'dem_flowacc': 'temp',
+        'dem_slope': 'temp',
+        'dem_aspect': 'temp',
+        'dem_aoi': 'temp',
+        'dem_slope_aoi': 'temp',
+        'dem_flowdir_aoi': 'temp',
+        'dem_flowacc_aoi': 'temp',
+        'dem_aspect_aoi': 'temp',
+        'points_aoi': 'control',
+        'soil_veg': 'temp',
+        'soilveg_aoi': 'temp',
+        'streams_aoi': 'core',
+        'streams_seg': 'temp',
+        'ratio_cell': 'temp',
+        'effect_cont': 'temp',
+    }
+
+    soilveg_fields = {
+        "k": None, "s": None, "nrill": None, "pi": None, "ppl": None,
+        "ret": None, "b": None, "nsheet": None, "y": None, "tau": None,
+        "v": None
+    }
+
+    def __init__(self, writer):
+        self.storage = writer
+
+        # complete list of field names that are supposed not to be changed,
+        # e.g. in properties tables
         self.fieldnames = {
             'veg_type_fieldname': 'veg_type',
             'soilveg_type_fieldname': 'soilveg_type',
@@ -241,8 +231,9 @@ class PrepareDataGISBase(PrepareDataBase):
             'stream_segment_inclination': 'inclination',
             'stream_segment_next_down_id': 'next_down_id',
             'stream_segment_length': 'segment_length',
-            'channel_shape_id':  self._input_params['streams_channel_shape_code'],
-            'channel_profile': 'profile',
+            'channel_shape_id':  self._input_params[
+                'streams_channel_type_fieldname'
+            ],
             'channel_shapetype': 'shapetype',
             'channel_bottom_width': 'b',
             'channel_bank_steepness': 'm',
@@ -250,17 +241,17 @@ class PrepareDataGISBase(PrepareDataBase):
             'channel_q365': 'q365'
         }
 
-        self.soilveg_fields = {
-            "k": None, "s": None, "n": None, "pi": None, "ppl": None,
-            "ret": None, "b": None, "x": None, "y": None, "tau": None, "v": None
-        }
         for sv in self.soilveg_fields.keys():
-            self._data_layers["soilveg_aoi_{}".format(sv)] = 'temp'
-        self.storage.set_data_layers(self._data_layers)
+            self.data_layers["soilveg_aoi_{}".format(sv)] = 'temp'
+        self.storage.set_data_layers(self.data_layers)
 
-        self.stream_shape_fields = [self.fieldnames['channel_profile'], self.fieldnames['channel_shapetype'], self.fieldnames['channel_bottom_width'],
-                                    self.fieldnames['channel_bank_steepness'], self.fieldnames['channel_bank_steepness'],
-                                    self.fieldnames['channel_bed_roughness'], self.fieldnames['channel_q365']]
+        self.stream_shape_fields = [
+            self.fieldnames['channel_shapetype'],
+            self.fieldnames['channel_bottom_width'],
+            self.fieldnames['channel_bank_steepness'],
+            self.fieldnames['channel_bed_roughness'],
+            self.fieldnames['channel_q365']
+        ]
 
         self.data = {
             'mat_boundary': None,
@@ -273,22 +264,20 @@ class PrepareDataGISBase(PrepareDataBase):
             'surface_retention': None,
             'mat_inf_index': None,
             'mat_hcrit': None,
-            'mat_aa': None,
+            'mat_a': None,
             'mat_b': None,
             'mat_reten': None,
             'mat_fd': None,
             'mat_dem': None,
-            'mat_efect_cont': None,
+            'mat_effect_cont': None,
             'mat_slope': None,
             'mat_nan': None,
-            'mat_a': None,
-            'mat_n': None,
-            'poradi': None,
+            'mat_nrill': None,
             'end_time': self._input_params['end_time'],
             'state_cell': None,
-            'temp': None,
             'type_of_computing': None,
-            'mfda': None,
+            'mfda': self._input_params['flow_direction'] == 'multiple',
+            'wave': self._input_params['wave'],
             'sr': None,
             'itera': None,
             'streams': None,
@@ -307,19 +296,19 @@ class PrepareDataGISBase(PrepareDataBase):
 
         :param elevation: string path to DEM layer
         :param soil: string path to soil definition layer
-        :param vegetation: string path to vegenatation definition layer
-        
-        :return: string path to AIO polygon layer
+        :param vegetation: string path to vegetation definition layer
+
+        :return: string path to AoI polygon layer
         """
         pass
 
-    @abstractmethod    
+    @abstractmethod
     def _create_DEM_derivatives(self, dem):
         """Creates all the needed DEM derivatives in the DEM's
         original extent to avoid raster edge effects. The clipping
         extent could be replaced be AOI border buffered by 1 cell to
-        prevent time consuming operations on DEM if the DEM is much
-        larger then the AOI.
+        prevent time-consuming operations on DEM if the DEM is much
+        larger than the AOI.
 
         :param dem: string path to DEM layer
 
@@ -328,11 +317,10 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _clip_raster_layer(self, dataset, outline, name):
+    def _clip_raster_layer(self, dataset, aoi_mask, name):
         """Clips raster dataset to given polygon.
 
         :param dataset: raster dataset to be clipped
-        :param aoi_polygon: feature class to be used as the clipping geometry
         :param name: dataset name in the _data dictionary
 
         :return: full path to clipped raster
@@ -340,12 +328,11 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _clip_record_points(self, dataset, outline, name):
+    def _clip_record_points(self, dataset, aoi_polygon, name):
         """Makes a copy of record points inside the AOI as new
         feature layer and logs those outside AOI.
 
         :param dataset: points dataset to be clipped
-        :param aoi_polygon: polygon feature class of the AoI
         :param name: output dataset name in the _data dictionary
 
         :return: full path to clipped points dataset
@@ -363,51 +350,57 @@ class PrepareDataGISBase(PrepareDataBase):
         pass
 
     @abstractmethod
-    def _update_grid_globals(self, reference):
+    def _update_grid_globals(self, reference, reference_cellsize):
         """Update raster spatial reference info.
 
         This function must be called before _rst2np() is used first
         time.
 
         :param reference: reference raster layer
+        :param reference_cellsize: reference raster layer for cell size
+            (see https://github.com/storm-fsv-cvut/smoderp2d/issues/256)
         """
         pass
 
     @abstractmethod
-    def _compute_efect_cont(self, dem_clip):
-        """Compute efect contour array.
-        ML: improve description
-        
+    def _compute_effect_cont(self, dem, asp):
+        """Compute effect contour array.
+
+        ML: improve description.
+
         :param dem: string to dem clipped by area of interest
-        :param asp: sting to aspect clipped by area of interest
         :return: numpy array
         """
         pass
 
-    @abstractmethod    
+    @abstractmethod
     def _prepare_soilveg(self, soil, soil_type, vegetation, vegetation_type,
-                         aoi_outline, table_soil_vegetation):
-        """Prepares the combination of soils and vegetation input
-        layers. Gets the spatial intersection of both and checks the
+                         aoi_polygon, table_soil_vegetation):
+        """Prepare the combination of soils and vegetation input layers.
+
+        Gets the spatial intersection of both and checks the
         consistency of attribute table.
 
         :param soil: string path to soil layer
         :param soil_type: soil type attribute
         :param vegetation: string path to vegetation layer
         :param vegetation_type: vegetation type attribute
-        :param aoi_polygon: string path to polygon layer defining area of interest
-        :param table_soil_vegetation: string path to table with soil and vegetation attributes
-        
+        :param table_soil_vegetation: string path to table with soil and
+                                      vegetation attributes
+
         :return: full path to soil and vegetation dataset
         """
         pass
 
     @abstractmethod
-    def _get_points_location(self):
-        """Get array of points locations. X and Y coordinates are obtained from the input points geometry
+    def _get_points_location(self, points_layer, points_fieldname):
+        """Get array of points locations.
+
+        X and Y coordinates are obtained from the input points geometry
         points' row and column index in the dem_aoi is calculated
 
-        :return: array with point fids, dem row and column indexes and x, y coordinates
+        :return: array with point fids, dem row and column indexes and
+                 x, y coordinates
         """
         pass
 
@@ -416,7 +409,7 @@ class PrepareDataGISBase(PrepareDataBase):
         """Clip stream layer to the given polygon.
 
         :param stream: path to stream layer
-        :param outline: path to polygon layer of the AoI
+        :param aoi_polygon: path to polygon layer of the AoI
 
         :return: full path to clipped stream dataset
         """
@@ -440,7 +433,7 @@ class PrepareDataGISBase(PrepareDataBase):
         array).
 
         :param stream: string path to stream dataset
-        
+
         :return mat_stream_seg: Numpy array
         """
         pass
@@ -454,12 +447,13 @@ class PrepareDataGISBase(PrepareDataBase):
     #     pass
 
     @abstractmethod
-    def _stream_shape(self, streams, channel_shape_code, channel_properties_table):
+    def _stream_shape(self, streams, channel_shape_code,
+                      channel_properties_table):
         """Compute shape of stream.
 
-        :param stream: string path to streams dataset
-        :param stream_shape_code: shape code column
-        :param stream_shape_tab: table with stream shapes
+        :param streams: string path to streams dataset
+        :param channel_shape_code: shape code column
+        :param channel_properties_table: table with stream shapes
 
         :return list: stream shape attributes as list
         """
@@ -472,7 +466,44 @@ class PrepareDataGISBase(PrepareDataBase):
         Raise DataPreparationInvalidInput on error.
         """
         pass
-            
+
+    @abstractmethod
+    def _get_field_names(self, ds):
+        """Get field names for vector layer."""
+        pass
+
+    def _check_empty_values(self, table, field, unique=False):
+        """Check empty values in fields.
+
+        :param table: name of table to be checked
+        :param field: name of field to be checked
+        :param unique: True for testing also unique values
+        """
+        values = self._get_field_values(table, field)
+
+        for v in values:
+            if v is None or (isinstance(v, str) and v.strip() == ""):
+                raise DataPreparationInvalidInput(
+                    "Incorrect values in field '{}': "
+                    "empty values are not allowed".format(field)
+                )
+
+        if unique:
+            if len(values) != len(set(values)):
+                raise DataPreparationInvalidInput(
+                    "Incorrect values in field '{}': "
+                    "duplicated values are not allowed".format(field)
+                )
+
+    @abstractmethod
+    def _get_field_values(self, table, field):
+        """Check empty values in fields.
+
+        :param table: name of table
+        :param field: name of field
+        """
+        pass
+
     def run(self):
         """Perform data preparation steps.
 
@@ -496,6 +527,16 @@ class PrepareDataGISBase(PrepareDataBase):
         )
         Logger.progress(10)
 
+        # set GridGlobals
+        self._update_grid_globals(aoi_mask, self._input_params['elevation'])
+        if GridGlobals.dx != GridGlobals.dy:
+            raise DataPreparationInvalidInput(
+                "Input DEM spatial x resolution ({}) differs from y "
+                "resolution ({}). Resample input data to set the same x and y"
+                " spatial resolution before running SMODERP2D.".format(
+                    GridGlobals.dx, GridGlobals.dy)
+            )
+
         # calculate DEM derivatives
         # intentionally done on non-clipped DEM to avoid edge effects
         Logger.info("Creating DEM-derived layers...")
@@ -508,41 +549,52 @@ class PrepareDataGISBase(PrepareDataBase):
         #   clip the input layers to AIO outline including the record points
         Logger.info("Clipping layers to AoI outline...")
         dem_aoi = self._clip_raster_layer(dem_filled, aoi_mask, 'dem_aoi')
-        dem_flowdir_aoi = self._clip_raster_layer(dem_flowdir, aoi_mask, 'dem_flowdir_aoi')
+        dem_flowdir_aoi = self._clip_raster_layer(
+            dem_flowdir, aoi_mask, 'dem_flowdir_aoi'
+        )
         self._clip_raster_layer(dem_flowacc, aoi_mask, 'dem_flowacc_aoi')
-        dem_slope_aoi = self._clip_raster_layer(dem_slope, aoi_mask, 'dem_slope_aoi')
-        dem_aspect_aoi = self._clip_raster_layer(dem_aspect, aoi_mask, 'dem_aspect_aoi')
-        points_aoi = self._clip_record_points(self._input_params['points'], aoi_polygon, 'points_aoi')
-        Logger.progress(30)
-
+        dem_slope_aoi = self._clip_raster_layer(
+            dem_slope, aoi_mask, 'dem_slope_aoi'
+        )
+        dem_aspect_aoi = self._clip_raster_layer(
+            dem_aspect, aoi_mask, 'dem_aspect_aoi'
+        )
         # convert to numpy arrays
         self.data['mat_dem'] = self._rst2np(dem_aoi)
-        # update data dict for spatial ref info
-        GridGlobals.r = self.data['mat_dem'].shape[0]
-        GridGlobals.c = self.data['mat_dem'].shape[1]
-        self._update_grid_globals(dem_aoi)
-        if GridGlobals.dx != GridGlobals.dy:
-            raise DataPreparationInvalidInput(
-                "Input DEM spatial x resolution ({}) differs from y resolution ({}). "
-                "Resample input data to set the same x and y spatial resolution before "
-                "running SMODERP2D.".format(GridGlobals.dx, GridGlobals.dy))
         self.data['mat_slope'] = self._rst2np(dem_slope_aoi)
         # unit conversion % -> 0-1
         self._convert_slope_units()
         if dem_flowdir_aoi is not None:
             self.data['mat_fd'] = self._rst2np(dem_flowdir_aoi)
-        self.data['mat_efect_cont'] = self._compute_efect_cont(dem_aoi, dem_aspect_aoi)
+        self.data['mat_effect_cont'] = self._compute_effect_cont(
+            dem_aoi, dem_aspect_aoi
+        )
+        Logger.progress(30)
 
-        #   join the attributes to soil_veg intersect and check the table consistency
+        # build points array
+        if self._input_params['points']:
+            points_aoi = self._clip_record_points(
+                self._input_params['points'], aoi_polygon, 'points_aoi'
+            )
+            Logger.info("Preparing points for hydrographs...")
+            self.data['array_points'] = self._get_points_location(
+                points_aoi,
+                self._input_params['points_fieldname']
+            )
+
+        #   join the attributes to soil_veg intersect and check the table
+        #   consistency
         Logger.info("Preparing soil and vegetation properties...")
         self._prepare_soilveg(
-            self._input_params['soil'], self._input_params['soil_type_fieldname'],
-            self._input_params['vegetation'], self._input_params['vegetation_type_fieldname'],
+            self._input_params['soil'],
+            self._input_params['soil_type_fieldname'],
+            self._input_params['vegetation'],
+            self._input_params['vegetation_type_fieldname'],
             aoi_polygon, self._input_params['table_soil_vegetation']
         )
         Logger.progress(40)
 
-        self.data['mat_n'] = self.soilveg_fields['n']
+        self.data['mat_nrill'] = self.soilveg_fields['nrill']
         self.data['mat_pi'] = self.soilveg_fields['pi']
         self.data['mat_ppl'] = self.soilveg_fields['ppl']
         self.data['mat_reten'] = self.soilveg_fields['ret']
@@ -552,42 +604,49 @@ class PrepareDataGISBase(PrepareDataBase):
             self._get_inf_combinat_index(GridGlobals.r, GridGlobals.c,
                                          self.soilveg_fields['k'],
                                          self.soilveg_fields['s'])
-        
+
         self.data['mat_nan'], self.data['mat_slope'], self.data['mat_dem'] = \
             self._get_mat_nan(GridGlobals.r, GridGlobals.c,
                               GridGlobals.NoDataValue, self.data['mat_slope'],
                               self.data['mat_dem'])
 
-        # build points array
-        Logger.info("Prepare points for hydrographs...")
-        self.data['array_points'] = self._get_points_location(points_aoi)
-
         # build a/aa arrays
-        self.data['mat_a'], self.data['mat_aa'] = self._get_a(
-            self.soilveg_fields['n'], self.soilveg_fields['x'],
-            self.soilveg_fields['y'], GridGlobals.r,
-            GridGlobals.c, GridGlobals.NoDataValue, self.data['mat_slope']
-        )
+        self.data['mat_a'] = self._get_a(
+                self.soilveg_fields['nsheet'], self.soilveg_fields['y'],
+                GridGlobals.NoDataValue, self.data['mat_slope'])
         Logger.progress(50)
 
         Logger.info("Computing critical level...")
         self.data['mat_hcrit'] = self._get_crit_water(
-            self.data['mat_b'], self.soilveg_fields['tau'], self.soilveg_fields['v'], GridGlobals.r,
+            self.data['mat_b'], self.soilveg_fields['tau'],
+            self.soilveg_fields['v'], GridGlobals.r,
             GridGlobals.c, self.data['mat_slope'],
-            GridGlobals.NoDataValue, self.data['mat_aa'])
+            GridGlobals.NoDataValue, self.data['mat_a'])
+        self.storage.write_raster(self.data['mat_hcrit'], 'hcrit', 'control')
 
         # load precipitation input file
-        self.data['sr'], self.data['itera'] = \
-            rainfall.load_precipitation(self._input_params['rainfall_file'])
+        try:
+            self.data['sr'], self.data['itera'] = \
+                rainfall.load_precipitation(self._input_params['rainfall_file'])
+        except RainDataError as e:
+            raise DataPreparationInvalidInput(e)
         Logger.progress(60)
 
         Logger.info("Processing stream network:")
-        if self._input_params['streams'] and self._input_params['channel_properties_table'] and self._input_params['streams_channel_shape_code']:
-            self._prepare_streams(self._input_params['streams'],
-                                 self._input_params['channel_properties_table'],
-                                 self._input_params['streams_channel_shape_code'],
-                                 dem_aoi, aoi_polygon
+        if self._input_params['streams'] and self._input_params['channel_properties_table'] and self._input_params['streams_channel_type_fieldname']:
+            self.data['type_of_computing'] = CompType.stream_rill
+            self._prepare_streams(
+                self._input_params['streams'],
+                self._input_params['channel_properties_table'],
+                self._input_params['streams_channel_type_fieldname'],
+                dem_aoi,
+                # provide unclipped DEM to avoid stream vertices placed
+                # outside DEM
+                aoi_polygon
             )
+        else:
+            self.data['type_of_computing'] = CompType.rill
+
         Logger.progress(90)
 
         # define mask (rc/rc variables)
@@ -595,13 +654,19 @@ class PrepareDataGISBase(PrepareDataBase):
             GridGlobals.r, GridGlobals.c, GridGlobals.NoDataValue,
             self.data['mat_nan']
         )
-
         GridGlobals.rr, GridGlobals.rc = self._get_rr_rc(
             GridGlobals.r, GridGlobals.c, self.data['mat_boundary']
         )
 
-        self.data['mfda'] = False ### ML: ???
-        self.data['mat_boundary'] = None ## ML: -> JJ ???
+        if self._input_params['generate_temporary']:
+            # write mat arrays to temp
+            for k, v in self.data.items():
+                if isinstance(v, np.ndarray) and k not in ('array_points', 'sr'):
+                    self.storage.write_raster(
+                        v, k, 'temp'
+                    )
+
+        self.data['mat_boundary'] = None  # ML: -> JJ ???
 
         Logger.info("Data preparation has been finished")
         Logger.info('-' * 80)
@@ -612,13 +677,13 @@ class PrepareDataGISBase(PrepareDataBase):
     def _set_input_params(self, options):
         """Set input parameters from user-given options.
 
-        :param options: directory with user-given options 
+        :param options: directory with user-given options
         """
         self._input_params = options
         # cast some options to float
         for opt in ('maxdt', 'end_time'):
             self._input_params[opt] = float(self._input_params[opt])
-            
+
     def _create_output_dir(self):
         """Creates empty output and temporary directories to which created
         files are saved.
@@ -631,76 +696,48 @@ class PrepareDataGISBase(PrepareDataBase):
         Logger.info(
             "Creating output directories <{}>".format(Globals.outdir)
         )
-        if os.path.exists(Globals.outdir):
-            shutil.rmtree(Globals.outdir)
-        os.makedirs(Globals.outdir)
 
-        # create temporary dir
-        self.data['temp'] = os.path.join(
-            Globals.outdir, "temp"
-        )
-        Logger.debug(
-            "Creating temp directory <{}>".format(self.data['temp'])
-        )
-        os.makedirs(self.data['temp'])
-
-        # create control dir
-        control = os.path.join(
-            Globals.outdir, "control"
-        )
-        Logger.debug(
-            "Creating control directory <{}>".format(control)
-        )
-        os.makedirs(control)
+        # create temporary/control dir
+        for dir_name in ("temp", "control"):
+            dir_path = os.path.join(Globals.outdir, dir_name)
+            Logger.debug(
+                "Creating {} directory <{}>".format(dir_name, dir_path)
+            )
+            os.makedirs(dir_path)
 
         self.storage.create_storage(self._input_params['output'])
 
-    def _get_points_dem_coords(self, x, y):
+    def _get_point_dem_coords(self, x, y):
         """ Finds the raster row and column index for input x, y coordinates
         :param x: X coordinate of the point
         :param y: Y coordinate of the point
 
-        :return: r, c - row and column index of the input point if point within the DEM, else None
+        :return: r, c - row and column index of the input point if point within
+        the DEM, else None
         """
         # position i,j in raster (starts at 0)
-        r = int(GridGlobals.r - ((y - GridGlobals.yllcorner) // GridGlobals.dy) - 1)
+        r = int(
+            GridGlobals.r - ((y - GridGlobals.yllcorner) // GridGlobals.dy) - 1
+        )
         c = int((x - GridGlobals.xllcorner) // GridGlobals.dx)
 
         # if point is not on the edge of raster or its
         # neighbours are not "NoDataValue", it will be returned
-        nv = GridGlobals.NoDataValue
-        if r != 0 and r != GridGlobals.r \
-            and c != 0 and c != GridGlobals.c and \
-            self.data['mat_dem'][r][c]   != nv and \
-            self.data['mat_dem'][r-1][c] != nv and \
-            self.data['mat_dem'][r+1][c] != nv and \
-            self.data['mat_dem'][r][c-1] != nv and \
-            self.data['mat_dem'][r][c+1] != nv:
-
+        if self.data['mat_dem'][r][c] != GridGlobals.NoDataValue:
             return r, c
         else:
             return None
 
-    def _prepare_streams(self, stream, stream_shape_tab, stream_shape_code, dem_aoi, aoi_polygon):
-        self.data['type_of_computing'] = 1
-
-        # pocitam vzdy s ryhama pokud jsou zadane vsechny vstupy pro
-        # vypocet toku, streams se pocitaji a type_of_computing je 3
-        listin = [self._input_params['streams'],
-                  self._input_params['channel_properties_table'],
-                  self._input_params['streams_channel_shape_code']]
-        tflistin = [len(i) > 1 for i in listin] ### TODO: ???
-
-        if all(tflistin):
-            self.data['type_of_computing'] = 3
-
-        if self.data['type_of_computing'] in (3, 5):
+    def _prepare_streams(self, stream, stream_shape_tab, stream_shape_code,
+                         dem, aoi_polygon):
+        rill_comptypes = (CompType.stream_rill, CompType.stream_subflow_rill)
+        if self.data['type_of_computing'] in rill_comptypes:
             Logger.info("Clipping stream to AoI outline ...")
             stream_aoi = self._stream_clip(stream, aoi_polygon)
             Logger.progress(70)
 
             Logger.info("Computing stream direction and inclinations...")
-            self._stream_direction(stream_aoi, dem_aoi)
+            self._stream_direction(stream_aoi, dem)
             Logger.progress(75)
 
             Logger.info("Computing stream segments...")
@@ -708,8 +745,10 @@ class PrepareDataGISBase(PrepareDataBase):
             Logger.progress(80)
 
             Logger.info("Computing stream hydraulics...")
-            #self._stream_hydraulics(stream_aoi) # ML: is it used -> output ?
-            self.data['streams'] = self._stream_shape(stream_aoi, stream_shape_code, stream_shape_tab)
+            # self._stream_hydraulics(stream_aoi) # ML: is it used -> output ?
+            self.data['streams'] = self._stream_shape(
+                stream_aoi, stream_shape_code, stream_shape_tab
+            )
         else:
             self.data['streams'] = None
             self.data['mat_stream_reach'] = None
@@ -726,9 +765,6 @@ class PrepareDataGISBase(PrepareDataBase):
         nr = range(r)
         nc = range(c)
 
-        rr = []
-        rc = []
-
         nv = no_data_value
         for i in nr:
             for j in nc:
@@ -738,12 +774,12 @@ class PrepareDataGISBase(PrepareDataBase):
                         val = -99
                 else:
                     if val != nv:
-                        if  mat_nan[i - 1][j] == nv or \
+                        if mat_nan[i - 1][j] == nv or \
                             mat_nan[i + 1][j] == nv or \
                             mat_nan[i][j - 1] == nv or \
                             mat_nan[i][j - 1] == nv:
                             val = -99
-                        if  mat_nan[i - 1][j + 1] == nv or \
+                        if mat_nan[i - 1][j + 1] == nv or \
                             mat_nan[i + 1][j + 1] == nv or \
                             mat_nan[i - 1][j - 1] == nv or \
                             mat_nan[i + 1][j - 1] == nv:
@@ -755,72 +791,218 @@ class PrepareDataGISBase(PrepareDataBase):
         return mat_boundary
 
     def _convert_slope_units(self):
-        """
-        Converts slope units from % to 0-1 range in the mask.
-        """
-        # TODO convert to NumPy logic!!!
-        for i in range(self.data['mat_slope'].shape[0]):
-            for j in range(self.data['mat_slope'].shape[1]):
-                nv = GridGlobals.NoDataValue
-                if self.data['mat_slope'][i][j] != nv:
-                    self.data['mat_slope'][i][j] = self.data['mat_slope'][i][j]/100.
+        """Convert slope units from % to 0-1 range in the mask."""
+        self.data['mat_slope'] = np.where(
+            self.data['mat_slope'] != GridGlobals.NoDataValue,
+            self.data['mat_slope'] / 100.,
+            self.data['mat_slope']
+        )
 
-    def _get_mat_stream_seg(self, mat_stream_seg):
+    @staticmethod
+    def _get_mat_stream_seg(mat_stream_seg):
         # each element of stream has a number assigned from 0 to
         # no. of stream parts
-        for i in range(GridGlobals.r):
-            for j in range(GridGlobals.c):
-                if mat_stream_seg[i][j] > 0: # FID starts at 1
-                    # state 0|1|2 (> Globals.streams_flow_inc -> stream flow)
-                    mat_stream_seg[i][j] += Globals.streams_flow_inc
+        mat_stream_seg += ma.where(
+            mat_stream_seg > 0,  # FID starts at 1
+            # state 0|1|2 (> Globals.streams_flow_inc -> stream flow)
+            Globals.streams_flow_inc,
+            0
+        )
 
     def _check_soilveg_dim(self, field):
+        """TODO.
+
+        :param field: TODO
+        """
         if self.soilveg_fields[field].shape[0] != GridGlobals.r or \
            self.soilveg_fields[field].shape[1] != GridGlobals.c:
             raise DataPreparationError(
-                "Unexpected soilveg {} attribute array dimension {}: should be ({}, {})".format(
+                "Unexpected soilveg {} attribute array dimension {}: "
+                "should be ({}, {})".format(
                     field, self.soilveg_fields[field].shape,
                     GridGlobals.r, GridGlobals.c)
             )
 
     def _get_streams_attr_(self):
+        """Get stream attributes."""
         fields = [
             self.fieldnames['stream_segment_id'],
-            self._input_params['streams_channel_shape_code'],
+            self._input_params['streams_channel_type_fieldname'],
             self.fieldnames['stream_segment_next_down_id'],
-            self.fieldnames['stream_segment_length'], 
-            self.fieldnames['stream_segment_inclination']] + self.stream_shape_fields
-        
-        stream_attr = {}
-        for f in fields:
-            stream_attr[f] = []
+            self.fieldnames['stream_segment_length'],
+            self.fieldnames['stream_segment_inclination']
+        ] + self.stream_shape_fields
 
-        return stream_attr
+        return {field: [] for field in fields}
 
     def _check_input_data_(self):
-        if self._input_params['streams'] or self._input_params['channel_properties_table'] or self._input_params['streams_channel_shape_code']:
+        """Check input data."""
+        self._check_empty_values(
+            self._input_params['vegetation'],
+            self._input_params['vegetation_type_fieldname']
+        )
+        self._check_empty_values(
+            self._input_params['soil'],
+            self._input_params['soil_type_fieldname']
+        )
+
+        if self._input_params['points']:
+            if not self._input_params['points_fieldname']:
+                raise DataPreparationInvalidInput(
+                    "Input parameter 'Points code fieldname' must be "
+                    "defined!"
+                )
+
+            self._check_empty_values(
+                self._input_params['points'],
+                self._input_params['points_fieldname'],
+                unique=True
+            )
+
+        if self._input_params['streams'] or \
+           self._input_params['channel_properties_table'] or \
+           self._input_params['streams_channel_type_fieldname']:
             if not self._input_params['streams']:
-                raise DataPreparationInvalidInput("Input parameter 'Stream network feature layer' must be defined!")
+                raise DataPreparationInvalidInput(
+                    "Input parameter 'Stream network feature layer' must be "
+                    "defined!"
+                )
             if not self._input_params['channel_properties_table']:
-                raise DataPreparationInvalidInput("Input parameter 'Channel properties table' must be defined!")
-            if not self._input_params['streams_channel_shape_code']:
-                raise DataPreparationInvalidInput("Field containing the channel shape identifier must be set!")
+                raise DataPreparationInvalidInput(
+                    "Input parameter 'Channel properties table' must be "
+                    "defined!"
+                )
+            if not self._input_params['streams_channel_type_fieldname']:
+                raise DataPreparationInvalidInput(
+                    "Field containing the channel shape identifier must be "
+                    "set!"
+                )
+
+            # check presence of needed fields in stream shape properties table
+            fields = self._get_field_names(
+                self._input_params['channel_properties_table']
+            )
+            for f in self.stream_shape_fields:
+                if f not in fields:
+                    raise DataPreparationInvalidInput(
+                        "Field '{}' not found in '{}'\nProper columns codes "
+                        "are: {}".format(
+                            f, self._input_params['channel_properties_table'],
+                            self.stream_shape_fields
+                        )
+                    )
+
+            # check presence streams_channel_type_fieldname in streams
+            for target in (self._input_params["streams"],
+                           self._input_params['channel_properties_table']):
+                fields = self._get_field_names(target)
+                channel_type_fieldname = self._input_params[
+                    "streams_channel_type_fieldname"
+                ]
+                if channel_type_fieldname not in fields:
+                    raise DataPreparationInvalidInput(
+                        "Field '{}' not found in '{}'".format(
+                            channel_type_fieldname, target
+                        )
+                    )
+
+        # rainfall file
+        if not os.path.isfile(self._input_params['rainfall_file']):
+            raise DataPreparationInvalidInput(
+                "The rainfall file does not exist"
+            )
 
     @staticmethod
     def _check_resolution_consistency(ewres, nsres):
-        """Raise DataPreparationInvalidInput on different spatial resolution."""
-        if GridGlobals.dx != ewres or GridGlobals.dy != nsres:
+        """Raise DataPreparationInvalidInput on different spatial resolution.
+
+        :param ewres: TODO
+        :param nsres: TODO
+        """
+        if not math.isclose(GridGlobals.dx, ewres) or not math.isclose(GridGlobals.dy, nsres):
             raise DataPreparationInvalidInput(
                 "Input DEM spatial resolution ({}, {}) differs from processing "
                 "spatial resolution ({}, {})".format(
                     GridGlobals.dx, GridGlobals.dy, ewres, nsres)
             )
 
+    @staticmethod
+    def _check_rst2np(arr):
+        """Check numpy array consistency with GridGlobals.
+        
+        Raise DataPreparationError() if array's shape is different from
+        GridGlobals.
+
+        :param arr: TODO
+        """
+        if arr.shape[0] != GridGlobals.r or arr.shape[1] != GridGlobals.c:
+            raise DataPreparationError(
+                "Data inconsistency ({},{}) vs ({},{})".format(
+                arr.shape[0], arr.shape[1],
+                GridGlobals.r, GridGlobals.c)
+            )
+
     def _decode_stream_attr(self, attr):
-        """Decode attribute names to fieldnames keys"""
+        """Decode attribute names to fieldnames keys.
+
+        :param attr: TODO
+        :return: TODO
+        """
         attr_decoded = {}
         for k, v in attr.items():
-            key_decoded = list(self.fieldnames.keys())[list(self.fieldnames.values()).index(k)]
+            key_decoded = list(self.fieldnames.keys())[
+                list(self.fieldnames.values()).index(k)
+            ]
             attr_decoded[key_decoded] = v
 
         return attr_decoded
+
+    def _stream_check_fields(self, stream_aoi):
+        """TODO.
+
+        :param stream_aoi: TODO
+        :return: TODO
+        """
+        fields = self._get_field_names(stream_aoi)
+        duplicated_fields = []
+        for f in fields:
+            if f in self.stream_shape_fields:
+                # arcpy.management.DeleteField(stream_aoi, f)
+                duplicated_fields.append(f)
+
+        # inform the user about deleted fields
+        if len(duplicated_fields) > 0:
+            Logger.warning(
+                "The input stream feature class '{}' must not contain fields "
+                "from the channel properties table '{}':".format(
+                    os.path.basename(self._input_params["streams"]),
+                    os.path.basename(
+                        self._input_params["channel_properties_table"]
+                    )
+                )
+            )
+            for f in duplicated_fields:
+                Logger.warning(
+                    f"\tField '{f}' was deleted from the streams dataset."
+                )
+
+        return duplicated_fields
+
+    @staticmethod
+    def _update_points_array(array_points, i, fid, r, c, x, y):
+        """Update array of points.
+
+        :param array_points: TODO
+        :param i: TODO
+        :param fid: TODO
+        :param r: TODO
+        :param c: TODO
+        :param x: TODO
+        :param y: TODO
+        """
+        array_points[i][0] = fid
+        array_points[i][1] = r
+        array_points[i][2] = c
+        # x,y coordinates of current point stored in an array
+        array_points[i][3] = x
+        array_points[i][4] = y

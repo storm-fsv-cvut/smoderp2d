@@ -1,7 +1,9 @@
 from smoderp2d.providers.base import Logger
 
+
 class DataPreparationError(Exception):
     pass
+
 
 class DataPreparationInvalidInput(DataPreparationError):
     def __init__(self, msg):
@@ -9,11 +11,13 @@ class DataPreparationInvalidInput(DataPreparationError):
             "Invalid input for data preparation: {}".format(msg)
         )
 
+
 class LicenceNotAvailable(DataPreparationError):
     def __init__(self, msg):
         Logger.fatal(
             "Essential software licence missing: {}".format(msg)
         )
+
 
 class DataPreparationNoIntersection(DataPreparationError):
     def __init__(self):

@@ -7,6 +7,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from pywps import Process, ComplexInput, ComplexOutput, Format
 from pywps.app.exceptions import ProcessError
 
+
 class Smoderp2d(Process):
     def __init__(self):
         inputs = [
@@ -28,8 +29,8 @@ class Smoderp2d(Process):
             identifier='smoderp2d',
             version='0.1',
             title="Experimental SMODERP2D process",
-            abstract="""Performs SMODERP distributed event-based model for surface and
-subsurface runoff and erosion
+            abstract="""Performs SMODERP distributed event-based model for 
+surface and subsurface runoff and erosion
 (https://github.com/storm-fsv-cvut/smoderp2d) in 2D""",
             inputs=inputs,
             outputs=outputs,
@@ -41,7 +42,7 @@ subsurface runoff and erosion
     def process_output(outdir):
         def zipdir(path, ziph):
             # ziph is zipfile handle
-            for root, dirs, files in os.walk(path):
+            for root, _, files in os.walk(path):
                 for file in files:
                     ziph.write(os.path.join(root, file))
 
@@ -67,7 +68,7 @@ subsurface runoff and erosion
     
     def _handler(self, request, response):
         sys.path.insert(0, "/opt/smoderp2d")
-        from smoderp2d import WpsRunner
+        from smoderp2d.runner.wps import WpsRunner
         from smoderp2d.exceptions import ProviderError, ConfigError
         from smoderp2d.core.general import Globals
         from smoderp2d.providers.wps.logger import WpsLogHandler
@@ -88,4 +89,6 @@ subsurface runoff and erosion
             raise ProcessError("SMODERP failed: {}".format(e))
 
         # output data
-        response.outputs['output'].file = self.process_output(Globals.get_outdir())
+        response.outputs['output'].file = self.process_output(
+            Globals.get_outdir()
+        )

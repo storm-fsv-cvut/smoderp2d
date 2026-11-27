@@ -13,27 +13,39 @@ from smoderp2d.core.general import GridGlobals, Globals
 
 
 class CumulativeData:
+    """TODO."""
+
     def __init__(self, data_type, file_name):
+        """TODO.
+
+        :param data_type: TODO
+        :param file_name: TODO
+        """
         self.data_type = data_type
         self.file_name = file_name
 
 
 class CumulativeSubsurfacePass(object):
-    """
-    Empty (pass) Class
+    """Empty (pass) Class.
 
-    Class is inherited by the class Cumulative if the subsurface flow is not desired.
+    Class is inherited by the class Cumulative if the subsurface flow is not
+    desired.
     """
+
     def __init__(self):
+        """TODO."""
         self.data = {}
 
     def update_cumulative_sur(self, subsurface):
+        """TODO.
+
+        :param subsurface: TODO
+        """
         pass
 
 
 class CumulativeSubsurface(CumulativeSubsurfacePass):
-    """
-    Max and cumulative values of the subsurface flow
+    """Max and cumulative values of the subsurface flow.
 
     Stores arrays of max or cumulative values of important variables of
     the subsurface flow.
@@ -43,26 +55,33 @@ class CumulativeSubsurface(CumulativeSubsurfacePass):
     """
 
     def __init__(self):
+        """TODO."""
         super(CumulativeSubsurface, self).__init__()
 
         Logger.info('Subsurface')
 
         self.data.update({
             # cumulative exfiltration volume [m3]
-            'exfiltration': CumulativeData('core', 'cExfiltr_m3'),     # 1
+            'exfiltration': CumulativeData('core', 'cexfiltr_m3'),
             # cumulative percolation volume [m3]
-            'percolation' : CumulativeData('core', 'cPercol_m3'),      # 2
+            'percolation' : CumulativeData('core', 'cpercol_m3'),
             # maximum water level in the subsurface soil layer [m]
-            'h_sub'       : CumulativeData('core', 'mWLevelSub_M'),    # 3
+            'h_sub'       : CumulativeData('core', 'mwlevelsub_m'),
             # maximum subsurface flux [m3s-1]
-            'q_sub'       : CumulativeData('core', 'mQSub_m3_s'),      # 4
+            'q_sub'       : CumulativeData('core', 'mqsub_m3_s'),
             # cumulative outflow volume in subsurface soil layer [m3]
-            'vol_sub'     : CumulativeData('core', 'cVOutSub_m3')      # 5
+            'vol_sub'     : CumulativeData('core', 'cvoutsub_m3')
         })
 
     def update_cumulative_subsur(self, i, j, sub, q_subsur):
-        """
-        Method is used after each time step to save the desired variables.
+        """Save the desired variables.
+
+        Method is used after each time step.
+
+        :param i: TODO
+        :param j: TODO
+        :param sub: TODO
+        :param q_subsur: TODO
         """
         self.exfiltration[i][j] += sub.exfiltration * GridGlobals.pixel_area
         self.percolation[i][j] += sub.percolation * GridGlobals.pixel_area
@@ -75,14 +94,14 @@ class CumulativeSubsurface(CumulativeSubsurfacePass):
 
 
 class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfacePass):
-    """
-    Max and Cumulative values
+    """Max and Cumulative values.
 
     Stores array of max or cumulative values at of important variables from
     the surface and rill flow.
     """
 
     def __init__(self):
+        """TODO."""
         super(Cumulative, self).__init__()
 
         Logger.info('Save cumulative and maximum values from: Surface')
@@ -90,37 +109,37 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         # Dictionary stores the python arrays identification.
         self.data.update({
             # cumulative infiltrated volume [m3]
-            'infiltration' : CumulativeData('core',    'cInfil_m3'),     # 1
+            'infiltration' : CumulativeData('control', 'cinfil_m3'),
             # cumulative precipitation volume [m3]
-            'precipitation': CumulativeData('core',    'cRain_m3'),      # 2
+            'precipitation': CumulativeData('control', 'crain_m3'),
             # maximum surface water level [m]
-            'h_sur_tot'    : CumulativeData('control', 'mWLevel_m'),     # 3
+            'h_sur_tot'    : CumulativeData('core',    'mwlevel_m'),
             # maximum sheet discharge [m3s-1]
-            'q_sheet_tot'  : CumulativeData('control', 'mQsheet_m3_s'),  # 4
+            'q_sheet_tot'  : CumulativeData('control', 'mqsheet_m3_s'),
             # cumulative sheet runoff volume [m3]
-            'vol_sheet'    : CumulativeData('control', 'cSheetVOutM3'),  # 5
+            'vol_sheet'    : CumulativeData('control', 'csheetvout_m3'),
             # maximum sheet velocity [ms-1]
-            'v_sheet'      : CumulativeData('control', 'mVel_m_s'),      # 6
+            'v_sheet'      : CumulativeData('core',    'mvel_m_s'),
             # maximum sheet shear stress [Pa]
-            'shear_sheet'  : CumulativeData('control', 'mrSearStr_Pa'),  # 7
+            'shear_sheet'  : CumulativeData('core',    'mrsearstr_pa'),
             # maximum water level in rills [m]
-            'h_rill'       : CumulativeData('control', 'mWLevelRill_m'), # 8
+            'h_rill'       : CumulativeData('control',    'mwlevelrill_m'),
             # maximum discharge in rills [m3s-1]
-            'q_rill_tot'   : CumulativeData('control', 'mQRill_m3_s'),   # 9
+            'q_rill_tot'   : CumulativeData('control', 'mqrill_m3_s'),
             # cumulative runoff volume in rills [m3]
-            'vol_rill'     : CumulativeData('control', 'cRillVOut_m3'),  # 10
+            'vol_rill'     : CumulativeData('control', 'crillvout_m3'),
             # maximum rill width [m]
-            'b_rill'       : CumulativeData('control', 'widthRill'),     # 11
+            'b_rill'       : CumulativeData('control', 'widthrill'),
             # cumulative surface inflow volume [m3]
-            'inflow_sur'   : CumulativeData('control', 'cVIn_M3'),       # 12
+            'inflow_sur'   : CumulativeData('control', 'cvin_m3'),
             # maximum surface retention [m]
-            'sur_ret'      : CumulativeData('control', 'surRet_M'),      # 13
+            'sur_ret'      : CumulativeData('control', 'surret_m'),
             # maximum sheet water level [m]
-            'h_sheet_tot'  : CumulativeData('control', 'mWLevelsheet_m'),  # 14
+            'h_sheet_tot'  : CumulativeData('control', 'mwlevelsheet_m'),
             # maximal total surface flow [m3/s]
-            'q_sur_tot'    : CumulativeData('core',    'mQsur_m3_s'),    # 15
+            'q_sur_tot'    : CumulativeData('core',    'mqsur_m3_s'),
             # cumulative total surface flow [m3/s]
-            'vol_sur_tot'  : CumulativeData('core',    'cVsur_m3'),       # 16
+            'vol_sur_tot'  : CumulativeData('core',    'cvsur_m3'),
         })
 
         # define arrays class attributes
@@ -140,7 +159,7 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
 
         :param surface: surface.arr
         :param subsurface: subsurface.arr (to be implemented)
-        :param delta_t: length of time step
+        :param delta_t: current time step length
         """
         self.infiltration += surface.infiltration * GridGlobals.pixel_area
         self.precipitation += surface.cur_rain * GridGlobals.pixel_area
@@ -153,17 +172,11 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         q_sheet_tot = surface.vol_runoff / delta_t
         q_rill_tot = surface.vol_runoff_rill / delta_t
         q_sur_tot = q_sheet_tot + q_rill_tot
-        self.q_sur_tot = ma.where(
-            q_sur_tot > self.q_sur_tot, q_sur_tot, self.q_sur_tot
-        )
-        self.h_sur_tot = ma.where(
-            surface.h_total_new > self.h_sur_tot,
-            surface.h_total_new,
-            self.h_sur_tot
-        )
-        self.q_sheet_tot = ma.where(
-            q_sheet_tot > self.q_sheet_tot, q_sheet_tot, self.q_sheet_tot
-        )
+
+        self.q_sur_tot = ma.maximum(q_sur_tot, self.q_sur_tot)
+        self.h_sur_tot = ma.maximum(surface.h_total_new, self.h_sur_tot)
+        self.q_sheet_tot = ma.maximum(q_sheet_tot, self.q_sheet_tot)
+
         cond_h_rill = ma.greater(surface.h_rill, self.h_rill)
         self.h_rill = ma.where(cond_h_rill, surface.h_rill, self.h_rill)
         self.b_rill = ma.where(cond_h_rill, surface.rillWidth, self.b_rill)
@@ -196,8 +209,15 @@ class Cumulative(CumulativeSubsurface if Globals.subflow else CumulativeSubsurfa
         self.shear_sheet = self.h_sheet_tot * 9807 * Globals.mat_slope
 
     def return_str_val(self, i, j):
-        """ returns the cumulative precipitation in mm and cumulative runoff
-        at a given cell"""
+        """Return the cumulative precipitation in mm and cumulative runoff.
+
+        Returns the values at a given cell.
+
+        :param i: TODO
+        :param j: TODO
+        """
         sw = Globals.slope_width
-        return '{:.4e}'.format(self.precipitation[i][j]/GridGlobals.pixel_area), \
+        return (
+            '{:.4e}'.format(self.precipitation[i][j]/GridGlobals.pixel_area),
             '{:.4e}'.format(self.vol_sur_tot[i][j] * sw)
+        )

@@ -2,9 +2,11 @@ import os
 import argparse
 from string import Template
 
+
 def file_content(filename):
     with open(filename, 'r') as fd:
         return fd.read()
+
 
 parser = argparse.ArgumentParser("Template WPS request")
 
@@ -17,17 +19,23 @@ parser.add_argument(
 
 args = parser.parse_args()
 tests_dir = os.path.join('..', '..', 'tests')
+data_dir = os.path.join(tests_dir, 'data')
+
 if 'profile1d' in args.template:
     d = {
-        'input': file_content(os.path.join(tests_dir, 'data', 'profile1d', 'data1D.csv')),
-        'soil_types': file_content(os.path.join(tests_dir, 'data', 'profile1d', 'data1D_soil_types.csv')),
-        'rainfall': file_content(os.path.join(tests_dir, 'data', 'rainfall.txt')),
+        'input': file_content(
+            os.path.join(data_dir, 'profile1d', 'data1D.csv')
+        ),
+        'soil_types': file_content(
+            os.path.join(data_dir, 'profile1d', 'data1D_soil_types.csv')
+        ),
+        'rainfall': file_content(os.path.join(data_dir, 'rainfall_nucice.txt')),
         'config': file_content(os.path.join(tests_dir, 'profile1d.ini'))
     }
-else: # smoderp2d
+else:  # smoderp2d
     d = {
-        'input': file_content(os.path.join(tests_dir, 'data', 'destak.save')),
-        'rainfall': file_content(os.path.join(tests_dir, 'data', 'rainfall.txt')),
+        'input': file_content(os.path.join(data_dir, 'destak.save')),
+        'rainfall': file_content(os.path.join(data_dir, 'rainfall_nucice.txt')),
         'config': file_content(os.path.join(tests_dir, 'quicktest.ini'))
     }
 

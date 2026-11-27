@@ -1,27 +1,38 @@
 import os
+import sys
+import pytest
+from test_utils import PerformTest, data_dir, class_manager
 
-from smoderp2d import ArcGisRunner
-from dpre_utils import perform_dpre_ref_test, data_dir, output_dir
+from smoderp2d.runners.arcgis import ArcGisRunner
 
-def dpre_params():
+def params(reference_dir):
     return {
-        # parameter indexes from the bin/arcgis/SMODERP2D.pyt tool for ArcGIS
-        'elevation': os.path.join(data_dir, "dem10m"),
-        'soil': os.path.join(data_dir, "soils.shp"),
-        'soil_type_fieldname': "SID",
-        'vegetation': os.path.join(data_dir, "landuse.shp"),
-        'vegetation_type_fieldname': "LandUse",
-        'rainfall_file': os.path.join(data_dir, "rainfall.txt"),
-        'maxdt': 30,
-        'end_time': 40,
-        'points': os.path.join(data_dir, "points.shp"),
-        'table_soil_vegetation': os.path.join(data_dir, "soil_veg_tab_mean.dbf"),
-        'table_soil_vegetation_code': "soilveg",
-        'streams': os.path.join(data_dir, "stream.shp"),
-        'channel_properties_table': os.path.join(data_dir, "stream_shape.dbf"),
-        'streams_channel_shape_code': "channel_id",
-        'output': output_dir,
+        'elevation': os.path.join(data_dir, reference_dir, "dem.tif"),
+        'soil': os.path.join(data_dir, reference_dir, "soils.shp"),
+        'vegetation': os.path.join(data_dir, reference_dir, "landuse.shp"),
+        'points': os.path.join(data_dir, reference_dir, "points.shp"),
+        'table_soil_vegetation': os.path.join(
+            data_dir, reference_dir, "soil_veg_tab.{}".format("dbf" if reference_dir == "nucice" else "csv")
+        ),
+        'streams': os.path.join(data_dir, reference_dir, "streams.shp"),
+        'channel_properties_table':  os.path.join(data_dir, reference_dir, "streams_shape.dbf")
     }
 
-if __name__ == "__main__":
-    perform_dpre_ref_test(ArcGisRunner, dpre_params, dataprep_only=False)
+@pytest.mark.usefixtures('class_manager')
+class TestArcGis:
+    def test_001_dpre(self):
+        PerformTest(
+            ArcGisRunner, self.reference_dir, params(self.reference_dir)
+        ).run_dpre()
+
+    # def test_002_roff(self):
+    #     # https://github.com/storm-fsv-cvut/smoderp2d/issues/199
+    #     # PerformTest(Runner).run_roff(
+    #     #     os.path.join(os.path.dirname(__file__), "gistest.ini")
+    #     # )
+    #     pass
+
+    def test_002_full(self):
+        PerformTest(
+            ArcGisRunner, self.reference_dir, params(self.reference_dir)
+        ).run_full()

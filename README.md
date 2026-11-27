@@ -6,14 +6,14 @@
 Distributed event-based model for surface and subsurface runoff and erosion.
 
 ```sh
-    @ @ @   @       @     @ @     @ @ @     @ @ @ @  @ @ @    @ @ @  
+    @ @ @   @       @     @ @     @ @ @     @ @ @ @  @ @ @    @ @ @
    @        @ @   @ @   @     @   @     @   @        @     @  @     @
    @        @   @   @  @       @  @      @  @        @     @  @     @
-     @ @    @       @  @       @  @      @  @ @ @    @ @ @    @ @ @  
-         @  @       @  @       @  @      @  @        @   @    @      
-         @  @       @   @     @   @     @   @        @    @   @  
-    @ @ @   @       @     @ @     @ @ @     @ @ @ @  @     @  @  
-    \  \  /   / /    \   \  /   \  /    /     /       @ @ @   @ @ @  
+     @ @    @       @  @       @  @      @  @ @ @    @ @ @    @ @ @
+         @  @       @  @       @  @      @  @        @   @    @
+         @  @       @   @     @   @     @   @        @    @   @
+    @ @ @   @       @     @ @     @ @ @     @ @ @ @  @     @  @
+    \  \  /   / /    \   \  /   \  /    /     /       @ @ @   @ @ @
      \ _\/   /_/      \   \/     \/    /_____/       @     @  @     @
          \__/          \  /      _\___/                    @  @      @
              \____      \/      /                         @   @      @
@@ -21,6 +21,8 @@ Distributed event-based model for surface and subsurface runoff and erosion.
                                \                      @       @     @
                                 \___________________ @ @ @ @  @ @ @
 ```
+
+User documentation: <https://storm-fsv-cvut.github.io/smoderp2d-manual/>
 
 ## How to test
 
@@ -35,51 +37,56 @@ git clone https://github.com/storm-fsv-cvut/smoderp2d.git
 Build an image:
 
 ```sh
-docker build -t smoderp docker/
+docker build \
+ --tag smoderp2d:latest --file docker/Dockerfile .
 ```
 
-Run SMODERP command line tool from Docker container:
+Run SMODERP2D command line tool from Docker container:
 
 ```sh
-docker run -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
- ./bin/start-smoderp2d.py smoderp \
- --config tests/quicktest.ini
+docker run \
+ -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
+ ./bin/start-smoderp2d.py smoderp2d \
+ --config tests/config_files/quicktest_stream_rill.ini
 ```
 
-### From command line locally
+#### GRASS GIS
+
+Build an image with GRASS GIS support:
 
 ```sh
-./bin/start-smoderp2d.py --config tests/quicktest.ini
+docker build \
+ --tag smoderp2d-grass:latest --file docker/grass/Dockerfile .
 ```
 
-### From GRASS GIS
-
-Note: GRASS GIS 7.8+ required
-
-Create testing mapset:
+Run SMODERP2D with GRASS GIS provider from Docker container:
 
 ```sh
-grass --text -c tests/grassdata/smoderp2d-location/test/
+docker run \
+ -v `pwd`:/opt/smoderp2d -w /opt/smoderp2d/ --rm --entrypoint \
+ ./tests/run_grass_gistest.sh smoderp2d-grass \
+ nucice
 ```
 
-Run `r.smoderp2d` module:
+### Run locally
+
+#### Command line
 
 ```sh
-./bin/grass/test_r_smoderp2d.py
+PYTHONPATH=$PYTHONPATH:`pwd` ./bin/start-smoderp2d.py --config tests/config_files/quicktest_stream_rill.ini
 ```
 
-### From ArcGIS 10.x or Pro
+#### QGIS
 
-Launch SMODERP2D ArcToolbox from `bin\arcgis` directory.
+Requirements: QGIS 3.28.10 and higher
 
-![SMODERP2D ArcToolbox in action](img/arctoolbox.png?raw=true "SMODERP2D ArcToolbox in action")
+Define `QGIS_PLUGINPATH` and `PYTHONPATH` environmental variables in
+`Settings -> Options -> System` and restart QGIS.
 
-### From QGIS
+Than enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.
 
-Quick test (on Linux):
+Alternatively set up environment variables in command line before starting QGIS:
 
 ```sh
-QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/projekt.qgs
+PYTHONPATH=$PYTHONPATH:`pwd` QGIS_PLUGINPATH=`pwd`/bin/qgis qgis tests/data/nucice/qgis_project.qgz
 ```
-
-Enable SMODERP2D plugin in `Plugins -> Manage and Install Plugins...`.

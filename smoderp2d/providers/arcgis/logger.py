@@ -8,6 +8,7 @@ try:
 except RuntimeError as e:
     raise ProviderError("ArcGIS provider: {}".format(e))
 
+
 class ArcPyLogHandler(logging.Handler):
     """Custom logging class that bounces messages to the arcpy tool
     window.
@@ -19,7 +20,7 @@ class ArcPyLogHandler(logging.Handler):
         super(ArcPyLogHandler, self).__init__()
 
     def emit(self, record):
-        """ Write the log message.
+        """Write the log message.
 
         :param record: record to emit
         """

@@ -1,40 +1,33 @@
 import os
-import sys
 import csv
-import argparse
-import logging
 import numpy as np
 
-if sys.version_info.major >= 3:
-    from configparser import ConfigParser, NoSectionError, NoOptionError
-else:
-    from ConfigParser import ConfigParser, NoSectionError, NoOptionError
+from configparser import NoSectionError, NoOptionError
 
 from smoderp2d.core.general import Globals
-import math
-from smoderp2d.providers.base import BaseProvider, Logger, CompType, \
-    BaseWritter
+from smoderp2d.core import CompType
+from smoderp2d.providers.base import BaseProvider
 from smoderp2d.providers.base.data_preparation import PrepareDataBase
-from smoderp2d.providers.cmd import CmdWritter, CmdArgumentParser
-from smoderp2d.exceptions import ConfigError, ProviderError
+from smoderp2d.providers.cmd import CmdWriter, CmdArgumentParser
+from smoderp2d.exceptions import ConfigError, ProviderError, RainDataError
 
 
 class Profile1DProvider(BaseProvider, PrepareDataBase):
+
     def __init__(self, config_file=None):
         super(Profile1DProvider, self).__init__()
 
-        # load configuration
         # load configuration
         if config_file is None and os.getenv("SMODERP2D_CONFIG_FILE"):
             config_file = os.getenv("SMODERP2D_CONFIG_FILE")
         cloader = CmdArgumentParser(config_file)
         # no gis has only roff comp type
-        self.args.config_file, self.args.typecomp = cloader.set_config(
-            "Run PROFILE1D.", typecomp='roff')
+        self.args.config_file, self.args.workflow_mode = cloader.set_config(
+            "Run PROFILE1D.", workflow_mode='roff')
         self._config = self._load_config()
 
-        # define storage writter
-        self.storage = CmdWritter()
+        # define storage writer
+        self.storage = CmdWriter()
 
     def _load_input_data(self, filename_indata, filename_soil_types):
         """Load configuration data from roff computation procedure.
@@ -57,10 +50,14 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         :return: numpy structured array
         """
         try:
-            data = np.genfromtxt(filename, delimiter=';', names=True, dtype=None,
-                                 encoding='utf-8-sig', deletechars='')
+            data = np.genfromtxt(
+                filename, delimiter=';', names=True, dtype=None,
+                encoding='utf-8-sig', deletechars=''
+            )
         except IndexError:
-            raise ProviderError("Input file '{}' empty or invalid".format(filename))
+            raise ProviderError(
+                "Input file '{}' empty or invalid".format(filename)
+            )
         if data.size == 1:
             data = data.reshape(1)
 
@@ -144,10 +141,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             raise ConfigError(e)
 
         # defaults for profile1d provider
-        #  type of computing =  1 sheet and rill flow
-        data = {}
-        data['type_of_computing'] = 1
-        data['mfda'] = False
+        data = {'type_of_computing': CompType.rill, 'mfda': False}
 
         # time settings
         try:
@@ -163,18 +157,11 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             )
         except TypeError:
             raise ProviderError('Invalid rainfall file in [data] section')
-        #Logger.progress(10)
-
+        except RainDataError as e:
+            raise ProviderError(e)
+        # Logger.progress(10)
 
         # general settings
-        # output directory is always set
-        # TODO: isn't it already in globals?
-        data['temp'] = os.path.join(Globals.outdir, 'temp')
-        # some self._configs are not in pickle.dump
-        data['extraOut'] = self._config.getboolean('output', 'extraout', fallback=False)
-        # rainfall data can be saved
-        data['prtTimes'] = self._config.get('output', 'printtimes', fallback=None)
-
         resolution = self._config.getfloat('domain', 'res')
         data['r'] = self._compute_rows(joint_data['horizontalProjection[m]'],
                                        resolution)
@@ -198,24 +185,21 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['mat_slope'] = self._compute_mat_slope(
             parsed_data['hor_len'], parsed_data['verticalDistance[m]'])
         # TODO can be probably removed (?) or stay zero
-        # data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
-        data['mat_efect_cont'].fill(data['dx']) # x-axis (EW) resolution
+        # data['mat_boundary'] = np.zeros((data['r'], data['c']), float)
+        data['mat_effect_cont'].fill(data['dx'])  # x-axis (EW) resolution
         # flow direction is always to the south
         data['mat_fd'].fill(4)
 
         # set x and y
-        data['x'] = parsed_data['x'].reshape((data['r'], data['c']))
+        data['nsheet'] = parsed_data['nsheet'].reshape((data['r'], data['c']))
         data['y'] = parsed_data['y'].reshape((data['r'], data['c']))
 
         # set values to parameter matrics
-        data['mat_n'] = parsed_data['n'].reshape((data['r'], data['c']))
+        data['mat_nrill'] = parsed_data['nrill'].reshape((data['r'], data['c']))
         data['mat_b'] = parsed_data['b'].reshape((data['r'], data['c']))
-        data['mat_a'], data['mat_aa'] = self._get_a(
-            data['mat_n'],
-            data['x'],
+        data['mat_a'] = self._get_a(
+            data['nsheet'],
             data['y'],
-            data['r'],
-            data['c'],
             data['NoDataValue'],
             data['mat_slope'])
         data['mat_hcrit'] = self._get_crit_water(
@@ -226,7 +210,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
             data['c'],
             data['mat_slope'],
             data['NoDataValue'],
-            data['mat_aa']
+            data['mat_a']
         )
 
         data['mat_reten'] = parsed_data['ret'].reshape((data['r'], data['c']))
@@ -260,6 +244,9 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
 
         slope_width = float(self._config.get('domain', 'slope_width'))
         data['slope_width'] = slope_width
+
+        # load hidden config
+        data.update(self._load_data_from_hidden_config())
 
         return data
 
@@ -300,7 +287,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
 
         return pix_heights / lengths
 
-    def _divide_joint_data(self, joint_data, r, res):
+    @staticmethod
+    def _divide_joint_data(joint_data, r, res):
         """Divide joint data into corresponding number of rows.
 
         :param joint_data: np structurred array with the joint data
@@ -320,7 +308,7 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         for slope_segment in joint_data:
             segment_length = np.sum(
                 slope_segment['horizontalProjection[m]'])
-            seg_r = self._compute_rows(segment_length, one_pix_len)
+            # seg_r = self._compute_rows(segment_length, one_pix_len)
 
             seg_hor_len_arr = np.array(
                 [one_pix_len],
@@ -342,28 +330,29 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
 
         return parsed_data
 
-    def _alloc_matrices(self, data):
+    @staticmethod
+    def _alloc_matrices(data):
         # TODO: use loop (check base provider)
         # allocate matrices
-        data['mat_b'] = np.zeros((data['r'],data['c']), float)
-        data['mat_stream_reach'] = np.zeros((data['r'],data['c']), float)
-        data['mat_a'] = np.zeros((data['r'],data['c']), float)
-        data['mat_slope'] = np.zeros((data['r'],data['c']), float)
-        data['mat_n'] = np.zeros((data['r'],data['c']), float)
+        data['mat_b'] = np.zeros((data['r'], data['c']), float)
+        data['mat_stream_reach'] = np.zeros((data['r'], data['c']), float)
+        data['mat_a'] = np.zeros((data['r'], data['c']), float)
+        data['mat_slope'] = np.zeros((data['r'], data['c']), float)
+        data['mat_n'] = np.zeros((data['r'], data['c']), float)
         # dem is not needed for computation
-        data['mat_dem'] = np.zeros((data['r'],data['c']), float)
-        data['mat_inf_index'] = np.zeros((data['r'],data['c']), float)
-        data['mat_fd'] = np.zeros((data['r'],data['c']), float)
-        data['mat_hcrit'] = np.zeros((data['r'],data['c']), float)
-        data['mat_aa'] = np.zeros((data['r'],data['c']), float)
-        data['mat_reten'] = np.zeros((data['r'],data['c']), float)
-        data['mat_nan'] = np.zeros((data['r'],data['c']), float)
-        data['mat_efect_cont'] = np.zeros((data['r'],data['c']), float)
-        data['mat_pi'] = np.zeros((data['r'],data['c']), float)
-        data['mat_boundary'] = np.zeros((data['r'],data['c']), float)
-        data['mat_ppl'] = np.zeros((data['r'],data['c']), float)
+        data['mat_dem'] = np.zeros((data['r'], data['c']), float)
+        data['mat_inf_index'] = np.zeros((data['r'], data['c']), float)
+        data['mat_fd'] = np.zeros((data['r'], data['c']), float)
+        data['mat_hcrit'] = np.zeros((data['r'], data['c']), float)
+        data['mat_reten'] = np.zeros((data['r'], data['c']), float)
+        data['mat_nan'] = np.zeros((data['r'], data['c']), float)
+        data['mat_effect_cont'] = np.zeros((data['r'], data['c']), float)
+        data['mat_pi'] = np.zeros((data['r'], data['c']), float)
+        data['mat_boundary'] = np.zeros((data['r'], data['c']), float)
+        data['mat_ppl'] = np.zeros((data['r'], data['c']), float)
 
-    def _set_unused(self, data):
+    @staticmethod
+    def _set_unused(data):
         data['cell_stream'] = None
         data['state_cell'] = None
         data['outletCells'] = None
@@ -371,9 +360,9 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
         data['bc'] = None
         data['br'] = None
         data['streams'] = None
-        data['poradi'] = None
 
-    def _set_hydrographs(self, max_row):
+    @staticmethod
+    def _set_hydrographs(max_row):
         """Get array_points and points for the data dictionary.
 
         These keys are needed to force the run to compute hydrographs.
@@ -385,8 +374,8 @@ class Profile1DProvider(BaseProvider, PrepareDataBase):
 
         return array_points
 
-    def postprocessing(self, cumulative, surface_array, stream):
-        super().postprocessing(cumulative, surface_array, stream)
+    def postprocessing(self, cumulative, surface_array, stream, inflows):
+        super().postprocessing(cumulative, surface_array, stream, inflows)
 
         # extra to normal postprocessing - write profile.csv
 

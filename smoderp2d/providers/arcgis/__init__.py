@@ -1,21 +1,24 @@
 import os
-import sys
 import logging
+import shutil
+
+import numpy.ma as ma
 
 from smoderp2d.core.general import Globals, GridGlobals
-from smoderp2d.providers.base import BaseProvider, CompType, BaseWritter
+from smoderp2d.providers.base import BaseProvider, BaseWriter, WorkflowMode
 from smoderp2d.providers.arcgis.logger import ArcPyLogHandler
 from smoderp2d.providers import Logger
-from smoderp2d.exceptions import GlobalsNotSet, ProviderError
+from smoderp2d.exceptions import ProviderError
 
 try:
     import arcpy
 except RuntimeError as e:
     raise ProviderError("ArcGIS provider: {}".format(e))
 
-class ArcGisWritter(BaseWritter):
+
+class ArcGisWriter(BaseWriter):
     def __init__(self):
-        super(ArcGisWritter, self).__init__()
+        super(ArcGisWriter, self).__init__()
 
         # Overwriting output
         arcpy.env.overwriteOutput = 1
@@ -28,7 +31,9 @@ class ArcGisWritter(BaseWritter):
         arcpy.management.CreateFileGDB(os.path.join(outdir, 'temp'), "data.gdb")
 
         # create control ArcGIS File Geodatabase
-        arcpy.management.CreateFileGDB(os.path.join(outdir, 'control'), "data.gdb")
+        arcpy.management.CreateFileGDB(
+            os.path.join(outdir, 'control'), "data.gdb"
+        )
 
     def output_filepath(self, name):
         """
@@ -37,71 +42,52 @@ class ArcGisWritter(BaseWritter):
         :param name: layer name to be saved
         :return: full path to the dataset
         """
-        item = self._data_target.get(name)
-        if item is None or item not in ("temp", "control", "core"):
-            raise ProviderError("Unable to define target in output_filepath: {}".format(name))
-
-        path = Globals.get_outdir()
-        # 'core' datasets don't have directory, only the geodatabase
-        if item in ("temp", "control"):
-            path = os.path.join(path, item)
-
-        path = os.path.join(path, 'data.gdb', name)
-
+        path = os.path.join(
+            BaseWriter.output_filepath(self, name, dirname_only=True),
+            'data.gdb',
+            name
+        )
         Logger.debug('File path: {}'.format(path))
 
         return path
 
-    def write_raster(self, array, output_name, directory=''):
-        """Write raster (numpy array) to ASCII file.
-
-        :param array: numpy array
-        :param output_name: output filename
-        :param directory: directory where to write output file
+    def _write_raster(self, array, file_output):
+        """See base method for description.
         """
-        file_output = self._raster_output_path(output_name, directory)
-        
-        # prevent call globals before values assigned
-        if GridGlobals.xllcorner is None or \
-            GridGlobals.yllcorner is None or \
-            GridGlobals.dx is None or \
-            GridGlobals.dy is None:
-            raise GlobalsNotSet()
+        self._check_globals()
 
         lower_left = arcpy.Point(
             GridGlobals.xllcorner,
             GridGlobals.yllcorner,
         )
+
         raster = arcpy.NumPyArrayToRaster(
-            array, lower_left, GridGlobals.dx, GridGlobals.dy,
-            value_to_nodata=GridGlobals.NoDataValue)
+            array.filled(GridGlobals.NoDataValue) if isinstance(array, ma.MaskedArray) else array,
+            lower_left, GridGlobals.dx, GridGlobals.dy,
+            value_to_nodata=GridGlobals.NoDataValue
+        )
+
         arcpy.RasterToASCII_conversion(
             raster,
-            file_output
+            file_output + self._raster_extension
         )
 
-        self._print_array_stats(
-            array, file_output
-        )
 
 class ArcGisProvider(BaseProvider):
-    def __init__(self):
+    def __init__(self, log_handler=ArcPyLogHandler):
         super(ArcGisProvider, self).__init__()
-
-        # type of computation (default)
-        self.args.typecomp = CompType.full
 
         # options must be defined by set_options()
         self._options = None
 
         # logger
         self.add_logging_handler(
-            handler=ArcPyLogHandler(),
+            handler=log_handler(),
             formatter=logging.Formatter("%(levelname)-8s %(message)s")
         )
-        
-        # define storage writter
-        self.storage = ArcGisWritter()
+
+        # define storage writer
+        self.storage = ArcGisWriter()
 
     def set_options(self, options):
         """Set input paramaters.
@@ -124,3 +110,18 @@ class ArcGisProvider(BaseProvider):
         from smoderp2d.providers.arcgis.data_preparation import PrepareData
         prep = PrepareData(self._options, self.storage)
         return prep.run()
+
+    def _postprocessing(self):
+        """See base method for description."""
+        # here ArcGIS-specific postprocessing starts...
+        Logger.debug('ArcGIS-specific postprocessing')
+        if not self._options['generate_temporary']:
+            try:
+                # delete temporary data
+                data_dir = os.path.join(Globals.outdir, 'temp')
+                arcpy.Delete_management(os.path.join(data_dir, "data.gdb"))
+                shutil.rmtree(data_dir)
+            except PermissionError as e:
+                raise ProviderError(
+                    f"Unable to cleanup output temporary directory: {e}"
+                )
