@@ -18,6 +18,7 @@ def load_precipitation(fh):
     try:
         fh = open(fh, "r")
         x = []
+        first_line = True
         for line in fh.readlines():
             split_line = line.split()
             if len(split_line) == 0 or '#' in split_line[0]:
@@ -25,12 +26,20 @@ def load_precipitation(fh):
                 continue
 
             try:
-                timestamp = float(split_line[0])
-                precipitation = float(split_line[1])
-            except ValueError:
-                # probaby comma used to separate decimal part
-                timestamp = float(split_line[0].replace(',', '.'))
-                precipitation = float(split_line[1].replace(',', '.'))
+                try:
+                    timestamp = float(split_line[0])
+                    precipitation = float(split_line[1])
+                except ValueError:
+                    # probaby comma used to separate decimal part
+                    timestamp = float(split_line[0].replace(',', '.'))
+                    precipitation = float(split_line[1].replace(',', '.'))
+            except (ValueError, IndexError):
+                if first_line:
+                    # skip first line with column headers
+                    first_line = False
+                    continue
+                raise
+            first_line = False
 
             if (timestamp == 0) & (precipitation > 0):
                 # if the record start with zero minutes the line has to
