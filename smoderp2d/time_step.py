@@ -6,7 +6,6 @@ from re import sub
 from textwrap import fill
 from smoderp2d.core.general import Globals, GridGlobals
 import smoderp2d.processes.rainfall as rain_f
-import smoderp2d.processes.infiltration as infilt
 import smoderp2d.processes.rill as rill
 from smoderp2d.core.surface import (
     runoff, sheet_runoff, rill_runoff, compute_h_hrill, surface_retention,
@@ -99,14 +98,16 @@ class TimeStep:
 
         return potRain
 
-    def do_next_h(self, surface, subsurface, rain_arr, cumulative, hydrographs,
-                  flow_control, courant, potRain, delta_t):
+    def do_next_h(self, surface, subsurface, rain_arr, cumulative,
+                  infiltration, hydrographs, flow_control, courant, potRain,
+                  delta_t):
         """TODO.
 
         :param surface: TODO
         :param subsurface: TODO
         :param rain_arr: TODO
         :param cumulative: TODO
+        :param infiltration: instance of the infiltration class
         :param hydrographs: TODO
         :param flow_control: TODO
         :param courant: TODO
@@ -116,8 +117,6 @@ class TimeStep:
         rr, rc = GridGlobals.get_region_dim()
         pixel_area = GridGlobals.get_pixel_area()
         fc = flow_control
-        combinatIndex = Globals.get_combinatIndex()
-        NoDataValue = GridGlobals.get_no_data()
 
         self.infilt_capa += potRain
         if ma.all(self.infilt_capa < self.max_infilt_capa):
@@ -137,18 +136,12 @@ class TimeStep:
                 actRain)
             return actRain
 
-        for iii in combinatIndex:
-            k = iii[1]
-            s = iii[2]
-            # jj * 100.0 !!! smazat
-            iii[3] = infilt.philip(
-                k,
-                s,
-                delta_t,
-                fc.total_time - self.infilt_time,
-                NoDataValue)
-
-        infilt.set_combinatIndex(combinatIndex)
+        # precalculate infiltration for soil types
+        # TODO the actual rainfall should be assigned here
+        #      in the future should be moved into main loop below
+        infiltration.precalc(
+            delta_t, fc.total_time - self.infilt_time, potRain
+        )
 
         #
         # nulovani na zacatku kazdeho kola
@@ -189,18 +182,18 @@ class TimeStep:
         #
         # infiltration
         #
-        philip_infiltration = infilt.philip_infiltration(
+        current_infiltration = infiltration.current_infiltration(
             surface.arr.soil_type, surBIL
         )
         surBIL = ma.where(
             subsurface.get_exfiltration() > 0,
             surBIL,
-            philip_infiltration[0]
+            current_infiltration[0]
         )
         surface.arr.infiltration = ma.where(
             subsurface.get_exfiltration() > 0,
             0,
-            philip_infiltration[1]
+            current_infiltration[1]
         )
 
         #
@@ -269,13 +262,14 @@ class TimeStep:
               rillWidth,
               h_rillPre,
               h_last_state1,
-              exfiltration):
+              exfiltration,
+              infiltration):
         
         h_new = ma.masked_array(h_new.reshape(r,c),mask=GridGlobals.masks)
         h_old = h_old.reshape(r,c)
 
         # Calculating infiltration  - function which does not allow negative levels
-        _bil,infilt_buf = infilt.philip_infiltration(soil_type, h_new) #[m]
+        _bil,infilt_buf = infiltration.current_infiltration(soil_type, h_new) #[m]
         infiltr = ma.filled(ma.where(exfiltration > 0,
                                      0,
                                      infilt_buf),
@@ -339,14 +333,15 @@ class TimeStep:
     # courant, total_time, delta_t, combinatIndex, NoDataValue,
     # sum_interception, mat_effect_cont, iter_
     def do_next_h_implicit(self, surface, subsurface, rain_arr, cumulative,
-                           hydrographs, flow_control, delta_t, delta_tmax,
-                           list_fd,courant):
+                           infiltration, hydrographs, flow_control, delta_t,
+                           delta_tmax, list_fd,courant):
         """TODO.
 
         :param surface: TODO
         :param subsurface: TODO
         :param rain_arr: TODO
         :param cumulative: TODO
+        :param infiltration: instance of the infiltration class
         :param hydrographs: TODO
         :param flow_control: TODO
         :param courant: TODO
@@ -363,8 +358,6 @@ class TimeStep:
         r, c = GridGlobals.r, GridGlobals.c
         pixel_area = GridGlobals.get_pixel_area()
         fc = flow_control
-        combinatIndex = Globals.get_combinatIndex()
-        NoDataValue = GridGlobals.get_no_data()
 
         # Calculating the infiltration
         sr = Globals.get_sr()
@@ -413,21 +406,11 @@ class TimeStep:
 
             # Changing the actRain to a list - inserting 0 for the NoDataValues	
             act_rain = (actRain / delta_t).tolist(0)
-            # After the max_infilt_capa is filled       
-            for iii in combinatIndex:
-                # TODO: variable not used. Should we delete it?
-                index = iii[0]
-                k = iii[1]
-                s = iii[2]
-
-                iii[3] = infilt.philip(
-                    k,
-                    s,
-                    delta_t,
-                    fc.total_time + delta_t -  self.infilt_time,
-                    NoDataValue)
-
-            infilt.set_combinatIndex(combinatIndex)
+            # After the max_infilt_capa is filled
+            # precalculate infiltration for soil types
+            infiltration.precalc(
+                delta_t, fc.total_time + delta_t - self.infilt_time, potRain
+            )
 
             def model_args(h_new):
                 res = self.model(
@@ -446,7 +429,8 @@ class TimeStep:
                     surface.arr.rillWidth,
                     surface.arr.h_rillPre,
                     surface.arr.h_last_state1,
-                    subsurface.get_exfiltration()
+                    subsurface.get_exfiltration(),
+                    infiltration
                 )
                 return res
             try:
@@ -582,11 +566,11 @@ class TimeStep:
         surface.arr.inflow_tm =ma.array(inflows_comp(tot_flow, list_fd), mask=GridGlobals.masks)
 
         # Calculating the infiltration
-        _bil,infiltration = infilt.philip_infiltration(
+        _bil, current_infiltration = infiltration.current_infiltration(
             surface.arr.soil_type, surface.arr.h_total_new
         ) #[m]
         surface.arr.infiltration = ma.where(
-            subsurface.get_exfiltration() > 0, 0, infiltration
+            subsurface.get_exfiltration() > 0, 0, current_infiltration
         )
         # Updating surface retention
         h_ret = actRain - surface.arr.infiltration

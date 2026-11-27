@@ -107,15 +107,12 @@ def rill(V_to_rill, rillRatio, l, b, delta_t, n, slope):
 #
 #         b = b_tmp
 #         # if sur.state != 2 :
-#         #     b = 0
-#
 #         b, V_rill_runoff, V_rill_rest, q, v, courant = rill(
 #             V_to_rill, rillRatio, l, b, delta_t, n, slope
 #         )
 #         # if ppp :
 #         if courant > courantMax:
 #             Logger.debug('------ ratio += 1 -----')
-#             input()
 #             ratio += 1
 #             if ratio > 10:
 #                 return (

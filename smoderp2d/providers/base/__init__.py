@@ -241,6 +241,12 @@ class BaseProvider(object):
         data['computation_type'] = self._hidden_config.get(
             'computation_type', 'computation_type', fallback='explicit'
         )
+        # infiltration type
+        # 1 for Philip infiltration (default)
+        # 2 - 4 experimental
+        data['infiltration_type'] = self._hidden_config.getint(
+            'infiltration', 'type', fallback=1
+        )
 
         return data
 
@@ -335,6 +341,13 @@ class BaseProvider(object):
         # load hidden config
         data.update(self._load_data_from_hidden_config())
 
+        # infiltration type can be also set in the config
+        # 1 for Philip infiltration (default)
+        # 2 - 4 experimental
+        data['infiltration_type'] = self._config.getint(
+            'infiltration', 'type', fallback=data['infiltration_type']
+        )
+
         return data
 
     def load(self):
@@ -407,6 +420,10 @@ class BaseProvider(object):
             Globals.computationType = data['computation_type']
         else:
             Globals.computationType = hidden_config.get('computation_type', 'explicit')
+        if 'infiltration_type' in data:
+            Globals.infiltration_type = data['infiltration_type']
+        else:
+            Globals.infiltration_type = hidden_config.get('infiltration_type', 1)
 
         Globals.end_time *= 60  # convert min to sec
 

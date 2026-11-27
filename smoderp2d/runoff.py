@@ -30,6 +30,7 @@ from smoderp2d.io_functions import hydrographs as wf
 from smoderp2d.providers import Logger
 
 from smoderp2d.exceptions import MaxIterationExceeded
+from smoderp2d.exceptions import IncorrectInfiltrationType
 
 import smoderp2d.processes.rainfall as rain_f
 import smoderp2d.flow_algorithm.D8 as D8
@@ -146,6 +147,32 @@ class Runoff(object):
 
         # handling the surface processes
         self.surface = get_surface()()
+
+        # instance of infiltration calc
+        infiltration_type = Globals.get_infiltration_type()
+        if infiltration_type == 1:
+            from smoderp2d.processes.infiltration import BaseInfiltration
+            self.infiltration = BaseInfiltration(Globals.get_combinatIndex())
+        elif infiltration_type == 2:
+            from smoderp2d.processes.infiltration.greenampt import \
+                GreenAmptInfiltration
+            self.infiltration = GreenAmptInfiltration(
+                Globals.get_combinatIndex()
+            )
+        elif infiltration_type == 3:
+            from smoderp2d.processes.infiltration.richards import \
+                RichardsInfiltration
+            self.infiltration = RichardsInfiltration(
+                Globals.get_combinatIndex()
+            )
+        elif infiltration_type == 4:
+            from smoderp2d.processes.infiltration.greenamptunsteadyrain \
+                import GreenAmptInfiltrationUnsteadyRain
+            self.infiltration = GreenAmptInfiltrationUnsteadyRain(
+                Globals.get_combinatIndex()
+            )
+        else:
+            raise IncorrectInfiltrationType(infiltration_type)
 
         # class handling the subsurface processes if desir
         # TODO: include in data preprocessing
@@ -308,6 +335,7 @@ class Runoff(object):
                     self.subsurface,
                     self.rain_arr,
                     self.cumulative,
+                    self.infiltration,
                     self.hydrographs,
                     self.flow_control,
                     self.courant,
@@ -353,6 +381,7 @@ class Runoff(object):
                     self.subsurface,
                     self.rain_arr,
                     self.cumulative,
+                    self.infiltration,
                     self.hydrographs,
                     self.flow_control,
                     self.delta_t,
